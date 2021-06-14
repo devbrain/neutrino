@@ -1,5 +1,6 @@
 #include <neutrino/utils/sorted_array.hh>
 #include <doctest/doctest.h>
+#include <vector>
 
 TEST_CASE("sorted_array - test insert")
 {

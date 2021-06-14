@@ -22,7 +22,7 @@ public:
         }
     }
 
-    void update(std::chrono::milliseconds ms)
+    void update([[maybe_unused]] std::chrono::milliseconds ms)
     {
 
     }
@@ -33,4 +33,5 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
     application app;
     app.open(320,200);
     app.run(30);
+    return 0;
 }
