@@ -7,7 +7,7 @@
 #elif defined(__GNUC__)
 #	include "neutrino/utils/mp/type_name/type_name.gcc.hpp"
 #elif defined(_MSC_VER)
-#	include "neutrino/core/utils/type_name/type_name.msvc.hpp"
+#	include "neutrino/utils/mp/type_name/type_name.msvc.hpp"
 #else
 #	error Unsupported compiler.
 #endif

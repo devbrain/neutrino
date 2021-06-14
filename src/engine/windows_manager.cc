@@ -25,7 +25,7 @@ namespace neutrino::engine::detail
             }
             return nullptr;
         }
-        catch (std::exception& e)
+        catch ([[maybe_unused]] std::exception& e)
         {
             return nullptr;
         }

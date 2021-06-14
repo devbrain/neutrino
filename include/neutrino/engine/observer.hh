@@ -78,7 +78,11 @@ namespace neutrino::engine {
             attach(Functor&& func) {
                 auto f = mp::to_stdfunction(func);
                 using func_t = decltype(f);
+#if !defined(_MSC_VER)
                 this->template attach(new functional_observer<func_t>(std::move(f)));
+#else
+                this->attach(new functional_observer<func_t>(std::move(f)));
+#endif
             }
 
             template<typename Event>
@@ -86,7 +90,11 @@ namespace neutrino::engine {
             attach(void (*func)(const Event&) ) {
                 auto f = mp::to_stdfunction(func);
                 using func_t = decltype(f);
+#if !defined(_MSC_VER)
                 this->template attach(new functional_observer<func_t>(std::move(f)));
+#else
+                this->attach(new functional_observer<func_t>(std::move(f)));
+#endif
             }
 
             template<typename Observer>
@@ -154,7 +162,11 @@ namespace neutrino::engine {
                     using type_t = mp::type_list_at_t<i.value, supplied_t>;
                     if constexpr(!std::is_same_v<std::monostate, type_t>) {
                         if (auto pval = std::get_if<type_t>(&ev_variant)) {
+#if !defined(_MSC_VER)
                             this->template notify(*pval);
+#else
+                            this->notify(*pval);
+#endif
                         }
                     }
                 });
