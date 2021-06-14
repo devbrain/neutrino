@@ -1,0 +1,34 @@
+my_add_library_headers(utils
+
+		${PROJECT_INCLUDE}/neutrino/utils/mp/callable/helpers.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/callable/callable.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/callable/function.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/callable/member_function.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/callable/functor.hpp
+
+		${PROJECT_INCLUDE}/neutrino/utils/mp/type_name/type_name.msvc.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/type_name/type_name.gcc.7_3.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/type_name/type_name.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/type_name/type_name.msvc.19_21.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/type_name/type_name.gcc.8_1.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/type_name/type_name.clang.5.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/type_name/type_name.clang.hpp
+		${PROJECT_INCLUDE}/neutrino/utils/mp/type_name/type_name.gcc.hpp
+
+		${PROJECT_INCLUDE}/neutrino/utils/mp/typelist.hh
+		${PROJECT_INCLUDE}/neutrino/utils/mp/if_then_else.hh
+		${PROJECT_INCLUDE}/neutrino/utils/mp/all_same.hh
+		${PROJECT_INCLUDE}/neutrino/utils/mp/one_of.hh
+		${PROJECT_INCLUDE}/neutrino/utils/mp/constexpr_for.hh
+		${PROJECT_INCLUDE}/neutrino/utils/mp/introspection.hh
+
+		${PROJECT_INCLUDE}/neutrino/utils/pp_for_each.h
+		${PROJECT_INCLUDE}/neutrino/utils/macros.hh
+		${PROJECT_INCLUDE}/neutrino/utils/exception.hh
+		${PROJECT_INCLUDE}/neutrino/utils/logger.hh
+		${PROJECT_INCLUDE}/neutrino/utils/register_at_exit.hh
+		${PROJECT_INCLUDE}/neutrino/utils/singleton.hh
+		${PROJECT_INCLUDE}/neutrino/utils/array_view.hh
+		${PROJECT_INCLUDE}/neutrino/utils/sorted_array.hh
+)
+	
