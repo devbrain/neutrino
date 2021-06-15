@@ -22,6 +22,9 @@ my_add_library_static(engine
 
             application/basic_application.cc
 
+            renderer/vga_renderer.cc
+            renderer/basic_renderer.cc
+
             ${PROJECT_INCLUDE}/neutrino/engine/application.hh
 
             ${PROJECT_INCLUDE}/neutrino/engine/observer.hh
@@ -39,6 +42,9 @@ my_add_library_static(engine
 
             ${PROJECT_INCLUDE}/neutrino/engine/application/basic_application.hh
             ${PROJECT_INCLUDE}/neutrino/engine/application/single_window_application.hh
+
+            ${PROJECT_INCLUDE}/neutrino/engine/renderer/basic_renderer.hh
+            ${PROJECT_INCLUDE}/neutrino/engine/renderer/vga_renderer.hh
         DEPENDS_PUBLIC
             neutrino::sdl
             neutrino::utils

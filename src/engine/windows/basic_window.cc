@@ -186,6 +186,10 @@ namespace neutrino::engine
         m_pimpl->sdl_window.title(v);
     }
     // ----------------------------------------------------------------------------------------------------
+    uint32_t basic_window::id () const noexcept {
+        return m_pimpl->sdl_window.id();
+    }
+    // ----------------------------------------------------------------------------------------------------
     std::tuple<int, int> basic_window::dimensions() const noexcept
     {
         return m_pimpl->sdl_window.size();
