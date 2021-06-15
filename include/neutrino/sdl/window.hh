@@ -94,6 +94,8 @@ namespace neutrino::sdl
 
         [[nodiscard]] std::string title() const;
         void title(const std::string& v);
+
+        void update_surface();
     };
 }
 // ======================================================================================================
@@ -279,6 +281,11 @@ namespace neutrino::sdl
     inline
     void window::title(const std::string& v) {
         SDL_SetWindowTitle(handle(), v.c_str());
+    }
+    // --------------------------------------------------------------------------------------------
+    inline
+    void window::update_surface() {
+        SAFE_SDL_CALL(SDL_UpdateWindowSurface, handle());
     }
 }
 #endif

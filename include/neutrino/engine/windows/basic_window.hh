@@ -60,6 +60,8 @@ namespace neutrino::engine
         void toggle_fullscreen();
         [[nodiscard]] std::string title() const;
         void title(const std::string& v);
+
+        [[nodiscard]] uint32_t id () const noexcept;
     protected:
         virtual void after_window_opened(uint32_t window_id);
         virtual void before_window_destroy();

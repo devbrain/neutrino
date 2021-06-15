@@ -182,8 +182,14 @@ namespace neutrino::engine {
 
     }
 
+    template <typename ... Events>
+    class observer : public detail::observer_monitor {
+    public:
+        virtual ~observer() = default;
+    };
+
     template <typename EventType, typename ... RestEventTypes>
-    class observer : public detail::observer_monitor,
+    class observer <EventType, RestEventTypes...>: public detail::observer_monitor,
                      public detail::observer<EventType>,
                      public detail::observer<RestEventTypes>... {
     public:
