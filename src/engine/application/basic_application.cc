@@ -67,6 +67,7 @@ namespace neutrino::engine {
             start = s;
             {
                 m_pimpl->m_input_publisher.run();
+                clear();
                 update (delta_t);
                 render();
             }
@@ -130,9 +131,13 @@ namespace neutrino::engine {
 
     }
     // -------------------------------------------------------------------------------
+    void basic_application::clear() {
+         windows_manager::instance().clear();
+    }
+    // -------------------------------------------------------------------------------
     void basic_application::render()
     {
-        windows_manager::instance().render();
+        windows_manager::instance().present();
     }
     // -------------------------------------------------------------------------------
     void basic_application::on_quit()

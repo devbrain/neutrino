@@ -128,7 +128,6 @@ namespace neutrino::engine
                                                             sdl::window::flags_t::INPUT_GRABBED)
         );
 
-    //    std::tie(m_pimpl->pos_x, m_pimpl->pos_y) = m_pimpl->sdl_window.position();
         m_pimpl->width = w;
         m_pimpl->height = h;
         windows_manager::instance().attach(m_pimpl->sdl_window, this);
@@ -355,18 +354,6 @@ namespace neutrino::engine
     void basic_window::clear()
     {
 
-    }
-    // ----------------------------------------------------------------------------------------------------
-    void basic_window::render()
-    {
-
-    }
-    // ----------------------------------------------------------------------------------------------------
-    void basic_window::_render()
-    {
-        clear();
-        render();
-        present();
     }
     // ----------------------------------------------------------------------------------------------------
     void basic_window::on_window_resized([[maybe_unused]] int w, [[maybe_unused]]  int h)

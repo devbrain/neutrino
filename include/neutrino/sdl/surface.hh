@@ -228,7 +228,7 @@ namespace neutrino::sdl
     // ----------------------------------------------------------------------------------------------
     inline
     surface::surface(const object<SDL_Window>& other)
-    : object<SDL_Surface>(SAFE_SDL_CALL(SDL_GetWindowSurface, const_cast<SDL_Window*>(other.handle())), true)
+    : object<SDL_Surface>(SAFE_SDL_CALL(SDL_GetWindowSurface, const_cast<SDL_Window*>(other.handle())), false)
     {
 
     }

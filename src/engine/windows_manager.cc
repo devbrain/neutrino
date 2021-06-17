@@ -205,11 +205,19 @@ namespace neutrino::engine::detail
         return !m_windows.empty();
     }
     // -------------------------------------------------------------------------------------------
-    void windows_manager::render()
+    void windows_manager::present()
     {
         for (auto* w : m_windows)
         {
-            w->_render();
+            w->present();
+        }
+    }
+    // -------------------------------------------------------------------------------------------
+    void windows_manager::clear()
+    {
+        for (auto* w : m_windows)
+        {
+            w->clear();
         }
     }
     // -------------------------------------------------------------------------------------------

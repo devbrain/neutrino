@@ -3,14 +3,16 @@
 //
 
 #include <neutrino/engine/application.hh>
-#include <neutrino/engine/window.hh>
+#include <neutrino/engine/renderer/vga_renderer.hh>
 
 struct application :
-        public neutrino::engine::single_window_application<neutrino::engine::window_2d, application>
+        public neutrino::engine::single_window_application<application>
 {
 public:
-
-    void update([[maybe_unused]] std::chrono::milliseconds ms)
+    neutrino::engine::basic_renderer* create_renderer() override {
+        return new neutrino::engine::vga_renderer();
+    }
+    void update([[maybe_unused]] std::chrono::milliseconds ms) override
     {
 
     }

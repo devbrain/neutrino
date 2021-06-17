@@ -14,7 +14,7 @@
 
 namespace neutrino::engine {
 
-    template <typename WINDOW, typename Derived, typename ... Events>
+    template <typename Derived, typename ... Events>
     class single_window_application : public basic_application, public observer<Events...> {
     public:
         single_window_application();
@@ -26,6 +26,8 @@ namespace neutrino::engine {
         void open (int w, int h, const std::string& title);
         void open (int w, int h, int x, int y, const std::string& title);
     protected:
+        virtual basic_renderer* create_renderer() = 0;
+
         virtual void update(std::chrono::milliseconds ms) = 0;
         virtual void before_open();
         virtual void after_open();
@@ -37,13 +39,17 @@ namespace neutrino::engine {
         void _init();
         template<typename ... Args>
         void _generic_open(Args&&... args) {
+
+            m_renderer = std::shared_ptr<basic_renderer>(create_renderer()) ;
+            m_window = std::make_unique<engine_window>(m_renderer);
             _init();
             before_open();
             this->m_window->open(std::forward<Args>(args)...);
             after_open();
         }
     private:
-        engine_window* m_window;
+        std::unique_ptr<engine_window> m_window;
+        std::shared_ptr<basic_renderer> m_renderer;
         sdl::system    m_initializer;
     };
 }
@@ -53,36 +59,34 @@ namespace neutrino::engine {
 namespace neutrino::engine {
 
 
-    template <typename WINDOW, typename Derived, typename ... Events>
-    single_window_application<WINDOW, Derived, Events...>::single_window_application()
+    template <typename Derived, typename ... Events>
+    single_window_application< Derived, Events...>::single_window_application()
     : m_initializer(sdl::init_flags::VIDEO, sdl::init_flags::AUDIO, sdl::init_flags::EVENTS)
     {
-        m_window = new WINDOW();
+    }
+    // ----------------------------------------------------------------------------------------
+    template <typename Derived, typename ... Events>
+    single_window_application< Derived, Events...>::~single_window_application() {
 
     }
     // ----------------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    single_window_application<WINDOW, Derived, Events...>::~single_window_application() {
-        delete m_window;
-    }
-    // ----------------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    void single_window_application<WINDOW, Derived, Events...>::toggle_fullscreen() {
+    template <typename Derived, typename ... Events>
+    void single_window_application< Derived, Events...>::toggle_fullscreen() {
         m_window->toggle_fullscreen();
     }
     // ----------------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    std::string single_window_application<WINDOW, Derived, Events...>::title() const {
+    template <typename Derived, typename ... Events>
+    std::string single_window_application< Derived, Events...>::title() const {
         return m_window->title();
     }
     // ----------------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    void single_window_application<WINDOW, Derived, Events...>::title(const std::string& v) {
+    template <typename Derived, typename ... Events>
+    void single_window_application< Derived, Events...>::title(const std::string& v) {
         m_window->title(v);
     }
     // ----------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    void single_window_application<WINDOW, Derived, Events...>::_init() {
+    template <typename Derived, typename ... Events>
+    void single_window_application< Derived, Events...>::_init() {
         if constexpr(sizeof...(Events) == 0) {
             auto f = [this](const neutrino::events::keyboard& ev)
             {
@@ -102,32 +106,32 @@ namespace neutrino::engine {
         }
     }
     // ----------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    void single_window_application<WINDOW, Derived, Events...>::open (int w, int h) {
+    template <typename Derived, typename ... Events>
+    void single_window_application< Derived, Events...>::open (int w, int h) {
         _generic_open(w, h);
     }
     // ----------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    void single_window_application<WINDOW, Derived, Events...>::open (int w, int h, int x, int y) {
+    template <typename Derived, typename ... Events>
+    void single_window_application< Derived, Events...>::open (int w, int h, int x, int y) {
         _generic_open(w, h, x, y);
     }
     // ----------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    void single_window_application<WINDOW, Derived, Events...>::open (int w, int h, const std::string& title) {
+    template <typename Derived, typename ... Events>
+    void single_window_application< Derived, Events...>::open (int w, int h, const std::string& title) {
         _generic_open(w, h, title);
     }
     // ----------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    void single_window_application<WINDOW, Derived, Events...>::open (int w, int h, int x, int y, const std::string& title) {
+    template <typename Derived, typename ... Events>
+    void single_window_application< Derived, Events...>::open (int w, int h, int x, int y, const std::string& title) {
         _generic_open(w, h, x, y, title);
     }
     // ----------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    void single_window_application<WINDOW, Derived, Events...>::before_open() {
+    template <typename Derived, typename ... Events>
+    void single_window_application< Derived, Events...>::before_open() {
     }
     // ----------------------------------------------------------------------------------
-    template <typename WINDOW, typename Derived, typename ... Events>
-    void single_window_application<WINDOW, Derived, Events...>::after_open() {
+    template <typename Derived, typename ... Events>
+    void single_window_application< Derived, Events...>::after_open() {
     }
 }
 #endif

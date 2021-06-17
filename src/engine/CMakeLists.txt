@@ -12,9 +12,6 @@ my_add_library_static(engine
 
             windows/basic_window.cc
             windows/engine_window.cc
-            windows/window_2d.cc
-            windows/window_opengl.cc
-            windows/window_vulkan.cc
 
             events/events_mapper.cc
             events/events_mapper.hh
@@ -24,18 +21,16 @@ my_add_library_static(engine
 
             renderer/vga_renderer.cc
             renderer/basic_renderer.cc
+            renderer/renderer_2d.cc
+            renderer/opengl_renderer.cc
 
             ${PROJECT_INCLUDE}/neutrino/engine/application.hh
 
             ${PROJECT_INCLUDE}/neutrino/engine/observer.hh
             ${PROJECT_INCLUDE}/neutrino/engine/message_broker.hh
-            ${PROJECT_INCLUDE}/neutrino/engine/window.hh
 
             ${PROJECT_INCLUDE}/neutrino/engine/windows/basic_window.hh
             ${PROJECT_INCLUDE}/neutrino/engine/windows/engine_window.hh
-            ${PROJECT_INCLUDE}/neutrino/engine/windows/window_opengl.hh
-            ${PROJECT_INCLUDE}/neutrino/engine/windows/window_vulkan.hh
-            ${PROJECT_INCLUDE}/neutrino/engine/windows/window_2d.hh
 
             ${PROJECT_INCLUDE}/neutrino/engine/events/events.hh
             ${PROJECT_INCLUDE}/neutrino/engine/events/events_s11n.hh
@@ -45,6 +40,13 @@ my_add_library_static(engine
 
             ${PROJECT_INCLUDE}/neutrino/engine/renderer/basic_renderer.hh
             ${PROJECT_INCLUDE}/neutrino/engine/renderer/vga_renderer.hh
+            ${PROJECT_INCLUDE}/neutrino/engine/renderer/renderer_2d.hh
+            ${PROJECT_INCLUDE}/neutrino/engine/renderer/opengl_renderer.hh
+
+            thirdparty/stb_image.c
+            thirdparty/stb_image.h
+            thirdparty/SDL_stbimage.h
+
         DEPENDS_PUBLIC
             neutrino::sdl
             neutrino::utils

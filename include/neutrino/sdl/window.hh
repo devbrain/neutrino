@@ -93,9 +93,10 @@ namespace neutrino::sdl
         void hide() noexcept;
 
         [[nodiscard]] std::string title() const;
-        void title(const std::string& v);
+        void title(const std::string& v) noexcept;
 
         void update_surface();
+        void swap_opengl_window() noexcept;
     };
 }
 // ======================================================================================================
@@ -279,13 +280,18 @@ namespace neutrino::sdl
     }
     // --------------------------------------------------------------------------------------------
     inline
-    void window::title(const std::string& v) {
+    void window::title(const std::string& v) noexcept {
         SDL_SetWindowTitle(handle(), v.c_str());
     }
     // --------------------------------------------------------------------------------------------
     inline
     void window::update_surface() {
         SAFE_SDL_CALL(SDL_UpdateWindowSurface, handle());
+    }
+    // --------------------------------------------------------------------------------------------
+    inline
+    void window::swap_opengl_window() noexcept {
+        SDL_GL_SwapWindow(handle());
     }
 }
 #endif
