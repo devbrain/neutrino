@@ -34,6 +34,12 @@ namespace neutrino::engine
     {
         friend class detail::windows_manager;
     public:
+        enum window_kind_t {
+            SIMPLE,
+            OPENGL,
+            VULKAN
+        };
+    public:
         basic_window();
         explicit basic_window(window_flags_t flags);
 
@@ -56,6 +62,7 @@ namespace neutrino::engine
         [[nodiscard]] bool has_keyboard_focus() const noexcept;
         [[nodiscard]] bool visible() const noexcept;
         virtual void clear() = 0;
+        virtual void present() = 0;
 
         void toggle_fullscreen();
         [[nodiscard]] std::string title() const;
@@ -66,8 +73,8 @@ namespace neutrino::engine
         virtual void after_window_opened(uint32_t window_id);
         virtual void before_window_destroy();
 
-        virtual void present() = 0;
-        virtual void render() = 0;
+
+
 
         virtual void on_window_close();
         virtual void on_window_resized(int w, int h);
@@ -84,18 +91,8 @@ namespace neutrino::engine
 
         void quit();
     protected:
-        enum window_kind_t {
-            SIMPLE,
-            OPENGL,
-            VULKAN
-        };
-
         basic_window(window_kind_t kind, window_flags_t flags);
-
     private:
-
-        void _render();
-
         void _window_restored();
         void _window_mouse_entered();
         void _window_mouse_leaved();

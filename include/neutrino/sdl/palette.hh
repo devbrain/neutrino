@@ -194,7 +194,7 @@ namespace neutrino::sdl
     {
         const auto n = std::distance(first, last);
         RTC_IN_PALETTE (static_cast<std::size_t>(n) <= size (), "Palette of size ", size(), "is too small to hold ", n, "entries");
-        if (0 == SDL_SetPaletteColors (handle(), first, 0, static_cast<int>(n)))
+        if (0 != SDL_SetPaletteColors (handle(), first, 0, static_cast<int>(n)))
         {
             RAISE_SDL_EX();
         }

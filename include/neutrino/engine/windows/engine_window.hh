@@ -8,17 +8,18 @@
 #include <neutrino/engine/observer.hh>
 #include <neutrino/engine/events/events.hh>
 #include <neutrino/engine/windows/basic_window.hh>
+#include <neutrino/engine/renderer/basic_renderer.hh>
+#include <memory>
 
 namespace neutrino::engine {
     class engine_window : public basic_window, public publisher<events::all_events_t> {
     public:
-        engine_window();
-        explicit engine_window(window_flags_t flags);
-    protected:
-        engine_window(window_kind_t kind, window_flags_t flags);
-    protected:
-         virtual void present() = 0;
-         virtual void render() = 0;
+        engine_window(std::shared_ptr<basic_renderer> renderer, window_flags_t flags);
+        explicit engine_window(std::shared_ptr<basic_renderer> renderer);
+    private:
+        void clear() override;
+        void after_window_opened(uint32_t window_id) override;
+        void present() override;
     private:
          void on_window_close() override;
 
@@ -33,6 +34,8 @@ namespace neutrino::engine {
          void on_touch_button(const sdl::events::touch_device_button& ev) override;
          void on_touch_motion(const sdl::events::touch_device_motion& ev) override;
          void on_touch_wheel(const sdl::events::touch_device_wheel& ev) override;
+    private:
+        std::shared_ptr<basic_renderer> m_renderer;
     };
 }
 

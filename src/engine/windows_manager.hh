@@ -45,7 +45,8 @@ namespace neutrino::engine
 
             [[nodiscard]] bool has_windows() const noexcept;
 
-            void render();
+            void clear();
+            void present();
 
             void attach(sdl::window& sdl_window, basic_window* engine_window);
             void detach(basic_window* engine_window);

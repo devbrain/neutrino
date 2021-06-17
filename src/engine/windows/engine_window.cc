@@ -6,15 +6,16 @@
 #include <engine/events/events_mapper.hh>
 
 namespace neutrino::engine {
-    engine_window::engine_window() = default;
     // --------------------------------------------------------------------------------------------
-    engine_window::engine_window(window_flags_t flags)
-    : basic_window(flags) {
+    engine_window::engine_window(std::shared_ptr<basic_renderer> renderer, window_flags_t flags)
+    : basic_window(renderer->window_kind(), flags),
+      m_renderer(renderer) {
 
     }
     // --------------------------------------------------------------------------------------------
-    engine_window::engine_window(window_kind_t kind, window_flags_t flags)
-    : basic_window(kind, flags) {
+    engine_window::engine_window(std::shared_ptr<basic_renderer> renderer)
+    : basic_window(renderer->window_kind()),
+      m_renderer(renderer) {
 
     }
     // --------------------------------------------------------------------------------------------
@@ -61,6 +62,18 @@ namespace neutrino::engine {
     // --------------------------------------------------------------------------------------------
     void engine_window::on_touch_wheel(const sdl::events::touch_device_wheel& ev) {
         this->notify(events::map_event(ev));
+    }
+    // --------------------------------------------------------------------------------------------
+    void engine_window::clear() {
+        m_renderer->clear();
+    }
+    // --------------------------------------------------------------------------------------------
+    void engine_window::after_window_opened([[maybe_unused]] uint32_t window_id) {
+        m_renderer->open(*this);
+    }
+    // --------------------------------------------------------------------------------------------
+    void engine_window::present() {
+        m_renderer->present();
     }
 
 }

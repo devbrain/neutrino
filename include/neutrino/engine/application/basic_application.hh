@@ -35,6 +35,7 @@ namespace neutrino::engine
         virtual void on_in_background ();
         virtual void on_in_foreground ();
     protected:
+        virtual void clear();
         virtual void update(std::chrono::milliseconds ms) = 0;
         virtual void render();
     private:
