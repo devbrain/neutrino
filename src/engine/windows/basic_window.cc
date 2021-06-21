@@ -156,25 +156,16 @@ namespace neutrino::engine
     {
 
         m_pimpl->windowed = !m_pimpl->windowed;
-        int screen_w, screen_h;
         if (m_pimpl->windowed)
         {
-            screen_w = m_pimpl->width;
-            screen_h = m_pimpl->height;
             SDL_SetWindowFullscreen(m_pimpl->sdl_window.handle(), 0);
             m_pimpl->sdl_window.position(m_pimpl->before_fullscreen_x, m_pimpl->before_fullscreen_y);
             SDL_ShowCursor(1);
         } else
         {
-            int i = m_pimpl->sdl_window.display_index();
-            SDL_Rect j;
-            SDL_GetDisplayBounds(i, &j);
-            screen_w = j.w;
-            screen_h = j.h;
             std::tie(m_pimpl->before_fullscreen_x, m_pimpl->before_fullscreen_y) = m_pimpl->sdl_window.position();
             SDL_SetWindowFullscreen(m_pimpl->sdl_window.handle(), SDL_WINDOW_FULLSCREEN_DESKTOP);
         }
-        on_window_resized(screen_w, screen_h);
     }
     // ----------------------------------------------------------------------------------------------------
     std::string basic_window::title() const {
@@ -295,6 +286,7 @@ namespace neutrino::engine
     {
         m_pimpl->width = w;
         m_pimpl->height = h;
+        on_window_invalidate();
         on_window_resized(w, h);
         present();
     }
@@ -347,6 +339,11 @@ namespace neutrino::engine
     }
     // ----------------------------------------------------------------------------------------------------
     void basic_window::on_window_close()
+    {
+
+    }
+    // ----------------------------------------------------------------------------------------------------
+    void basic_window::on_window_invalidate()
     {
 
     }

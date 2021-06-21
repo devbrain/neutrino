@@ -36,4 +36,9 @@ namespace neutrino::engine {
     {
         return basic_window::SIMPLE;
     }
+    // --------------------------------------------------------------------------------
+    void renderer_2d::invalidate([[maybe_unused]] const basic_window& window)
+    {
+
+    }
 }

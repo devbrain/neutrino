@@ -17,7 +17,8 @@ namespace neutrino::engine {
         void open(const basic_window& window) override;
         void clear() override;
         void present() override;
-        basic_window::window_kind_t window_kind() const noexcept override;
+        [[nodiscard]] basic_window::window_kind_t window_kind() const noexcept override;
+        void invalidate(const basic_window& window) override;
     private:
         struct impl;
         std::unique_ptr<impl> m_pimpl;

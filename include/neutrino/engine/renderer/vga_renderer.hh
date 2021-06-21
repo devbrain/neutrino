@@ -7,6 +7,7 @@
 
 #include <neutrino/engine/windows/basic_window.hh>
 #include <neutrino/engine/renderer/basic_renderer.hh>
+#include <neutrino/sdl/surface.hh>
 
 namespace neutrino::engine {
     class vga_renderer : public basic_renderer {
@@ -17,6 +18,9 @@ namespace neutrino::engine {
         void clear() override;
         void present() override;
         [[nodiscard]] basic_window::window_kind_t window_kind() const noexcept override;
+        void invalidate(const basic_window& window) override;
+    protected:
+        [[nodiscard]] sdl::surface& surface() noexcept;
     private:
         struct impl;
         impl* m_pimpl;

@@ -36,7 +36,10 @@ my_add_library_static(engine
             ${PROJECT_INCLUDE}/neutrino/engine/events/events_s11n.hh
 
             ${PROJECT_INCLUDE}/neutrino/engine/application/basic_application.hh
-            ${PROJECT_INCLUDE}/neutrino/engine/application/single_window_application.hh
+            ${PROJECT_INCLUDE}/neutrino/engine/application/generic_application.hh
+            ${PROJECT_INCLUDE}/neutrino/engine/application/neutrino_application.hh
+            ${PROJECT_INCLUDE}/neutrino/engine/application/oldschool_demo.hh
+            application/oldschool_demo.cc
 
             ${PROJECT_INCLUDE}/neutrino/engine/renderer/basic_renderer.hh
             ${PROJECT_INCLUDE}/neutrino/engine/renderer/vga_renderer.hh
@@ -46,6 +49,13 @@ my_add_library_static(engine
             thirdparty/stb_image.c
             thirdparty/stb_image.h
             thirdparty/SDL_stbimage.h
+
+            ${PROJECT_INCLUDE}/neutrino/engine/systems/video/video_system.hh
+            ${PROJECT_INCLUDE}/neutrino/engine/systems/video/oldschool.hh
+
+            ${PROJECT_INCLUDE}/neutrino/engine/systems/video/retro/retro.hh
+            systems/video/retro/retro.cc
+            systems/video/oldschool.cc
 
         DEPENDS_PUBLIC
             neutrino::sdl

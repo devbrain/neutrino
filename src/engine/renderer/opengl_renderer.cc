@@ -71,4 +71,9 @@ namespace neutrino::engine {
     {
         return basic_window::OPENGL;
     }
+    // --------------------------------------------------------------------------------
+    void opengl_renderer::invalidate([[maybe_unused]] const basic_window& window)
+    {
+
+    }
 }
