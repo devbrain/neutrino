@@ -96,6 +96,11 @@ namespace neutrino::engine {
         m_pimpl->work.get_palette().fill(colors.begin(), colors.end());
     }
     // --------------------------------------------------------------------------------
+    void vga_renderer::invalidate(const basic_window& window) {
+        auto w = sdl::window::by_id(window.id());
+        m_pimpl->window_surface = sdl::surface(w);
+    }
+    // --------------------------------------------------------------------------------
     vga_renderer::~vga_renderer() {
         delete m_pimpl;
     }
@@ -111,5 +116,9 @@ namespace neutrino::engine {
     // --------------------------------------------------------------------------------
     basic_window::window_kind_t vga_renderer::window_kind() const noexcept {
         return basic_window::SIMPLE;
+    }
+    // --------------------------------------------------------------------------------
+    sdl::surface& vga_renderer::surface() noexcept {
+        return m_pimpl->work;
     }
 }

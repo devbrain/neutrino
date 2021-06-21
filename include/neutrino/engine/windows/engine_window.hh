@@ -34,6 +34,7 @@ namespace neutrino::engine {
          void on_touch_button(const sdl::events::touch_device_button& ev) override;
          void on_touch_motion(const sdl::events::touch_device_motion& ev) override;
          void on_touch_wheel(const sdl::events::touch_device_wheel& ev) override;
+         void on_window_invalidate() override;
     private:
         std::shared_ptr<basic_renderer> m_renderer;
     };

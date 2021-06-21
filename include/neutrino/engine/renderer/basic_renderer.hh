@@ -15,7 +15,8 @@ namespace neutrino::engine {
         virtual void clear() = 0;
         virtual void present() = 0;
 
-        virtual basic_window::window_kind_t window_kind() const noexcept = 0;
+        [[nodiscard]] virtual  basic_window::window_kind_t window_kind() const noexcept = 0;
+        virtual void invalidate(const basic_window& window) = 0;
     };
 }
 

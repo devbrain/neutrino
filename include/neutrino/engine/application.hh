@@ -7,6 +7,8 @@
 
 
 #include <neutrino/engine/application/basic_application.hh>
-#include <neutrino/engine/application/single_window_application.hh>
+#include <neutrino/engine/application/generic_application.hh>
+#include <neutrino/engine/application/neutrino_application.hh>
+#include <neutrino/engine/application/oldschool_demo.hh>
 
-#endif //NEUTRINO_APPLICATION_HH
+#endif

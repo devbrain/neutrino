@@ -64,6 +64,10 @@ namespace neutrino::engine {
         this->notify(events::map_event(ev));
     }
     // --------------------------------------------------------------------------------------------
+    void engine_window::on_window_invalidate() {
+        m_renderer->invalidate(*this);
+    }
+    // --------------------------------------------------------------------------------------------
     void engine_window::clear() {
         m_renderer->clear();
     }

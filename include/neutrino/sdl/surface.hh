@@ -36,7 +36,7 @@ namespace neutrino::sdl
         surface(surface&& other);
         surface(const object<SDL_Window>& other);
         surface& operator = (object<SDL_Surface>&& other);
-
+        surface& operator = (surface&& other) noexcept;
 
 
         surface& operator = (const surface& other) = delete;
@@ -224,6 +224,13 @@ namespace neutrino::sdl
     : object<SDL_Surface>(nullptr, false)
     {
         other.swap(*this);
+    }
+    // ----------------------------------------------------------------------------------------------
+    inline
+    surface& surface::operator = (surface&& other) noexcept
+    {
+        object<SDL_Surface>::operator=(std::move(other));
+        return *this;
     }
     // ----------------------------------------------------------------------------------------------
     inline

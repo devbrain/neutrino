@@ -73,9 +73,6 @@ namespace neutrino::engine
         virtual void after_window_opened(uint32_t window_id);
         virtual void before_window_destroy();
 
-
-
-
         virtual void on_window_close();
         virtual void on_window_resized(int w, int h);
         virtual void on_input_focus_changed(bool keyboard_focus, bool mouse_focus);
@@ -90,6 +87,8 @@ namespace neutrino::engine
         virtual void on_touch_wheel(const sdl::events::touch_device_wheel& ev);
 
         void quit();
+
+        virtual void on_window_invalidate();
     protected:
         basic_window(window_kind_t kind, window_flags_t flags);
     private:
