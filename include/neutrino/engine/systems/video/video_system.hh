@@ -5,7 +5,7 @@
 #ifndef NEUTRINO_SYSTEMS_VIDEO_VIDEO_SYSTEM_HH
 #define NEUTRINO_SYSTEMS_VIDEO_VIDEO_SYSTEM_HH
 
-#include <neutrino/engine/observer.hh>
+#include <neutrino/utils/observer.hh>
 #include <neutrino/engine/events/events.hh>
 #include <neutrino/engine/windows/basic_window.hh>
 

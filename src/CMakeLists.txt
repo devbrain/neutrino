@@ -1,3 +1,5 @@
 add_subdirectory(sdl)
 add_subdirectory(utils)
-add_subdirectory(engine)
+#add_subdirectory(engine)
+add_subdirectory(hal)
+add_subdirectory(math)

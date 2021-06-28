@@ -4,7 +4,7 @@
 
 #include <string>
 #include <doctest/doctest.h>
-#include <neutrino/engine/observer.hh>
+#include <neutrino/utils/observer.hh>
 
 
 struct simple_observer : public neutrino::engine::observer<int> {

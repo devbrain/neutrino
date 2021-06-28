@@ -104,7 +104,8 @@ namespace neutrino::sdl
          * @throws @see sdl::exception on failure
          */
         void blit_scaled (const rect& srect, object<SDL_Surface>& dst) const;
-
+        void blit_scaled (object<SDL_Surface>& dst) const;
+        void blit_scaled (const rect& srect, object<SDL_Surface>& dst, const rect& drect) const;
 
         /**
          * @brief Blit this surface to @c dst surface
@@ -158,6 +159,7 @@ namespace neutrino::sdl
 
         // this method returns reference to the actual palette
         [[nodiscard]] palette get_palette() const;
+        void set_palette(const palette& pal);
     };
     namespace detail
     {
@@ -419,6 +421,16 @@ namespace neutrino::sdl
     }
     // ----------------------------------------------------------------------------------------------
     inline
+    void surface::blit_scaled (object<SDL_Surface>& dst) const {
+        SAFE_SDL_CALL(SDL_BlitScaled, const_handle(), nullptr, dst.handle(), nullptr);
+    }
+    // ----------------------------------------------------------------------------------------------
+    inline
+    void surface::blit_scaled (const rect& srect, object<SDL_Surface>& dst, const rect& drect) const {
+        SAFE_SDL_CALL(SDL_BlitScaled, const_handle(), &srect, dst.handle(), const_cast<rect*>(&drect));
+    }
+    // ----------------------------------------------------------------------------------------------
+    inline
     void surface::blit (const rect& srect, object<SDL_Surface>& dst, const point& dpoint) const
     {
         rect dstrect{dpoint, srect.w, srect.h};
@@ -511,6 +523,11 @@ namespace neutrino::sdl
     palette surface::get_palette() const
     {
         return palette(*this);
+    }
+    // --------------------------------------------------------------------------------------------
+    inline
+    void surface::set_palette(const palette& pal) {
+        SAFE_SDL_CALL(SDL_SetSurfacePalette, handle(), pal.const_handle());
     }
 }
 #endif

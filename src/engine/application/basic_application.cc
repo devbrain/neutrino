@@ -4,8 +4,8 @@
 
 #include <neutrino/engine/application/basic_application.hh>
 #include <neutrino/sdl/timers.hh>
-#include "engine/input_publisher.hh"
-#include "engine/windows_manager.hh"
+#include "hal/input_publisher.hh"
+#include "hal/windows_manager.hh"
 
 #include <atomic>
 

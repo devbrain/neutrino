@@ -5,8 +5,8 @@
 #ifndef NEUTRINO_ENGINE_APPLICATION_BASIC_APPLICATION_HH
 #define NEUTRINO_ENGINE_APPLICATION_BASIC_APPLICATION_HH
 
-#include <neutrino/engine/observer.hh>
-#include <neutrino/engine/message_broker.hh>
+#include <neutrino/utils/observer.hh>
+#include "../../../../src/hal/message_broker.hh"
 #include <neutrino/engine/events/events.hh>
 #include <chrono>
 #include <memory>
@@ -16,7 +16,7 @@ namespace neutrino::engine
 {
     namespace detail
     {
-        using application_publisher_t = publisher<events::current_fps>;
+        using application_publisher_t = utils::publisher<events::current_fps>;
     }
 
     class basic_application : private detail::application_publisher_t {

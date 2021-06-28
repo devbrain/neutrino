@@ -5,14 +5,14 @@
 #ifndef NEUTRINO_ENGINE_WINDOWS_ENGINE_WINDOW_HH
 #define NEUTRINO_ENGINE_WINDOWS_ENGINE_WINDOW_HH
 
-#include <neutrino/engine/observer.hh>
+#include <neutrino/utils/observer.hh>
 #include <neutrino/engine/events/events.hh>
 #include <neutrino/engine/windows/basic_window.hh>
 #include <neutrino/engine/renderer/basic_renderer.hh>
 #include <memory>
 
 namespace neutrino::engine {
-    class engine_window : public basic_window, public publisher<events::all_events_t> {
+class engine_window : public basic_window, public utils::publisher<events::all_events_t> {
     public:
         engine_window(std::shared_ptr<basic_renderer> renderer, window_flags_t flags);
         explicit engine_window(std::shared_ptr<basic_renderer> renderer);

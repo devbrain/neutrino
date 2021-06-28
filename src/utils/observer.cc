@@ -2,9 +2,9 @@
 // Created by igor on 08/06/2021.
 //
 
-#include <neutrino/engine/observer.hh>
+#include <neutrino/utils/observer.hh>
 
-namespace neutrino::engine::detail
+namespace neutrino::utils::detail
 {
     void observer_monitor::on_subscribed()
     {}

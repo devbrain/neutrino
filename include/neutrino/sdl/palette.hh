@@ -61,6 +61,8 @@ namespace neutrino::sdl
             }
             return s->palette;
         }
+
+
     };
 }
 // ================================================================================================
@@ -79,7 +81,7 @@ namespace neutrino::sdl
     palette::palette (const color* first, const color* last)
     : object<SDL_Palette>(SAFE_SDL_CALL(SDL_AllocPalette, static_cast<int>(std::distance(first, last))), true)
     {
-        if (0 == SDL_SetPaletteColors (handle(), first, 0, static_cast<int>(size())))
+        if (0 != SDL_SetPaletteColors (handle(), first, 0, static_cast<int>(size())))
         {
             RAISE_SDL_EX();
         }
@@ -89,6 +91,12 @@ namespace neutrino::sdl
     palette::palette(std::size_t num_colors)
     : object<SDL_Palette>(SAFE_SDL_CALL(SDL_AllocPalette, static_cast<int>(num_colors)), true)
     {
+        auto* colors = reinterpret_cast<color *>(handle()->colors);
+        for (std::size_t i=0; i<num_colors; i++) {
+            colors[i].r = 0;
+            colors[i].g = 0;
+            colors[i].b = 0;
+        }
     }
     // -------------------------------------------------------------------------------------------
     inline

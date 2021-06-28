@@ -1,21 +1,23 @@
 //
-// Created by igor on 09/06/2021.
+// Created by igor on 26/06/2021.
 //
 
-#ifndef NEUTRINO_MESSAGE_BROKER_HH
-#define NEUTRINO_MESSAGE_BROKER_HH
+#ifndef NEUTRINO_HAL_EVENTS_BROKER_HH
+#define NEUTRINO_HAL_EVENTS_BROKER_HH
+
+#include <vector>
+#include <string>
+#include <set>
+#include <cstdint>
 
 #include <neutrino/utils/mp/type_name/type_name.hpp>
 #include <neutrino/utils/mp/constexpr_for.hh>
 #include <neutrino/utils/mp/typelist.hh>
 #include <neutrino/utils/sorted_array.hh>
-#include <neutrino/sdl/events/system_events.hh>
-#include <neutrino/engine/observer.hh>
-#include <vector>
-#include <string>
-#include <set>
+#include <neutrino/utils/observer.hh>
 
-namespace neutrino::engine {
+
+namespace neutrino::hal {
     namespace detail {
         class abstract_dynamic_event_handler {
         public:
@@ -23,7 +25,7 @@ namespace neutrino::engine {
 
             virtual void handle (void* raw_data) const = 0;
             bool remove (void* pointer_to_observer);
-            bool empty() const;
+            [[nodiscard]] bool empty() const;
             bool add(void* pointer_to_observer);
         protected:
             std::vector<void*> m_handlers;
@@ -32,10 +34,10 @@ namespace neutrino::engine {
         template <typename Event>
         class dynamic_event_handler : public abstract_dynamic_event_handler {
         private:
-            void handle(void* raw_data) const {
+            void handle(void* raw_data) const override {
                 const auto& ev = *reinterpret_cast<Event*>(raw_data);
                 for (void* ptr : m_handlers) {
-                    auto* obs = reinterpret_cast<neutrino::engine::detail::observer<Event>*>(ptr);
+                    auto* obs = reinterpret_cast<neutrino::utils::detail::observer<Event>*>(ptr);
                     obs->on_event(ev);
                 }
             }
@@ -45,8 +47,8 @@ namespace neutrino::engine {
 
             event_handler_holder() = default;
 
-            event_handler_holder(uint32_t k)
-            : key(k), value(nullptr) {}
+            explicit event_handler_holder(uint32_t k)
+                    : key(k), value(nullptr) {}
 
             template<typename Event>
             static auto make() {
@@ -73,12 +75,13 @@ namespace neutrino::engine {
         }
     }
 
-    class message_broker : public observer<sdl::events::user> {
+    class events_broker {
+    protected:
         using destructor_t = void (*)(void* raw);
         using container_t = std::vector<detail::event_handler_holder>;
     public:
-        message_broker();
-        ~message_broker();
+        events_broker();
+        virtual ~events_broker();
 
         template<typename Event, typename ... Args>
         void notify(Args&&... args) {
@@ -94,22 +97,16 @@ namespace neutrino::engine {
                 delete e;
             };
 
-            SDL_Event ev;
-            ev.type = SDL_USEREVENT;
-            ev.user.code = static_cast<int32_t>(key_type);
-            ev.user.data1 = new Event(std::forward<Args>(args)...);
-            ev.user.data2 = reinterpret_cast<void*>(destructor);
-
-            SDL_PushEvent(&ev);
+            _pos_event(static_cast<int32_t>(key_type), new Event(std::forward<Args>(args)...), reinterpret_cast<void*>(destructor));
         }
 
         template<typename... Events>
-        void attach(observer<Events...>* observer) {
+        void attach(utils::observer<Events...>* observer) {
             using events_t = mp::type_list<Events...>;
             bool added = false;
             mp::constexpr_for<0, events_t::size(), 1>([this, observer, &added](auto idx) {
                 using event_t = mp::type_list_at_t<idx.value, events_t>;
-                using observer_t = neutrino::engine::detail::observer<event_t>;
+                using observer_t = neutrino::utils::detail::observer<event_t>;
                 auto* specific_observer = dynamic_cast<observer_t *>(observer);
                 static detail::event_handler_holder key {type_hash_v<event_t>};
 
@@ -135,12 +132,12 @@ namespace neutrino::engine {
         }
 
         template<typename... Events>
-        void detach(observer<Events...>* observer) {
+        void detach(utils::observer<Events...>* observer) {
             using events_t = mp::type_list<Events...>;
             bool removed = false;
             mp::constexpr_for<0, events_t::size(), 1>([this, observer, &removed](auto idx) {
                 using event_t = mp::type_list_at_t<idx.value, events_t>;
-                using observer_t = neutrino::engine::detail::observer<event_t>;
+                using observer_t = neutrino::utils::detail::observer<event_t>;
                 auto* specific_observer = dynamic_cast<observer_t *>(observer);
                 static detail::event_handler_holder key {type_hash_v<event_t>};
                 auto itr = utils::sorted_array<container_t>::find(m_table, key);
@@ -156,13 +153,12 @@ namespace neutrino::engine {
                 observer->on_unsubscribed();
             }
         }
-    private:
-        void on_event(const sdl::events::user& ev);
-    private:
+
+    protected:
         container_t m_table;
-        std::set<detail::observer_monitor*> m_monitors;
+        std::set<utils::detail::observer_monitor*> m_monitors;
+    private:
+        static void _pos_event(uint32_t code, void *data1, void* data2);
     };
 }
-
-
 #endif

@@ -3,7 +3,7 @@
 //
 
 #include <doctest/doctest.h>
-#include <neutrino/engine/message_broker.hh>
+#include "../../src/hal/message_broker.hh"
 
 struct complext_observer : public neutrino::engine::observer<int, double> {
     int ivalue = 0;

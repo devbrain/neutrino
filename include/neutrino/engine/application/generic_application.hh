@@ -8,7 +8,7 @@
 #include <neutrino/engine/application/basic_application.hh>
 #include <neutrino/engine/windows/engine_window.hh>
 #include <neutrino/sdl/system.hh>
-#include <neutrino/engine/observer.hh>
+#include <neutrino/utils/observer.hh>
 
 
 #include <memory>

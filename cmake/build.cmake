@@ -124,12 +124,8 @@ macro(my_add_library_static LIBNAME)
 	add_library(${_lib} STATIC ${_sources})
 	add_library(neutrino::${LIBNAME} ALIAS ${_lib})
 	target_include_directories(${_lib}
-			INTERFACE
-				$<BUILD_INTERFACE:${PROJECT_INCLUDE}>
-			PRIVATE
-				${PROJECT_INCLUDE_PRIVATE}
-			SYSTEM INTERFACE
-				$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
+			PUBLIC  ${PROJECT_INCLUDE} ${PROJECT_CONFIG_INCLUDE}
+			PRIVATE ${PROJECT_INCLUDE_PRIVATE}
 			)
 	if(MSVC)
 		target_compile_options(${_lib} PRIVATE /W4)

@@ -8,16 +8,17 @@
 #include <neutrino/sdl/events/system_events.hh>
 #include <neutrino/sdl/window.hh>
 #include <neutrino/utils/singleton.hh>
-#include <neutrino/engine/observer.hh>
+#include <neutrino/utils/observer.hh>
 #include <vector>
 
 
-namespace neutrino::engine
+namespace neutrino::hal
 {
-    class basic_window;
+    class window;
+
     namespace detail
     {
-        class windows_manager : public neutrino::engine::observer<sdl::events::window_shown,
+        class windows_manager : public utils::observer<sdl::events::window_shown,
                 sdl::events::window_hidden,
                 sdl::events::window_exposed,
                 sdl::events::window_minimized,
@@ -48,8 +49,8 @@ namespace neutrino::engine
             void clear();
             void present();
 
-            void attach(sdl::window& sdl_window, basic_window* engine_window);
-            void detach(basic_window* engine_window);
+            void attach(sdl::window& sdl_window, neutrino::hal::window* engine_window);
+            void detach(neutrino::hal::window* engine_window);
         private:
             void on_event(const sdl::events::window_shown& ev) override;
             void on_event(const sdl::events::window_hidden& ev) override;
@@ -73,7 +74,7 @@ namespace neutrino::engine
             void on_event(const sdl::events::touch_device_motion& ev) override;
             void on_event(const sdl::events::touch_device_wheel& ev) override;
         private:
-            std::vector<basic_window*> m_windows;
+            std::vector<window*> m_windows;
         };
     } // ns detail
     using windows_manager = utils::singleton<detail::windows_manager>;
