@@ -1,11 +1,12 @@
 //
-// Created by igor on 09/06/2021.
+// Created by igor on 26/06/2021.
 //
 
-#include <neutrino/engine/message_broker.hh>
+#include <neutrino/hal/events/events_broker.hh>
+#include <neutrino/sdl/events/system_events.hh>
 #include <algorithm>
 
-namespace neutrino::engine
+namespace neutrino::hal
 {
     namespace detail
     {
@@ -39,22 +40,21 @@ namespace neutrino::engine
         }
     } // ns detail
     // ===========================================================================================
-    message_broker::message_broker() = default;
+    events_broker::events_broker() = default;
 
-    message_broker::~message_broker() {
+    events_broker::~events_broker() {
         for (auto* m : m_monitors) {
             m->on_unsubscribed();
         }
     }
+    // -------------------------------------------------------------------------------------------
+    void events_broker::_pos_event(uint32_t code, void *data1, void* data2) {
+        SDL_Event ev;
+        ev.type = SDL_USEREVENT;
+        ev.user.code = static_cast<int32_t>(code);
+        ev.user.data1 = data1;
+        ev.user.data2 = data2;
 
-    void message_broker::on_event(const sdl::events::user& ev) {
-        detail::event_handler_holder key {static_cast<uint32_t>(ev.code)};
-        auto itr = utils::sorted_array<container_t>::find(m_table, key);
-        if (itr != m_table.end())
-        {
-            itr->value->handle(ev.data1);
-        }
-        destructor_t destructor = reinterpret_cast<destructor_t>(ev.data2);
-        destructor(ev.data1);
+        SDL_PushEvent(&ev);
     }
 }

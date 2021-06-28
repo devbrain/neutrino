@@ -80,13 +80,15 @@ namespace neutrino::engine {
         explicit impl(sdl::window&& w, int width, int height)
         : window(std::move(w)),
           window_surface (sdl::surface(window)),
-          work(sdl::surface::make_8bit(width, height))
+          work(sdl::surface::make_8bit(width, height)),
+          work_win_format(width, height, window_surface.get_pixel_format())
         {
 
         }
         sdl::window  window;
         sdl::surface window_surface;
         sdl::surface work;
+        sdl::surface work_win_format;
     };
     // ================================================================================
     void vga_renderer::open (const basic_window& window) {
@@ -110,7 +112,16 @@ namespace neutrino::engine {
     }
     // --------------------------------------------------------------------------------
     void vga_renderer::present() {
-        m_pimpl->work.blit(m_pimpl->window_surface);
+        unsigned work_w, work_h, surf_w, surf_h;
+        std::tie(std::ignore, std::ignore, work_w, work_h) = m_pimpl->work.pixels_data();
+        std::tie(std::ignore, std::ignore, surf_w, surf_h) = m_pimpl->window_surface.pixels_data();
+
+        if (work_w != surf_w || work_h != surf_h) {
+            m_pimpl->work.blit(m_pimpl->work_win_format);
+            m_pimpl->work_win_format.blit_scaled(m_pimpl->window_surface);
+        } else {
+            m_pimpl->work.blit(m_pimpl->window_surface);
+        }
         m_pimpl->window.update_surface();
     }
     // --------------------------------------------------------------------------------
@@ -121,4 +132,13 @@ namespace neutrino::engine {
     sdl::surface& vga_renderer::surface() noexcept {
         return m_pimpl->work;
     }
+    // --------------------------------------------------------------------------------
+    sdl::surface& vga_renderer::surface() const noexcept {
+        return m_pimpl->work;
+    }
+    // --------------------------------------------------------------------------------
+    sdl::palette vga_renderer::standard_palette() {
+        return sdl::palette (colors.begin(), colors.end());
+    }
+
 }

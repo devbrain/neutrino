@@ -1,0 +1,113 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 42ff0f902..b3b9e9d00 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -40,8 +40,12 @@ include(GNUInstallDirs)
+ option(PNG_BUILD_ZLIB "Custom zlib Location, else find_package is used" OFF)
+ 
+ if(NOT PNG_BUILD_ZLIB)
+-  find_package(ZLIB REQUIRED)
+-  include_directories(${ZLIB_INCLUDE_DIRS})
++  if(NOT TARGET ZLIB::zlib)
++    find_package(ZLIB REQUIRED)
++    include_directories(${ZLIB_INCLUDE_DIRS})
++  else()
++    set(ZLIB_LIBRARIES ZLIB::zlib)
++  endif()
+ endif()
+ 
+ if(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU AND NOT EMSCRIPTEN)
+@@ -520,7 +524,7 @@ if(PNG_DEBUG)
+ endif()
+ 
+ # Now build our target.
+-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${ZLIB_INCLUDE_DIRS})
++include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+ 
+ unset(PNG_LIB_TARGETS)
+ 
+@@ -898,84 +902,6 @@ if(PNG_SHARED)
+     CLEAN_DIRECT_OUTPUT 1)
+ endif()
+ 
+-# Install.
+-if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
+-  install(TARGETS ${PNG_LIB_TARGETS}
+-          EXPORT libpng
+-          RUNTIME DESTINATION bin
+-          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-          FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
+-
+-  if(PNG_SHARED)
+-    # Create a symlink for libpng.dll.a => libpng16.dll.a on Cygwin
+-    if(CYGWIN OR MINGW)
+-      create_symlink(libpng${CMAKE_IMPORT_LIBRARY_SUFFIX} TARGET png)
+-      install(FILES $<TARGET_LINKER_FILE_DIR:png>/libpng${CMAKE_IMPORT_LIBRARY_SUFFIX}
+-              DESTINATION ${CMAKE_INSTALL_LIBDIR})
+-    endif()
+-
+-    if(NOT WIN32)
+-      create_symlink(libpng${CMAKE_SHARED_LIBRARY_SUFFIX} TARGET png)
+-      install(FILES $<TARGET_LINKER_FILE_DIR:png>/libpng${CMAKE_SHARED_LIBRARY_SUFFIX}
+-              DESTINATION ${CMAKE_INSTALL_LIBDIR})
+-    endif()
+-  endif()
+-
+-  if(PNG_STATIC)
+-    if(NOT WIN32 OR CYGWIN OR MINGW)
+-      create_symlink(libpng${CMAKE_STATIC_LIBRARY_SUFFIX} TARGET png_static)
+-      install(FILES $<TARGET_LINKER_FILE_DIR:png_static>/libpng${CMAKE_STATIC_LIBRARY_SUFFIX}
+-              DESTINATION ${CMAKE_INSTALL_LIBDIR})
+-    endif()
+-  endif()
+-endif()
+-
+-if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
+-  install(FILES ${libpng_public_hdrs}
+-          DESTINATION include)
+-  install(FILES ${libpng_public_hdrs}
+-          DESTINATION include/${PNGLIB_NAME})
+-endif()
+-if(NOT SKIP_INSTALL_EXECUTABLES AND NOT SKIP_INSTALL_ALL)
+-  if(NOT WIN32 OR CYGWIN OR MINGW)
+-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/libpng-config
+-            DESTINATION bin)
+-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${PNGLIB_NAME}-config
+-            DESTINATION bin)
+-  endif()
+-endif()
+-
+-if(NOT SKIP_INSTALL_PROGRAMS AND NOT SKIP_INSTALL_ALL)
+-  install(TARGETS ${PNG_BIN_TARGETS}
+-          RUNTIME DESTINATION bin)
+-endif()
+-
+-if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
+-  # Install the man pages.
+-  install(FILES libpng.3 libpngpf.3
+-          DESTINATION ${CMAKE_INSTALL_MANDIR}/man3)
+-  install(FILES png.5
+-          DESTINATION ${CMAKE_INSTALL_MANDIR}/man5)
+-  # Install the pkg-config files.
+-  if(NOT CMAKE_HOST_WIN32 OR CYGWIN OR MINGW)
+-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libpng.pc
+-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/libpng-config
+-            DESTINATION ${CMAKE_INSTALL_BINDIR})
+-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PNGLIB_NAME}.pc
+-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${PNGLIB_NAME}-config
+-            DESTINATION ${CMAKE_INSTALL_BINDIR})
+-  endif()
+-endif()
+-
+-# Create an export file that CMake users can include() to import our targets.
+-if(NOT SKIP_INSTALL_EXPORT AND NOT SKIP_INSTALL_ALL)
+-  install(EXPORT libpng
+-          DESTINATION lib/libpng
+-          FILE lib${PNG_LIB_NAME}.cmake)
+-endif()
+ 
+ # TODO: Create MSVC import lib for MinGW-compiled shared lib.
+ # pexports libpng.dll > libpng.def

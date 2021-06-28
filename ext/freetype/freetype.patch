@@ -1,0 +1,71 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a7aec4d..baf96ff 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -204,31 +204,12 @@ if (BUILD_FRAMEWORK)
+ endif ()
+ 
+ 
+-# Find dependencies
+-set(HARFBUZZ_MIN_VERSION "1.8.0")
+-if (FT_WITH_HARFBUZZ)
+-  find_package(HarfBuzz ${HARFBUZZ_MIN_VERSION} REQUIRED)
+-else ()
+-  find_package(HarfBuzz ${HARFBUZZ_MIN_VERSION})
+-endif ()
+-
+-if (FT_WITH_PNG)
+-  find_package(PNG REQUIRED)
+-else ()
+-  find_package(PNG)
+-endif ()
++set(ZLIB_FOUND)
++set(BZip2_FOUND)
++set(PNG_FOUND)
+ 
+-if (FT_WITH_ZLIB)
+-  find_package(ZLIB REQUIRED)
+-else ()
+-  find_package(ZLIB)
+-endif ()
++# Find dependencies
+ 
+-if (FT_WITH_BZIP2)
+-  find_package(BZip2 REQUIRED)
+-else ()
+-  find_package(BZip2)
+-endif ()
+ 
+ if (FT_WITH_BROTLI)
+   find_package(BrotliDec REQUIRED)
+@@ -449,22 +430,14 @@ endif ()
+ 
+ set(PKG_CONFIG_REQUIRED_PRIVATE "")
+ 
+-if (ZLIB_FOUND)
+-  target_link_libraries(freetype PRIVATE ${ZLIB_LIBRARIES})
+-  target_include_directories(freetype PRIVATE ${ZLIB_INCLUDE_DIRS})
+-  list(APPEND PKG_CONFIG_REQUIRED_PRIVATE "zlib")
+-endif ()
+-if (BZIP2_FOUND)
+-  target_link_libraries(freetype PRIVATE ${BZIP2_LIBRARIES})
+-  target_include_directories(freetype PRIVATE ${BZIP2_INCLUDE_DIR}) # not BZIP2_INCLUDE_DIRS
+-  list(APPEND PKG_CONFIG_REQUIRED_PRIVATE "bzip2")
+-endif ()
+-if (PNG_FOUND)
+-  target_link_libraries(freetype PRIVATE ${PNG_LIBRARIES})
+-  target_compile_definitions(freetype PRIVATE ${PNG_DEFINITIONS})
+-  target_include_directories(freetype PRIVATE ${PNG_INCLUDE_DIRS})
+-  list(APPEND PKG_CONFIG_REQUIRED_PRIVATE "libpng")
+-endif ()
++
++  target_link_libraries(freetype PRIVATE ZLIB::zlib)
++
++  target_link_libraries(freetype PRIVATE BZIP2::bz2)
++
++  target_link_libraries(freetype PRIVATE PNG::png)
++
++
+ if (HARFBUZZ_FOUND)
+   target_link_libraries(freetype PRIVATE ${HARFBUZZ_LIBRARIES})
+   target_include_directories(freetype PRIVATE ${HARFBUZZ_INCLUDE_DIRS})

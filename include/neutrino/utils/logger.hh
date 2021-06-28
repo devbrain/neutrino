@@ -6,7 +6,7 @@
 #define NEUTRINO_UTILS_LOGGER_HH
 
 #include <variant>
-#include <neutrino/core/sdlpp/sdl2.hh>
+#include <neutrino/sdl/sdl2.hh>
 #include <sstream>
 
 template <typename T0, typename ... Ts>

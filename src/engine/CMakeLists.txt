@@ -1,14 +1,14 @@
 my_add_library_static(engine
         SOURCES
 
-            observer.cc
+        ../utils/observer.cc
 
-            message_broker.cc
+        ../hal/message_broker.cc
 
-            input_publisher.hh
+        ../hal/input_publisher.hh
 
-            windows_manager.cc
-            windows_manager.hh
+        ../hal/windows_manager.cc
+        ../hal/windows_manager.hh
 
             windows/basic_window.cc
             windows/engine_window.cc
@@ -25,9 +25,6 @@ my_add_library_static(engine
             renderer/opengl_renderer.cc
 
             ${PROJECT_INCLUDE}/neutrino/engine/application.hh
-
-            ${PROJECT_INCLUDE}/neutrino/engine/observer.hh
-            ${PROJECT_INCLUDE}/neutrino/engine/message_broker.hh
 
             ${PROJECT_INCLUDE}/neutrino/engine/windows/basic_window.hh
             ${PROJECT_INCLUDE}/neutrino/engine/windows/engine_window.hh

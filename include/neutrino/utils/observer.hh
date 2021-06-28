@@ -2,8 +2,8 @@
 // Created by igor on 07/06/2021.
 //
 
-#ifndef NEUTRINO_ENGINE_OBSERVER_HH
-#define NEUTRINO_ENGINE_OBSERVER_HH
+#ifndef NEUTRINO_UTILS_OBSERVER_HH
+#define NEUTRINO_UTILS_OBSERVER_HH
 
 #include <neutrino/utils/mp/typelist.hh>
 #include <neutrino/utils/mp/constexpr_for.hh>
@@ -17,7 +17,7 @@
 #include <variant>
 #include <functional>
 
-namespace neutrino::engine {
+namespace neutrino::utils {
     namespace detail {
         // ======================================================================================
         template <typename EventType>

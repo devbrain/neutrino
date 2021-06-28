@@ -44,9 +44,10 @@ set (PROJECT_CONFIG_INCLUDE  ${CMAKE_BINARY_DIR}/include)
 include (TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(NOT IS_BIG_ENDIAN)
-    set (TE_IS_LITTLE_ENDIAN 1)
+    set (NEUTRINO_IS_LITTLE_ENDIAN 1)
 endif()
-
+file(MAKE_DIRECTORY ${PROJECT_CONFIG_INCLUDE}/neutrino)
+configure_file(${PROJECT_INCLUDE}/configure.h.in ${PROJECT_CONFIG_INCLUDE}/neutrino/neutrino_config.h @ONLY)
 # ===========================================================
 # IDE Support
 # ===========================================================
@@ -63,8 +64,8 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${COMMANDS_FOLDER})
 # ========================================================================
 add_subdirectory(ext)
 add_subdirectory(src)
-add_subdirectory(test)
-add_subdirectory(apps)
+#add_subdirectory(test)
+#add_subdirectory(apps)
 
 
 

@@ -4,16 +4,17 @@
 
 #include "windows_manager.hh"
 
-#include <neutrino/engine/windows/basic_window.hh>
+#include <neutrino/hal/window.hh>
 #include <neutrino/sdl/window.hh>
+#include "hal/events/events_mapper.hh"
 
 #include <algorithm>
 
 #define d_USER_DATA_ID "neutrino::window"
 
-namespace neutrino::engine::detail
+namespace neutrino::hal::detail
 {
-    basic_window* from_event(const neutrino::sdl::events::detail::window_event& ev)
+    neutrino::hal::window* from_event(const neutrino::sdl::events::detail::window_event& ev)
     {
         try
         {
@@ -21,7 +22,7 @@ namespace neutrino::engine::detail
             void* p = sdl_window.user_data(d_USER_DATA_ID);
             if (p)
             {
-                return reinterpret_cast<basic_window*>(p);
+                return reinterpret_cast<neutrino::hal::window*>(p);
             }
             return nullptr;
         }
@@ -139,59 +140,59 @@ namespace neutrino::engine::detail
     {
         if (auto* w = from_event(ev))
         {
-            w->on_keyboard_input(ev);
+            w->on_keyboard_input(events::map_event(ev));
         }
     }
     // -------------------------------------------------------------------------------------------
     void windows_manager::on_event(const sdl::events::mouse_button& ev) {
         if (auto* w = from_event(ev))
         {
-            w->on_mouse_button(ev);
+            w->on_pointer_input(events::map_event(ev));
         }
     }
     // -------------------------------------------------------------------------------------------
     void windows_manager::on_event(const sdl::events::mouse_motion& ev) {
         if (auto* w = from_event(ev))
         {
-            w->on_mouse_motion(ev);
+            w->on_pointer_input(events::map_event(ev));
         }
     }
     // -------------------------------------------------------------------------------------------
     void windows_manager::on_event(const sdl::events::mouse_wheel& ev) {
         if (auto* w = from_event(ev))
         {
-            w->on_mouse_wheel(ev);
+            w->on_pointer_input(events::map_event(ev));
         }
     }
     // -------------------------------------------------------------------------------------------
     void windows_manager::on_event(const sdl::events::touch_device_button& ev) {
         if (auto* w = from_event(ev))
         {
-            w->on_touch_button(ev);
+            w->on_pointer_input(events::map_event(ev));
         }
     }
     // -------------------------------------------------------------------------------------------
     void windows_manager::on_event(const sdl::events::touch_device_motion& ev) {
         if (auto* w = from_event(ev))
         {
-            w->on_touch_motion(ev);
+            w->on_pointer_input(events::map_event(ev));
         }
     }
     // -------------------------------------------------------------------------------------------
     void windows_manager::on_event(const sdl::events::touch_device_wheel& ev) {
         if (auto* w = from_event(ev))
         {
-            w->on_touch_wheel(ev);
+            w->on_pointer_input(events::map_event(ev));
         }
     }
     // -------------------------------------------------------------------------------------------
-    void windows_manager::attach(sdl::window& sdl_window, basic_window* engine_window)
+    void windows_manager::attach(sdl::window& sdl_window, neutrino::hal::window* engine_window)
     {
         sdl_window.user_data(d_USER_DATA_ID, engine_window);
         m_windows.push_back(engine_window);
     }
     // -------------------------------------------------------------------------------------------
-    void windows_manager::detach(basic_window* engine_window)
+    void windows_manager::detach(neutrino::hal::window* engine_window)
     {
         auto itr = std::find(m_windows.begin(), m_windows.end(), engine_window);
         if (itr != m_windows.end())

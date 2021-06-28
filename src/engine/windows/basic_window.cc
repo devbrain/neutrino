@@ -5,7 +5,7 @@
 #include <neutrino/sdl/window.hh>
 
 #include <neutrino/engine/windows/basic_window.hh>
-#include "engine/windows_manager.hh"
+#include "hal/windows_manager.hh"
 
 namespace neutrino::engine
 {

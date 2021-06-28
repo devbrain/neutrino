@@ -1,4 +1,5 @@
-my_add_library_headers(utils
+my_add_library_static(utils
+		SOURCES
 
 		${PROJECT_INCLUDE}/neutrino/utils/mp/callable/helpers.hpp
 		${PROJECT_INCLUDE}/neutrino/utils/mp/callable/callable.hpp
@@ -30,5 +31,39 @@ my_add_library_headers(utils
 		${PROJECT_INCLUDE}/neutrino/utils/singleton.hh
 		${PROJECT_INCLUDE}/neutrino/utils/array_view.hh
 		${PROJECT_INCLUDE}/neutrino/utils/sorted_array.hh
+
+		io/base64.cc
+		${PROJECT_INCLUDE}/neutrino/utils/io/base64.hh
+		io/binary_reader.cc
+		${PROJECT_INCLUDE}/neutrino/utils/io/binary_reader.hh
+		io/binary_writer.cc
+		${PROJECT_INCLUDE}/neutrino/utils/io/binary_writer.hh
+		io/ios_init.hh
+		io/memory_stream_buf.cc
+		${PROJECT_INCLUDE}/neutrino/utils/io/memory_stream_buf.hh
+
+		ascii.cc
+		${PROJECT_INCLUDE}/neutrino/utils/ascii.hh
+
+		string_tokenizer.cc
+		${PROJECT_INCLUDE}/neutrino/utils/string_tokenizer.hh
+
+		whereami.cc
+		${PROJECT_INCLUDE}/neutrino/utils/whereami.hh
+
+		thirdparty/whereami.c
+		thirdparty/whereami.h
+
+		${PROJECT_INCLUDE}/neutrino/utils/byte_order.hh
+		${PROJECT_INCLUDE}/neutrino/utils/override.hh
+		${PROJECT_INCLUDE}/neutrino/utils/string_constant.hh
+		${PROJECT_INCLUDE}/neutrino/utils/string_tokenizer.hh
+		${PROJECT_INCLUDE}/neutrino/utils/string_utils.hh
+		${PROJECT_INCLUDE}/neutrino/utils/spimpl.h
+
+		${PROJECT_INCLUDE}/neutrino/utils/observer.hh
+		observer.cc
+		DEPENDS_PUBLIC
+			thirdparty::sdl2
 )
 	
