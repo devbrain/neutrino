@@ -5,7 +5,7 @@
 #include <neutrino/hal/video/surface.hh>
 #include <neutrino/hal/video/window.hh>
 #include "surface_impl.hh"
-#include "hal/windows/window_impl.hh"
+#include "hal/video/windows/window_impl.hh"
 #include "hal/cast.hh"
 #define SDL2_ROTOZOOM_SCOPE extern "C"
 #include "hal/video/thirdparty/gfx/SDL2_rotozoom.h"

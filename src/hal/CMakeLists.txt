@@ -2,10 +2,10 @@ my_add_library_static(hal
         SOURCES
 
         ${PROJECT_INCLUDE}/neutrino/hal/video/window.hh
-        windows/window.cc
-        windows/window_impl.hh
-        windows/windows_manager.hh
-        windows/windows_manager.cc
+        video/windows/window.cc
+        video/windows/window_impl.hh
+        video/windows/windows_manager.hh
+        video/windows/windows_manager.cc
 
         message_broker.hh
         message_broker.cc
