@@ -2,7 +2,7 @@
 // Created by igor on 26/06/2021.
 //
 
-#include <neutrino/hal/window.hh>
+#include <neutrino/hal/video/window.hh>
 #include "windows_manager.hh"
 #include "window_impl.hh"
 

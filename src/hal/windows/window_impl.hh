@@ -5,7 +5,7 @@
 #ifndef NEUTRINO_WINDOW_IMPL_HH
 #define NEUTRINO_WINDOW_IMPL_HH
 
-#include <neutrino/sdl/window.hh>
+#include <hal/sdl/window.hh>
 
 
 namespace neutrino::hal::detail {

@@ -6,7 +6,7 @@
 #define NEUTRINO_HAL_EVENTS_SCANCODE_MAPPER_HH
 
 
-#include <neutrino/sdl/events/event_types.hh>
+#include <hal/sdl/events/event_types.hh>
 #include <neutrino/hal/events/scancodes.hh>
 
 namespace neutrino::hal::events {
