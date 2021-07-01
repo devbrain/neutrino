@@ -7,7 +7,7 @@
 #include <neutrino/hal/application.hh>
 #include <hal/sdl/timers.hh>
 #include "hal/input_publisher.hh"
-#include "hal/windows/windows_manager.hh"
+#include "hal/video/windows/windows_manager.hh"
 #include "hal/message_broker.hh"
 
 namespace neutrino::hal {

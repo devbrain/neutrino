@@ -7,7 +7,7 @@
 #include "hal/video/renderer_impl.hh"
 #include "hal/video/texture_impl.hh"
 #include "hal/video/surface_impl.hh"
-#include "hal/windows/window_impl.hh"
+#include "hal/video/windows/window_impl.hh"
 
 #define SDL2_GFXPRIMITIVES_SCOPE extern "C"
 #include "hal/video/thirdparty/gfx/SDL2_gfxPrimitives.h"
