@@ -5,8 +5,8 @@
 #ifndef NEUTRINO_WINDOWS_MANAGER_HH
 #define NEUTRINO_WINDOWS_MANAGER_HH
 
-#include <neutrino/sdl/events/system_events.hh>
-#include <neutrino/sdl/window.hh>
+#include <hal/sdl/events/system_events.hh>
+#include <hal/sdl/window.hh>
 #include <neutrino/utils/singleton.hh>
 #include <neutrino/utils/observer.hh>
 #include <vector>

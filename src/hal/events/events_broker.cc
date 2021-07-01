@@ -3,7 +3,7 @@
 //
 
 #include <neutrino/hal/events/events_broker.hh>
-#include <neutrino/sdl/events/system_events.hh>
+#include <hal/sdl/events/system_events.hh>
 #include <algorithm>
 
 namespace neutrino::hal

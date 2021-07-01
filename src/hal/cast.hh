@@ -6,11 +6,16 @@
 #define NEUTRINO_HAL_MATH_CAST_HH
 
 #include <optional>
-#include <neutrino/sdl/geometry.hh>
-#include <neutrino/sdl/color.hh>
+#include <hal/sdl/geometry.hh>
+#include <hal/sdl/color.hh>
+#include <hal/sdl/surface.hh>
+
 #include <neutrino/math/point.hh>
 #include <neutrino/math/rect.hh>
-#include <neutrino/hal/color.hh>
+#include <neutrino/hal/video/color.hh>
+#include <neutrino/hal/video/blend_mode.hh>
+#include <neutrino/utils/exception.hh>
+
 
 namespace neutrino {
     inline
@@ -51,6 +56,39 @@ namespace neutrino {
         return cast(*x);
     }
 
+    inline
+    sdl::blend_mode cast(neutrino::hal::blend_mode v) {
+        switch (v)
+        {
+            case neutrino::hal::blend_mode::NONE:
+                return sdl::blend_mode::NONE;
+            case neutrino::hal::blend_mode::ADD:
+                return sdl::blend_mode::ADD;
+            case neutrino::hal::blend_mode::BLEND:
+                return sdl::blend_mode::BLEND;
+            case neutrino::hal::blend_mode::MOD:
+                return sdl::blend_mode::MOD;
+            default:
+                RAISE_EX("Should not be here");
+        }
+    }
+
+    inline
+    neutrino::hal::blend_mode  cast(sdl::blend_mode v) {
+        switch (v)
+        {
+            case sdl::blend_mode::NONE:
+                return neutrino::hal::blend_mode::NONE;
+            case sdl::blend_mode::ADD:
+                return neutrino::hal::blend_mode::ADD;
+            case sdl::blend_mode::BLEND:
+                return neutrino::hal::blend_mode::BLEND;
+            case sdl::blend_mode::MOD:
+                return neutrino::hal::blend_mode::MOD;
+            default:
+                RAISE_EX("Should not be here");
+        }
+    }
 }
 
 #endif

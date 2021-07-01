@@ -4,8 +4,8 @@
 
 #include "windows_manager.hh"
 
-#include <neutrino/hal/window.hh>
-#include <neutrino/sdl/window.hh>
+#include <neutrino/hal/video/window.hh>
+#include <hal/sdl/window.hh>
 #include "hal/events/events_mapper.hh"
 
 #include <algorithm>

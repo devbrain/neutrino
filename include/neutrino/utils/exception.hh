@@ -8,25 +8,22 @@
 #include <sstream>
 #include <string>
 #include <stdexcept>
-#include <neutrino/sdl/sdl2.hh>
 
 namespace neutrino
 {
-    namespace detail
-    {
-        struct sdl_related{};
-    }
+
     class exception : public std::runtime_error
     {
     public:
         template <typename ... Args>
-        exception(detail::sdl_related, const char* function, const char* source, int line, Args&&... args);
-
-        template <typename ... Args>
         exception(const char* function, const char* source, int line, Args&&... args);
+
+    protected:
+        explicit exception(const std::string& err)
+        : std::runtime_error(err) {}
     private:
-        template <typename Discriminator, typename ... Args>
-        static std::string _create(Discriminator d, const char* function, const char* source, int line, Args&&... args);
+        template <typename ... Args>
+        static std::string _create(const char* function, const char* source, int line, Args&&... args);
 
     };
 } // ns
@@ -36,35 +33,24 @@ namespace neutrino
 namespace neutrino
 {
 
-    template<typename ... Args>
-    inline
-    exception::exception(detail::sdl_related d, const char* function, const char* source, int line, Args&&... args)
-    : std::runtime_error(_create(d, function, source, line, std::forward<Args>(args)...))
-    {
-
-    }
 
     template <typename ... Args>
     inline
     exception::exception(const char* function, const char* source, int line, Args&&... args)
-    : std::runtime_error(_create(0, function, source, line, std::forward<Args>(args)...))
+    : std::runtime_error(_create(function, source, line, std::forward<Args>(args)...))
     {
 
     }
     // --------------------------------------------------------------------------------------
-    template<typename Discriminator, typename ... Args>
+    template<typename ... Args>
     inline
-    std::string exception::_create(Discriminator /*d*/, const char* function, const char* source, int line, Args&&... args)
+    std::string exception::_create(const char* function, const char* source, int line, Args&&... args)
     {
         std::ostringstream os;
-        if constexpr (std::is_same_v<Discriminator, detail::sdl_related>)
-        {
-            os << "SDL error [" << SDL_GetError() << "] at ";
-        }
-        else
-        {
-            os << "Error at ";
-        }
+
+
+        os << "Error at ";
+
         os  << function << " " << source << "@" << line;
         if constexpr (sizeof...(args) > 0)
         {
@@ -79,6 +65,6 @@ namespace neutrino
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
 
-#define RAISE_SDL_EX(...) throw ::neutrino::exception{::neutrino::detail::sdl_related{}, __PRETTY_FUNCTION__, __FILE__, __LINE__,  ##__VA_ARGS__}
+
 #define RAISE_EX(...) throw ::neutrino::exception{__PRETTY_FUNCTION__, __FILE__, __LINE__,  ##__VA_ARGS__}
 #endif //SDLPP_EXCEPTION_HH

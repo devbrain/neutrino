@@ -3,7 +3,7 @@
 //
 
 #include <neutrino/hal/system.hh>
-#include <neutrino/sdl/system.hh>
+#include <hal/sdl/system.hh>
 
 namespace neutrino::hal {
 

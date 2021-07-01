@@ -6,7 +6,7 @@
 #define NEUTRINO_HAL_EVENTS_EVENTS_MAPPER_HH
 
 #include <neutrino/hal/events/events.hh>
-#include <neutrino/sdl/events/system_events.hh>
+#include <hal/sdl/events/system_events.hh>
 
 namespace neutrino::hal::events {
     keyboard map_event(const sdl::events::keyboard& kv);

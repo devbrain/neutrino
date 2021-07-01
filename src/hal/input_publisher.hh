@@ -5,7 +5,7 @@
 #ifndef NEUTRINO_HAL_INPUT_PUBLISHER_HH
 #define NEUTRINO_HAL_INPUT_PUBLISHER_HH
 
-#include <neutrino/sdl/events/events_dispatcher.hh>
+#include <hal/sdl/events/events_dispatcher.hh>
 #include <neutrino/utils/observer.hh>
 
 namespace neutrino::hal {
