@@ -5,7 +5,7 @@
 #include <doctest/doctest.h>
 #include "../../src/hal/message_broker.hh"
 
-struct complext_observer : public neutrino::engine::observer<int, double> {
+struct complext_observer : public neutrino::utils::observer<int, double> {
     int ivalue = 0;
     double dvalue = 0;
 
@@ -21,7 +21,7 @@ struct complext_observer : public neutrino::engine::observer<int, double> {
 TEST_SUITE("message broker") {
     TEST_CASE("complex observer") {
         complext_observer obs;
-        neutrino::engine::message_broker mb;
+        neutrino::hal::message_broker mb;
 
         mb.attach(&obs);
 

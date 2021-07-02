@@ -7,7 +7,7 @@
 #include <neutrino/utils/observer.hh>
 
 
-struct simple_observer : public neutrino::engine::observer<int> {
+struct simple_observer : public neutrino::utils::observer<int> {
     int ivalue = 0;
 
     void on_event(const int& x) override {
@@ -16,7 +16,7 @@ struct simple_observer : public neutrino::engine::observer<int> {
 
 };
 
-struct complext_observer : public neutrino::engine::observer<int, double> {
+struct complext_observer : public neutrino::utils::observer<int, double> {
     int ivalue = 0;
     double dvalue = 0;
 
@@ -32,7 +32,7 @@ struct complext_observer : public neutrino::engine::observer<int, double> {
 TEST_SUITE("observer/subject") {
     TEST_CASE("Test simple observer") {
         simple_observer so;
-        neutrino::engine::publisher<int> subj;
+        neutrino::utils::publisher<int> subj;
 
         subj.attach(&so);
         subj.notify(1);
@@ -51,7 +51,7 @@ TEST_SUITE("observer/subject") {
         simple_observer so;
         complext_observer co;
 
-        neutrino::engine::publisher<int, double> subj;
+        neutrino::utils::publisher<int, double> subj;
 
         subj.attach(&so);
         subj.attach(&co);
@@ -83,7 +83,7 @@ TEST_SUITE("observer/subject") {
     TEST_CASE("Test functional observer") {
         int x = 0;
 
-        neutrino::engine::publisher<int> subj;
+        neutrino::utils::publisher<int> subj;
         subj.attach([&x](const int & a){x = a;});
         subj.attach(f);
 

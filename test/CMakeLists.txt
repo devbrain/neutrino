@@ -17,13 +17,14 @@ my_add_executable(unittest
 
 
         engine/test_observer_subject.cc
-        engine/test_message_broker.cc
+        #engine/test_message_broker.cc
         )
 
 target_link_libraries(unittest
         PRIVATE
 
         neutrino::engine
+        neutrino::utils
 
         thirdparty::doctest
         )

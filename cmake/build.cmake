@@ -59,6 +59,9 @@ function(my_add_executable EXENAME)
     else()
   		target_compile_options(${EXENAME} PRIVATE -Wall -Wextra -pedantic)
 	endif()
+	if (NEUTRINO_BUILD_TEST)
+		target_compile_definitions(${EXENAME} PRIVATE NEUTRINO_BUILD_TEST)
+	endif()
 endfunction()
  
 # ---------------------------------------------------------------------------------------------- 
@@ -89,6 +92,7 @@ macro(my_add_library_headers LIBNAME)
 	target_sources(${_lib} INTERFACE ${_sources})
 	target_include_directories(${_lib} INTERFACE $<BUILD_INTERFACE:${PROJECT_INCLUDE}>)
 	target_include_directories(${_lib} SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
+
 
 	if (PARAMS_DEPENDS)
 		foreach(_dep IN ITEMS ${PARAMS_DEPENDS})
@@ -131,6 +135,10 @@ macro(my_add_library_static LIBNAME)
 		target_compile_options(${_lib} PRIVATE /W4)
 	else()
 		target_compile_options(${_lib} PRIVATE -Wall -Wextra -pedantic)
+	endif()
+
+	if (NEUTRINO_BUILD_TEST)
+		target_compile_definitions(${_lib} PRIVATE NEUTRINO_BUILD_TEST)
 	endif()
 
 	if (PARAMS_DEPENDS_PUBLIC)
