@@ -10,7 +10,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ===========================================================
 project(neutrino)
-
+# ===========================================================
+option(NEUTRINO_BUILD_TEST "Build Neutrino tests" OFF)
 # ===========================================================
 include(GenerateExportHeader)
 include(build)
@@ -64,7 +65,11 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${COMMANDS_FOLDER})
 # ========================================================================
 add_subdirectory(ext)
 add_subdirectory(src)
-#add_subdirectory(test)
+
+if (NEUTRINO_BUILD_TEST)
+    add_subdirectory(test)
+endif()
+
 #add_subdirectory(apps)
 
 

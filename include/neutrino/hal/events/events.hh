@@ -13,6 +13,8 @@
 #include <optional>
 
 namespace neutrino::hal::events {
+
+
     struct current_fps {
         unsigned value;
     };

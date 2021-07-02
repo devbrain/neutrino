@@ -27,7 +27,7 @@ namespace neutrino::utils
 // Recursion base case. If you run past the last index of
     template<std::size_t Length, std::size_t Index, typename Left, typename Right, typename std::enable_if<
             Index == Length, bool>::type = 0>
-    constexpr bool CompareCharacters(const Left& lhs, const Right& rhs)
+    constexpr bool CompareCharacters([[maybe_unused]] const Left& lhs,[[maybe_unused]]  const Right& rhs)
     {
         return true;
     }
@@ -182,8 +182,8 @@ namespace neutrino::utils
 // Less than human friendly concat function, wrapped by a huamn friendly one below
     template<typename Left, typename Right, std::size_t... IndexesLeft, std::size_t... IndexesRight>
     constexpr StringConstant<sizeof...(IndexesLeft) + sizeof...(IndexesRight)>
-    ConcatStrings(const Left& lhs, const Right& rhs, std::index_sequence<IndexesLeft...> dummy1,
-                  std::index_sequence<IndexesRight...> dummy2)
+    ConcatStrings(const Left& lhs, const Right& rhs, [[maybe_unused]] std::index_sequence<IndexesLeft...> dummy1,
+                  [[maybe_unused]] std::index_sequence<IndexesRight...> dummy2)
     {
         return StringConstant<sizeof...(IndexesLeft) + sizeof...(IndexesRight)>(lhs[IndexesLeft]...,
                                                                                 rhs[IndexesRight]...);
