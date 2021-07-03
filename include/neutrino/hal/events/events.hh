@@ -8,8 +8,8 @@
 
 #include <neutrino/utils/mp/typelist.hh>
 #include <neutrino/hal/events/scancodes.hh>
+#include <neutrino/math/point.hh>
 #include <bitflags/bitflags.hpp>
-#include <glm/ext/vector_int2.hpp>
 #include <optional>
 
 namespace neutrino::hal::events {
@@ -48,7 +48,7 @@ namespace neutrino::hal::events {
 
     };
 
-    using coords_t = glm::ivec2;
+    using coords_t = neutrino::math::point2d;
 
     enum class pointer_button_t {
         LEFT,
