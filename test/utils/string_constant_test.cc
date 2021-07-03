@@ -9,8 +9,8 @@ TEST_CASE("String constants test")
 {
     using namespace neutrino::utils;
 
-    constexpr auto foo = StringFactory( "foo" );
-    constexpr auto bar = StringFactory( "bar" );
+    constexpr auto foo = string_factory("foo");
+    constexpr auto bar = string_factory("bar");
 
     constexpr auto foobar = foo + bar;
 
