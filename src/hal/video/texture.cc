@@ -3,12 +3,46 @@
 //
 
 #include <neutrino/hal/video/texture.hh>
+#include <neutrino/hal/video/renderer.hh>
+#include <neutrino/hal/video/surface.hh>
+#include <neutrino/utils/exception.hh>
 #include <hal/cast.hh>
 
 #include "texture_impl.hh"
+#include "renderer_impl.hh"
+#include "surface_impl.hh"
 
 namespace neutrino::hal
 {
+
+    static sdl::texture::access cast_flags(const texture::access& flags) {
+        switch (flags)
+        {
+            case texture::access::STREAMING:
+                return sdl::texture::access::STREAMING;
+            case texture::access::STATIC:
+                return sdl::texture::access::STATIC;
+            case texture::access::TARGET:
+                return sdl::texture::access::TARGET;
+            default:
+                RAISE_EX("Should not be here");
+        }
+    }
+
+    texture::texture() = default;
+
+    texture::texture (const renderer& r, const pixel_format& format, unsigned w, unsigned h, access flags)
+    : m_pimpl(spimpl::make_unique_impl<detail::texture_impl>(r.m_pimpl->renderer, sdl::pixel_format(format.value()), w, h, cast_flags(flags)))
+    {
+
+    }
+
+    texture::texture (const renderer& r, const surface& s)
+    : m_pimpl(spimpl::make_unique_impl<detail::texture_impl>(r.m_pimpl->renderer, s.m_pimpl->surface))
+    {
+
+    }
+
     texture::texture(std::unique_ptr<detail::texture_impl>&& t)
     : m_pimpl(std::move(t))
     {
@@ -90,5 +124,13 @@ namespace neutrino::hal
     void texture::update(const math::rect& area, const void* pixels, std::size_t pitch)
     {
         m_pimpl->texture.update(cast(area), pixels, pitch);
+    }
+
+    uint32_t texture::map_rgba(const color& c) const {
+        return SDL_MapRGBA(m_pimpl->format.const_handle(), c.r, c.g, c.b, c.a);
+    }
+
+    uint32_t texture::map_rgb(const color& c) const {
+        return SDL_MapRGB(m_pimpl->format.const_handle(), c.r, c.g, c.b);
     }
 }

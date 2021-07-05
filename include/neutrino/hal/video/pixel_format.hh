@@ -7,6 +7,7 @@
 
 #include <ostream>
 #include <cstdint>
+#include <neutrino/hal/video/color.hh>
 
 namespace neutrino::hal
 {
@@ -156,6 +157,8 @@ namespace neutrino::hal
 
         // bpp, rmask, gmask, bmask, amask
         [[nodiscard]] description get_mask() const;
+
+
     private:
         explicit pixel_format(uint32_t f);
     private:

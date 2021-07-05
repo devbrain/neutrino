@@ -25,10 +25,12 @@ namespace neutrino::hal {
     class window;
     class renderer;
     class image_loader;
+    class texture;
 
     class surface final {
         friend class image_loader;
         friend class renderer;
+        friend class texture;
     public:
         surface() = default;
 

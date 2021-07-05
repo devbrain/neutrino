@@ -6,7 +6,7 @@ MACRO(add_demo name)
             ${name}.cc
             FOLDER Demos
             )
-    target_link_libraries(${name} neutrino::engine thirdparty::sdl2-main)
+    target_link_libraries(${name} neutrino::demoscene thirdparty::sdl2-main)
 ENDMACRO()
 
 MACRO(add_demo_gen name gen)
@@ -19,10 +19,10 @@ MACRO(add_demo_gen name gen)
             FOLDER Demos
             )
     target_include_directories(${name} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(${name} neutrino::engine thirdparty::sdl2-main)
+    target_link_libraries(${name} neutrino::demoscene thirdparty::sdl2-main)
 ENDMACRO()
 
 add_demo(fire)
-add_demo(plasma)
-add_demo(blob)
-add_demo_gen(bobs data/eye.png)
+#add_demo(plasma)
+#add_demo(blob)
+#add_demo_gen(bobs data/eye.png)

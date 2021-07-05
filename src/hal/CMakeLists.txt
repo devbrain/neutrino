@@ -22,7 +22,7 @@ my_add_library_static(hal
         events/events_broker.cc
         ${PROJECT_INCLUDE}/neutrino/hal/events/events_broker.hh
 
-        application.cc
+        application_monitor.cc
         ${PROJECT_INCLUDE}/neutrino/hal/application.hh
 
         system.cc
