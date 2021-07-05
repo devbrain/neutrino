@@ -16,6 +16,7 @@ namespace neutrino::engine::events {
     using pointer = hal::events::pointer;
 
     struct full_screen{};
+    struct quit{};
 }
 
 #endif //NEUTRINO_EVENTS_HH

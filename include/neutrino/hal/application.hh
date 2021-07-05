@@ -31,6 +31,7 @@ namespace neutrino::hal
 
         events_broker& broker();
     protected:
+        virtual void setup();
         virtual void on_terminating ();
         virtual void on_low_memory ();
         virtual void on_will_enter_background ();

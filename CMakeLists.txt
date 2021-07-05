@@ -70,7 +70,7 @@ if (NEUTRINO_BUILD_TEST)
     add_subdirectory(test)
 endif()
 
-#add_subdirectory(apps)
+add_subdirectory(apps)
 
 
 

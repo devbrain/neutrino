@@ -2,7 +2,7 @@
 // Created by igor on 06/06/2021.
 //
 
-#include <neutrino/engine/application.hh>
+#include <neutrino/demoscene/demoscene.hh>
 #include <vector>
 
 #define SCREEN_WIDTH 480
@@ -10,18 +10,19 @@
 
 using namespace neutrino;
 
-struct blob_app : public engine::oldschool_demo
+struct fire_app : public demoscene::scene
 {
 public:
-    blob_app()
-            : engine::oldschool_demo(SCREEN_WIDTH, SCREEN_HEIGHT),
+    fire_app()
+            : demoscene::scene(SCREEN_WIDTH, SCREEN_HEIGHT),
               fire(SCREEN_WIDTH * SCREEN_HEIGHT)
     {
 
     }
 
-    void update(uint8_t* pixels, [[maybe_unused]] std::chrono::milliseconds ms) override
+    void effect(demoscene::palette_t& pal, demoscene::surface_t& surface, int w, int h) override
     {
+        auto* pixels = surface.data();
         int j = SCREEN_WIDTH * (SCREEN_HEIGHT - 1);
         for (int i = 0; i < SCREEN_WIDTH - 1; i++)
         {
@@ -87,8 +88,7 @@ public:
             }
         }
     }
-
-    void init_palette(sdl::palette& colors) override
+    void init(demoscene::palette_t& colors, demoscene::surface_t& surface, int w, int h) override
     {
         /* create a suitable fire palette, this is crucial for a good effect */
         /* black to blue, blue to red, red to yellow, yellow to white*/
@@ -130,8 +130,8 @@ private:
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
-    blob_app app;
-    app.open();
+    fire_app app;
+    //app.open();
     app.run(30);
     return 0;
 }

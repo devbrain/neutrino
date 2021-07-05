@@ -9,10 +9,22 @@
 
 namespace neutrino::hal::detail {
     struct texture_impl {
+
+        static uint32_t get_format(const sdl::texture& tex) {
+            uint32_t format;
+            SDL_QueryTexture(tex.const_handle(), &format, nullptr, nullptr, nullptr);
+            return format;
+        }
+
         template<typename ... Args>
         texture_impl(Args&&... args)
-        : texture(std::forward<Args>(args)...) {}
+        : texture(std::forward<Args>(args)...),
+        format (sdl::object<SDL_PixelFormat>(SDL_AllocFormat(get_format(texture)), true))
+        {
+        }
+
         sdl::texture texture;
+        sdl::object<SDL_PixelFormat> format;
     };
 }
 

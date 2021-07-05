@@ -65,6 +65,9 @@ namespace neutrino::hal {
         // slow updates
         void update(const void* pixels, std::size_t pitch);
         void update(const math::rect& area, const void* pixels, std::size_t pitch);
+
+        [[nodiscard]] uint32_t map_rgba(const color& c) const;
+        [[nodiscard]] uint32_t map_rgb(const color& c) const;
     private:
         explicit texture(std::unique_ptr<detail::texture_impl>&& t);
     private:

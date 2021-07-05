@@ -2,7 +2,7 @@
 // Created by igor on 25/06/2021.
 //
 
-#include <neutrino/engine/application.hh>
+#include <neutrino/engine/application_monitor.hh>
 #include <glm/ext/vector_int2.hpp>
 
 #define BLOB_RADIUS 44

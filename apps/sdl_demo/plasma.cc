@@ -2,7 +2,7 @@
 // Created by igor on 24/06/2021.
 //
 
-#include <neutrino/engine/application.hh>
+#include <neutrino/engine/application_monitor.hh>
 #include <cmath>
 
 #define SCREEN_WIDTH 480
