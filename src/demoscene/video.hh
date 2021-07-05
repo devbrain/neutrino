@@ -23,7 +23,7 @@ namespace neutrino::demoscene
         palette_t* palette ();
         surface_t* surface();
     private:
-        void open(const hal::window& window) override;
+        void attach(const hal::window& window) override;
         void present() override;
 
     private:

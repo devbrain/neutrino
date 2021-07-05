@@ -7,7 +7,7 @@ namespace neutrino::engine
 {
     accelerated_2d_context::accelerated_2d_context () = default;
 
-    void accelerated_2d_context::open(const hal::window& window) {
+    void accelerated_2d_context::attach(const hal::window& window) {
         m_renderer = hal::renderer(window, hal::renderer::flags::ACCELERATED);
     }
 

@@ -14,7 +14,7 @@ namespace neutrino::engine {
         accelerated_2d_context();
 
     protected:
-        void open(const hal::window& window) override;
+        void attach(const hal::window& window) override;
         void clear() override;
         void present() override;
 

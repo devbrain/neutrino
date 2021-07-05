@@ -12,8 +12,8 @@ namespace neutrino::demoscene {
         m_palette.fill({0,0,0,0});
     }
 
-    void video::open(const hal::window& window) {
-        engine::accelerated_2d_context::open(window);
+    void video::attach(const hal::window& window) {
+        engine::accelerated_2d_context::attach(window);
         m_renderer.logical_size(m_width, m_heigh);
         m_texture = hal::texture(m_renderer, m_format, m_width, m_heigh, hal::texture::access::STREAMING);
     }

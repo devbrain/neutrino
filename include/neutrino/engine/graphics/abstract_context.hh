@@ -13,7 +13,7 @@ namespace neutrino::engine {
     public:
         virtual ~abstract_graphics_context();
 
-        virtual void open(const hal::window& window) = 0;
+        virtual void attach(const hal::window& window) = 0;
         virtual void clear() = 0;
         virtual void present() = 0;
 

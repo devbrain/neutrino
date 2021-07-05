@@ -31,11 +31,13 @@ namespace neutrino::engine {
     void window::show() {
         auto [w,h] = m_graphics_context->dimensions();
         this->open(w, h);
+        m_graphics_context->attach(*this);
     }
     // -----------------------------------------------------------------------------------------------------------
     void window::show(int x, int y) {
         auto [w,h] = m_graphics_context->dimensions();
         this->open(w, h, x, y);
+        m_graphics_context->attach(*this);
     }
     // -----------------------------------------------------------------------------------------------------------
     void window::on_event(const events::full_screen&) {
