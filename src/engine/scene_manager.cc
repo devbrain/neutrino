@@ -48,10 +48,6 @@ namespace neutrino::engine::detail {
         }
     }
     // ----------------------------------------------------------------------------------------
-    void scene_manager::on_before_destroy() {
-
-    }
-    // ----------------------------------------------------------------------------------------
     void scene_manager::on_input_focus_changed(bool keyboard_focus, bool mouse_focus) {
         if (m_current_scene) {
             m_current_scene->on_input_focus_changed(keyboard_focus, mouse_focus);

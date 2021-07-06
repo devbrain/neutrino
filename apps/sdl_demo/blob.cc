@@ -2,8 +2,10 @@
 // Created by igor on 25/06/2021.
 //
 
-#include <neutrino/engine/application_monitor.hh>
+#include <neutrino/engine/application.hh>
+#include <neutrino/demoscene/demoscene.hh>
 #include <glm/ext/vector_int2.hpp>
+#include <cmath>
 
 #define BLOB_RADIUS 44
 #define BLOB_DRADIUS (BLOB_RADIUS * 2)
@@ -14,21 +16,47 @@
 
 using namespace neutrino;
 
-struct blob_app : public engine::oldschool_demo
+struct blob_window : public demoscene::scene
 {
 public:
-    blob_app()
-    : engine::oldschool_demo(SCREEN_WIDTH, SCREEN_HEIGHT)
+    blob_window()
+    : demoscene::scene(SCREEN_WIDTH, SCREEN_HEIGHT)
     {
+        int i, j;
+        uint32_t distance_squared;
+        float fraction;
 
+        /* create blob */
+        for (i = -BLOB_RADIUS; i < BLOB_RADIUS; ++i)
+        {
+            for (j = -BLOB_RADIUS; j < BLOB_RADIUS; ++j)
+            {
+                distance_squared = i * i + j * j;
+                if (distance_squared <= BLOB_SRADIUS)
+                {
+                    /* compute density */
+                    fraction = (float)distance_squared / (float)BLOB_SRADIUS;
+                    blob[i + BLOB_RADIUS][j + BLOB_RADIUS] = pow((1.0 - (fraction * fraction)), 4.0) * 255.0;
+                }
+                else
+                    blob[i + BLOB_RADIUS][j + BLOB_RADIUS] = 0;
+            }
+        }
+
+        for (i = 0; i < NUMBER_OF_BLOBS; i++)
+        {
+            init_blob(blobs + i);
+        }
     }
 
-    void update(uint8_t* image, [[maybe_unused]] std::chrono::milliseconds ms) override
+    void effect(demoscene::vga& vga) override
     {
-        Uint32 start;
+        uint32_t start;
         int i, j;
-        Uint8 k;
-        video_system()->cls();
+        uint8_t k;
+        vga.cls();
+        uint8_t* image = vga.surface().data();
+
         for (i = 0; i < NUMBER_OF_BLOBS; i++)
         {
             blobs[i][0] += -2 + (int)(5.0 * (rand()/(RAND_MAX+1.0)));
@@ -61,8 +89,9 @@ public:
 
     }
 
-    void init_palette(sdl::palette& colors) override
+    void init(demoscene::vga& vga) override
     {
+        auto& colors = vga.palette();
         for (int i = 0; i < 256; ++i)
         {
             colors[i].r = i;
@@ -71,39 +100,10 @@ public:
         }
     }
 
-    void pre_run() override
-    {
-        int i, j;
-        Uint32 distance_squared;
-        float fraction;
-
-        /* create blob */
-        for (i = -BLOB_RADIUS; i < BLOB_RADIUS; ++i)
-        {
-            for (j = -BLOB_RADIUS; j < BLOB_RADIUS; ++j)
-            {
-                distance_squared = i * i + j * j;
-                if (distance_squared <= BLOB_SRADIUS)
-                {
-                    /* compute density */
-                    fraction = (float)distance_squared / (float)BLOB_SRADIUS;
-                    blob[i + BLOB_RADIUS][j + BLOB_RADIUS] = pow((1.0 - (fraction * fraction)),4.0) * 255.0;
-                }
-                else
-                    blob[i + BLOB_RADIUS][j + BLOB_RADIUS] = 0;
-            }
-        }
-
-        for (i = 0; i < NUMBER_OF_BLOBS; i++)
-        {
-            init_blob(blobs + i);
-        }
-
-    }
 private:
     using vec2 = glm::ivec2;
 
-    void init_blob(vec2* blob)
+    static void init_blob(vec2* blob)
     {
         (*blob)[0] =  (SCREEN_WIDTH >> 1) - BLOB_RADIUS;
         (*blob)[1] =  (SCREEN_HEIGHT >> 1) - BLOB_RADIUS;
@@ -115,8 +115,9 @@ private:
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
-    blob_app app;
-    app.open();
+    engine::application app(nullptr);
+    blob_window w;
+    w.show();
     app.run(30);
     return 0;
 }

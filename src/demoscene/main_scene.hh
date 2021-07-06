@@ -26,8 +26,11 @@ namespace neutrino::demoscene
         void on_keyboard_input(const engine::events::keyboard& ev) override;
         void on_pointer_input(const engine::events::pointer& ev) override;
     private:
+        void show_fps();
+    private:
         demoscene::scene* m_owner;
         bool m_show_fps;
+        unsigned m_current_fps;
     };
 }
 

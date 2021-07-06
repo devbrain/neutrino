@@ -78,9 +78,12 @@ namespace neutrino::hal {
             start = s;
             {
                 m_pimpl->m_input_publisher.run();
-                clear();
-                update (delta_t);
-                render();
+                if (windows_manager::instance().has_windows())
+                {
+                    clear();
+                    update(delta_t);
+                    render();
+                }
             }
 
             const auto e = sdl::get_ms_since_init();

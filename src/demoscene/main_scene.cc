@@ -2,23 +2,26 @@
 // Created by igor on 03/07/2021.
 //
 
-#include "main_scene.hh"
-#include "neutrino/demoscene/vga.hh"
+#include <sstream>
 #include <neutrino/engine/scene_manager.hh>
+#include <neutrino/engine/application.hh>
+#include "main_scene.hh"
+
+
 
 namespace neutrino::demoscene {
     main_scene::main_scene(demoscene::scene* owner)
     : engine::scene(0),
       m_owner(owner),
-      m_show_fps(false)
+      m_show_fps(false),
+      m_current_fps(0)
     {
+        hal::get_application()->attach(this);
     }
 
     void main_scene::on_event(const engine::events::current_fps& e) {
-        if (m_show_fps)
-        {
-         //   m_fps = e.value;
-        }
+        m_current_fps = e.value;
+        show_fps();
     }
 
     void main_scene::on_enter() {
@@ -54,6 +57,7 @@ namespace neutrino::demoscene {
                 } else {
                     if (ev.code == engine::events::scan_code_t::F) {
                         m_show_fps ^= true;
+                        show_fps();
                     }
                 }
             }
@@ -63,5 +67,15 @@ namespace neutrino::demoscene {
 
     void main_scene::on_pointer_input([[maybe_unused]] const engine::events::pointer& ev) {
 
+    }
+
+    void main_scene::show_fps()
+    {
+        std::ostringstream os;
+        if (m_show_fps)
+        {
+            os << "FPS: " << m_current_fps;
+        }
+        m_owner->title(os.str());
     }
 }

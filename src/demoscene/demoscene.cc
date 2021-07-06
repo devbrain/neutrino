@@ -10,7 +10,7 @@
 namespace neutrino::demoscene
 {
     scene::scene(int w, int h)
-    : neutrino::engine::main_window (w, h),
+    : neutrino::engine::main_window (w, h, hal::window_flags_t::RESIZABLE),
       m_main_scene(nullptr)
     {
     }

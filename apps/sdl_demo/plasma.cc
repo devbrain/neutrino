@@ -2,7 +2,8 @@
 // Created by igor on 24/06/2021.
 //
 
-#include <neutrino/engine/application_monitor.hh>
+#include <neutrino/engine/application.hh>
+#include <neutrino/demoscene/demoscene.hh>
 #include <cmath>
 
 #define SCREEN_WIDTH 480
@@ -10,20 +11,26 @@
 
 using namespace neutrino;
 
-struct blob_app : public engine::oldschool_demo
+struct plasma : public demoscene::scene
 {
 public:
-    blob_app()
-            : engine::oldschool_demo(SCREEN_WIDTH, SCREEN_HEIGHT)
+    plasma()
+            : demoscene::scene(SCREEN_WIDTH, SCREEN_HEIGHT)
     {
-
+        /*create sin lookup table */
+        for (int i = 0; i < 512; i++)
+        {
+            auto rad =  ((float)i * 0.703125) * 0.0174532; /* 360 / 512 * degree to rad, 360 degrees spread over 512 values to be able to use AND 512-1 instead of using modulo 360*/
+            aSin[i] = sin(rad) * 1024; /*using fixed point math with 1024 as base*/
+        }
     }
 
-    void update(uint8_t* image, [[maybe_unused]] std::chrono::milliseconds ms) override
+    void effect(demoscene::vga& vga) override
     {
-        Uint16 i,j;
-        Uint8 index;
+        uint16_t i,j;
+        uint8_t index;
         int x;
+        uint8_t* image = vga.surface().data();
 
         tpos4 = pos4;
         tpos3 = pos3;
@@ -61,8 +68,9 @@ public:
         pos3 +=8;
     }
 
-    void init_palette(sdl::palette& colors) override
+    void init(demoscene::vga& vga) override
     {
+        auto& colors = vga.palette();
         /* create palette */
         for (int i = 0; i < 64; ++i)
         {
@@ -76,14 +84,7 @@ public:
         }
     }
 
-    void pre_run () override {
-        /*create sin lookup table */
-        for (int i = 0; i < 512; i++)
-        {
-            auto rad =  ((float)i * 0.703125) * 0.0174532; /* 360 / 512 * degree to rad, 360 degrees spread over 512 values to be able to use AND 512-1 instead of using modulo 360*/
-            aSin[i] = sin(rad) * 1024; /*using fixed point math with 1024 as base*/
-        }
-    }
+
 private:
     uint16_t pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0, tpos1, tpos2, tpos3, tpos4;
     int aSin[512];
@@ -91,8 +92,11 @@ private:
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
-    blob_app app;
-    app.open();
+    engine::application app(nullptr);
+    plasma window;
+    window.show();
+
     app.run(30);
+
     return 0;
 }

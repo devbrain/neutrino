@@ -24,7 +24,6 @@ public:
     void effect(demoscene::vga& vga) override
     {
 
-        auto* pixels = vga.surface().data();
         int j = SCREEN_WIDTH * (SCREEN_HEIGHT - 1);
         for (int i = 0; i < SCREEN_WIDTH - 1; i++)
         {
@@ -77,7 +76,7 @@ public:
             j -= SCREEN_WIDTH;
         }
 
-        uint8_t* image = pixels + (SCREEN_WIDTH * SCREEN_HEIGHT);  /*start in the right bottom corner*/
+        uint8_t* image = vga.surface().data() + (SCREEN_WIDTH * SCREEN_HEIGHT)-1;  /*start in the right bottom corner*/
 
         /* draw fire array to screen from bottom to top + 300*/
 
@@ -90,6 +89,7 @@ public:
             }
         }
     }
+
     void init(demoscene::vga& vga) override
     {
         auto& colors = vga.palette();

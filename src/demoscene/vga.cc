@@ -23,8 +23,8 @@ namespace neutrino::demoscene {
         auto [px, pitch] = m_texture.lock();
         auto* pixels = (uint32_t*)px;
         std::size_t idx = 0;
-        for (int y=0; y<h; y++) {
-            for (int x=0; x<w; x++) {
+        for (unsigned y=0; y<h; y++) {
+            for (unsigned x=0; x<w; x++) {
                 pixels[idx] = m_texture.map_rgb(m_palette[m_surface[idx]]);
                 idx++;
             }
@@ -35,13 +35,13 @@ namespace neutrino::demoscene {
 
     int vga::width () const noexcept {
         int w;
-        std::tie(w, std::ignore) = m_window.dimensions();
+        std::tie(w, std::ignore) = m_renderer.logical_size();
         return w;
     }
 
     int vga::height () const noexcept {
         int h;
-        std::tie(std::ignore, h) = m_window.dimensions();
+        std::tie(std::ignore, h) = m_renderer.logical_size();
         return h;
     }
 
@@ -51,5 +51,10 @@ namespace neutrino::demoscene {
 
     vga::surface_t& vga::surface() {
         return m_surface;
+    }
+
+    void vga::cls()
+    {
+        m_renderer.clear();
     }
 }

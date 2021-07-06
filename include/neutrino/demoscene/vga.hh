@@ -31,6 +31,7 @@ namespace neutrino::demoscene
         [[nodiscard]] int width () const noexcept;
         [[nodiscard]] int height () const noexcept;
 
+        void cls();
 
     private:
         vga (engine::main_window& window);
