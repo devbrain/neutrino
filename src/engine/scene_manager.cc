@@ -13,12 +13,13 @@ namespace neutrino::engine::detail {
 
     }
     // ----------------------------------------------------------------------------------------
-    void scene_manager::add(scene* sc) {
+    int scene_manager::add(scene* sc) {
         auto itr = m_scenes.find(sc->id());
         if (itr != m_scenes.end()) {
             RAISE_EX("Scene ", sc->id(), " was already registered");
         }
         m_scenes[sc->id()] = sc;
+        return sc->id();
     }
     // ----------------------------------------------------------------------------------------
     void scene_manager::activate(int scene_id) {

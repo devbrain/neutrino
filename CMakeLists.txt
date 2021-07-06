@@ -18,6 +18,8 @@ include(build)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads)
 find_package(Filesystem)
+find_package(Vulkan)
+find_package(OpenGL)
 # ===========================================================
 
 # Output binary to predictable location.
@@ -47,6 +49,15 @@ TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(NOT IS_BIG_ENDIAN)
     set (NEUTRINO_IS_LITTLE_ENDIAN 1)
 endif()
+
+if (VULKAN_FOUND)
+    set(NEUTRINO_HAS_VULKAN 1)
+endif()
+
+if (VULKAN_FOUND)
+    set(NEUTRINO_HAS_VULKAN 1)
+endif()
+
 file(MAKE_DIRECTORY ${PROJECT_CONFIG_INCLUDE}/neutrino)
 configure_file(${PROJECT_INCLUDE}/configure.h.in ${PROJECT_CONFIG_INCLUDE}/neutrino/neutrino_config.h @ONLY)
 # ===========================================================

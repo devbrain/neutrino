@@ -11,6 +11,7 @@
 #include <neutrino/utils/spimpl.h>
 #include <neutrino/hal/events/events.hh>
 #include <bitflags/bitflags.hpp>
+#include <neutrino/neutrino_config.h>
 
 namespace neutrino::hal {
 
@@ -39,16 +40,19 @@ namespace neutrino::hal {
         friend class detail::windows_manager;
     public:
         enum window_kind_t {
-            SIMPLE,
-            OPENGL,
+            SIMPLE
+#if defined(NEUTRINO_HAS_OPENGL)
+            ,
+            OPENGL
+#endif
+#if defined(NEUTRINO_HAS_VULKAN)
+            ,
             VULKAN
+#endif
         };
 
         using handle_t = uint32_t;
     public:
-        window();
-        explicit window(window_flags_t flags);
-
         virtual ~window();
 
         void open (int w, int h);
@@ -76,7 +80,7 @@ namespace neutrino::hal {
 
         [[nodiscard]] handle_t id () const noexcept;
     protected:
-        virtual void after_window_opened(handle_t window_id);
+        virtual void after_window_opened();
         virtual void before_window_destroy();
 
         virtual void on_window_close();
@@ -91,6 +95,7 @@ namespace neutrino::hal {
 
         virtual void on_window_invalidate();
     protected:
+        explicit window(window_kind_t kind);
         window(window_kind_t kind, window_flags_t flags);
     private:
         void _window_restored();
@@ -109,9 +114,39 @@ namespace neutrino::hal {
         void _window_resized(int w, int h);
 
         void init(window_kind_t kind, std::optional<window_flags_t> flags);
-    private:
+    protected:
         spimpl::unique_impl_ptr<detail::window> m_pimpl;
     };
+
+    // =====================================================================================
+    class window_2d : public window {
+    public:
+        window_2d();
+        explicit window_2d(window_flags_t flags);
+
+        [[nodiscard]] renderer get_renderer() const;
+    private:
+        void clear() override;
+        void present() override;
+    };
+
+#if defined(NEUTRINO_HAS_OPENGL)
+    class window_opengl : public window {
+    public:
+        window_opengl();
+        explicit window_opengl(window_flags_t flags);
+    private:
+        void present() override;
+    };
+#endif
+
+#if defined(NEUTRINO_HAS_VULKAN)
+    class window_vulkan : public window {
+    public:
+        window_vulkan();
+        explicit window_vulkan(window_flags_t flags);
+    };
+#endif
 }
 
 #endif

@@ -3,8 +3,8 @@ my_add_library_static(demoscene
             demoscene.cc
             ${PROJECT_INCLUDE}/neutrino/demoscene/demoscene.hh
 
-            video.cc
-            video.hh
+            vga.cc
+            ${PROJECT_INCLUDE}/neutrino/demoscene/vga.hh
             main_scene.cc
             main_scene.hh
         DEPENDS_PUBLIC

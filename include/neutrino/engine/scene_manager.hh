@@ -18,19 +18,19 @@
 
 namespace neutrino::engine {
 
-    class window;
+    template<typename> class scene_window;
     class application;
+
     namespace detail
     {
         class scene_manager : public utils::publisher<events::full_screen, events::quit>
         {
-            friend class neutrino::engine::window;
             friend class neutrino::engine::application;
-
+            template<typename> friend class neutrino::engine::scene_window;
         public:
             scene_manager();
 
-            void add(scene* sc);
+            int add(scene* sc);
             void activate(int scene_id);
         private:
             void update(std::chrono::milliseconds ms);

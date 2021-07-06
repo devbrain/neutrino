@@ -50,6 +50,8 @@ namespace neutrino::sdl
 
         virtual ~object() noexcept;
 
+        void destroy();
+
         [[nodiscard]] SDLOBJECT* handle() noexcept;
         [[nodiscard]] const SDLOBJECT* handle() const noexcept;
         [[nodiscard]] SDLOBJECT* const_handle() const noexcept;
@@ -123,9 +125,16 @@ namespace neutrino::sdl
     inline
     object<SDLOBJECT>::~object() noexcept
     {
-        if (m_owner)
+        destroy();
+    }
+    // ----------------------------------------------------------------------------------------------
+    template <class SDLOBJECT>
+    inline
+    void object<SDLOBJECT>::destroy() {
+        if (m_owner && m_object)
         {
             detail::deleter_traits<SDLOBJECT>::call(m_object);
+            m_object = nullptr;
         }
     }
     // ----------------------------------------------------------------------------------------------
