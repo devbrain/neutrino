@@ -65,6 +65,12 @@ namespace neutrino::hal
 
     }
 
+    renderer::renderer(std::unique_ptr<detail::renderer_impl> impl)
+    : m_pimpl(std::move(impl))
+    {
+
+    }
+
     renderer::operator bool() const
     {
         return m_pimpl->renderer.const_handle() != nullptr;

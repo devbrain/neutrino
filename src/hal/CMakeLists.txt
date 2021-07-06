@@ -1,3 +1,13 @@
+
+
+if (VULKAN_FOUND)
+    message(STATUS "VULKAN found")
+    set(VULKAN_TARGET Vulkan::Vulkan)
+endif()
+if (OPENGL_FOUND)
+    message(STATUS "OPENGL found")
+endif()
+
 my_add_library_static(hal
         SOURCES
 
@@ -22,7 +32,7 @@ my_add_library_static(hal
         events/events_broker.cc
         ${PROJECT_INCLUDE}/neutrino/hal/events/events_broker.hh
 
-        application_monitor.cc
+        application.cc
         ${PROJECT_INCLUDE}/neutrino/hal/application.hh
 
         system.cc
@@ -88,4 +98,6 @@ my_add_library_static(hal
             thirdparty::glm
             thirdparty::bitflags
             thirdparty::sdl2
+            ${VULKAN_LIBS}
         )
+

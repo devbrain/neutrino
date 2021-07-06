@@ -3,22 +3,20 @@
 //
 
 #include <neutrino/hal/video/window.hh>
+#include <neutrino/hal/video/renderer.hh>
+#include "hal/video/renderer_impl.hh"
 #include "windows_manager.hh"
 #include "window_impl.hh"
 
-namespace neutrino::hal {
+
+namespace neutrino::hal
+{
     window::~window() = default;
     // ---------------------------------------------------------------------------------------------------
-    window::window()
+    window::window(window_kind_t kind)
             : m_pimpl(spimpl::make_unique_impl<detail::window>())
     {
-        init(SIMPLE, std::nullopt);
-    }
-    // ---------------------------------------------------------------------------------------------------
-    window::window(window_flags_t flags)
-            : m_pimpl(spimpl::make_unique_impl<detail::window>())
-    {
-        init(SIMPLE, flags);
+        init(kind, std::nullopt);
     }
     // ---------------------------------------------------------------------------------------------------
     window::window(window_kind_t kind, window_flags_t flags)
@@ -90,18 +88,15 @@ namespace neutrino::hal {
 
         m_pimpl->width = w;
         m_pimpl->height = h;
-
+        m_pimpl->sdl_renderer = sdl::renderer(m_pimpl->sdl_window);
         windows_manager::instance().attach(m_pimpl->sdl_window, this);
 
-        after_window_opened(m_pimpl->sdl_window.id());
+        after_window_opened();
     }
     // ----------------------------------------------------------------------------------------------------
-    void window::after_window_opened([[maybe_unused]] uint32_t window_id) {
-
-    }
-    // ----------------------------------------------------------------------------------------------------
-    void window::present()
+    void window::after_window_opened()
     {
+
     }
     // ----------------------------------------------------------------------------------------------------
     void window::focus() noexcept
@@ -129,15 +124,18 @@ namespace neutrino::hal {
         }
     }
     // ----------------------------------------------------------------------------------------------------
-    std::string window::title() const {
+    std::string window::title() const
+    {
         return m_pimpl->sdl_window.title();
     }
     // ----------------------------------------------------------------------------------------------------
-    void window::title(const std::string& v) {
+    void window::title(const std::string& v)
+    {
         m_pimpl->sdl_window.title(v);
     }
     // ----------------------------------------------------------------------------------------------------
-    uint32_t window::id () const noexcept {
+    uint32_t window::id() const noexcept
+    {
         return m_pimpl->sdl_window.id();
     }
     // ----------------------------------------------------------------------------------------------------
@@ -239,7 +237,8 @@ namespace neutrino::hal {
         std::swap(m_pimpl, empty);
     }
     // ----------------------------------------------------------------------------------------------------
-    void window::before_window_destroy() {
+    void window::before_window_destroy()
+    {
 
     }
     // ----------------------------------------------------------------------------------------------------
@@ -271,11 +270,13 @@ namespace neutrino::hal {
 
     }
     // ----------------------------------------------------------------------------------------------------
-    void window::on_keyboard_input([[maybe_unused]] const events::keyboard& ev) {
+    void window::on_keyboard_input([[maybe_unused]] const events::keyboard& ev)
+    {
 
     }
     // ----------------------------------------------------------------------------------------------------
-    void window::on_pointer_input([[maybe_unused]]const events::pointer& ev){
+    void window::on_pointer_input([[maybe_unused]]const events::pointer& ev)
+    {
 
     }
     // ----------------------------------------------------------------------------------------------------
@@ -298,5 +299,49 @@ namespace neutrino::hal {
     {
 
     }
+    // ====================================================================================================
+#if defined(NEUTRINO_HAS_OPENGL)
+    window_opengl::window_opengl()
+    : window(window::window_kind_t::OPENGL) {}
+    // ----------------------------------------------------------------------------------------------------
+    window_opengl::window_opengl(window_flags_t flags)
+    : window(window::window_kind_t::OPENGL, flags) {}
+    // ----------------------------------------------------------------------------------------------------
+    void window_opengl::present() {
+        m_pimpl->sdl_window.swap_opengl_window();
+    }
+    // ----------------------------------------------------------------------------------------------------
+#endif
+#if defined(NEUTRINO_HAS_VULKAN)
+    window_vulkan::window_vulkan()
+            : window(window::window_kind_t::VULKAN) {}
+    // ----------------------------------------------------------------------------------------------------
+    window_vulkan::window_vulkan(window_flags_t flags)
+            : window(window::window_kind_t::VULKAN, flags) {}
+    // ----------------------------------------------------------------------------------------------------
+#endif
 
+    window_2d::window_2d()
+    : window(window::window_kind_t::SIMPLE)
+    {
+
+    }
+    // ----------------------------------------------------------------------------------------------------
+    window_2d::window_2d(window_flags_t flags)
+    : window(window::window_kind_t::SIMPLE, flags)
+    {
+
+    }
+    // ----------------------------------------------------------------------------------------------------
+    renderer window_2d::get_renderer() const {
+        return renderer(std::make_unique<detail::renderer_impl>(sdl::object<SDL_Renderer>(m_pimpl->sdl_renderer.const_handle(), false)));
+    }
+    // ----------------------------------------------------------------------------------------------------
+    void window_2d::clear() {
+        m_pimpl->sdl_renderer.clear();
+    }
+    // ----------------------------------------------------------------------------------------------------
+    void window_2d::present() {
+        m_pimpl->sdl_renderer.present();
+    }
 }

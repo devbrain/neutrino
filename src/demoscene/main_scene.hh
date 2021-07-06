@@ -27,10 +27,6 @@ namespace neutrino::demoscene
         void on_pointer_input(const engine::events::pointer& ev) override;
     private:
         demoscene::scene* m_owner;
-        palette_t* m_pal;
-        surface_t* m_surface;
-        int m_width;
-        int m_height;
         bool m_show_fps;
     };
 }

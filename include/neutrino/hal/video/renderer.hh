@@ -21,11 +21,12 @@ namespace neutrino::hal {
     }
 
     class window;
-
+    class window_2d;
 
     class renderer
     {
         friend class texture;
+        friend class window_2d;
     public:
         BEGIN_BITFLAGS(flags)
             FLAG(SOFTWARE)
@@ -155,6 +156,7 @@ namespace neutrino::hal {
 
         void present() noexcept;
     private:
+        renderer(std::unique_ptr<detail::renderer_impl> impl);
         spimpl::unique_impl_ptr<detail::renderer_impl> m_pimpl;
     };
 }

@@ -4,43 +4,24 @@
 
 #include <neutrino/engine/application.hh>
 #include <neutrino/engine/scene_manager.hh>
-#include "window.hh"
+#include "neutrino/engine/scene_window.hh"
 
 namespace neutrino::engine {
     struct application::impl {
-        impl(std::unique_ptr<abstract_graphics_context> actx, std::unique_ptr<application_monitor> amonitor, hal::window_flags_t flags)
-        : ctx(std::move(actx)),
-          monitor(std::move(amonitor)),
-          main_window(ctx, flags)
+        impl(std::unique_ptr<application_monitor> amonitor)
+        : monitor(std::move(amonitor))
         {
-            scene_manager::instance().attach(&main_window);
+
         }
 
-        impl(std::unique_ptr<abstract_graphics_context> actx, std::unique_ptr<application_monitor> amonitor)
-        : ctx(std::move(actx)),
-          monitor(std::move(amonitor)),
-          main_window(ctx)
-        {
-            scene_manager::instance().attach(&main_window);
-        }
-
-        std::shared_ptr<abstract_graphics_context> ctx;
         std::unique_ptr<application_monitor> monitor;
-        window main_window;
+
     };
+    // ----------------------------------------------------------------------------------------------------------------------------------------------
 
-
-    application::application(std::unique_ptr<abstract_graphics_context> ctx, std::unique_ptr<application_monitor> monitor, hal::window_flags_t flags)
-    : m_pimpl(spimpl::make_unique_impl<impl>(std::move(ctx), std::move(monitor), flags)) {
+    application::application(std::unique_ptr<application_monitor> monitor)
+    : m_pimpl(spimpl::make_unique_impl<impl>(std::move(monitor))) {
         scene_manager::instance().attach(this);
-
-        m_pimpl->main_window.show();
-    }
-
-    application::application(std::unique_ptr<abstract_graphics_context> ctx, std::unique_ptr<application_monitor> monitor)
-    : m_pimpl(spimpl::make_unique_impl<impl>(std::move(ctx), std::move(monitor))) {
-        scene_manager::instance().attach(this);
-        m_pimpl->main_window.show();
     }
 
     void application::on_terminating () {
@@ -53,6 +34,7 @@ namespace neutrino::engine {
             m_pimpl->monitor->on_low_memory();
         }
     }
+
     void application::on_will_enter_background () {
         if (m_pimpl->monitor) {
             m_pimpl->monitor->on_will_enter_background();
@@ -75,9 +57,5 @@ namespace neutrino::engine {
 
     void application::on_event(const events::quit&) {
         this->quit();
-    }
-
-    std::shared_ptr<abstract_graphics_context> application::graphics_context() {
-        return m_pimpl->ctx;
     }
 }

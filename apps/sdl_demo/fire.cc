@@ -3,6 +3,7 @@
 //
 
 #include <neutrino/demoscene/demoscene.hh>
+#include <neutrino/engine/application.hh>
 #include <vector>
 
 #define SCREEN_WIDTH 480
@@ -20,9 +21,10 @@ public:
 
     }
 
-    void effect(demoscene::palette_t& pal, demoscene::surface_t& surface, int w, int h) override
+    void effect(demoscene::vga& vga) override
     {
-        auto* pixels = surface.data();
+
+        auto* pixels = vga.surface().data();
         int j = SCREEN_WIDTH * (SCREEN_HEIGHT - 1);
         for (int i = 0; i < SCREEN_WIDTH - 1; i++)
         {
@@ -88,8 +90,9 @@ public:
             }
         }
     }
-    void init(demoscene::palette_t& colors, demoscene::surface_t& surface, int w, int h) override
+    void init(demoscene::vga& vga) override
     {
+        auto& colors = vga.palette();
         /* create a suitable fire palette, this is crucial for a good effect */
         /* black to blue, blue to red, red to yellow, yellow to white*/
 
@@ -130,8 +133,12 @@ private:
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
-    fire_app app;
-    //app.open();
+
+    neutrino::engine::application app(nullptr);
+
+    fire_app window;
+    window.show();
     app.run(30);
+
     return 0;
 }

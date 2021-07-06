@@ -5,10 +5,12 @@
 #include <atomic>
 
 #include <neutrino/hal/application.hh>
+#include <neutrino/hal/system.hh>
 #include <hal/sdl/timers.hh>
 #include "hal/input_publisher.hh"
 #include "hal/video/windows/windows_manager.hh"
 #include "hal/message_broker.hh"
+
 
 namespace neutrino::hal {
     namespace
@@ -34,6 +36,7 @@ namespace neutrino::hal {
         std::atomic<bool> m_quit_flag;
         input_publisher m_input_publisher;
         message_broker  m_message_broker;
+        hal::system     m_system;
     };
     // -------------------------------------------------------------------------------
     application::application()
