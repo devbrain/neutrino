@@ -27,12 +27,20 @@ namespace neutrino::utils {
             virtual void on_event(const EventType& event) = 0;
         };
         // ======================================================================================
+        class monitors_holder;
+
         class observer_monitor {
+            friend class monitors_holder;
         public:
-            virtual ~observer_monitor() = default;
+            virtual ~observer_monitor();
 
             virtual void on_subscribed ();
             virtual void on_unsubscribed();
+        private:
+            void _on_attached (monitors_holder* mh);
+            void _on_detached (monitors_holder* mh);
+        private:
+            std::set<monitors_holder*> m_holders;
         };
         // ======================================================================================
         template <typename EventType>
@@ -60,18 +68,27 @@ namespace neutrino::utils {
         template<typename F, typename ... Events>
         inline constexpr bool is_callable_supported_v = std::disjunction_v<std::is_invocable<F,Events>...>;
         // ======================================================================================
+        class monitors_holder {
+        public:
+            friend class observer_monitor;
+            virtual ~monitors_holder();
+        protected:
+            void insert(observer_monitor* obs);
+            void remove(observer_monitor* obs);
+
+            void destruct(observer_monitor* obs);
+        private:
+            std::set<observer_monitor*> m_monitors;
+        };
+        // ======================================================================================
         template <typename ... Events>
-        class basic_publisher {
+        class basic_publisher : public monitors_holder {
         public:
             basic_publisher()
                     : m_holder{std::vector<observer<Events>*>{}...} {
             }
 
-            virtual ~basic_publisher() {
-                for (auto* monitor : m_monitors) {
-                    monitor->on_unsubscribed();
-                }
-            }
+
 
             template<typename Functor>
             std::enable_if_t<is_callable_supported_v<Functor, Events...>, void>
@@ -115,8 +132,7 @@ namespace neutrino::utils {
                 });
                 if (attached) {
                     if (auto* monitor = dynamic_cast<observer_monitor*>(obs)) {
-                        m_monitors.insert(monitor);
-                        monitor->on_subscribed();
+                        this->insert(monitor);
                     }
                 }
             }
@@ -139,8 +155,7 @@ namespace neutrino::utils {
                 });
                 if (detached) {
                     if (auto* monitor = dynamic_cast<observer_monitor*>(obs)) {
-                        m_monitors.erase(monitor);
-                        monitor->on_unsubscribed();
+                        this->remove(monitor);
                     }
                 }
             }
@@ -175,9 +190,7 @@ namespace neutrino::utils {
         private:
             using supported_events_t = mp::type_list<Events...>;
             using holder_t = std::tuple<std::vector<observer<Events>*>...>;
-
             holder_t m_holder;
-            std::set<observer_monitor*> m_monitors;
         };
 
     }

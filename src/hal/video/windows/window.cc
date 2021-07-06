@@ -43,7 +43,6 @@ namespace neutrino::hal
         m_pimpl->flags = flags;
         if (flags)
         {
-
             m_pimpl->windowed = !(*flags & window_flags_t::FULLSCREEN);
             m_pimpl->visible = !(*flags & window_flags_t::MINIMIZED);
         } else
@@ -110,8 +109,6 @@ namespace neutrino::hal
     // ----------------------------------------------------------------------------------------------------
     void window::toggle_fullscreen()
     {
-
-        m_pimpl->windowed = !m_pimpl->windowed;
         if (m_pimpl->windowed)
         {
             SDL_SetWindowFullscreen(m_pimpl->sdl_window.handle(), 0);
@@ -122,6 +119,7 @@ namespace neutrino::hal
             std::tie(m_pimpl->before_fullscreen_x, m_pimpl->before_fullscreen_y) = m_pimpl->sdl_window.position();
             SDL_SetWindowFullscreen(m_pimpl->sdl_window.handle(), SDL_WINDOW_FULLSCREEN_DESKTOP);
         }
+        m_pimpl->windowed = !m_pimpl->windowed;
     }
     // ----------------------------------------------------------------------------------------------------
     std::string window::title() const
@@ -232,14 +230,6 @@ namespace neutrino::hal
         m_pimpl->sdl_window.hide();
         on_window_close();
         windows_manager::instance().detach(this);
-        before_window_destroy();
-        spimpl::unique_impl_ptr<detail::window> empty;
-        std::swap(m_pimpl, empty);
-    }
-    // ----------------------------------------------------------------------------------------------------
-    void window::before_window_destroy()
-    {
-
     }
     // ----------------------------------------------------------------------------------------------------
     void window::_window_resized(int w, int h)

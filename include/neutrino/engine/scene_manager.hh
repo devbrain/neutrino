@@ -29,12 +29,10 @@ namespace neutrino::engine {
             template<typename> friend class neutrino::engine::scene_window;
         public:
             scene_manager();
-
             int add(scene* sc);
             void activate(int scene_id);
         private:
             void update(std::chrono::milliseconds ms);
-            void on_before_destroy();
             void on_input_focus_changed(bool keyboard_focus, bool mouse_focus);
             void on_visibility_change(bool is_visible);
             void on_keyboard_input(const events::keyboard& ev);

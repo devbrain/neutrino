@@ -21,7 +21,6 @@ namespace neutrino::engine {
         void on_event(const events::full_screen&) override;
 
     private:
-        void before_window_destroy() override;
         void on_input_focus_changed(bool keyboard_focus, bool mouse_focus) override;
         void on_visibility_change(bool is_visible) override;
         void on_keyboard_input(const events::keyboard& ev) override;
@@ -57,11 +56,6 @@ namespace neutrino::engine {
     template <typename Base>
     void scene_window<Base>::on_event(const events::full_screen&) {
         this->toggle_fullscreen();
-    }
-    // -----------------------------------------------------------------------------------------------------------
-    template <typename Base>
-    void scene_window<Base>::before_window_destroy() {
-        scene_manager::instance().on_before_destroy();
     }
     // -----------------------------------------------------------------------------------------------------------
     template <typename Base>

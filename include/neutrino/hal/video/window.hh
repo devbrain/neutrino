@@ -64,7 +64,6 @@ namespace neutrino::hal {
         //Focuses on window
         void focus() noexcept;
 
-
         [[nodiscard]] std::tuple<int, int> dimensions() const noexcept;
         [[nodiscard]] std::tuple<int, int> position() const noexcept;
 
@@ -81,7 +80,6 @@ namespace neutrino::hal {
         [[nodiscard]] handle_t id () const noexcept;
     protected:
         virtual void after_window_opened();
-        virtual void before_window_destroy();
 
         virtual void on_window_close();
         virtual void on_window_resized(int w, int h);

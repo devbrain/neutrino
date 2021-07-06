@@ -23,6 +23,6 @@ MACRO(add_demo_gen name gen)
 ENDMACRO()
 
 add_demo(fire)
-#add_demo(plasma)
-#add_demo(blob)
+add_demo(plasma)
+add_demo(blob)
 #add_demo_gen(bobs data/eye.png)
