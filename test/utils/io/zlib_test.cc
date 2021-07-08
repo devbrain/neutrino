@@ -16,11 +16,11 @@ TEST_SUITE("zlib") {
     TEST_CASE("testDeflate1")
     {
         std::stringstream buffer;
-        DeflatingOutputStream deflater(buffer);
+        deflating_output_stream deflater(buffer);
         deflater << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         deflater << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         deflater.close();
-        InflatingInputStream inflater(buffer);
+        inflating_input_stream inflater(buffer);
         std::string data;
         inflater >> data;
         REQUIRE (data == "abcdefabcdefabcdefabcdefabcdefabcdef");
@@ -30,12 +30,12 @@ TEST_SUITE("zlib") {
 
     TEST_CASE("testDeflate2") {
         std::stringstream buffer;
-        DeflatingOutputStream deflater(buffer);
+        deflating_output_stream deflater(buffer);
         deflater << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         deflater << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         deflater.close();
         std::stringstream buffer2;
-        InflatingOutputStream inflater(buffer2);
+        inflating_output_stream inflater(buffer2);
         StreamCopier::copyStream(buffer, inflater);
         inflater.close();
         std::string data;
@@ -49,11 +49,11 @@ TEST_SUITE("zlib") {
         std::stringstream buffer;
         buffer << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         buffer << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
-        DeflatingInputStream deflater(buffer);
+        deflating_input_stream deflater(buffer);
         std::stringstream buffer2;
         StreamCopier::copyStream(deflater, buffer2);
         std::stringstream buffer3;
-        InflatingOutputStream inflater(buffer3);
+        inflating_output_stream inflater(buffer3);
         StreamCopier::copyStream(buffer2, inflater);
         inflater.close();
         std::string data;
@@ -66,12 +66,12 @@ TEST_SUITE("zlib") {
     {
         std::vector<char> buffer(1024);
         memory_output_stream ostr(buffer.data(), static_cast<std::streamsize>(buffer.size()));
-        DeflatingOutputStream deflater(ostr, -10, Z_BEST_SPEED);
+        deflating_output_stream deflater(ostr, -10, Z_BEST_SPEED);
         std::string data(36828, 'x');
         deflater << data;
         deflater.close();
         memory_input_stream istr(buffer.data(), ostr.chars_written());
-        InflatingInputStream inflater(istr, -10);
+        inflating_input_stream inflater(istr, -10);
         std::string data2;
         inflater >> data2;
         REQUIRE (data2 == data);
@@ -80,11 +80,11 @@ TEST_SUITE("zlib") {
     TEST_CASE("testGzip1")
     {
         std::stringstream buffer;
-        DeflatingOutputStream deflater(buffer, DeflatingStreamBuf::STREAM_GZIP);
+        deflating_output_stream deflater(buffer, deflating_stream_buf::STREAM_GZIP);
         deflater << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         deflater << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         deflater.close();
-        InflatingInputStream inflater(buffer, InflatingStreamBuf::STREAM_GZIP);
+        inflating_input_stream inflater(buffer, inflating_stream_buf::STREAM_GZIP);
         std::string data;
         inflater >> data;
         REQUIRE (data == "abcdefabcdefabcdefabcdefabcdefabcdef");
@@ -105,7 +105,7 @@ TEST_SUITE("zlib") {
 
         std::string gzstr((char*) gzdata, sizeof(gzdata));
         std::istringstream istr(gzstr);
-        InflatingInputStream inflater(istr, InflatingStreamBuf::STREAM_GZIP);
+        inflating_input_stream inflater(istr, inflating_stream_buf::STREAM_GZIP);
         std::string data;
         inflater >> data;
         REQUIRE (data == "Hello,");
@@ -117,15 +117,15 @@ TEST_SUITE("zlib") {
     TEST_CASE("testGzip3")
     {
         std::stringstream buffer;
-        DeflatingOutputStream deflater1(buffer, DeflatingStreamBuf::STREAM_GZIP);
+        deflating_output_stream deflater1(buffer, deflating_stream_buf::STREAM_GZIP);
         deflater1 << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         deflater1 << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         deflater1.close();
-        DeflatingOutputStream deflater2(buffer, DeflatingStreamBuf::STREAM_GZIP);
+        deflating_output_stream deflater2(buffer, deflating_stream_buf::STREAM_GZIP);
         deflater2 << "bcdefabcdefabcdefabcdefabcdefabcdefa" << std::endl;
         deflater2 << "bcdefabcdefabcdefabcdefabcdefabcdefa" << std::endl;
         deflater2.close();
-        InflatingInputStream inflater(buffer, InflatingStreamBuf::STREAM_GZIP);
+        inflating_input_stream inflater(buffer, inflating_stream_buf::STREAM_GZIP);
         std::string data;
         inflater >> data;
         REQUIRE (data == "abcdefabcdefabcdefabcdefabcdefabcdef");
