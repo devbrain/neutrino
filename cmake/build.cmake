@@ -48,8 +48,8 @@ function(my_add_executable EXENAME)
 				${_source}
 				)
     endforeach()
-
     add_executable(${EXENAME} ${_sources})
+	
 	target_include_directories(${EXENAME} PRIVATE ${PROJECT_INCLUDE})
 	if (PARAMS_FOLDER)
 		set_target_properties (${EXENAME} PROPERTIES FOLDER ${PARAMS_FOLDER})

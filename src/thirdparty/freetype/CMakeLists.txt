@@ -383,6 +383,7 @@ add_library(freetype
   ${BASE_SRCS}
 )
 add_library(thirdparty::freetype ALIAS freetype)
+set_target_properties(freetype PROPERTIES  FOLDER ThirdParty)
 
 set_target_properties(
   freetype PROPERTIES

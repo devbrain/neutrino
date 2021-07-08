@@ -6,6 +6,7 @@
 #define NEUTRINO_HAL_WINDOW_HH
 
 #include <tuple>
+#include <string>
 #include <optional>
 
 #include <neutrino/utils/spimpl.h>

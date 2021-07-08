@@ -188,6 +188,7 @@ if (BUILD_SHARED_LIBS)
 endif()
 
 add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+set_target_properties(zlibstatic PROPERTIES  FOLDER ThirdParty)
 add_library(thirdparty::zlib ALIAS zlibstatic)
 target_include_directories(zlibstatic PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
