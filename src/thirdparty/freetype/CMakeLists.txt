@@ -336,11 +336,25 @@ set(BASE_SRCS
 
 if (UNIX)
   list(APPEND BASE_SRCS "builds/unix/ftsystem.c")
-elseif (WIN32)
-  list(APPEND BASE_SRCS "builds/windows/ftsystem.c")
 else ()
   list(APPEND BASE_SRCS "src/base/ftsystem.c")
 endif ()
+
+if (WIN32)
+  enable_language(RC)
+  list(APPEND BASE_SRCS builds/windows/ftdebug.c
+          src/base/ftver.rc)
+elseif (WINCE)
+  list(APPEND BASE_SRCS builds/wince/ftdebug.c)
+else ()
+  list(APPEND BASE_SRCS src/base/ftdebug.c)
+endif ()
+
+if (BUILD_FRAMEWORK)
+  list(APPEND BASE_SRCS builds/mac/freetype-Info.plist)
+endif ()
+
+
 
 if (WIN32)
   enable_language(RC)
