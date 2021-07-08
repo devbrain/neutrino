@@ -7,7 +7,7 @@
 #include "ios_init.hh"
 
 namespace neutrino::utils::io {
-    DeflatingStreamBuf::DeflatingStreamBuf(std::istream& istr, StreamType type, int level):
+    deflating_stream_buf::deflating_stream_buf(std::istream& istr, StreamType type, int level):
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::in),
             _pIstr(&istr),
             _pOstr(0),
@@ -39,7 +39,7 @@ namespace neutrino::utils::io {
     }
 
 
-    DeflatingStreamBuf::DeflatingStreamBuf(std::istream& istr, int windowBits, int level):
+    deflating_stream_buf::deflating_stream_buf(std::istream& istr, int windowBits, int level):
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::in),
             _pIstr(&istr),
             _pOstr(0),
@@ -64,7 +64,7 @@ namespace neutrino::utils::io {
     }
 
 
-    DeflatingStreamBuf::DeflatingStreamBuf(std::ostream& ostr, StreamType type, int level):
+    deflating_stream_buf::deflating_stream_buf(std::ostream& ostr, StreamType type, int level):
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::out),
             _pIstr(0),
             _pOstr(&ostr),
@@ -89,7 +89,7 @@ namespace neutrino::utils::io {
     }
 
 
-    DeflatingStreamBuf::DeflatingStreamBuf(std::ostream& ostr, int windowBits, int level):
+    deflating_stream_buf::deflating_stream_buf(std::ostream& ostr, int windowBits, int level):
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::out),
             _pIstr(0),
             _pOstr(&ostr),
@@ -114,7 +114,7 @@ namespace neutrino::utils::io {
     }
 
 
-    DeflatingStreamBuf::~DeflatingStreamBuf()
+    deflating_stream_buf::~deflating_stream_buf()
     {
         try
         {
@@ -128,7 +128,7 @@ namespace neutrino::utils::io {
     }
 
 
-    int DeflatingStreamBuf::close()
+    int deflating_stream_buf::close()
     {
         buffered_stream_buf ::sync();
         _pIstr = 0;
@@ -167,7 +167,7 @@ namespace neutrino::utils::io {
     }
 
 
-    int DeflatingStreamBuf::sync()
+    int deflating_stream_buf::sync()
     {
         if (buffered_stream_buf ::sync())
             return -1;
@@ -208,7 +208,7 @@ namespace neutrino::utils::io {
     }
 
 
-    int DeflatingStreamBuf::read_from_device(char* buffer, std::streamsize length)
+    int deflating_stream_buf::read_from_device(char* buffer, std::streamsize length)
     {
         if (!_pIstr) return 0;
         if (_zstr.avail_in == 0 && !_eof)
@@ -272,7 +272,7 @@ namespace neutrino::utils::io {
     }
 
 
-    int DeflatingStreamBuf::write_to_device(const char* buffer, std::streamsize length)
+    int deflating_stream_buf::write_to_device(const char* buffer, std::streamsize length)
     {
         if (length == 0 || !_pOstr) return 0;
 
@@ -310,91 +310,91 @@ namespace neutrino::utils::io {
     }
 
 
-    DeflatingIOS::DeflatingIOS(std::ostream& ostr, DeflatingStreamBuf::StreamType type, int level):
+    deflating_ios::deflating_ios(std::ostream& ostr, deflating_stream_buf::StreamType type, int level):
             _buf(ostr, type, level)
     {
         te_ios_init(&_buf);
     }
 
 
-    DeflatingIOS::DeflatingIOS(std::ostream& ostr, int windowBits, int level):
+    deflating_ios::deflating_ios(std::ostream& ostr, int windowBits, int level):
             _buf(ostr, windowBits, level)
     {
         te_ios_init(&_buf);
     }
 
 
-    DeflatingIOS::DeflatingIOS(std::istream& istr, DeflatingStreamBuf::StreamType type, int level):
+    deflating_ios::deflating_ios(std::istream& istr, deflating_stream_buf::StreamType type, int level):
             _buf(istr, type, level)
     {
         te_ios_init(&_buf);
     }
 
 
-    DeflatingIOS::DeflatingIOS(std::istream& istr, int windowBits, int level):
+    deflating_ios::deflating_ios(std::istream& istr, int windowBits, int level):
             _buf(istr, windowBits, level)
     {
         te_ios_init(&_buf);
     }
 
 
-    DeflatingIOS::~DeflatingIOS()
+    deflating_ios::~deflating_ios()
     {
     }
 
 
-    DeflatingStreamBuf* DeflatingIOS::rdbuf()
+    deflating_stream_buf* deflating_ios::rdbuf()
     {
         return &_buf;
     }
 
 
-    DeflatingOutputStream::DeflatingOutputStream(std::ostream& ostr, DeflatingStreamBuf::StreamType type, int level):
+    deflating_output_stream::deflating_output_stream(std::ostream& ostr, deflating_stream_buf::StreamType type, int level):
             std::ostream(&_buf),
-            DeflatingIOS(ostr, type, level)
+            deflating_ios(ostr, type, level)
     {
     }
 
 
-    DeflatingOutputStream::DeflatingOutputStream(std::ostream& ostr, int windowBits, int level):
+    deflating_output_stream::deflating_output_stream(std::ostream& ostr, int windowBits, int level):
             std::ostream(&_buf),
-            DeflatingIOS(ostr, windowBits, level)
+            deflating_ios(ostr, windowBits, level)
     {
     }
 
 
-    DeflatingOutputStream::~DeflatingOutputStream()
+    deflating_output_stream::~deflating_output_stream()
     {
     }
 
 
-    int DeflatingOutputStream::close()
+    int deflating_output_stream::close()
     {
         return _buf.close();
     }
 
 
-    int DeflatingOutputStream::sync()
+    int deflating_output_stream::sync()
     {
         return _buf.pubsync();
     }
 
 
-    DeflatingInputStream::DeflatingInputStream(std::istream& istr, DeflatingStreamBuf::StreamType type, int level):
+    deflating_input_stream::deflating_input_stream(std::istream& istr, deflating_stream_buf::StreamType type, int level):
             std::istream(&_buf),
-            DeflatingIOS(istr, type, level)
+            deflating_ios(istr, type, level)
     {
     }
 
 
-    DeflatingInputStream::DeflatingInputStream(std::istream& istr, int windowBits, int level):
+    deflating_input_stream::deflating_input_stream(std::istream& istr, int windowBits, int level):
             std::istream(&_buf),
-            DeflatingIOS(istr, windowBits, level)
+            deflating_ios(istr, windowBits, level)
     {
     }
 
 
-    DeflatingInputStream::~DeflatingInputStream()
+    deflating_input_stream::~deflating_input_stream()
     {
     }
 

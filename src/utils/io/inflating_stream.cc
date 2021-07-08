@@ -7,7 +7,7 @@
 #include "ios_init.hh"
 
 namespace neutrino::utils::io {
-    InflatingStreamBuf::InflatingStreamBuf(std::istream& istr, StreamType type):
+    inflating_stream_buf::inflating_stream_buf(std::istream& istr, StreamType type):
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::in),
             _pIstr(&istr),
             _pOstr(nullptr),
@@ -40,7 +40,7 @@ namespace neutrino::utils::io {
     }
 
 
-    InflatingStreamBuf::InflatingStreamBuf(std::istream& istr, int windowBits):
+    inflating_stream_buf::inflating_stream_buf(std::istream& istr, int windowBits):
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::in),
             _pIstr(&istr),
             _pOstr(nullptr),
@@ -67,7 +67,7 @@ namespace neutrino::utils::io {
     }
 
 
-    InflatingStreamBuf::InflatingStreamBuf(std::ostream& ostr, StreamType type):
+    inflating_stream_buf::inflating_stream_buf(std::ostream& ostr, StreamType type):
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::out),
             _pIstr(nullptr),
             _pOstr(&ostr),
@@ -93,7 +93,7 @@ namespace neutrino::utils::io {
     }
 
 
-    InflatingStreamBuf::InflatingStreamBuf(std::ostream& ostr, int windowBits):
+    inflating_stream_buf::inflating_stream_buf(std::ostream& ostr, int windowBits):
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::out),
             _pIstr(nullptr),
             _pOstr(&ostr),
@@ -119,7 +119,7 @@ namespace neutrino::utils::io {
     }
 
 
-    InflatingStreamBuf::~InflatingStreamBuf()
+    inflating_stream_buf::~inflating_stream_buf()
     {
         try
         {
@@ -133,7 +133,7 @@ namespace neutrino::utils::io {
     }
 
 
-    int InflatingStreamBuf::close()
+    int inflating_stream_buf::close()
     {
         sync();
         _pIstr = nullptr;
@@ -142,7 +142,7 @@ namespace neutrino::utils::io {
     }
 
 
-    void InflatingStreamBuf::reset()
+    void inflating_stream_buf::reset()
     {
         int rc = inflateReset(&_zstr);
         if (rc == Z_OK)
@@ -156,7 +156,7 @@ namespace neutrino::utils::io {
     }
 
 
-    int InflatingStreamBuf::read_from_device(char* buffer, std::streamsize length)
+    int inflating_stream_buf::read_from_device(char* buffer, std::streamsize length)
     {
         if (_eof || !_pIstr) return 0;
 
@@ -215,7 +215,7 @@ namespace neutrino::utils::io {
     }
 
 
-    int InflatingStreamBuf::write_to_device(const char* buffer, std::streamsize length)
+    int inflating_stream_buf::write_to_device(const char* buffer, std::streamsize length)
     {
         if (length == 0 || !_pOstr) return 0;
 
@@ -261,7 +261,7 @@ namespace neutrino::utils::io {
     }
 
 
-    int InflatingStreamBuf::sync()
+    int inflating_stream_buf::sync()
     {
         int n = buffered_stream_buf::sync();
         if (!n && _pOstr) _pOstr->flush();
@@ -269,84 +269,84 @@ namespace neutrino::utils::io {
     }
 
 
-    InflatingIOS::InflatingIOS(std::ostream& ostr, InflatingStreamBuf::StreamType type):
+    inflating_ios::inflating_ios(std::ostream& ostr, inflating_stream_buf::StreamType type):
             _buf(ostr, type)
     {
         te_ios_init(&_buf);
     }
 
 
-    InflatingIOS::InflatingIOS(std::ostream& ostr, int windowBits):
+    inflating_ios::inflating_ios(std::ostream& ostr, int windowBits):
             _buf(ostr, windowBits)
     {
         te_ios_init(&_buf);
     }
 
 
-    InflatingIOS::InflatingIOS(std::istream& istr, InflatingStreamBuf::StreamType type):
+    inflating_ios::inflating_ios(std::istream& istr, inflating_stream_buf::StreamType type):
             _buf(istr, type)
     {
         te_ios_init(&_buf);
     }
 
 
-    InflatingIOS::InflatingIOS(std::istream& istr, int windowBits):
+    inflating_ios::inflating_ios(std::istream& istr, int windowBits):
             _buf(istr, windowBits)
     {
         te_ios_init(&_buf);
     }
 
 
-    InflatingIOS::~InflatingIOS() = default;
+    inflating_ios::~inflating_ios() = default;
 
 
-    InflatingStreamBuf* InflatingIOS::rdbuf()
+    inflating_stream_buf* inflating_ios::rdbuf()
     {
         return &_buf;
     }
 
 
-    InflatingOutputStream::InflatingOutputStream(std::ostream& ostr, InflatingStreamBuf::StreamType type):
+    inflating_output_stream::inflating_output_stream(std::ostream& ostr, inflating_stream_buf::StreamType type):
             std::ostream(&_buf),
-            InflatingIOS(ostr, type)
+            inflating_ios(ostr, type)
     {
     }
 
 
-    InflatingOutputStream::InflatingOutputStream(std::ostream& ostr, int windowBits):
+    inflating_output_stream::inflating_output_stream(std::ostream& ostr, int windowBits):
             std::ostream(&_buf),
-            InflatingIOS(ostr, windowBits)
+            inflating_ios(ostr, windowBits)
     {
     }
 
 
-    InflatingOutputStream::~InflatingOutputStream()  = default;
+    inflating_output_stream::~inflating_output_stream()  = default;
 
 
-    int InflatingOutputStream::close()
+    int inflating_output_stream::close()
     {
         return _buf.close();
     }
 
 
-    InflatingInputStream::InflatingInputStream(std::istream& istr, InflatingStreamBuf::StreamType type):
+    inflating_input_stream::inflating_input_stream(std::istream& istr, inflating_stream_buf::StreamType type):
             std::istream(&_buf),
-            InflatingIOS(istr, type)
+            inflating_ios(istr, type)
     {
     }
 
 
-    InflatingInputStream::InflatingInputStream(std::istream& istr, int windowBits):
+    inflating_input_stream::inflating_input_stream(std::istream& istr, int windowBits):
             std::istream(&_buf),
-            InflatingIOS(istr, windowBits)
+            inflating_ios(istr, windowBits)
     {
     }
 
 
-    InflatingInputStream::~InflatingInputStream() = default;
+    inflating_input_stream::~inflating_input_stream() = default;
 
 
-    void InflatingInputStream::reset()
+    void inflating_input_stream::reset()
     {
         _buf.reset();
         clear();
