@@ -36,4 +36,8 @@ namespace neutrino::tiled {
     std::size_t tile_sheet_manager::add(const std::filesystem::path& path) {
         return add(hal::load(path));
     }
+    // ------------------------------------------------------------------------------------------------------------
+    const tile_sheet& tile_sheet_manager::get(std::size_t idx) {
+        return m_sheets[idx];
+    }
 }

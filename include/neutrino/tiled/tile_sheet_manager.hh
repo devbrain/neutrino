@@ -21,6 +21,7 @@ namespace neutrino::tiled {
         std::size_t add(const std::filesystem::path& path, const std::vector<math::rect>& coords);
         std::size_t add(const std::filesystem::path& path);
 
+        const tile_sheet& get(std::size_t idx);
     private:
         hal::renderer&          m_renderer;
         std::vector<tile_sheet> m_sheets;

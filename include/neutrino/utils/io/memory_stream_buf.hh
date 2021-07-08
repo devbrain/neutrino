@@ -44,15 +44,15 @@ namespace neutrino::utils::io
         memory_stream_buf(char_type* pBuffer, std::streamsize bufferSize);
         explicit memory_stream_buf(std::shared_ptr<mem_block_t> mem);
         explicit memory_stream_buf(std::unique_ptr<mem_block_t>&& mem);
-        ~memory_stream_buf();
+        ~memory_stream_buf() override;
 
 
-        virtual int_type overflow(int_type /*c*/);
-        virtual int_type underflow();
-        virtual pos_type seekoff(off_type off, std::ios_base::seekdir way,
-                                 std::ios_base::openmode which = std::ios_base::in | std::ios_base::out);
-        virtual int sync();
-        std::streamsize chars_written() const;
+        int_type overflow(int_type /*c*/) override;
+        int_type underflow() override;
+        pos_type seekoff(off_type off, std::ios_base::seekdir way,
+                                 std::ios_base::openmode which = std::ios_base::in | std::ios_base::out) override;
+        int sync() override;
+        [[nodiscard]] std::streamsize chars_written() const;
 
         /// Resets the buffer so that current read and write positions
         /// will be set to the beginning of the buffer.
@@ -80,7 +80,7 @@ namespace neutrino::utils::io
         explicit memory_ios(std::unique_ptr<memory_stream_buf_t::mem_block_t>&& mem);
         /// Creates the basic stream.
 
-        ~memory_ios();
+        ~memory_ios() override;
         /// Destroys the stream.
 
         memory_stream_buf_t* rdbuf();
@@ -100,7 +100,7 @@ namespace neutrino::utils::io
 /// Creates a MemoryInputStream for the given memory area,
 /// ready for reading.
 
-        ~memory_input_stream();
+        ~memory_input_stream() override;
 /// Destroys the MemoryInputStream.
     };
 
@@ -112,10 +112,10 @@ namespace neutrino::utils::io
 /// Creates a MemoryOutputStream for the given memory area,
 /// ready for writing.
 
-        ~memory_output_stream();
+        ~memory_output_stream() override;
 /// Destroys the MemoryInputStream.
 
-        std::streamsize charsWritten() const;
+        std::streamsize chars_written() const;
 /// Returns the number of chars written to the buffer.
     };
 
@@ -155,9 +155,7 @@ namespace neutrino::utils::io
     }
     // -----------------------------------------------------------------------------------------
     template<typename ch, typename tr>
-    memory_stream_buf<ch, tr>::~memory_stream_buf()
-    {
-    }
+    memory_stream_buf<ch, tr>::~memory_stream_buf() = default;
     // -----------------------------------------------------------------------------------------
     template<typename ch, typename tr>
     typename memory_stream_buf<ch, tr>::int_type memory_stream_buf<ch, tr>::overflow(int_type /*c*/)
@@ -283,10 +281,10 @@ namespace neutrino::utils::io
         return &m_buf;
     }
     // ======================================================================================
-    inline std::streamsize memory_output_stream::charsWritten() const
+    inline std::streamsize memory_output_stream::chars_written() const
     {
         return m_buf.chars_written();
     }
 }
 
-#endif //NEUTRINO_UTILS_MEMORY_STREAM_BUF_HH
+#endif

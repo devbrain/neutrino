@@ -13,6 +13,7 @@ my_add_executable(unittest
         utils/io/base_64_test.cc
         utils/io/binary_reader_writer.cc
         utils/io/memory_stream.cc
+        utils/io/zlib_test.cc
 
 
 

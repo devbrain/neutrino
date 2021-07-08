@@ -99,12 +99,12 @@ namespace neutrino::utils::io
         }
 
     protected:
-        void setMode(openmode mode)
+        void mode(openmode mode)
         {
             _mode = mode;
         }
 
-        openmode getMode() const
+        openmode mode() const
         {
             return _mode;
         }
@@ -135,6 +135,8 @@ namespace neutrino::utils::io
         char_type*      _pBuffer;
         openmode        _mode;
     };
+
+    using buffered_stream_buf = basic_buffered_stream_buf<char, std::char_traits<char>>;
 }
 
 #endif

@@ -41,6 +41,15 @@ my_add_library_static(utils
 		io/ios_init.hh
 		io/memory_stream_buf.cc
 		${PROJECT_INCLUDE}/neutrino/utils/io/memory_stream_buf.hh
+		${PROJECT_INCLUDE}/neutrino/utils/io/buffered_stream_buf.hh
+		${PROJECT_INCLUDE}/neutrino/utils/io/buffered_bidi_stream_buf.hh
+		${PROJECT_INCLUDE}/neutrino/utils/io/unbuffered_stream_buf.hh
+		${PROJECT_INCLUDE}/neutrino/utils/io/deflating_stream.hh
+		io/deflating_stream.cc
+		${PROJECT_INCLUDE}/neutrino/utils/io/inflating_stream.hh
+		io/inflating_stream.cc
+		${PROJECT_INCLUDE}/neutrino/utils/io/stream_copier.hh
+		io/stream_copier.cc
 
 		ascii.cc
 		${PROJECT_INCLUDE}/neutrino/utils/ascii.hh
@@ -65,5 +74,6 @@ my_add_library_static(utils
 		observer.cc
 		DEPENDS_PUBLIC
 			thirdparty::sdl2
+			thirdparty::zlib
 )
 	
