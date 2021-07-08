@@ -36,7 +36,7 @@ TEST_SUITE("zlib") {
         deflater.close();
         std::stringstream buffer2;
         inflating_output_stream inflater(buffer2);
-        StreamCopier::copyStream(buffer, inflater);
+        stream_copier::copy_stream(buffer, inflater);
         inflater.close();
         std::string data;
         buffer2 >> data;
@@ -51,10 +51,10 @@ TEST_SUITE("zlib") {
         buffer << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
         deflating_input_stream deflater(buffer);
         std::stringstream buffer2;
-        StreamCopier::copyStream(deflater, buffer2);
+        stream_copier::copy_stream(deflater, buffer2);
         std::stringstream buffer3;
         inflating_output_stream inflater(buffer3);
-        StreamCopier::copyStream(buffer2, inflater);
+        stream_copier::copy_stream(buffer2, inflater);
         inflater.close();
         std::string data;
         buffer3 >> data;
@@ -66,7 +66,7 @@ TEST_SUITE("zlib") {
     {
         std::vector<char> buffer(1024);
         memory_output_stream ostr(buffer.data(), static_cast<std::streamsize>(buffer.size()));
-        deflating_output_stream deflater(ostr, -10, Z_BEST_SPEED);
+        deflating_output_stream deflater(ostr, -10, ZLIB_BEST_SPEED);
         std::string data(36828, 'x');
         deflater << data;
         deflater.close();

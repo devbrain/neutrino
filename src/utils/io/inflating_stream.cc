@@ -2,122 +2,154 @@
 // Created by igor on 08/07/2021.
 //
 
+#include <vector>
 #include <neutrino/utils/io/inflating_stream.hh>
 #include <neutrino/utils/exception.hh>
+#include <thirdparty/zlib/zlib.h>
 #include "ios_init.hh"
 
-namespace neutrino::utils::io {
-    inflating_stream_buf::inflating_stream_buf(std::istream& istr, StreamType type):
+namespace neutrino::utils::io
+{
+
+    static constexpr auto STREAM_BUFFER_SIZE = 1024;
+    static constexpr auto INFLATE_BUFFER_SIZE = 32768;
+
+    struct inflating_stream_buf::impl
+    {
+
+        impl(std::istream& istr, type_t type)
+                : m_istr(&istr),
+                  m_ostr(nullptr),
+                  m_eof(false),
+                  m_check(type != STREAM_ZIP),
+                  m_buffer(INFLATE_BUFFER_SIZE)
+        {
+            m_zstream.next_in = nullptr;
+            m_zstream.avail_in = 0;
+            m_zstream.total_in = 0;
+            m_zstream.next_out = nullptr;
+            m_zstream.avail_out = 0;
+            m_zstream.total_out = 0;
+            m_zstream.msg = nullptr;
+            m_zstream.state = nullptr;
+            m_zstream.zalloc = Z_NULL;
+            m_zstream.zfree = Z_NULL;
+            m_zstream.opaque = Z_NULL;
+            m_zstream.data_type = 0;
+            m_zstream.adler = 0;
+            m_zstream.reserved = 0;
+
+            int rc = inflateInit2(&m_zstream, 15 + (type == STREAM_GZIP ? 16 : 0));
+            if (rc != Z_OK)
+            {
+                RAISE_EX(zError(rc));
+            }
+        }
+
+        impl(std::istream& istr, int windowBits)
+                : m_istr(&istr),
+                  m_ostr(nullptr),
+                  m_eof(false),
+                  m_check(false),
+                  m_buffer(INFLATE_BUFFER_SIZE)
+        {
+            m_zstream.zalloc = Z_NULL;
+            m_zstream.zfree = Z_NULL;
+            m_zstream.opaque = Z_NULL;
+            m_zstream.next_in = nullptr;
+            m_zstream.avail_in = 0;
+            m_zstream.next_out = nullptr;
+            m_zstream.avail_out = 0;
+
+            int rc = inflateInit2(&m_zstream, windowBits);
+            if (rc != Z_OK)
+            {
+                RAISE_EX(zError(rc));
+            }
+        }
+
+        impl(std::ostream& ostr, type_t type)
+                : m_istr(nullptr),
+                  m_ostr(&ostr),
+                  m_eof(false),
+                  m_check(type != STREAM_ZIP),
+                  m_buffer(INFLATE_BUFFER_SIZE)
+        {
+            m_zstream.zalloc = Z_NULL;
+            m_zstream.zfree = Z_NULL;
+            m_zstream.opaque = Z_NULL;
+            m_zstream.next_in = nullptr;
+            m_zstream.avail_in = 0;
+            m_zstream.next_out = nullptr;
+            m_zstream.avail_out = 0;
+
+            int rc = inflateInit2(&m_zstream, 15 + (type == STREAM_GZIP ? 16 : 0));
+            if (rc != Z_OK)
+            {
+                RAISE_EX(zError(rc));
+            }
+        }
+
+        impl(std::ostream& ostr, int windowBits)
+                : m_istr(nullptr),
+                  m_ostr(&ostr),
+                  m_eof(false),
+                  m_check(false),
+                  m_buffer(INFLATE_BUFFER_SIZE)
+        {
+            m_zstream.zalloc = Z_NULL;
+            m_zstream.zfree = Z_NULL;
+            m_zstream.opaque = Z_NULL;
+            m_zstream.next_in = nullptr;
+            m_zstream.avail_in = 0;
+            m_zstream.next_out = nullptr;
+            m_zstream.avail_out = 0;
+
+            int rc = inflateInit2(&m_zstream, windowBits);
+            if (rc != Z_OK)
+            {
+                RAISE_EX(zError(rc));
+            }
+        }
+
+        std::istream* m_istr;
+        std::ostream* m_ostr;
+
+        z_stream m_zstream{};
+        bool m_eof;
+        bool m_check;
+        std::vector<char> m_buffer;
+    };
+
+    inflating_stream_buf::inflating_stream_buf(std::istream& istr, type_t type)
+            :
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::in),
-            _pIstr(&istr),
-            _pOstr(nullptr),
-            _eof(false),
-            _check(type != STREAM_ZIP)
+            m_pimpl(spimpl::make_unique_impl<inflating_stream_buf::impl>(istr, type))
     {
-        _zstr.next_in   = nullptr;
-        _zstr.avail_in  = 0;
-        _zstr.total_in  = 0;
-        _zstr.next_out  = nullptr;
-        _zstr.avail_out = 0;
-        _zstr.total_out = 0;
-        _zstr.msg       = nullptr;
-        _zstr.state     = nullptr;
-        _zstr.zalloc    = Z_NULL;
-        _zstr.zfree     = Z_NULL;
-        _zstr.opaque    = Z_NULL;
-        _zstr.data_type = 0;
-        _zstr.adler     = 0;
-        _zstr.reserved  = 0;
 
-        _buffer = new char[INFLATE_BUFFER_SIZE];
-
-        int rc = inflateInit2(&_zstr, 15 + (type == STREAM_GZIP ? 16 : 0));
-        if (rc != Z_OK)
-        {
-            delete [] _buffer;
-            RAISE_EX(zError(rc));
-        }
     }
 
-
-    inflating_stream_buf::inflating_stream_buf(std::istream& istr, int windowBits):
+    inflating_stream_buf::inflating_stream_buf(std::istream& istr, int windowBits)
+            :
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::in),
-            _pIstr(&istr),
-            _pOstr(nullptr),
-            _eof(false),
-            _check(false)
+            m_pimpl(spimpl::make_unique_impl<inflating_stream_buf::impl>(istr, windowBits))
     {
-        _zstr.zalloc    = Z_NULL;
-        _zstr.zfree     = Z_NULL;
-        _zstr.opaque    = Z_NULL;
-        _zstr.next_in   = nullptr;
-        _zstr.avail_in  = 0;
-        _zstr.next_out  = nullptr;
-        _zstr.avail_out = 0;
-
-        _buffer = new char[INFLATE_BUFFER_SIZE];
-
-        int rc = inflateInit2(&_zstr, windowBits);
-        if (rc != Z_OK)
-        {
-            delete [] _buffer;
-
-            RAISE_EX(zError(rc));
-        }
     }
 
-
-    inflating_stream_buf::inflating_stream_buf(std::ostream& ostr, StreamType type):
+    inflating_stream_buf::inflating_stream_buf(std::ostream& ostr, type_t type)
+            :
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::out),
-            _pIstr(nullptr),
-            _pOstr(&ostr),
-            _eof(false),
-            _check(type != STREAM_ZIP)
+            m_pimpl(spimpl::make_unique_impl<inflating_stream_buf::impl>(ostr, type))
     {
-        _zstr.zalloc    = Z_NULL;
-        _zstr.zfree     = Z_NULL;
-        _zstr.opaque    = Z_NULL;
-        _zstr.next_in   = nullptr;
-        _zstr.avail_in  = 0;
-        _zstr.next_out  = nullptr;
-        _zstr.avail_out = 0;
-
-        _buffer = new char[INFLATE_BUFFER_SIZE];
-
-        int rc = inflateInit2(&_zstr, 15 + (type == STREAM_GZIP ? 16 : 0));
-        if (rc != Z_OK)
-        {
-            delete [] _buffer;
-            RAISE_EX(zError(rc));
-        }
     }
 
-
-    inflating_stream_buf::inflating_stream_buf(std::ostream& ostr, int windowBits):
+    inflating_stream_buf::inflating_stream_buf(std::ostream& ostr, int windowBits)
+            :
             buffered_stream_buf(STREAM_BUFFER_SIZE, std::ios::out),
-            _pIstr(nullptr),
-            _pOstr(&ostr),
-            _eof(false),
-            _check(false)
+            m_pimpl(spimpl::make_unique_impl<inflating_stream_buf::impl>(ostr, windowBits))
     {
-        _zstr.zalloc    = Z_NULL;
-        _zstr.zfree     = Z_NULL;
-        _zstr.opaque    = Z_NULL;
-        _zstr.next_in   = nullptr;
-        _zstr.avail_in  = 0;
-        _zstr.next_out  = nullptr;
-        _zstr.avail_out = 0;
 
-        _buffer = new char[INFLATE_BUFFER_SIZE];
-
-        int rc = inflateInit2(&_zstr, windowBits);
-        if (rc != Z_OK)
-        {
-            delete [] _buffer;
-            RAISE_EX(zError(rc));
-        }
     }
-
 
     inflating_stream_buf::~inflating_stream_buf()
     {
@@ -128,223 +160,223 @@ namespace neutrino::utils::io {
         catch (...)
         {
         }
-        delete [] _buffer;
-        inflateEnd(&_zstr);
+        inflateEnd(&m_pimpl->m_zstream);
     }
-
 
     int inflating_stream_buf::close()
     {
         sync();
-        _pIstr = nullptr;
-        _pOstr = nullptr;
+        m_pimpl->m_istr = nullptr;
+        m_pimpl->m_ostr = nullptr;
         return 0;
     }
 
-
     void inflating_stream_buf::reset()
     {
-        int rc = inflateReset(&_zstr);
+        int rc = inflateReset(&m_pimpl->m_zstream);
         if (rc == Z_OK)
         {
-            _eof = false;
-        }
-        else
+            m_pimpl->m_eof = false;
+        } else
         {
             RAISE_EX(zError(rc));
         }
     }
 
-
     int inflating_stream_buf::read_from_device(char* buffer, std::streamsize length)
     {
-        if (_eof || !_pIstr) return 0;
+        if (m_pimpl->m_eof || !m_pimpl->m_istr)
+        { return 0; }
 
-        if (_zstr.avail_in == 0)
+        if (m_pimpl->m_zstream.avail_in == 0)
         {
             int n = 0;
-            if (_pIstr->good())
+            if (m_pimpl->m_istr->good())
             {
-                _pIstr->read(_buffer, INFLATE_BUFFER_SIZE);
-                n = static_cast<int>(_pIstr->gcount());
+                m_pimpl->m_istr->read(m_pimpl->m_buffer.data(), INFLATE_BUFFER_SIZE);
+                n = static_cast<int>(m_pimpl->m_istr->gcount());
             }
-            _zstr.next_in   = (unsigned char*) _buffer;
-            _zstr.avail_in  = n;
+            m_pimpl->m_zstream.next_in = (unsigned char*) m_pimpl->m_buffer.data();
+            m_pimpl->m_zstream.avail_in = n;
         }
-        _zstr.next_out  = (unsigned char*) buffer;
-        _zstr.avail_out = static_cast<unsigned>(length);
+        m_pimpl->m_zstream.next_out = (unsigned char*) buffer;
+        m_pimpl->m_zstream.avail_out = static_cast<unsigned>(length);
         for (;;)
         {
-            int rc = inflate(&_zstr, Z_NO_FLUSH);
-            if (rc == Z_DATA_ERROR && !_check)
+            int rc = inflate(&m_pimpl->m_zstream, Z_NO_FLUSH);
+            if (rc == Z_DATA_ERROR && !m_pimpl->m_check)
             {
-                if (_zstr.avail_in == 0)
+                if (m_pimpl->m_zstream.avail_in == 0)
                 {
-                    if (_pIstr->good())
+                    if (m_pimpl->m_istr->good())
+                    {
                         rc = Z_OK;
-                    else
+                    } else
+                    {
                         rc = Z_STREAM_END;
+                    }
                 }
             }
             if (rc == Z_STREAM_END)
             {
-                _eof = true;
-                return static_cast<int>(length) - _zstr.avail_out;
+                m_pimpl->m_eof = true;
+                return static_cast<int>(length) - m_pimpl->m_zstream.avail_out;
             }
-            if (rc != Z_OK) {
+            if (rc != Z_OK)
+            {
                 RAISE_EX(zError(rc));
             }
-            if (_zstr.avail_out == 0)
+            if (m_pimpl->m_zstream.avail_out == 0)
+            {
                 return static_cast<int>(length);
-            if (_zstr.avail_in == 0)
+            }
+            if (m_pimpl->m_zstream.avail_in == 0)
             {
                 int n = 0;
-                if (_pIstr->good())
+                if (m_pimpl->m_istr->good())
                 {
-                    _pIstr->read(_buffer, INFLATE_BUFFER_SIZE);
-                    n = static_cast<int>(_pIstr->gcount());
+                    m_pimpl->m_istr->read(m_pimpl->m_buffer.data(), INFLATE_BUFFER_SIZE);
+                    n = static_cast<int>(m_pimpl->m_istr->gcount());
                 }
                 if (n > 0)
                 {
-                    _zstr.next_in  = (unsigned char*) _buffer;
-                    _zstr.avail_in = n;
-                }
-                else return static_cast<int>(length) - _zstr.avail_out;
+                    m_pimpl->m_zstream.next_in = (unsigned char*) m_pimpl->m_buffer.data();
+                    m_pimpl->m_zstream.avail_in = n;
+                } else
+                { return static_cast<int>(length) - m_pimpl->m_zstream.avail_out; }
             }
         }
     }
 
-
     int inflating_stream_buf::write_to_device(const char* buffer, std::streamsize length)
     {
-        if (length == 0 || !_pOstr) return 0;
+        if (length == 0 || !m_pimpl->m_ostr)
+        { return 0; }
 
-        _zstr.next_in   = (unsigned char*) buffer;
-        _zstr.avail_in  = static_cast<unsigned>(length);
-        _zstr.next_out  = (unsigned char*) _buffer;
-        _zstr.avail_out = INFLATE_BUFFER_SIZE;
+        m_pimpl->m_zstream.next_in = (unsigned char*) buffer;
+        m_pimpl->m_zstream.avail_in = static_cast<unsigned>(length);
+        m_pimpl->m_zstream.next_out = (unsigned char*) m_pimpl->m_buffer.data();
+        m_pimpl->m_zstream.avail_out = INFLATE_BUFFER_SIZE;
         for (;;)
         {
-            int rc = inflate(&_zstr, Z_NO_FLUSH);
+            int rc = inflate(&m_pimpl->m_zstream, Z_NO_FLUSH);
             if (rc == Z_STREAM_END)
             {
-                _pOstr->write(_buffer, INFLATE_BUFFER_SIZE - _zstr.avail_out);
-                if (!_pOstr->good()) {
+                m_pimpl->m_ostr->write(m_pimpl->m_buffer.data(), INFLATE_BUFFER_SIZE - m_pimpl->m_zstream.avail_out);
+                if (!m_pimpl->m_ostr->good())
+                {
                     RAISE_EX("Failed writing inflated data to output stream");
                 }
                 break;
             }
-            if (rc != Z_OK) {
+            if (rc != Z_OK)
+            {
                 RAISE_EX(zError(rc));
             }
-            if (_zstr.avail_out == 0)
+            if (m_pimpl->m_zstream.avail_out == 0)
             {
-                _pOstr->write(_buffer, INFLATE_BUFFER_SIZE);
-                if (!_pOstr->good()) {
+                m_pimpl->m_ostr->write(m_pimpl->m_buffer.data(), INFLATE_BUFFER_SIZE);
+                if (!m_pimpl->m_ostr->good())
+                {
                     RAISE_EX("Failed writing inflated data to output stream");
                 }
-                _zstr.next_out  = (unsigned char*) _buffer;
-                _zstr.avail_out = INFLATE_BUFFER_SIZE;
+                m_pimpl->m_zstream.next_out = (unsigned char*) m_pimpl->m_buffer.data();
+                m_pimpl->m_zstream.avail_out = INFLATE_BUFFER_SIZE;
             }
-            if (_zstr.avail_in == 0)
+            if (m_pimpl->m_zstream.avail_in == 0)
             {
-                _pOstr->write(_buffer, INFLATE_BUFFER_SIZE - _zstr.avail_out);
-                if (!_pOstr->good()) {
+                m_pimpl->m_ostr->write(m_pimpl->m_buffer.data(), INFLATE_BUFFER_SIZE - m_pimpl->m_zstream.avail_out);
+                if (!m_pimpl->m_ostr->good())
+                {
                     RAISE_EX("Failed writing inflated data to output stream");
                 }
-                _zstr.next_out  = (unsigned char*) _buffer;
-                _zstr.avail_out = INFLATE_BUFFER_SIZE;
+                m_pimpl->m_zstream.next_out = (unsigned char*) m_pimpl->m_buffer.data();
+                m_pimpl->m_zstream.avail_out = INFLATE_BUFFER_SIZE;
                 break;
             }
         }
         return static_cast<int>(length);
     }
 
-
     int inflating_stream_buf::sync()
     {
         int n = buffered_stream_buf::sync();
-        if (!n && _pOstr) _pOstr->flush();
+        if (!n && m_pimpl->m_ostr)
+        { m_pimpl->m_ostr->flush(); }
         return n;
     }
 
-
-    inflating_ios::inflating_ios(std::ostream& ostr, inflating_stream_buf::StreamType type):
+    inflating_ios::inflating_ios(std::ostream& ostr, inflating_stream_buf::type_t type)
+            :
             _buf(ostr, type)
     {
         te_ios_init(&_buf);
     }
 
-
-    inflating_ios::inflating_ios(std::ostream& ostr, int windowBits):
+    inflating_ios::inflating_ios(std::ostream& ostr, int windowBits)
+            :
             _buf(ostr, windowBits)
     {
         te_ios_init(&_buf);
     }
 
-
-    inflating_ios::inflating_ios(std::istream& istr, inflating_stream_buf::StreamType type):
+    inflating_ios::inflating_ios(std::istream& istr, inflating_stream_buf::type_t type)
+            :
             _buf(istr, type)
     {
         te_ios_init(&_buf);
     }
 
-
-    inflating_ios::inflating_ios(std::istream& istr, int windowBits):
+    inflating_ios::inflating_ios(std::istream& istr, int windowBits)
+            :
             _buf(istr, windowBits)
     {
         te_ios_init(&_buf);
     }
 
-
     inflating_ios::~inflating_ios() = default;
-
 
     inflating_stream_buf* inflating_ios::rdbuf()
     {
         return &_buf;
     }
 
-
-    inflating_output_stream::inflating_output_stream(std::ostream& ostr, inflating_stream_buf::StreamType type):
+    inflating_output_stream::inflating_output_stream(std::ostream& ostr, inflating_stream_buf::type_t type)
+            :
             std::ostream(&_buf),
             inflating_ios(ostr, type)
     {
     }
 
-
-    inflating_output_stream::inflating_output_stream(std::ostream& ostr, int windowBits):
+    inflating_output_stream::inflating_output_stream(std::ostream& ostr, int windowBits)
+            :
             std::ostream(&_buf),
             inflating_ios(ostr, windowBits)
     {
     }
 
-
-    inflating_output_stream::~inflating_output_stream()  = default;
-
+    inflating_output_stream::~inflating_output_stream() = default;
 
     int inflating_output_stream::close()
     {
         return _buf.close();
     }
 
-
-    inflating_input_stream::inflating_input_stream(std::istream& istr, inflating_stream_buf::StreamType type):
+    inflating_input_stream::inflating_input_stream(std::istream& istr, inflating_stream_buf::type_t type)
+            :
             std::istream(&_buf),
             inflating_ios(istr, type)
     {
     }
 
-
-    inflating_input_stream::inflating_input_stream(std::istream& istr, int windowBits):
+    inflating_input_stream::inflating_input_stream(std::istream& istr, int windowBits)
+            :
             std::istream(&_buf),
             inflating_ios(istr, windowBits)
     {
     }
 
-
     inflating_input_stream::~inflating_input_stream() = default;
-
 
     void inflating_input_stream::reset()
     {
