@@ -184,6 +184,7 @@ set(BZ2_SOURCES
 
 # The bz2 OBJECT-library, required for bzip2, bzip2recover.
 add_library(bz2_ObjLib OBJECT)
+set_target_properties(bz2_ObjLib PROPERTIES  FOLDER ThirdParty)
 target_sources(bz2_ObjLib
     PRIVATE   ${BZ2_SOURCES}
     PUBLIC    ${CMAKE_CURRENT_SOURCE_DIR}/bzlib_private.h
@@ -217,7 +218,8 @@ endif()
 
 if(ENABLE_STATIC_LIB)
     # The libbz2 static library.
-    add_library(bz2_static STATIC)
+    add_library(bz2_static STATIC  )
+    set_target_properties(bz2_static PROPERTIES  FOLDER ThirdParty)
     add_library(BZIP2::bz2 ALIAS bz2_static)
     target_include_directories(bz2_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

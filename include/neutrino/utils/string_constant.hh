@@ -84,7 +84,7 @@ namespace neutrino::utils
         template<std::size_t... Indexes>
         constexpr
         explicit string_constant(const string_constant<N>& rhs,
-                                 [[maybe_unused]] std::index_sequence<Indexes...> dummy = string_constant::g_indexes)
+                                 [[maybe_unused]] std::index_sequence<Indexes...> dummy = string_constant<sizeof...(Indexes)>::g_indexes)
                 : m_value{rhs[Indexes]..., '\0'}
         {
         }

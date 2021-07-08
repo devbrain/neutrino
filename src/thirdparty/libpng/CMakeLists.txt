@@ -268,6 +268,8 @@ if(NOT AWK OR ANDROID OR IOS)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/pnglibconf.h.prebuilt
                  ${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h)
   add_custom_target(genfiles) # Dummy
+  set_target_properties(genfiles PROPERTIES FOLDER ThirdParty)
+  
 else()
   # Generate .chk from .out with awk:
   # generate_chk(INPUT inputfile OUTPUT outputfile [DEPENDS dep1 [dep2...]])
@@ -524,6 +526,7 @@ if(PNG_STATIC)
   # does not work without changing name
   set(PNG_LIB_NAME_STATIC png_static)
   add_library(png_static STATIC ${libpng_sources})
+  set_target_properties(png_static PROPERTIES FOLDER ThirdParty)
   add_dependencies(png_static genfiles)
   # MSVC doesn't use a different file extension for shared vs. static
   # libs. We are able to change OUTPUT_NAME to remove the _static

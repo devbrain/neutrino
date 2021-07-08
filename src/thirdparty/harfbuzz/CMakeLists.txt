@@ -415,6 +415,7 @@ endif ()
 
 ## Define harfbuzz library
 add_library(harfbuzz ${project_sources} ${project_extra_sources} ${project_headers})
+set_target_properties(harfbuzz PROPERTIES  FOLDER ThirdParty)
 add_library(thirdparty::harfbuzz ALIAS harfbuzz)
 target_link_libraries(harfbuzz ${THIRD_PARTY_LIBS})
 target_include_directories(harfbuzz PUBLIC
@@ -436,6 +437,7 @@ endif ()
 ## Define harfbuzz-subset library
 if (HB_BUILD_SUBSET)
   add_library(harfbuzz-subset ${subset_project_sources} ${subset_project_headers})
+  set_target_properties(harfbuzz-subset PROPERTIES FOLDER ThirdParty)
   add_library(thirdparty::harfbuzz-subset ALIAS harfbuzz-subset)
   add_dependencies(harfbuzz-subset harfbuzz)
   target_link_libraries(harfbuzz-subset harfbuzz ${THIRD_PARTY_LIBS})
