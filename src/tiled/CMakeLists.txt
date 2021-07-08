@@ -13,6 +13,15 @@ my_add_library_static(tiled
         ${PROJECT_INCLUDE}/neutrino/tiled/world.hh
         world.cc
 
+        ${PROJECT_INCLUDE}/neutrino/tiled/world_renderer.hh
+        world_renderer.cc
+
+        ${PROJECT_INCLUDE}/neutrino/tiled/camera.hh
+        camera.cc
+
+        ${PROJECT_INCLUDE}/neutrino/tiled/tmx.hh
+        tmx.cc
+
         DEPENDS_PUBLIC
             neutrino::engine
         )

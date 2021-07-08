@@ -3,6 +3,7 @@
 //
 
 #include <neutrino/tiled/world.hh>
+#include <neutrino/utils/override.hh>
 
 namespace neutrino::tiled {
     std::size_t world::add(tiles_layer world_layer) {
@@ -54,8 +55,40 @@ namespace neutrino::tiled {
         m_bound_sprites[bound_sprite_id].current = current_frame;
     }
     // -----------------------------------------------------------------------------------------
-    std::tuple<std::size_t, bool> world::sprite_state(std::size_t bound_sprite_id) const
+    std::tuple<std::size_t, std::size_t, bool> world::sprite_state(std::size_t bound_sprite_id) const
     {
-        return {m_bound_sprites[bound_sprite_id].current, m_bound_sprites[bound_sprite_id].active};
+        return {m_bound_sprites[bound_sprite_id].current,
+                m_sprites[m_bound_sprites[bound_sprite_id].sprite_id].frames.size(),
+                m_bound_sprites[bound_sprite_id].active};
+    }
+    // -----------------------------------------------------------------------------------------
+    math::dimension_t world::dims_in_pixels(std::size_t layer_id) const {
+        const auto& layer = m_layers[layer_id];
+        math::dimension_t ret;
+        std::visit(neutrino::utils::overload(
+                [&ret] (const auto& tl) {
+                    ret = {tl.w*tl.tile_width, tl.h*tl.tile_height};
+                }), layer);
+        return ret;
+    }
+    // -----------------------------------------------------------------------------------------
+    math::dimension_t world::dims_in_tiles(std::size_t layer_id) const {
+        const auto& layer = m_layers[layer_id];
+        math::dimension_t ret;
+        std::visit(neutrino::utils::overload(
+                [&ret] (const auto& tl) {
+                    ret = {tl.w, tl.h};
+                }), layer);
+        return ret;
+    }
+    // -----------------------------------------------------------------------------------------
+    math::dimension_t world::tile_dims(std::size_t layer_id) const {
+        const auto& layer = m_layers[layer_id];
+        math::dimension_t ret;
+        std::visit(neutrino::utils::overload(
+                [&ret] (const auto & tl) {
+                    ret = {tl.tile_width, tl.tile_height};
+                }), layer);
+        return ret;
     }
 }

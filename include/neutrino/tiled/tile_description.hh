@@ -24,19 +24,28 @@ namespace neutrino::tiled {
         double rotate_radians;
     };
 
+    struct empty_tile {};
+
+    using tile_t = std::variant<empty_tile, tile_description>;
+
     struct sprite {
         std::vector<tile_description> frames;
     };
 
+    // all tiles in the layer should be of the same dimension
     struct tiles_layer {
-        int w;
-        int h;
-        std::vector<tile_description> tiles;
+        int w; // width in tiles
+        int h; // height in tiles
+        int tile_width;
+        int tile_height;
+        std::vector<tile_t> tiles;
     };
 
     struct image_layer {
         int w;
         int h;
+        int tile_width;
+        int tile_height;
         tile_description image;
     };
 

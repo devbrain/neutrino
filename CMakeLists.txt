@@ -11,7 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ===========================================================
 project(neutrino)
 # ===========================================================
-option(NEUTRINO_BUILD_TEST "Build Neutrino tests" OFF)
+option(NEUTRINO_BUILD_TEST "Build Neutrino tests" ON)
 # ===========================================================
 include(GenerateExportHeader)
 include(build)

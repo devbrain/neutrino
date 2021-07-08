@@ -55,7 +55,7 @@ TEST_SUITE ("memory stream")
         char output[64];
         memory_output_stream ostr1(output, 64);
         ostr1 << "This is a test " << 42 << std::ends;
-        REQUIRE (ostr1.charsWritten() == 18);
+        REQUIRE (ostr1.chars_written() == 18);
         REQUIRE (std::string("This is a test 42") == output);
 
         char output2[4];

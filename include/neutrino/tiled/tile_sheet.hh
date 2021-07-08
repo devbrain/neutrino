@@ -7,6 +7,7 @@
 
 #include <neutrino/math/rect.hh>
 #include <neutrino/utils/spimpl.h>
+#include <neutrino/tiled/tile_description.hh>
 #include <vector>
 
 namespace neutrino
@@ -14,7 +15,6 @@ namespace neutrino
     namespace hal
     {
         class renderer;
-
         class surface;
     }
 
@@ -38,6 +38,9 @@ namespace neutrino
             [[nodiscard]] bool is_image() const noexcept;
             [[nodiscard]] std::size_t size() const noexcept;
             [[nodiscard]] math::dimension_t dimension(std::size_t idx) const;
+
+            void draw(hal::renderer& renderer, const tile_description& descr, const math::rect& srcrect, const math::rect& dstrect) const;
+
         private:
             spimpl::unique_impl_ptr<detail::tile_sheet_impl> m_pimpl;
         };
