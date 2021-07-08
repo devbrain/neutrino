@@ -56,6 +56,8 @@ my_add_library_static(hal
         video/thirdparty/stb_image.c
         video/thirdparty/SDL_lbm.h
         video/thirdparty/SDL_pcx.h
+        video/thirdparty/SDL_ttf.h
+        video/thirdparty/SDL_ttf.c
         video/stb_image_loader.cc
         ios_rwops.hh
 
@@ -64,6 +66,8 @@ my_add_library_static(hal
         video/thirdparty/gfx/SDL2_gfxPrimitives_font.h
         video/thirdparty/gfx/SDL2_rotozoom.c
         video/thirdparty/gfx/SDL2_rotozoom.h
+
+
 
         video/texture.cc
         video/texture_impl.hh
@@ -97,6 +101,7 @@ my_add_library_static(hal
             neutrino::math
             thirdparty::glm
             thirdparty::bitflags
+            thirdparty::freetype
             thirdparty::sdl2
             ${VULKAN_LIBS}
         )
