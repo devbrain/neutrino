@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <neutrino/utils/macros.hh>
 
 namespace neutrino
 {
@@ -59,6 +60,13 @@ namespace neutrino
         }
         return os.str();
     }
+
+
+    template <typename ... Args>
+    inline
+    void raise_exception [[noreturn]] (const char* function, const char* source, int line, Args&&... args) {
+        throw exception(function, source, line, std::forward<Args>(args)...);
+    }
 }
 
 #if defined(_MSC_VER)
@@ -66,5 +74,6 @@ namespace neutrino
 #endif
 
 
-#define RAISE_EX(...) throw ::neutrino::exception{__PRETTY_FUNCTION__, __FILE__, __LINE__,  ##__VA_ARGS__}
-#endif //SDLPP_EXCEPTION_HH
+#define RAISE_EX(...) ::neutrino::raise_exception(__PRETTY_FUNCTION__, __FILE__, __LINE__,  ##__VA_ARGS__)
+#define ENFORCE(expr) while (!(expr)) {::neutrino::raise_exception(__PRETTY_FUNCTION__, __FILE__, __LINE__, "Assertion failed: " STRINGIZE(expr));}
+#endif
