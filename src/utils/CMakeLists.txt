@@ -51,11 +51,30 @@ my_add_library_static(utils
 		${PROJECT_INCLUDE}/neutrino/utils/io/stream_copier.hh
 		io/stream_copier.cc
 
-		ascii.cc
-		${PROJECT_INCLUDE}/neutrino/utils/ascii.hh
+		strings/ascii.cc
+		${PROJECT_INCLUDE}/neutrino/utils/strings/ascii.hh
 
-		string_tokenizer.cc
-		${PROJECT_INCLUDE}/neutrino/utils/string_tokenizer.hh
+        strings/number_parser.cc
+		${PROJECT_INCLUDE}/neutrino/utils/strings/number_parser.hh
+
+        strings/number_formatter.cc
+		${PROJECT_INCLUDE}/neutrino/utils/strings/number_formatter.hh
+
+        strings/numeric_string.cc
+		${PROJECT_INCLUDE}/neutrino/utils/strings/numeric_string.hh
+
+		strings/string_tokenizer.cc
+		${PROJECT_INCLUDE}/neutrino/utils/strings/string_tokenizer.hh
+
+		${PROJECT_INCLUDE}/neutrino/utils/strings/string_constant.hh
+		${PROJECT_INCLUDE}/neutrino/utils/strings/string_utils.hh
+
+		fpe/fpe.cc
+		${PROJECT_INCLUDE}/neutrino/utils/fpe/fpe.hh
+		${PROJECT_INCLUDE}/neutrino/utils/fpe/fpe_c99.hh
+		${PROJECT_INCLUDE}/neutrino/utils/fpe/fpe_windows.hh
+
+
 
 		whereami.cc
 		${PROJECT_INCLUDE}/neutrino/utils/whereami.hh
@@ -65,9 +84,7 @@ my_add_library_static(utils
 
 		${PROJECT_INCLUDE}/neutrino/utils/byte_order.hh
 		${PROJECT_INCLUDE}/neutrino/utils/override.hh
-		${PROJECT_INCLUDE}/neutrino/utils/string_constant.hh
-		${PROJECT_INCLUDE}/neutrino/utils/string_tokenizer.hh
-		${PROJECT_INCLUDE}/neutrino/utils/string_utils.hh
+
 		${PROJECT_INCLUDE}/neutrino/utils/spimpl.h
 
 		${PROJECT_INCLUDE}/neutrino/utils/observer.hh
@@ -75,5 +92,7 @@ my_add_library_static(utils
 		DEPENDS_PUBLIC
 			thirdparty::sdl2
 			thirdparty::zlib
+			thirdparty::strong_type
+			thirdparty::double-conversion
 )
 	
