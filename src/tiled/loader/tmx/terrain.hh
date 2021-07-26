@@ -6,18 +6,19 @@
 #define NEUTRINO_TERRAIN_HH
 
 #include "component.hh"
-
+#include "xml.hh"
 namespace neutrino::tiled::tmx {
     /**
    * @brief A terrain describes a kind of terrain on the map.
    */
     class terrain : public component {
     public:
+        static terrain parse(const xml_node& node);
         /**
          * @brief Terrain constructor.
          */
-        terrain(const std::string& name, unsigned tile)
-                : m_name(name), m_tile(tile)
+        terrain(std::string name, unsigned tile)
+                : m_name(std::move(name)), m_tile(tile)
         {
         }
 

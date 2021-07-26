@@ -7,7 +7,10 @@
 
 #include <string>
 #include <optional>
+#include <vector>
 #include <neutrino/math/point.hh>
+#include "xml.hh"
+#include <memory>
 
 namespace neutrino::tiled::tmx {
    /**
@@ -15,12 +18,19 @@ namespace neutrino::tiled::tmx {
    */
     class image {
     public:
+
+        static std::unique_ptr<image> parse(const xml_node& elt);
+
         /**
          * @brief Image constructor.
          */
-        image(const std::string& format, const std::string& source, const std::string& trans,
+        image(std::string format, std::string source, std::string trans,
               int width, int height)
-              : m_format(format), m_source(source), m_trans(trans), m_width(width), m_height(height)
+              : m_format(std::move(format)),
+                m_source(std::move(source)),
+                m_trans(std::move(trans)),
+                m_width(width),
+                m_height(height)
         {
         }
 
@@ -96,6 +106,9 @@ namespace neutrino::tiled::tmx {
             return std::nullopt;
         }
 
+        [[nodiscard]] const std::vector<unsigned char>& data() const noexcept {
+            return m_data;
+        }
     private:
         const std::string m_format;
         const std::string m_source;
@@ -103,6 +116,7 @@ namespace neutrino::tiled::tmx {
 
         const int m_width;
         const int m_height;
+        std::vector<unsigned char> m_data;
     };
 
 }

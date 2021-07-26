@@ -10,18 +10,17 @@
 #include <filesystem>
 #include <variant>
 #include <optional>
+#include <strong_type/strong_type.hpp>
 
 #include "xml.hh"
 #include "color.hh"
 
 namespace neutrino::tiled::tmx
 {
-
-    struct object_id {
-        object_id() : id (0) {}
-        explicit object_id(int v) : id(v) {}
-        int id;
-    };
+    namespace detail {
+        struct object_id_s;
+    }
+    using object_id = strong::type<int, detail::object_id_s, strong::ordered, strong::equality>;
 
     using property_t = std::variant<std::string, int, bool, float, colori, std::filesystem::path, object_id>;
 

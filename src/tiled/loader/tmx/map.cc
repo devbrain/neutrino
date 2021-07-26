@@ -3,11 +3,12 @@
 //
 
 #include "map.hh"
+#include "tile_layer.hh"
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::tiled::tmx
 {
-    map map::parse(const xml_node& elt) {
+    map map::parse(const xml_node& elt, path_resolver_t resolver) {
         std::string version =  elt.get_string_attribute("version", Requirement::OPTIONAL, "1.0");
 
         static const std::map<std::string, orientation_t> orientation_mp = {
@@ -53,8 +54,11 @@ namespace neutrino::tiled::tmx
 
         component::parse(result, elt);
 
-        elt.parse_many_elements("tileset", [&result](const xml_node& e) {
-           // map->addTileSet(parseTileSet(elt));
+        elt.parse_many_elements("tileset", [&result, &resolver](const xml_node& e) {
+            result.m_tilesets.push_back(tile_set::parse(e, resolver));
+        });
+        elt.parse_many_elements("layer", [&result, &resolver](const xml_node& e) {
+            result.m_layers.push_back(std::make_unique<tile_layer>(tile_layer::parse(e)));
         });
         /*
         elt.parseEachElement([map,this](const XMLElementWrapper elt) {
@@ -75,9 +79,9 @@ namespace neutrino::tiled::tmx
         for (auto i = m_tilesets.rbegin(); i != m_tilesets.rend(); i++)
         {
             const auto& tileset = *i;
-            if (tileset->first_gid() <= gid)
+            if (tileset.first_gid() <= gid)
             {
-                return tileset.get();
+                return &tileset;
             }
         }
         return nullptr;

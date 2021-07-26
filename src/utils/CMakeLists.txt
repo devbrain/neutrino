@@ -86,6 +86,7 @@ my_add_library_static(utils
 		${PROJECT_INCLUDE}/neutrino/utils/override.hh
 
 		${PROJECT_INCLUDE}/neutrino/utils/spimpl.h
+		${PROJECT_INCLUDE}/neutrino/utils/switch_by_string.hh
 
 		${PROJECT_INCLUDE}/neutrino/utils/observer.hh
 		observer.cc
