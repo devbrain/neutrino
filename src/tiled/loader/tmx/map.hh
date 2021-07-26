@@ -10,6 +10,8 @@
 #include "tile_set.hh"
 #include "xml.hh"
 #include "color.hh"
+#include "path_resolver.hh"
+
 namespace neutrino::tiled::tmx {
     /**
    * @brief the orientation of the map.
@@ -55,7 +57,7 @@ namespace neutrino::tiled::tmx {
      */
     class map : public component {
     public:
-        static map parse(const xml_node& node);
+        static map parse(const xml_node& node, path_resolver_t resolver);
 
         /**
          * @brief Map constructor.
@@ -142,7 +144,7 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the render order
          */
-        [[nodiscard]] render_order_t get_render_order() const noexcept {
+        [[nodiscard]] render_order_t render_order() const noexcept {
             return m_renderOrder;
         }
 
@@ -184,7 +186,7 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the next object id.
          */
-        unsigned next_object_id() const noexcept {
+        [[nodiscard]] unsigned next_object_id() const noexcept {
             return m_nextObjectId;
         }
 
@@ -204,11 +206,7 @@ namespace neutrino::tiled::tmx {
          *
          * @param tileset the tileset
          */
-        void add_tile_set(std::unique_ptr<tile_set> tileset) {
-            if (!tileset) {
-                return;
-            }
-
+        void add_tile_set(tile_set&& tileset) {
             m_tilesets.emplace_back(std::move(tileset));
         }
 
@@ -217,7 +215,7 @@ namespace neutrino::tiled::tmx {
          *
          * @return a tileset range
          */
-        [[nodiscard]] const std::vector<std::unique_ptr<tile_set>>& getTileSets() const noexcept {
+        [[nodiscard]] const std::vector<tile_set>& tile_sets() const noexcept {
             return m_tilesets;
         }
 
@@ -227,7 +225,7 @@ namespace neutrino::tiled::tmx {
          * @param gid a global id
          * @returns the corresponding tileset
          */
-        const tile_set *tile_set_from_gid(unsigned gid) const noexcept;
+        [[nodiscard]] const tile_set* tile_set_from_gid(unsigned gid) const noexcept;
         /** @} */
 
         /**
@@ -292,7 +290,7 @@ namespace neutrino::tiled::tmx {
 
         const unsigned m_nextObjectId;
 
-        std::vector<std::unique_ptr<tile_set>> m_tilesets;
+        std::vector<tile_set> m_tilesets;
         std::vector<std::unique_ptr<layer>> m_layers;
     };
 }

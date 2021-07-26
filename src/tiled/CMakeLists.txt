@@ -23,23 +23,33 @@ my_add_library_static(tiled
         ${PROJECT_INCLUDE}/neutrino/tiled/loader/tmx.hh
         loader/tmx/tmx.cc
         loader/tmx/cell.hh
+        loader/tmx/cell.cc
         loader/tmx/color.hh
         loader/tmx/component.cc
         loader/tmx/component.hh
         loader/tmx/image.hh
+        loader/tmx/image.cc
         loader/tmx/layer.hh
+        loader/tmx/layer.cc
         loader/tmx/image_layer.hh
         loader/tmx/object.hh
         loader/tmx/object_layer.hh
         loader/tmx/terrain.hh
+        loader/tmx/terrain.cc
         loader/tmx/tile.hh
+        loader/tmx/tile.cc
         loader/tmx/tile_layer.hh
+        loader/tmx/tile_layer.cc
         loader/tmx/tile_set.hh
         loader/tmx/tile_set.cc
         loader/tmx/map.hh
         loader/tmx/map.cc
         loader/tmx/xml.cc
         loader/tmx/xml.hh
+        loader/tmx/path_resolver.hh
+        loader/tmx/parse_data.cc
+        loader/tmx/parse_data.hh
+        loader/tmx/csv/parser.hpp
 
         ${PROJECT_INCLUDE}/neutrino/tiled/window.hh
         window.cc

@@ -9,6 +9,8 @@
 #include "image.hh"
 #include "terrain.hh"
 #include "tile.hh"
+#include "xml.hh"
+#include "path_resolver.hh"
 #include <neutrino/math/rect.hh>
 #include <vector>
 #include <memory>
@@ -19,6 +21,7 @@ namespace neutrino::tiled::tmx {
   */
     class tile_set : public component {
     public:
+        static tile_set parse(const xml_node& elt, const path_resolver_t& resolver);
         /**
          * @brief TileSet constructor.
          */
@@ -167,7 +170,7 @@ namespace neutrino::tiled::tmx {
          *
          * @param terrain the terrain information
          */
-        void add_terrain(std::unique_ptr<terrain> aterrain) {
+        void add_terrain(terrain aterrain) {
             m_terrains.emplace_back(std::move(aterrain));
         }
 
@@ -176,7 +179,7 @@ namespace neutrino::tiled::tmx {
          *
          * @returns a terrain range
          */
-        [[nodiscard]] const std::vector<std::unique_ptr<terrain>>& get_terrains() const noexcept {
+        [[nodiscard]] const std::vector<terrain>& get_terrains() const noexcept {
             return m_terrains;
         }
         /** @} */
@@ -184,7 +187,7 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief A tile iterator.
          */
-        typedef std::vector<std::unique_ptr<tile>>::const_iterator const_iterator;
+        typedef std::vector<tile>::const_iterator const_iterator;
 
         /**
          * @name Tile handling
@@ -195,7 +198,7 @@ namespace neutrino::tiled::tmx {
          *
          * @param tile the tile
          */
-        void add_tile(std::unique_ptr<tile> atile) {
+        void add_tile(tile atile) {
             m_tiles.emplace_back(std::move(atile));
         }
 
@@ -236,6 +239,9 @@ namespace neutrino::tiled::tmx {
         /** @} */
 
     private:
+        static tile_set parse_inner(unsigned first_gid, const xml_node& elt);
+        static tile_set parse_from_file(unsigned first_gid, const std::string& source, const path_resolver_t& resolver);
+    private:
         const unsigned m_firstgid;
         const std::string m_name;
         const unsigned m_tilewidth;
@@ -248,8 +254,8 @@ namespace neutrino::tiled::tmx {
         int m_y;
 
         std::unique_ptr<image> m_image;
-        std::vector<std::unique_ptr<terrain>> m_terrains;
-        std::vector<std::unique_ptr<tile>> m_tiles;
+        std::vector<terrain> m_terrains;
+        std::vector<tile> m_tiles;
     };
 
 }

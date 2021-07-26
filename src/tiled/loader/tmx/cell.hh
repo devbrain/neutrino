@@ -15,7 +15,10 @@ namespace neutrino::tiled::tmx
     class cell
     {
     public:
-        cell(unsigned gid, bool hflip = false, bool vflip = false, bool dflip = false)
+
+        static cell decode_gid(unsigned int gid);
+
+        explicit cell(unsigned gid, bool hflip = false, bool vflip = false, bool dflip = false)
                 : m_gid(gid), m_hflip(hflip), m_vflip(vflip), m_dflip(dflip)
         {
         }

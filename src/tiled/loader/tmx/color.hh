@@ -5,6 +5,7 @@
 #include <tuple>
 #include <cstdint>
 #include <string>
+#include <neutrino/utils/strings/number_parser.hh>
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::tiled::tmx
@@ -16,7 +17,11 @@ namespace neutrino::tiled::tmx
         {
             static T parse(const std::string& color, std::string::size_type idx)
             {
-                return static_cast<T>(std::stoi(color.substr(idx, 2), nullptr, 16));
+                unsigned x;
+                if (!utils::number_parser::try_parse_hex(color.substr(idx, 2), x)) {
+                    RAISE_EX("Failed to parse ", color.substr(idx, 2), " as hex number");
+                }
+                return static_cast<T>(x);
             }
             static constexpr T unit() noexcept
             {
@@ -33,7 +38,11 @@ namespace neutrino::tiled::tmx
         {
             static float parse(const std::string& color, std::string::size_type idx)
             {
-                return (float) std::stoi(color.substr(idx, 2), nullptr, 16) / 255;
+                unsigned x;
+                if (!utils::number_parser::try_parse_hex(color.substr(idx, 2), x)) {
+                    RAISE_EX("Failed to parse ", color.substr(idx, 2), " as hex number");
+                }
+                return (float) x / 255.0f;
             }
             static constexpr float unit() noexcept
             {

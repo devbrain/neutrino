@@ -31,7 +31,7 @@ namespace neutrino::tiled::tmx {
         {
             RAISE_EX ("entry node <map> is missing");
         }
-        map::parse(xml_node(root));
+        map::parse(xml_node(root), [](const std::string&) {return "";});
         return nullptr;
     }
 }

@@ -3,6 +3,9 @@
 //
 
 #include "component.hh"
+#include <neutrino/utils/strings/number_parser.hh>
+#include <neutrino/utils/switch_by_string.hh>
+
 
 namespace neutrino::tiled::tmx
 {
@@ -26,6 +29,8 @@ namespace neutrino::tiled::tmx
         return i->second;
     }
 
+
+
     void component::parse(component& obj, const xml_node& elt)
     {
         elt.parse_one_element("properties", [&obj](const xml_node& e) {
@@ -34,67 +39,28 @@ namespace neutrino::tiled::tmx
                 ENFORCE(!name.empty());
                 std::string value = inner.get_string_attribute("value");
                 std::string type = inner.get_string_attribute("type", Requirement::OPTIONAL, "");
-                if (type == "bool")
-                {
-                    obj.add(name, value == "true" || value == "yes" || value == "t" || value == "y");
-                } else
-                {
-                    if (type == "int")
-                    {
-                        if (!value.empty())
-                        {
-                            obj.add(name, std::atoi(value.c_str()));
-                        } else
-                        {
-                            obj.add(name, 0);
-                        }
-                    } else
-                    {
-                        if (type == "float")
-                        {
-                            float f = 0;
-                            if (!value.empty())
-                            {
-                                f = std::atof(value.c_str());
-                            }
-                            obj.add(name, f);
-                        }
-                        else
-                        {
-                            if (type == "color") {
-                                colori  c;
-                                if (!value.empty())
-                                {
-                                    c = colori(value);
-                                }
-                                obj.add(name, c);
-                            }
-                            else
-                            {
-                                if (type == "file")
-                                {
-                                    std::filesystem::path p = value.empty() ? "." : value;
-                                    obj.add(name, p);
-                                }
-                                else
-                                {
-                                    if (type == "object")
-                                    {
-                                        object_id o;
-                                        if (!value.empty())
-                                        {
-                                            o.id = std::atoi(value.c_str());
-                                        }
-                                        obj.add(name, o);
-                                    }
-                                    else
-                                    {
-                                        obj.add(name, value);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                switch (switcher(value.c_str())) {
+                    case "bool"_case:
+                        obj.add(name, utils::number_parser::parse_bool(value));
+                        break;
+                    case "int"_case:
+                        obj.add(name, utils::number_parser::parse(name));
+                        break;
+                    case "float"_case:
+                        obj.add(name, (float)utils::number_parser::parse_float(value));
+                        break;
+                    case "color"_case:
+                        obj.add(name, colori(value));
+                        break;
+                    case "file"_case:
+                        obj.add(name, std::filesystem::path(value.empty() ? "." : value));
+                        break;
+                    case "object"_case:
+                        obj.add(name, object_id(utils::number_parser::parse(value)));
+                        break;
+                    default:
+                        obj.add(name, value);
+                        break;
                 }
             });
         });

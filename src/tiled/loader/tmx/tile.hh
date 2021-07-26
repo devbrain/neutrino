@@ -7,6 +7,8 @@
 
 #include "component.hh"
 #include "image.hh"
+#include "xml.hh"
+
 #include <memory>
 #include <array>
 
@@ -16,6 +18,9 @@ namespace neutrino::tiled::tmx {
   */
     class tile : public component {
     public:
+        static constexpr auto INVALID = static_cast<unsigned>(-1);
+    public:
+        static tile parse(const xml_node& e);
         /**
          * @brief Tile constructor.
          */
