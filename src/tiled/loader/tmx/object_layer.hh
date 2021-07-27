@@ -8,6 +8,7 @@
 #include "object.hh"
 #include "layer.hh"
 #include <memory>
+#include <utility>
 
 namespace neutrino::tiled::tmx {
     /**
@@ -25,16 +26,18 @@ namespace neutrino::tiled::tmx {
      */
     class object_layer : public layer {
     public:
-        using objects_vec_t = std::vector<std::unique_ptr<object>>;
+        using objects_vec_t = std::vector<object_t>;
         using const_iterator = objects_vec_t::const_iterator;
     public:
         /**
          * @brief ObjectLayer constructor.
          */
-        object_layer(const std::string& name, double opacity, bool visible, const std::string& color, draw_order_t order)
-                : layer(name, opacity, visible), m_color(color), m_order(order)
+        object_layer(std::string name, double opacity, bool visible, const std::string color, draw_order_t order)
+                : layer(std::move(name), opacity, visible), m_color(color), m_order(order)
         {
         }
+
+        object_layer(object_layer&&) = default;
 
         /**
          * @brief Get the color used to display the objects.
@@ -50,7 +53,7 @@ namespace neutrino::tiled::tmx {
          *
          * @param obj the object
          */
-        void add(std::unique_ptr<object> obj) {
+        void add(object_t obj) {
             m_objects.emplace_back(std::move(obj));
         }
 

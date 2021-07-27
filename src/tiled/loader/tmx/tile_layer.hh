@@ -27,6 +27,8 @@ namespace neutrino::tiled::tmx
         {
         }
 
+        tile_layer(tile_layer&& ) = default;
+
         /**
          * @brief Add a cell to the layer.
          *

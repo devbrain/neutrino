@@ -22,6 +22,10 @@ namespace neutrino::tiled::tmx
                 : m_gid(gid), m_hflip(hflip), m_vflip(vflip), m_dflip(dflip)
         {
         }
+
+        cell(const cell&) = default;
+        cell(cell&&) = default;
+        cell& operator = (const cell&) = default;
         /**
      * @brief Get the global id of the tile.
      *

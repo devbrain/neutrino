@@ -58,7 +58,7 @@ namespace neutrino::tiled::tmx
             result.m_tilesets.push_back(tile_set::parse(e, resolver));
         });
         elt.parse_many_elements("layer", [&result, &resolver](const xml_node& e) {
-            result.m_layers.push_back(std::make_unique<tile_layer>(tile_layer::parse(e)));
+            result.m_layers.emplace_back(tile_layer::parse(e));
         });
         /*
         elt.parseEachElement([map,this](const XMLElementWrapper elt) {

@@ -6,7 +6,9 @@
 #define NEUTRINO_OBJECT_HH
 
 #include <string>
+#include <utility>
 #include <vector>
+#include <variant>
 
 #include "component.hh"
 #include <neutrino/math/rect.hh>
@@ -22,37 +24,21 @@ namespace neutrino::tiled::tmx {
     class object : public component {
     public:
         /**
-         * @brief A kind of geometrical object.
-         */
-        enum Kind {
-            RECTANGLE,  /**< Rectangle */
-            ELLIPSE,    /**< Ellipse */
-            POLYLINE,   /**< Polyline (open line) */
-            POLYGON,    /**< Polygon (closed line) */
-            TILE,       /**< Tile (image) */
-        };
-
-        /**
          * @brief object constructor.
          */
-        object(const Kind kind, unsigned id, const std::string& name, const std::string& type,
+        object(unsigned id, std::string  name, std::string  type,
                const math::point2d& origin, double rotation, bool visible)
-                : m_kind(kind), m_id(id), m_name(name), m_type(type), m_origin(origin), m_rotation(rotation), m_visible(visible)
+                : m_id(id),
+                  m_name(std::move(name)),
+                  m_type(std::move(type)),
+                  m_origin(origin),
+                  m_rotation(rotation),
+                  m_visible(visible)
         {
         }
 
-
-        /**
-         * @brief Get the kind of the object.
-         *
-         * This may be useful to do some casting.
-         *
-         * @return the kind of the object
-         */
-        [[nodiscard]] Kind kind() const noexcept {
-            return m_kind;
-        }
-
+        object(const object&) = default;
+        object& operator = (const object&) = default;
         /**
          * @brief Get the id of the object.
          *
@@ -67,7 +53,7 @@ namespace neutrino::tiled::tmx {
          *
          * @return the name of the object
          */
-        [[nodiscard]] const std::string& name() const noexcept {
+        [[nodiscard]] std::string name() const noexcept {
             return m_name;
         }
 
@@ -76,7 +62,7 @@ namespace neutrino::tiled::tmx {
          *
          * @return the type of the object.
          */
-        [[nodiscard]] const std::string& type() const noexcept {
+        [[nodiscard]] std::string type() const noexcept {
             return m_type;
         }
 
@@ -89,7 +75,7 @@ namespace neutrino::tiled::tmx {
          *
          * @return the origin
          */
-        [[nodiscard]] const math::point2d& origin() const noexcept {
+        [[nodiscard]] math::point2d origin() const noexcept {
             return m_origin;
         }
 
@@ -111,62 +97,7 @@ namespace neutrino::tiled::tmx {
             return m_visible;
         }
 
-        /**
-         * @brief Tell whether this object is a rectangle.
-         *
-         * @returns true if the object is a rectangle
-         */
-        [[nodiscard]] bool is_rectangle() const noexcept {
-            return m_kind == RECTANGLE;
-        }
-
-        /**
-         * @brief Tell whether this object is an ellipse.
-         *
-         * @returns true if the object is an ellipse
-         */
-        [[nodiscard]] bool is_ellipse() const noexcept {
-            return m_kind == ELLIPSE;
-        }
-
-        /**
-         * @brief Tell whether this object is a chain (polygon or polyline).
-         *
-         * @returns true if the object is a chain
-         */
-        [[nodiscard]] bool is_chain() const noexcept {
-            return m_kind == POLYLINE || m_kind == POLYGON;
-        }
-
-        /**
-         * @brief Tell whether this object is a polyline.
-         *
-         * @returns true if the object is a polyline
-         */
-        [[nodiscard]] bool is_polyline() const noexcept {
-            return m_kind == POLYLINE;
-        }
-
-        /**
-         * @brief Tell whether this object is a polygon.
-         *
-         * @returns true if the object is a polygon
-         */
-        [[nodiscard]] bool is_polygon() const noexcept {
-            return m_kind == POLYGON;
-        }
-
-        /**
-         * @brief Tell whether this object is a tile.
-         *
-         * @returns true if the object is a tile
-         */
-        [[nodiscard]] bool is_tile() const noexcept {
-            return m_kind == TILE;
-        }
-
     private:
-        const Kind m_kind;
         const unsigned m_id;
         const std::string m_name;
         const std::string m_type;
@@ -183,19 +114,20 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief Tileobject constructor.
          */
-        tile_object(unsigned id, const std::string& name, const std::string& type,
-                    const math::point2d& origin, double rotation, bool visible, unsigned gid, bool hflip, bool vflip, bool dflip)
-                : object(TILE, id, name, type, origin, rotation, visible)
-                , m_gid(gid), m_hflip(hflip), m_vflip(vflip), m_dflip(dflip)
-        {
-        }
+        tile_object(unsigned id, std::string name, std::string type,
+                    math::point2d origin, double rotation, bool visible, unsigned gid, bool hflip, bool vflip, bool dflip)
+                : object(id, std::move(name), std::move(type), origin, rotation, visible)
+                , m_gid(gid), m_hflip(hflip), m_vflip(vflip), m_dflip(dflip) {}
+
+        tile_object(const tile_object&) = default;
+        tile_object& operator = (const tile_object&) = default;
 
         /**
          * @brief Get the global id of the refering tile (if needed)
          *
          * @return the global id
          */
-        unsigned gid() const noexcept {
+        [[nodiscard]] unsigned gid() const noexcept {
             return m_gid;
         }
 
@@ -204,7 +136,7 @@ namespace neutrino::tiled::tmx {
          *
          * @returns true if the tile object must be flipped horizontally
          */
-        bool is_horizontally_flipped() const noexcept {
+        [[nodiscard]] bool is_horizontally_flipped() const noexcept {
             return m_hflip;
         }
 
@@ -213,7 +145,7 @@ namespace neutrino::tiled::tmx {
          *
          * @returns true if the tile object must be flipped vertically
          */
-        bool is_vertically_flipped() const noexcept {
+        [[nodiscard]] bool is_vertically_flipped() const noexcept {
             return m_vflip;
         }
 
@@ -222,7 +154,7 @@ namespace neutrino::tiled::tmx {
          *
          * @returns true if the tile object must be flipped diagonally
          */
-        bool is_diagonally_flipped() const noexcept {
+        [[nodiscard]] bool is_diagonally_flipped() const noexcept {
             return m_dflip;
         }
 
@@ -244,18 +176,21 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief Boxed constructor.
          */
-        boxed(Kind kind, unsigned id, const std::string& name, const std::string& type,
-              const math::point2d& origin, double rotation, bool visible, unsigned width, unsigned height)
-                : object(kind, id, name, type, origin, rotation, visible), m_width(width), m_height(height)
+        boxed(unsigned id, std::string name, std::string type,
+              math::point2d origin, double rotation, bool visible, unsigned width, unsigned height)
+                : object(id, std::move(name), std::move(type), origin, rotation, visible), m_width(width), m_height(height)
         {
         }
+
+        boxed(const boxed&) = default;
+        boxed& operator = (const boxed&) = default;
 
         /**
          * @brief Get the width of the box.
          *
          * @returns the width of the box
          */
-        unsigned width() const noexcept {
+        [[nodiscard]] unsigned width() const noexcept {
             return m_width;
         }
 
@@ -264,7 +199,7 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the height of the box
          */
-        unsigned height() const noexcept {
+        [[nodiscard]] unsigned height() const noexcept {
             return m_height;
         }
 
@@ -283,11 +218,14 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief Rectangle constructor.
          */
-        rectangle(unsigned id, const std::string& name, const std::string& type,
-                  const math::point2d& origin, double rotation, bool visible, unsigned width, unsigned height)
-                : boxed(RECTANGLE, id, name, type, origin, rotation, visible, width, height)
+        rectangle(unsigned id, std::string name, std::string type,
+                  math::point2d origin, double rotation, bool visible, unsigned width, unsigned height)
+                : boxed(id, std::move(name), std::move(type), origin, rotation, visible, width, height)
         {
         }
+
+        rectangle(const rectangle&) = default;
+        rectangle& operator = (const rectangle&) = default;
     };
 
     /**
@@ -299,11 +237,14 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief Ellipse constructor.
          */
-        ellipse(unsigned id, const std::string& name, const std::string& type,
-                const math::point2d& origin, double rotation, bool visible, unsigned width, unsigned height)
-                : boxed(ELLIPSE, id, name, type, origin, rotation, visible, width, height)
+        ellipse(unsigned id, std::string name, std::string type,
+                math::point2d origin, double rotation, bool visible, unsigned width, unsigned height)
+                : boxed(id, std::move(name), std::move(type), origin, rotation, visible, width, height)
         {
         }
+
+        ellipse(const ellipse&) = default;
+        ellipse& operator = (const ellipse&) = default;
     };
 
     /**
@@ -316,10 +257,13 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief Chain constructor.
          */
-        chain(const Kind kind, unsigned id, const std::string& name, const std::string& type, const math::point2d& origin, double rotation, bool visible)
-                : object(kind, id, name, type, origin, rotation, visible)
+        chain(unsigned id, std::string name, std::string type, math::point2d origin, double rotation, bool visible)
+            : object(id, std::move(name), std::move(type), origin, rotation, visible)
         {
         }
+
+        chain(const chain&) = default;
+        chain& operator = (const chain&) = default;
 
         /**
          * @brief Set the points of the lines.
@@ -365,10 +309,13 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief Polyline constructor.
          */
-        polyline(unsigned id, const std::string& name, const std::string& type, const math::point2d& origin, double rotation, bool visible)
-                : chain(POLYLINE, id, name, type, origin, rotation, visible)
+        polyline(unsigned id, std::string name, std::string type, math::point2d origin, double rotation, bool visible)
+                : chain(id, std::move(name), std::move(type), origin, rotation, visible)
         {
         }
+
+        polyline(const polyline&) = default;
+        polyline& operator = (const polyline&) = default;
     };
 
     /**
@@ -380,12 +327,17 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief Polygon constructor.
          */
-        polygon(unsigned id, const std::string& name, const std::string& type, const math::point2d& origin, double rotation,
+        polygon(unsigned id, std::string name, std::string type, math::point2d origin, double rotation,
                 bool visible)
-                : chain(POLYLINE, id, name, type, origin, rotation, visible)
+                : chain(id, std::move(name), std::move(type), origin, rotation, visible)
         {
         }
+
+        polygon(const polygon&) = default;
+        polygon& operator = (const polygon&) = default;
     };
+
+    using object_t = std::variant<rectangle, ellipse, polygon, polyline, tile>;
 }
 
 #endif
