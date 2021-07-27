@@ -33,7 +33,9 @@ my_add_library_static(tiled
         loader/tmx/layer.cc
         loader/tmx/image_layer.hh
         loader/tmx/object.hh
+        loader/tmx/object.cc
         loader/tmx/object_layer.hh
+        loader/tmx/object_layer.cc
         loader/tmx/terrain.hh
         loader/tmx/terrain.cc
         loader/tmx/tile.hh

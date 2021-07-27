@@ -29,6 +29,8 @@ namespace neutrino::tiled::tmx {
         using objects_vec_t = std::vector<object_t>;
         using const_iterator = objects_vec_t::const_iterator;
     public:
+
+        static object_layer parse(const xml_node& elt);
         /**
          * @brief ObjectLayer constructor.
          */
