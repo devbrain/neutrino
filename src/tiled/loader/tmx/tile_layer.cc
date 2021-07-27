@@ -20,12 +20,12 @@ namespace neutrino::tiled::tmx
             auto compression = e.get_string_attribute("compression", Requirement::OPTIONAL);
             if (encoding.empty() && compression.empty())
             {
-                e.parse_one_element("data", [&result](const xml_node& delt) {
-                    delt.parse_many_elements("tile", [&result](const xml_node& telt) {
+
+                    e.parse_many_elements("tile", [&result](const xml_node& telt) {
                         auto gid = telt.get_uint_attribute("gid");
                         result.add(cell::decode_gid(gid));
                     });
-                });
+
             } else
             {
                 auto data = parse_data(encoding, compression, e.get_text());

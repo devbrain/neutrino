@@ -23,6 +23,7 @@ namespace neutrino::tiled::tmx {
    */
     class object : public component {
     public:
+
         /**
          * @brief object constructor.
          */
@@ -38,7 +39,7 @@ namespace neutrino::tiled::tmx {
         }
 
         object(const object&) = default;
-        object& operator = (const object&) = default;
+
         /**
          * @brief Get the id of the object.
          *
@@ -120,7 +121,7 @@ namespace neutrino::tiled::tmx {
                 , m_gid(gid), m_hflip(hflip), m_vflip(vflip), m_dflip(dflip) {}
 
         tile_object(const tile_object&) = default;
-        tile_object& operator = (const tile_object&) = default;
+
 
         /**
          * @brief Get the global id of the refering tile (if needed)
@@ -183,7 +184,7 @@ namespace neutrino::tiled::tmx {
         }
 
         boxed(const boxed&) = default;
-        boxed& operator = (const boxed&) = default;
+
 
         /**
          * @brief Get the width of the box.
@@ -225,7 +226,7 @@ namespace neutrino::tiled::tmx {
         }
 
         rectangle(const rectangle&) = default;
-        rectangle& operator = (const rectangle&) = default;
+
     };
 
     /**
@@ -244,7 +245,7 @@ namespace neutrino::tiled::tmx {
         }
 
         ellipse(const ellipse&) = default;
-        ellipse& operator = (const ellipse&) = default;
+
     };
 
     /**
@@ -263,7 +264,7 @@ namespace neutrino::tiled::tmx {
         }
 
         chain(const chain&) = default;
-        chain& operator = (const chain&) = default;
+
 
         /**
          * @brief Set the points of the lines.
@@ -315,7 +316,7 @@ namespace neutrino::tiled::tmx {
         }
 
         polyline(const polyline&) = default;
-        polyline& operator = (const polyline&) = default;
+
     };
 
     /**
@@ -334,10 +335,12 @@ namespace neutrino::tiled::tmx {
         }
 
         polygon(const polygon&) = default;
-        polygon& operator = (const polygon&) = default;
+
     };
 
-    using object_t = std::variant<rectangle, ellipse, polygon, polyline, tile>;
+    using object_t = std::variant<rectangle, ellipse, polygon, polyline, tile_object>;
+
+    object_t parse_object(const xml_node& elt);
 }
 
 #endif

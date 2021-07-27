@@ -32,8 +32,8 @@ TEST_CASE("test1/example/test map attribs")
 
     REQUIRE(ts1.first_gid() == 1);
     REQUIRE(ts1.name() == "marioenemies");
-    REQUIRE(ts1.tile_width()==32);
-    REQUIRE(ts1.tile_height()==32);
+    REQUIRE(ts1.tile_width() == 32);
+    REQUIRE(ts1.tile_height() == 32);
 
     REQUIRE(ts1.get_terrains().size() == 1);
     REQUIRE(ts1.get_terrains()[0].tile() == 0);
@@ -41,22 +41,58 @@ TEST_CASE("test1/example/test map attribs")
 
     REQUIRE(ts1.get_tile(0));
     REQUIRE(ts1.get_tile(0)->id() == 0);
-    REQUIRE(test::check_properties(*ts1.get_tile(0), {{"wall", std::string ("true")}}));
+    REQUIRE(test::check_properties(*ts1.get_tile(0), {{"wall", std::string("true")}}));
 
     REQUIRE(ts1.get_tile(1));
     REQUIRE(ts1.get_tile(1)->id() == 1);
-    REQUIRE(test::check_properties(*ts1.get_tile(1), {{"wall", std::string ("true")}}));
+    REQUIRE(test::check_properties(*ts1.get_tile(1), {{"wall", std::string("true")}}));
 
     const auto& ts2 = the_map.tile_sets()[1];
 
     REQUIRE(ts2.first_gid() == 101);
     REQUIRE(ts2.name() == "marioobjects");
-    REQUIRE(ts2.tile_width()==32);
-    REQUIRE(ts2.tile_height()==32);
+    REQUIRE(ts2.tile_width() == 32);
+    REQUIRE(ts2.tile_height() == 32);
 
     REQUIRE(ts2.get_image());
     REQUIRE(ts2.get_image()->source() == "../flappyman/docs/marioobjects.png");
     REQUIRE(ts2.get_image()->width() == 576);
     REQUIRE(ts2.get_image()->height() == 336);
+
+
+    std::vector<int> ids = {101, 100, 280, 1,
+                            1, 0, 0, 0,
+                            0, 0, 1, 101,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            1, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0};
+    REQUIRE(the_map.get_layers().size() == 2);
+    if (const auto* tl = std::get_if<tile_layer>(&the_map.get_layers()[0]); tl) {
+        int k = 0;
+        for (const auto c : *tl) {
+            REQUIRE(k < ids.size());
+            REQUIRE(c.gid() == ids[k++]);
+        }
+        REQUIRE(k == ids.size());
+    }
 
 }
