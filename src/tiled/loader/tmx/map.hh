@@ -5,18 +5,27 @@
 #ifndef NEUTRINO_MAP_HH
 #define NEUTRINO_MAP_HH
 
+#include <variant>
+
 #include "component.hh"
 #include "layer.hh"
 #include "tile_set.hh"
 #include "xml.hh"
 #include "color.hh"
 #include "path_resolver.hh"
+#include "tile_layer.hh"
+#include "object_layer.hh"
 
-namespace neutrino::tiled::tmx {
+namespace neutrino::tiled::tmx
+{
+
+    using layer_t = std::variant<object_layer, tile_layer>;
+
     /**
    * @brief the orientation of the map.
    */
-    enum class orientation_t {
+    enum class orientation_t
+    {
         UNKNOWN,    /**< Unknown orientation */
         ORTHOGONAL, /**< Orthogonal orientation */
         ISOMETRIC,  /**< Isometric orientation */
@@ -27,7 +36,8 @@ namespace neutrino::tiled::tmx {
     /**
      * @brief Stagger index of the hexagonal map.
      */
-    enum class stagger_index_t {
+    enum class stagger_index_t
+    {
         ODD,
         EVEN,
     };
@@ -35,7 +45,8 @@ namespace neutrino::tiled::tmx {
     /**
      * @brief Stagger axis of the hexagonal map.
      */
-    enum class stagger_axis_t {
+    enum class stagger_axis_t
+    {
         X,
         Y,
     };
@@ -43,7 +54,8 @@ namespace neutrino::tiled::tmx {
     /**
      * @brief the render order of the tiles.
      */
-    enum class render_order_t {
+    enum class render_order_t
+    {
         RIGHT_DOWN, /**< Right down order */
         RIGHT_UP,   /**< Right up order */
         LEFT_DOWN,  /**< Left down order */
@@ -55,7 +67,8 @@ namespace neutrino::tiled::tmx {
      *
      * Tilesets describe what to draw while layers describe how to draw things.
      */
-    class map : public component {
+    class map : public component
+    {
     public:
         static map parse(const xml_node& node, path_resolver_t resolver);
 
@@ -68,7 +81,6 @@ namespace neutrino::tiled::tmx {
                 : m_version(version), m_orientation(orientation), m_width(width), m_height(height),
                   m_tilewidth(tilewidth), m_tileheight(tileheight), m_bgcolor(bgcolor), m_renderOrder(renderOrder),
                   m_hexSideLength(hexSideLength), m_axis(axis), m_index(index), m_nextObjectId(nextObjectId)
-
         {
         }
 
@@ -81,7 +93,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the version of the TMX format (generally "1.0")
          */
-        [[nodiscard]] const std::string& version() const noexcept {
+        [[nodiscard]] const std::string& version() const noexcept
+        {
             return m_version;
         }
 
@@ -90,7 +103,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the orientation of the map
          */
-        [[nodiscard]] orientation_t orientation() const noexcept {
+        [[nodiscard]] orientation_t orientation() const noexcept
+        {
             return m_orientation;
         }
 
@@ -99,7 +113,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the width of the map (in number of tiles)
          */
-        [[nodiscard]] unsigned width() const noexcept {
+        [[nodiscard]] unsigned width() const noexcept
+        {
             return m_width;
         }
 
@@ -108,7 +123,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the height of the map (in number of tiles)
          */
-        [[nodiscard]] unsigned height() const noexcept {
+        [[nodiscard]] unsigned height() const noexcept
+        {
             return m_height;
         }
 
@@ -117,7 +133,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the width of tiles (in pixels)
          */
-        [[nodiscard]] unsigned tile_width() const noexcept {
+        [[nodiscard]] unsigned tile_width() const noexcept
+        {
             return m_tilewidth;
         }
 
@@ -126,7 +143,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the height of tiles (in pixels)
          */
-        [[nodiscard]] unsigned tile_height() const noexcept {
+        [[nodiscard]] unsigned tile_height() const noexcept
+        {
             return m_tileheight;
         }
 
@@ -135,7 +153,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the background color
          */
-        [[nodiscard]] colori background_color() const noexcept {
+        [[nodiscard]] colori background_color() const noexcept
+        {
             return m_bgcolor;
         }
 
@@ -144,7 +163,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the render order
          */
-        [[nodiscard]] render_order_t render_order() const noexcept {
+        [[nodiscard]] render_order_t render_order() const noexcept
+        {
             return m_renderOrder;
         }
 
@@ -155,7 +175,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the hexagonal side length
          */
-        [[nodiscard]] unsigned hex_side_length() const noexcept {
+        [[nodiscard]] unsigned hex_side_length() const noexcept
+        {
             return m_hexSideLength;
         }
 
@@ -166,7 +187,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the staggered axis
          */
-        [[nodiscard]] stagger_axis_t stagger_axis() const noexcept {
+        [[nodiscard]] stagger_axis_t stagger_axis() const noexcept
+        {
             return m_axis;
         }
 
@@ -177,7 +199,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the staggered index
          */
-        [[nodiscard]] stagger_index_t stagger_index() const noexcept {
+        [[nodiscard]] stagger_index_t stagger_index() const noexcept
+        {
             return m_index;
         }
 
@@ -186,7 +209,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the next object id.
          */
-        [[nodiscard]] unsigned next_object_id() const noexcept {
+        [[nodiscard]] unsigned next_object_id() const noexcept
+        {
             return m_nextObjectId;
         }
 
@@ -206,7 +230,8 @@ namespace neutrino::tiled::tmx {
          *
          * @param tileset the tileset
          */
-        void add_tile_set(tile_set&& tileset) {
+        void add_tile_set(tile_set&& tileset)
+        {
             m_tilesets.emplace_back(std::move(tileset));
         }
 
@@ -215,7 +240,8 @@ namespace neutrino::tiled::tmx {
          *
          * @return a tileset range
          */
-        [[nodiscard]] const std::vector<tile_set>& tile_sets() const noexcept {
+        [[nodiscard]] const std::vector<tile_set>& tile_sets() const noexcept
+        {
             return m_tilesets;
         }
 
@@ -241,7 +267,13 @@ namespace neutrino::tiled::tmx {
          *
          * @param layer the layer
          */
-        void add_layer(std::unique_ptr<layer> alayer) {
+        void add_layer(tile_layer alayer)
+        {
+            m_layers.emplace_back(std::move(alayer));
+        }
+
+        void add_layer(object_layer alayer)
+        {
             m_layers.emplace_back(std::move(alayer));
         }
 
@@ -250,7 +282,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns a layer range
          */
-        [[nodiscard]] const std::vector<std::unique_ptr<layer>>& get_layers() const noexcept {
+        [[nodiscard]] const std::vector<layer_t>& get_layers() const noexcept
+        {
             return m_layers;
         }
 
@@ -259,13 +292,13 @@ namespace neutrino::tiled::tmx {
          *
          * @param visitor the visitor
          */
-         /*
-        void visitLayers(LayerVisitor& visitor) const {
-            for (auto layer : getLayers()) {
-                layer->accept(*this, visitor);
-            }
-        }
-          */
+        /*
+       void visitLayers(LayerVisitor& visitor) const {
+           for (auto layer : getLayers()) {
+               layer->accept(*this, visitor);
+           }
+       }
+         */
         /** @} */
 
 
@@ -291,7 +324,7 @@ namespace neutrino::tiled::tmx {
         const unsigned m_nextObjectId;
 
         std::vector<tile_set> m_tilesets;
-        std::vector<std::unique_ptr<layer>> m_layers;
+        std::vector<layer_t> m_layers;
     };
 }
 
