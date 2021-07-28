@@ -7,10 +7,13 @@
 
 #include "component.hh"
 #include "image.hh"
+#include "object_layer.hh"
+#include "animation.hh"
 #include "xml.hh"
 
 #include <memory>
 #include <array>
+
 
 namespace neutrino::tiled::tmx {
     /**
@@ -119,12 +122,23 @@ namespace neutrino::tiled::tmx {
             return m_image.get();
         }
 
+        [[nodiscard]] const animation& get_animation() const noexcept {
+            return m_animation;
+        }
+
+        [[nodiscard]] const object_layer* objects() const noexcept {
+            if (m_objects) {
+                return m_objects.get();
+            }
+            return nullptr;
+        }
     private:
         const unsigned m_id;
         const std::array<unsigned, 4> m_terrain;
         const unsigned m_probability;
-
+        animation m_animation;
         std::unique_ptr<image> m_image;
+        std::unique_ptr<object_layer> m_objects;
     };
 
 }

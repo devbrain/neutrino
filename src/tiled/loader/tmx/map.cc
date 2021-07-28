@@ -60,17 +60,12 @@ namespace neutrino::tiled::tmx
         elt.parse_many_elements("layer", [&result, &resolver](const xml_node& e) {
             result.m_layers.emplace_back(tile_layer::parse(e));
         });
-        /*
-        elt.parseEachElement([map,this](const XMLElementWrapper elt) {
-            if (elt.is("layer")) {
-                map->addLayer(parseLayer(elt));
-            } else if (elt.is("objectgroup")) {
-                    map->addLayer(parseObjectGroup(elt));
-                } else if (elt.is("imagelayer")) {
-                        map->addLayer(parseImageLayer(elt));
-                    }
+        elt.parse_many_elements("objectgroup", [&result, &resolver](const xml_node& e) {
+            result.m_object_layers.emplace_back(object_layer::parse(e));
         });
-         */
+        elt.parse_many_elements("imagelayer", [&result, &resolver](const xml_node& e) {
+            result.m_layers.emplace_back(image_layer::parse(e));
+        });
         return result;
     }
     // ------------------------------------------------------------------------------------------

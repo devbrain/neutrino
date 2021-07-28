@@ -11,32 +11,73 @@
 #include <variant>
 
 #include "component.hh"
+#include "color.hh"
 #include <neutrino/math/rect.hh>
 #include <neutrino/math/point.hh>
 
-namespace neutrino::tiled::tmx {
+namespace neutrino::tiled::tmx
+{
     /**
    * @brief An object is a geometrical object.
    *
    * There four kinds of geometrical objects: rectangles, ellipses, polylines
    * and polygons.
    */
-    class object : public component {
+
+    struct object_attribs
+    {
+        object_attribs(unsigned id, std::string name, std::string type,
+                       const math::point2d& origin, int width, int height, double rotation, bool visible,
+                       unsigned gid, bool hflip, bool vflip, bool dflip)
+                : m_id(id),
+                  m_name(std::move(name)),
+                  m_type(std::move(type)),
+                  m_origin(origin),
+                  m_width(width),
+                  m_height(height),
+                  m_rotation(rotation),
+                  m_visible(visible),
+                  m_gid(gid),
+                  m_hflip(hflip),
+                  m_vflip(vflip),
+                  m_dflip(dflip)
+        {}
+
+        unsigned m_id;
+        std::string m_name;
+        std::string m_type;
+        math::point2d m_origin;
+        int m_width;
+        int m_height;
+        double m_rotation;
+        bool m_visible;
+        unsigned m_gid;
+        bool m_hflip;
+        bool m_vflip;
+        bool m_dflip;
+    };
+
+    class object : public component
+    {
     public:
 
         /**
          * @brief object constructor.
          */
-        object(unsigned id, std::string  name, std::string  type,
-               const math::point2d& origin, double rotation, bool visible)
-                : m_id(id),
-                  m_name(std::move(name)),
-                  m_type(std::move(type)),
-                  m_origin(origin),
-                  m_rotation(rotation),
-                  m_visible(visible)
-        {
-        }
+        object(object_attribs atts)
+                : m_id(atts.m_id),
+                  m_name(std::move(atts.m_name)),
+                  m_type(std::move(atts.m_type)),
+                  m_origin(atts.m_origin),
+                  m_width(atts.m_width),
+                  m_height(atts.m_height),
+                  m_rotation(atts.m_rotation),
+                  m_visible(atts.m_visible),
+                  m_gid(atts.m_gid),
+                  m_hflip(atts.m_hflip),
+                  m_vflip(atts.m_vflip),
+                  m_dflip(atts.m_dflip)
+        {}
 
         object(const object&) = default;
 
@@ -45,7 +86,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the id of the object
          */
-        [[nodiscard]] unsigned id() const noexcept {
+        [[nodiscard]] unsigned id() const noexcept
+        {
             return m_id;
         }
 
@@ -54,7 +96,8 @@ namespace neutrino::tiled::tmx {
          *
          * @return the name of the object
          */
-        [[nodiscard]] std::string name() const noexcept {
+        [[nodiscard]] std::string name() const noexcept
+        {
             return m_name;
         }
 
@@ -63,10 +106,10 @@ namespace neutrino::tiled::tmx {
          *
          * @return the type of the object.
          */
-        [[nodiscard]] std::string type() const noexcept {
+        [[nodiscard]] std::string type() const noexcept
+        {
             return m_type;
         }
-
 
         /**
          * @brief Get the origin.
@@ -76,8 +119,19 @@ namespace neutrino::tiled::tmx {
          *
          * @return the origin
          */
-        [[nodiscard]] math::point2d origin() const noexcept {
+        [[nodiscard]] math::point2d origin() const noexcept
+        {
             return m_origin;
+        }
+
+        [[nodiscard]] int width() const noexcept
+        {
+            return m_width;
+        }
+
+        [[nodiscard]] int height() const noexcept
+        {
+            return m_height;
         }
 
         /**
@@ -85,7 +139,8 @@ namespace neutrino::tiled::tmx {
          *
          * @return the angle of rotation in degrees clockwise
          */
-        [[nodiscard]] double rotation() const noexcept {
+        [[nodiscard]] double rotation() const noexcept
+        {
             return m_rotation;
         }
 
@@ -94,41 +149,17 @@ namespace neutrino::tiled::tmx {
          *
          * @returns true if the object is visible
          */
-        [[nodiscard]] bool visible() const noexcept {
+        [[nodiscard]] bool visible() const noexcept
+        {
             return m_visible;
         }
-
-    private:
-        const unsigned m_id;
-        const std::string m_name;
-        const std::string m_type;
-        const math::point2d m_origin;
-        const double m_rotation;
-        const bool m_visible;
-    };
-
-    /**
-     * @brief A tile object is an image put in the map.
-     */
-    class tile_object : public object {
-    public:
         /**
-         * @brief Tileobject constructor.
-         */
-        tile_object(unsigned id, std::string name, std::string type,
-                    math::point2d origin, double rotation, bool visible, unsigned gid, bool hflip, bool vflip, bool dflip)
-                : object(id, std::move(name), std::move(type), origin, rotation, visible)
-                , m_gid(gid), m_hflip(hflip), m_vflip(vflip), m_dflip(dflip) {}
-
-        tile_object(const tile_object&) = default;
-
-
-        /**
-         * @brief Get the global id of the refering tile (if needed)
-         *
-         * @return the global id
-         */
-        [[nodiscard]] unsigned gid() const noexcept {
+        * @brief Get the global id of the refering tile (if needed)
+        *
+        * @return the global id
+        */
+        [[nodiscard]] unsigned gid() const noexcept
+        {
             return m_gid;
         }
 
@@ -137,7 +168,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns true if the tile object must be flipped horizontally
          */
-        [[nodiscard]] bool is_horizontally_flipped() const noexcept {
+        [[nodiscard]] bool is_horizontally_flipped() const noexcept
+        {
             return m_hflip;
         }
 
@@ -146,7 +178,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns true if the tile object must be flipped vertically
          */
-        [[nodiscard]] bool is_vertically_flipped() const noexcept {
+        [[nodiscard]] bool is_vertically_flipped() const noexcept
+        {
             return m_vflip;
         }
 
@@ -155,97 +188,49 @@ namespace neutrino::tiled::tmx {
          *
          * @returns true if the tile object must be flipped diagonally
          */
-        [[nodiscard]] bool is_diagonally_flipped() const noexcept {
+        [[nodiscard]] bool is_diagonally_flipped() const noexcept
+        {
             return m_dflip;
         }
-
     private:
-        const unsigned m_gid;
+        unsigned m_id;
+        std::string m_name;
+        std::string m_type;
+        math::point2d m_origin;
+        int m_width;
+        int m_height;
+        double m_rotation;
+        bool m_visible;
+        unsigned m_gid;
         bool m_hflip;
         bool m_vflip;
         bool m_dflip;
     };
 
-    /**
-     * @brief A boxed object is a geometrical object that is defined by a box.
-     *
-     * There are two kinds of boxed objects: rectangles and ellipses.
-     */
-    class boxed : public object {
+    class ellipse : public object
+    {
     public:
-
         /**
-         * @brief Boxed constructor.
+         * @brief Tileobject constructor.
          */
-        boxed(unsigned id, std::string name, std::string type,
-              math::point2d origin, double rotation, bool visible, unsigned width, unsigned height)
-                : object(id, std::move(name), std::move(type), origin, rotation, visible), m_width(width), m_height(height)
-        {
-        }
-
-        boxed(const boxed&) = default;
-
-
-        /**
-         * @brief Get the width of the box.
-         *
-         * @returns the width of the box
-         */
-        [[nodiscard]] unsigned width() const noexcept {
-            return m_width;
-        }
-
-        /**
-         * @brief Get the height of the box.
-         *
-         * @returns the height of the box
-         */
-        [[nodiscard]] unsigned height() const noexcept {
-            return m_height;
-        }
-
-    private:
-        const unsigned m_width;
-        const unsigned m_height;
-    };
-
-
-    /**
-     * @brief A rectangle is a geometrical object.
-     */
-    class rectangle : public boxed {
-    public:
-
-        /**
-         * @brief Rectangle constructor.
-         */
-        rectangle(unsigned id, std::string name, std::string type,
-                  math::point2d origin, double rotation, bool visible, unsigned width, unsigned height)
-                : boxed(id, std::move(name), std::move(type), origin, rotation, visible, width, height)
-        {
-        }
-
-        rectangle(const rectangle&) = default;
-
-    };
-
-    /**
-     * @brief An ellipse is a geometrical object.
-     */
-    class ellipse : public boxed {
-    public:
-
-        /**
-         * @brief Ellipse constructor.
-         */
-        ellipse(unsigned id, std::string name, std::string type,
-                math::point2d origin, double rotation, bool visible, unsigned width, unsigned height)
-                : boxed(id, std::move(name), std::move(type), origin, rotation, visible, width, height)
-        {
-        }
+        explicit ellipse(object_attribs a)
+                : object(std::move(a))
+        {}
 
         ellipse(const ellipse&) = default;
+    };
 
+    class point : public object
+    {
+    public:
+        /**
+         * @brief Tileobject constructor.
+         */
+        explicit point(object_attribs a)
+                : object(std::move(a))
+        {}
+
+        point(const point&) = default;
     };
 
     /**
@@ -253,25 +238,26 @@ namespace neutrino::tiled::tmx {
      *
      * There are two kinds of chain: polylines and polygons.
      */
-    class chain : public object {
+    class chain : public object
+    {
     public:
         /**
          * @brief Chain constructor.
          */
-        chain(unsigned id, std::string name, std::string type, math::point2d origin, double rotation, bool visible)
-            : object(id, std::move(name), std::move(type), origin, rotation, visible)
+        explicit chain(object_attribs a)
+                : object(std::move(a))
         {
         }
 
         chain(const chain&) = default;
-
 
         /**
          * @brief Set the points of the lines.
          *
          * @param points the points
          */
-        void points(std::vector<math::point2d> points) {
+        void points(std::vector<math::point2d> points)
+        {
             m_points = std::move(points);
         }
 
@@ -285,7 +271,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the begin iterator
          */
-        [[nodiscard]] const_iterator begin() const noexcept {
+        [[nodiscard]] const_iterator begin() const noexcept
+        {
             return m_points.cbegin();
         }
 
@@ -294,7 +281,8 @@ namespace neutrino::tiled::tmx {
          *
          * @returns the end iterator
          */
-        [[nodiscard]] const_iterator end() const noexcept {
+        [[nodiscard]] const_iterator end() const noexcept
+        {
             return m_points.cend();
         }
 
@@ -305,13 +293,14 @@ namespace neutrino::tiled::tmx {
     /**
      * @brief A polyline is an open set of lines.
      */
-    class polyline : public chain {
+    class polyline : public chain
+    {
     public:
         /**
          * @brief Polyline constructor.
          */
-        polyline(unsigned id, std::string name, std::string type, math::point2d origin, double rotation, bool visible)
-                : chain(id, std::move(name), std::move(type), origin, rotation, visible)
+        explicit polyline(object_attribs a)
+                : chain(std::move(a))
         {
         }
 
@@ -328,9 +317,8 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief Polygon constructor.
          */
-        polygon(unsigned id, std::string name, std::string type, math::point2d origin, double rotation,
-                bool visible)
-                : chain(id, std::move(name), std::move(type), origin, rotation, visible)
+        explicit polygon(object_attribs a)
+                : chain(std::move(a))
         {
         }
 
@@ -338,7 +326,111 @@ namespace neutrino::tiled::tmx {
 
     };
 
-    using object_t = std::variant<rectangle, ellipse, polygon, polyline, tile_object>;
+    class text : public object
+    {
+    public:
+        enum class halign_t
+        {
+            LEFT,
+            CENTER,
+            RIGHT,
+            JUSTIFY
+        };
+        enum class valign_t
+        {
+            TOP,
+            CENTER,
+            BOTTOM
+        };
+
+        explicit text(object_attribs a)
+        : object(a) {}
+
+        void parse(const xml_node& elt);
+
+        text(object_attribs a, std::string font_family, int pixel_size, bool wrap,
+             colori color, bool bold, bool italic, bool underline, bool strike,
+             bool kerning, halign_t halign, valign_t valign, const std::string& data)
+                : object(std::move(a)),
+                  m_font_family(std::move(font_family)),
+                  m_pixel_size(pixel_size),
+                  m_wrap(wrap),
+                  m_color(color),
+                  m_bold(bold),
+                  m_italic(italic),
+                  m_underline(underline),
+                  m_strike(strike),
+                  m_kerning(kerning),
+                  m_halign(halign),
+                  m_valign(valign),
+                  m_data(data)
+        {}
+
+        [[nodiscard]] std::string font_family() const noexcept
+        {
+            return m_font_family;
+        }
+
+        [[nodiscard]] int pixel_size() const noexcept
+        {
+            return m_pixel_size;
+        }
+        [[nodiscard]] bool wrap() const noexcept
+        {
+            return m_wrap;
+        }
+        [[nodiscard]] colori color() const noexcept
+        {
+            return m_color;
+        }
+        [[nodiscard]] bool bold() const noexcept
+        {
+            return m_bold;
+        }
+        [[nodiscard]] bool italic() const noexcept
+        {
+            return m_italic;
+        }
+        [[nodiscard]] bool underline() const noexcept
+        {
+            return m_underline;
+        }
+        [[nodiscard]] bool strike() const noexcept
+        {
+            return m_strike;
+        }
+        [[nodiscard]] bool kerning() const noexcept
+        {
+            return m_kerning;
+        }
+        [[nodiscard]] halign_t halign() const noexcept
+        {
+            return m_halign;
+        }
+        [[nodiscard]] valign_t valign() const noexcept
+        {
+            return m_valign;
+        }
+        [[nodiscard]] const std::string& data() const noexcept
+        {
+            return m_data;
+        }
+    private:
+        std::string m_font_family;
+        int m_pixel_size;
+        bool m_wrap;
+        colori m_color;
+        bool m_bold;
+        bool m_italic;
+        bool m_underline;
+        bool m_strike;
+        bool m_kerning;
+        halign_t m_halign;
+        valign_t m_valign;
+        std::string m_data;
+    };
+
+    using object_t = std::variant<object, point, ellipse, polygon, polyline, text>;
 
     object_t parse_object(const xml_node& elt);
 }

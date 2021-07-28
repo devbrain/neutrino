@@ -23,7 +23,7 @@ namespace neutrino::tiled::tmx {
         {
             std::vector<math::point2d> res;
             utils::string_tokenizer grp(points, " ", utils::string_tokenizer::TOK_IGNORE_EMPTY);
-            for (const auto g : grp) {
+            for (const auto& g : grp) {
                 utils::string_tokenizer p(g, ",", utils::string_tokenizer::TOK_IGNORE_EMPTY);
                 ENFORCE(p.count() == 2);
                 auto [x, s1] = cnv(p[0]);
@@ -38,19 +38,25 @@ namespace neutrino::tiled::tmx {
 
     object_t parse_object(const xml_node& elt)
     {
-        auto id = elt.get_uint_attribute("id", Requirement::OPTIONAL);
+        auto id = elt.get_uint_attribute("id");
         auto name = elt.get_string_attribute("name", Requirement::OPTIONAL);
         auto type = elt.get_string_attribute("type", Requirement::OPTIONAL);
-        auto x = elt.get_uint_attribute("x");
-        auto y = elt.get_uint_attribute("y");
+        auto x = elt.get_uint_attribute("x", Requirement::OPTIONAL);
+        auto y = elt.get_uint_attribute("y", Requirement::OPTIONAL);
+        auto width = elt.get_int_attribute("width", Requirement::OPTIONAL);
+        auto height = elt.get_int_attribute("height", Requirement::OPTIONAL);
+        auto gid = elt.get_int_attribute("gid", Requirement::OPTIONAL);
         double rotation = elt.get_double_attribute("rotation", Requirement::OPTIONAL);
         bool visible = elt.get_bool_attribute("visible", Requirement::OPTIONAL, true);
 
         math::point2d origin{x, y};
+        auto c = cell::decode_gid(gid);
+        object_attribs atts(id, name, type, origin, width, height, rotation, visible, c.gid(),
+                            c.hor_flipped(), c.vert_flipped(), c.diag_flipped());
 
         if (elt.has_child("polygon"))
         {
-            polygon obj(id, name, type, origin, rotation, visible);
+            polygon obj(atts);
             component::parse(obj, elt);
 
 
@@ -64,7 +70,7 @@ namespace neutrino::tiled::tmx {
 
         if (elt.has_child("polyline"))
         {
-            polyline obj(id, name, type, origin, rotation, visible);
+            polyline obj(atts);
 
             component::parse(obj, elt);
             elt.parse_one_element("polyline", [&obj](const xml_node& elt) {
@@ -73,31 +79,62 @@ namespace neutrino::tiled::tmx {
             });
         }
 
-        if (elt.has_attribute("gid"))
-        {
-            unsigned gid = elt.get_uint_attribute("gid");
-            auto c = cell::decode_gid(gid);
-
-            tile_object obj (id, name, type, origin, rotation, visible, c.gid(),
-                             c.hor_flipped(), c.vert_flipped(), c.diag_flipped());
-            component::parse(obj, elt);
-            return obj;
-        }
-
-        unsigned width = elt.get_uint_attribute("width", Requirement::OPTIONAL);
-        unsigned height = elt.get_uint_attribute("height", Requirement::OPTIONAL);
 
         if (elt.has_child("ellipse"))
         {
-            ellipse obj(id, name, type, origin, rotation, visible, width, height);
+            ellipse obj(atts);
             component::parse(obj, elt);
 
             return obj;
         }
 
-        rectangle obj  (id, name, type, origin, rotation, visible, width, height);
+        if (elt.has_child("point"))
+        {
+            point obj(atts);
+            component::parse(obj, elt);
 
+            return obj;
+        }
+
+        if (elt.has_child("text")) {
+            text obj(atts);
+            component::parse(obj, elt);
+            elt.parse_one_element("text", [&obj](const xml_node& elt) {
+                obj.parse(elt);
+            });
+            return obj;
+        }
+
+        object obj(atts);
         component::parse(obj, elt);
         return obj;
+    }
+
+    void text::parse(const xml_node& elt)
+    {
+        m_font_family = elt.get_string_attribute("fontfamily", Requirement::OPTIONAL, "sans-serif");
+        m_pixel_size = elt.get_int_attribute("pixelsize", Requirement::OPTIONAL, 16);
+        m_wrap = elt.get_bool_attribute("wrap", Requirement::OPTIONAL);
+        m_bold = elt.get_bool_attribute("bold", Requirement::OPTIONAL);
+        m_italic = elt.get_bool_attribute("italic", Requirement::OPTIONAL);
+        m_underline = elt.get_bool_attribute("underline", Requirement::OPTIONAL);
+        m_strike = elt.get_bool_attribute("strikeout", Requirement::OPTIONAL);
+        m_kerning = elt.get_bool_attribute("kerning", Requirement::OPTIONAL, true);
+
+        m_color = colori(elt.get_string_attribute("color", Requirement::OPTIONAL, "#000000"));
+
+        static const std::map<std::string, text::halign_t> hmp = {
+                {"left", text::halign_t::LEFT},
+                {"right", text::halign_t::RIGHT},
+                {"center", text::halign_t::CENTER},
+                {"justify", text::halign_t::JUSTIFY}
+        };
+        m_halign = elt.parse_enum("halign", text::halign_t::LEFT, hmp);
+        static const std::map<std::string, text::valign_t> vmp = {
+                {"center", text::valign_t::CENTER},
+                {"top", text::valign_t::TOP},
+                {"bottom", text::valign_t::BOTTOM}
+        };
+        m_valign = elt.parse_enum("valign", text::valign_t::TOP, vmp);
     }
 }

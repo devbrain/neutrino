@@ -32,6 +32,12 @@ namespace neutrino::tiled::tmx
         elt.parse_one_element("image", [&result](const xml_node& e) {
             result.set_image(image::parse(e));
         });
+        elt.parse_one_element("animation", [&result](const xml_node& e) {
+            result.m_animation = animation::parse(e);
+        });
+        elt.parse_one_element("objectgroup", [&result](const xml_node& e) {
+            result.m_objects = std::make_unique<object_layer>(object_layer::parse(e));
+        });
         return result;
     }
 }

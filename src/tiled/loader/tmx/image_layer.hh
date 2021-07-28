@@ -7,6 +7,7 @@
 
 #include "layer.hh"
 #include "image.hh"
+#include "xml.hh"
 #include <memory>
 
 namespace neutrino::tiled::tmx {
@@ -15,6 +16,9 @@ namespace neutrino::tiled::tmx {
    */
   class image_layer : public layer {
   public:
+
+      static image_layer parse(const xml_node& elt);
+
     /**
      * @brief ImageLayer constructor
      */
