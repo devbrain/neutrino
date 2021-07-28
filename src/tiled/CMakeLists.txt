@@ -24,6 +24,8 @@ my_add_library_static(tiled
         loader/tmx/tmx.cc
         loader/tmx/cell.hh
         loader/tmx/cell.cc
+        loader/tmx/animation.hh
+        loader/tmx/animation.cc
         loader/tmx/color.hh
         loader/tmx/component.cc
         loader/tmx/component.hh
@@ -32,6 +34,7 @@ my_add_library_static(tiled
         loader/tmx/layer.hh
         loader/tmx/layer.cc
         loader/tmx/image_layer.hh
+        loader/tmx/image_layer.cc
         loader/tmx/object.hh
         loader/tmx/object.cc
         loader/tmx/object_layer.hh

@@ -7,6 +7,7 @@
 
 #include "object.hh"
 #include "layer.hh"
+#include "color.hh"
 #include <memory>
 #include <utility>
 
@@ -34,7 +35,7 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief ObjectLayer constructor.
          */
-        object_layer(std::string name, double opacity, bool visible, const std::string color, draw_order_t order)
+        object_layer(std::string name, double opacity, bool visible, colori color, draw_order_t order)
                 : layer(std::move(name), opacity, visible), m_color(color), m_order(order)
         {
         }
@@ -46,10 +47,13 @@ namespace neutrino::tiled::tmx {
          *
          * @return the color to display the objects
          */
-        const std::string& color() noexcept {
+        [[nodiscard]] const colori & color() const noexcept {
             return m_color;
         }
 
+        [[nodiscard]] draw_order_t draw_order() const noexcept {
+            return m_order;
+        }
         /**
          * @brief Add an object.
          *
@@ -59,27 +63,14 @@ namespace neutrino::tiled::tmx {
             m_objects.emplace_back(std::move(obj));
         }
 
-        /**
-         * @brief Get the begin iterator on the objects.
-         *
-         * @return the begin iterator
-         */
-        [[nodiscard]] const_iterator begin() const noexcept {
-            return m_objects.begin();
+        [[nodiscard]] const objects_vec_t& objects() const noexcept {
+            return m_objects;
         }
 
-        /**
-         * @brief Get the end iterator on the objects.
-         *
-         * @return the end iterator
-         */
-        [[nodiscard]] const_iterator end() const noexcept {
-            return m_objects.end();
-        }
 
     private:
-        const std::string m_color;
-        const draw_order_t m_order;
+        colori m_color;
+        draw_order_t m_order;
         objects_vec_t m_objects;
     };
 }

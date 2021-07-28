@@ -15,11 +15,12 @@
 #include "path_resolver.hh"
 #include "tile_layer.hh"
 #include "object_layer.hh"
+#include "image_layer.hh"
 
 namespace neutrino::tiled::tmx
 {
 
-    using layer_t = std::variant<object_layer, tile_layer>;
+    using layer_t = std::variant<image_layer, tile_layer>;
 
     /**
    * @brief the orientation of the map.
@@ -272,9 +273,18 @@ namespace neutrino::tiled::tmx
             m_layers.emplace_back(std::move(alayer));
         }
 
-        void add_layer(object_layer alayer)
+        void add_layer(image_layer alayer)
         {
             m_layers.emplace_back(std::move(alayer));
+        }
+
+        void add_layer(object_layer alayer)
+        {
+            m_object_layers.emplace_back(std::move(alayer));
+        }
+
+        const std::vector<object_layer>& objects() const noexcept {
+            return m_object_layers;
         }
 
         /**
@@ -282,7 +292,7 @@ namespace neutrino::tiled::tmx
          *
          * @returns a layer range
          */
-        [[nodiscard]] const std::vector<layer_t>& get_layers() const noexcept
+        [[nodiscard]] const std::vector<layer_t>& layers() const noexcept
         {
             return m_layers;
         }
@@ -325,6 +335,7 @@ namespace neutrino::tiled::tmx
 
         std::vector<tile_set> m_tilesets;
         std::vector<layer_t> m_layers;
+        std::vector<object_layer> m_object_layers;
     };
 }
 

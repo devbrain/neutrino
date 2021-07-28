@@ -60,39 +60,49 @@ TEST_CASE("test1/example/test map attribs")
     REQUIRE(ts2.get_image()->height() == 336);
 
 
-    std::vector<int> ids = {101, 100, 280, 1,
-                            1, 0, 0, 0,
-                            0, 0, 1, 101,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            1, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 1, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0,
-                            0, 0, 0, 0};
-    REQUIRE(the_map.get_layers().size() == 2);
-    if (const auto* tl = std::get_if<tile_layer>(&the_map.get_layers()[0]); tl) {
-        int k = 0;
-        for (const auto c : *tl) {
-            REQUIRE(k < ids.size());
-            REQUIRE(c.gid() == ids[k++]);
-        }
-        REQUIRE(k == ids.size());
+    std::vector<int> ids = {
+            101, 100, 280, 1, 1, 0, 0, 0, 0, 0, 1, 101, 0, 0, 0, 0,
+            0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0
+    };
+
+    REQUIRE(the_map.layers().size() == 2);
+    const auto* tl = std::get_if<tile_layer>(&the_map.layers()[0]);
+    REQUIRE(tl);
+    int k = 0;
+    for (const auto c : *tl)
+    {
+        REQUIRE(k < ids.size());
+        REQUIRE(c.gid() == ids[k++]);
     }
+    REQUIRE(k == ids.size());
+
+    REQUIRE (the_map.objects().size() == 2);
+
+    const object_layer& oe = the_map.objects()[1];
+    REQUIRE(oe.empty());
+    REQUIRE(oe.name() == "TestObject2");
+
+    const object_layer& ol = the_map.objects()[0];
+    REQUIRE(ol.name() == "TestObject");
+    REQUIRE(ol.draw_order() == draw_order_t::TOP_DOWN);
+    REQUIRE(ol.color() == "#a0a0a4");
+    REQUIRE(test::check_properties(ol, {{"objectlayerprop", std::string("666")}}));
+
+    const auto& objects = ol.objects();
+    REQUIRE(objects.size() == 4);
+
+    const auto* o1 = std::get_if<object>(&objects[0]);
+    REQUIRE(o1 != nullptr);
+    REQUIRE(o1->id() == 1);
+    REQUIRE(o1->origin() == neutrino::math::point2d{7, 11});
+    REQUIRE(o1->width() == 51);
+    REQUIRE(o1->height() == 51);
+    REQUIRE(test::check_properties(*o1, {{"asquare", std::string("test")}}));
+
 
 }
