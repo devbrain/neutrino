@@ -136,5 +136,7 @@ namespace neutrino::tiled::tmx {
                 {"bottom", text::valign_t::BOTTOM}
         };
         m_valign = elt.parse_enum("valign", text::valign_t::TOP, vmp);
+
+        m_data = elt.get_text();
     }
 }
