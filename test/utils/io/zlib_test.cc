@@ -92,6 +92,20 @@ TEST_SUITE("zlib") {
         REQUIRE (data == "abcdefabcdefabcdefabcdefabcdefabcdef");
     }
 
+    TEST_CASE("testZSTD1")
+    {
+        std::stringstream buffer;
+        deflating_output_stream deflater(buffer, deflating_stream_buf::STREAM_ZSTD);
+        deflater << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
+        deflater << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
+        deflater.close();
+        inflating_input_stream inflater(buffer, inflating_stream_buf::STREAM_ZSTD);
+        std::string data;
+        inflater >> data;
+        REQUIRE (data == "abcdefabcdefabcdefabcdefabcdefabcdef");
+        inflater >> data;
+        REQUIRE (data == "abcdefabcdefabcdefabcdefabcdefabcdef");
+    }
 
     TEST_CASE("testGzip2")
     {
@@ -126,6 +140,34 @@ TEST_SUITE("zlib") {
         deflater2 << "bcdefabcdefabcdefabcdefabcdefabcdefa" << std::endl;
         deflater2.close();
         inflating_input_stream inflater(buffer, inflating_stream_buf::STREAM_GZIP);
+        std::string data;
+        inflater >> data;
+        REQUIRE (data == "abcdefabcdefabcdefabcdefabcdefabcdef");
+        inflater >> data;
+        REQUIRE (data == "abcdefabcdefabcdefabcdefabcdefabcdef");
+        data.clear();
+        inflater >> data;
+        REQUIRE (data.empty());
+        REQUIRE (inflater.eof());
+        inflater.reset();
+        inflater >> data;
+        REQUIRE (data == "bcdefabcdefabcdefabcdefabcdefabcdefa");
+        inflater >> data;
+        REQUIRE (data == "bcdefabcdefabcdefabcdefabcdefabcdefa");
+    }
+
+    TEST_CASE("testZSTD")
+    {
+        std::stringstream buffer;
+        deflating_output_stream deflater1(buffer, deflating_stream_buf::STREAM_ZSTD);
+        deflater1 << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
+        deflater1 << "abcdefabcdefabcdefabcdefabcdefabcdef" << std::endl;
+        deflater1.close();
+        deflating_output_stream deflater2(buffer, deflating_stream_buf::STREAM_ZSTD);
+        deflater2 << "bcdefabcdefabcdefabcdefabcdefabcdefa" << std::endl;
+        deflater2 << "bcdefabcdefabcdefabcdefabcdefabcdefa" << std::endl;
+        deflater2.close();
+        inflating_input_stream inflater(buffer, inflating_stream_buf::STREAM_ZSTD);
         std::string data;
         inflater >> data;
         REQUIRE (data == "abcdefabcdefabcdefabcdefabcdefabcdef");

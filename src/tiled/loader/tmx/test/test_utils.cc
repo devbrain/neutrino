@@ -35,4 +35,38 @@ namespace neutrino::tiled::tmx::test {
         }
         return true;
     }
+    // ---------------------------------------------------------------------------------
+    bool test_tiles(const tile_layer& tl, const std::vector<int>& expected) {
+        int k = 0;
+        for (const auto c : tl)
+        {
+            if(k >= expected.size()) {
+                return false;
+            }
+            if (c.gid() != expected[k++]) {
+                return false;
+            }
+        }
+        return (k == expected.size());
+    }
+    bool eq_cells (const std::vector<cell>& a, const std::vector<cell>& b) {
+        if (a.size() != b.size()) {
+            return false;
+        }
+        for (std::size_t i=0; i<a.size(); i++) {
+            if (a[i].hor_flipped() != b[i].hor_flipped()) {
+                return false;
+            }
+            if (a[i].vert_flipped() != b[i].vert_flipped()) {
+                return false;
+            }
+            if (a[i].diag_flipped() != b[i].diag_flipped()) {
+                return false;
+            }
+            if (a[i].gid() != b[i].gid()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

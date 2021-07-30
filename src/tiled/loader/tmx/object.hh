@@ -286,6 +286,9 @@ namespace neutrino::tiled::tmx
             return m_points.cend();
         }
 
+        [[nodiscard]] const std::vector<math::point2d>& points () const noexcept {
+            return m_points;
+        }
     private:
         std::vector<math::point2d> m_points;
     };

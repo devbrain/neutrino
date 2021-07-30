@@ -50,6 +50,8 @@ my_add_library_static(utils
 		io/inflating_stream.cc
 		${PROJECT_INCLUDE}/neutrino/utils/io/stream_copier.hh
 		io/stream_copier.cc
+		io/zstd_wrapper.cc
+		io/zstd_wrapper.hh
 
 		strings/ascii.cc
 		${PROJECT_INCLUDE}/neutrino/utils/strings/ascii.hh
@@ -93,6 +95,7 @@ my_add_library_static(utils
 		DEPENDS_PUBLIC
 			thirdparty::sdl2
 			thirdparty::zlib
+			thirdparty::zstd
 			thirdparty::strong_type
 			thirdparty::double-conversion
 )

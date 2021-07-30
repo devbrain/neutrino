@@ -10,7 +10,7 @@
 #include <variant>
 
 namespace neutrino::tiled::tmx {
-    using data_buff_t = std::string;
+    using data_buff_t = std::vector<char>;
     using int_buff_t = std::vector<int>;
     using parsed_buf_t = std::variant<data_buff_t , int_buff_t >;
     parsed_buf_t parse_data(const std::string& encoding, const std::string& compression, const std::string& data);

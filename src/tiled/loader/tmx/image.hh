@@ -106,7 +106,7 @@ namespace neutrino::tiled::tmx {
             return std::nullopt;
         }
 
-        [[nodiscard]] const std::vector<unsigned char>& data() const noexcept {
+        [[nodiscard]] const std::vector<char>& data() const noexcept {
             return m_data;
         }
     private:
@@ -116,7 +116,7 @@ namespace neutrino::tiled::tmx {
 
         const int m_width;
         const int m_height;
-        std::vector<unsigned char> m_data;
+        std::vector<char> m_data;
     };
 
 }

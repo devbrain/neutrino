@@ -41,8 +41,9 @@ namespace neutrino::utils::io
     public:
         enum type_t
         {
-            STREAM_ZLIB, /// Create a zlib header, use Adler-32 checksum.
-            STREAM_GZIP  /// Create a gzip header, use CRC-32 checksum.
+            STREAM_ZLIB,  /// Create a zlib header, use Adler-32 checksum.
+            STREAM_GZIP,  /// Create a gzip header, use CRC-32 checksum.
+            STREAM_ZSTD
         };
 
         /// Creates a DeflatingStreamBuf for compressing data read
