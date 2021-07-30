@@ -24,7 +24,8 @@ namespace neutrino::utils::io
         {
             STREAM_ZLIB, /// Expect a zlib header, use Adler-32 checksum.
             STREAM_GZIP, /// Expect a gzip header, use CRC-32 checksum.
-            STREAM_ZIP   /// STREAM_ZIP is handled as STREAM_ZLIB, except that we do not check the ADLER32 value (must be checked by caller)
+            STREAM_ZIP,   /// STREAM_ZIP is handled as STREAM_ZLIB, except that we do not check the ADLER32 value (must be checked by caller)
+            STREAM_ZSTD
         };
 
         /// Creates an InflatingStreamBuf for expanding the compressed data read from

@@ -9,6 +9,7 @@
 #include <neutrino/utils/exception.hh>
 #include <thirdparty/zlib/zlib.h>
 #include "ios_init.hh"
+#include "zstd_wrapper.hh"
 
 namespace neutrino::utils::io
 {
@@ -21,6 +22,7 @@ namespace neutrino::utils::io
                 : m_istr(&istr),
                   m_ostr(nullptr),
                   m_buffer(DEFLATE_BUFFER_SIZE),
+                  m_type(type),
                   m_eof(false)
         {
             m_zstr.next_in = nullptr;
@@ -39,7 +41,9 @@ namespace neutrino::utils::io
             m_zstr.reserved = 0;
 
 
-            int rc = deflateInit2(&m_zstr, level, Z_DEFLATED, 15 + (type == STREAM_GZIP ? 16 : 0), 8,
+            int rc = (m_type == STREAM_ZSTD) ?
+                     zstd_deflate_init(&m_zstr, level, "", Z_DEFAULT_STRATEGY) :
+                     deflateInit2(&m_zstr, level, Z_DEFLATED, 15 + (type == STREAM_GZIP ? 16 : 0), 8,
                                   Z_DEFAULT_STRATEGY);
             if (rc != Z_OK)
             {
@@ -51,6 +55,7 @@ namespace neutrino::utils::io
                 : m_istr(&istr),
                   m_ostr(nullptr),
                   m_buffer(DEFLATE_BUFFER_SIZE),
+                  m_type(STREAM_GZIP),
                   m_eof(false)
         {
             m_zstr.zalloc = Z_NULL;
@@ -61,7 +66,10 @@ namespace neutrino::utils::io
             m_zstr.next_out = nullptr;
             m_zstr.avail_out = 0;
 
-            int rc = deflateInit2(&m_zstr, level, Z_DEFLATED, windowBits, 8, Z_DEFAULT_STRATEGY);
+            int rc =  (m_type == STREAM_ZSTD) ?
+                      zstd_deflate_init(&m_zstr, level, "", Z_DEFAULT_STRATEGY) :
+                      deflateInit2(&m_zstr, level, Z_DEFLATED, windowBits, 8, Z_DEFAULT_STRATEGY);
+
             if (rc != Z_OK)
             {
                 RAISE_EX(zError(rc));
@@ -72,6 +80,7 @@ namespace neutrino::utils::io
                 : m_istr(nullptr),
                   m_ostr(&ostr),
                   m_buffer(DEFLATE_BUFFER_SIZE),
+                  m_type(type),
                   m_eof(false)
         {
             m_zstr.zalloc = Z_NULL;
@@ -82,7 +91,9 @@ namespace neutrino::utils::io
             m_zstr.next_out = nullptr;
             m_zstr.avail_out = 0;
 
-            int rc = deflateInit2(&m_zstr, level, Z_DEFLATED, 15 + (type == STREAM_GZIP ? 16 : 0), 8,
+            int rc = (m_type == STREAM_ZSTD) ?
+                     zstd_deflate_init(&m_zstr, level, "", Z_DEFAULT_STRATEGY) :
+                     deflateInit2(&m_zstr, level, Z_DEFLATED, 15 + (type == STREAM_GZIP ? 16 : 0), 8,
                                   Z_DEFAULT_STRATEGY);
             if (rc != Z_OK)
             {
@@ -94,6 +105,7 @@ namespace neutrino::utils::io
                 : m_istr(nullptr),
                   m_ostr(&ostr),
                   m_buffer(DEFLATE_BUFFER_SIZE),
+                  m_type(STREAM_GZIP),
                   m_eof(false)
         {
             m_zstr.zalloc = Z_NULL;
@@ -104,17 +116,24 @@ namespace neutrino::utils::io
             m_zstr.next_out = nullptr;
             m_zstr.avail_out = 0;
 
-            int rc = deflateInit2(&m_zstr, level, Z_DEFLATED, windowBits, 8, Z_DEFAULT_STRATEGY);
+            int rc = (m_type == STREAM_ZSTD) ?
+                              zstd_deflate_init(&m_zstr, level, "", Z_DEFAULT_STRATEGY) :
+                              deflateInit2(&m_zstr, level, Z_DEFLATED, windowBits, 8, Z_DEFAULT_STRATEGY);
             if (rc != Z_OK)
             {
                 RAISE_EX(zError(rc));
             }
         }
 
+        int do_deflate (z_streamp strm, int flush) {
+            return (m_type == STREAM_ZSTD) ? zstd_deflate(strm, flush) : deflate(strm, flush);
+        }
+
         std::istream* m_istr;
         std::ostream* m_ostr;
         std::vector<char> m_buffer;
         z_stream m_zstr;
+        deflating_stream_buf::type_t m_type;
         bool m_eof;
     };
 
@@ -167,7 +186,7 @@ namespace neutrino::utils::io
         {
             if (m_pimpl->m_zstr.next_out)
             {
-                int rc = deflate(&m_pimpl->m_zstr, Z_FINISH);
+                int rc = m_pimpl->do_deflate(&m_pimpl->m_zstr, Z_FINISH);
                 if (rc != Z_OK && rc != Z_STREAM_END)
                 {
                     RAISE_EX(zError(rc));
@@ -181,7 +200,7 @@ namespace neutrino::utils::io
                 m_pimpl->m_zstr.avail_out = DEFLATE_BUFFER_SIZE;
                 while (rc != Z_STREAM_END)
                 {
-                    rc = deflate(&m_pimpl->m_zstr, Z_FINISH);
+                    rc = m_pimpl->do_deflate(&m_pimpl->m_zstr, Z_FINISH);
                     if (rc != Z_OK && rc != Z_STREAM_END)
                     {
                         RAISE_EX(zError(rc));
@@ -212,7 +231,7 @@ namespace neutrino::utils::io
         {
             if (m_pimpl->m_zstr.next_out)
             {
-                int rc = deflate(&m_pimpl->m_zstr, Z_SYNC_FLUSH);
+                int rc = m_pimpl->do_deflate(&m_pimpl->m_zstr, Z_SYNC_FLUSH);
                 if (rc != Z_OK)
                 {
                     RAISE_EX(zError(rc));
@@ -226,7 +245,7 @@ namespace neutrino::utils::io
                 {
                     m_pimpl->m_zstr.next_out = (unsigned char*) m_pimpl->m_buffer.data();
                     m_pimpl->m_zstr.avail_out = DEFLATE_BUFFER_SIZE;
-                    rc = deflate(&m_pimpl->m_zstr, Z_SYNC_FLUSH);
+                    rc = m_pimpl->do_deflate(&m_pimpl->m_zstr, Z_SYNC_FLUSH);
                     if (rc != Z_OK)
                     {
                         RAISE_EX(zError(rc));
@@ -274,7 +293,7 @@ namespace neutrino::utils::io
         m_pimpl->m_zstr.avail_out = static_cast<unsigned>(length);
         for (;;)
         {
-            int rc = deflate(&m_pimpl->m_zstr, m_pimpl->m_eof ? Z_FINISH : Z_NO_FLUSH);
+            int rc = m_pimpl->do_deflate(&m_pimpl->m_zstr, m_pimpl->m_eof ? Z_FINISH : Z_NO_FLUSH);
             if (m_pimpl->m_eof && rc == Z_STREAM_END)
             {
                 m_pimpl->m_istr = nullptr;
@@ -321,7 +340,7 @@ namespace neutrino::utils::io
         m_pimpl->m_zstr.avail_out = DEFLATE_BUFFER_SIZE;
         for (;;)
         {
-            int rc = deflate(&m_pimpl->m_zstr, Z_NO_FLUSH);
+            int rc = m_pimpl->do_deflate(&m_pimpl->m_zstr, Z_NO_FLUSH);
             if (rc != Z_OK)
             {
                 RAISE_EX(zError(rc));

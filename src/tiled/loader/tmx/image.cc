@@ -18,9 +18,7 @@ namespace neutrino::tiled::tmx {
         elt.parse_one_element("data", [&result](const xml_node& elt) {
             auto encoding = elt.get_string_attribute("encoding", Requirement::OPTIONAL);
             auto compression = elt.get_string_attribute("compression", Requirement::OPTIONAL);
-            const auto& dt = std::get<data_buff_t>(parse_data(encoding, compression, elt.get_text()));
-            result->m_data.resize(dt.size());
-            std::memcpy(result->m_data.data(), dt.c_str(), dt.size());
+            result->m_data = std::get<data_buff_t>(parse_data(encoding, compression, elt.get_text()));
         });
         return result;
     }

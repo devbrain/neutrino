@@ -73,6 +73,11 @@ set (TEST_DATA
         test1/test_base64_level.tmx
         test1/test_csv_level.tmx
         test1/test_xml_level.tmx
+        test-rs/tiled_flipped.tmx
+        test-rs/tilesheet.tsx
+        test-rs/tiled_base64_zlib.tmx
+        test-rs/tiled_base64_gzip.tmx
+        test-rs/tiled_base64_zstandard.tmx
         )
 set (GENERATED_HEADERS )
 foreach(FILE ${TEST_DATA})
@@ -84,12 +89,11 @@ endforeach()
 add_library(neutrino_tiled_with_tests OBJECT
         loader/tmx/test/test_color.cc
         loader/tmx/test/test1_example_tmx.cc
-        loader/tmx/test/test1_base64_level.cc
-        loader/tmx/test/test1_csv_level.cc
-        loader/tmx/test/test1_xml_level.cc
+        loader/tmx/test/test_encodings.cc
+        loader/tmx/test/test_flipped.cc
         loader/tmx/test/test_utils.cc
         loader/tmx/test/test_utils.hh
-
+        loader/tmx/test/test_compression.cc
         ${GENERATED_HEADERS}
         )
 

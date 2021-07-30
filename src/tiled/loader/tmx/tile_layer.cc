@@ -5,6 +5,7 @@
 #include "tile_layer.hh"
 #include "parse_data.hh"
 #include <neutrino/utils/override.hh>
+#include <neutrino/utils/byte_order.hh>
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::tiled::tmx
@@ -20,7 +21,6 @@ namespace neutrino::tiled::tmx
             auto compression = e.get_string_attribute("compression", Requirement::OPTIONAL);
             if (encoding.empty() && compression.empty())
             {
-
                     e.parse_many_elements("tile", [&result](const xml_node& telt) {
                         auto gid = telt.get_uint_attribute("gid");
                         result.add(cell::decode_gid(gid));
@@ -36,9 +36,11 @@ namespace neutrino::tiled::tmx
                                     ENFORCE(sz % 4 == 0);
                                     for (std::size_t i = 0; i < sz; i += 4)
                                     {
-                                        unsigned gid = buff[i] | (buff[i + 1] << 8) | (buff[i + 2] << 16) |
-                                                       (buff[i + 3] << 24);
-
+                                        union {
+                                            uint8_t* bytes;
+                                            uint32_t* words;
+                                        } u = {(uint8_t*)buff.data() + i};
+                                        unsigned gid = neutrino::utils::byte_order::from_little_endian(*u.words);
                                         result.add(cell::decode_gid(gid));
                                     }
                                 },

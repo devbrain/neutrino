@@ -5,7 +5,8 @@
 #include <vector>
 #include <neutrino/utils/io/inflating_stream.hh>
 #include <neutrino/utils/exception.hh>
-#include <thirdparty/zlib/zlib.h>
+
+#include "zstd_wrapper.hh"
 #include "ios_init.hh"
 
 namespace neutrino::utils::io
@@ -21,8 +22,9 @@ namespace neutrino::utils::io
                 : m_istr(&istr),
                   m_ostr(nullptr),
                   m_eof(false),
-                  m_check(type != STREAM_ZIP),
-                  m_buffer(INFLATE_BUFFER_SIZE)
+                  m_check((type != STREAM_ZIP) && (type!=STREAM_ZSTD)),
+                  m_buffer(INFLATE_BUFFER_SIZE),
+                  m_type(type)
         {
             m_zstream.next_in = nullptr;
             m_zstream.avail_in = 0;
@@ -39,7 +41,10 @@ namespace neutrino::utils::io
             m_zstream.adler = 0;
             m_zstream.reserved = 0;
 
-            int rc = inflateInit2(&m_zstream, 15 + (type == STREAM_GZIP ? 16 : 0));
+            int rc = (m_type == STREAM_ZSTD) ?
+                     zstd_inflate_init(&m_zstream, "", 0) :
+                     inflateInit2(&m_zstream, 15 + (type == STREAM_GZIP ? 16 : 0));
+
             if (rc != Z_OK)
             {
                 RAISE_EX(zError(rc));
@@ -51,7 +56,8 @@ namespace neutrino::utils::io
                   m_ostr(nullptr),
                   m_eof(false),
                   m_check(false),
-                  m_buffer(INFLATE_BUFFER_SIZE)
+                  m_buffer(INFLATE_BUFFER_SIZE),
+                  m_type(STREAM_GZIP)
         {
             m_zstream.zalloc = Z_NULL;
             m_zstream.zfree = Z_NULL;
@@ -61,7 +67,10 @@ namespace neutrino::utils::io
             m_zstream.next_out = nullptr;
             m_zstream.avail_out = 0;
 
-            int rc = inflateInit2(&m_zstream, windowBits);
+            int rc = (m_type == STREAM_ZSTD) ?
+                     zstd_inflate_init(&m_zstream, "", 0) :
+                     inflateInit2(&m_zstream, windowBits);
+
             if (rc != Z_OK)
             {
                 RAISE_EX(zError(rc));
@@ -72,8 +81,9 @@ namespace neutrino::utils::io
                 : m_istr(nullptr),
                   m_ostr(&ostr),
                   m_eof(false),
-                  m_check(type != STREAM_ZIP),
-                  m_buffer(INFLATE_BUFFER_SIZE)
+                  m_check(type != STREAM_ZIP && type != STREAM_ZSTD),
+                  m_buffer(INFLATE_BUFFER_SIZE),
+                  m_type(type)
         {
             m_zstream.zalloc = Z_NULL;
             m_zstream.zfree = Z_NULL;
@@ -83,7 +93,10 @@ namespace neutrino::utils::io
             m_zstream.next_out = nullptr;
             m_zstream.avail_out = 0;
 
-            int rc = inflateInit2(&m_zstream, 15 + (type == STREAM_GZIP ? 16 : 0));
+            int rc = (m_type == STREAM_ZSTD) ?
+                     zstd_inflate_init(&m_zstream, "", 0) :
+                     inflateInit2(&m_zstream, 15 + (type == STREAM_GZIP ? 16 : 0));
+
             if (rc != Z_OK)
             {
                 RAISE_EX(zError(rc));
@@ -95,7 +108,8 @@ namespace neutrino::utils::io
                   m_ostr(&ostr),
                   m_eof(false),
                   m_check(false),
-                  m_buffer(INFLATE_BUFFER_SIZE)
+                  m_buffer(INFLATE_BUFFER_SIZE),
+                  m_type(STREAM_GZIP)
         {
             m_zstream.zalloc = Z_NULL;
             m_zstream.zfree = Z_NULL;
@@ -105,11 +119,19 @@ namespace neutrino::utils::io
             m_zstream.next_out = nullptr;
             m_zstream.avail_out = 0;
 
-            int rc = inflateInit2(&m_zstream, windowBits);
+            int rc = (m_type == STREAM_ZSTD) ?
+                     zstd_inflate_init(&m_zstream, "", 0) :
+                     inflateInit2(&m_zstream, windowBits);
             if (rc != Z_OK)
             {
                 RAISE_EX(zError(rc));
             }
+        }
+
+        int do_inflate (z_streamp strm, int flush) {
+            return (m_type == STREAM_ZSTD) ?
+                    zstd_inflate(strm, flush) :
+                    inflate(strm, flush);
         }
 
         std::istream* m_istr;
@@ -119,6 +141,7 @@ namespace neutrino::utils::io
         bool m_eof;
         bool m_check;
         std::vector<char> m_buffer;
+        type_t m_type;
     };
 
     inflating_stream_buf::inflating_stream_buf(std::istream& istr, type_t type)
@@ -160,7 +183,14 @@ namespace neutrino::utils::io
         catch (...)
         {
         }
-        inflateEnd(&m_pimpl->m_zstream);
+        if (m_pimpl->m_type != STREAM_ZSTD)
+        {
+            inflateEnd(&m_pimpl->m_zstream);
+        }
+        else
+        {
+            zstd_inflate_end(&m_pimpl->m_zstream);
+        }
     }
 
     int inflating_stream_buf::close()
@@ -173,7 +203,10 @@ namespace neutrino::utils::io
 
     void inflating_stream_buf::reset()
     {
-        int rc = inflateReset(&m_pimpl->m_zstream);
+        int rc = (m_pimpl->m_type != STREAM_ZSTD) ?
+                inflateReset(&m_pimpl->m_zstream) :
+                 zstd_inflate_reset(&m_pimpl->m_zstream);
+
         if (rc == Z_OK)
         {
             m_pimpl->m_eof = false;
@@ -203,7 +236,7 @@ namespace neutrino::utils::io
         m_pimpl->m_zstream.avail_out = static_cast<unsigned>(length);
         for (;;)
         {
-            int rc = inflate(&m_pimpl->m_zstream, Z_NO_FLUSH);
+            int rc = m_pimpl->do_inflate(&m_pimpl->m_zstream, Z_NO_FLUSH);
             if (rc == Z_DATA_ERROR && !m_pimpl->m_check)
             {
                 if (m_pimpl->m_zstream.avail_in == 0)
@@ -259,7 +292,7 @@ namespace neutrino::utils::io
         m_pimpl->m_zstream.avail_out = INFLATE_BUFFER_SIZE;
         for (;;)
         {
-            int rc = inflate(&m_pimpl->m_zstream, Z_NO_FLUSH);
+            int rc = m_pimpl->do_inflate(&m_pimpl->m_zstream, Z_NO_FLUSH);
             if (rc == Z_STREAM_END)
             {
                 m_pimpl->m_ostr->write(m_pimpl->m_buffer.data(), INFLATE_BUFFER_SIZE - m_pimpl->m_zstream.avail_out);

@@ -104,5 +104,14 @@ TEST_CASE("test1/example/test map attribs")
     REQUIRE(o1->height() == 51);
     REQUIRE(test::check_properties(*o1, {{"asquare", std::string("test")}}));
 
+    const auto* o2 = std::get_if<polygon>(&objects[2]);
+    REQUIRE(o2 != nullptr);
 
+    std::vector<neutrino::math::point2d> pts = {
+            {0,0}, {147,-21}, {110,-118}, {-77,-85},
+            {-136,92}, {-34,189}, {111,86}, {1,401},
+            {-355,137}, {-266,-87}, {-228,-145}, {-72,-170},
+            {103,-156}, {149,-137}, {702,101}
+    };
+    REQUIRE(o2->points() == pts);
 }

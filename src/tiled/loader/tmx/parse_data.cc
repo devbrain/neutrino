@@ -28,7 +28,7 @@ static void decode_csv(const std::string& data, std::vector<int>& out)
             auto val = neutrino::utils::trim(*field.data);
             if (!val.empty())
             {
-                int v = neutrino::utils::number_parser::parse(neutrino::utils::trim(*field.data));
+                auto v = neutrino::utils::number_parser::parse_unsigned(neutrino::utils::trim(*field.data));
                 out.push_back(v);
             }
         } else
@@ -60,7 +60,7 @@ namespace neutrino::tiled::tmx
             {
                 std::istringstream is(utils::trim(data));
                 utils::io::base64_decoder decoder(is);
-                std::string res;
+                std::vector<char> res;
                 if (!compression.empty())
                 {
 
@@ -73,14 +73,20 @@ namespace neutrino::tiled::tmx
                         case "zlib"_case:
                             type = utils::io::inflating_stream_buf::STREAM_ZLIB;
                             break;
+                        case "zstd"_case:
+                            type = utils::io::inflating_stream_buf::STREAM_ZSTD;
+                            break;
                         default:
                             RAISE_EX("Unsupported compression type ", compression);
                     }
                     utils::io::inflating_input_stream inflating_input_stream(decoder, type);
-                    inflating_input_stream >> res;
+                    res = std::vector<char>((std::istreambuf_iterator<char>(inflating_input_stream)),
+                            std::istreambuf_iterator<char>());
+
                 } else
                 {
-                    decoder >> res;
+                    res = std::vector<char>((std::istreambuf_iterator<char>(decoder)),
+                                            std::istreambuf_iterator<char>());
                 }
                 return res;
             } else

@@ -44,6 +44,10 @@ namespace neutrino::tiled::tmx
          */
         typedef typename std::vector<cell>::const_iterator const_iterator;
 
+        [[nodiscard]] const std::vector<cell>& cells() const noexcept {
+            return m_cells;
+        }
+
         /**
          * @brief Get the begin iterator on the cells.
          *
