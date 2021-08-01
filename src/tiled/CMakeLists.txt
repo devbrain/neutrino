@@ -78,6 +78,9 @@ set (TEST_DATA
         test-rs/tiled_base64_zlib.tmx
         test-rs/tiled_base64_gzip.tmx
         test-rs/tiled_base64_zstandard.tmx
+        test3/b64zlib.tmx
+        test-rs/tiled_base64_zlib_infinite.tmx
+        test-rs/tilesheet.tsx
         )
 set (GENERATED_HEADERS )
 foreach(FILE ${TEST_DATA})
@@ -94,6 +97,8 @@ add_library(neutrino_tiled_with_tests OBJECT
         loader/tmx/test/test_utils.cc
         loader/tmx/test/test_utils.hh
         loader/tmx/test/test_compression.cc
+        loader/tmx/test/test_text.cc
+        loader/tmx/test/test_infinite.cc
         ${GENERATED_HEADERS}
         )
 

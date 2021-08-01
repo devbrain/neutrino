@@ -19,7 +19,7 @@ TEST_CASE("test1/example/test map attribs")
     REQUIRE(the_map.render_order() == render_order_t::RIGHT_DOWN);
     REQUIRE(the_map.version() == "1.0");
     REQUIRE(the_map.background_color() == "#595959");
-    REQUIRE(the_map.next_object_id() == 5);
+    REQUIRE(!the_map.infinite());
 
     std::map<std::string, property_t> expected_map = {
             {"name", std::string("Test")},
@@ -74,7 +74,7 @@ TEST_CASE("test1/example/test map attribs")
     const auto* tl = std::get_if<tile_layer>(&the_map.layers()[0]);
     REQUIRE(tl);
     int k = 0;
-    for (const auto c : *tl)
+    for (const auto c : tl->cells())
     {
         REQUIRE(k < ids.size());
         REQUIRE(c.gid() == ids[k++]);

@@ -12,9 +12,44 @@
 
 namespace neutrino::tiled::tmx
 {
+
+    class chunk {
+    public:
+        static chunk parse (const xml_node& elt, const std::string encoding, const std::string& compression);
+
+        chunk (int x, int y, int w, int h)
+        : m_x(x), m_y(y), m_width(w), m_height(h) {}
+        [[nodiscard]] int x() const noexcept {
+            return m_x;
+        }
+        [[nodiscard]] int y() const noexcept {
+            return m_y;
+        }
+        [[nodiscard]] int width() const noexcept {
+            return m_width;
+        }
+        [[nodiscard]] int height() const noexcept {
+            return m_height;
+        }
+        void add(cell acell)
+        {
+            m_cells.emplace_back(acell);
+        }
+        [[nodiscard]] const std::vector<cell>& cells() const noexcept {
+            return m_cells;
+        }
+    private:
+        int m_x;
+        int m_y;
+        int m_width;
+        int m_height;
+
+        std::vector<cell> m_cells;
+    };
+
     /**
-  * @brief A tile layer is a layer with tiles in cells.
-  */
+     * @brief A tile layer is a layer with tiles in cells.
+     */
     class tile_layer : public layer
     {
     public:
@@ -29,46 +64,27 @@ namespace neutrino::tiled::tmx
 
         tile_layer(tile_layer&& ) = default;
 
-        /**
-         * @brief Add a cell to the layer.
-         *
-         * @param cell the cell
-         */
         void add(cell acell)
         {
             m_cells.emplace_back(acell);
         }
+        void add(chunk achunk)
+        {
+            m_chunks.emplace_back(achunk);
+        }
 
-        /**
-         * @brief A cell iterator.
-         */
         typedef typename std::vector<cell>::const_iterator const_iterator;
 
         [[nodiscard]] const std::vector<cell>& cells() const noexcept {
             return m_cells;
         }
 
-        /**
-         * @brief Get the begin iterator on the cells.
-         *
-         * @return the begin iterator
-         */
-        [[nodiscard]] const_iterator begin() const noexcept
-        {
-            return m_cells.cbegin();
-        }
-
-        /**
-         * @brief Get the end iterator on the cells.
-         *
-         * @return the end iterator
-         */
-        [[nodiscard]] const_iterator end() const noexcept
-        {
-            return m_cells.cend();
+        [[nodiscard]] const std::vector<chunk>& chunks() const noexcept {
+            return m_chunks;
         }
     private:
         std::vector<cell> m_cells;
+        std::vector<chunk> m_chunks;
     };
 }
 

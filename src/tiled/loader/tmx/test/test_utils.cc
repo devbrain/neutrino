@@ -38,7 +38,7 @@ namespace neutrino::tiled::tmx::test {
     // ---------------------------------------------------------------------------------
     bool test_tiles(const tile_layer& tl, const std::vector<int>& expected) {
         int k = 0;
-        for (const auto c : tl)
+        for (const auto c : tl.cells())
         {
             if(k >= expected.size()) {
                 return false;

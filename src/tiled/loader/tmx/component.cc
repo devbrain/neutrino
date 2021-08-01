@@ -37,7 +37,13 @@ namespace neutrino::tiled::tmx
             e.parse_many_elements("property", [&obj](const xml_node& inner) {
                 std::string name = inner.get_string_attribute("name");
                 ENFORCE(!name.empty());
-                std::string value = inner.get_string_attribute("value");
+                std::string value = inner.get_string_attribute("value", Requirement::OPTIONAL, "");
+                if (value.empty()) {
+                    value = inner.get_text();
+                    if (value.empty()) {
+                        RAISE_EX("No value attribute found while parsing properties");
+                    }
+                }
                 std::string type = inner.get_string_attribute("type", Requirement::OPTIONAL, "");
                 switch (switcher(value.c_str())) {
                     case "bool"_case:
