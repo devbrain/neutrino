@@ -47,10 +47,10 @@ namespace neutrino::tiled::tmx
 
         auto index = elt.parse_enum("staggerindex", stagger_index_t::ODD, stagger_index_mp);
 
-        auto next_object_id = elt.get_attribute<unsigned>("nextobjectid", Requirement::OPTIONAL);
+        auto infinite = elt.get_attribute<bool>("infinite", Requirement::OPTIONAL, false);
 
         map result(version, orientation, width, height, tilewidth, tileheight, colori(bgcolor), render_order,
-                   side_length, axis, index, next_object_id);
+                   side_length, axis, index, infinite);
 
         component::parse(result, elt);
 

@@ -10,6 +10,41 @@
 
 namespace neutrino::tiled::tmx
 {
+    // ==============================================================================
+    namespace
+    {
+        template<typename T>
+        void parse_inner_data(T& result, const xml_node& e, const std::string encoding, const std::string& compression)
+        {
+            auto data = parse_data(encoding, compression, e.get_text());
+            std::visit(
+                    utils::overload(
+                            [&result](const data_buff_t& buff) {
+                                const auto sz = buff.size();
+                                ENFORCE(sz % 4 == 0);
+                                for (std::size_t i = 0; i < sz; i += 4)
+                                {
+                                    union
+                                    {
+                                        uint8_t* bytes;
+                                        uint32_t* words;
+                                    } u = {(uint8_t*) buff.data() + i};
+                                    unsigned gid = neutrino::utils::byte_order::from_little_endian(*u.words);
+                                    result.add(cell::decode_gid(gid));
+                                }
+                            },
+                            [&result](const int_buff_t& buff) {
+                                for (auto gid : buff)
+                                {
+                                    result.add(cell::decode_gid(gid));
+                                }
+                            }),
+                    data
+            );
+        }
+    }
+    // ==============================================================================
+
     tile_layer tile_layer::parse(const xml_node& elt)
     {
         auto[name, opacity, visible] = layer::parse(elt);
@@ -21,39 +56,45 @@ namespace neutrino::tiled::tmx
             auto compression = e.get_string_attribute("compression", Requirement::OPTIONAL);
             if (encoding.empty() && compression.empty())
             {
-                    e.parse_many_elements("tile", [&result](const xml_node& telt) {
-                        auto gid = telt.get_uint_attribute("gid");
-                        result.add(cell::decode_gid(gid));
-                    });
-
+                e.parse_many_elements("tile", [&result](const xml_node& telt) {
+                    auto gid = telt.get_uint_attribute("gid");
+                    result.add(cell::decode_gid(gid));
+                });
             } else
             {
-                auto data = parse_data(encoding, compression, e.get_text());
-                std::visit(
-                        utils::overload(
-                                [&result](const data_buff_t& buff) {
-                                    const auto sz = buff.size();
-                                    ENFORCE(sz % 4 == 0);
-                                    for (std::size_t i = 0; i < sz; i += 4)
-                                    {
-                                        union {
-                                            uint8_t* bytes;
-                                            uint32_t* words;
-                                        } u = {(uint8_t*)buff.data() + i};
-                                        unsigned gid = neutrino::utils::byte_order::from_little_endian(*u.words);
-                                        result.add(cell::decode_gid(gid));
-                                    }
-                                },
-                                [&result](const int_buff_t& buff) {
-                                    for (auto gid : buff)
-                                    {
-                                        result.add(cell::decode_gid(gid));
-                                    }
-                                }),
-                        data
-                );
+                if (e.has_child("chunk")) {
+                    e.parse_many_elements("chunk", [&result, &encoding=std::as_const(encoding),
+                                                    &compression = std::as_const(compression)](const xml_node& celt) {
+                        result.add(chunk::parse(celt, encoding, compression));
+                    });
+                } else {
+                    parse_inner_data(result, e, encoding, compression);
+                }
             }
         });
+        return result;
+    }
+    // ===========================================================================================================
+    chunk chunk::parse(const xml_node& elt, const std::string encoding, const std::string& compression)
+    {
+        auto x = elt.get_attribute<int>("x");
+        auto y = elt.get_attribute<int>("y");
+        auto w = elt.get_attribute<int>("width");
+        auto h = elt.get_attribute<int>("height");
+
+        chunk result(x, y, w, h);
+
+        if (encoding.empty() && compression.empty())
+        {
+            elt.parse_many_elements("tile", [&result](const xml_node& telt) {
+                auto gid = telt.get_uint_attribute("gid");
+                result.add(cell::decode_gid(gid));
+            });
+
+        } else
+        {
+            parse_inner_data(result, elt, encoding, compression);
+        }
         return result;
     }
 }
