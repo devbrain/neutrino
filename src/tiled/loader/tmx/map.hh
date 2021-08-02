@@ -17,6 +17,7 @@
 #include "tile_layer.hh"
 #include "object_layer.hh"
 #include "image_layer.hh"
+#include "group.hh"
 
 namespace neutrino::tiled::tmx
 {
@@ -179,7 +180,8 @@ namespace neutrino::tiled::tmx
         {
             return m_layers;
         }
-
+    private:
+        static void parse_group(const xml_node& elt, map& result, const group* parent, path_resolver_t resolver);
     private:
         const std::string m_version;
 

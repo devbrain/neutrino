@@ -113,6 +113,7 @@ namespace neutrino::tiled::tmx
                     }
                 }
             }
+            RAISE_EX("Should not be here");
         }
 
         unsigned get_uint_attribute(const char* name, Requirement req = Requirement::MANDATORY, unsigned val = 0) const;

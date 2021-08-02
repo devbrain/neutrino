@@ -28,7 +28,7 @@ namespace neutrino::tiled::tmx
     {
     public:
 
-       static void parse(component& obj, const xml_node& elt);
+       static void parse(component& obj, const xml_node& elt, const component* parent = nullptr);
 
         template <typename T>
         void add(const std::string& name, T&& v) {

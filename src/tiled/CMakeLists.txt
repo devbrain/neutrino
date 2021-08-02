@@ -47,6 +47,8 @@ my_add_library_static(tiled
         loader/tmx/tile_layer.cc
         loader/tmx/tile_set.hh
         loader/tmx/tile_set.cc
+        loader/tmx/group.cc
+        loader/tmx/group.hh
         loader/tmx/map.hh
         loader/tmx/map.cc
         loader/tmx/xml.cc
