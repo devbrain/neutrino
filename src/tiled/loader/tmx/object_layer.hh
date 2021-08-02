@@ -8,6 +8,7 @@
 #include "object.hh"
 #include "layer.hh"
 #include "color.hh"
+#include "group.hh"
 #include <memory>
 #include <utility>
 
@@ -31,12 +32,18 @@ namespace neutrino::tiled::tmx {
         using const_iterator = objects_vec_t::const_iterator;
     public:
 
-        static object_layer parse(const xml_node& elt);
+        static object_layer parse(const xml_node& elt, const group* parent = nullptr);
         /**
          * @brief ObjectLayer constructor.
          */
-        object_layer(std::string name, double opacity, bool visible, colori color, draw_order_t order)
-                : layer(std::move(name), opacity, visible), m_color(color), m_order(order)
+        object_layer(std::string name, double opacity, bool visible, colori color, draw_order_t order,
+                     int offsetx, int offsety, colori tint)
+                : layer(std::move(name), opacity, visible),
+                m_offsetx(offsetx),
+                m_offsety(offsety),
+                m_tint(tint),
+                m_color(color),
+                m_order(order)
         {
         }
 
@@ -69,6 +76,9 @@ namespace neutrino::tiled::tmx {
 
 
     private:
+        int m_offsetx;
+        int m_offsety;
+        colori m_tint;
         colori m_color;
         draw_order_t m_order;
         objects_vec_t m_objects;

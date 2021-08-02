@@ -7,6 +7,7 @@
 
 #include "cell.hh"
 #include "layer.hh"
+#include "group.hh"
 #include "xml.hh"
 #include <vector>
 
@@ -15,10 +16,13 @@ namespace neutrino::tiled::tmx
 
     class chunk {
     public:
-        static chunk parse (const xml_node& elt, const std::string encoding, const std::string& compression);
+        static chunk parse (const xml_node& elt, const std::string& encoding, const std::string& compression);
 
         chunk (int x, int y, int w, int h)
         : m_x(x), m_y(y), m_width(w), m_height(h) {}
+
+        chunk(chunk&&) = default;
+
         [[nodiscard]] int x() const noexcept {
             return m_x;
         }
@@ -53,12 +57,19 @@ namespace neutrino::tiled::tmx
     class tile_layer : public layer
     {
     public:
-        static tile_layer parse(const xml_node& elt);
+        static tile_layer parse(const xml_node& elt, const group* parent = nullptr);
         /**
          * @brief TileLayer constructor.
          */
-        tile_layer(std::string name, double opacity, bool visible)
-                : layer(std::move(name), opacity, visible)
+        tile_layer(std::string name, double opacity, bool visible,
+                   int offsetx, int offsety, float parallax_x, float parallax_y,
+                   colori tint)
+                : layer(std::move(name), opacity, visible),
+                m_offsetx(offsetx),
+                m_offsety(offsety),
+                m_parallax_x(parallax_x),
+                m_parallax_y(parallax_y),
+                m_tint(tint)
         {
         }
 
@@ -68,12 +79,11 @@ namespace neutrino::tiled::tmx
         {
             m_cells.emplace_back(acell);
         }
+
         void add(chunk achunk)
         {
-            m_chunks.emplace_back(achunk);
+            m_chunks.emplace_back(std::move(achunk));
         }
-
-        typedef typename std::vector<cell>::const_iterator const_iterator;
 
         [[nodiscard]] const std::vector<cell>& cells() const noexcept {
             return m_cells;
@@ -82,7 +92,33 @@ namespace neutrino::tiled::tmx
         [[nodiscard]] const std::vector<chunk>& chunks() const noexcept {
             return m_chunks;
         }
+
+        [[nodiscard]] int offset_x() const noexcept {
+            return m_offsetx;
+        }
+
+        [[nodiscard]] int offset_y() const noexcept {
+            return m_offsety;
+        }
+
+        [[nodiscard]] colori tint() const noexcept {
+            return m_tint;
+        }
+
+        [[nodiscard]] float parallax_x() const noexcept {
+            return m_parallax_x;
+        }
+
+        [[nodiscard]] float parallax_y() const noexcept {
+            return m_parallax_y;
+        }
     private:
+        int m_offsetx;
+        int m_offsety;
+        float m_parallax_x;
+        float m_parallax_y;
+        colori m_tint;
+
         std::vector<cell> m_cells;
         std::vector<chunk> m_chunks;
     };

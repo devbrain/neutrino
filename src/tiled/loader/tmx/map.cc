@@ -52,20 +52,13 @@ namespace neutrino::tiled::tmx
         map result(version, orientation, width, height, tilewidth, tileheight, colori(bgcolor), render_order,
                    side_length, axis, index, infinite);
 
-        component::parse(result, elt);
-
         elt.parse_many_elements("tileset", [&result, &resolver](const xml_node& e) {
             result.m_tilesets.push_back(tile_set::parse(e, resolver));
         });
-        elt.parse_many_elements("layer", [&result, &resolver](const xml_node& e) {
-            result.m_layers.emplace_back(tile_layer::parse(e));
-        });
-        elt.parse_many_elements("objectgroup", [&result, &resolver](const xml_node& e) {
-            result.m_object_layers.emplace_back(object_layer::parse(e));
-        });
-        elt.parse_many_elements("imagelayer", [&result, &resolver](const xml_node& e) {
-            result.m_layers.emplace_back(image_layer::parse(e));
-        });
+
+        component::parse(result, elt);
+        parse_group(elt, result, nullptr, resolver);
+
         return result;
     }
     // ------------------------------------------------------------------------------------------
@@ -80,5 +73,21 @@ namespace neutrino::tiled::tmx
             }
         }
         return nullptr;
+    }
+    // -------------------------------------------------------------------------------------------
+    void map::parse_group(const xml_node& elt, map& result, const group* parent, path_resolver_t resolver) {
+        elt.parse_many_elements("layer", [&result, &resolver, parent](const xml_node& e) {
+            result.m_layers.emplace_back(tile_layer::parse(e, parent));
+        });
+        elt.parse_many_elements("objectgroup", [&result, &resolver, parent](const xml_node& e) {
+            result.m_object_layers.emplace_back(object_layer::parse(e, parent));
+        });
+        elt.parse_many_elements("imagelayer", [&result, &resolver, parent](const xml_node& e) {
+            result.m_layers.emplace_back(image_layer::parse(e, parent));
+        });
+        elt.parse_many_elements("group", [&result, &resolver, parent](const xml_node& e) {
+                auto current = group::parse(e, parent);
+                parse_group(e, result, &current, resolver);
+        });
     }
 }

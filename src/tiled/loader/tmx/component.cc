@@ -31,8 +31,13 @@ namespace neutrino::tiled::tmx
 
 
 
-    void component::parse(component& obj, const xml_node& elt)
+    void component::parse(component& obj, const xml_node& elt, const component* parent)
     {
+        if (parent) {
+            for (const auto& [name, val] : parent->m_prop) {
+                obj.add(name, val);
+            }
+        }
         elt.parse_one_element("properties", [&obj](const xml_node& e) {
             e.parse_many_elements("property", [&obj](const xml_node& inner) {
                 std::string name = inner.get_string_attribute("name");
@@ -70,5 +75,6 @@ namespace neutrino::tiled::tmx
                 }
             });
         });
+
     }
 }

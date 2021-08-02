@@ -14,7 +14,7 @@ namespace neutrino::tiled::tmx
     namespace
     {
         template<typename T>
-        void parse_inner_data(T& result, const xml_node& e, const std::string encoding, const std::string& compression)
+        void parse_inner_data(T& result, const xml_node& e, const std::string& encoding, const std::string& compression)
         {
             auto data = parse_data(encoding, compression, e.get_text());
             std::visit(
@@ -45,12 +45,16 @@ namespace neutrino::tiled::tmx
     }
     // ==============================================================================
 
-    tile_layer tile_layer::parse(const xml_node& elt)
+    tile_layer tile_layer::parse(const xml_node& elt, const group* parent)
     {
-        auto[name, opacity, visible] = layer::parse(elt);
-        tile_layer result(name, opacity, visible);
+        auto [name, offsetx, offsety, opacity, visible, tint] = group::parse_content(elt, parent);
 
-        component::parse(result, elt);
+        auto parallax_x = elt.get_attribute<double>("parallaxx", Requirement::OPTIONAL, 1.0);
+        auto parallax_y = elt.get_attribute<double>("parallaxy", Requirement::OPTIONAL, 1.0);
+
+        tile_layer result(name, opacity, visible, offsetx, offsety, (float)parallax_x, (float)parallax_y, tint);
+
+        component::parse(result, elt, parent);
         elt.parse_one_element("data", [&result](const xml_node e) {
             auto encoding = e.get_string_attribute("encoding", Requirement::OPTIONAL);
             auto compression = e.get_string_attribute("compression", Requirement::OPTIONAL);
@@ -75,7 +79,7 @@ namespace neutrino::tiled::tmx
         return result;
     }
     // ===========================================================================================================
-    chunk chunk::parse(const xml_node& elt, const std::string encoding, const std::string& compression)
+    chunk chunk::parse(const xml_node& elt, const std::string& encoding, const std::string& compression)
     {
         auto x = elt.get_attribute<int>("x");
         auto y = elt.get_attribute<int>("y");
