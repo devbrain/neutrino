@@ -2,10 +2,17 @@
 // Created by igor on 29/07/2021.
 //
 
+#if defined(__GNUC__) || defined(__GNUG__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
+#endif
+
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "zstd_wrapper.hh"
+#include "zstd_wrapper.h"
 #define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_isFrame, ZSTD_MAGICNUMBER, ZSTD_customMem */
 #include "zstd.h"
 
@@ -37,6 +44,8 @@ static unsigned ZWRAP_isLittleEndian(void)
 #ifndef __has_builtin
 # define __has_builtin(x) 0
 #endif
+
+
 
 static unsigned ZWRAP_swap32(unsigned in)
 {
@@ -205,7 +214,7 @@ static int ZWRAPC_finishWithError(ZWRAP_CCtx* zwc, z_streamp strm, int error)
 static int ZWRAPC_finishWithErrorMsg(z_streamp strm, const char* message)
 {
     ZWRAP_CCtx* zwc = (ZWRAP_CCtx*) strm->state;
-    strm->msg = const_cast<char*>(message);
+    strm->msg = message;
     if (zwc == NULL) return Z_STREAM_ERROR;
 
     return ZWRAPC_finishWithError(zwc, strm, 0);
@@ -227,7 +236,7 @@ static struct internal_state* convert_into_sis(void* ptr)
     return (struct internal_state*) ptr;
 }
 
-int zstd_deflate_init (z_streamp strm, int level, [[maybe_unused]] const char *version, [[maybe_unused]] int stream_size)
+int zstd_deflate_init (z_streamp strm, int level, const char *version,  int stream_size)
 {
     ZWRAP_CCtx* zwc;
 
@@ -251,10 +260,10 @@ int zstd_deflate_init (z_streamp strm, int level, [[maybe_unused]] const char *v
 
 
 int zstd_deflate_init2 (z_streamp strm, int level,
-                        [[maybe_unused]] int method,
-                        [[maybe_unused]] int windowBits,
-                        [[maybe_unused]] int memLevel,
-                        [[maybe_unused]] int strategy, const char *version, int stream_size)
+                        int method,
+                        int windowBits,
+                        int memLevel,
+                        int strategy, const char *version, int stream_size)
 {
     return zstd_deflate_init(strm, level, version, stream_size);
 }
@@ -424,13 +433,13 @@ int zstd_deflate_end (z_streamp strm)
 }
 
 
-uLong zstd_deflate_bound ([[maybe_unused]]z_streamp strm, uLong sourceLen)
+uLong zstd_deflate_bound (z_streamp strm, uLong sourceLen)
 {
     return ZSTD_compressBound(sourceLen);
 }
 
 
-int zstd_deflate_params ([[maybe_unused]]z_streamp strm, [[maybe_unused]]int level, [[maybe_unused]]int strategy)
+int zstd_deflate_params (z_streamp strm, int level, int strategy)
 {
     return Z_OK;
 }
@@ -517,7 +526,7 @@ static int ZWRAPD_finishWithError(ZWRAP_DCtx* zwd, z_streamp strm, int error)
 static int ZWRAPD_finishWithErrorMsg(z_streamp strm, const char* message)
 {
     ZWRAP_DCtx* const zwd = (ZWRAP_DCtx*) strm->state;
-    strm->msg = const_cast<char*>(message);
+    strm->msg = message;
     if (zwd == NULL) return Z_STREAM_ERROR;
 
     return ZWRAPD_finishWithError(zwd, strm, 0);
@@ -875,33 +884,33 @@ int zstd_inflate_sync (z_streamp strm)
 
 
 /* Advanced compression functions */
-int zstd_deflate_copy ([[maybe_unused]]z_streamp dest, z_streamp source)
+int zstd_deflate_copy (z_streamp dest, z_streamp source)
 {
     return ZWRAPC_finishWithErrorMsg(source, "deflateCopy is not supported!");
 }
 
 
-int zstd_deflate_tune (z_streamp strm, [[maybe_unused]]int good_length, [[maybe_unused]]int max_lazy, [[maybe_unused]]int nice_length, [[maybe_unused]]int max_chain)
+int zstd_deflate_tune (z_streamp strm, int good_length, int max_lazy, int nice_length, int max_chain)
 {
     return ZWRAPC_finishWithErrorMsg(strm, "deflateTune is not supported!");
 }
 
 
 #if ZLIB_VERNUM >= 0x1260
-int zstd_deflate_pending (z_streamp strm, [[maybe_unused]]unsigned *pending, [[maybe_unused]]int *bits)
+int zstd_deflate_pending (z_streamp strm, unsigned *pending, int *bits)
 {
     return ZWRAPC_finishWithErrorMsg(strm, "deflatePending is not supported!");
 }
 #endif
 
 
-int zstd_deflate_prime (z_streamp strm, [[maybe_unused]]int bits, [[maybe_unused]]int value)
+int zstd_deflate_prime (z_streamp strm, int bits, int value)
 {
     return ZWRAPC_finishWithErrorMsg(strm, "deflatePrime is not supported!");
 }
 
 
-int zstd_deflate_set_header (z_streamp strm, [[maybe_unused]] gz_headerp head)
+int zstd_deflate_set_header (z_streamp strm, gz_headerp head)
 {
     return ZWRAPC_finishWithErrorMsg(strm, "deflateSetHeader is not supported!");
 }

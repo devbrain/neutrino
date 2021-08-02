@@ -9,7 +9,7 @@
 #include <neutrino/utils/exception.hh>
 #include <thirdparty/zlib/zlib.h>
 #include "ios_init.hh"
-#include "zstd_wrapper.hh"
+#include "zstd_wrapper.h"
 
 namespace neutrino::utils::io
 {

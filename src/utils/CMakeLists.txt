@@ -50,8 +50,8 @@ my_add_library_static(utils
 		io/inflating_stream.cc
 		${PROJECT_INCLUDE}/neutrino/utils/io/stream_copier.hh
 		io/stream_copier.cc
-		io/zstd_wrapper.cc
-		io/zstd_wrapper.hh
+        io/zstd_wrapper.c
+		io/zstd_wrapper.h
 
 		strings/ascii.cc
 		${PROJECT_INCLUDE}/neutrino/utils/strings/ascii.hh
