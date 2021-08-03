@@ -134,6 +134,12 @@ namespace neutrino::utils::io
                     inflate(strm, flush);
         }
 
+        ~impl() {
+            if (m_type == STREAM_ZSTD) {
+                zstd_inflate_end(&m_zstream);
+            }
+        }
+
         std::istream* m_istr;
         std::ostream* m_ostr;
 

@@ -129,6 +129,12 @@ namespace neutrino::utils::io
             return (m_type == STREAM_ZSTD) ? zstd_deflate(strm, flush) : deflate(strm, flush);
         }
 
+        ~impl() {
+            if (m_type == STREAM_ZSTD) {
+                zstd_deflate_end(&m_zstr);
+            }
+        }
+
         std::istream* m_istr;
         std::ostream* m_ostr;
         std::vector<char> m_buffer;
