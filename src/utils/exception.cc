@@ -30,7 +30,7 @@ namespace neutrino {
                 const exception* cause = m_chain.get();
                 while (cause)
                 {
-                    os << "\n" << "|-> Caused by: "
+                    os << "\n" << "|-> "
                     <<  _create(true, s_use_function_sig ? cause->m_function.c_str() : "",
                                 cause->m_source.c_str(), cause->m_line, cause->m_text);
                     cause = cause->m_chain.get();
@@ -55,25 +55,25 @@ namespace neutrino {
         auto pfx2 = utils::string_factory("");
 #endif
 
-        if constexpr(pfx1.Length() < pfx2.Length()) {
-            const char* p = strstr(source, pfx2.Get());
+        if constexpr(pfx1.length() < pfx2.length()) {
+            const char* p = strstr(source, pfx2.c_str());
             if (!p) {
-                p = strstr(source, pfx1.Get());
+                p = strstr(source, pfx1.c_str());
                 if (p) {
-                    return remove_slash(source + pfx1.Length());
+                    return remove_slash(source + pfx1.length());
                 }
             } else {
-                return remove_slash(source + pfx2.Length());
+                return remove_slash(source + pfx2.length());
             }
         } else {
-            const char* p = strstr(source, pfx1.Get());
+            const char* p = strstr(source, pfx1.c_str());
             if (!p) {
-                p = strstr(source, pfx2.Get());
+                p = strstr(source, pfx2.c_str());
                 if (p) {
-                    return remove_slash(source + pfx2.Length());
+                    return remove_slash(source + pfx2.length());
                 }
             } else {
-                return remove_slash(source + pfx1.Length());
+                return remove_slash(source + pfx1.length());
             }
         }
         return source;
