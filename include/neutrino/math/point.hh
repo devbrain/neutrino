@@ -7,9 +7,11 @@
 
 
 #include <glm/ext/vector_int2.hpp>
+#include <glm/ext/vector_float2.hpp>
 
 namespace neutrino::math {
     using point2d = glm::ivec2;
+    using point2f = glm::vec2;
 }
 
 #endif

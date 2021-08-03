@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="32" tileheight="32" nextobjectid="6">
  <properties>
-  <property name="BigInteger" type="int" value="999999999"/>
+  <property name="BigInteger" type="int" value="zopa999999999"/>
   <property name="EmptyProperty" value=""/>
   <property name="FalseProperty" type="bool" value="false"/>
   <property name="FileProperty" type="file" value="torches.png"/>

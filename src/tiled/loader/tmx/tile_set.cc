@@ -34,33 +34,37 @@ namespace neutrino::tiled::tmx {
     tile_set tile_set::parse_inner(unsigned first_gid, const xml_node& elt)
     {
         auto name = elt.get_string_attribute("name", Requirement::OPTIONAL);
-        auto tilewidth = elt.get_uint_attribute("tilewidth", Requirement::OPTIONAL);
-        auto tileheight = elt.get_uint_attribute("tileheight", Requirement::OPTIONAL);
-        auto spacing = elt.get_uint_attribute("spacing", Requirement::OPTIONAL);
-        auto margin = elt.get_uint_attribute("margin", Requirement::OPTIONAL);
-        auto tilecount = elt.get_uint_attribute("tilecount", Requirement::OPTIONAL);
+        try {
+            auto tilewidth = elt.get_uint_attribute("tilewidth", Requirement::OPTIONAL);
+            auto tileheight = elt.get_uint_attribute("tileheight", Requirement::OPTIONAL);
+            auto spacing = elt.get_uint_attribute("spacing", Requirement::OPTIONAL);
+            auto margin = elt.get_uint_attribute("margin", Requirement::OPTIONAL);
+            auto tilecount = elt.get_uint_attribute("tilecount", Requirement::OPTIONAL);
 
-        tile_set result(first_gid, name, tilewidth, tileheight, spacing, margin, tilecount);
-        component::parse(result, elt);
-        elt.parse_one_element("tileoffset", [&result](const xml_node& elt) {
-            int x = elt.get_int_attribute("x");
-            int y = elt.get_int_attribute("y");
-            result.offset(x, y);
-        });
-        elt.parse_one_element("image", [&result](const xml_node& e) {
-            result.set_image(image::parse(e));
-        });
-        elt.parse_one_element("terraintypes", [&result](const xml_node& e){
-            e.parse_many_elements("terrain", [&result](const xml_node& elt){
-                result.add_terrain(terrain::parse(elt));
+            tile_set result(first_gid, name, tilewidth, tileheight, spacing, margin, tilecount);
+            component::parse(result, elt);
+            elt.parse_one_element("tileoffset", [&result](const xml_node& elt) {
+                int x = elt.get_int_attribute("x");
+                int y = elt.get_int_attribute("y");
+                result.offset(x, y);
             });
-        });
+            elt.parse_one_element("image", [&result](const xml_node& e) {
+                result.set_image(image::parse(e));
+            });
+            elt.parse_one_element("terraintypes", [&result](const xml_node& e){
+                e.parse_many_elements("terrain", [&result](const xml_node& elt){
+                    result.add_terrain(terrain::parse(elt));
+                });
+            });
 
-        elt.parse_many_elements("tile", [&result](const xml_node& e){
-            result.add_tile(tile::parse(e));
-        });
+            elt.parse_many_elements("tile", [&result](const xml_node& e){
+                result.add_tile(tile::parse(e));
+            });
 
-        return result;
+            return result;
+        } catch (exception& e) {
+            RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse tileset name [", name, "], first_gid [", first_gid, "]");
+        }
     }
     // -----------------------------------------------------------------------------------------------------
     tile_set tile_set::parse_from_file(unsigned first_gid, const std::string& source, const path_resolver_t& resolver)
@@ -77,7 +81,11 @@ namespace neutrino::tiled::tmx {
         {
             RAISE_EX ("entry node <tileset> is missing");
         }
-        return parse_inner(first_gid, xml_node(root));
+        try {
+            return parse_inner(first_gid, xml_node(root));
+        } catch (exception& e) {
+            RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse external tileset [", source, "]");
+        }
     }
     // -----------------------------------------------------------------------------------------------------
     tile_set tile_set::parse(const xml_node& elt, const path_resolver_t& resolver) {

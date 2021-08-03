@@ -29,12 +29,12 @@ namespace neutrino::tiled::tmx
         return i->second;
     }
 
-
-
     void component::parse(component& obj, const xml_node& elt, const component* parent)
     {
-        if (parent) {
-            for (const auto& [name, val] : parent->m_prop) {
+        if (parent)
+        {
+            for (const auto&[name, val] : parent->m_prop)
+            {
                 obj.add(name, val);
             }
         }
@@ -43,35 +43,49 @@ namespace neutrino::tiled::tmx
                 std::string name = inner.get_string_attribute("name");
                 ENFORCE(!name.empty());
                 std::string value = inner.get_string_attribute("value", Requirement::OPTIONAL, "");
-                if (value.empty()) {
+                if (value.empty())
+                {
                     value = inner.get_text();
-                    if (value.empty()) {
-                        RAISE_EX("No value attribute found while parsing properties");
+                }
+
+                std::string type = inner.get_string_attribute("type", Requirement::OPTIONAL, "string");
+                if (type != "string")
+                {
+                    if (value.empty())
+                    {
+                        RAISE_EX("Empty property value for non string type");
                     }
                 }
-                std::string type = inner.get_string_attribute("type", Requirement::OPTIONAL, "");
-                switch (switcher(value.c_str())) {
-                    case "bool"_case:
-                        obj.add(name, utils::number_parser::parse_bool(value));
-                        break;
-                    case "int"_case:
-                        obj.add(name, utils::number_parser::parse(name));
-                        break;
-                    case "float"_case:
-                        obj.add(name, (float)utils::number_parser::parse_float(value));
-                        break;
-                    case "color"_case:
-                        obj.add(name, colori(value));
-                        break;
-                    case "file"_case:
-                        obj.add(name, std::filesystem::path(value.empty() ? "." : value));
-                        break;
-                    case "object"_case:
-                        obj.add(name, object_id(utils::number_parser::parse(value)));
-                        break;
-                    default:
-                        obj.add(name, value);
-                        break;
+                try
+                {
+                    switch (switcher(type.c_str()))
+                    {
+                        case "bool"_case:
+                            obj.add(name, utils::number_parser::parse_bool(value));
+                            break;
+                        case "int"_case:
+                            obj.add(name, utils::number_parser::parse64(value));
+                            break;
+                        case "float"_case:
+                            obj.add(name, (float) utils::number_parser::parse_float(value));
+                            break;
+                        case "color"_case:
+                            obj.add(name, colori(value));
+                            break;
+                        case "file"_case:
+                            obj.add(name, std::filesystem::path(value.empty() ? "." : value));
+                            break;
+                        case "object"_case:
+                            obj.add(name, object_id(utils::number_parser::parse(value)));
+                            break;
+                        default:
+                            obj.add(name, value);
+                            break;
+                    }
+                }
+                catch (exception& e)
+                {
+                    RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse property [", name, "] of type [", type, "]");
                 }
             });
         });

@@ -27,7 +27,7 @@ namespace neutrino::tiled::tmx
     struct object_attribs
     {
         object_attribs(unsigned id, std::string name, std::string type,
-                       const math::point2d& origin, int width, int height, double rotation, bool visible,
+                       const math::point2f& origin, int width, int height, double rotation, bool visible,
                        unsigned gid, bool hflip, bool vflip, bool dflip)
                 : m_id(id),
                   m_name(std::move(name)),
@@ -46,7 +46,7 @@ namespace neutrino::tiled::tmx
         unsigned m_id;
         std::string m_name;
         std::string m_type;
-        math::point2d m_origin;
+        math::point2f m_origin;
         int m_width;
         int m_height;
         double m_rotation;
@@ -119,7 +119,7 @@ namespace neutrino::tiled::tmx
          *
          * @return the origin
          */
-        [[nodiscard]] math::point2d origin() const noexcept
+        [[nodiscard]] math::point2f origin() const noexcept
         {
             return m_origin;
         }
@@ -196,7 +196,7 @@ namespace neutrino::tiled::tmx
         unsigned m_id;
         std::string m_name;
         std::string m_type;
-        math::point2d m_origin;
+        math::point2f m_origin;
         int m_width;
         int m_height;
         double m_rotation;
@@ -256,7 +256,7 @@ namespace neutrino::tiled::tmx
          *
          * @param points the points
          */
-        void points(std::vector<math::point2d> points)
+        void points(std::vector<math::point2f> points)
         {
             m_points = std::move(points);
         }
@@ -264,7 +264,7 @@ namespace neutrino::tiled::tmx
         /**
          * @brief A point iterator.
          */
-        typedef typename std::vector<math::point2d>::const_iterator const_iterator;
+        typedef typename std::vector<math::point2f>::const_iterator const_iterator;
 
         /**
          * @brief Get the begin iterator on the points.
@@ -286,11 +286,11 @@ namespace neutrino::tiled::tmx
             return m_points.cend();
         }
 
-        [[nodiscard]] const std::vector<math::point2d>& points () const noexcept {
+        [[nodiscard]] const std::vector<math::point2f>& points () const noexcept {
             return m_points;
         }
     private:
-        std::vector<math::point2d> m_points;
+        std::vector<math::point2f> m_points;
     };
 
     /**
