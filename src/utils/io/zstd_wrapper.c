@@ -857,7 +857,7 @@ int zstd_inflate (z_streamp strm, int flush)
 
 int zstd_inflate_end (z_streamp strm)
 {
-    if (g_ZWRAPdecompressionType == ZWRAP_FORCE_ZLIB || !strm->reserved)
+    if (!strm->reserved)
         return inflateEnd(strm);
 
     LOG_WRAPPERD("- inflateEnd total_in=%d total_out=%d\n",

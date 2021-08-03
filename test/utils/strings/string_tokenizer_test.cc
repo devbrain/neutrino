@@ -354,8 +354,8 @@ TEST_SUITE("StringTokenizer")
         REQUIRE (st.find("2", 3) == 5);
         REQUIRE (st.find("3", 4) == 4);
 
-        REQUIRE_THROWS_AS(st.find("4"), std::runtime_error);
-        REQUIRE_THROWS_AS(st[8], std::runtime_error);
+        REQUIRE_THROWS_AS(st.find("4"), neutrino::exception);
+        REQUIRE_THROWS_AS(st[8], neutrino::exception);
 
 
         st[0] = "1";
