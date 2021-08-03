@@ -112,13 +112,13 @@ namespace neutrino::utils
             return index < N ? m_value[index] : throw std::out_of_range("Index out of range");
         }
 
-        [[nodiscard]] constexpr const char* Get() const
+        [[nodiscard]] constexpr const char* c_str() const
         { return m_value.data(); }
 
-        [[nodiscard]] constexpr std::size_t Length() const
+        [[nodiscard]] constexpr std::size_t length() const
         { return N; }
 
-        [[nodiscard]] std::string ToString() const
+        [[nodiscard]] std::string to_string() const
         { return std::string(m_value); }
 
     protected:

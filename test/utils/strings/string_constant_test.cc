@@ -27,5 +27,5 @@ TEST_CASE("String constants test")
 
     // Odds and ends
     static_assert( (foo + bar)[3] == 'b', "Failure, is unacceptable" );
-    static_assert( (foo + bar).Length( ) == 6, "Failure, is unacceptable" );
+    static_assert((foo + bar).length() == 6, "Failure, is unacceptable" );
 }
