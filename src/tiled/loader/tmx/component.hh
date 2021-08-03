@@ -22,7 +22,7 @@ namespace neutrino::tiled::tmx
     }
     using object_id = strong::type<int, detail::object_id_s, strong::ordered, strong::equality>;
 
-    using property_t = std::variant<std::string, int, bool, float, colori, std::filesystem::path, object_id>;
+    using property_t = std::variant<std::string, int64_t, bool, float, colori, std::filesystem::path, object_id>;
 
     class component
     {

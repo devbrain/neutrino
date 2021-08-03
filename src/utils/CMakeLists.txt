@@ -26,6 +26,7 @@ my_add_library_static(utils
 		${PROJECT_INCLUDE}/neutrino/utils/pp_for_each.h
 		${PROJECT_INCLUDE}/neutrino/utils/macros.hh
 		${PROJECT_INCLUDE}/neutrino/utils/exception.hh
+		exception.cc
 		${PROJECT_INCLUDE}/neutrino/utils/logger.hh
 		${PROJECT_INCLUDE}/neutrino/utils/register_at_exit.hh
 		${PROJECT_INCLUDE}/neutrino/utils/singleton.hh
@@ -99,4 +100,7 @@ my_add_library_static(utils
 			thirdparty::strong_type
 			thirdparty::double-conversion
 )
-	
+
+target_compile_definitions(neutrino_utils PRIVATE
+		NEUTRINO_PATH_PRIVATE="${PROJECT_INCLUDE_PRIVATE}"
+        NEUTRINO_PATH_INCLUDE="${PROJECT_INCLUDE}")

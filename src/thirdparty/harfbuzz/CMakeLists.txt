@@ -86,6 +86,9 @@ macro (check_funcs) # Similar to AC_CHECK_FUNCS of autotools
 endmacro ()
 
 #cmake_policy(CMP0075)
+if(POLICY CMP0075)
+  cmake_policy(SET CMP0075 NEW)
+endif()
 
 if (UNIX)
   list(APPEND CMAKE_REQUIRED_LIBRARIES m)

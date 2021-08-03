@@ -94,8 +94,9 @@ namespace neutrino::utils
         if (try_parse_64(s, result, thSep))
         {
             return result;
-        } else
+        } else {
             RAISE_EX("Not a valid integer", s);
+        }
     }
 
     bool number_parser::try_parse_64(const std::string& s, int64_t& value, char thousandSeparator)

@@ -9,6 +9,7 @@ namespace neutrino::tiled::tmx
     group group::parse(const xml_node& elt, const group* parent)
     {
         group res;
+
         if (parent) {
             res.offsetx = parent->offsetx;
             res.offsety = parent->offsety;
@@ -16,27 +17,32 @@ namespace neutrino::tiled::tmx
             res.visible = parent->visible;
             res.tint    = parent->tint;
         }
-        if (elt.has_attribute("offsetx"))
-        {
-            res.offsetx = elt.get_attribute<int>("offsetx");
+        auto name = elt.get_string_attribute("name", Requirement::OPTIONAL, "<unknown>");
+        try {
+            if (elt.has_attribute("offsetx"))
+            {
+                res.offsetx = elt.get_attribute<int>("offsetx");
+            }
+            if (elt.has_attribute("offsety"))
+            {
+                res.offsety = elt.get_attribute<int>("offsety");
+            }
+            if (elt.has_attribute("opacity"))
+            {
+                res.opacity = elt.get_attribute<double>("opacity");
+            }
+            if (elt.has_attribute("visible"))
+            {
+                res.visible = elt.get_attribute<bool>("visible");
+            }
+            if (elt.has_attribute("tintcolor"))
+            {
+                res.tint = colori(elt.get_string_attribute("tintcolor"));
+            }
+            component::parse(res, elt, parent);
+        } catch (exception &e) {
+            RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse group [", name, "]");
         }
-        if (elt.has_attribute("offsety"))
-        {
-            res.offsety = elt.get_attribute<int>("offsety");
-        }
-        if (elt.has_attribute("opacity"))
-        {
-            res.opacity = elt.get_attribute<double>("opacity");
-        }
-        if (elt.has_attribute("visible"))
-        {
-            res.visible = elt.get_attribute<bool>("visible");
-        }
-        if (elt.has_attribute("tintcolor"))
-        {
-            res.tint = colori(elt.get_string_attribute("tintcolor"));
-        }
-        component::parse(res, elt, parent);
         return res;
     }
 

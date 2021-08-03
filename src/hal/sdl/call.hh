@@ -15,21 +15,13 @@ namespace neutrino::sdl
     public:
         template <typename ... Args>
         sdl_error(const char* function, const char* source, int line, Args&&... args)
-        : exception(_create(function, source, line, std::forward<Args&&>(args)...)) {}
-
+        : exception(exception::dummy_t::CUSTOM, _create_prefix(function, source, line),
+                    function, source, line, std::forward<Args>(args)...) {}
     private:
-        template <typename ... Args>
-        static std::string _create(const char* function, const char* source, int line, Args&&... args) {
+        static std::string _create_prefix(const char* function, const char* source, int line) {
             std::ostringstream os;
-
             os << "SDL error [" << SDL_GetError() << "] at ";
-
             os  << function << " " << source << "@" << line;
-            if constexpr (sizeof...(args) > 0)
-            {
-                os << " :";
-                ((os << ' ' << std::forward<Args>(args)), ...);
-            }
             return os.str();
         }
     };
