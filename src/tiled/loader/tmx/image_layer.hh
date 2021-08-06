@@ -7,7 +7,7 @@
 
 #include "layer.hh"
 #include "image.hh"
-#include "xml.hh"
+#include "reader.hh"
 #include "group.hh"
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace neutrino::tiled::tmx
     {
     public:
 
-        static image_layer parse(const xml_node& elt, const group* parent = nullptr);
+        static image_layer parse(const reader& elt, const group* parent = nullptr);
 
         image_layer(const std::string& name, double opacity, bool visible,
                     int offsetx, int offsety, colori tint)

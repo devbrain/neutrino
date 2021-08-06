@@ -9,7 +9,7 @@
 #include <optional>
 #include <vector>
 #include <neutrino/math/point.hh>
-#include "xml.hh"
+#include "reader.hh"
 #include <memory>
 
 namespace neutrino::tiled::tmx {
@@ -19,7 +19,7 @@ namespace neutrino::tiled::tmx {
     class image {
     public:
 
-        static std::unique_ptr<image> parse(const xml_node& elt);
+        static std::unique_ptr<image> parse(const reader& elt);
 
         /**
          * @brief Image constructor.

@@ -7,7 +7,8 @@
 #include <neutrino/tiled/world/tile_sheet_manager.hh>
 #include <neutrino/tiled/world/world.hh>
 #include <neutrino/utils/exception.hh>
-#include <pugixml.hpp>
+
+#include "xml_reader.hh"
 
 #include "map.hh"
 
@@ -31,7 +32,7 @@ namespace neutrino::tiled::tmx {
         {
             RAISE_EX ("entry node <map> is missing");
         }
-        map::parse(xml_node(root), [](const std::string&) {return "";});
+        map::parse(xml_reader(root), [](const std::string&) {return "";});
         return nullptr;
     }
 }

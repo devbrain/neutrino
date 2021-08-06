@@ -6,7 +6,7 @@
 #include "layer.hh"
 namespace neutrino::tiled::tmx
 {
-    group group::parse(const xml_node& elt, const group* parent)
+    group group::parse(const reader& elt, const group* parent)
     {
         group res;
 
@@ -17,23 +17,23 @@ namespace neutrino::tiled::tmx
             res.visible = parent->visible;
             res.tint    = parent->tint;
         }
-        auto name = elt.get_string_attribute("name", Requirement::OPTIONAL, "<unknown>");
+        auto name = elt.get_string_attribute("name",  "<unknown>");
         try {
             if (elt.has_attribute("offsetx"))
             {
-                res.offsetx = elt.get_attribute<int>("offsetx");
+                res.offsetx = elt.get_int_attribute("offsetx");
             }
             if (elt.has_attribute("offsety"))
             {
-                res.offsety = elt.get_attribute<int>("offsety");
+                res.offsety = elt.get_int_attribute("offsety");
             }
             if (elt.has_attribute("opacity"))
             {
-                res.opacity = elt.get_attribute<double>("opacity");
+                res.opacity = elt.get_double_attribute("opacity");
             }
             if (elt.has_attribute("visible"))
             {
-                res.visible = elt.get_attribute<bool>("visible");
+                res.visible = elt.get_bool_attribute("visible");
             }
             if (elt.has_attribute("tintcolor"))
             {
@@ -46,7 +46,7 @@ namespace neutrino::tiled::tmx
         return res;
     }
 
-    std::tuple<std::string, int, int, float, bool, colori> group::parse_content(const xml_node& elt, const group* self) {
+    std::tuple<std::string, int, int, float, bool, colori> group::parse_content(const reader& elt, const group* self) {
         auto [name, opacity, visible] = layer::parse(elt);
 
         int offsetx = default_offset_x, offsety = default_offset_y;
@@ -54,7 +54,7 @@ namespace neutrino::tiled::tmx
 
         if (elt.has_attribute("offsetx"))
         {
-            offsetx = elt.get_attribute<int>("offsetx");
+            offsetx = elt.get_int_attribute("offsetx");
         } else {
             if (self && self->offsetx) {
                 offsetx = *self->offsetx;
@@ -63,7 +63,7 @@ namespace neutrino::tiled::tmx
 
         if (elt.has_attribute("offsety"))
         {
-            offsety = elt.get_attribute<int>("offsety");
+            offsety = elt.get_int_attribute("offsety");
         } else {
             if (self && self->offsety) {
                 offsety = *self->offsety;

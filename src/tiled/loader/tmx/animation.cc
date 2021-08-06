@@ -6,9 +6,9 @@
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::tiled::tmx {
-    animation animation::parse(const xml_node& elt) {
+    animation animation::parse(const reader& elt) {
         animation obj;
-        elt.parse_many_elements("frame", [&obj](const xml_node&e) {
+        elt.parse_many_elements("frame", [&obj](const reader&e) {
             auto id = e.get_int_attribute("tileid");
             auto d = e.get_uint_attribute("duration");
             obj.add({id, std::chrono::milliseconds{d}});

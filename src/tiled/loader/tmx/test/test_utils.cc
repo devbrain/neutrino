@@ -6,6 +6,8 @@
 #include <sstream>
 #include <neutrino/utils/io/memory_stream_buf.hh>
 #include <neutrino/utils/exception.hh>
+#include <utility>
+#include "tiled/loader/tmx/xml_reader.hh"
 
 namespace neutrino::tiled::tmx::test {
     map load_map(const unsigned char* data, std::size_t length, path_resolver_t resolver) {
@@ -20,7 +22,7 @@ namespace neutrino::tiled::tmx::test {
         {
             RAISE_EX ("entry node <map> is missing");
         }
-        return map::parse(xml_node(root), resolver);
+        return map::parse(xml_reader(root), std::move(resolver));
     }
     // ---------------------------------------------------------------------------------
     bool check_properties(const component& obj, const std::map<std::string, property_t>& props) {

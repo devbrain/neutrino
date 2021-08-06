@@ -6,7 +6,7 @@
 #define NEUTRINO_TEST_UTILS_HH
 
 
-#include "tiled/loader/tmx/xml.hh"
+#include "tiled/loader/tmx/reader.hh"
 #include "tiled/loader/tmx/map.hh"
 
 namespace neutrino::tiled::tmx::test {

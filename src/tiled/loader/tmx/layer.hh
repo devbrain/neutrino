@@ -6,7 +6,7 @@
 #define NEUTRINO_LAYER_HH
 
 #include "component.hh"
-#include "xml.hh"
+#include "reader.hh"
 #include <tuple>
 
 namespace neutrino::tiled::tmx {
@@ -18,7 +18,7 @@ namespace neutrino::tiled::tmx {
     class layer : public component {
     public:
         // std::string name, double opacity, bool visible
-        static std::tuple<std::string, double, bool> parse(const xml_node& elt);
+        static std::tuple<std::string, double, bool> parse(const reader& elt);
         /**
          * @brief Layer constructor.
          */

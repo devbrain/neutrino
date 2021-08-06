@@ -36,20 +36,20 @@ namespace neutrino::tiled::tmx {
         }
     }
 
-    object_t parse_object(const xml_node& elt)
+    object_t parse_object(const reader& elt)
     {
 
         try {
             auto id = elt.get_uint_attribute("id");
-            auto name = elt.get_string_attribute("name", Requirement::OPTIONAL);
-            auto type = elt.get_string_attribute("type", Requirement::OPTIONAL);
-            auto x = elt.get_double_attribute("x", Requirement::OPTIONAL);
-            auto y = elt.get_double_attribute("y", Requirement::OPTIONAL);
-            auto width = elt.get_double_attribute("width", Requirement::OPTIONAL);
-            auto height = elt.get_double_attribute("height", Requirement::OPTIONAL);
-            auto gid = elt.get_int_attribute("gid", Requirement::OPTIONAL);
-            auto rotation = elt.get_double_attribute("rotation", Requirement::OPTIONAL);
-            bool visible = elt.get_bool_attribute("visible", Requirement::OPTIONAL, true);
+            auto name = elt.get_string_attribute("name", "");
+            auto type = elt.get_string_attribute("type", "");
+            auto x = elt.get_double_attribute("x", 0);
+            auto y = elt.get_double_attribute("y", 0);
+            auto width = elt.get_double_attribute("width", 0);
+            auto height = elt.get_double_attribute("height", 0);
+            auto gid = elt.get_int_attribute("gid", 0);
+            auto rotation = elt.get_double_attribute("rotation", 0.0);
+            bool visible = elt.get_bool_attribute("visible", true);
 
             math::point2f origin{x, y};
             auto c = cell::decode_gid(gid);
@@ -62,7 +62,7 @@ namespace neutrino::tiled::tmx {
                 component::parse(obj, elt);
 
 
-                elt.parse_one_element("polygon", [&obj](const xml_node& elt) {
+                elt.parse_one_element("polygon", [&obj](const reader& elt) {
                     std::string points = elt.get_string_attribute("points");
                     obj.points(parse_points(points));
                 });
@@ -75,7 +75,7 @@ namespace neutrino::tiled::tmx {
                 polyline obj(atts);
 
                 component::parse(obj, elt);
-                elt.parse_one_element("polyline", [&obj](const xml_node& elt) {
+                elt.parse_one_element("polyline", [&obj](const reader& elt) {
                     std::string points = elt.get_string_attribute("points");
                     obj.points(parse_points(points));
                 });
@@ -101,7 +101,7 @@ namespace neutrino::tiled::tmx {
             if (elt.has_child("text")) {
                 text obj(atts);
                 component::parse(obj, elt);
-                elt.parse_one_element("text", [&obj](const xml_node& elt) {
+                elt.parse_one_element("text", [&obj](const reader& elt) {
                     obj.parse(elt);
                 });
                 return obj;
@@ -111,25 +111,25 @@ namespace neutrino::tiled::tmx {
             component::parse(obj, elt);
             return obj;
         } catch (exception& e) {
-            auto id = elt.get_string_attribute("id", Requirement::OPTIONAL, "<missing>");
-            auto name = elt.get_string_attribute("name", Requirement::OPTIONAL, "<unknown>");
+            auto id = elt.get_string_attribute("id", "<missing>");
+            auto name = elt.get_string_attribute("name", "<unknown>");
             RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse object [", name, "], id [", id, "]");
         }
     }
 
-    void text::parse(const xml_node& elt)
+    void text::parse(const reader& elt)
     {
         try {
-            m_font_family = elt.get_string_attribute("fontfamily", Requirement::OPTIONAL, "sans-serif");
-            m_pixel_size = elt.get_int_attribute("pixelsize", Requirement::OPTIONAL, 16);
-            m_wrap = elt.get_bool_attribute("wrap", Requirement::OPTIONAL);
-            m_bold = elt.get_bool_attribute("bold", Requirement::OPTIONAL);
-            m_italic = elt.get_bool_attribute("italic", Requirement::OPTIONAL);
-            m_underline = elt.get_bool_attribute("underline", Requirement::OPTIONAL);
-            m_strike = elt.get_bool_attribute("strikeout", Requirement::OPTIONAL);
-            m_kerning = elt.get_bool_attribute("kerning", Requirement::OPTIONAL, true);
+            m_font_family = elt.get_string_attribute("fontfamily", "sans-serif");
+            m_pixel_size = elt.get_int_attribute("pixelsize",  16);
+            m_wrap = elt.get_bool_attribute("wrap", false);
+            m_bold = elt.get_bool_attribute("bold", false);
+            m_italic = elt.get_bool_attribute("italic", false);
+            m_underline = elt.get_bool_attribute("underline", false);
+            m_strike = elt.get_bool_attribute("strikeout", false);
+            m_kerning = elt.get_bool_attribute("kerning", true);
 
-            m_color = colori(elt.get_string_attribute("color", Requirement::OPTIONAL, "#000000"));
+            m_color = colori(elt.get_string_attribute("color", "#000000"));
 
             static const std::map<std::string, text::halign_t> hmp = {
                     {"left", text::halign_t::LEFT},
@@ -147,8 +147,8 @@ namespace neutrino::tiled::tmx {
 
             m_data = elt.get_text();
         } catch (exception& e) {
-            auto id = elt.get_string_attribute("id", Requirement::OPTIONAL, "<missing>");
-            auto name = elt.get_string_attribute("name", Requirement::OPTIONAL, "<unknown>");
+            auto id = elt.get_string_attribute("id", "<missing>");
+            auto name = elt.get_string_attribute("name", "<unknown>");
             RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse text object [", name, "], id [", id, "]");
         }
     }

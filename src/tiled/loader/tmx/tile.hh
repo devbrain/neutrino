@@ -9,7 +9,7 @@
 #include "image.hh"
 #include "object_layer.hh"
 #include "animation.hh"
-#include "xml.hh"
+#include "reader.hh"
 
 #include <memory>
 #include <array>
@@ -23,7 +23,7 @@ namespace neutrino::tiled::tmx {
     public:
         static constexpr auto INVALID = static_cast<unsigned>(-1);
     public:
-        static tile parse(const xml_node& e);
+        static tile parse(const reader& e);
         /**
          * @brief Tile constructor.
          */

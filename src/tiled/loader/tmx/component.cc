@@ -29,26 +29,26 @@ namespace neutrino::tiled::tmx
         return i->second;
     }
 
-    void component::parse(component& obj, const xml_node& elt, const component* parent)
+    void component::parse(component& obj, const reader& elt, const component* parent)
     {
         if (parent)
         {
-            for (const auto&[name, val] : parent->m_prop)
+            for (const auto& [name, val] : parent->m_prop)
             {
                 obj.add(name, val);
             }
         }
-        elt.parse_one_element("properties", [&obj](const xml_node& e) {
-            e.parse_many_elements("property", [&obj](const xml_node& inner) {
+        elt.parse_one_element("properties", [&obj](const reader& e) {
+            e.parse_many_elements("property", [&obj](const reader& inner) {
                 std::string name = inner.get_string_attribute("name");
                 ENFORCE(!name.empty());
-                std::string value = inner.get_string_attribute("value", Requirement::OPTIONAL, "");
+                std::string value = inner.get_string_attribute("value","");
                 if (value.empty())
                 {
                     value = inner.get_text();
                 }
 
-                std::string type = inner.get_string_attribute("type", Requirement::OPTIONAL, "string");
+                std::string type = inner.get_string_attribute("type", "string");
                 if (type != "string")
                 {
                     if (value.empty())

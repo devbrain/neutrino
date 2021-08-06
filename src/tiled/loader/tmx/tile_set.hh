@@ -9,7 +9,7 @@
 #include "image.hh"
 #include "terrain.hh"
 #include "tile.hh"
-#include "xml.hh"
+#include "reader.hh"
 #include "path_resolver.hh"
 #include <neutrino/math/rect.hh>
 #include <vector>
@@ -21,7 +21,7 @@ namespace neutrino::tiled::tmx {
   */
     class tile_set : public component {
     public:
-        static tile_set parse(const xml_node& elt, const path_resolver_t& resolver);
+        static tile_set parse(const reader& elt, const path_resolver_t& resolver);
         /**
          * @brief TileSet constructor.
          */
@@ -239,7 +239,7 @@ namespace neutrino::tiled::tmx {
         /** @} */
 
     private:
-        static tile_set parse_inner(unsigned first_gid, const xml_node& elt);
+        static tile_set parse_inner(unsigned first_gid, const reader& elt);
         static tile_set parse_from_file(unsigned first_gid, const std::string& source, const path_resolver_t& resolver);
     private:
         const unsigned m_firstgid;

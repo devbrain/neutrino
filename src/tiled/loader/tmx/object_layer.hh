@@ -32,7 +32,7 @@ namespace neutrino::tiled::tmx {
         using const_iterator = objects_vec_t::const_iterator;
     public:
 
-        static object_layer parse(const xml_node& elt, const group* parent = nullptr);
+        static object_layer parse(const reader& elt, const group* parent = nullptr);
         /**
          * @brief ObjectLayer constructor.
          */

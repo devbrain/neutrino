@@ -8,9 +8,9 @@
 
 namespace neutrino::tiled::tmx
 {
-    map map::parse(const xml_node& elt, path_resolver_t resolver) {
+    map map::parse(const reader& elt, path_resolver_t resolver) {
         try {
-            std::string version =  elt.get_string_attribute("version", Requirement::OPTIONAL, "1.0");
+            std::string version =  elt.get_string_attribute("version", "1.0");
 
             static const std::map<std::string, orientation_t> orientation_mp = {
                     {"orthogonal", orientation_t::ORTHOGONAL},
@@ -20,11 +20,11 @@ namespace neutrino::tiled::tmx
                     };
 
             auto orientation = elt.parse_enum("orientation", orientation_t::UNKNOWN, orientation_mp);
-            auto width = elt.get_attribute<unsigned>("width");
-            auto height = elt.get_attribute<unsigned>("height");
-            auto tilewidth = elt.get_attribute<unsigned>("tilewidth");
-            auto tileheight = elt.get_attribute<unsigned>("tileheight");
-            auto bgcolor = elt.get_attribute("backgroundcolor", Requirement::OPTIONAL, "#000000");
+            auto width = elt.get_uint_attribute("width");
+            auto height = elt.get_uint_attribute("height");
+            auto tilewidth = elt.get_uint_attribute("tilewidth");
+            auto tileheight = elt.get_uint_attribute("tileheight");
+            auto bgcolor = elt.get_string_attribute("backgroundcolor", "#000000");
 
             static const std::map<std::string, render_order_t> render_order_mp = {
                     {"right-down", render_order_t::RIGHT_DOWN},
@@ -34,7 +34,7 @@ namespace neutrino::tiled::tmx
                     };
             auto render_order = elt.parse_enum("renderorder", render_order_t::RIGHT_DOWN, render_order_mp);
 
-            auto side_length = elt.get_attribute<unsigned>("hexsidelength", Requirement::OPTIONAL);
+            auto side_length = elt.get_uint_attribute("hexsidelength", 0);
 
             static const std::map<std::string, stagger_axis_t> stagger_axis_mp = {
                     {"x", stagger_axis_t::X},
@@ -48,12 +48,12 @@ namespace neutrino::tiled::tmx
 
             auto index = elt.parse_enum("staggerindex", stagger_index_t::ODD, stagger_index_mp);
 
-            auto infinite = elt.get_attribute<bool>("infinite", Requirement::OPTIONAL, false);
+            auto infinite = elt.get_bool_attribute("infinite", false);
 
             map result(version, orientation, width, height, tilewidth, tileheight, colori(bgcolor), render_order,
                        side_length, axis, index, infinite);
 
-            elt.parse_many_elements("tileset", [&result, &resolver](const xml_node& e) {
+            elt.parse_many_elements("tileset", [&result, &resolver](const reader& e) {
                 result.m_tilesets.push_back(tile_set::parse(e, resolver));
             });
 
@@ -79,17 +79,17 @@ namespace neutrino::tiled::tmx
         return nullptr;
     }
     // -------------------------------------------------------------------------------------------
-    void map::parse_group(const xml_node& elt, map& result, const group* parent, path_resolver_t resolver) {
-        elt.parse_many_elements("layer", [&result, &resolver, parent](const xml_node& e) {
+    void map::parse_group(const reader& elt, map& result, const group* parent, path_resolver_t resolver) {
+        elt.parse_many_elements("layer", [&result, &resolver, parent](const reader& e) {
             result.m_layers.emplace_back(tile_layer::parse(e, parent));
         });
-        elt.parse_many_elements("objectgroup", [&result, &resolver, parent](const xml_node& e) {
+        elt.parse_many_elements("objectgroup", [&result, &resolver, parent](const reader& e) {
             result.m_object_layers.emplace_back(object_layer::parse(e, parent));
         });
-        elt.parse_many_elements("imagelayer", [&result, &resolver, parent](const xml_node& e) {
+        elt.parse_many_elements("imagelayer", [&result, &resolver, parent](const reader& e) {
             result.m_layers.emplace_back(image_layer::parse(e, parent));
         });
-        elt.parse_many_elements("group", [&result, &resolver, parent](const xml_node& e) {
+        elt.parse_many_elements("group", [&result, &resolver, parent](const reader& e) {
                 auto current = group::parse(e, parent);
                 parse_group(e, result, &current, resolver);
         });

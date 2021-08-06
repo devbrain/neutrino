@@ -51,8 +51,12 @@ my_add_library_static(tiled
         loader/tmx/group.hh
         loader/tmx/map.hh
         loader/tmx/map.cc
-        loader/tmx/xml.cc
-        loader/tmx/xml.hh
+        loader/tmx/xml_reader.cc
+        loader/tmx/xml_reader.hh
+        loader/tmx/json_reader.cc
+        loader/tmx/json_reader.hh
+        loader/tmx/reader.hh
+        loader/tmx/reader.cc
         loader/tmx/path_resolver.hh
         loader/tmx/parse_data.cc
         loader/tmx/parse_data.hh
@@ -67,6 +71,7 @@ my_add_library_static(tiled
         DEPENDS_PUBLIC
             neutrino::engine
             thirdparty::pugixml
+            thirdparty::json
         )
 include(bin2c)
 
