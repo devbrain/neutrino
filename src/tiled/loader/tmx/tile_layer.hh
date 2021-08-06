@@ -63,13 +63,15 @@ namespace neutrino::tiled::tmx
          */
         tile_layer(std::string name, double opacity, bool visible,
                    int offsetx, int offsety, float parallax_x, float parallax_y,
-                   colori tint)
+                   colori tint, int width, int height)
                 : layer(std::move(name), opacity, visible),
                 m_offsetx(offsetx),
                 m_offsety(offsety),
                 m_parallax_x(parallax_x),
                 m_parallax_y(parallax_y),
-                m_tint(tint)
+                m_tint(tint),
+                m_width(width),
+                m_height(height)
         {
         }
 
@@ -112,12 +114,22 @@ namespace neutrino::tiled::tmx
         [[nodiscard]] float parallax_y() const noexcept {
             return m_parallax_y;
         }
+
+        [[nodiscard]] int width() const noexcept {
+            return m_width;
+        }
+
+        [[nodiscard]] int height() const noexcept {
+            return m_height;
+        }
     private:
         int m_offsetx;
         int m_offsety;
         float m_parallax_x;
         float m_parallax_y;
         colori m_tint;
+        int m_width;
+        int m_height;
 
         std::vector<cell> m_cells;
         std::vector<chunk> m_chunks;

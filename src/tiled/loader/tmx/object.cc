@@ -43,15 +43,15 @@ namespace neutrino::tiled::tmx {
             auto id = elt.get_uint_attribute("id");
             auto name = elt.get_string_attribute("name", Requirement::OPTIONAL);
             auto type = elt.get_string_attribute("type", Requirement::OPTIONAL);
-            auto x = elt.get_uint_attribute("x", Requirement::OPTIONAL);
-            auto y = elt.get_uint_attribute("y", Requirement::OPTIONAL);
-            auto width = elt.get_int_attribute("width", Requirement::OPTIONAL);
-            auto height = elt.get_int_attribute("height", Requirement::OPTIONAL);
+            auto x = elt.get_double_attribute("x", Requirement::OPTIONAL);
+            auto y = elt.get_double_attribute("y", Requirement::OPTIONAL);
+            auto width = elt.get_double_attribute("width", Requirement::OPTIONAL);
+            auto height = elt.get_double_attribute("height", Requirement::OPTIONAL);
             auto gid = elt.get_int_attribute("gid", Requirement::OPTIONAL);
-            double rotation = elt.get_double_attribute("rotation", Requirement::OPTIONAL);
+            auto rotation = elt.get_double_attribute("rotation", Requirement::OPTIONAL);
             bool visible = elt.get_bool_attribute("visible", Requirement::OPTIONAL, true);
 
-            math::point2d origin{x, y};
+            math::point2f origin{x, y};
             auto c = cell::decode_gid(gid);
             object_attribs atts(id, name, type, origin, width, height, rotation, visible, c.gid(),
                                 c.hor_flipped(), c.vert_flipped(), c.diag_flipped());

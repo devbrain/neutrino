@@ -27,7 +27,7 @@ namespace neutrino::tiled::tmx
     struct object_attribs
     {
         object_attribs(unsigned id, std::string name, std::string type,
-                       const math::point2f& origin, int width, int height, double rotation, bool visible,
+                       const math::point2f& origin, double width, double height, double rotation, bool visible,
                        unsigned gid, bool hflip, bool vflip, bool dflip)
                 : m_id(id),
                   m_name(std::move(name)),
@@ -47,8 +47,8 @@ namespace neutrino::tiled::tmx
         std::string m_name;
         std::string m_type;
         math::point2f m_origin;
-        int m_width;
-        int m_height;
+        double m_width;
+        double m_height;
         double m_rotation;
         bool m_visible;
         unsigned m_gid;
@@ -64,7 +64,7 @@ namespace neutrino::tiled::tmx
         /**
          * @brief object constructor.
          */
-        object(object_attribs atts)
+        explicit object(object_attribs atts)
                 : m_id(atts.m_id),
                   m_name(std::move(atts.m_name)),
                   m_type(std::move(atts.m_type)),
@@ -124,12 +124,12 @@ namespace neutrino::tiled::tmx
             return m_origin;
         }
 
-        [[nodiscard]] int width() const noexcept
+        [[nodiscard]] double width() const noexcept
         {
             return m_width;
         }
 
-        [[nodiscard]] int height() const noexcept
+        [[nodiscard]] double height() const noexcept
         {
             return m_height;
         }
@@ -197,8 +197,8 @@ namespace neutrino::tiled::tmx
         std::string m_name;
         std::string m_type;
         math::point2f m_origin;
-        int m_width;
-        int m_height;
+        double m_width;
+        double m_height;
         double m_rotation;
         bool m_visible;
         unsigned m_gid;
@@ -353,7 +353,7 @@ namespace neutrino::tiled::tmx
 
         text(object_attribs a, std::string font_family, int pixel_size, bool wrap,
              colori color, bool bold, bool italic, bool underline, bool strike,
-             bool kerning, halign_t halign, valign_t valign, const std::string& data)
+             bool kerning, halign_t halign, valign_t valign, std::string  data)
                 : object(std::move(a)),
                   m_font_family(std::move(font_family)),
                   m_pixel_size(pixel_size),
@@ -366,7 +366,7 @@ namespace neutrino::tiled::tmx
                   m_kerning(kerning),
                   m_halign(halign),
                   m_valign(valign),
-                  m_data(data)
+                  m_data(std::move(data))
         {}
 
         [[nodiscard]] std::string font_family() const noexcept
