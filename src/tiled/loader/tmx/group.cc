@@ -48,6 +48,7 @@ namespace neutrino::tiled::tmx
 
     std::tuple<std::string, int, int, float, bool, colori> group::parse_content(const xml_node& elt, const group* self) {
         auto [name, opacity, visible] = layer::parse(elt);
+
         int offsetx = default_offset_x, offsety = default_offset_y;
         colori tint;
 
@@ -62,10 +63,10 @@ namespace neutrino::tiled::tmx
 
         if (elt.has_attribute("offsety"))
         {
-            offsetx = elt.get_attribute<int>("offsety");
+            offsety = elt.get_attribute<int>("offsety");
         } else {
             if (self && self->offsety) {
-                offsetx = *self->offsety;
+                offsety = *self->offsety;
             }
         }
 

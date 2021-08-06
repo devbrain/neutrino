@@ -48,11 +48,14 @@ namespace neutrino::tiled::tmx
     tile_layer tile_layer::parse(const xml_node& elt, const group* parent)
     {
         auto [name, offsetx, offsety, opacity, visible, tint] = group::parse_content(elt, parent);
+
         try {
             auto parallax_x = elt.get_attribute<double>("parallaxx", Requirement::OPTIONAL, 1.0);
             auto parallax_y = elt.get_attribute<double>("parallaxy", Requirement::OPTIONAL, 1.0);
+            auto width = elt.get_int_attribute("width");
+            auto height = elt.get_int_attribute("height");
 
-            tile_layer result(name, opacity, visible, offsetx, offsety, (float)parallax_x, (float)parallax_y, tint);
+            tile_layer result(name, opacity, visible, offsetx, offsety, (float)parallax_x, (float)parallax_y, tint, width, height);
 
             component::parse(result, elt, parent);
             elt.parse_one_element("data", [&result](const xml_node e) {
