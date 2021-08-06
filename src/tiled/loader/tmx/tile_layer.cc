@@ -14,7 +14,7 @@ namespace neutrino::tiled::tmx
     namespace
     {
         template<typename T>
-        void parse_inner_data(T& result, const xml_node& e, const std::string& encoding, const std::string& compression)
+        void parse_inner_data(T& result, const reader& e, const std::string& encoding, const std::string& compression)
         {
             auto data = parse_data(encoding, compression, e.get_text());
             std::visit(
@@ -44,26 +44,25 @@ namespace neutrino::tiled::tmx
         }
     }
     // ==============================================================================
-
-    tile_layer tile_layer::parse(const xml_node& elt, const group* parent)
+    tile_layer tile_layer::parse(const reader& elt, const group* parent)
     {
         auto [name, offsetx, offsety, opacity, visible, tint] = group::parse_content(elt, parent);
 
         try {
-            auto parallax_x = elt.get_attribute<double>("parallaxx", Requirement::OPTIONAL, 1.0);
-            auto parallax_y = elt.get_attribute<double>("parallaxy", Requirement::OPTIONAL, 1.0);
+            auto parallax_x = elt.get_double_attribute("parallaxx", 1.0);
+            auto parallax_y = elt.get_double_attribute("parallaxy", 1.0);
             auto width = elt.get_int_attribute("width");
             auto height = elt.get_int_attribute("height");
 
             tile_layer result(name, opacity, visible, offsetx, offsety, (float)parallax_x, (float)parallax_y, tint, width, height);
 
             component::parse(result, elt, parent);
-            elt.parse_one_element("data", [&result](const xml_node e) {
-                auto encoding = e.get_string_attribute("encoding", Requirement::OPTIONAL);
-                auto compression = e.get_string_attribute("compression", Requirement::OPTIONAL);
+            elt.parse_one_element("data", [&result](const reader& e) {
+                auto encoding = e.get_string_attribute("encoding", "");
+                auto compression = e.get_string_attribute("compression", "");
                 if (encoding.empty() && compression.empty())
                 {
-                    e.parse_many_elements("tile", [&result](const xml_node& telt) {
+                    e.parse_many_elements("tile", [&result](const reader& telt) {
                         auto gid = telt.get_uint_attribute("gid");
                         result.add(cell::decode_gid(gid));
                     });
@@ -71,7 +70,7 @@ namespace neutrino::tiled::tmx
                 {
                     if (e.has_child("chunk")) {
                         e.parse_many_elements("chunk", [&result, &encoding=std::as_const(encoding),
-                                                        &compression = std::as_const(compression)](const xml_node& celt) {
+                                                        &compression = std::as_const(compression)](const reader& celt) {
                             result.add(chunk::parse(celt, encoding, compression));
                         });
                     } else {
@@ -81,23 +80,23 @@ namespace neutrino::tiled::tmx
             });
             return result;
         } catch (exception& e) {
-            auto id = elt.get_string_attribute("id", Requirement::OPTIONAL, "<missing>");
+            auto id = elt.get_string_attribute("id", "<missing>");
             RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse layer [", name, "], id [", id, "]");
         }
     }
     // ===========================================================================================================
-    chunk chunk::parse(const xml_node& elt, const std::string& encoding, const std::string& compression)
+    chunk chunk::parse(const reader& elt, const std::string& encoding, const std::string& compression)
     {
-        auto x = elt.get_attribute<int>("x");
-        auto y = elt.get_attribute<int>("y");
-        auto w = elt.get_attribute<int>("width");
-        auto h = elt.get_attribute<int>("height");
+        auto x = elt.get_int_attribute("x");
+        auto y = elt.get_int_attribute("y");
+        auto w = elt.get_int_attribute("width");
+        auto h = elt.get_int_attribute("height");
 
         chunk result(x, y, w, h);
 
         if (encoding.empty() && compression.empty())
         {
-            elt.parse_many_elements("tile", [&result](const xml_node& telt) {
+            elt.parse_many_elements("tile", [&result](const reader& telt) {
                 auto gid = telt.get_uint_attribute("gid");
                 result.add(cell::decode_gid(gid));
             });

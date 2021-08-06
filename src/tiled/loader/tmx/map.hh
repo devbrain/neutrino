@@ -11,7 +11,7 @@
 #include "component.hh"
 #include "layer.hh"
 #include "tile_set.hh"
-#include "xml.hh"
+#include "reader.hh"
 #include "color.hh"
 #include "path_resolver.hh"
 #include "tile_layer.hh"
@@ -69,7 +69,7 @@ namespace neutrino::tiled::tmx
     class map : public component
     {
     public:
-        static map parse(const xml_node& node, path_resolver_t resolver);
+        static map parse(const reader& node, path_resolver_t resolver);
 
         /**
          * @brief Map constructor.
@@ -181,7 +181,7 @@ namespace neutrino::tiled::tmx
             return m_layers;
         }
     private:
-        static void parse_group(const xml_node& elt, map& result, const group* parent, path_resolver_t resolver);
+        static void parse_group(const reader& elt, map& result, const group* parent, path_resolver_t resolver);
     private:
         const std::string m_version;
 

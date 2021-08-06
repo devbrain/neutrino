@@ -7,7 +7,7 @@
 
 #include <optional>
 #include <tuple>
-#include "xml.hh"
+#include "reader.hh"
 #include "component.hh"
 #include "color.hh"
 
@@ -26,9 +26,9 @@ namespace neutrino::tiled::tmx {
         std::optional<bool> visible;
         std::optional<colori> tint;
 
-        static group parse(const xml_node& elt, const group* parent = nullptr);
+        static group parse(const reader& elt, const group* parent = nullptr);
         // name, offsetx, offsety, opacity, visible, tint
-        static std::tuple<std::string, int, int, float, bool, colori> parse_content(const xml_node& elt, const group* self);
+        static std::tuple<std::string, int, int, float, bool, colori> parse_content(const reader& elt, const group* self);
     };
 }
 

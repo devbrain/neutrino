@@ -8,13 +8,13 @@
 
 namespace neutrino::tiled::tmx
 {
-    tile tile::parse(const xml_node& elt) {
+    tile tile::parse(const reader& elt) {
         try {
             unsigned id = elt.get_uint_attribute("id");
 
             std::array<unsigned, 4> terrain = { { INVALID, INVALID, INVALID, INVALID } };
 
-            if (auto attr = elt.get_string_attribute("terrain", Requirement::OPTIONAL); !attr.empty())
+            if (auto attr = elt.get_string_attribute("terrain", ""); !attr.empty())
             {
                 utils::string_tokenizer tokenizer(attr, ",", utils::string_tokenizer::TOK_TRIM);
                 unsigned t = 0;
@@ -24,24 +24,24 @@ namespace neutrino::tiled::tmx
                 }
             }
 
-            unsigned probability = elt.get_uint_attribute("probability", Requirement::OPTIONAL, 100);
+            unsigned probability = elt.get_uint_attribute("probability",  100);
 
             tile result(id, terrain, probability);
 
             component::parse(result, elt);
 
-            elt.parse_one_element("image", [&result](const xml_node& e) {
+            elt.parse_one_element("image", [&result](const reader& e) {
                 result.set_image(image::parse(e));
             });
-            elt.parse_one_element("animation", [&result](const xml_node& e) {
+            elt.parse_one_element("animation", [&result](const reader& e) {
                 result.m_animation = animation::parse(e);
             });
-            elt.parse_one_element("objectgroup", [&result](const xml_node& e) {
+            elt.parse_one_element("objectgroup", [&result](const reader& e) {
                 result.m_objects = std::make_unique<object_layer>(object_layer::parse(e));
             });
             return result;
         } catch (exception& e) {
-            auto id = elt.get_string_attribute("id", Requirement::OPTIONAL, "<missing>");
+            auto id = elt.get_string_attribute("id", "<missing>");
             RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse tile, id [", id, "]");
         }
     }

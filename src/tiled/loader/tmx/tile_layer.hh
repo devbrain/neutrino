@@ -8,7 +8,7 @@
 #include "cell.hh"
 #include "layer.hh"
 #include "group.hh"
-#include "xml.hh"
+#include "reader.hh"
 #include <vector>
 
 namespace neutrino::tiled::tmx
@@ -16,7 +16,7 @@ namespace neutrino::tiled::tmx
 
     class chunk {
     public:
-        static chunk parse (const xml_node& elt, const std::string& encoding, const std::string& compression);
+        static chunk parse (const reader& elt, const std::string& encoding, const std::string& compression);
 
         chunk (int x, int y, int w, int h)
         : m_x(x), m_y(y), m_width(w), m_height(h) {}
@@ -57,7 +57,7 @@ namespace neutrino::tiled::tmx
     class tile_layer : public layer
     {
     public:
-        static tile_layer parse(const xml_node& elt, const group* parent = nullptr);
+        static tile_layer parse(const reader& elt, const group* parent = nullptr);
         /**
          * @brief TileLayer constructor.
          */

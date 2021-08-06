@@ -349,7 +349,7 @@ namespace neutrino::tiled::tmx
         explicit text(object_attribs a)
         : object(a) {}
 
-        void parse(const xml_node& elt);
+        void parse(const reader& elt);
 
         text(object_attribs a, std::string font_family, int pixel_size, bool wrap,
              colori color, bool bold, bool italic, bool underline, bool strike,
@@ -435,7 +435,7 @@ namespace neutrino::tiled::tmx
 
     using object_t = std::variant<object, point, ellipse, polygon, polyline, text>;
 
-    object_t parse_object(const xml_node& elt);
+    object_t parse_object(const reader& elt);
 }
 
 #endif

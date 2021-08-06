@@ -5,16 +5,16 @@
 #include "terrain.hh"
 
 namespace neutrino::tiled::tmx {
-    terrain terrain::parse(const xml_node& elt) {
+    terrain terrain::parse(const reader& elt) {
         try {
-            auto name = elt.get_attribute("name");
-            auto tile = elt.get_attribute<unsigned>("tile");
+            auto name = elt.get_string_attribute("name");
+            auto tile = elt.get_uint_attribute("tile");
 
             terrain result(name, tile);
             component::parse(result, elt);
             return result;
         } catch(exception& e) {
-            auto name = elt.get_string_attribute("name", Requirement::OPTIONAL, "<unknown>");
+            auto name = elt.get_string_attribute("name", "<unknown>");
             RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse terrain [", name, "]");
         }
     }

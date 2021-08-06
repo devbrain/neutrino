@@ -5,7 +5,7 @@
 #ifndef NEUTRINO_ANIMATION_HH
 #define NEUTRINO_ANIMATION_HH
 
-#include "xml.hh"
+#include "reader.hh"
 #include <vector>
 #include <chrono>
 
@@ -33,7 +33,7 @@ namespace neutrino::tiled::tmx
     class animation
     {
     public:
-        static animation parse(const xml_node& elt);
+        static animation parse(const reader& elt);
 
         void add(frame f) {
             m_frames.emplace_back(std::move(f));
