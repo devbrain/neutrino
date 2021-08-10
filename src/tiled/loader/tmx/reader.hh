@@ -18,7 +18,20 @@ namespace neutrino::tiled::tmx
     {
     public:
         using visitor_t = std::function<void(const reader&)>;
+        enum document_t {
+            XML_DOCUMENT,
+            JSON_DOCUMENT,
+            UNKNOWN_TYPE
+        };
     public:
+
+        static document_t guess_document_type(const char* txt, std::size_t size);
+
+        reader() = default;
+        reader(const reader&) = delete;
+        reader& operator = (const reader&) = delete;
+        reader(reader&&) = default;
+
         virtual ~reader();
 
         virtual void parse_each_element(visitor_t func) const = 0;
@@ -26,7 +39,6 @@ namespace neutrino::tiled::tmx
         virtual void parse_one_element(const char* name, visitor_t func) const = 0;
 
         [[nodiscard]] bool has_attribute(const char* name) const;
-        [[nodiscard]] virtual std::string get_text() const = 0;
         [[nodiscard]] virtual bool has_child(const char *name) const = 0;
 
         [[nodiscard]] unsigned get_uint_attribute(const char* name) const;

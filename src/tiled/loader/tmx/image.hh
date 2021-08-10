@@ -10,6 +10,7 @@
 #include <vector>
 #include <neutrino/math/point.hh>
 #include "reader.hh"
+#include "json_reader.hh"
 #include <memory>
 
 namespace neutrino::tiled::tmx {
@@ -20,7 +21,7 @@ namespace neutrino::tiled::tmx {
     public:
 
         static std::unique_ptr<image> parse(const reader& elt);
-
+        static std::unique_ptr<image> parse(const json_reader& elt);
         /**
          * @brief Image constructor.
          */

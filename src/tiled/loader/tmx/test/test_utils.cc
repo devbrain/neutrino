@@ -5,24 +5,23 @@
 #include "test_utils.hh"
 #include <sstream>
 #include <neutrino/utils/io/memory_stream_buf.hh>
-#include <neutrino/utils/exception.hh>
 #include <utility>
 #include "tiled/loader/tmx/xml_reader.hh"
+#include "tiled/loader/tmx/json_reader.hh"
 
 namespace neutrino::tiled::tmx::test {
     map load_map(const unsigned char* data, std::size_t length, path_resolver_t resolver) {
-        pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_buffer((char*)data, length);
-        if (!result)
+        auto doc_type = reader::guess_document_type((char*)data, length);
+        switch (doc_type)
         {
-            RAISE_EX("Failed to load tmx :", result.description());
+            case reader::XML_DOCUMENT:
+                return map::parse(xml_reader::load((char*)data, length, "map"), std::move(resolver));
+            case reader::JSON_DOCUMENT:
+                return map::parse(json_reader::load((char*)data, length, nullptr), std::move(resolver));
+            default:
+                RAISE_EX("Unknown document type");
         }
-        auto root = doc.child("map");
-        if (!root)
-        {
-            RAISE_EX ("entry node <map> is missing");
-        }
-        return map::parse(xml_reader(root), std::move(resolver));
+
     }
     // ---------------------------------------------------------------------------------
     bool check_properties(const component& obj, const std::map<std::string, property_t>& props) {

@@ -21,6 +21,7 @@ namespace neutrino::tiled::tmx {
     }
     // ---------------------------------------------------------------------------------------
     std::unique_ptr<world> load(std::istream& is, tile_sheet_manager& tsm) {
+        /*
          pugi::xml_document doc;
          pugi::xml_parse_result result = doc.load(is);
         if (!result)
@@ -33,6 +34,7 @@ namespace neutrino::tiled::tmx {
             RAISE_EX ("entry node <map> is missing");
         }
         map::parse(xml_reader(root), [](const std::string&) {return "";});
+         */
         return nullptr;
     }
 }

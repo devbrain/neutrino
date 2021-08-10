@@ -4,6 +4,8 @@
 
 #include "object.hh"
 #include "cell.hh"
+#include "json_reader.hh"
+#include "xml_reader.hh"
 #include <neutrino/utils/strings/string_tokenizer.hh>
 #include <neutrino/utils/strings/number_parser.hh>
 #include <neutrino/utils/strings/string_utils.hh>
@@ -144,8 +146,13 @@ namespace neutrino::tiled::tmx {
                     {"bottom", text::valign_t::BOTTOM}
             };
             m_valign = elt.parse_enum("valign", text::valign_t::TOP, vmp);
-
-            m_data = elt.get_text();
+            if (const auto* xml_rdr = dynamic_cast<const xml_reader*>(&elt); xml_rdr) {
+                m_data = xml_rdr->get_text();
+            } else if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
+                m_data = json_rdr->get_string_attribute("text");
+            } else {
+                    RAISE_EX("Not implemeted yet");
+            }
         } catch (exception& e) {
             auto id = elt.get_string_attribute("id", "<missing>");
             auto name = elt.get_string_attribute("name", "<unknown>");

@@ -26,9 +26,9 @@ namespace neutrino::tiled::tmx {
          * @brief TileSet constructor.
          */
         tile_set(unsigned firstgid, const std::string& name, unsigned tilewidth, unsigned tileheight,
-                 unsigned spacing, unsigned margin, unsigned tilecount)
+                 unsigned spacing, unsigned margin, unsigned tilecount, unsigned columns)
                 : m_firstgid(firstgid), m_name(name), m_tilewidth(tilewidth), m_tileheight(tileheight),
-                  m_spacing(spacing), m_margin(margin), m_tilecount(tilecount),
+                  m_spacing(spacing), m_margin(margin), m_tilecount(tilecount), m_columns(columns),
                   m_x(0), m_y(0), m_image(nullptr)
         {
         }
@@ -238,6 +238,9 @@ namespace neutrino::tiled::tmx {
         [[nodiscard]] math::rect get_coords(unsigned id, math::dimension_t size) const noexcept;
         /** @} */
 
+        [[nodiscard]] unsigned columns() const noexcept {
+            return m_columns;
+        }
     private:
         static tile_set parse_inner(unsigned first_gid, const reader& elt);
         static tile_set parse_from_file(unsigned first_gid, const std::string& source, const path_resolver_t& resolver);
@@ -249,6 +252,7 @@ namespace neutrino::tiled::tmx {
         const unsigned m_spacing;
         const unsigned m_margin;
         const unsigned m_tilecount;
+        const unsigned m_columns;
 
         int m_x;
         int m_y;

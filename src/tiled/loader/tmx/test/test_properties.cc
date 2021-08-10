@@ -4,15 +4,13 @@
 
 #include <doctest/doctest.h>
 #include "test4/example.h"
+#include "test4/js_example.h"
 
 #include "test_utils.hh"
 
 using namespace neutrino::tiled::tmx;
 
-TEST_CASE("test4/example.tmx properties")
-{
-    auto the_map = test::load_map(example, example_length);
-
+static void test_props(const map& the_map) {
     static const std::map<std::string, property_t> props = {
             {"BigInteger", property_t{999999999}},
             {"EmptyProperty", property_t {std::string{}}},
@@ -27,6 +25,18 @@ TEST_CASE("test4/example.tmx properties")
             {"YellowProperty", property_t {colori{"#ffffff00"}}}
     };
     REQUIRE(test::check_properties(the_map, props));
+}
+
+TEST_CASE("test4/example.tmx properties")
+{
+    auto the_map = test::load_map(example, example_length);
+    test_props(the_map);
+}
+
+TEST_CASE("test4/js_example.json properties")
+{
+    auto the_map = test::load_map(js_example, js_example_length);
+    test_props(the_map);
 }
 
 TEST_CASE("test4/example.tmx animation ad objects")
