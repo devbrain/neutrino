@@ -32,7 +32,11 @@ namespace neutrino::tiled::tmx
 
         template <typename T>
         void add(const std::string& name, T&& v) {
+#if !defined(_MSC_VER)
             m_prop.template insert(std::make_pair(name, property_t{std::forward<T>(v)}));
+#else
+            m_prop.insert(std::make_pair(name, property_t{ std::forward<T>(v) }));
+#endif
         }
 
         [[nodiscard]] bool empty() const noexcept ;

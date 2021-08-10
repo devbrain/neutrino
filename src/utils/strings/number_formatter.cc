@@ -2,6 +2,10 @@
 // Created by igor on 25/07/2021.
 //
 
+#if defined(_MSC_VER)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <neutrino/utils/strings/number_formatter.hh>
 #include <iomanip>
 
@@ -131,7 +135,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append(std::string& str, long value)
+    void number_formatter::append(std::string& str, int64_t value)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;
@@ -139,7 +143,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append(std::string& str, long value, int width)
+    void number_formatter::append(std::string& str, int64_t value, int width)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;
@@ -147,7 +151,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append0(std::string& str, long value, int width)
+    void number_formatter::append0(std::string& str, int64_t value, int width)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;
@@ -155,7 +159,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append_hex(std::string& str, long value)
+    void number_formatter::append_hex(std::string& str, int64_t value)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;
@@ -163,7 +167,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append_hex(std::string& str, long value, int width)
+    void number_formatter::append_hex(std::string& str, int64_t value, int width)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;
@@ -171,7 +175,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append(std::string& str, unsigned long value)
+    void number_formatter::append(std::string& str, uint64_t value)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;
@@ -179,7 +183,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append(std::string& str, unsigned long value, int width)
+    void number_formatter::append(std::string& str, uint64_t value, int width)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;
@@ -187,7 +191,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append0(std::string& str, unsigned long value, int width)
+    void number_formatter::append0(std::string& str, uint64_t value, int width)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;
@@ -195,7 +199,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append_hex(std::string& str, unsigned long value)
+    void number_formatter::append_hex(std::string& str, uint64_t value)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;
@@ -203,7 +207,7 @@ namespace neutrino::utils
         str.append(result, sz);
     }
 
-    void number_formatter::append_hex(std::string& str, unsigned long value, int width)
+    void number_formatter::append_hex(std::string& str, uint64_t value, int width)
     {
         char result[NF_MAX_INT_STRING_LEN];
         std::size_t sz = NF_MAX_INT_STRING_LEN;

@@ -23,8 +23,8 @@ TEST_SUITE("NumberFormatter")
         REQUIRE (number_formatter::format((long) -123) == "-123");
         REQUIRE (number_formatter::format((long) -123, 5) == " -123");
 
-        REQUIRE (number_formatter::format((unsigned long) 123) == "123");
-        REQUIRE (number_formatter::format((unsigned long) 123, 5) == "  123");
+        REQUIRE (number_formatter::format((uint64_t) 123) == "123");
+        REQUIRE (number_formatter::format((uint64_t) 123, 5) == "  123");
 
         REQUIRE (number_formatter::format(123) == "123");
         REQUIRE (number_formatter::format(-123) == "-123");
@@ -39,7 +39,7 @@ TEST_SUITE("NumberFormatter")
         REQUIRE (number_formatter::format((uint64_t) 123, 5) == "  123");
 
 
-        if (sizeof(void*) == 4)
+        if constexpr (sizeof(void*) == 4)
         {
             REQUIRE (number_formatter::format((void*) 0x12345678) == "12345678");
         } else
@@ -54,7 +54,7 @@ TEST_SUITE("NumberFormatter")
         REQUIRE (number_formatter::format0(-123, 5) == "-0123");
         REQUIRE (number_formatter::format0((long) 123, 5) == "00123");
         REQUIRE (number_formatter::format0((long) -123, 5) == "-0123");
-        REQUIRE (number_formatter::format0((unsigned long) 123, 5) == "00123");
+        REQUIRE (number_formatter::format0((uint64_t) 123, 5) == "00123");
 
 
         REQUIRE (number_formatter::format0((int64_t) 123, 5) == "00123");
@@ -90,10 +90,10 @@ TEST_SUITE("NumberFormatter")
         REQUIRE (number_formatter::format_hex((long) 0x12, 4) == "0012");
         REQUIRE (number_formatter::format_hex((long) 0xab, 4) == "00AB");
 
-        REQUIRE (number_formatter::format_hex((unsigned long) 0x12) == "12");
-        REQUIRE (number_formatter::format_hex((unsigned long) 0xab) == "AB");
-        REQUIRE (number_formatter::format_hex((unsigned long) 0x12, 4) == "0012");
-        REQUIRE (number_formatter::format_hex((unsigned long) 0xab, 4) == "00AB");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0x12) == "12");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0xab) == "AB");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0x12, 4) == "0012");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0xab, 4) == "00AB");
 
 
         REQUIRE (number_formatter::format_hex((int64_t) 0x12) == "12");
@@ -127,12 +127,12 @@ TEST_SUITE("NumberFormatter")
         REQUIRE (number_formatter::format_hex((long) 0x12, 6, true) == "0x0012");
         REQUIRE (number_formatter::format_hex((long) 0xab, 6, true) == "0x00AB");
 
-        REQUIRE (number_formatter::format_hex((unsigned long) 0x12, true) == "0x12");
-        REQUIRE (number_formatter::format_hex((unsigned long) 0xab, true) == "0xAB");
-        REQUIRE (number_formatter::format_hex((unsigned long) 0x12, 4, true) == "0x12");
-        REQUIRE (number_formatter::format_hex((unsigned long) 0xab, 4, true) == "0xAB");
-        REQUIRE (number_formatter::format_hex((unsigned long) 0x12, 6, true) == "0x0012");
-        REQUIRE (number_formatter::format_hex((unsigned long) 0xab, 6, true) == "0x00AB");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0x12, true) == "0x12");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0xab, true) == "0xAB");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0x12, 4, true) == "0x12");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0xab, 4, true) == "0xAB");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0x12, 6, true) == "0x0012");
+        REQUIRE (number_formatter::format_hex((uint64_t) 0xab, 6, true) == "0x00AB");
 
 
         REQUIRE (number_formatter::format_hex((int64_t) 0x12, true) == "0x12");
