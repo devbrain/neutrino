@@ -10,19 +10,30 @@
 
 using namespace neutrino::tiled::tmx;
 
+template<typename T>
+static property_t to_prop(T v) {
+    property_t p = std::move(v);
+    return p;
+}
+
+static property_t to_prop(int v) {
+    property_t p = (int64_t)v;
+    return p;
+}
+
 static void test_props(const map& the_map) {
     static const std::map<std::string, property_t> props = {
-            {"BigInteger", property_t{999999999}},
-            {"EmptyProperty", property_t {std::string{}}},
-            {"FalseProperty", property_t {false}},
-            {"FileProperty", property_t {std::filesystem::path{"torches.png"}}},
-            {"FloatProperty", property_t {0.12f}},
-            {"IntProperty", property_t {1234}},
-            {"NegativeFloatProperty", property_t {-0.12f}},
-            {"NegativeIntProperty", property_t {-1234}},
-            {"StringProperty", property_t {std::string{"A string value"}}},
-            {"TrueProperty", property_t {true}},
-            {"YellowProperty", property_t {colori{"#ffffff00"}}}
+            {"BigInteger", to_prop((int64_t)999999999)},
+            {"EmptyProperty", to_prop(std::string{})},
+            {"FalseProperty", to_prop (false)},
+            {"FileProperty", to_prop (std::filesystem::path{"torches.png"})},
+            {"FloatProperty", to_prop (0.12f)},
+            {"IntProperty", to_prop (1234)},
+            {"NegativeFloatProperty", to_prop (-0.12f)},
+            {"NegativeIntProperty", to_prop (-1234)},
+            {"StringProperty", to_prop (std::string{"A string value"})},
+            {"TrueProperty", to_prop (true)},
+            {"YellowProperty", to_prop (colori{"#ffffff00"})}
     };
     REQUIRE(test::check_properties(the_map, props));
 }

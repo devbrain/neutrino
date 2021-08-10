@@ -1,62 +1,66 @@
 //
 // Created by igor on 25/07/2021.
 //
+#if defined(_MSC_VER)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <neutrino/utils/fpe/fpe.hh>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+
 namespace neutrino::utils
 {
-FPEnvironmentImpl::FPEnvironmentImpl()
+fpe_impl::fpe_impl()
 {
     _env = _controlfp(0, 0);
 }
 
 
-FPEnvironmentImpl::FPEnvironmentImpl(const FPEnvironmentImpl& env)
+fpe_impl::fpe_impl(const fpe_impl& env)
 {
     _env = env._env;
 }
 
 
-FPEnvironmentImpl::~FPEnvironmentImpl()
+fpe_impl::~fpe_impl()
 {
     _controlfp(_env, _MCW_RC);
 }
 
 
-FPEnvironmentImpl& FPEnvironmentImpl::operator = (const FPEnvironmentImpl& env)
+fpe_impl& fpe_impl::operator = (const fpe_impl& env)
 {
     _env = env._env;
     return *this;
 }
 
 
-void FPEnvironmentImpl::keepCurrentImpl()
+void fpe_impl::keepCurrentImpl()
 {
     _env = _controlfp(0, 0);
 }
 
 
-void FPEnvironmentImpl::clearFlagsImpl()
+void fpe_impl::clearFlagsImpl()
 {
     _clearfp();
 }
 
 
-bool FPEnvironmentImpl::isFlagImpl(FlagImpl flag)
+bool fpe_impl::isFlagImpl(FlagImpl flag)
 {
     return (_statusfp() & flag) != 0;
 }
 
 
-void FPEnvironmentImpl::setRoundingModeImpl(RoundingModeImpl mode)
+void fpe_impl::setRoundingModeImpl(RoundingModeImpl mode)
 {
     _controlfp(mode, _MCW_RC);
 }
 
 
-FPEnvironmentImpl::RoundingModeImpl FPEnvironmentImpl::getRoundingModeImpl()
+fpe_impl::RoundingModeImpl fpe_impl::getRoundingModeImpl()
 {
     return RoundingModeImpl(_controlfp(0, 0) & _MCW_RC);
 }

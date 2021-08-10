@@ -74,7 +74,7 @@ namespace neutrino::tiled::tmx
             }
         }
         if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
-            elt.parse_one_element("properties", [&obj](const reader& e) {
+            elt.parse_many_elements("properties", [&obj](const reader& e) {
                 std::string name = e.get_string_attribute("name");
                 ENFORCE(!name.empty());
                 std::string value = e.get_string_attribute("value","");
