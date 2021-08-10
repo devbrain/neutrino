@@ -63,10 +63,15 @@ namespace neutrino::tiled::tmx {
                     result.add_terrain(terrain::parse(elt));
                 });
             });
-
-            elt.parse_many_elements("tile", [&result](const reader& e){
-                result.add_tile(tile::parse(e));
-            });
+            if (dynamic_cast<const xml_reader*>(&elt)) {
+                elt.parse_many_elements("tile", [&result](const reader& e){
+                    result.add_tile(tile::parse(e));
+                });
+            } else {
+                elt.parse_many_elements("tiles", [&result](const reader& e){
+                    result.add_tile(tile::parse(e));
+                });
+            }
 
             return result;
         } catch (exception& e) {

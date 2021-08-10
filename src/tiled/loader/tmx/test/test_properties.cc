@@ -50,10 +50,7 @@ TEST_CASE("test4/js_example.json properties")
     test_props(the_map);
 }
 
-TEST_CASE("test4/example.tmx animation ad objects")
-{
-    auto the_map = test::load_map(example, example_length);
-
+static void test_anim(const map& the_map) {
     REQUIRE(the_map.tile_sets().size() == 2);
     const auto& ts = the_map.tile_sets()[1];
     REQUIRE(ts.first_gid() == 49);
@@ -84,6 +81,20 @@ TEST_CASE("test4/example.tmx animation ad objects")
     REQUIRE(anm.frames().size() == 4);
     REQUIRE(anm.frames()[0].duration() == std::chrono::milliseconds{200});
     REQUIRE(anm.frames()[0].id() == 0);
+}
+
+TEST_CASE("test4/example.tmx animation ad objects")
+{
+    auto the_map = test::load_map(example, example_length);
+
+    test_anim(the_map);
+}
+
+TEST_CASE("test4/js_example.json animation ad objects")
+{
+    auto the_map = test::load_map(js_example, js_example_length);
+
+    test_anim(the_map);
 }
 
 TEST_CASE("test4/example.tmx testing group")
