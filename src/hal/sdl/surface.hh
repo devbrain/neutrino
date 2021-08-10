@@ -487,13 +487,28 @@ namespace neutrino::sdl
     inline
     void surface::fill (const utils::array_view1d<rect>& rects, uint32_t c)
     {
+#if defined(_MSC_VER)
+#pragma warning ( push )
+#pragma warning ( disable : 4267 )
+#endif
         SAFE_SDL_CALL(SDL_FillRects, handle(), rects.begin(), rects.size(), c);
+#if defined(_MSC_VER)
+#pragma warning ( pop )
+#endif
     }
     // ----------------------------------------------------------------------------------------------
     inline
     void surface::fill (const utils::array_view1d<rect>& rects, const color& c)
     {
+#if defined(_MSC_VER)
+#pragma warning ( push )
+#pragma warning ( disable : 4267 )
+#endif
         SAFE_SDL_CALL(SDL_FillRects, handle(), rects.begin(), rects.size(), map_color(c));
+#if defined(_MSC_VER)
+#pragma warning ( pop )
+#endif
+
     }
     // ----------------------------------------------------------------------------------------------
     inline

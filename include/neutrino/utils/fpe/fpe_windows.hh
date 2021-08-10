@@ -4,6 +4,12 @@
 
 #ifndef NEUTRINO_FPE_WINDOWS_HH
 #define NEUTRINO_FPE_WINDOWS_HH
+
+#if defined(_MSC_VER)
+#pragma warning( push )
+#pragma warning( disable : 4244 )
+#endif
+
 #include <float.h>
 #include <math.h>
 
@@ -133,5 +139,9 @@ namespace neutrino::utils {
 
 
 }
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
 
 #endif //NEUTRINO_FPE_WINDOWS_HH

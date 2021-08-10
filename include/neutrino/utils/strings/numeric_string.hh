@@ -177,7 +177,7 @@ namespace neutrino::utils
             // taken into account;
             // to avoid overflow for the largest int size,
             // we resort to FPEnvironment::copySign() (ie. floating-point)
-            if (sizeof(I) == sizeof(intmax_t))
+            if constexpr (sizeof(I) == sizeof(intmax_t))
             {
                 limitCheck = static_cast<uintmax_t>(fpe::copy_sign(static_cast<double>(std::numeric_limits<I>::min()),
                                                                    1));
@@ -288,12 +288,19 @@ namespace neutrino::utils
         {
             ENFORCE(std::numeric_limits<I>::is_signed);
             intmax_t i;
-            if (sizeof(I) == sizeof(intmax_t))
+            if constexpr (sizeof(I) == sizeof(intmax_t))
             {
                 i = static_cast<intmax_t>(fpe::copy_sign(static_cast<double>(result), -1));
             } else
             {
+#if defined(_MSC_VER)
+#pragma warning ( push )
+#pragma warning ( disable: 4146 )
+#endif
                 i = static_cast<intmax_t>(-result);
+#if defined(_MSC_VER)
+#pragma warning ( pop )
+#endif
             }
             if (isIntOverflow<I>(i))
             { return false; }

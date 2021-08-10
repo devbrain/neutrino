@@ -94,7 +94,6 @@ my_add_library_static(utils
 		${PROJECT_INCLUDE}/neutrino/utils/observer.hh
 		observer.cc
 		DEPENDS_PUBLIC
-			thirdparty::sdl2
 			thirdparty::zlib
 			thirdparty::zstd
 			thirdparty::strong_type
