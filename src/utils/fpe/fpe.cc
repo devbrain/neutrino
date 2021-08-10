@@ -11,6 +11,7 @@
 
 namespace neutrino::utils
 {
+
 fpe_impl::fpe_impl()
 {
     _env = _controlfp(0, 0);

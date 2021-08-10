@@ -49,16 +49,19 @@ namespace neutrino::sdl
             return r;
         }
         // ----------------------------------------------------------------------------------------------
+
         template<typename... Args2, typename... Args>
         auto call_sdl(int(f)(Args2...), const char* function, const char* file, int line, Args&&... args)
         -> decltype(f(std::forward<Args>(args)...))
         {
+
             auto r = f(std::forward<Args>(args)...);
             if (r < 0)
             {
                 throw ::neutrino::sdl::sdl_error(function, file, line);
             }
             return r;
+
         }
         // ----------------------------------------------------------------------------------------------
         template<typename... Args2, typename... Args>

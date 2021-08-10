@@ -8,6 +8,11 @@
 #include <cstddef>
 #include <iterator>
 
+#if defined(_MSC_VER)
+#pragma warning ( push )
+#pragma warning ( disable : 4996 )
+#endif
+
 namespace neutrino::sdl::detail
 {
     //-------------------------------------------------------------------
@@ -333,5 +338,9 @@ namespace neutrino::sdl::detail
         return forwardIterator;
     }
 } // ns core
+
+#if defined(_MSC_VER)
+#pragma warning ( pop )
+#endif
 
 #endif
