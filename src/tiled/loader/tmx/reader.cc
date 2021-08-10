@@ -5,9 +5,29 @@
 #include "reader.hh"
 #include <neutrino/utils/exception.hh>
 #include <neutrino/utils/strings/number_parser.hh>
+#include <neutrino/utils/strings/ascii.hh>
 
 namespace neutrino::tiled::tmx
 {
+    reader::document_t reader::guess_document_type(const char* txt, std::size_t size) {
+        std::size_t k = 0;
+        for (k = 0; k<size; k++) {
+            auto ch = txt[k];
+            if (!utils::ascii::is_space(ch)) {
+                if (ch == '<') {
+                    return XML_DOCUMENT;
+                } else {
+                    if (ch == '{' || ch == '[') {
+                        return JSON_DOCUMENT;
+                    } else {
+                        return UNKNOWN_TYPE;
+                    }
+                }
+            }
+        }
+        return UNKNOWN_TYPE;
+    }
+
     reader::~reader() = default;
 
 

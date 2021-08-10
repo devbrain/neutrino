@@ -70,6 +70,7 @@ my_add_library_static(tiled
 
         DEPENDS_PUBLIC
             neutrino::engine
+        DEPENDS_PRIVATE
             thirdparty::pugixml
             thirdparty::json
         )
@@ -89,6 +90,8 @@ set (TEST_DATA
         test-rs/tiled_base64_zlib_infinite.tmx
         test-rs/tilesheet.tsx
         test4/example.tmx
+        test4/js_example.json
+        json/simple_map.json
         )
 set (GENERATED_HEADERS )
 foreach(FILE ${TEST_DATA})
@@ -108,6 +111,7 @@ add_library(neutrino_tiled_with_tests OBJECT
         loader/tmx/test/test_text.cc
         loader/tmx/test/test_infinite.cc
         loader/tmx/test/test_properties.cc
+        loader/tmx/test/test_json_simple.cc
         ${GENERATED_HEADERS}
         )
 

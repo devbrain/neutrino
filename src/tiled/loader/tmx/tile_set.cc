@@ -41,17 +41,23 @@ namespace neutrino::tiled::tmx {
             auto spacing = elt.get_uint_attribute("spacing", 0);
             auto margin = elt.get_uint_attribute("margin", 0);
             auto tilecount = elt.get_uint_attribute("tilecount", 0);
+            auto columns = elt.get_uint_attribute("columns", 0);
 
-            tile_set result(first_gid, name, tilewidth, tileheight, spacing, margin, tilecount);
+            tile_set result(first_gid, name, tilewidth, tileheight, spacing, margin, tilecount, columns);
             component::parse(result, elt);
             elt.parse_one_element("tileoffset", [&result](const reader& elt) {
                 int x = elt.get_int_attribute("x");
                 int y = elt.get_int_attribute("y");
                 result.offset(x, y);
             });
-            elt.parse_one_element("image", [&result](const reader& e) {
-                result.set_image(image::parse(e));
-            });
+            if (const json_reader* jr = dynamic_cast<const json_reader*>(&elt); jr) {
+                result.set_image(image::parse(*jr));
+            } else {
+                elt.parse_one_element("image", [&result](const reader& e) {
+                    result.set_image(image::parse(e));
+                });
+            }
+
             elt.parse_one_element("terraintypes", [&result](const reader& e){
                 e.parse_many_elements("terrain", [&result](const reader& elt){
                     result.add_terrain(terrain::parse(elt));
@@ -75,19 +81,8 @@ namespace neutrino::tiled::tmx {
             RAISE_EX("Failed to load file  :", source);
         }
         if (content[0] == '<') {
-            pugi::xml_document doc;
-            pugi::xml_parse_result result = doc.load_string(content.c_str());
-            if (!result)
-            {
-                RAISE_EX("Failed to load file  :", source, " : " , result.description());
-            }
-            auto root = doc.child("tileset");
-            if (!root)
-            {
-                RAISE_EX ("entry node <tileset> is missing");
-            }
             try {
-                return parse_inner(first_gid, xml_reader(root));
+                return parse_inner(first_gid, xml_reader::load(content.c_str(), content.size(), "tileset"));
             } catch (exception& e) {
                 RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse external tileset [", source, "]");
             }
