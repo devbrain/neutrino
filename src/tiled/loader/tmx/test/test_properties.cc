@@ -83,14 +83,14 @@ static void test_anim(const map& the_map) {
     REQUIRE(anm.frames()[0].id() == 0);
 }
 
-TEST_CASE("test4/example.tmx animation ad objects")
+TEST_CASE("test4/example.tmx animation xml objects")
 {
     auto the_map = test::load_map(example, example_length);
 
     test_anim(the_map);
 }
 
-TEST_CASE("test4/js_example.json animation ad objects")
+TEST_CASE("test4/js_example.json animation json objects")
 {
     auto the_map = test::load_map(js_example, js_example_length);
 

@@ -36,6 +36,16 @@ namespace neutrino::tiled::tmx {
             }
             return res;
         }
+
+        std::vector<math::point2f> parse_points(const reader& elt, const char* name = nullptr) {
+            if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
+                return json_rdr->parse_points(name);
+            }
+            else {
+                std::string points = elt.get_string_attribute("points");
+                return parse_points(points);
+            }
+        }
     }
 
     object_t parse_object(const reader& elt)
@@ -63,11 +73,14 @@ namespace neutrino::tiled::tmx {
                 polygon obj(atts);
                 component::parse(obj, elt);
 
-
-                elt.parse_one_element("polygon", [&obj](const reader& elt) {
-                    std::string points = elt.get_string_attribute("points");
-                    obj.points(parse_points(points));
-                });
+                if (!reader::is_json(elt)) {
+                    elt.parse_one_element("polygon", [&obj](const reader& e) {
+                        obj.points(parse_points(e));
+                        });
+                }
+                else {
+                    obj.points(parse_points(elt, "polygon"));
+                }
 
                 return obj;
             }
@@ -77,10 +90,14 @@ namespace neutrino::tiled::tmx {
                 polyline obj(atts);
 
                 component::parse(obj, elt);
-                elt.parse_one_element("polyline", [&obj](const reader& elt) {
-                    std::string points = elt.get_string_attribute("points");
-                    obj.points(parse_points(points));
-                });
+                if (!reader::is_json(elt)) {
+                    elt.parse_one_element("polyline", [&obj](const reader& e) {
+                        obj.points(parse_points(e));
+                        });
+                }
+                else {
+                    obj.points(parse_points(elt, "polyline"));
+                }
             }
 
 

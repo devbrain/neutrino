@@ -3,6 +3,7 @@
 //
 
 #include "reader.hh"
+#include "json_reader.hh"
 #include <neutrino/utils/exception.hh>
 #include <neutrino/utils/strings/number_parser.hh>
 #include <neutrino/utils/strings/ascii.hh>
@@ -26,6 +27,11 @@ namespace neutrino::tiled::tmx
             }
         }
         return UNKNOWN_TYPE;
+    }
+
+    bool reader::is_json(const reader& elt) noexcept {
+        return dynamic_cast<const json_reader*>(&elt) != nullptr;
+
     }
 
     reader::~reader() = default;

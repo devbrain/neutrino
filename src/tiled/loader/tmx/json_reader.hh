@@ -14,6 +14,7 @@
 
 #include "reader.hh"
 #include <neutrino/utils/spimpl.h>
+#include <neutrino/math/point.hh>
 
 /*!
 @brief namespace for Niels Lohmann
@@ -97,6 +98,9 @@ namespace neutrino::tiled::tmx
 
 
         void iterate_data_array(std::function<void(uint32_t  v)> f) const;
+        void parse_each_element_of(const char* name, visitor_t func) const;
+        bool has_element(const char* name) const noexcept;
+        std::vector<math::point2f> parse_points(const char* name) const;
     private:
         void parse_each_element(visitor_t func) const override;
         void parse_many_elements(const char* name, visitor_t func) const override;

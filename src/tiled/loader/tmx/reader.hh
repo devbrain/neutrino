@@ -26,6 +26,7 @@ namespace neutrino::tiled::tmx
     public:
 
         static document_t guess_document_type(const char* txt, std::size_t size);
+        static bool is_json(const reader& elt) noexcept;
 
         reader() = default;
         reader(const reader&) = delete;
