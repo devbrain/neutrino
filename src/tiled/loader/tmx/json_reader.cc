@@ -86,7 +86,17 @@ namespace neutrino::tiled::tmx
         if (itr != m_pimpl->m_node.end()) {
             if (itr->is_object()) {
                 const auto& child = *itr;
-                func(json_reader(child));
+                if (child.is_object()) {
+                    func(json_reader(child));
+                } else {
+                    if (child.is_array()) {
+                        for (const auto& e : child) {
+                            func(json_reader(e));
+                        }
+                    } else {
+                        RAISE_EX("Non iterable element ", name);
+                    }
+                }
             }
         }
     }

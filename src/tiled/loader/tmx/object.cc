@@ -42,7 +42,7 @@ namespace neutrino::tiled::tmx {
     {
 
         try {
-            auto id = elt.get_uint_attribute("id");
+            auto id = elt.get_uint_attribute("id", (unsigned int)-1);
             auto name = elt.get_string_attribute("name", "");
             auto type = elt.get_string_attribute("type", "");
             auto x = elt.get_double_attribute("x", 0);
