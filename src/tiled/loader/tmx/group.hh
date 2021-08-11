@@ -27,8 +27,8 @@ namespace neutrino::tiled::tmx {
         std::optional<colori> tint;
 
         static group parse(const reader& elt, const group* parent = nullptr);
-        // name, offsetx, offsety, opacity, visible, tint
-        static std::tuple<std::string, int, int, float, bool, colori> parse_content(const reader& elt, const group* self);
+        // name, offsetx, offsety, opacity, visible, tint, id
+        static std::tuple<std::string, int, int, float, bool, colori, int> parse_content(const reader& elt, const group* self);
     };
 }
 

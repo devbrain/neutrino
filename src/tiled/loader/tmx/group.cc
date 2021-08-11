@@ -46,8 +46,8 @@ namespace neutrino::tiled::tmx
         return res;
     }
 
-    std::tuple<std::string, int, int, float, bool, colori> group::parse_content(const reader& elt, const group* self) {
-        auto [name, opacity, visible] = layer::parse(elt);
+    std::tuple<std::string, int, int, float, bool, colori, int> group::parse_content(const reader& elt, const group* self) {
+        auto [name, opacity, visible, id] = layer::parse(elt);
 
         int offsetx = default_offset_x, offsety = default_offset_y;
         colori tint;
@@ -88,6 +88,6 @@ namespace neutrino::tiled::tmx
             visible = *self->visible;
         }
 
-        return {name, offsetx, offsety, (float)opacity, visible, tint};
+        return {name, offsetx, offsety, (float)opacity, visible, tint, id};
     }
 }

@@ -8,9 +8,9 @@
 namespace neutrino::tiled::tmx {
     image_layer image_layer::parse(const reader& elt, const group* parent)
     {
-        auto [name, offsetx, offsety, opacity, visible, tint] = group::parse_content(elt, parent);
+        auto [name, offsetx, offsety, opacity, visible, tint, id] = group::parse_content(elt, parent);
         try {
-            image_layer res(name, opacity, visible, offsetx, offsety, tint);
+            image_layer res(name, opacity, visible, id, offsetx, offsety, tint);
             component::parse(res, elt, parent);
             if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
                 res.set_image(image::parse(*json_rdr));

@@ -61,10 +61,10 @@ namespace neutrino::tiled::tmx
         /**
          * @brief TileLayer constructor.
          */
-        tile_layer(std::string name, double opacity, bool visible,
+        tile_layer(std::string name, double opacity, bool visible, int id,
                    int offsetx, int offsety, float parallax_x, float parallax_y,
                    colori tint, int width, int height)
-                : layer(std::move(name), opacity, visible),
+                : layer(std::move(name), opacity, visible, id),
                 m_offsetx(offsetx),
                 m_offsety(offsety),
                 m_parallax_x(parallax_x),

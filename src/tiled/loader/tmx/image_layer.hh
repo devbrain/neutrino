@@ -22,9 +22,9 @@ namespace neutrino::tiled::tmx
 
         static image_layer parse(const reader& elt, const group* parent = nullptr);
 
-        image_layer(const std::string& name, double opacity, bool visible,
+        image_layer(const std::string& name, double opacity, bool visible, int id,
                     int offsetx, int offsety, colori tint)
-                : layer(name, opacity, visible),
+                : layer(name, opacity, visible, id),
                 m_offsetx(offsetx),
                 m_offsety(offsety),
                 m_tint(tint),

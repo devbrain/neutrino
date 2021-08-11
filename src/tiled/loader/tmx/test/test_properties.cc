@@ -98,14 +98,18 @@ TEST_CASE("test4/js_example.json animation json objects")
 
 static void test_group(const map& the_map) {
     REQUIRE(the_map.layers().size() == 9);
-    const auto* tl = std::get_if<tile_layer>(&the_map.layers()[6]);
-    REQUIRE(tl);
-    REQUIRE(tl->name() == "Testing Child Tile Layer");
+    for (const auto& v : the_map.layers()) {
+        const auto* tl = std::get_if<tile_layer>(&v);
+        if (tl && tl->id() == 2) {
+            REQUIRE(tl->name() == "Testing Child Tile Layer");
 
-    REQUIRE(tl->width() == 10);
-    REQUIRE(tl->height() == 10);
-    REQUIRE(tl->offset_x() == 11);
-    REQUIRE(tl->offset_y() == 2);
+            REQUIRE(tl->width() == 10);
+            REQUIRE(tl->height() == 10);
+            REQUIRE(tl->offset_x() == 11);
+            REQUIRE(tl->offset_y() == 2);
+            break;
+        }
+    }
 }
 
 TEST_CASE("test4/example.tmx testing group")

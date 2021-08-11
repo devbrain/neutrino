@@ -56,7 +56,7 @@ namespace neutrino::tiled::tmx
     tile_layer tile_layer::parse(const reader& elt, const group* parent)
     {
         json_reader::assert_type("tilelayer", elt);
-        auto [name, offsetx, offsety, opacity, visible, tint] = group::parse_content(elt, parent);
+        auto [name, offsetx, offsety, opacity, visible, tint, id] = group::parse_content(elt, parent);
 
         try {
             auto parallax_x = elt.get_double_attribute("parallaxx", 1.0);
@@ -64,7 +64,7 @@ namespace neutrino::tiled::tmx
             auto width = elt.get_int_attribute("width");
             auto height = elt.get_int_attribute("height");
 
-            tile_layer result(name, opacity, visible, offsetx, offsety, (float)parallax_x, (float)parallax_y, tint, width, height);
+            tile_layer result(name, opacity, visible, id, offsetx, offsety, (float)parallax_x, (float)parallax_y, tint, width, height);
 
             component::parse(result, elt, parent);
             if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
