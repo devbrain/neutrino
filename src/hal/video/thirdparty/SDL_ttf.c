@@ -19,6 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#if defined(_MSC_VER)
+#pragma warning (push)
+#pragma warning (disable : 4201 4127 4100)
+#endif
+
 #include "SDL.h"
 #include "SDL_cpuinfo.h"
 #include "SDL_endian.h"

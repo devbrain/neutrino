@@ -8,7 +8,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #pragma GCC diagnostic ignored "-Wsign-compare"
-
+#elif defined(_MSC_VER)
+#pragma warning (push)
+#pragma warning (disable : 4267 4244)
 #endif
 #define STBI_NO_STDIO
 #define SDL_STBIMAGE_IMPLEMENTATION

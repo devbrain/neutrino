@@ -258,6 +258,10 @@ namespace neutrino::hal
         m_pimpl->renderer.present();
     }
     // ---------------------------------------------------------------------------
+#if defined(_MSC_VER)
+#pragma warning ( push )
+#pragma warning ( disable : 4244)
+#endif
     void renderer::hline(int x1, int x2, int y) {
         auto col = m_pimpl->renderer.active_color();
         hlineRGBA(m_pimpl->renderer.handle(), x1, x2, y, col.r, col.b, col.b, col.a);
@@ -268,6 +272,7 @@ namespace neutrino::hal
         vlineRGBA(m_pimpl->renderer.handle(), x, y1, y2, col.r, col.b, col.b, col.a);
     }
     // ---------------------------------------------------------------------------
+
     void renderer::rounded_rectangle(const math::rect& r, int radius) {
         auto col = m_pimpl->renderer.active_color();
         roundedRectangleRGBA(m_pimpl->renderer.handle(),
@@ -384,4 +389,7 @@ namespace neutrino::hal
     void renderer::pie_filled(const math::point2d& p, int rad, float start_angle, float end_angle) {
         pie_filled(p[0], p[1], rad, start_angle, end_angle);
     }
+#if defined(_MSC_VER)
+#pragma warning ( pop )
+#endif
 }

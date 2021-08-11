@@ -29,7 +29,7 @@ namespace neutrino::tiled::tmx
             }
             if (elt.has_attribute("opacity"))
             {
-                res.opacity = elt.get_double_attribute("opacity");
+                res.opacity = (float)elt.get_double_attribute("opacity");
             }
             if (elt.has_attribute("visible"))
             {
@@ -88,6 +88,6 @@ namespace neutrino::tiled::tmx
             visible = *self->visible;
         }
 
-        return {name, offsetx, offsety, opacity, visible, tint};
+        return {name, offsetx, offsety, (float)opacity, visible, tint};
     }
 }

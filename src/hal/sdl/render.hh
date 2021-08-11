@@ -407,7 +407,14 @@ namespace neutrino::sdl
     inline
     void renderer::draw_connected_lines(const utils::array_view1d<point>& vertices)
     {
+#if defined(_MSC_VER)
+#pragma warning ( push )
+#pragma warning ( disable : 4267)
+#endif
         SAFE_SDL_CALL(SDL_RenderDrawLines, handle(), vertices.data(), vertices.size());
+#if defined(_MSC_VER)
+#pragma warning ( pop )
+#endif
     }
     // ----------------------------------------------------------------------------------------------------------------
     inline
@@ -437,7 +444,14 @@ namespace neutrino::sdl
     inline
     void renderer::draw(const utils::array_view1d<rect>& rec)
     {
+#if defined(_MSC_VER)
+#pragma warning ( push )
+#pragma warning ( disable : 4267)
+#endif
         SAFE_SDL_CALL(SDL_RenderDrawRects, handle(), rec.data(), rec.size());
+#if defined(_MSC_VER)
+#pragma warning ( pop )
+#endif
     }
     // ----------------------------------------------------------------------------------------------------------------
     inline

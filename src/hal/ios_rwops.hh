@@ -45,7 +45,7 @@ namespace neutrino::hal
         std::size_t read(void* ptr, std::size_t size, std::size_t maxnum)
         {
             if (size == 0)
-            { return -1; }
+            { return (std::size_t)-1; }
 
             m_stream->read((char*) ptr, size * maxnum);
 
@@ -93,7 +93,7 @@ namespace neutrino::hal
         std::size_t write(const void* ptr, std::size_t size, std::size_t maxnum)
         {
             if (size == 0)
-            { return -1; }
+            { return (std::size_t)-1; }
 
             m_stream->write((char*) ptr, size * maxnum);
 
