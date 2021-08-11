@@ -93,13 +93,10 @@ TEST_CASE("test4/example.tmx animation xml objects")
 TEST_CASE("test4/js_example.json animation json objects")
 {
     auto the_map = test::load_map(js_example, js_example_length);
-
     test_anim(the_map);
 }
 
-TEST_CASE("test4/example.tmx testing group")
-{
-    auto the_map = test::load_map(example, example_length);
+static void test_group(const map& the_map) {
     REQUIRE(the_map.layers().size() == 9);
     const auto* tl = std::get_if<tile_layer>(&the_map.layers()[6]);
     REQUIRE(tl);
@@ -109,4 +106,16 @@ TEST_CASE("test4/example.tmx testing group")
     REQUIRE(tl->height() == 10);
     REQUIRE(tl->offset_x() == 11);
     REQUIRE(tl->offset_y() == 2);
+}
+
+TEST_CASE("test4/example.tmx testing group")
+{
+    auto the_map = test::load_map(example, example_length);
+    test_group(the_map);
+}
+
+TEST_CASE("test4/js_example.json testing group")
+{
+    auto the_map = test::load_map(js_example, js_example_length);
+    test_group(the_map);
 }
