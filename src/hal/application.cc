@@ -100,9 +100,14 @@ namespace neutrino::hal {
                 {
                     total_time += ms;
                 }
-
+#if defined(_MSC_VER)
+#pragma warning (push)
+#pragma warning (disable : 4244)
+#endif
                 const unsigned fps = (1000u * frames) / static_cast<unsigned long>(total_time.count());
-
+#if defined(_MSC_VER)
+#pragma warning (pop)
+#endif
                 if (old_fps == 0) {
                     notify(events::current_fps{fps});
                     old_fps = fps;

@@ -6,21 +6,32 @@
 #include <hal/video/surface_impl.hh>
 #include "hal/ios_rwops.hh"
 
-#define STBI_NO_STDIO
-#include "hal/video/thirdparty/SDL_stbimage.h"
+
 
 #if defined(__GNUC__) || defined(__GNUG__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+#elif defined(_MSC_VER)
+#pragma warning (push)
+#pragma warning (disable : 4456 4701 4267 4244)
 #endif
+
+#define STBI_NO_STDIO
+#include "hal/video/thirdparty/SDL_stbimage.h"
 
 namespace
 {
-
 #include "hal/video/thirdparty/SDL_lbm.h"
 #include "hal/video/thirdparty/SDL_pcx.h"
 
 }
+
+#if defined(__GNUC__) || defined(__GNUG__)
+#pragma GCC diagnostic pop
+
+#elif defined(_MSC_VER)
+#pragma warning (pop)
+#endif
 
 namespace neutrino::hal {
     namespace detail {

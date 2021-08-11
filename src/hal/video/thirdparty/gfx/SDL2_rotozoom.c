@@ -31,6 +31,9 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#elif defined(_MSC_VER)
+#pragma warning (push)
+#pragma warning (disable : 4244 4701)
 #endif
 #ifdef WIN32
 #include <windows.h>

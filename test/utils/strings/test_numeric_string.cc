@@ -157,7 +157,7 @@ TEST_SUITE("numeric string conversions") {
         REQUIRE(safeIntCast<signed char>(sc, st) == c);
         REQUIRE(st == sc);
 
-        unsigned char uc = 0, ut = -1;
+        unsigned char uc = 0, ut = (unsigned char)-1;
         REQUIRE(!isIntOverflow<unsigned char>(uc));
         REQUIRE(safeIntCast<char>(uc, ut) == uc);
         REQUIRE(ut == uc);
@@ -174,11 +174,11 @@ TEST_SUITE("numeric string conversions") {
         REQUIRE(!isIntOverflow<int>(i));
         REQUIRE(!isIntOverflow<unsigned>(i));
         i = -1;
-        unsigned int ti = -1;
+        unsigned int ti = (unsigned int)-1;
         REQUIRE(isIntOverflow<unsigned>(i));
         REQUIRE_THROWS(safeIntCast(i, ti));
 
-        if (sizeof(long) > sizeof(int))
+        if constexpr (sizeof(long) > sizeof(int))
         {
             long l = LONG_MAX;
             REQUIRE(isIntOverflow<int>(l));
