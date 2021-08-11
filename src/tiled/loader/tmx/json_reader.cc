@@ -84,8 +84,8 @@ namespace neutrino::tiled::tmx
     {
         auto itr = m_pimpl->m_node.find(name);
         if (itr != m_pimpl->m_node.end()) {
-            if (itr->is_object()) {
-                const auto& child = *itr;
+            const auto& child = *itr;
+               
                 if (child.is_object()) {
                     func(json_reader(child));
                 } else {
@@ -97,17 +97,64 @@ namespace neutrino::tiled::tmx
                         RAISE_EX("Non iterable element ", name);
                     }
                 }
-            }
+
         }
+    }
+    // -------------------------------------------------------------------------------------------
+    bool json_reader::has_element(const char* name) const noexcept {
+        return m_pimpl->m_node.find(name) != m_pimpl->m_node.end();
     }
     // -------------------------------------------------------------------------------------------
     bool json_reader::has_child(const char* name) const
     {
         auto itr = m_pimpl->m_node.find(name);
         if (itr != m_pimpl->m_node.end()) {
-            return itr->is_object();
+            return itr->is_object() || itr->is_array();
         }
         return false;
+    }
+    // -------------------------------------------------------------------------------------------
+    void json_reader::parse_each_element_of(const char* name, visitor_t func) const {
+        auto itr = m_pimpl->m_node.find(name);
+        if (itr != m_pimpl->m_node.end()) {
+            if (itr->is_array()) {
+                for (const auto& obj : *itr) {
+                    func(json_reader(obj));
+                }
+            }
+            else {
+                RAISE_EX(name, "is expected to be an array");
+            }
+        }
+    }
+    // -------------------------------------------------------------------------------------------
+    std::vector<math::point2f> json_reader::parse_points(const char* name) const {
+        auto j = m_pimpl->m_node.find(name);
+        if (j == m_pimpl->m_node.end()) {
+            RAISE_EX("Can not find element", name);
+        }
+        const auto& node = *j;
+        if (!node.is_array()) {
+            RAISE_EX("points elements is expected to be an array");
+        }
+        std::vector<math::point2f> ret;
+        for (const auto& obj : node) {
+            if (!obj.is_object()) {
+                RAISE_EX("points should be an array of objects");
+            }
+            auto itr = obj.find("x");
+            if (itr == obj.end()) {
+                RAISE_EX("x attribute is missing for points object");
+            }
+            const float x = itr->get<float>();
+            itr = obj.find("y");
+            if (itr == obj.end()) {
+                RAISE_EX("y attribute is missing for points object");
+            }
+            const float y = itr->get<float>();
+            ret.emplace_back(x, y);
+        }
+        return ret;
     }
     // -------------------------------------------------------------------------------------------
     std::optional<std::string> json_reader::get_attribute_value(const char* name) const

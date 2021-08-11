@@ -51,7 +51,7 @@ namespace neutrino::tiled::tmx {
                 result.offset(x, y);
             });
             if (const json_reader* jr = dynamic_cast<const json_reader*>(&elt); jr) {
-                if (elt.has_child("image")) {
+                if (jr->has_element("image")) {
                     result.set_image(image::parse(*jr));
                 }
             } else {

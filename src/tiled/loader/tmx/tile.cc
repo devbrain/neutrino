@@ -33,9 +33,16 @@ namespace neutrino::tiled::tmx
             elt.parse_one_element("image", [&result](const reader& e) {
                 result.set_image(image::parse(e));
             });
-            elt.parse_one_element("animation", [&result](const reader& e) {
-                result.m_animation = animation::parse(e);
-            });
+            if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
+                if (json_rdr->has_element("animation")) {
+                    result.m_animation = animation::parse(elt);
+                }
+            }
+            else {
+                elt.parse_one_element("animation", [&result](const reader& e) {
+                    result.m_animation = animation::parse(e);
+                    });
+            }
             elt.parse_one_element("objectgroup", [&result](const reader& e) {
                 result.m_objects = std::make_unique<object_layer>(object_layer::parse(e));
             });
