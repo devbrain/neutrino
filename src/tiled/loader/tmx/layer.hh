@@ -17,15 +17,16 @@ namespace neutrino::tiled::tmx {
    */
     class layer : public component {
     public:
-        // std::string name, double opacity, bool visible
-        static std::tuple<std::string, double, bool> parse(const reader& elt);
+        // std::string name, double opacity, bool visible, int id
+        static std::tuple<std::string, double, bool, int> parse(const reader& elt);
         /**
          * @brief Layer constructor.
          */
-        layer(std::string name, double opacity, bool visible)
+        layer(std::string name, double opacity, bool visible, int id)
                 : m_name(std::move(name)),
                   m_opacity(opacity),
-                  m_visible(visible)
+                  m_visible(visible),
+                  m_id(id)
         {
         }
 
@@ -43,10 +44,14 @@ namespace neutrino::tiled::tmx {
             return m_visible;
         }
 
+        [[nodiscard]] int id() const noexcept {
+            return m_id;
+        }
     private:
         const std::string m_name;
         double m_opacity;
         bool m_visible;
+        int m_id;
     };
 }
 

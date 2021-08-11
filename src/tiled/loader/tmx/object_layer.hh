@@ -36,9 +36,9 @@ namespace neutrino::tiled::tmx {
         /**
          * @brief ObjectLayer constructor.
          */
-        object_layer(std::string name, double opacity, bool visible, colori color, draw_order_t order,
+        object_layer(std::string name, double opacity, bool visible, int id, colori color, draw_order_t order,
                      int offsetx, int offsety, colori tint)
-                : layer(std::move(name), opacity, visible),
+                : layer(std::move(name), opacity, visible, id),
                 m_offsetx(offsetx),
                 m_offsety(offsety),
                 m_tint(tint),
