@@ -3,6 +3,7 @@
 //
 
 #include "object_layer.hh"
+#include "xml_reader.hh"
 
 namespace neutrino::tiled::tmx {
     object_layer object_layer::parse(const reader& elt, const group* parent) {
@@ -20,10 +21,15 @@ namespace neutrino::tiled::tmx {
 
             object_layer obj(name, opacity, visible, colori(color), order, offsetx, offsety, tint);
             component::parse(obj, elt, parent);
-
-            elt.parse_many_elements("object", [&obj](const reader& elt) {
-                obj.add(parse_object(elt));
-            });
+            if (dynamic_cast<const xml_reader*>(&elt)) {
+                elt.parse_many_elements("object", [&obj](const reader& elt) {
+                    obj.add(parse_object(elt));
+                });
+            } else {
+                elt.parse_many_elements("objects", [&obj](const reader& elt) {
+                    obj.add(parse_object(elt));
+                });
+            }
             return obj;
         } catch (exception& e) {
             RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse objectgroup [", name, "]");

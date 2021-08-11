@@ -19,7 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#if defined(_MSC_VER)
+#if defined(__GNUC__) || defined(__GNUG__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#elif defined(_MSC_VER)
 #pragma warning (push)
 #pragma warning (disable : 4201 4127 4100)
 #endif
