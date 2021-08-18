@@ -341,6 +341,7 @@ target_include_directories(liblzma PRIVATE
     src/common
 )
 add_library(thirdparty::liblzma ALIAS liblzma)
+set_target_properties(liblzma PROPERTIES  FOLDER ThirdParty)
 target_link_libraries(liblzma Threads::Threads)
 
 # Put the tuklib functions under the lzma_ namespace.
