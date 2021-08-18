@@ -6,6 +6,7 @@
 #include "test_utils.hh"
 #include "test-rs/tiled_base64_gzip.h"
 #include "test-rs/tiled_base64_zlib.h"
+#include "test-rs/js_tiled_base64_gzip.h"
 #include "test-rs/tiled_base64_zstandard.h"
 
 using namespace neutrino::tiled::tmx;
@@ -33,4 +34,14 @@ TEST_CASE("test tmx compression") {
 
     REQUIRE(test::eq_cells(ztl->cells(), gtl->cells()));
     REQUIRE(test::eq_cells(zstl->cells(), gtl->cells()));
+}
+
+TEST_CASE("test json compression") {
+    auto gmap = test::load_map(tiled_base64_gzip, tiled_base64_gzip_length);
+
+    REQUIRE(!gmap.layers().empty());
+    const auto* gtl = std::get_if<tile_layer>(&gmap.layers()[0]);
+    REQUIRE(gtl);
+    REQUIRE(gtl->cells().size() == 10000);
+
 }

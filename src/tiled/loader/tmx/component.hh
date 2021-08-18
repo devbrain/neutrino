@@ -22,7 +22,9 @@ namespace neutrino::tiled::tmx
     }
     using object_id = strong::type<int, detail::object_id_s, strong::ordered, strong::equality>;
 
-    using property_t = std::variant<std::string, int64_t, bool, float, colori, std::filesystem::path, object_id>;
+    using typed_string = std::tuple<std::string, std::string>; // < type, value >
+
+    using property_t = std::variant<std::string, int64_t, bool, float, colori, std::filesystem::path, object_id, typed_string>;
 
     class component
     {
@@ -32,11 +34,7 @@ namespace neutrino::tiled::tmx
 
         template <typename T>
         void add(const std::string& name, T&& v) {
-#if !defined(_MSC_VER)
-            m_prop.template insert(std::make_pair(name, property_t{std::forward<T>(v)}));
-#else
             m_prop.insert(std::make_pair(name, property_t{ std::forward<T>(v) }));
-#endif
         }
 
         [[nodiscard]] bool empty() const noexcept ;

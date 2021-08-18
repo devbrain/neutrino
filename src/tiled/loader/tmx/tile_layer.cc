@@ -127,11 +127,16 @@ namespace neutrino::tiled::tmx
 
         if (encoding.empty() && compression.empty())
         {
-            elt.parse_many_elements("tile", [&result](const reader& telt) {
-                auto gid = telt.get_uint_attribute("gid");
-                result.add(cell::decode_gid(gid));
-            });
-
+            if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
+                json_rdr->iterate_data_array([&result](uint32_t gid){
+                    result.add(cell::decode_gid(gid));
+                });
+            } else {
+                elt.parse_many_elements("tile", [&result](const reader& telt) {
+                    auto gid = telt.get_uint_attribute("gid");
+                    result.add(cell::decode_gid(gid));
+                });
+            }
         } else
         {
             parse_inner_data(result, elt, encoding, compression);

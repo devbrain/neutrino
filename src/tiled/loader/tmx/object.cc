@@ -48,6 +48,13 @@ namespace neutrino::tiled::tmx {
         }
     }
 
+    static bool get_object_discriminator(const reader& elt, const char* name) {
+        if (reader::is_json(elt)) {
+            return elt.get_bool_attribute(name, false);
+        }
+        return elt.has_child(name);
+    }
+
     object_t parse_object(const reader& elt)
     {
 
@@ -67,6 +74,8 @@ namespace neutrino::tiled::tmx {
             auto c = cell::decode_gid(gid);
             object_attribs atts(id, name, type, origin, width, height, rotation, visible, c.gid(),
                                 c.hor_flipped(), c.vert_flipped(), c.diag_flipped());
+
+
 
             if (elt.has_child("polygon"))
             {
@@ -98,18 +107,17 @@ namespace neutrino::tiled::tmx {
                 else {
                     obj.points(parse_points(elt, "polyline"));
                 }
-            }
-
-
-            if (elt.has_child("ellipse"))
-            {
-                ellipse obj(atts);
-                component::parse(obj, elt);
-
                 return obj;
             }
 
-            if (elt.has_child("point"))
+            if (get_object_discriminator(elt, "ellipse")) {
+                ellipse obj(atts);
+                component::parse(obj, elt);
+                return obj;
+            }
+
+
+            if (get_object_discriminator(elt, "point"))
             {
                 point obj(atts);
                 component::parse(obj, elt);

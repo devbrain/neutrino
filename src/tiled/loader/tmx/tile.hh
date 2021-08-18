@@ -21,7 +21,7 @@ namespace neutrino::tiled::tmx {
   */
     class tile : public component {
     public:
-        static constexpr auto INVALID = static_cast<unsigned>(-1);
+        static constexpr auto INVALID_TERRAIN = static_cast<unsigned>(-1);
     public:
         static tile parse(const reader& e);
         /**
