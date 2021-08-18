@@ -99,9 +99,10 @@ namespace neutrino::tiled::tmx
                     } else
                     {
                         if (e.has_child("chunk")) {
-                            e.parse_many_elements("chunk", [&result, &encoding=std::as_const(encoding),
+                            int idx = 0;
+                            e.parse_many_elements("chunk", [&result, &idx, &encoding=std::as_const(encoding),
                                                             &compression = std::as_const(compression)](const reader& celt) {
-                                result.add(chunk::parse(celt, encoding, compression));
+                                result.add(chunk::parse(celt, encoding, compression, idx++));
                             });
                         } else {
                             parse_inner_data(result, e, encoding, compression);
@@ -111,13 +112,14 @@ namespace neutrino::tiled::tmx
             }
             return result;
         } catch (exception& e) {
-            auto id = elt.get_string_attribute("id", "<missing>");
-            RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse layer [", name, "], id [", id, "]");
+            auto idx = elt.get_string_attribute("id", "<missing>");
+            RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse layer [", name, "], id [", idx, "]");
         }
     }
     // ===========================================================================================================
-    chunk chunk::parse(const reader& elt, const std::string& encoding, const std::string& compression)
+    chunk chunk::parse(const reader& elt, const std::string& encoding, const std::string& compression, int chunk_id)
     {
+        try {
         auto x = elt.get_int_attribute("x");
         auto y = elt.get_int_attribute("y");
         auto w = elt.get_int_attribute("width");
@@ -142,5 +144,9 @@ namespace neutrino::tiled::tmx
             parse_inner_data(result, elt, encoding, compression);
         }
         return result;
+        }
+        catch (exception& e) {
+            RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse chunk #", chunk_id);
+        }
     }
 }

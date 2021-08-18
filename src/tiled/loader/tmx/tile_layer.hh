@@ -16,7 +16,7 @@ namespace neutrino::tiled::tmx
 
     class chunk {
     public:
-        static chunk parse (const reader& elt, const std::string& encoding, const std::string& compression);
+        static chunk parse (const reader& elt, const std::string& encoding, const std::string& compression, int chunk_id=0);
 
         chunk (int x, int y, int w, int h)
         : m_x(x), m_y(y), m_width(w), m_height(h) {}
