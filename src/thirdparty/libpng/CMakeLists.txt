@@ -21,10 +21,14 @@
 # For conditions of distribution and use, see the disclaimer
 # and license in png.h
 
-cmake_minimum_required(VERSION 3.1)
-cmake_policy(VERSION 3.1)
+cmake_minimum_required(VERSION 3.18)
+cmake_policy(VERSION 3.18)
 
-project(libpng C ASM)
+if(MSVC_VERSION)
+    project(libpng C)
+else()
+    project(libpng C ASM)
+endif()
 enable_testing()
 
 set(PNGLIB_MAJOR 1)
