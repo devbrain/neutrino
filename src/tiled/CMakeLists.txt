@@ -78,13 +78,16 @@ include(bin2c)
 
 set (TEST_DATA
         test1/example.tmx
+        test1/js_example.json
         test1/test_base64_level.tmx
+
         test1/test_csv_level.tmx
         test1/test_xml_level.tmx
         test-rs/tiled_flipped.tmx
         test-rs/tilesheet.tsx
         test-rs/tiled_base64_zlib.tmx
         test-rs/tiled_base64_gzip.tmx
+        test-rs/js_tiled_base64_gzip.json
         test-rs/tiled_base64_zstandard.tmx
         test3/b64zlib.tmx
         test-rs/tiled_base64_zlib_infinite.tmx
@@ -112,6 +115,7 @@ add_library(neutrino_tiled_with_tests OBJECT
         loader/tmx/test/test_infinite.cc
         loader/tmx/test/test_properties.cc
         loader/tmx/test/test_json_simple.cc
+        loader/tmx/test/test_json_complex.cc
         ${GENERATED_HEADERS}
         )
 

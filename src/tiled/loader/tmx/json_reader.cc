@@ -52,13 +52,13 @@ namespace neutrino::tiled::tmx
         }
     }
     // -------------------------------------------------------------------------------------------
-    void json_reader::iterate_data_array(std::function<void(uint32_t  v)> f) const {
-        auto itr = m_pimpl->m_node.find("data");
+    void json_reader::iterate_data_array(std::function<void(uint32_t  v)> f, const char* name) const {
+        auto itr = m_pimpl->m_node.find(name);
         if (itr == m_pimpl->m_node.end()) {
-            RAISE_EX("Can not find data array");
+            RAISE_EX("Can not find", name, "array");
         }
         if (!itr->is_array()) {
-            RAISE_EX("data element is not array");
+            RAISE_EX(name, "element is not array");
         }
         for (const auto& x : *itr) {
             f(x.get<uint32_t>());

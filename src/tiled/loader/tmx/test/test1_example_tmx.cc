@@ -17,7 +17,7 @@ TEST_CASE("test1/example/test map attribs")
     REQUIRE(the_map.height() == 10);
     REQUIRE(the_map.orientation() == orientation_t::ORTHOGONAL);
     REQUIRE(the_map.render_order() == render_order_t::RIGHT_DOWN);
-    REQUIRE(the_map.version() == "1.0");
+
     REQUIRE(the_map.background_color() == "#595959");
     REQUIRE(!the_map.infinite());
 
@@ -115,3 +115,4 @@ TEST_CASE("test1/example/test map attribs")
     };
     REQUIRE(o2->points() == pts);
 }
+

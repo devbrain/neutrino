@@ -10,6 +10,10 @@
 #include "tiled/loader/tmx/json_reader.hh"
 
 namespace neutrino::tiled::tmx::test {
+    map load_map(const std::string& txt, path_resolver_t resolver) {
+        return load_map((const unsigned char*)txt.c_str(), txt.size(), resolver);
+    }
+
     map load_map(const unsigned char* data, std::size_t length, path_resolver_t resolver) {
         auto doc_type = reader::guess_document_type((char*)data, length);
         switch (doc_type)

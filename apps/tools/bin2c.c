@@ -8,11 +8,17 @@
  * Some modifications were made by Gwilym Kuiper (kuiper.gwilym@gmail.com)
  * I have decided not to change the licence.
  */
+
+#if defined(_MSC_VER)
 #define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #ifdef USE_BZ2
 #include <bzlib.h>
@@ -23,7 +29,10 @@ main(int argc, char *argv[])
 {
     char *buf;
     char *ident;
-    unsigned int i, file_size, need_comma;
+    unsigned int i, need_comma;
+    int file_size;
+    int rc;
+    struct stat info;
 
     FILE *f_input, *f_output;
 
@@ -37,6 +46,14 @@ main(int argc, char *argv[])
                 argv[0]);
         return -1;
     }
+    if( stat( argv[1], &info ) != 0 ) {
+        printf( "cannot access %s\n", argv[1] );
+        return -1;
+    }
+    else if( info.st_mode & S_IFDIR )  {
+        printf( "%s is a directory\n", argv[1] );
+        return -1;
+    }
 
     f_input = fopen(argv[1], "rb");
     if (f_input == NULL) {
@@ -45,9 +62,22 @@ main(int argc, char *argv[])
     }
 
     // Get the file length
-    fseek(f_input, 0, SEEK_END);
+    rc = fseek(f_input, 0, SEEK_END);
+    if (rc == -1) {
+        perror("fseek failed ");
+        return -1;
+    }
     file_size = ftell(f_input);
-    fseek(f_input, 0, SEEK_SET);
+    if (file_size < 0) {
+        perror("ftell failed");
+        return -1;
+    }
+
+    rc = fseek(f_input, 0, SEEK_SET);
+    if (rc == -1) {
+        perror("fseek failed ");
+        return -1;
+    }
 
     buf = (char *) malloc(file_size);
     assert(buf);

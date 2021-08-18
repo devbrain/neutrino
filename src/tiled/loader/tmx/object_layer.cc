@@ -21,15 +21,10 @@ namespace neutrino::tiled::tmx {
 
             object_layer obj(name, opacity, visible, id, colori(color), order, offsetx, offsety, tint);
             component::parse(obj, elt, parent);
-            if (dynamic_cast<const xml_reader*>(&elt)) {
-                elt.parse_many_elements("object", [&obj](const reader& elt) {
-                    obj.add(parse_object(elt));
-                });
-            } else {
-                elt.parse_many_elements("objects", [&obj](const reader& elt) {
-                    obj.add(parse_object(elt));
-                });
-            }
+            const char* objects_name = reader::is_json(elt) ? "objects" : "object";
+            elt.parse_many_elements(objects_name, [&obj](const reader& elt) {
+                obj.add(parse_object(elt));
+            });
             return obj;
         } catch (exception& e) {
             RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse objectgroup [", name, "]");

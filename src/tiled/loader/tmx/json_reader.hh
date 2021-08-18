@@ -97,7 +97,7 @@ namespace neutrino::tiled::tmx
         ~json_reader() override;
 
 
-        void iterate_data_array(std::function<void(uint32_t  v)> f) const;
+        void iterate_data_array(std::function<void(uint32_t  v)> f, const char* name = "data") const;
         void parse_each_element_of(const char* name, visitor_t func) const;
         bool has_element(const char* name) const noexcept;
         std::vector<math::point2f> parse_points(const char* name) const;
