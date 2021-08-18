@@ -20,6 +20,19 @@ namespace neutrino::tiled::tmx::test {
     bool check_properties(const component& obj, const std::map<std::string, property_t>& props);
     bool test_tiles(const tile_layer& tl, const std::vector<int>& expected);
     bool eq_cells (const std::vector<cell>& a, const std::vector<cell>& b);
+
+    template<typename T>
+    inline
+    property_t to_prop(T v) {
+        property_t p = std::move(v);
+        return p;
+    }
+
+    inline
+    property_t to_prop(int v) {
+        property_t p = (int64_t)v;
+        return p;
+    }
 }
 
 #endif

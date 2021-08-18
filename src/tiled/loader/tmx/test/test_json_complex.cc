@@ -54,8 +54,8 @@ TEST_CASE("Parse a Map from Tiled's documentation")
     REQUIRE(the_map.tile_height() == 32);
 
     REQUIRE(the_map.version() == "1");
-    REQUIRE(the_map.get("mapProperty1") == property_t(typed_string{"one", "string"}));
-    REQUIRE(the_map.get("mapProperty2") == property_t(typed_string{"two", "string"}));
+    REQUIRE(the_map.get("mapProperty1") == test::to_prop(typed_string{"one", "string"}));
+    REQUIRE(the_map.get("mapProperty2") == test::to_prop(typed_string{"two", "string"}));
 }
 
 TEST_CASE("Parse a Layer from Tiled's documentation - read simple values")
@@ -97,7 +97,7 @@ TEST_CASE("Parse a Layer from Tiled's documentation - read simple values")
         REQUIRE(tl.offset_x() == 0);
         REQUIRE(tl.offset_y() == 0);
         REQUIRE(tl.tint() == "#656667");
-        REQUIRE(tl.get("tileLayerProp") == property_t((int) 1));
+        REQUIRE(tl.get("tileLayerProp") == test::to_prop((int) 1));
     }
 
     SUBCASE("Layer - Object Layer format")
@@ -130,7 +130,7 @@ TEST_CASE("Parse a Layer from Tiled's documentation - read simple values")
         REQUIRE(tl.opacity() == 1);
         REQUIRE(tl.visible());
         REQUIRE(tl.objects().empty());
-        REQUIRE(tl.get("layerProp1") == property_t(std::string{"someStringValue"}));
+        REQUIRE(tl.get("layerProp1") == test::to_prop(std::string{"someStringValue"}));
     }
 }
 
@@ -195,7 +195,7 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
         REQUIRE(obj.width() == 0);
         REQUIRE(obj.height() == 0);
         REQUIRE(obj.origin() == neutrino::math::point2f(32, 32));
-        REQUIRE(obj.get("hp") == property_t(12));
+        REQUIRE(obj.get("hp") == test::to_prop(12));
     }
 
     SUBCASE("Object - ellipse") {
@@ -423,7 +423,7 @@ TEST_CASE( "Parse a Tileset from Tiled's documentation - read simple values")
     REQUIRE(ts.tile_count() == 266);
     REQUIRE(ts.tile_width() == 32);
     REQUIRE(ts.tile_height() == 32);
-    REQUIRE(ts.get("myProperty1") == property_t (std::string("myProperty1_value")));
+    REQUIRE(ts.get("myProperty1") == test::to_prop (std::string("myProperty1_value")));
     const auto* img = ts.get_image();
     REQUIRE(img);
     REQUIRE(img->data().empty());
@@ -472,12 +472,12 @@ TEST_CASE( "Property-tests - Set properties from json" )
     component c;
     component::parse(c, json_reader::load(txt.c_str(), txt.size(), nullptr));
 
-    REQUIRE(c.get("color") == property_t {colori("#ff268176")});
-    REQUIRE(c.get("file_ref") == property_t {std::filesystem::path("../demo-tileset.png")});
-    REQUIRE(c.get("hp") == property_t {(int)4});
-    REQUIRE(c.get("is_player") == property_t {true});
-    REQUIRE(c.get("jump_force") == property_t {10.0f});
-    REQUIRE(c.get("name") == property_t {std::string{"Mario"}});
+    REQUIRE(c.get("color") == test::to_prop (colori("#ff268176")));
+    REQUIRE(c.get("file_ref") == test::to_prop (std::filesystem::path("../demo-tileset.png")));
+    REQUIRE(c.get("hp") == test::to_prop ((int)4));
+    REQUIRE(c.get("is_player") == test::to_prop (true));
+    REQUIRE(c.get("jump_force") == test::to_prop (10.0f));
+    REQUIRE(c.get("name") == test::to_prop (std::string{"Mario"}));
 }
 
 TEST_CASE( "Parse a Tile from Tiled's documentation - read simple values")
@@ -496,7 +496,7 @@ TEST_CASE( "Parse a Tile from Tiled's documentation - read simple values")
     )";
     const auto tl = tile::parse(json_reader::load(txt.c_str(), txt.size(), nullptr));
     REQUIRE (tl.id() == 11);
-    REQUIRE(tl.get("myProperty2") == property_t(std::string("myProperty2_value")));
+    REQUIRE(tl.get("myProperty2") == test::to_prop(std::string("myProperty2_value")));
     REQUIRE (tl.terrain()[0] == 0);
     REQUIRE (tl.terrain()[1] == 1);
     REQUIRE (tl.terrain()[2] == 0);
