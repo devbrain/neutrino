@@ -18,7 +18,7 @@ namespace neutrino::tiled::tmx
                 if (json_rdr->has_element("terrain")) {
                     int idx = 0;
                     json_rdr->iterate_data_array([&terrain, &idx](uint32_t v) {
-                        terrain[idx++] = v;
+                        terrain.at(idx++) = v;
                         }, "terrain");
                 }
             } else {
@@ -28,7 +28,7 @@ namespace neutrino::tiled::tmx
                     unsigned t = 0;
                     for (const auto& tok : tokenizer)
                     {
-                        terrain[t++] = utils::number_parser::parse(tok);
+                        terrain.at(t++) = utils::number_parser::parse(tok);
                     }
                 }
             }

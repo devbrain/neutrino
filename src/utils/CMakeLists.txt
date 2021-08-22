@@ -51,8 +51,16 @@ my_add_library_static(utils
 		io/inflating_stream.cc
 		${PROJECT_INCLUDE}/neutrino/utils/io/stream_copier.hh
 		io/stream_copier.cc
-        io/zstd_wrapper.c
-		io/zstd_wrapper.h
+		io/compression_stream/zstd_wrapper.c
+		io/compression_stream/zstd_wrapper.h
+		io/compression_stream/io_stream_wrapper.cc
+		io/compression_stream/io_stream_wrapper.hh
+		io/compression_stream/compression_stream_wrapper.cc
+		io/compression_stream/compression_stream_wrapper.hh
+		io/compression_stream/decompression_stream_wrapper.cc
+		io/compression_stream/decompression_stream_wrapper.hh
+		io/compression_stream/zlib_stream_wrapper.cc
+		io/compression_stream/zlib_stream_wrapper.hh
 
 		strings/ascii.cc
 		${PROJECT_INCLUDE}/neutrino/utils/strings/ascii.hh

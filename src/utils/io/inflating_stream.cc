@@ -6,7 +6,7 @@
 #include <neutrino/utils/io/inflating_stream.hh>
 #include <neutrino/utils/exception.hh>
 
-#include "zstd_wrapper.h"
+#include "utils/io/compression_stream/zstd_wrapper.h"
 #include "ios_init.hh"
 
 namespace neutrino::utils::io
