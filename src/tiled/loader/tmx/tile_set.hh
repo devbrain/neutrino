@@ -11,6 +11,7 @@
 #include "tile.hh"
 #include "reader.hh"
 #include "path_resolver.hh"
+#include "wang_set.hh"
 #include <neutrino/math/rect.hh>
 #include <vector>
 #include <memory>
@@ -241,6 +242,14 @@ namespace neutrino::tiled::tmx {
         [[nodiscard]] unsigned columns() const noexcept {
             return m_columns;
         }
+
+        [[nodiscard]] const std::vector<wang_set>& wang_sets () const noexcept {
+            return m_wang_sets;
+        }
+
+        void add_wang_set(wang_set ws) {
+            m_wang_sets.emplace_back(std::move(ws));
+        }
     private:
         static tile_set parse_inner(unsigned first_gid, const reader& elt);
         static tile_set parse_from_file(unsigned first_gid, const std::string& source, const path_resolver_t& resolver);
@@ -260,6 +269,7 @@ namespace neutrino::tiled::tmx {
         std::unique_ptr<image> m_image;
         std::vector<terrain> m_terrains;
         std::vector<tile> m_tiles;
+        std::vector<wang_set> m_wang_sets;
     };
 
 }

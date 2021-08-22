@@ -5,6 +5,7 @@
 #include "tiled/loader/tmx/tile_layer.hh"
 #include "tiled/loader/tmx/object_layer.hh"
 #include "tiled/loader/tmx/object.hh"
+#include "tiled/loader/tmx/wang_set.hh"
 #include <iostream>
 
 using namespace neutrino::tiled::tmx;
@@ -134,7 +135,7 @@ TEST_CASE("Parse a Layer from Tiled's documentation - read simple values")
     }
 }
 
-TEST_CASE( "Parse a Chunk from Tiled's documentation - read simple values")
+TEST_CASE("Parse a Chunk from Tiled's documentation - read simple values")
 {
     const std::string txt = R"(
     {
@@ -153,9 +154,9 @@ TEST_CASE( "Parse a Chunk from Tiled's documentation - read simple values")
     REQUIRE(c.cells().size() == 16);
 }
 
-
-template <typename T>
-static T parse(const std::string& txt) {
+template<typename T>
+static T parse(const std::string& txt)
+{
     auto objp = parse_object(json_reader::load(txt.c_str(), txt.size(), nullptr));
     const auto* obj = std::get_if<T>(&objp);
     REQUIRE(obj != nullptr);
@@ -198,7 +199,8 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
         REQUIRE(obj.get("hp") == test::to_prop(12));
     }
 
-    SUBCASE("Object - ellipse") {
+    SUBCASE("Object - ellipse")
+    {
         auto obj = parse<ellipse>(R"(
             {
                 "ellipse":true,
@@ -221,7 +223,7 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
         REQUIRE(obj.visible());
         REQUIRE(obj.width() == 248);
         REQUIRE(obj.height() == 152);
-        REQUIRE(obj.origin() == neutrino::math::point2f {560, 808});
+        REQUIRE(obj.origin() == neutrino::math::point2f{560, 808});
     }
 
     SUBCASE("Object - point")
@@ -247,7 +249,7 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
         REQUIRE(obj.visible());
         REQUIRE(obj.width() == 0);
         REQUIRE(obj.height() == 0);
-        REQUIRE(obj.origin() == neutrino::math::point2f {220, 350});
+        REQUIRE(obj.origin() == neutrino::math::point2f{220, 350});
     }
 
     SUBCASE("Object - polygon")
@@ -296,9 +298,9 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
         REQUIRE(obj.visible());
         REQUIRE(obj.width() == 0);
         REQUIRE(obj.height() == 0);
-        REQUIRE(obj.origin() == neutrino::math::point2f {-176, 432});
+        REQUIRE(obj.origin() == neutrino::math::point2f{-176, 432});
         REQUIRE(obj.points().size() == 5);
-        REQUIRE(obj.points()[2] == neutrino::math::point2f {136, -128});
+        REQUIRE(obj.points()[2] == neutrino::math::point2f{136, -128});
     }
 
     SUBCASE("Object - polyline")
@@ -349,9 +351,9 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
         REQUIRE(obj.visible());
         REQUIRE(obj.width() == 0);
         REQUIRE(obj.height() == 0);
-        REQUIRE(obj.origin() == neutrino::math::point2f {240, 88});
+        REQUIRE(obj.origin() == neutrino::math::point2f{240, 88});
         REQUIRE(obj.points().size() == 6);
-        REQUIRE(obj.points()[4] == neutrino::math::point2f {656, 120});
+        REQUIRE(obj.points()[4] == neutrino::math::point2f{656, 120});
     }
 
     SUBCASE("Object - text")
@@ -381,14 +383,13 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
         REQUIRE(obj.visible());
         REQUIRE(obj.width() == 248);
         REQUIRE(obj.height() == 19);
-        REQUIRE(obj.origin() == neutrino::math::point2f {48, 136});
+        REQUIRE(obj.origin() == neutrino::math::point2f{48, 136});
         REQUIRE(obj.wrap());
         REQUIRE(obj.data() == "Hello World");
     }
 }
 
-
-TEST_CASE( "Parse a Tileset from Tiled's documentation - read simple values")
+TEST_CASE("Parse a Tileset from Tiled's documentation - read simple values")
 {
     const std::string txt = R"(
         {
@@ -423,7 +424,7 @@ TEST_CASE( "Parse a Tileset from Tiled's documentation - read simple values")
     REQUIRE(ts.tile_count() == 266);
     REQUIRE(ts.tile_width() == 32);
     REQUIRE(ts.tile_height() == 32);
-    REQUIRE(ts.get("myProperty1") == test::to_prop (std::string("myProperty1_value")));
+    REQUIRE(ts.get("myProperty1") == test::to_prop(std::string("myProperty1_value")));
     const auto* img = ts.get_image();
     REQUIRE(img);
     REQUIRE(img->data().empty());
@@ -432,7 +433,7 @@ TEST_CASE( "Parse a Tileset from Tiled's documentation - read simple values")
     REQUIRE(img->source() == "../image/fishbaddie_parts.png");
 }
 
-TEST_CASE( "Property-tests - Set properties from json" )
+TEST_CASE("Property-tests - Set properties from json")
 {
     const std::string txt = R"(
     {
@@ -472,15 +473,15 @@ TEST_CASE( "Property-tests - Set properties from json" )
     component c;
     component::parse(c, json_reader::load(txt.c_str(), txt.size(), nullptr));
 
-    REQUIRE(c.get("color") == test::to_prop (colori("#ff268176")));
-    REQUIRE(c.get("file_ref") == test::to_prop (std::filesystem::path("../demo-tileset.png")));
-    REQUIRE(c.get("hp") == test::to_prop ((int)4));
-    REQUIRE(c.get("is_player") == test::to_prop (true));
-    REQUIRE(c.get("jump_force") == test::to_prop (10.0f));
-    REQUIRE(c.get("name") == test::to_prop (std::string{"Mario"}));
+    REQUIRE(c.get("color") == test::to_prop(colori("#ff268176")));
+    REQUIRE(c.get("file_ref") == test::to_prop(std::filesystem::path("../demo-tileset.png")));
+    REQUIRE(c.get("hp") == test::to_prop((int) 4));
+    REQUIRE(c.get("is_player") == test::to_prop(true));
+    REQUIRE(c.get("jump_force") == test::to_prop(10.0f));
+    REQUIRE(c.get("name") == test::to_prop(std::string{"Mario"}));
 }
 
-TEST_CASE( "Parse a Tile from Tiled's documentation - read simple values")
+TEST_CASE("Parse a Tile from Tiled's documentation - read simple values")
 {
     const std::string txt = R"(
         {
@@ -501,6 +502,161 @@ TEST_CASE( "Parse a Tile from Tiled's documentation - read simple values")
     REQUIRE (tl.terrain()[1] == 1);
     REQUIRE (tl.terrain()[2] == 0);
     REQUIRE (tl.terrain()[3] == 1);
+}
+
+TEST_CASE("Wang-tests - everything Wang - simple")
+{
+    const std::string txt = R"(
+            {
+                "colors":[
+                {
+                    "color":"#ff0000",
+                    "name":"Red",
+                    "probability":1,
+                    "tile":-1
+                },
+                {
+                    "color":"#00ff00",
+                    "name":"Green",
+                    "probability":1,
+                    "tile":-1
+                },
+                {
+                    "color":"#0000ff",
+                    "name":"Blue",
+                    "probability":1,
+                    "tile":-1
+                },
+                {
+                    "color":"#ff7700",
+                    "name":"Orange",
+                    "probability":1,
+                    "tile":-1
+                }],
+                "name":"FirstWang",
+                "properties":[
+                    {
+                        "name":"floating_wang",
+                        "type":"float",
+                        "value":14.6
+                    },
+                    {
+                        "name":"is_wang",
+                        "type":"bool",
+                        "value":true
+                    }],
+                "tile":-1,
+                "wangtiles":[
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":0,
+                        "vflip":false,
+                        "wangid":[3, 0, 1, 0, 1, 0, 3, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":1,
+                        "vflip":false,
+                        "wangid":[1, 0, 1, 0, 1, 0, 1, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":2,
+                        "vflip":false,
+                        "wangid":[3, 0, 3, 0, 1, 0, 1, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":3,
+                        "vflip":false,
+                        "wangid":[3, 0, 1, 0, 1, 0, 1, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":4,
+                        "vflip":false,
+                        "wangid":[2, 0, 2, 0, 1, 0, 1, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":8,
+                        "vflip":false,
+                        "wangid":[1, 0, 1, 0, 3, 0, 3, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":9,
+                        "vflip":false,
+                        "wangid":[2, 0, 1, 0, 1, 0, 1, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":10,
+                        "vflip":false,
+                        "wangid":[1, 0, 3, 0, 3, 0, 1, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":16,
+                        "vflip":false,
+                        "wangid":[3, 0, 3, 0, 3, 0, 3, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":17,
+                        "vflip":false,
+                        "wangid":[3, 0, 3, 0, 3, 0, 3, 0]
+                    },
+                    {
+                        "dflip":false,
+                        "hflip":false,
+                        "tileid":18,
+                        "vflip":false,
+                        "wangid":[3, 0, 3, 0, 1, 0, 1, 0]
+                    }]
+            }
+        )";
+
+    wang_set ws = wang_set::parse(json_reader::load(txt.c_str(), txt.size(), nullptr));
+    REQUIRE(ws.name() == "FirstWang");
+    REQUIRE(ws.local_tile() == -1);
+    REQUIRE(ws.colors().size() == 4);
+    REQUIRE(ws.get("is_wang") == test::to_prop(true));
+
+    const auto& c = ws.colors()[3];
+    REQUIRE(c.color() == "#ff7700");
+    REQUIRE(c.name() == "Orange");
+    REQUIRE(c.prob() == 1);
+    REQUIRE(c.local_tile() == -1);
+
+    REQUIRE(ws.tiles().size() == 11);
+    const auto& t = ws.tiles()[10];
+
+    REQUIRE(!t.diag_flipped());
+    REQUIRE(!t.hor_flipped());
+    REQUIRE(!t.vert_flipped());
+    REQUIRE(t.gid() == 18);
+
+    const auto& w = t.wang_id();
+
+    REQUIRE(w[wang_tile::TOP] == 3);
+    REQUIRE(w[wang_tile::TOP_RIGHT] == 0);
+    REQUIRE(w[wang_tile::RIGHT] == 3);
+    REQUIRE(w[wang_tile::BOTTOM_RIGHT] == 0);
+    REQUIRE(w[wang_tile::BOTTOM] == 1);
+    REQUIRE(w[wang_tile::BOTTOM_LEFT] == 0);
+    REQUIRE(w[wang_tile::LEFT] == 1);
+    REQUIRE(w[wang_tile::TOP_LEFT] == 0);
 }
 
 #if 0
@@ -567,196 +723,8 @@ TEST_CASE( "Parse a Terrain from Tiled's documentation", "[tiled][terrain]" )
     REQUIRE((parseOk && hasCorrectValues));
 }
 
-TEST_CASE( "Wang-tests - everything Wang - simple", "[tiled][wang]" )
-{
-    SECTION("WangSet")
-    {
-        nlohmann::json j = "{\n"
-                           "    \"cornercolors\":[],\n"
-                           "    \"edgecolors\":[\n"
-                           "        {\n"
-                           "            \"color\":\"#ff0000\",\n"
-                           "            \"name\":\"Red\",\n"
-                           "            \"probability\":1,\n"
-                           "            \"tile\":-1\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"color\":\"#00ff00\",\n"
-                           "            \"name\":\"Green\",\n"
-                           "            \"probability\":1,\n"
-                           "            \"tile\":-1\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"color\":\"#0000ff\",\n"
-                           "            \"name\":\"Blue\",\n"
-                           "            \"probability\":1,\n"
-                           "            \"tile\":-1\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"color\":\"#ff7700\",\n"
-                           "            \"name\":\"Orange\",\n"
-                           "            \"probability\":1,\n"
-                           "            \"tile\":-1\n"
-                           "        }],\n"
-                           "    \"name\":\"FirstWang\",\n"
-                           "    \"properties\":[\n"
-                           "        {\n"
-                           "            \"name\":\"floating_wang\",\n"
-                           "            \"type\":\"float\",\n"
-                           "            \"value\":14.6\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"name\":\"is_wang\",\n"
-                           "            \"type\":\"bool\",\n"
-                           "            \"value\":true\n"
-                           "        }],\n"
-                           "    \"tile\":-1,\n"
-                           "    \"wangtiles\":[\n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":0,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[3, 0, 1, 0, 1, 0, 3, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":1,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[1, 0, 1, 0, 1, 0, 1, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":2,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[3, 0, 3, 0, 1, 0, 1, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":3,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[3, 0, 1, 0, 1, 0, 1, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":4,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[2, 0, 2, 0, 1, 0, 1, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":8,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[1, 0, 1, 0, 3, 0, 3, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":9,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[2, 0, 1, 0, 1, 0, 1, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":10,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[1, 0, 3, 0, 3, 0, 1, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":16,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[3, 0, 3, 0, 3, 0, 3, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":17,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[3, 0, 3, 0, 3, 0, 3, 0]\n"
-                           "        }, \n"
-                           "        {\n"
-                           "            \"dflip\":false,\n"
-                           "            \"hflip\":false,\n"
-                           "            \"tileid\":18,\n"
-                           "            \"vflip\":false,\n"
-                           "            \"wangid\":[3, 0, 3, 0, 1, 0, 1, 0]\n"
-                           "        }]\n"
-                           "}"_json;
 
-        tson::WangSet wangset;
-        std::unique_ptr<tson::IJson> json = std::make_unique<tson::NlohmannJson>(&j);
-        bool parseOk = wangset.parse(*json);
-        bool hasCorrectValues = (
-                wangset.getTile() == -1 &&
-                wangset.getName() == "FirstWang" &&
-                wangset.getCornerColors().empty() &&
-                wangset.getEdgeColors().size() == 4 &&
-                wangset.getWangTiles().size() == 11 &&
-                wangset.getProperties().getValue<float>("floating_wang") == 14.6f &&
-                wangset.getProperties().getValue<bool>("is_wang") &&
-                wangset.get<float>("floating_wang") == 14.6f &&
-                wangset.getProp("is_wang")->getValue<bool>()
-        );
 
-        REQUIRE((parseOk && hasCorrectValues));
-    }
-
-    SECTION("WangColor")
-    {
-        nlohmann::json j = "{\n"
-                           "  \"color\": \"#d31313\",\n"
-                           "  \"name\": \"Rails\",\n"
-                           "  \"probability\": 1,\n"
-                           "  \"tile\": 18\n"
-                           "}"_json;
-
-        tson::WangColor wangColor;
-        tson::Color colorMatch = tson::Colori("#d31313");
-        std::unique_ptr<tson::IJson> json = std::make_unique<tson::NlohmannJson>(&j);
-        bool parseOk = wangColor.parse(*json);
-        bool hasCorrectValues = (
-                wangColor.getColor() == colorMatch &&
-                wangColor.getName() == "Rails" &&
-                wangColor.getProbability() == 1 &&
-                wangColor.getTile() == 18
-        );
-
-        REQUIRE((parseOk && hasCorrectValues));
-    }
-
-    SECTION("WangTile")
-    {
-        nlohmann::json j = "{\n"
-                           "  \"dflip\": false,\n"
-                           "  \"hflip\": false,\n"
-                           "  \"tileid\": 0,\n"
-                           "  \"vflip\": false,\n"
-                           "  \"wangid\": [2, 0, 1, 0, 1, 0, 2, 0]\n"
-                           "}"_json;
-
-        tson::WangTile wangTile;
-        std::unique_ptr<tson::IJson> json = std::make_unique<tson::NlohmannJson>(&j);
-        bool parseOk = wangTile.parse(*json);
-        bool hasCorrectValues = (
-                !wangTile.hasDFlip() &&
-                !wangTile.hasHFlip() &&
-                !wangTile.hasVFlip() &&
-                wangTile.getTileid() == 0 &&
-                wangTile.getWangIds().size() == 8 &&
-                wangTile.getWangIds()[6] == 2
-        );
-
-        REQUIRE((parseOk && hasCorrectValues));
-    }
-}
 
 
 #endif
