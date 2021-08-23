@@ -66,17 +66,23 @@ namespace neutrino::tiled::tmx {
                 });
             });
 
-            elt.parse_one_element("wangsets", [&result](const reader& e){
-                e.parse_many_elements("wangset", [&result](const reader& elt){
-                    result.add_wang_set(wang_set::parse(elt));
-                });
-            });
+
 
             if (dynamic_cast<const xml_reader*>(&elt)) {
                 elt.parse_many_elements("tile", [&result](const reader& e){
                     result.add_tile(tile::parse(e));
                 });
+
+                elt.parse_one_element("wangsets", [&result](const reader& e){
+                    e.parse_many_elements("wangset", [&result](const reader& elt){
+                        result.add_wang_set(wang_set::parse(elt));
+                    });
+                });
             } else {
+                elt.parse_one_element("wangsets", [&result](const reader& e){
+                    result.add_wang_set(wang_set::parse(e));
+                });
+
                 elt.parse_many_elements("tiles", [&result](const reader& e){
                     result.add_tile(tile::parse(e));
                 });

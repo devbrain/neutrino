@@ -93,10 +93,15 @@ set (TEST_DATA
         test-rs/tiled_base64_zstandard.tmx
         test3/b64zlib.tmx
         test-rs/tiled_base64_zlib_infinite.tmx
+        test-rs/js_tiled_base64_zlib_infinite.json
         test-rs/tilesheet.tsx
+        test-rs/tiled_image_layers.tmx
+        test-rs/js_tiled_image_layers.json
         test4/example.tmx
         test4/js_example.json
         json/simple_map.json
+        wang/isometric_staggered_grass_and_water.tmx
+        wang/js_isometric_staggered_grass_and_water.json
         )
 set (GENERATED_HEADERS )
 foreach(FILE ${TEST_DATA})
@@ -118,6 +123,8 @@ add_library(neutrino_tiled_with_tests OBJECT
         loader/tmx/test/test_properties.cc
         loader/tmx/test/test_json_simple.cc
         loader/tmx/test/test_json_complex.cc
+        loader/tmx/test/test_wang.cc
+        loader/tmx/test/test_image_layers.cc
         ${GENERATED_HEADERS}
         )
 

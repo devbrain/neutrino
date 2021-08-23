@@ -26,6 +26,9 @@ namespace neutrino::tiled::tmx {
 
     std::unique_ptr<image> image::parse(const json_reader& elt) {
         std::string source = elt.get_string_attribute("image");
+        if (source.empty()) {
+            return nullptr;
+        }
         std::string trans = elt.get_string_attribute("transparentcolor", "");
         unsigned width = elt.get_uint_attribute("imagewidth", 0);
         unsigned height = elt.get_uint_attribute("imageheight", 0);

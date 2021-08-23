@@ -13,7 +13,9 @@ namespace neutrino::tiled::tmx {
             image_layer res(name, opacity, visible, id, offsetx, offsety, tint);
             component::parse(res, elt, parent);
             if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
-                res.set_image(image::parse(*json_rdr));
+                if (json_rdr->has_attribute("image")) {
+                    res.set_image(image::parse(*json_rdr));
+                }
             }
             else {
                 elt.parse_one_element("image", [&res](const reader& elt) {
