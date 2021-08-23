@@ -10,8 +10,6 @@
 
 using namespace neutrino::tiled::tmx;
 
-
-
 static void test_props(const map& the_map) {
     static const std::map<std::string, property_t> props = {
             {"BigInteger", test::to_prop((int64_t)999999999)},
