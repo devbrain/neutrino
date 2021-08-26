@@ -32,6 +32,7 @@ my_add_library_static(utils
 		${PROJECT_INCLUDE}/neutrino/utils/singleton.hh
 		${PROJECT_INCLUDE}/neutrino/utils/array_view.hh
 		${PROJECT_INCLUDE}/neutrino/utils/sorted_array.hh
+		${PROJECT_INCLUDE}/neutrino/utils/strong_type.hpp
 
 		io/base64.cc
 		${PROJECT_INCLUDE}/neutrino/utils/io/base64.hh
@@ -81,6 +82,26 @@ my_add_library_static(utils
 		${PROJECT_INCLUDE}/neutrino/utils/strings/string_utils.hh
 
 		fpe/fpe.cc
+		fpe/double-conversion/bignum.cc
+		fpe/double-conversion/bignum-dtoa.cc
+		fpe/double-conversion/bignum-dtoa.h
+		fpe/double-conversion/bignum.h
+		fpe/double-conversion/cached-powers.cc
+		fpe/double-conversion/cached-powers.h
+		fpe/double-conversion/diy-fp.h
+		fpe/double-conversion/double-conversion.h
+		fpe/double-conversion/double-to-string.cc
+		fpe/double-conversion/double-to-string.h
+		fpe/double-conversion/fast-dtoa.cc
+		fpe/double-conversion/fast-dtoa.h
+		fpe/double-conversion/fixed-dtoa.cc
+		fpe/double-conversion/fixed-dtoa.h
+		fpe/double-conversion/ieee.h
+		fpe/double-conversion/string-to-double.cc
+		fpe/double-conversion/string-to-double.h
+		fpe/double-conversion/strtod.cc
+		fpe/double-conversion/strtod.h
+		fpe/double-conversion/utils.h
 		${PROJECT_INCLUDE}/neutrino/utils/fpe/fpe.hh
 		${PROJECT_INCLUDE}/neutrino/utils/fpe/fpe_c99.hh
 		${PROJECT_INCLUDE}/neutrino/utils/fpe/fpe_windows.hh
@@ -104,8 +125,6 @@ my_add_library_static(utils
 		DEPENDS_PUBLIC
 			thirdparty::zlib
 			thirdparty::zstd
-			thirdparty::strong_type
-			thirdparty::double-conversion
 )
 
 target_compile_definitions(neutrino_utils PRIVATE

@@ -10,7 +10,7 @@
 #include <filesystem>
 #include <variant>
 #include <optional>
-#include <strong_type/strong_type.hpp>
+#include <neutrino/utils/strong_type.hpp>
 
 #include "reader.hh"
 #include "color.hh"
