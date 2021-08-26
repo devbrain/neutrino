@@ -15,12 +15,39 @@
 #include <neutrino/math/rect.hh>
 #include <vector>
 #include <memory>
+#include <optional>
 
 namespace neutrino::tiled::tmx {
     /**
   * @brief A tileset is a set of tiles in a single file (image or TSX file).
   */
     class tile_set : public component {
+    public:
+        class grid {
+        public:
+            static grid parse(const reader& elt);
+        public:
+            grid (bool ortho, unsigned w, unsigned h)
+            : m_orthogonal(ortho),
+              m_width(w),
+              m_height(h) {}
+
+            [[nodiscard]] bool is_orthogonal () const noexcept {
+                return m_orthogonal;
+            }
+
+            [[nodiscard]] unsigned width () const noexcept {
+                return m_width;
+            }
+
+            [[nodiscard]] unsigned height () const noexcept {
+                return m_height;
+            }
+        private:
+            bool     m_orthogonal;
+            unsigned m_width;
+            unsigned m_height;
+        };
     public:
         static tile_set parse(const reader& elt, const path_resolver_t& resolver);
         /**
@@ -250,6 +277,14 @@ namespace neutrino::tiled::tmx {
         void add_wang_set(wang_set ws) {
             m_wang_sets.emplace_back(std::move(ws));
         }
+
+        void add_grid(grid g) {
+            m_grid = g;
+        }
+
+        [[nodiscard]] std::optional<grid> grid_info() const noexcept {
+            return m_grid;
+        }
     private:
         static tile_set parse_inner(unsigned first_gid, const reader& elt);
         static tile_set parse_from_file(unsigned first_gid, const std::string& source, const path_resolver_t& resolver);
@@ -270,6 +305,7 @@ namespace neutrino::tiled::tmx {
         std::vector<terrain> m_terrains;
         std::vector<tile> m_tiles;
         std::vector<wang_set> m_wang_sets;
+        std::optional<grid> m_grid;
     };
 
 }

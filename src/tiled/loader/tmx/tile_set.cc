@@ -16,6 +16,17 @@ namespace neutrino::tiled::tmx {
         return nullptr;
     }
 
+    tile_set::grid tile_set::grid::parse(const reader& elt) {
+        try {
+            auto ortho = elt.get_string_attribute("orientation") == "orthogonal";
+            auto w = elt.get_uint_attribute("width");
+            auto h = elt.get_uint_attribute("height");
+            return {ortho, w, h};
+        } catch (exception& e) {
+            RAISE_EX_WITH_CAUSE(std::move(e), "Failed to parse grid section");
+        }
+    }
+
     math::rect tile_set::get_coords(unsigned id, math::dimension_t size) const noexcept {
         unsigned width = (size[0] - 2 * m_margin + m_spacing) / (m_tilewidth + m_spacing); // number of tiles
         unsigned height = (size[1] - 2 * m_margin + m_spacing) / (m_tileheight + m_spacing); // number of tiles
@@ -49,6 +60,9 @@ namespace neutrino::tiled::tmx {
                 int x = elt.get_int_attribute("x");
                 int y = elt.get_int_attribute("y");
                 result.offset(x, y);
+            });
+            elt.parse_one_element("grid", [&result] (const reader& elt) {
+                 result.add_grid(grid::parse(elt));
             });
             if (const json_reader* jr = dynamic_cast<const json_reader*>(&elt); jr) {
                 if (jr->has_element("image")) {

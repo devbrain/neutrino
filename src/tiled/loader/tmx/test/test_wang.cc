@@ -19,6 +19,12 @@ static void test_wang(const map& the_map) {
 
     const auto& ts = the_map.tile_sets()[0];
     REQUIRE(ts.wang_sets().size() == 1);
+    auto grid = ts.grid_info();
+    REQUIRE(grid);
+    REQUIRE(!grid->is_orthogonal());
+    REQUIRE(grid->width() == 64);
+    REQUIRE(grid->height() == 32);
+
 
     const auto& ws = ts.wang_sets()[0];
     REQUIRE(ws.name() == "Terrains");
