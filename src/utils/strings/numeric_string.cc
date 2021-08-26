@@ -6,8 +6,8 @@
 #include <neutrino/utils/strings/numeric_string.hh>
 #include <neutrino/utils/exception.hh>
 #include <neutrino/utils/strings/string_utils.hh>
-#include <double-conversion/double-conversion.h>
-#include <double-conversion/ieee.h>
+#include <utils/fpe/double-conversion/double-conversion.h>
+#include <utils/fpe/double-conversion/ieee.h>
 
 #define UNIMPLEMENTED RAISE_EX("Unimplemented")
 

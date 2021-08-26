@@ -6,7 +6,7 @@
 #define NEUTRINO_TILED_TILE_TYPES_HH
 
 #include <cstddef>
-#include <strong_type/strong_type.hpp>
+#include <neutrino/utils/strong_type.hpp>
 #include <neutrino/utils/macros.hh>
 
 #define d_DECLARE_TILED_TYPE(TYPE, NAME)                    \
