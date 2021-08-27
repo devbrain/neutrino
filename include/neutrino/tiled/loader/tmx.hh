@@ -10,14 +10,14 @@
 #include <memory>
 
 namespace neutrino::tiled {
-    class tile_sheet_manager;
-    class world;
+  class tile_sheet_manager;
 
-    namespace tmx
-    {
-        std::unique_ptr<world> load(std::istream& is, tile_sheet_manager& tsm);
-        std::unique_ptr<world> load(std::filesystem::path& path, tile_sheet_manager& tsm);
-    }
+  class world;
+
+  namespace tmx {
+    std::unique_ptr<world> load (std::istream &is, tile_sheet_manager &tsm);
+    std::unique_ptr<world> load (std::filesystem::path &path, tile_sheet_manager &tsm);
+  }
 }
 
 #endif

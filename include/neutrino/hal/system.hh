@@ -8,21 +8,21 @@
 #include <bitflags/bitflags.hpp>
 
 namespace neutrino::hal {
-    BEGIN_BITFLAGS(system_flags_t)
-        FLAG(AUDIO)
-        FLAG(JOYSTICK)
-        FLAG(HAPTIC)
-        FLAG(GAMECONTROLLER)
-        FLAG(SENSOR)
-    END_BITFLAGS(system_flags_t)
+  BEGIN_BITFLAGS(system_flags_t)
+    FLAG(AUDIO)
+    FLAG(JOYSTICK)
+    FLAG(HAPTIC)
+    FLAG(GAMECONTROLLER)
+    FLAG(SENSOR)
+  END_BITFLAGS(system_flags_t)
 
-    class system final {
+  class system final {
     public:
-        system();
-        explicit system(system_flags_t flags);
+      system ();
+      explicit system (system_flags_t flags);
 
-        ~system();
-    };
+      ~system ();
+  };
 }
 
 #endif

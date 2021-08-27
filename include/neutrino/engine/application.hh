@@ -13,25 +13,24 @@
 #include <neutrino/utils/spimpl.h>
 
 namespace neutrino::engine {
-    class application : public hal::application, public utils::observer<events::quit> {
+  class application : public hal::application, public utils::observer<events::quit> {
     public:
-        explicit application(std::unique_ptr<application_monitor> monitor);
+      explicit application (std::unique_ptr<application_monitor> monitor);
 
-        void on_event(const events::quit&) override;
+      void on_event (const events::quit &) override;
 
     private:
-        void on_terminating () override;
-        void on_low_memory () override;
-        void on_will_enter_background () override;
-        void on_in_background () override;
-        void on_in_foreground () override;
-        void update(std::chrono::milliseconds ms) override;
+      void on_terminating () override;
+      void on_low_memory () override;
+      void on_will_enter_background () override;
+      void on_in_background () override;
+      void on_in_foreground () override;
+      void update (std::chrono::milliseconds ms) override;
     private:
-        struct impl;
-        spimpl::unique_impl_ptr<impl> m_pimpl;
-    };
+      struct impl;
+      spimpl::unique_impl_ptr<impl> m_pimpl;
+  };
 }
-
 
 #endif
 

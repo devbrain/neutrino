@@ -103,6 +103,7 @@ set (TEST_DATA
         wang/isometric_staggered_grass_and_water.tmx
         wang/js_isometric_staggered_grass_and_water.json
         )
+
 set (GENERATED_HEADERS )
 foreach(FILE ${TEST_DATA})
     set (PATH "loader/tmx/test/data/${FILE}")

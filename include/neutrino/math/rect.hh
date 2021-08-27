@@ -8,23 +8,23 @@
 #include <neutrino/math/point.hh>
 
 namespace neutrino::math {
-    using dimension_t = glm::ivec2;
-    struct rect {
-        rect (int x, int y, int w, int h)
-        : point{x,y}, dims{w, h}
-        {
+  using dimension_t = glm::ivec2;
 
-        }
-        rect() = default;
+  struct rect {
+    rect (int x, int y, int w, int h)
+        : point{x, y}, dims{w, h} {
 
-        rect (const point2d& corner, int w, int h)
+    }
+    rect () = default;
+
+    rect (const point2d &corner, int w, int h)
         : point{corner}, dims{w, h} {
 
-        }
+    }
 
-        point2d point;
-        dimension_t dims;
-    };
+    point2d point;
+    dimension_t dims;
+  };
 }
 
 #endif

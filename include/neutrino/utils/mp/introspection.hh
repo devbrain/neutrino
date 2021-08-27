@@ -83,7 +83,7 @@
     public:                                                                                     \
         static constexpr bool value = type::value;                                              \
     }
-    
+
 
 
 /**

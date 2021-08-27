@@ -8,15 +8,17 @@
 #include <neutrino/hal/events/events.hh>
 
 namespace neutrino::engine::events {
-    using current_fps = hal::events::current_fps;
-    using key_mod_t = hal::events::key_mod_t;
-    using scan_code_t = hal::events::scan_code_t;
-    using pointer_button_t = hal::events::pointer_button_t;
-    using keyboard = hal::events::keyboard;
-    using pointer = hal::events::pointer;
+  using current_fps = hal::events::current_fps;
+  using key_mod_t = hal::events::key_mod_t;
+  using scan_code_t = hal::events::scan_code_t;
+  using pointer_button_t = hal::events::pointer_button_t;
+  using keyboard = hal::events::keyboard;
+  using pointer = hal::events::pointer;
 
-    struct full_screen{};
-    struct quit{};
+  struct full_screen {
+  };
+  struct quit {
+  };
 }
 
 #endif //NEUTRINO_EVENTS_HH

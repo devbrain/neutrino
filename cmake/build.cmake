@@ -50,7 +50,7 @@ function(my_add_executable EXENAME)
     endforeach()
     add_executable(${EXENAME} ${_sources})
 	
-	target_include_directories(${EXENAME} PRIVATE ${PROJECT_INCLUDE})
+	target_include_directories(${EXENAME} PRIVATE ${PROJECT_INCLUDE} ${CMAKE_CURRENT_BINARY_DIR})
 	if (PARAMS_FOLDER)
 		set_target_properties (${EXENAME} PROPERTIES FOLDER ${PARAMS_FOLDER})
 	endif()

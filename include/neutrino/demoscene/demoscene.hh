@@ -8,24 +8,25 @@
 #include <neutrino/engine/main_window.hh>
 #include <neutrino/demoscene/vga.hh>
 
-namespace neutrino::demoscene
-{
+namespace neutrino::demoscene {
 
-    class main_scene;
-    class scene : public engine::main_window {
-        friend class main_scene;
+  class main_scene;
+
+  class scene : public engine::main_window {
+      friend class main_scene;
+
     public:
-        scene(int w, int h);
-        ~scene() override;
+      scene (int w, int h);
+      ~scene () override;
     protected:
-        virtual void init(vga& screen) = 0;
-        virtual void effect(vga& screen) = 0;
+      virtual void init (vga &screen) = 0;
+      virtual void effect (vga &screen) = 0;
     private:
-        void after_window_opened() override;
+      void after_window_opened () override;
     private:
-        std::unique_ptr<vga> m_vga;
-        main_scene* m_main_scene;
-    };
+      std::unique_ptr<vga> m_vga;
+      main_scene *m_main_scene;
+  };
 }
 
 #endif

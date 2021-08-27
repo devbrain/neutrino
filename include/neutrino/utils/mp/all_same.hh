@@ -8,13 +8,13 @@
 #include <type_traits>
 
 namespace neutrino::mp {
-    /**
-     * Check a parameter pack for all of type A
-     * @tparam A Type to test
-     * @tparam Ts Parameter pack
-     */
-    template <typename A, typename ...Ts>
-    inline constexpr bool all_same_v = std::conjunction_v<std::is_same<A,Ts>...>;
+  /**
+   * Check a parameter pack for all of type A
+   * @tparam A Type to test
+   * @tparam Ts Parameter pack
+   */
+  template <typename A, typename ...Ts>
+  inline constexpr bool all_same_v = std::conjunction_v<std::is_same<A, Ts>...>;
 }
 
 #endif

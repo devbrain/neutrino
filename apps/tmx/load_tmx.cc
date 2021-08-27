@@ -3,10 +3,9 @@
 //
 
 #include <neutrino/tiled/loader/tmx.hh>
-#include <neutrino/tiled/world/tile_sheet_manager.hh>
+#include "map/map_city.h"
+#include "map/city.h"
 
-int main(int argc, char* argv[]) {
-    using namespace neutrino::tiled;
-    tile_sheet_manager tsm;
+int main (int argc, char *argv[]) {
 
 }

@@ -5,13 +5,12 @@
 #ifndef NEUTRINO_MATH_POINT_HH
 #define NEUTRINO_MATH_POINT_HH
 
-
 #include <glm/ext/vector_int2.hpp>
 #include <glm/ext/vector_float2.hpp>
 
 namespace neutrino::math {
-    using point2d = glm::ivec2;
-    using point2f = glm::vec2;
+  using point2d = glm::ivec2;
+  using point2f = glm::vec2;
 }
 
 #endif

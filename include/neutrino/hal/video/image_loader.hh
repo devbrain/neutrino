@@ -12,28 +12,24 @@
 #include <neutrino/hal/video/surface.hh>
 #include <neutrino/utils/macros.hh>
 
+namespace neutrino::hal {
 
-namespace neutrino::hal
-{
+  surface load (std::istream &is);
+  surface load (const std::filesystem::path &path);
 
-    surface load(std::istream& is);
-    surface load(const std::filesystem::path& path);
+  namespace detail {
+    struct surface_impl;
+  }
 
-    namespace detail
-    {
-        struct surface_impl;
-    }
-
-    class image_loader
-    {
+  class image_loader {
     public:
-        image_loader();
-        virtual ~image_loader();
-        virtual surface load(std::istream& is) = 0;
-        virtual bool test(std::istream& is) const = 0;
+      image_loader ();
+      virtual ~image_loader ();
+      virtual surface load (std::istream &is) = 0;
+      virtual bool test (std::istream &is) const = 0;
     protected:
-        static surface create(std::unique_ptr<detail::surface_impl>&& impl);
-    };
+      static surface create (std::unique_ptr<detail::surface_impl> &&impl);
+  };
 }
 
 #define NEUTRINO_REGISTER_IMAGE_LOADER(LOADER_TYPE) static LOADER_TYPE ANONYMOUS_VAR(register_image_loader)
