@@ -6,13 +6,12 @@
 #define NEUTRINO_HAL_VIDEO_BLEND_MODE_HH
 
 namespace neutrino::hal {
-    enum class blend_mode
-    {
-        NONE,
-        BLEND,
-        ADD,
-        MOD
-    };
+  enum class blend_mode {
+      NONE,
+      BLEND,
+      ADD,
+      MOD
+  };
 }
 
 #endif

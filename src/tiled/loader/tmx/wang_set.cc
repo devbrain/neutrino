@@ -31,7 +31,7 @@ namespace neutrino::tiled::tmx {
     wang_tile::wang_data_t wang_tile::parse_corners(const reader& elt) {
 
         wang_data_t res;
-        int t = 0;
+        std::size_t t = 0;
         try {
             if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
 

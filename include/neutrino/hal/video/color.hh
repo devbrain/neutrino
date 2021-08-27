@@ -8,17 +8,19 @@
 #include <cstdint>
 
 namespace neutrino::hal {
-    struct color {
-        color()
-        : r(0), g(0), b(0), a(0) {}
-        color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_ = 0)
-        : r(r_), g(g_), b(b_), a(a_) {}
+  struct color {
+    color ()
+        : r (0), g (0), b (0), a (0) {
+    }
+    color (uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_ = 0)
+        : r (r_), g (g_), b (b_), a (a_) {
+    }
 
-        uint8_t r;
-        uint8_t g;
-        uint8_t b;
-        uint8_t a;
-    };
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+  };
 }
 
 #endif

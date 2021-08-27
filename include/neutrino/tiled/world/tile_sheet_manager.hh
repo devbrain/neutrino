@@ -10,21 +10,20 @@
 #include <filesystem>
 #include <iosfwd>
 
-
 namespace neutrino::tiled {
-    class tile_sheet_manager {
+  class tile_sheet_manager {
     public:
-        tile_sheet_id_t add(hal::surface image, const std::vector<math::rect>& coords);
-        tile_sheet_id_t add(hal::surface image);
-        tile_sheet_id_t add(std::istream& is, const std::vector<math::rect>& coords);
-        tile_sheet_id_t add(std::istream& is);
-        tile_sheet_id_t add(const std::filesystem::path& path, const std::vector<math::rect>& coords);
-        tile_sheet_id_t add(const std::filesystem::path& path);
+      tile_sheet_id_t add (hal::surface image, const std::vector<math::rect> &coords);
+      tile_sheet_id_t add (hal::surface image);
+      tile_sheet_id_t add (std::istream &is, const std::vector<math::rect> &coords);
+      tile_sheet_id_t add (std::istream &is);
+      tile_sheet_id_t add (const std::filesystem::path &path, const std::vector<math::rect> &coords);
+      tile_sheet_id_t add (const std::filesystem::path &path);
 
-        const tile_sheet& get(tile_sheet_id_t idx);
+      const tile_sheet &get (tile_sheet_id_t idx);
     private:
-        std::vector<tile_sheet> m_sheets;
-    };
+      std::vector<tile_sheet> m_sheets;
+  };
 }
 
 #endif

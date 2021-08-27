@@ -7,12 +7,12 @@
 #include <type_traits>
 
 namespace neutrino::mp {
-    /**
-     * Check a parameter pack for at least one of type A
-     * @tparam A Type to test
-     * @tparam Ts Parameter pack
-     */
-    template <typename A, typename ...Ts>
-    inline constexpr bool one_of_v = std::disjunction_v<std::is_same<A,Ts>...>;
+  /**
+   * Check a parameter pack for at least one of type A
+   * @tparam A Type to test
+   * @tparam Ts Parameter pack
+   */
+  template <typename A, typename ...Ts>
+  inline constexpr bool one_of_v = std::disjunction_v<std::is_same<A, Ts>...>;
 }
 #endif

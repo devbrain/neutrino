@@ -5,64 +5,50 @@
 #include <queue>
 #include <cstdlib>
 
+namespace {
+  using queue_t = std::queue<std::function<void ()>>;
+  static queue_t *callbacks = nullptr;
 
-namespace
-{
-    using queue_t = std::queue<std::function<void()>>;
-    static queue_t* callbacks = nullptr;
+  struct queue_init {
 
-    struct queue_init
-    {
+    queue_init () {
+      if (!callbacks) {
+        callbacks = new queue_t;
+        std::atexit ([] () {
+          if (callbacks) {
+            while (!callbacks->empty ()) {
+              try {
+                callbacks->front () ();
+              }
+              catch (...) {
 
-
-        queue_init()
-        {
-            if (!callbacks)
-            {
-                callbacks = new queue_t;
-                std::atexit([]() {
-                    if (callbacks)
-                    {
-                        while (!callbacks->empty())
-                        {
-                            try
-                            {
-                                callbacks->front()();
-                            }
-                            catch (...)
-                            {
-
-                            }
-                            callbacks->pop();
-                        }
-                        delete callbacks;
-                    }
-                });
+              }
+              callbacks->pop ();
             }
-        }
+            delete callbacks;
+          }
+        });
+      }
+    }
 
-        void add(std::function<void()> f)
-        {
-            callbacks->push(f);
-        }
-    };
+    void add (std::function<void ()> f) {
+      callbacks->push (f);
+    }
+  };
 
 }
 
-namespace neutrino
-{
-    inline
-    void register_at_exit(std::function<void()> callback)
-    {
-        static queue_init static_initializer;
-        static_initializer.add(callback);
-    }
+namespace neutrino {
+  inline
+  void register_at_exit (std::function<void ()> callback) {
+    static queue_init static_initializer;
+    static_initializer.add (callback);
+  }
 
-    template<typename T>
-    void delete_at_exit(T* ptr)
-    {
-        register_at_exit([ptr]() { delete ptr; });
-    }
+  template <typename T>
+  void delete_at_exit (T *ptr) {
+    register_at_exit ([ptr] () { delete ptr; });
+  }
 }
 
 #endif

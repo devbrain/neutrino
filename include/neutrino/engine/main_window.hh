@@ -8,12 +8,12 @@
 #include <neutrino/engine/scene_window.hh>
 
 namespace neutrino::engine {
-    using main_window = scene_window<hal::window_2d>;
+  using main_window = scene_window<hal::window_2d>;
 #if defined(NEUTRINO_HAS_OPENGL)
-    using main_window_opengl = scene_window<hal::window_opengl>;
+  using main_window_opengl = scene_window<hal::window_opengl>;
 #endif
 #if defined(NEUTRINO_HAS_VULKAN)
-    using main_window_vulkan = scene_window<hal::window_vulkan>;
+  using main_window_vulkan = scene_window<hal::window_vulkan>;
 #endif
 }
 

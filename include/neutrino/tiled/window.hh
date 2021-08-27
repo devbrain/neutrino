@@ -8,13 +8,13 @@
 #include <neutrino/engine/main_window.hh>
 
 namespace neutrino::tiled {
-    class window : public engine::main_window {
+  class window : public engine::main_window {
     public:
-        window(int w, int h);
-        ~window();
+      window (int w, int h);
+      ~window ();
     protected:
-        void after_window_opened() override;
-    };
+      void after_window_opened () override;
+  };
 }
 
 #endif

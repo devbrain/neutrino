@@ -7,10 +7,9 @@
 
 #include <filesystem>
 
-namespace neutrino::utils
-{
-     std::filesystem::path get_executable_path();
-     std::filesystem::path get_module_path();
+namespace neutrino::utils {
+  std::filesystem::path get_executable_path ();
+  std::filesystem::path get_module_path ();
 }
 
 #endif //NEUTRINO_UTILS_WHEREAMI_HH

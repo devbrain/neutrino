@@ -13,38 +13,40 @@
 #include <neutrino/hal/video/renderer.hh>
 #include <neutrino/engine/main_window.hh>
 
-namespace neutrino::demoscene
-{
-    class scene;
-    class main_scene;
-    class vga
-    {
-        friend class scene;
-        friend class main_scene;
+namespace neutrino::demoscene {
+  class scene;
+
+  class main_scene;
+
+  class vga {
+      friend class scene;
+
+      friend class main_scene;
+
     public:
-        using palette_t = std::array<hal::color, 256>;
-        using surface_t = std::vector<uint8_t>;
+      using palette_t = std::array<hal::color, 256>;
+      using surface_t = std::vector<uint8_t>;
 
-        palette_t& palette ();
-        surface_t& surface();
+      palette_t &palette ();
+      surface_t &surface ();
 
-        [[nodiscard]] int width () const noexcept;
-        [[nodiscard]] int height () const noexcept;
+      [[nodiscard]] int width () const noexcept;
+      [[nodiscard]] int height () const noexcept;
 
-        void cls();
+      void cls ();
 
     private:
-        vga (engine::main_window& window);
-        void present();
+      vga (engine::main_window &window);
+      void present ();
     private:
-        engine::main_window& m_window;
+      engine::main_window &m_window;
 
-        palette_t m_palette;
-        surface_t m_surface;
+      palette_t m_palette;
+      surface_t m_surface;
 
-        hal::renderer m_renderer;
-        hal::texture m_texture;
-    };
+      hal::renderer m_renderer;
+      hal::texture m_texture;
+  };
 }
 
 #endif //NEUTRINO_VGA_HH
