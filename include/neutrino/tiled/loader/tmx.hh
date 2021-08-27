@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <iosfwd>
 #include <memory>
+#include <neutrino/tiled/loader/path_resolver.hh>
 
 namespace neutrino::tiled {
   class tile_sheet_manager;
@@ -15,8 +16,9 @@ namespace neutrino::tiled {
   class world;
 
   namespace tmx {
-    std::unique_ptr<world> load (std::istream &is, tile_sheet_manager &tsm);
-    std::unique_ptr<world> load (std::filesystem::path &path, tile_sheet_manager &tsm);
+    void load (const char *text, std::size_t size, path_resolver_t resolver);
+    std::unique_ptr<world> load (std::istream &is, path_resolver_t resolver, tile_sheet_manager &tsm);
+    std::unique_ptr<world> load (std::filesystem::path &path, path_resolver_t resolver, tile_sheet_manager &tsm);
   }
 }
 

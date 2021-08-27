@@ -5,10 +5,9 @@
 #include <neutrino/tiled/video.hh>
 
 namespace neutrino::tiled {
-    video::video(hal::renderer& renderer)
-    : m_renderer(renderer)
-    {
+  video::video (hal::renderer &renderer)
+      : m_renderer (renderer) {
 
-    }
+  }
 
 }

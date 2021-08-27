@@ -1,177 +1,187 @@
-{ "backgroundcolor":"#ff00ff",
- "compressionlevel":-1,
- "height":100,
- "infinite":false,
- "layers":[
+{
+  "backgroundcolor": "#ff00ff",
+  "compressionlevel": -1,
+  "height": 100,
+  "infinite": false,
+  "layers": [
+    {
+      "compression": "gzip",
+      "data": "H4sIAAAAAAAAA+3XMQrDMAwFUF0hJwglc9L7364NjUG4dulQu8t7IMiQSR8heYuIrapbpxhvuWq\/6njWvVNymaNkUs\/JqZURc5wZLOm7rpKLGRlvjVfP107t8T47jJH7vTcqZ3KETEYrfa\/7XO\/6vEtkMk7u87kbcq9LJjV5jFPfUOWube30CFnM0Lpr6\/dGyaE3M\/zep1zy210e47Tu2FYuW3gTzvDtLrAz5ujt7d5\/zPUpG3n837fzw3zyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgewAvf+EvQJwAAA==",
+      "encoding": "base64",
+      "height": 100,
+      "id": 1,
+      "name": "Tile Layer 1",
+      "opacity": 1,
+      "properties": [
         {
-         "compression":"gzip",
-         "data":"H4sIAAAAAAAAA+3XMQrDMAwFUF0hJwglc9L7364NjUG4dulQu8t7IMiQSR8heYuIrapbpxhvuWq\/6njWvVNymaNkUs\/JqZURc5wZLOm7rpKLGRlvjVfP107t8T47jJH7vTcqZ3KETEYrfa\/7XO\/6vEtkMk7u87kbcq9LJjV5jFPfUOWube30CFnM0Lpr6\/dGyaE3M\/zep1zy210e47Tu2FYuW3gTzvDtLrAz5ujt7d5\/zPUpG3n837fzw3zyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgewAvf+EvQJwAAA==",
-         "encoding":"base64",
-         "height":100,
-         "id":1,
-         "name":"Tile Layer 1",
-         "opacity":1,
-         "properties":[
-                {
-                 "name":"prop1",
-                 "type":"string",
-                 "value":"12"
-                }, 
-                {
-                 "name":"prop2",
-                 "type":"string",
-                 "value":"some text"
-                }],
-         "type":"tilelayer",
-         "visible":true,
-         "width":100,
-         "x":0,
-         "y":0
-        }, 
+          "name": "prop1",
+          "type": "string",
+          "value": "12"
+        },
         {
-         "draworder":"topdown",
-         "id":2,
-         "name":"Object group",
-         "objects":[
-                {
-                 "height":135,
-                 "id":1,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":285,
-                 "x":14,
-                 "y":9
-                }, 
-                {
-                 "ellipse":true,
-                 "height":109,
-                 "id":2,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":102,
-                 "x":329,
-                 "y":217
-                }, 
-                {
-                 "height":0,
-                 "id":3,
-                 "name":"",
-                 "polyline":[
-                        {
-                         "x":0,
-                         "y":0
-                        }, 
-                        {
-                         "x":-111,
-                         "y":-63
-                        }, 
-                        {
-                         "x":-203,
-                         "y":27
-                        }, 
-                        {
-                         "x":-205,
-                         "y":-130
-                        }, 
-                        {
-                         "x":-78,
-                         "y":-150
-                        }, 
-                        {
-                         "x":-6,
-                         "y":-6
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":314,
-                 "y":376
-                }, 
-                {
-                 "height":0,
-                 "id":4,
-                 "name":"",
-                 "polygon":[
-                        {
-                         "x":0,
-                         "y":0
-                        }, 
-                        {
-                         "x":139,
-                         "y":128
-                        }, 
-                        {
-                         "x":-55,
-                         "y":64
-                        }, 
-                        {
-                         "x":-37,
-                         "y":-49
-                        }, 
-                        {
-                         "x":159,
-                         "y":47
-                        }, 
-                        {
-                         "x":138,
-                         "y":126
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":479,
-                 "y":84
-                }],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }],
- "nextlayerid":3,
- "nextobjectid":5,
- "orientation":"orthogonal",
- "renderorder":"right-down",
- "tiledversion":"1.7.2",
- "tileheight":32,
- "tilesets":[
+          "name": "prop2",
+          "type": "string",
+          "value": "some text"
+        }
+      ],
+      "type": "tilelayer",
+      "visible": true,
+      "width": 100,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 2,
+      "name": "Object group",
+      "objects": [
         {
-         "columns":14,
-         "firstgid":1,
-         "image":"..\/..\/..\/..\/..\/..\/..\/..\/rs-tiled\/assets\/tilesheet.png",
-         "imageheight":192,
-         "imagewidth":448,
-         "margin":0,
-         "name":"tilesheet",
-         "properties":[
-                {
-                 "name":"tileset property",
-                 "type":"string",
-                 "value":"tsp"
-                }],
-         "spacing":0,
-         "tilecount":84,
-         "tileheight":32,
-         "tiles":[
-                {
-                 "id":1,
-                 "properties":[
-                        {
-                         "name":"a tile property",
-                         "type":"string",
-                         "value":"123"
-                        }]
-                }],
-         "tilewidth":32
-        }],
- "tilewidth":32,
- "type":"map",
- "version":"1.6",
- "width":100
+          "height": 135,
+          "id": 1,
+          "name": "",
+          "rotation": 0,
+          "type": "",
+          "visible": true,
+          "width": 285,
+          "x": 14,
+          "y": 9
+        },
+        {
+          "ellipse": true,
+          "height": 109,
+          "id": 2,
+          "name": "",
+          "rotation": 0,
+          "type": "",
+          "visible": true,
+          "width": 102,
+          "x": 329,
+          "y": 217
+        },
+        {
+          "height": 0,
+          "id": 3,
+          "name": "",
+          "polyline": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": -111,
+              "y": -63
+            },
+            {
+              "x": -203,
+              "y": 27
+            },
+            {
+              "x": -205,
+              "y": -130
+            },
+            {
+              "x": -78,
+              "y": -150
+            },
+            {
+              "x": -6,
+              "y": -6
+            }
+          ],
+          "rotation": 0,
+          "type": "",
+          "visible": true,
+          "width": 0,
+          "x": 314,
+          "y": 376
+        },
+        {
+          "height": 0,
+          "id": 4,
+          "name": "",
+          "polygon": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 139,
+              "y": 128
+            },
+            {
+              "x": -55,
+              "y": 64
+            },
+            {
+              "x": -37,
+              "y": -49
+            },
+            {
+              "x": 159,
+              "y": 47
+            },
+            {
+              "x": 138,
+              "y": 126
+            }
+          ],
+          "rotation": 0,
+          "type": "",
+          "visible": true,
+          "width": 0,
+          "x": 479,
+          "y": 84
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "nextlayerid": 3,
+  "nextobjectid": 5,
+  "orientation": "orthogonal",
+  "renderorder": "right-down",
+  "tiledversion": "1.7.2",
+  "tileheight": 32,
+  "tilesets": [
+    {
+      "columns": 14,
+      "firstgid": 1,
+      "image": "..\/..\/..\/..\/..\/..\/..\/..\/rs-tiled\/assets\/tilesheet.png",
+      "imageheight": 192,
+      "imagewidth": 448,
+      "margin": 0,
+      "name": "tilesheet",
+      "properties": [
+        {
+          "name": "tileset property",
+          "type": "string",
+          "value": "tsp"
+        }
+      ],
+      "spacing": 0,
+      "tilecount": 84,
+      "tileheight": 32,
+      "tiles": [
+        {
+          "id": 1,
+          "properties": [
+            {
+              "name": "a tile property",
+              "type": "string",
+              "value": "123"
+            }
+          ]
+        }
+      ],
+      "tilewidth": 32
+    }
+  ],
+  "tilewidth": 32,
+  "type": "map",
+  "version": "1.6",
+  "width": 100
 }

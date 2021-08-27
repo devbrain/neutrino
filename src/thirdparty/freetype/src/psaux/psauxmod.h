@@ -19,25 +19,21 @@
 #ifndef PSAUXMOD_H_
 #define PSAUXMOD_H_
 
-
 #include <ft2build.h>
 #include FT_MODULE_H
 
 #include FT_INTERNAL_POSTSCRIPT_AUX_H
 
-
 FT_BEGIN_HEADER
 
 
-  FT_CALLBACK_TABLE
-  const CFF_Builder_FuncsRec  cff_builder_funcs;
+FT_CALLBACK_TABLE
+const CFF_Builder_FuncsRec cff_builder_funcs;
 
-  FT_CALLBACK_TABLE
-  const PS_Builder_FuncsRec   ps_builder_funcs;
+FT_CALLBACK_TABLE
+const PS_Builder_FuncsRec ps_builder_funcs;
 
-
-  FT_EXPORT_VAR( const FT_Module_Class )  psaux_driver_class;
-
+FT_EXPORT_VAR(const FT_Module_Class) psaux_driver_class;
 
 FT_END_HEADER
 

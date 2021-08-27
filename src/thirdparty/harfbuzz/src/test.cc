@@ -35,8 +35,7 @@
 #endif
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char **argv) {
   if (argc != 2) {
     fprintf (stderr, "usage: %s font-file.ttf\n", argv[0]);
     exit (1);
@@ -70,18 +69,17 @@ main (int argc, char **argv)
   hb_glyph_info_t *infos = hb_buffer_get_glyph_infos (buffer, nullptr);
   hb_glyph_position_t *positions = hb_buffer_get_glyph_positions (buffer, nullptr);
 
-  for (unsigned int i = 0; i < count; i++)
-  {
+  for (unsigned int i = 0; i < count; i++) {
     hb_glyph_info_t *info = &infos[i];
     hb_glyph_position_t *pos = &positions[i];
 
     printf ("cluster %d	glyph 0x%x at	(%d,%d)+(%d,%d)\n",
-	    info->cluster,
-	    info->codepoint,
-	    pos->x_offset,
-	    pos->y_offset,
-	    pos->x_advance,
-	    pos->y_advance);
+            info->cluster,
+            info->codepoint,
+            pos->x_offset,
+            pos->y_offset,
+            pos->x_advance,
+            pos->y_advance);
 
   }
 

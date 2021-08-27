@@ -28,6 +28,7 @@
 #  include <png.h>
 #else
 #  include "../../png.h"
+
 #endif
 
 /* 1.6.1 added support for the configure test harness, which uses 77 to indicate
@@ -43,8 +44,8 @@
 /* Since this program tests the ability to change the unknown chunk handling
  * these must be defined:
  */
-#if defined(PNG_SET_UNKNOWN_CHUNKS_SUPPORTED) &&\
-   defined(PNG_STDIO_SUPPORTED) &&\
+#if defined(PNG_SET_UNKNOWN_CHUNKS_SUPPORTED) && \
+   defined(PNG_STDIO_SUPPORTED) && \
    defined(PNG_READ_SUPPORTED)
 
 /* One of these must be defined to allow us to find out what happened.  It is
@@ -1295,11 +1296,10 @@ main(void)
 
 #else /* !(SET_UNKNOWN_CHUNKS && READ) */
 int
-main(void)
-{
-   fprintf(stderr,
-      " test ignored: no support to modify unknown chunk handling\n");
-   /* So the test is skipped: */
-   return SKIP;
+main (void) {
+  fprintf (stderr,
+           " test ignored: no support to modify unknown chunk handling\n");
+  /* So the test is skipped: */
+  return SKIP;
 }
 #endif /* SET_UNKNOWN_CHUNKS && READ*/

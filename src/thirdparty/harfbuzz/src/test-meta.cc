@@ -29,16 +29,17 @@
 
 #include <type_traits>
 
-template <typename T> struct U { typedef T type; };
+template <typename T> struct U {
+  typedef T type;
+};
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char **argv) {
   static_assert (hb_is_convertible (void, void), "");
   static_assert (hb_is_convertible (void, const void), "");
   static_assert (hb_is_convertible (const void, void), "");
 
-  static_assert (hb_is_convertible (int,  int), "");
+  static_assert (hb_is_convertible (int, int), "");
   static_assert (hb_is_convertible (char, int), "");
   static_assert (hb_is_convertible (long, int), "");
 
@@ -48,19 +49,21 @@ main (int argc, char **argv)
   static_assert (hb_is_convertible (int, const int), "");
   static_assert (hb_is_convertible (const int, const int), "");
 
-  static_assert (hb_is_convertible (int&, int), "");
-  static_assert (!hb_is_convertible (int, int&), "");
+  static_assert (hb_is_convertible (int &, int), "");
+  static_assert (!hb_is_convertible (int, int &), "");
 
   static_assert (hb_is_convertible (int, const int&), "");
-  static_assert (!hb_is_convertible (const int, int&), "");
+  static_assert (!hb_is_convertible (const int, int &), "");
   static_assert (hb_is_convertible (const int, const int&), "");
-  static_assert (hb_is_convertible (int&, const int), "");
+  static_assert (hb_is_convertible (int &, const int), "");
   static_assert (hb_is_convertible (const int&, int), "");
   static_assert (hb_is_convertible (const int&, const int), "");
   static_assert (hb_is_convertible (const int&, const int), "");
 
-  struct X {};
-  struct Y : X {};
+  struct X {
+  };
+  struct Y : X {
+  };
 
   static_assert (hb_is_convertible (const X &, const X), "");
   static_assert (hb_is_convertible (X &, const X), "");
@@ -71,8 +74,8 @@ main (int argc, char **argv)
   static_assert (!hb_is_convertible (X, X &), "");
   static_assert (hb_is_convertible (X &, X &), "");
 
-  static_assert (hb_is_convertible (int&, long), "");
-  static_assert (!hb_is_convertible (int&, long&), "");
+  static_assert (hb_is_convertible (int &, long), "");
+  static_assert (!hb_is_convertible (int &, long &), "");
 
   static_assert (hb_is_convertible (int *, int *), "");
   static_assert (hb_is_convertible (int *, const int *), "");

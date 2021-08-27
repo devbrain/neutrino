@@ -5,5 +5,5 @@
 #include "compression_stream_wrapper.hh"
 
 namespace neutrino::utils::detail {
-    compression_stream_wrapper::~compression_stream_wrapper() = default;
+  compression_stream_wrapper::~compression_stream_wrapper () = default;
 }

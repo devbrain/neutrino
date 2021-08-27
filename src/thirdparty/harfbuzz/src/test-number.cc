@@ -26,10 +26,8 @@
 #include "hb.hh"
 #include "hb-number.hh"
 
-
 int
-main (int argc, char **argv)
-{
+main (int argc, char **argv) {
   {
     const char str[] = "123";
     const char *pp = str;

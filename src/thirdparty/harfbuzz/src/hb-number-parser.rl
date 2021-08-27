@@ -34,66 +34,65 @@ machine double_parser;
 alphtype unsigned char;
 write data;
 
-action see_neg { neg = true; }
-action see_exp_neg { exp_neg = true; }
+action see_neg{neg = true;}
+action see_exp_neg{exp_neg = true;}
 
-action add_int  {
-	value = value * 10. + (fc - '0');
+action add_int{
+    value = value * 10. + (fc - '0');
 }
-action add_frac {
-	if (likely (frac <= MAX_FRACT / 10))
-	{
-	  frac = frac * 10. + (fc - '0');
-	  ++frac_count;
-	}
+action add_frac{
+    if (likely (frac <= MAX_FRACT / 10))
+    {
+      frac = frac * 10. + (fc - '0');
+      ++frac_count;
+    }
 }
-action add_exp  {
-	if (likely (exp * 10 + (fc - '0') <= MAX_EXP))
-	  exp = exp * 10 + (fc - '0');
-	else
-	  exp_overflow = true;
+action add_exp{
+    if (likely (exp * 10 + (fc - '0') <= MAX_EXP))
+    exp = exp * 10 + (fc - '0');
+    else
+    exp_overflow = true;
 }
 
-num = [0-9]+;
+num = [0 - 9] +;
 
 main := (
-	(
-		(('+'|'-'@see_neg)? num @add_int) ('.' num @add_frac)?
-		|
-		(('+'|'-'@see_neg)? '.' num @add_frac)
-	)
-	(('e'|'E') (('+'|'-'@see_exp_neg)? num @add_exp))?
+(
+(('+'|'-'@see_neg)? num @add_int) ('.' num @add_frac)?
+|
+(('+'|'-'@see_neg)? '.' num @add_frac)
+)
+(('e'|'E') (('+'|'-'@see_exp_neg)? num @add_exp))?
 );
 
 }%%
 
 /* Works only for n < 512 */
 static inline double
-_pow10 (unsigned exponent)
-{
+_pow10 (unsigned exponent) {
   static const double _powers_of_10[] =
-  {
-    1.0e+256,
-    1.0e+128,
-    1.0e+64,
-    1.0e+32,
-    1.0e+16,
-    1.0e+8,
-    10000.,
-    100.,
-    10.
-  };
+      {
+          1.0e+256,
+          1.0e+128,
+          1.0e+64,
+          1.0e+32,
+          1.0e+16,
+          1.0e+8,
+          10000.,
+          100.,
+          10.
+      };
   unsigned mask = 1 << (ARRAY_LENGTH (_powers_of_10) - 1);
   double result = 1;
   for (const double *power = _powers_of_10; mask; ++power, mask >>= 1)
-    if (exponent & mask) result *= *power;
+    if (exponent & mask)
+      result *= *power;
   return result;
 }
 
 /* a variant of strtod that also gets end of buffer in its second argument */
 static inline double
-strtod_rl (const char *p, const char **end_ptr /* IN/OUT */)
-{
+strtod_rl (const char *p, const char **end_ptr /* IN/OUT */) {
   double value = 0;
   double frac = 0;
   double frac_count = 0;
@@ -114,20 +113,25 @@ strtod_rl (const char *p, const char **end_ptr /* IN/OUT */)
 
   *end_ptr = p;
 
-  if (frac_count) value += frac / _pow10 (frac_count);
-  if (neg) value *= -1.;
+  if (frac_count)
+    value += frac / _pow10 (frac_count);
+  if (neg)
+    value *= -1.;
 
-  if (unlikely (exp_overflow))
-  {
-    if (value == 0) return value;
-    if (exp_neg)    return neg ? -DBL_MIN : DBL_MIN;
-    else            return neg ? -DBL_MAX : DBL_MAX;
+  if (unlikely (exp_overflow)) {
+    if (value == 0)
+      return value;
+    if (exp_neg)
+      return neg ? -DBL_MIN : DBL_MIN;
+    else
+      return neg ? -DBL_MAX : DBL_MAX;
   }
 
-  if (exp)
-  {
-    if (exp_neg) value /= _pow10 (exp);
-    else         value *= _pow10 (exp);
+  if (exp) {
+    if (exp_neg)
+      value /= _pow10 (exp);
+    else
+      value *= _pow10 (exp);
   }
 
   return value;

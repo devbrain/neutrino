@@ -22,11 +22,11 @@ TUKLIB_DECLS_BEGIN
 #	define progname program_invocation_name
 #else
 #	define progname TUKLIB_SYMBOL(tuklib_progname)
-	extern char *progname;
+extern char *progname;
 #endif
 
 #define tuklib_progname_init TUKLIB_SYMBOL(tuklib_progname_init)
-extern void tuklib_progname_init(char **argv);
+extern void tuklib_progname_init (char **argv);
 
 TUKLIB_DECLS_END
 #endif

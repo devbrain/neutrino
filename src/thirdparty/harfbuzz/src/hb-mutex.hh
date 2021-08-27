@@ -51,13 +51,13 @@
 #elif !defined(HB_NO_MT) && (defined(HAVE_PTHREAD) || defined(__APPLE__))
 
 #include <pthread.h>
-typedef pthread_mutex_t hb_mutex_impl_t;
-#define HB_MUTEX_IMPL_INIT	PTHREAD_MUTEX_INITIALIZER
-#define hb_mutex_impl_init(M)	pthread_mutex_init (M, nullptr)
-#define hb_mutex_impl_lock(M)	pthread_mutex_lock (M)
-#define hb_mutex_impl_unlock(M)	pthread_mutex_unlock (M)
-#define hb_mutex_impl_finish(M)	pthread_mutex_destroy (M)
 
+typedef pthread_mutex_t hb_mutex_impl_t;
+#define HB_MUTEX_IMPL_INIT    PTHREAD_MUTEX_INITIALIZER
+#define hb_mutex_impl_init(M)    pthread_mutex_init (M, nullptr)
+#define hb_mutex_impl_lock(M)    pthread_mutex_lock (M)
+#define hb_mutex_impl_unlock(M)    pthread_mutex_unlock (M)
+#define hb_mutex_impl_finish(M)    pthread_mutex_destroy (M)
 
 #elif !defined(HB_NO_MT) && defined(_WIN32)
 
@@ -90,26 +90,35 @@ typedef int hb_mutex_impl_t;
 
 #endif
 
+#define HB_MUTEX_INIT        {HB_MUTEX_IMPL_INIT}
 
-#define HB_MUTEX_INIT		{HB_MUTEX_IMPL_INIT}
-
-struct hb_mutex_t
-{
+struct hb_mutex_t {
   hb_mutex_impl_t m;
 
-  void init   () { hb_mutex_impl_init   (&m); }
-  void lock   () { hb_mutex_impl_lock   (&m); }
-  void unlock () { hb_mutex_impl_unlock (&m); }
-  void fini ()   { hb_mutex_impl_finish (&m); }
+  void init () {
+    hb_mutex_impl_init   (&m);
+  }
+  void lock () {
+    hb_mutex_impl_lock   (&m);
+  }
+  void unlock () {
+    hb_mutex_impl_unlock (&m);
+  }
+  void fini () {
+    hb_mutex_impl_finish (&m);
+  }
 };
 
-struct hb_lock_t
-{
-  hb_lock_t (hb_mutex_t &mutex_) : mutex (mutex_) { mutex.lock (); }
-  ~hb_lock_t () { mutex.unlock (); }
+struct hb_lock_t {
+    hb_lock_t (hb_mutex_t &mutex_)
+        : mutex (mutex_) {
+      mutex.lock ();
+    }
+    ~hb_lock_t () {
+      mutex.unlock ();
+    }
   private:
-  hb_mutex_t &mutex;
+    hb_mutex_t &mutex;
 };
-
 
 #endif /* HB_MUTEX_HH */

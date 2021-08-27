@@ -27,13 +27,12 @@
 
 #include "afhints.h"
 
-
 FT_BEGIN_HEADER
 
 
-  /* the `latin' writing system */
+/* the `latin' writing system */
 
-  AF_DECLARE_WRITING_SYSTEM_CLASS( af_latin2_writing_system_class )
+AF_DECLARE_WRITING_SYSTEM_CLASS(af_latin2_writing_system_class)
 
 
 /* */

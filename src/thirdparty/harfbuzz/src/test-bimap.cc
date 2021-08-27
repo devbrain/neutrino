@@ -28,9 +28,8 @@
 #include "hb-bimap.hh"
 
 int
-main (int argc, char **argv)
-{
-  hb_bimap_t	bm;
+main (int argc, char **argv) {
+  hb_bimap_t bm;
 
   assert (bm.is_empty () == true);
   bm.set (1, 4);
@@ -47,7 +46,7 @@ main (int argc, char **argv)
   bm.clear ();
   assert (bm.get_population () == 0);
 
-  hb_inc_bimap_t  ibm;
+  hb_inc_bimap_t ibm;
 
   assert (ibm.add (13) == 0);
   assert (ibm.add (8) == 1);

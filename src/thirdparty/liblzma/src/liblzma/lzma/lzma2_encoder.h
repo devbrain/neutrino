@@ -29,15 +29,14 @@
 /// Size of a header for uncompressed chunk
 #define LZMA2_HEADER_UNCOMPRESSED 3
 
+extern lzma_ret lzma_lzma2_encoder_init (
+    lzma_next_coder *next, const lzma_allocator *allocator,
+    const lzma_filter_info *filters);
 
-extern lzma_ret lzma_lzma2_encoder_init(
-		lzma_next_coder *next, const lzma_allocator *allocator,
-		const lzma_filter_info *filters);
+extern uint64_t lzma_lzma2_encoder_memusage (const void *options);
 
-extern uint64_t lzma_lzma2_encoder_memusage(const void *options);
+extern lzma_ret lzma_lzma2_props_encode (const void *options, uint8_t *out);
 
-extern lzma_ret lzma_lzma2_props_encode(const void *options, uint8_t *out);
-
-extern uint64_t lzma_lzma2_block_size(const void *options);
+extern uint64_t lzma_lzma2_block_size (const void *options);
 
 #endif

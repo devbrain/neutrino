@@ -4,15 +4,15 @@
 
 #include <neutrino/engine/scene.hh>
 
-namespace neutrino::engine
-{
+namespace neutrino::engine {
 
-    scene::scene(int scene_id)
-    : m_id(scene_id) {}
+  scene::scene (int scene_id)
+      : m_id (scene_id) {
+  }
 
-    scene::~scene() = default;
+  scene::~scene () = default;
 
-    int scene::id() const noexcept {
-        return m_id;
-    }
+  int scene::id () const noexcept {
+    return m_id;
+  }
 }

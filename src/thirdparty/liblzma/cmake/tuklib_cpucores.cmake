@@ -12,11 +12,11 @@ include(CheckCSourceCompiles)
 include(CheckIncludeFile)
 
 function(tuklib_cpucores_internal_check)
-    if(WIN32 OR CYGWIN)
+    if (WIN32 OR CYGWIN)
         # Nothing to do, the tuklib_cpucores.c handles it.
         set(TUKLIB_CPUCORES_DEFINITIONS "" CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 
     # glibc-based systems (GNU/Linux and GNU/kFreeBSD) have
     # sched_getaffinity(). The CPU_COUNT() macro was added in glibc 2.9.
@@ -35,13 +35,13 @@ function(tuklib_cpucores_internal_check)
                 return CPU_COUNT(&cpu_mask);
             }
         "
-        TUKLIB_CPUCORES_SCHED_GETAFFINITY)
-    if(TUKLIB_CPUCORES_SCHED_GETAFFINITY)
+            TUKLIB_CPUCORES_SCHED_GETAFFINITY)
+    if (TUKLIB_CPUCORES_SCHED_GETAFFINITY)
         set(TUKLIB_CPUCORES_DEFINITIONS
-            "TUKLIB_CPUCORES_SCHED_GETAFFINITY"
-            CACHE INTERNAL "")
+                "TUKLIB_CPUCORES_SCHED_GETAFFINITY"
+                CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 
     # FreeBSD has both cpuset and sysctl. Look for cpuset first because
     # it's a better approach.
@@ -61,12 +61,12 @@ function(tuklib_cpucores_internal_check)
                 return 0;
             }
         "
-        TUKLIB_CPUCORES_CPUSET)
-    if(TUKLIB_CPUCORES_CPUSET)
+            TUKLIB_CPUCORES_CPUSET)
+    if (TUKLIB_CPUCORES_CPUSET)
         set(TUKLIB_CPUCORES_DEFINITIONS "HAVE_PARAM_H;TUKLIB_CPUCORES_CPUSET"
-            CACHE INTERNAL "")
+                CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 
     # On OS/2, both sysconf() and sysctl() pass the tests in this file,
     # but only sysctl() works. On QNX it's the opposite: only sysconf() works
@@ -76,9 +76,9 @@ function(tuklib_cpucores_internal_check)
     # We test sysctl() first and intentionally break the sysctl() test on QNX
     # so that sysctl() is never used on QNX.
     check_include_file(sys/param.h HAVE_SYS_PARAM_H)
-    if(HAVE_SYS_PARAM_H)
+    if (HAVE_SYS_PARAM_H)
         list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_SYS_PARAM_H)
-    endif()
+    endif ()
     check_c_source_compiles("
             #ifdef __QNX__
             compile error
@@ -96,19 +96,19 @@ function(tuklib_cpucores_internal_check)
                 return 0;
             }
         "
-        TUKLIB_CPUCORES_SYSCTL)
-    if(TUKLIB_CPUCORES_SYSCTL)
-        if(HAVE_SYS_PARAM_H)
+            TUKLIB_CPUCORES_SYSCTL)
+    if (TUKLIB_CPUCORES_SYSCTL)
+        if (HAVE_SYS_PARAM_H)
             set(TUKLIB_CPUCORES_DEFINITIONS
-                "HAVE_PARAM_H;TUKLIB_CPUCORES_SYSCTL"
-                CACHE INTERNAL "")
-        else()
+                    "HAVE_PARAM_H;TUKLIB_CPUCORES_SYSCTL"
+                    CACHE INTERNAL "")
+        else ()
             set(TUKLIB_CPUCORES_DEFINITIONS
-                "TUKLIB_CPUCORES_SYSCTL"
-                CACHE INTERNAL "")
-        endif()
+                    "TUKLIB_CPUCORES_SYSCTL"
+                    CACHE INTERNAL "")
+        endif ()
         return()
-    endif()
+    endif ()
 
     # Many platforms support sysconf().
     check_c_source_compiles("
@@ -126,12 +126,12 @@ function(tuklib_cpucores_internal_check)
                 return 0;
             }
         "
-        TUKLIB_CPUCORES_SYSCONF)
-    if(TUKLIB_CPUCORES_SYSCONF)
+            TUKLIB_CPUCORES_SYSCONF)
+    if (TUKLIB_CPUCORES_SYSCONF)
         set(TUKLIB_CPUCORES_DEFINITIONS "TUKLIB_CPUCORES_SYSCONF"
-            CACHE INTERNAL "")
+                CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 
     # HP-UX
     check_c_source_compiles("
@@ -145,31 +145,31 @@ function(tuklib_cpucores_internal_check)
                 return 0;
             }
         "
-        TUKLIB_CPUCORES_PSTAT_GETDYNAMIC)
-    if(TUKLIB_CPUCORES_PSTAT_GETDYNAMIC)
+            TUKLIB_CPUCORES_PSTAT_GETDYNAMIC)
+    if (TUKLIB_CPUCORES_PSTAT_GETDYNAMIC)
         set(TUKLIB_CPUCORES_DEFINITIONS "TUKLIB_CPUCORES_PSTAT_GETDYNAMIC"
-            CACHE INTERNAL "")
+                CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 endfunction()
 
 function(tuklib_cpucores TARGET_OR_ALL)
-    if(NOT DEFINED CACHE{TUKLIB_CPUCORES_FOUND})
+    if (NOT DEFINED CACHE{TUKLIB_CPUCORES_FOUND})
         message(STATUS
                 "Checking how to detect the number of available CPU cores")
         tuklib_cpucores_internal_check()
 
-        if(DEFINED CACHE{TUKLIB_CPUCORES_DEFINITIONS})
+        if (DEFINED CACHE{TUKLIB_CPUCORES_DEFINITIONS})
             set(TUKLIB_CPUCORES_FOUND 1 CACHE INTERNAL "")
-        else()
+        else ()
             set(TUKLIB_CPUCORES_FOUND 0 CACHE INTERNAL "")
             message(WARNING
                     "No method to detect the number of CPU cores was found")
-        endif()
-    endif()
+        endif ()
+    endif ()
 
-    if(TUKLIB_CPUCORES_FOUND)
+    if (TUKLIB_CPUCORES_FOUND)
         tuklib_add_definitions("${TARGET_OR_ALL}"
-                               "${TUKLIB_CPUCORES_DEFINITIONS}")
-    endif()
+                "${TUKLIB_CPUCORES_DEFINITIONS}")
+    endif ()
 endfunction()

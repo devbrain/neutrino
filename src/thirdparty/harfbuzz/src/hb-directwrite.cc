@@ -66,8 +66,8 @@ public:
   // IDWriteFontFileLoader methods
   virtual HRESULT STDMETHODCALLTYPE
   CreateStreamFromKey (void const* fontFileReferenceKey,
-		       uint32_t fontFileReferenceKeySize,
-		       OUT IDWriteFontFileStream** fontFileStream)
+               uint32_t fontFileReferenceKeySize,
+               OUT IDWriteFontFileStream** fontFileStream)
   {
     *fontFileStream = mFontFileStream;
     return S_OK;
@@ -97,9 +97,9 @@ public:
   // IDWriteFontFileStream methods
   virtual HRESULT STDMETHODCALLTYPE
   ReadFileFragment (void const** fragmentStart,
-		    UINT64 fileOffset,
-		    UINT64 fragmentSize,
-		    OUT void** fragmentContext)
+            UINT64 fileOffset,
+            UINT64 fragmentSize,
+            OUT void** fragmentContext)
   {
     // We are required to do bounds checking.
     if (fileOffset + fragmentSize > mSize) return E_FAIL;
@@ -162,7 +162,7 @@ _hb_directwrite_shaper_face_data_create (hb_face_t *face)
   // TODO: factory and fontFileLoader should be cached separately
   IDWriteFactory* dwriteFactory;
   hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof (IDWriteFactory),
-			    (IUnknown**) &dwriteFactory);
+                (IUnknown**) &dwriteFactory);
 
   if (unlikely (hr != S_OK))
     FAIL ("Failed to run DWriteCreateFactory().");
@@ -170,7 +170,7 @@ _hb_directwrite_shaper_face_data_create (hb_face_t *face)
   hb_blob_t *blob = hb_face_reference_blob (face);
   DWriteFontFileStream *fontFileStream;
   fontFileStream = new DWriteFontFileStream ((uint8_t *) hb_blob_get_data (blob, nullptr),
-					     hb_blob_get_length (blob));
+                         hb_blob_get_length (blob));
 
   DWriteFontFileLoader *fontFileLoader = new DWriteFontFileLoader (fontFileStream);
   dwriteFactory->RegisterFontFileLoader (fontFileLoader);
@@ -178,7 +178,7 @@ _hb_directwrite_shaper_face_data_create (hb_face_t *face)
   IDWriteFontFile *fontFile;
   uint64_t fontFileKey = 0;
   hr = dwriteFactory->CreateCustomFontFileReference (&fontFileKey, sizeof (fontFileKey),
-						     fontFileLoader, &fontFile);
+                             fontFileLoader, &fontFile);
 
   if (FAILED (hr))
     FAIL ("Failed to load font file from data!");
@@ -195,7 +195,7 @@ _hb_directwrite_shaper_face_data_create (hb_face_t *face)
 
   IDWriteFontFace *fontFace;
   dwriteFactory->CreateFontFace (faceType, 1, &fontFile, 0,
-				 DWRITE_FONT_SIMULATIONS_NONE, &fontFace);
+                 DWRITE_FONT_SIMULATIONS_NONE, &fontFace);
 
   data->dwriteFactory = dwriteFactory;
   data->fontFile = fontFile;
@@ -281,7 +281,7 @@ public:
     bool ContainsTextPosition (uint32_t aTextPosition) const
     {
       return aTextPosition >= mTextStart &&
-	     aTextPosition <  mTextStart + mTextLength;
+         aTextPosition <  mTextStart + mTextLength;
     }
 
     Run *nextRun;
@@ -289,9 +289,9 @@ public:
 
 public:
   TextAnalysis (const wchar_t* text, uint32_t textLength,
-		const wchar_t* localeName, DWRITE_READING_DIRECTION readingDirection)
-	       : mTextLength (textLength), mText (text), mLocaleName (localeName),
-		 mReadingDirection (readingDirection), mCurrentRun (nullptr) {}
+        const wchar_t* localeName, DWRITE_READING_DIRECTION readingDirection)
+           : mTextLength (textLength), mText (text), mLocaleName (localeName),
+         mReadingDirection (readingDirection), mCurrentRun (nullptr) {}
   ~TextAnalysis ()
   {
     // delete runs, except mRunHead which is part of the TextAnalysis object
@@ -331,8 +331,8 @@ public:
 
   IFACEMETHODIMP
   GetTextAtPosition (uint32_t textPosition,
-		     OUT wchar_t const** textString,
-		     OUT uint32_t* textLength)
+             OUT wchar_t const** textString,
+             OUT uint32_t* textLength)
   {
     if (textPosition >= mTextLength)
     {
@@ -350,8 +350,8 @@ public:
 
   IFACEMETHODIMP
   GetTextBeforePosition (uint32_t textPosition,
-			 OUT wchar_t const** textString,
-			 OUT uint32_t* textLength)
+             OUT wchar_t const** textString,
+             OUT uint32_t* textLength)
   {
     if (textPosition == 0 || textPosition > mTextLength)
     {
@@ -372,13 +372,13 @@ public:
   GetParagraphReadingDirection () { return mReadingDirection; }
 
   IFACEMETHODIMP GetLocaleName (uint32_t textPosition, uint32_t* textLength,
-				wchar_t const** localeName)
+                wchar_t const** localeName)
   { return S_OK; }
 
   IFACEMETHODIMP
   GetNumberSubstitution (uint32_t textPosition,
-			 OUT uint32_t* textLength,
-			 OUT IDWriteNumberSubstitution** numberSubstitution)
+             OUT uint32_t* textLength,
+             OUT IDWriteNumberSubstitution** numberSubstitution)
   {
     // We do not support number substitution.
     *numberSubstitution = nullptr;
@@ -391,7 +391,7 @@ public:
 
   IFACEMETHODIMP
   SetScriptAnalysis (uint32_t textPosition, uint32_t textLength,
-		     DWRITE_SCRIPT_ANALYSIS const* scriptAnalysis)
+             DWRITE_SCRIPT_ANALYSIS const* scriptAnalysis)
   {
     SetCurrentRun (textPosition);
     SplitCurrentRun (textPosition);
@@ -406,17 +406,17 @@ public:
 
   IFACEMETHODIMP
   SetLineBreakpoints (uint32_t textPosition,
-		      uint32_t textLength,
-		      const DWRITE_LINE_BREAKPOINT* lineBreakpoints)
+              uint32_t textLength,
+              const DWRITE_LINE_BREAKPOINT* lineBreakpoints)
   { return S_OK; }
 
   IFACEMETHODIMP SetBidiLevel (uint32_t textPosition, uint32_t textLength,
-			       uint8_t explicitLevel, uint8_t resolvedLevel)
+                   uint8_t explicitLevel, uint8_t resolvedLevel)
   { return S_OK; }
 
   IFACEMETHODIMP
   SetNumberSubstitution (uint32_t textPosition, uint32_t textLength,
-			 IDWriteNumberSubstitution* numberSubstitution)
+             IDWriteNumberSubstitution* numberSubstitution)
   { return S_OK; }
 
 protected:
@@ -453,8 +453,8 @@ protected:
     for (Run *run = &mRunHead; run; run = run->nextRun)
       if (run->ContainsTextPosition (textPosition))
       {
-	mCurrentRun = run;
-	return;
+    mCurrentRun = run;
+    return;
       }
     assert (0); // We should always be able to find the text position in one of our runs
   }
@@ -518,9 +518,9 @@ struct active_feature_t {
     const active_feature_t *a = (const active_feature_t *) pa;
     const active_feature_t *b = (const active_feature_t *) pb;
     return a->fea.nameTag < b->fea.nameTag ? -1 : a->fea.nameTag > b->fea.nameTag ? 1 :
-	   a->order < b->order ? -1 : a->order > b->order ? 1 :
-	   a->fea.parameter < b->fea.parameter ? -1 : a->fea.parameter > b->fea.parameter ? 1 :
-	   0;
+       a->order < b->order ? -1 : a->order > b->order ? 1 :
+       a->fea.parameter < b->fea.parameter ? -1 : a->fea.parameter > b->fea.parameter ? 1 :
+       0;
   }
   bool operator== (const active_feature_t *f)
   { return cmp (this, f) == 0; }
@@ -536,8 +536,8 @@ struct feature_event_t {
     const feature_event_t *a = (const feature_event_t *) pa;
     const feature_event_t *b = (const feature_event_t *) pb;
     return a->index < b->index ? -1 : a->index > b->index ? 1 :
-	   a->start < b->start ? -1 : a->start > b->start ? 1 :
-	   active_feature_t::cmp (&a->feature, &b->feature);
+       a->start < b->start ? -1 : a->start > b->start ? 1 :
+       active_feature_t::cmp (&a->feature, &b->feature);
   }
 };
 
@@ -550,10 +550,10 @@ struct range_record_t {
 
 hb_bool_t
 _hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
-		       hb_font_t          *font,
-		       hb_buffer_t        *buffer,
-		       const hb_feature_t *features,
-		       unsigned int        num_features)
+               hb_font_t          *font,
+               hb_buffer_t        *buffer,
+               const hb_feature_t *features,
+               unsigned int        num_features)
 {
   hb_face_t *face = font->face;
   const hb_directwrite_face_data_t *face_data = face->data.directwrite;
@@ -608,8 +608,8 @@ _hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
 
   DWRITE_READING_DIRECTION readingDirection;
   readingDirection = buffer->props.direction ?
-		     DWRITE_READING_DIRECTION_RIGHT_TO_LEFT :
-		     DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
+             DWRITE_READING_DIRECTION_RIGHT_TO_LEFT :
+             DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
 
   /*
   * There's an internal 16-bit limit on some things inside the analyzer,
@@ -639,7 +639,7 @@ _hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
   const wchar_t localeName[20] = {0};
   if (buffer->props.language)
     mbstowcs ((wchar_t*) localeName,
-	      hb_language_to_string (buffer->props.language), 20);
+          hb_language_to_string (buffer->props.language), 20);
 
   /*
    * Set up features.
@@ -692,44 +692,44 @@ _hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
 
       if (event->index != last_index)
       {
-	/* Save a snapshot of active features and the range. */
-	range_record_t *range = range_records.push ();
+    /* Save a snapshot of active features and the range. */
+    range_record_t *range = range_records.push ();
 
-	unsigned int offset = feature_records.length;
+    unsigned int offset = feature_records.length;
 
-	active_features.qsort ();
-	for (unsigned int j = 0; j < active_features.length; j++)
-	{
-	  if (!j || active_features[j].fea.nameTag != feature_records[feature_records.length - 1].nameTag)
-	  {
-	    feature_records.push (active_features[j].fea);
-	  }
-	  else
-	  {
-	    /* Overrides value for existing feature. */
-	    feature_records[feature_records.length - 1].parameter = active_features[j].fea.parameter;
-	  }
-	}
+    active_features.qsort ();
+    for (unsigned int j = 0; j < active_features.length; j++)
+    {
+      if (!j || active_features[j].fea.nameTag != feature_records[feature_records.length - 1].nameTag)
+      {
+        feature_records.push (active_features[j].fea);
+      }
+      else
+      {
+        /* Overrides value for existing feature. */
+        feature_records[feature_records.length - 1].parameter = active_features[j].fea.parameter;
+      }
+    }
 
-	/* Will convert to pointer after all is ready, since feature_records.array
-	 * may move as we grow it. */
-	range->features.features = reinterpret_cast<DWRITE_FONT_FEATURE *> (offset);
-	range->features.featureCount = feature_records.length - offset;
-	range->index_first = last_index;
-	range->index_last  = event->index - 1;
+    /* Will convert to pointer after all is ready, since feature_records.array
+     * may move as we grow it. */
+    range->features.features = reinterpret_cast<DWRITE_FONT_FEATURE *> (offset);
+    range->features.featureCount = feature_records.length - offset;
+    range->index_first = last_index;
+    range->index_last  = event->index - 1;
 
-	last_index = event->index;
+    last_index = event->index;
       }
 
       if (event->start)
       {
-	active_features.push (event->feature);
+    active_features.push (event->feature);
       }
       else
       {
-	active_feature_t *feature = active_features.find (&event->feature);
-	if (feature)
-	  active_features.remove (feature - active_features.arrayZ);
+    active_feature_t *feature = active_features.find (&event->feature);
+    if (feature)
+      active_features.remove (feature - active_features.arrayZ);
       }
     }
 
@@ -754,31 +754,31 @@ _hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
       range_record_t *last_range = &range_records[0];
       for (unsigned int i = 0; i < textLength; i++)
       {
-	range_record_t *range = last_range;
-	while (log_clusters[i] < range->index_first)
-	  range--;
-	while (log_clusters[i] > range->index_last)
-	  range++;
-	if (!range_features.length ||
-	    &range->features != range_features[range_features.length - 1])
-	{
-	  auto **typoFeatures = range_features.push ();
-	  auto *c = range_char_counts.push ();
-	  if (unlikely (!typoFeatures || !c))
-	  {
-	    range_features.shrink (0);
-	    range_char_counts.shrink (0);
-	    break;
-	  }
-	  *typoFeatures = &range->features;
-	  *c = 1;
-	}
-	else
-	{
-	  range_char_counts[range_char_counts.length - 1]++;
-	}
+    range_record_t *range = last_range;
+    while (log_clusters[i] < range->index_first)
+      range--;
+    while (log_clusters[i] > range->index_last)
+      range++;
+    if (!range_features.length ||
+        &range->features != range_features[range_features.length - 1])
+    {
+      auto **typoFeatures = range_features.push ();
+      auto *c = range_char_counts.push ();
+      if (unlikely (!typoFeatures || !c))
+      {
+        range_features.shrink (0);
+        range_char_counts.shrink (0);
+        break;
+      }
+      *typoFeatures = &range->features;
+      *c = 1;
+    }
+    else
+    {
+      range_char_counts[range_char_counts.length - 1]++;
+    }
 
-	last_range = range;
+    last_range = range;
       }
   }
 
@@ -798,10 +798,10 @@ retry_getglyphs:
   glyphProperties = new DWRITE_SHAPING_GLYPH_PROPERTIES[maxGlyphCount];
 
   hr = analyzer->GetGlyphs (textString, textLength, fontFace, false,
-			    isRightToLeft, &runHead->mScript, localeName,
-			    nullptr, dwFeatures, featureRangeLengths, featureRanges,
-			    maxGlyphCount, clusterMap, textProperties,
-			    glyphIndices, glyphProperties, &glyphCount);
+                isRightToLeft, &runHead->mScript, localeName,
+                nullptr, dwFeatures, featureRangeLengths, featureRanges,
+                maxGlyphCount, clusterMap, textProperties,
+                glyphIndices, glyphProperties, &glyphCount);
 
   if (unlikely (hr == HRESULT_FROM_WIN32 (ERROR_INSUFFICIENT_BUFFER)))
   {
@@ -821,11 +821,11 @@ retry_getglyphs:
   /* The -2 in the following is to compensate for possible
    * alignment needed after the WORD array.  sizeof (WORD) == 2. */
   unsigned int glyphs_size = (scratch_size * sizeof (int) - 2)
-			     / (sizeof (WORD) +
-				sizeof (DWRITE_SHAPING_GLYPH_PROPERTIES) +
-				sizeof (int) +
-				sizeof (DWRITE_GLYPH_OFFSET) +
-				sizeof (uint32_t));
+                 / (sizeof (WORD) +
+                sizeof (DWRITE_SHAPING_GLYPH_PROPERTIES) +
+                sizeof (int) +
+                sizeof (DWRITE_GLYPH_OFFSET) +
+                sizeof (uint32_t));
   ALLOCATE_ARRAY (uint32_t, vis_clusters, glyphs_size);
 
 #undef ALLOCATE_ARRAY
@@ -838,11 +838,11 @@ retry_getglyphs:
   double y_mult = (double) font->y_scale / fontEmSize;
 
   hr = analyzer->GetGlyphPlacements (textString, clusterMap, textProperties,
-				     textLength, glyphIndices, glyphProperties,
-				     glyphCount, fontFace, fontEmSize,
-				     false, isRightToLeft, &runHead->mScript, localeName,
-				     dwFeatures, featureRangeLengths, featureRanges,
-				     glyphAdvances, glyphOffsets);
+                     textLength, glyphIndices, glyphProperties,
+                     glyphCount, fontFace, fontEmSize,
+                     false, isRightToLeft, &runHead->mScript, localeName,
+                     dwFeatures, featureRangeLengths, featureRanges,
+                     glyphAdvances, glyphOffsets);
 
   if (FAILED (hr))
     FAIL ("Analyzer failed to get glyph placements.");
@@ -933,7 +933,7 @@ _hb_directwrite_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *
   void *table_context;
   BOOL exists;
   if (!dw_face || FAILED (dw_face->TryGetFontTable (hb_uint32_swap (tag), &data,
-						    &length, &table_context, &exists)))
+                            &length, &table_context, &exists)))
     return nullptr;
 
   if (!data || !exists || !length)
@@ -947,7 +947,7 @@ _hb_directwrite_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *
   context->table_context = table_context;
 
   return hb_blob_create ((const char *) data, length, HB_MEMORY_MODE_READONLY,
-			 context, _hb_directwrite_table_data_release);
+             context, _hb_directwrite_table_data_release);
 }
 
 static void
@@ -973,7 +973,7 @@ hb_directwrite_face_create (IDWriteFontFace *font_face)
   if (font_face)
     font_face->AddRef ();
   return hb_face_create_for_tables (_hb_directwrite_reference_table, font_face,
-				    _hb_directwrite_font_release);
+                    _hb_directwrite_font_release);
 }
 
 /**

@@ -54,25 +54,23 @@
 
 /* C++11-style GCC primitives. We prefer these as they don't require linking to libstdc++ / libc++. */
 
-#define _hb_memory_barrier()			__sync_synchronize ()
+#define _hb_memory_barrier()            __sync_synchronize ()
 
-#define hb_atomic_int_impl_add(AI, V)		__atomic_fetch_add ((AI), (V), __ATOMIC_ACQ_REL)
-#define hb_atomic_int_impl_set_relaxed(AI, V)	__atomic_store_n ((AI), (V), __ATOMIC_RELAXED)
-#define hb_atomic_int_impl_set(AI, V)		__atomic_store_n ((AI), (V), __ATOMIC_RELEASE)
-#define hb_atomic_int_impl_get_relaxed(AI)	__atomic_load_n ((AI), __ATOMIC_RELAXED)
-#define hb_atomic_int_impl_get(AI)		__atomic_load_n ((AI), __ATOMIC_ACQUIRE)
+#define hb_atomic_int_impl_add(AI, V)        __atomic_fetch_add ((AI), (V), __ATOMIC_ACQ_REL)
+#define hb_atomic_int_impl_set_relaxed(AI, V)    __atomic_store_n ((AI), (V), __ATOMIC_RELAXED)
+#define hb_atomic_int_impl_set(AI, V)        __atomic_store_n ((AI), (V), __ATOMIC_RELEASE)
+#define hb_atomic_int_impl_get_relaxed(AI)    __atomic_load_n ((AI), __ATOMIC_RELAXED)
+#define hb_atomic_int_impl_get(AI)        __atomic_load_n ((AI), __ATOMIC_ACQUIRE)
 
-#define hb_atomic_ptr_impl_set_relaxed(P, V)	__atomic_store_n ((P), (V), __ATOMIC_RELAXED)
-#define hb_atomic_ptr_impl_get_relaxed(P)	__atomic_load_n ((P), __ATOMIC_RELAXED)
-#define hb_atomic_ptr_impl_get(P)		__atomic_load_n ((P), __ATOMIC_ACQUIRE)
+#define hb_atomic_ptr_impl_set_relaxed(P, V)    __atomic_store_n ((P), (V), __ATOMIC_RELAXED)
+#define hb_atomic_ptr_impl_get_relaxed(P)    __atomic_load_n ((P), __ATOMIC_RELAXED)
+#define hb_atomic_ptr_impl_get(P)        __atomic_load_n ((P), __ATOMIC_ACQUIRE)
 static inline bool
-_hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
-{
+_hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N) {
   const void *O = O_; // Need lvalue
   return __atomic_compare_exchange_n ((void **) P, (void **) &O, (void *) N, true, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
 }
-#define hb_atomic_ptr_impl_cmpexch(P,O,N)	_hb_atomic_ptr_impl_cmplexch ((const void **) (P), (O), (N))
-
+#define hb_atomic_ptr_impl_cmpexch(P, O, N)    _hb_atomic_ptr_impl_cmplexch ((const void **) (P), (O), (N))
 
 #elif !defined(HB_NO_MT)
 
@@ -118,12 +116,11 @@ _hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
 
 #endif
 
-
 #ifndef _hb_memory_r_barrier
-#define _hb_memory_r_barrier()			_hb_memory_barrier ()
+#define _hb_memory_r_barrier()            _hb_memory_barrier ()
 #endif
 #ifndef _hb_memory_w_barrier
-#define _hb_memory_w_barrier()			_hb_memory_barrier ()
+#define _hb_memory_w_barrier()            _hb_memory_barrier ()
 #endif
 #ifndef hb_atomic_int_impl_set_relaxed
 #define hb_atomic_int_impl_set_relaxed(AI, V)	(*(AI) = (V))
@@ -148,41 +145,67 @@ inline int hb_atomic_int_impl_get (const int *AI)	{ int v = *AI; _hb_memory_r_ba
 inline void *hb_atomic_ptr_impl_get (void ** const P)	{ void *v = *P; _hb_memory_r_barrier (); return v; }
 #endif
 
-
-struct hb_atomic_int_t
-{
+struct hb_atomic_int_t {
   hb_atomic_int_t () = default;
-  constexpr hb_atomic_int_t (int v) : v (v) {}
+  constexpr hb_atomic_int_t (int v)
+      : v (v) {
+  }
 
-  void set_relaxed (int v_) { hb_atomic_int_impl_set_relaxed (&v, v_); }
-  void set (int v_) { hb_atomic_int_impl_set (&v, v_); }
-  int get_relaxed () const { return hb_atomic_int_impl_get_relaxed (&v); }
-  int get () const { return hb_atomic_int_impl_get (&v); }
-  int inc () { return hb_atomic_int_impl_add (&v,  1); }
-  int dec () { return hb_atomic_int_impl_add (&v, -1); }
+  void set_relaxed (int v_) {
+    hb_atomic_int_impl_set_relaxed (&v, v_);
+  }
+  void set (int v_) {
+    hb_atomic_int_impl_set (&v, v_);
+  }
+  int get_relaxed () const {
+    return hb_atomic_int_impl_get_relaxed (&v);
+  }
+  int get () const {
+    return hb_atomic_int_impl_get (&v);
+  }
+  int inc () {
+    return hb_atomic_int_impl_add (&v, 1);
+  }
+  int dec () {
+    return hb_atomic_int_impl_add (&v, -1);
+  }
 
   int v = 0;
 };
 
 template <typename P>
-struct hb_atomic_ptr_t
-{
+struct hb_atomic_ptr_t {
   typedef hb_remove_pointer<P> T;
 
   hb_atomic_ptr_t () = default;
-  constexpr hb_atomic_ptr_t (T* v) : v (v) {}
+  constexpr hb_atomic_ptr_t (T *v)
+      : v (v) {
+  }
 
-  void init (T* v_ = nullptr) { set_relaxed (v_); }
-  void set_relaxed (T* v_) { hb_atomic_ptr_impl_set_relaxed (&v, v_); }
-  T *get_relaxed () const { return (T *) hb_atomic_ptr_impl_get_relaxed (&v); }
-  T *get () const { return (T *) hb_atomic_ptr_impl_get ((void **) &v); }
-  bool cmpexch (const T *old, T *new_) const { return hb_atomic_ptr_impl_cmpexch ((void **) &v, (void *) old, (void *) new_); }
+  void init (T *v_ = nullptr) {
+    set_relaxed (v_);
+  }
+  void set_relaxed (T *v_) {
+    hb_atomic_ptr_impl_set_relaxed (&v, v_);
+  }
+  T *get_relaxed () const {
+    return (T *) hb_atomic_ptr_impl_get_relaxed (&v);
+  }
+  T *get () const {
+    return (T *) hb_atomic_ptr_impl_get ((void **) &v);
+  }
+  bool cmpexch (const T *old, T *new_) const {
+    return hb_atomic_ptr_impl_cmpexch ((void **) &v, (void *) old, (void *) new_);
+  }
 
-  T * operator -> () const                    { return get (); }
-  template <typename C> operator C * () const { return get (); }
+  T *operator-> () const {
+    return get ();
+  }
+  template <typename C> operator C * () const {
+    return get ();
+  }
 
   T *v = nullptr;
 };
-
 
 #endif /* HB_ATOMIC_HH */

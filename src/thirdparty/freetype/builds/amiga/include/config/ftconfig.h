@@ -5,7 +5,7 @@
 /*    Amiga-specific configuration file (specification only).              */
 /*                                                                         */
 /*  Copyright (C) 2005-2020 by                                             */
-/*  Werner Lemberg and Detlef Würkner.                                     */
+/*  Werner Lemberg and Detlef Wï¿½rkner.                                     */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
 /*  modified, and distributed under the terms of the FreeType project      */
@@ -29,7 +29,7 @@
 #endif
 
 #undef FT_EXPORT_DEF
-#define FT_EXPORT_DEF( x )  x
+#define FT_EXPORT_DEF(x)  x
 
 /* Now include the original file */
 #ifndef __MORPHOS__
@@ -37,6 +37,7 @@
 #include "FT:include/freetype/config/ftconfig.h"
 #else
 #include "/FT/include/freetype/config/ftconfig.h"
+
 #endif
 #else
 /* We must define that, it seems that

@@ -228,10 +228,10 @@ struct hb_graphite2_cluster_t {
 
 hb_bool_t
 _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
-		     hb_font_t          *font,
-		     hb_buffer_t        *buffer,
-		     const hb_feature_t *features,
-		     unsigned int        num_features)
+             hb_font_t          *font,
+             hb_buffer_t        *buffer,
+             const hb_feature_t *features,
+             unsigned int        num_features)
 {
   hb_face_t *face = font->face;
   gr_face *grface = face->data.graphite2->grface;
@@ -266,16 +266,16 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   hb_tag_t script_tag[HB_OT_MAX_TAGS_PER_SCRIPT];
   unsigned int count = HB_OT_MAX_TAGS_PER_SCRIPT;
   hb_ot_tags_from_script_and_language (hb_buffer_get_script (buffer),
-				       HB_LANGUAGE_INVALID,
-				       &count,
-				       script_tag,
-				       nullptr, nullptr);
+                       HB_LANGUAGE_INVALID,
+                       &count,
+                       script_tag,
+                       nullptr, nullptr);
 
   seg = gr_make_seg (nullptr, grface,
-		     count ? script_tag[count - 1] : HB_OT_TAG_DEFAULT_SCRIPT,
-		     feats,
-		     gr_utf32, chars, buffer->len,
-		     2 | (hb_buffer_get_direction (buffer) == HB_DIRECTION_RTL ? 1 : 0));
+             count ? script_tag[count - 1] : HB_OT_TAG_DEFAULT_SCRIPT,
+             feats,
+             gr_utf32, chars, buffer->len,
+             2 | (hb_buffer_get_direction (buffer) == HB_DIRECTION_RTL ? 1 : 0));
 
   if (unlikely (!seg)) {
     if (feats) gr_featureval_destroy (feats);
@@ -293,7 +293,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   (void) buffer->ensure (glyph_count);
   scratch = buffer->get_scratch_buffer (&scratch_size);
   while ((DIV_CEIL (sizeof (hb_graphite2_cluster_t) * buffer->len, sizeof (*scratch)) +
-	  DIV_CEIL (sizeof (hb_codepoint_t) * glyph_count, sizeof (*scratch))) > scratch_size)
+      DIV_CEIL (sizeof (hb_codepoint_t) * glyph_count, sizeof (*scratch))) > scratch_size)
   {
     if (unlikely (!buffer->ensure (buffer->allocated * 2)))
     {
@@ -358,21 +358,21 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
       c->num_glyphs = 0;
       if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
       {
-	c->advance = curradv - gr_slot_origin_X(is) * xscale;
-	curradv -= c->advance;
+    c->advance = curradv - gr_slot_origin_X(is) * xscale;
+    curradv -= c->advance;
       }
       else
       {
-	c->advance = 0;
-	clusters[ci].advance += gr_slot_origin_X(is) * xscale - curradv;
-	curradv += clusters[ci].advance;
+    c->advance = 0;
+    clusters[ci].advance += gr_slot_origin_X(is) * xscale - curradv;
+    curradv += clusters[ci].advance;
       }
       ci++;
     }
     clusters[ci].num_glyphs++;
 
     if (clusters[ci].base_char + clusters[ci].num_chars < after + 1)
-	clusters[ci].num_chars = after + 1 - clusters[ci].base_char;
+    clusters[ci].num_chars = after + 1 - clusters[ci].base_char;
   }
 
   if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
@@ -405,11 +405,11 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
       pPos->x_offset = gr_slot_origin_X (is) * xscale - curradvx;
       pPos->y_offset = gr_slot_origin_Y (is) * yscale - curradvy;
       if (info->cluster != currclus) {
-	pPos->x_advance = info->var1.i32;
-	curradvx += pPos->x_advance;
-	currclus = info->cluster;
+    pPos->x_advance = info->var1.i32;
+    curradvx += pPos->x_advance;
+    currclus = info->cluster;
       } else
-	pPos->x_advance = 0.;
+    pPos->x_advance = 0.;
 
       pPos->y_advance = gr_slot_advance_Y (is, grface, nullptr) * yscale;
       curradvy += pPos->y_advance;
@@ -422,11 +422,11 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
     {
       if (info->cluster != currclus)
       {
-	pPos->x_advance = info->var1.i32;
-	curradvx -= pPos->x_advance;
-	currclus = info->cluster;
+    pPos->x_advance = info->var1.i32;
+    curradvx -= pPos->x_advance;
+    currclus = info->cluster;
       } else
-	pPos->x_advance = 0.;
+    pPos->x_advance = 0.;
 
       pPos->y_advance = gr_slot_advance_Y (is, grface, nullptr) * yscale;
       curradvy -= pPos->y_advance;

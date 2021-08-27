@@ -5,19 +5,16 @@
 #include <neutrino/tiled/window.hh>
 
 namespace neutrino::tiled {
-    window::window(int w, int h)
-    : engine::main_window(w, h)
-    {
+  window::window (int w, int h)
+      : engine::main_window (w, h) {
 
-    }
-    // --------------------------------------------------------------------
-    window::~window() noexcept
-    {
+  }
+  // --------------------------------------------------------------------
+  window::~window () noexcept {
 
-    }
-    // --------------------------------------------------------------------
-    void window::after_window_opened()
-    {
+  }
+  // --------------------------------------------------------------------
+  void window::after_window_opened () {
 
-    }
+  }
 }

@@ -32,69 +32,68 @@
 /* Memory pool for persistent allocation of small objects. */
 
 template <typename T, unsigned ChunkLen = 16>
-struct hb_pool_t
-{
-  hb_pool_t () : next (nullptr) {}
-  ~hb_pool_t () { fini (); }
-
-  void fini ()
-  {
-    next = nullptr;
-
-    for (chunk_t *_ : chunks) ::free (_);
-
-    chunks.fini ();
-  }
-
-  T* alloc ()
-  {
-    if (unlikely (!next))
-    {
-      if (unlikely (!chunks.alloc (chunks.length + 1))) return nullptr;
-      chunk_t *chunk = (chunk_t *) calloc (1, sizeof (chunk_t));
-      if (unlikely (!chunk)) return nullptr;
-      chunks.push (chunk);
-      next = chunk->thread ();
+struct hb_pool_t {
+    hb_pool_t ()
+        : next (nullptr) {
+    }
+    ~hb_pool_t () {
+      fini ();
     }
 
-    T* obj = next;
-    next = * ((T**) next);
+    void fini () {
+      next = nullptr;
 
-    memset (obj, 0, sizeof (T));
+      for (chunk_t *_ : chunks)
+        ::free (_);
 
-    return obj;
-  }
+      chunks.fini ();
+    }
 
-  void free (T* obj)
-  {
-    * (T**) obj = next;
-    next = obj;
-  }
+    T *alloc () {
+      if (unlikely (!next)) {
+        if (unlikely (!chunks.alloc (chunks.length + 1)))
+          return nullptr;
+        chunk_t *chunk = (chunk_t *) calloc (1, sizeof (chunk_t));
+        if (unlikely (!chunk))
+          return nullptr;
+        chunks.push (chunk);
+        next = chunk->thread ();
+      }
+
+      T *obj = next;
+      next = *((T **) next);
+
+      memset (obj, 0, sizeof (T));
+
+      return obj;
+    }
+
+    void free (T *obj) {
+      *(T **) obj = next;
+      next = obj;
+    }
 
   private:
 
-  static_assert (ChunkLen > 1, "");
-  static_assert (sizeof (T) >= sizeof (void *), "");
-  static_assert (alignof (T) % alignof (void *) == 0, "");
+    static_assert (ChunkLen > 1, "");
+    static_assert (sizeof (T) >= sizeof (void *), "");
+    static_assert (alignof (T) % alignof (void *) == 0, "");
 
-  struct chunk_t
-  {
-    T* thread ()
-    {
-      for (unsigned i = 0; i < ARRAY_LENGTH (arrayZ) - 1; i++)
-	* (T**) &arrayZ[i] = &arrayZ[i + 1];
+    struct chunk_t {
+      T *thread () {
+        for (unsigned i = 0; i < ARRAY_LENGTH (arrayZ) - 1; i++)
+          *(T **) &arrayZ[i] = &arrayZ[i + 1];
 
-      * (T**) &arrayZ[ARRAY_LENGTH (arrayZ) - 1] = nullptr;
+        *(T **) &arrayZ[ARRAY_LENGTH (arrayZ) - 1] = nullptr;
 
-      return arrayZ;
-    }
+        return arrayZ;
+      }
 
-    T arrayZ[ChunkLen];
-  };
+      T arrayZ[ChunkLen];
+    };
 
-  T* next;
-  hb_vector_t<chunk_t *> chunks;
+    T *next;
+    hb_vector_t<chunk_t *> chunks;
 };
-
 
 #endif /* HB_POOL_HH */

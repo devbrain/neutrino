@@ -57,21 +57,19 @@
 
 
 #if !defined(TE_IOS_INIT_HACK)
-	// Microsoft Visual Studio with Dinkumware STL (but not STLport)
+// Microsoft Visual Studio with Dinkumware STL (but not STLport)
 #	if defined(_MSC_VER) && (!defined(_STLP_MSVC) || defined(_STLP_NO_OWN_IOSTREAMS))
 #		define TE_IOS_INIT_HACK 1
-    // QNX with Dinkumware but not GNU C++ Library
+// QNX with Dinkumware but not GNU C++ Library
 #	elif defined(__QNX__) && !defined(__GLIBCPP__)
 #		define TE_IOS_INIT_HACK 1
 #	endif
 #endif
-
 
 #if defined(TE_IOS_INIT_HACK)
 #	define te_ios_init(buf)
 #else
 #	define te_ios_init(buf) init(buf)
 #endif
-
 
 #endif //NEUTRINO_UTILS_IOS_INIT_HH

@@ -59,8 +59,8 @@
 #endif
 
 #ifndef MAX
-#  define MAX(a,b)  ((a) > (b)? (a) : (b))
-#  define MIN(a,b)  ((a) < (b)? (a) : (b))
+#  define MAX(a, b)  ((a) > (b)? (a) : (b))
+#  define MIN(a, b)  ((a) < (b)? (a) : (b))
 #endif
 
 #ifdef DEBUG
@@ -70,47 +70,46 @@
 #endif
 
 enum rpng2_states {
-    kPreInit = 0,
-    kWindowInit,
-    kDone
+  kPreInit = 0,
+  kWindowInit,
+  kDone
 };
 
-typedef unsigned char   uch;
-typedef unsigned short  ush;
-typedef unsigned long   ulg;
+typedef unsigned char uch;
+typedef unsigned short ush;
+typedef unsigned long ulg;
 
 typedef struct _mainprog_info {
-    double display_exponent;
-    ulg width;
-    ulg height;
-    void *png_ptr;
-    void *info_ptr;
-    void (*mainprog_init)(void);
-    void (*mainprog_display_row)(ulg row_num);
-    void (*mainprog_finish_display)(void);
-    uch *image_data;
-    uch **row_pointers;
-    jmp_buf jmpbuf;
-    int passes;              /* not used */
-    int pass;
-    int rowbytes;
-    int channels;
-    int need_bgcolor;
-    int state;
-    uch bg_red;
-    uch bg_green;
-    uch bg_blue;
+  double display_exponent;
+  ulg width;
+  ulg height;
+  void *png_ptr;
+  void *info_ptr;
+  void (*mainprog_init) (void);
+  void (*mainprog_display_row) (ulg row_num);
+  void (*mainprog_finish_display) (void);
+  uch *image_data;
+  uch **row_pointers;
+  jmp_buf jmpbuf;
+  int passes;              /* not used */
+  int pass;
+  int rowbytes;
+  int channels;
+  int need_bgcolor;
+  int state;
+  uch bg_red;
+  uch bg_green;
+  uch bg_blue;
 } mainprog_info;
-
 
 /* prototypes for public functions in readpng2.c */
 
-void readpng2_version_info(void);
+void readpng2_version_info (void);
 
-int readpng2_check_sig(uch *sig, int num);
+int readpng2_check_sig (uch *sig, int num);
 
-int readpng2_init(mainprog_info *mainprog_ptr);
+int readpng2_init (mainprog_info *mainprog_ptr);
 
-int readpng2_decode_data(mainprog_info *mainprog_ptr, uch *rawbuf, ulg length);
+int readpng2_decode_data (mainprog_info *mainprog_ptr, uch *rawbuf, ulg length);
 
-void readpng2_cleanup(mainprog_info *mainprog_ptr);
+void readpng2_cleanup (mainprog_info *mainprog_ptr);

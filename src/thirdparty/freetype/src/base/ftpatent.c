@@ -25,27 +25,25 @@
 #include FT_SERVICE_TRUETYPE_GLYF_H
 
 
-  /* documentation is in freetype.h */
+/* documentation is in freetype.h */
 
-  FT_EXPORT_DEF( FT_Bool )
-  FT_Face_CheckTrueTypePatents( FT_Face  face )
-  {
-    FT_UNUSED( face );
+FT_EXPORT_DEF(FT_Bool)
+FT_Face_CheckTrueTypePatents (FT_Face face) {
+  FT_UNUSED(face);
 
-    return FALSE;
-  }
+  return FALSE;
+}
 
 
-  /* documentation is in freetype.h */
+/* documentation is in freetype.h */
 
-  FT_EXPORT_DEF( FT_Bool )
-  FT_Face_SetUnpatentedHinting( FT_Face  face,
-                                FT_Bool  value )
-  {
-    FT_UNUSED( face );
-    FT_UNUSED( value );
+FT_EXPORT_DEF(FT_Bool)
+FT_Face_SetUnpatentedHinting (FT_Face face,
+                              FT_Bool value) {
+  FT_UNUSED(face);
+  FT_UNUSED(value);
 
-    return FALSE;
-  }
+  return FALSE;
+}
 
 /* END */

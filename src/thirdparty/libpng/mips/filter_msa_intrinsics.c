@@ -40,9 +40,9 @@
 #if PNG_MIPS_MSA_OPT > 0
 
 #ifdef CLANG_BUILD
-   #define MSA_SRLI_B(a, b)   __msa_srli_b((v16i8) a, b)
+#define MSA_SRLI_B(a, b)   __msa_srli_b((v16i8) a, b)
 
-   #define LW(psrc)                              \
+#define LW(psrc)                              \
    ( {                                           \
        uint8_t *psrc_lw_m = (uint8_t *) (psrc);  \
        uint32_t val_m;                           \
@@ -57,7 +57,7 @@
        val_m;                                    \
    } )
 
-   #define SH(val, pdst)                         \
+#define SH(val, pdst)                         \
    {                                             \
        uint8_t *pdst_sh_m = (uint8_t *) (pdst);  \
        uint16_t val_m = (val);                   \
@@ -70,7 +70,7 @@
        );                                        \
    }
 
-   #define SW(val, pdst)                         \
+#define SW(val, pdst)                         \
    {                                             \
        uint8_t *pdst_sw_m = (uint8_t *) (pdst);  \
        uint32_t val_m = (val);                   \
@@ -83,8 +83,8 @@
        );                                        \
    }
 
-       #if (__mips == 64)
-        #define SD(val, pdst)                         \
+#if (__mips == 64)
+#define SD(val, pdst)                         \
         {                                             \
             uint8_t *pdst_sd_m = (uint8_t *) (pdst);  \
             uint64_t val_m = (val);                   \
@@ -96,8 +96,8 @@
                 : [val_m] "r" (val_m)                 \
             );                                        \
         }
-    #else
-        #define SD(val, pdst)                                          \
+#else
+#define SD(val, pdst)                                          \
         {                                                              \
             uint8_t *pdst_sd_m = (uint8_t *) (pdst);                   \
             uint32_t val0_m, val1_m;                                   \
@@ -108,12 +108,12 @@
             SW(val0_m, pdst_sd_m);                                     \
             SW(val1_m, pdst_sd_m + 4);                                 \
         }
-    #endif
+#endif
 #else
-   #define MSA_SRLI_B(a, b)   (a >> b)
+#define MSA_SRLI_B(a, b)   (a >> b)
 
 #if (__mips_isa_rev >= 6)
-   #define LW(psrc)                              \
+#define LW(psrc)                              \
    ( {                                           \
        uint8_t *psrc_lw_m = (uint8_t *) (psrc);  \
        uint32_t val_m;                           \
@@ -128,7 +128,7 @@
        val_m;                                    \
    } )
 
-   #define SH(val, pdst)                         \
+#define SH(val, pdst)                         \
    {                                             \
        uint8_t *pdst_sh_m = (uint8_t *) (pdst);  \
        uint16_t val_m = (val);                   \
@@ -141,7 +141,7 @@
        );                                        \
    }
 
-   #define SW(val, pdst)                         \
+#define SW(val, pdst)                         \
    {                                             \
        uint8_t *pdst_sw_m = (uint8_t *) (pdst);  \
        uint32_t val_m = (val);                   \
@@ -154,8 +154,8 @@
        );                                        \
    }
 
-   #if (__mips == 64)
-        #define SD(val, pdst)                         \
+#if (__mips == 64)
+#define SD(val, pdst)                         \
         {                                             \
             uint8_t *pdst_sd_m = (uint8_t *) (pdst);  \
             uint64_t val_m = (val);                   \
@@ -167,8 +167,8 @@
                 : [val_m] "r" (val_m)                 \
             );                                        \
         }
-    #else
-        #define SD(val, pdst)                                          \
+#else
+#define SD(val, pdst)                                          \
         {                                                              \
             uint8_t *pdst_sd_m = (uint8_t *) (pdst);                   \
             uint32_t val0_m, val1_m;                                   \
@@ -179,9 +179,9 @@
             SW(val0_m, pdst_sd_m);                                     \
             SW(val1_m, pdst_sd_m + 4);                                 \
         }
-    #endif
+#endif
 #else  // !(__mips_isa_rev >= 6)
-   #define LW(psrc)                              \
+#define LW(psrc)                              \
    ( {                                           \
        uint8_t *psrc_lw_m = (uint8_t *) (psrc);  \
        uint32_t val_m;                           \
@@ -196,7 +196,7 @@
        val_m;                                    \
    } )
 
-   #define SH(val, pdst)                         \
+#define SH(val, pdst)                         \
    {                                             \
        uint8_t *pdst_sh_m = (uint8_t *) (pdst);  \
        uint16_t val_m = (val);                   \
@@ -209,7 +209,7 @@
        );                                        \
    }
 
-   #define SW(val, pdst)                         \
+#define SW(val, pdst)                         \
    {                                             \
        uint8_t *pdst_sw_m = (uint8_t *) (pdst);  \
        uint32_t val_m = (val);                   \
@@ -222,7 +222,7 @@
        );                                        \
    }
 
-   #define SD(val, pdst)                                          \
+#define SD(val, pdst)                                          \
     {                                                              \
         uint8_t *pdst_sd_m = (uint8_t *) (pdst);                   \
         uint32_t val0_m, val1_m;                                   \
@@ -234,7 +234,7 @@
         SW(val1_m, pdst_sd_m + 4);                                 \
     }
 
-    #define SW_ZERO(pdst)                      \
+#define SW_ZERO(pdst)                      \
     {                                          \
         uint8_t *pdst_m = (uint8_t *) (pdst);  \
                                                \
@@ -379,8 +379,8 @@ void png_read_filter_row_up_msa(png_row_infop row_info, png_bytep row,
       LD_UB4(pp, 16, src4, src5, src6, src7);
       pp += 64;
 
-	  ADD4(src0, src4, src1, src5, src2, src6, src3, src7,
-	       src0, src1, src2, src3);
+      ADD4(src0, src4, src1, src5, src2, src6, src3, src7,
+           src0, src1, src2, src3);
 
       ST_UB4(src0, src1, src2, src3, rp, 16);
       rp += 64;
@@ -400,7 +400,7 @@ void png_read_filter_row_up_msa(png_row_infop row_info, png_bytep row,
             LD_UB4(pp, 16, src4, src5, src6, src7);
 
             ADD4(src0, src4, src1, src5, src2, src6, src3, src7,
-	             src0, src1, src2, src3);
+                 src0, src1, src2, src3);
 
             ST_UB4(src0, src1, src2, src3, rp, 16);
             rp += 64;
@@ -425,7 +425,7 @@ void png_read_filter_row_up_msa(png_row_infop row_info, png_bytep row,
             LD_UB2(rp, 16, src0, src1);
             LD_UB2(pp, 16, src4, src5);
 
-			ADD2(src0, src4, src1, src5, src0, src1);
+            ADD2(src0, src4, src1, src5, src0, src1);
 
             ST_UB2(src0, src1, rp, 16);
             rp += 32;

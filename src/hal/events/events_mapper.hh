@@ -9,15 +9,15 @@
 #include <hal/sdl/events/system_events.hh>
 
 namespace neutrino::hal::events {
-    keyboard map_event(const sdl::events::keyboard& kv);
+  keyboard map_event (const sdl::events::keyboard &kv);
 
-    pointer map_event(const sdl::events::mouse_button& m);
-    pointer map_event(const sdl::events::mouse_motion& m);
-    pointer map_event(const sdl::events::mouse_wheel& m);
+  pointer map_event (const sdl::events::mouse_button &m);
+  pointer map_event (const sdl::events::mouse_motion &m);
+  pointer map_event (const sdl::events::mouse_wheel &m);
 
-    pointer map_event(const sdl::events::touch_device_button& m);
-    pointer map_event(const sdl::events::touch_device_motion& m);
-    pointer map_event(const sdl::events::touch_device_wheel& m);
+  pointer map_event (const sdl::events::touch_device_button &m);
+  pointer map_event (const sdl::events::touch_device_motion &m);
+  pointer map_event (const sdl::events::touch_device_wheel &m);
 }
 
 #endif

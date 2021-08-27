@@ -31,10 +31,12 @@
 #  include <png.h>
 #else
 #  include "../../png.h"
+
 #endif
 
 #ifndef PNG_SETJMP_SUPPORTED
 #  include <setjmp.h> /* because png.h did *not* include this */
+
 #endif
 
 /* 1.6.1 added support for the configure test harness, which uses 77 to indicate
@@ -47,7 +49,7 @@
 #endif
 
 #if PNG_LIBPNG_VER < 10700
-   /* READ_PNG and WRITE_PNG were not defined, so: */
+/* READ_PNG and WRITE_PNG were not defined, so: */
 #  ifdef PNG_INFO_IMAGE_SUPPORTED
 #     ifdef PNG_SEQUENTIAL_READ_SUPPORTED
 #        define PNG_READ_PNG_SUPPORTED
@@ -1714,9 +1716,8 @@ main(int argc, char **argv)
 }
 #else /* !READ_PNG */
 int
-main(void)
-{
-   fprintf(stderr, "pngimage: no support for png_read/write_image\n");
-   return SKIP;
+main (void) {
+  fprintf (stderr, "pngimage: no support for png_read/write_image\n");
+  return SKIP;
 }
 #endif

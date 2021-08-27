@@ -34,6 +34,7 @@
 #  include <png.h>
 #else
 #  include "../../png.h"
+
 #endif
 
 /* The following is to support direct compilation of this file as C++ */
@@ -51,10 +52,10 @@
  * the implementation takes to read a PNG ignoring the potentially very large IO
  * overhead.
  */
-#if defined (CLOCK_PROCESS_CPUTIME_ID) && defined(PNG_STDIO_SUPPORTED) &&\
-    defined(PNG_EASY_ACCESS_SUPPORTED) &&\
-    (PNG_LIBPNG_VER >= 10700 ? defined(PNG_READ_PNG_SUPPORTED) :\
-     defined (PNG_SEQUENTIAL_READ_SUPPORTED) &&\
+#if defined (CLOCK_PROCESS_CPUTIME_ID) && defined(PNG_STDIO_SUPPORTED) && \
+    defined(PNG_EASY_ACCESS_SUPPORTED) && \
+    (PNG_LIBPNG_VER >= 10700 ? defined(PNG_READ_PNG_SUPPORTED) : \
+     defined (PNG_SEQUENTIAL_READ_SUPPORTED) && \
      defined(PNG_INFO_IMAGE_SUPPORTED))
 
 typedef struct
@@ -603,5 +604,7 @@ int main(int argc, char **argv)
    return ok == 0;
 }
 #else /* !sufficient support */
-int main(void) { return 77; }
+int main (void) {
+  return 77;
+}
 #endif /* !sufficient support */

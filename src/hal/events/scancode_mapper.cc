@@ -5,251 +5,492 @@
 #include "scancode_mapper.hh"
 
 namespace neutrino::hal::events {
-    scan_code_t map_scancode(neutrino::sdl::scancode sc) {
-        switch (sc) {
-            case neutrino::sdl::scancode::UNKNOWN: return scan_code_t::UNKNOWN;
-            case neutrino::sdl::scancode::A: return scan_code_t::A;
-            case neutrino::sdl::scancode::B: return scan_code_t::B;
-            case neutrino::sdl::scancode::C: return scan_code_t::C;
-            case neutrino::sdl::scancode::D: return scan_code_t::D;
-            case neutrino::sdl::scancode::E: return scan_code_t::E;
-            case neutrino::sdl::scancode::F: return scan_code_t::F;
-            case neutrino::sdl::scancode::G: return scan_code_t::G;
-            case neutrino::sdl::scancode::H: return scan_code_t::H;
-            case neutrino::sdl::scancode::I: return scan_code_t::I;
-            case neutrino::sdl::scancode::J: return scan_code_t::J;
-            case neutrino::sdl::scancode::K: return scan_code_t::K;
-            case neutrino::sdl::scancode::L: return scan_code_t::L;
-            case neutrino::sdl::scancode::M: return scan_code_t::M;
-            case neutrino::sdl::scancode::N: return scan_code_t::N;
-            case neutrino::sdl::scancode::O: return scan_code_t::O;
-            case neutrino::sdl::scancode::P: return scan_code_t::P;
-            case neutrino::sdl::scancode::Q: return scan_code_t::Q;
-            case neutrino::sdl::scancode::R: return scan_code_t::R;
-            case neutrino::sdl::scancode::S: return scan_code_t::S;
-            case neutrino::sdl::scancode::T: return scan_code_t::T;
-            case neutrino::sdl::scancode::U: return scan_code_t::U;
-            case neutrino::sdl::scancode::V: return scan_code_t::V;
-            case neutrino::sdl::scancode::W: return scan_code_t::W;
-            case neutrino::sdl::scancode::X: return scan_code_t::X;
-            case neutrino::sdl::scancode::Y: return scan_code_t::Y;
-            case neutrino::sdl::scancode::Z: return scan_code_t::Z;
-            case neutrino::sdl::scancode::_1: return scan_code_t::_1;
-            case neutrino::sdl::scancode::_2: return scan_code_t::_2;
-            case neutrino::sdl::scancode::_3: return scan_code_t::_3;
-            case neutrino::sdl::scancode::_4: return scan_code_t::_4;
-            case neutrino::sdl::scancode::_5: return scan_code_t::_5;
-            case neutrino::sdl::scancode::_6: return scan_code_t::_6;
-            case neutrino::sdl::scancode::_7: return scan_code_t::_7;
-            case neutrino::sdl::scancode::_8: return scan_code_t::_8;
-            case neutrino::sdl::scancode::_9: return scan_code_t::_9;
-            case neutrino::sdl::scancode::_0: return scan_code_t::_0;
-            case neutrino::sdl::scancode::RETURN: return scan_code_t::RETURN;
-            case neutrino::sdl::scancode::ESCAPE: return scan_code_t::ESCAPE;
-            case neutrino::sdl::scancode::BACKSPACE: return scan_code_t::BACKSPACE;
-            case neutrino::sdl::scancode::TAB: return scan_code_t::TAB;
-            case neutrino::sdl::scancode::SPACE: return scan_code_t::SPACE;
-            case neutrino::sdl::scancode::MINUS: return scan_code_t::MINUS;
-            case neutrino::sdl::scancode::EQUALS: return scan_code_t::EQUALS;
-            case neutrino::sdl::scancode::LEFTBRACKET: return scan_code_t::LEFTBRACKET;
-            case neutrino::sdl::scancode::RIGHTBRACKET: return scan_code_t::RIGHTBRACKET;
-            case neutrino::sdl::scancode::BACKSLASH: return scan_code_t::BACKSLASH;
-            case neutrino::sdl::scancode::NONUSHASH: return scan_code_t::NONUSHASH;
-            case neutrino::sdl::scancode::SEMICOLON: return scan_code_t::SEMICOLON;
-            case neutrino::sdl::scancode::APOSTROPHE: return scan_code_t::APOSTROPHE;
-            case neutrino::sdl::scancode::GRAVE: return scan_code_t::GRAVE;
-            case neutrino::sdl::scancode::COMMA: return scan_code_t::COMMA;
-            case neutrino::sdl::scancode::PERIOD: return scan_code_t::PERIOD;
-            case neutrino::sdl::scancode::SLASH: return scan_code_t::SLASH;
-            case neutrino::sdl::scancode::CAPSLOCK: return scan_code_t::CAPSLOCK;
-            case neutrino::sdl::scancode::F1: return scan_code_t::F1;
-            case neutrino::sdl::scancode::F2: return scan_code_t::F2;
-            case neutrino::sdl::scancode::F3: return scan_code_t::F3;
-            case neutrino::sdl::scancode::F4: return scan_code_t::F4;
-            case neutrino::sdl::scancode::F5: return scan_code_t::F5;
-            case neutrino::sdl::scancode::F6: return scan_code_t::F6;
-            case neutrino::sdl::scancode::F7: return scan_code_t::F7;
-            case neutrino::sdl::scancode::F8: return scan_code_t::F8;
-            case neutrino::sdl::scancode::F9: return scan_code_t::F9;
-            case neutrino::sdl::scancode::F10: return scan_code_t::F10;
-            case neutrino::sdl::scancode::F11: return scan_code_t::F11;
-            case neutrino::sdl::scancode::F12: return scan_code_t::F12;
-            case neutrino::sdl::scancode::PRINTSCREEN: return scan_code_t::PRINTSCREEN;
-            case neutrino::sdl::scancode::SCROLLLOCK: return scan_code_t::SCROLLLOCK;
-            case neutrino::sdl::scancode::PAUSE: return scan_code_t::PAUSE;
-            case neutrino::sdl::scancode::INSERT: return scan_code_t::INSERT;
-            case neutrino::sdl::scancode::HOME: return scan_code_t::HOME;
-            case neutrino::sdl::scancode::PAGEUP: return scan_code_t::PAGEUP;
-            case neutrino::sdl::scancode::DEL: return scan_code_t::DEL;
-            case neutrino::sdl::scancode::END: return scan_code_t::END;
-            case neutrino::sdl::scancode::PAGEDOWN: return scan_code_t::PAGEDOWN;
-            case neutrino::sdl::scancode::RIGHT: return scan_code_t::RIGHT;
-            case neutrino::sdl::scancode::LEFT: return scan_code_t::LEFT;
-            case neutrino::sdl::scancode::DOWN: return scan_code_t::DOWN;
-            case neutrino::sdl::scancode::UP: return scan_code_t::UP;
-            case neutrino::sdl::scancode::NUMLOCKCLEAR: return scan_code_t::NUMLOCKCLEAR;
-            case neutrino::sdl::scancode::KP_DIVIDE: return scan_code_t::KP_DIVIDE;
-            case neutrino::sdl::scancode::KP_MULTIPLY: return scan_code_t::KP_MULTIPLY;
-            case neutrino::sdl::scancode::KP_MINUS: return scan_code_t::KP_MINUS;
-            case neutrino::sdl::scancode::KP_PLUS: return scan_code_t::KP_PLUS;
-            case neutrino::sdl::scancode::KP_ENTER: return scan_code_t::KP_ENTER;
-            case neutrino::sdl::scancode::KP_1: return scan_code_t::KP_1;
-            case neutrino::sdl::scancode::KP_2: return scan_code_t::KP_2;
-            case neutrino::sdl::scancode::KP_3: return scan_code_t::KP_3;
-            case neutrino::sdl::scancode::KP_4: return scan_code_t::KP_4;
-            case neutrino::sdl::scancode::KP_5: return scan_code_t::KP_5;
-            case neutrino::sdl::scancode::KP_6: return scan_code_t::KP_6;
-            case neutrino::sdl::scancode::KP_7: return scan_code_t::KP_7;
-            case neutrino::sdl::scancode::KP_8: return scan_code_t::KP_8;
-            case neutrino::sdl::scancode::KP_9: return scan_code_t::KP_9;
-            case neutrino::sdl::scancode::KP_0: return scan_code_t::KP_0;
-            case neutrino::sdl::scancode::KP_PERIOD: return scan_code_t::KP_PERIOD;
-            case neutrino::sdl::scancode::NONUSBACKSLASH: return scan_code_t::NONUSBACKSLASH;
-            case neutrino::sdl::scancode::APPLICATION: return scan_code_t::APPLICATION;
-            case neutrino::sdl::scancode::POWER: return scan_code_t::POWER;
-            case neutrino::sdl::scancode::KP_EQUALS: return scan_code_t::KP_EQUALS;
-            case neutrino::sdl::scancode::F13: return scan_code_t::F13;
-            case neutrino::sdl::scancode::F14: return scan_code_t::F14;
-            case neutrino::sdl::scancode::F15: return scan_code_t::F15;
-            case neutrino::sdl::scancode::F16: return scan_code_t::F16;
-            case neutrino::sdl::scancode::F17: return scan_code_t::F17;
-            case neutrino::sdl::scancode::F18: return scan_code_t::F18;
-            case neutrino::sdl::scancode::F19: return scan_code_t::F19;
-            case neutrino::sdl::scancode::F20: return scan_code_t::F20;
-            case neutrino::sdl::scancode::F21: return scan_code_t::F21;
-            case neutrino::sdl::scancode::F22: return scan_code_t::F22;
-            case neutrino::sdl::scancode::F23: return scan_code_t::F23;
-            case neutrino::sdl::scancode::F24: return scan_code_t::F24;
-            case neutrino::sdl::scancode::EXECUTE: return scan_code_t::EXECUTE;
-            case neutrino::sdl::scancode::HELP: return scan_code_t::HELP;
-            case neutrino::sdl::scancode::MENU: return scan_code_t::MENU;
-            case neutrino::sdl::scancode::SELECT: return scan_code_t::SELECT;
-            case neutrino::sdl::scancode::STOP: return scan_code_t::STOP;
-            case neutrino::sdl::scancode::AGAIN: return scan_code_t::AGAIN;
-            case neutrino::sdl::scancode::UNDO: return scan_code_t::UNDO;
-            case neutrino::sdl::scancode::CUT: return scan_code_t::CUT;
-            case neutrino::sdl::scancode::COPY: return scan_code_t::COPY;
-            case neutrino::sdl::scancode::PASTE: return scan_code_t::PASTE;
-            case neutrino::sdl::scancode::FIND: return scan_code_t::FIND;
-            case neutrino::sdl::scancode::MUTE: return scan_code_t::MUTE;
-            case neutrino::sdl::scancode::VOLUMEUP: return scan_code_t::VOLUMEUP;
-            case neutrino::sdl::scancode::VOLUMEDOWN: return scan_code_t::VOLUMEDOWN;
-            case neutrino::sdl::scancode::KP_COMMA: return scan_code_t::KP_COMMA;
-            case neutrino::sdl::scancode::KP_EQUALSAS400: return scan_code_t::KP_EQUALSAS400;
-            case neutrino::sdl::scancode::INTERNATIONAL1: return scan_code_t::INTERNATIONAL1;
-            case neutrino::sdl::scancode::INTERNATIONAL2: return scan_code_t::INTERNATIONAL2;
-            case neutrino::sdl::scancode::INTERNATIONAL3: return scan_code_t::INTERNATIONAL3;
-            case neutrino::sdl::scancode::INTERNATIONAL4: return scan_code_t::INTERNATIONAL4;
-            case neutrino::sdl::scancode::INTERNATIONAL5: return scan_code_t::INTERNATIONAL5;
-            case neutrino::sdl::scancode::INTERNATIONAL6: return scan_code_t::INTERNATIONAL6;
-            case neutrino::sdl::scancode::INTERNATIONAL7: return scan_code_t::INTERNATIONAL7;
-            case neutrino::sdl::scancode::INTERNATIONAL8: return scan_code_t::INTERNATIONAL8;
-            case neutrino::sdl::scancode::INTERNATIONAL9: return scan_code_t::INTERNATIONAL9;
-            case neutrino::sdl::scancode::LANG1: return scan_code_t::LANG1;
-            case neutrino::sdl::scancode::LANG2: return scan_code_t::LANG2;
-            case neutrino::sdl::scancode::LANG3: return scan_code_t::LANG3;
-            case neutrino::sdl::scancode::LANG4: return scan_code_t::LANG4;
-            case neutrino::sdl::scancode::LANG5: return scan_code_t::LANG5;
-            case neutrino::sdl::scancode::LANG6: return scan_code_t::LANG6;
-            case neutrino::sdl::scancode::LANG7: return scan_code_t::LANG7;
-            case neutrino::sdl::scancode::LANG8: return scan_code_t::LANG8;
-            case neutrino::sdl::scancode::LANG9: return scan_code_t::LANG9;
-            case neutrino::sdl::scancode::ALTERASE: return scan_code_t::ALTERASE;
-            case neutrino::sdl::scancode::SYSREQ: return scan_code_t::SYSREQ;
-            case neutrino::sdl::scancode::CANCEL: return scan_code_t::CANCEL;
-            case neutrino::sdl::scancode::CLEAR: return scan_code_t::CLEAR;
-            case neutrino::sdl::scancode::PRIOR: return scan_code_t::PRIOR;
-            case neutrino::sdl::scancode::RETURN2: return scan_code_t::RETURN2;
-            case neutrino::sdl::scancode::SEPARATOR: return scan_code_t::SEPARATOR;
-            case neutrino::sdl::scancode::KBD_OUT: return scan_code_t::KBD_OUT;
-            case neutrino::sdl::scancode::OPER: return scan_code_t::OPER;
-            case neutrino::sdl::scancode::CLEARAGAIN: return scan_code_t::CLEARAGAIN;
-            case neutrino::sdl::scancode::CRSEL: return scan_code_t::CRSEL;
-            case neutrino::sdl::scancode::EXSEL: return scan_code_t::EXSEL;
-            case neutrino::sdl::scancode::KP_00: return scan_code_t::KP_00;
-            case neutrino::sdl::scancode::KP_000: return scan_code_t::KP_000;
-            case neutrino::sdl::scancode::THOUSANDSSEPARATOR: return scan_code_t::THOUSANDSSEPARATOR;
-            case neutrino::sdl::scancode::DECIMALSEPARATOR: return scan_code_t::DECIMALSEPARATOR;
-            case neutrino::sdl::scancode::CURRENCYUNIT: return scan_code_t::CURRENCYUNIT;
-            case neutrino::sdl::scancode::CURRENCYSUBUNIT: return scan_code_t::CURRENCYSUBUNIT;
-            case neutrino::sdl::scancode::KP_LEFTPAREN: return scan_code_t::KP_LEFTPAREN;
-            case neutrino::sdl::scancode::KP_RIGHTPAREN: return scan_code_t::KP_RIGHTPAREN;
-            case neutrino::sdl::scancode::KP_LEFTBRACE: return scan_code_t::KP_LEFTBRACE;
-            case neutrino::sdl::scancode::KP_RIGHTBRACE: return scan_code_t::KP_RIGHTBRACE;
-            case neutrino::sdl::scancode::KP_TAB: return scan_code_t::KP_TAB;
-            case neutrino::sdl::scancode::KP_BACKSPACE: return scan_code_t::KP_BACKSPACE;
-            case neutrino::sdl::scancode::KP_A: return scan_code_t::KP_A;
-            case neutrino::sdl::scancode::KP_B: return scan_code_t::KP_B;
-            case neutrino::sdl::scancode::KP_C: return scan_code_t::KP_C;
-            case neutrino::sdl::scancode::KP_D: return scan_code_t::KP_D;
-            case neutrino::sdl::scancode::KP_E: return scan_code_t::KP_E;
-            case neutrino::sdl::scancode::KP_F: return scan_code_t::KP_F;
-            case neutrino::sdl::scancode::KP_XOR: return scan_code_t::KP_XOR;
-            case neutrino::sdl::scancode::KP_POWER: return scan_code_t::KP_POWER;
-            case neutrino::sdl::scancode::KP_PERCENT: return scan_code_t::KP_PERCENT;
-            case neutrino::sdl::scancode::KP_LESS: return scan_code_t::KP_LESS;
-            case neutrino::sdl::scancode::KP_GREATER: return scan_code_t::KP_GREATER;
-            case neutrino::sdl::scancode::KP_AMPERSAND: return scan_code_t::KP_AMPERSAND;
-            case neutrino::sdl::scancode::KP_DBLAMPERSAND: return scan_code_t::KP_DBLAMPERSAND;
-            case neutrino::sdl::scancode::KP_VERTICALBAR: return scan_code_t::KP_VERTICALBAR;
-            case neutrino::sdl::scancode::KP_DBLVERTICALBAR: return scan_code_t::KP_DBLVERTICALBAR;
-            case neutrino::sdl::scancode::KP_COLON: return scan_code_t::KP_COLON;
-            case neutrino::sdl::scancode::KP_HASH: return scan_code_t::KP_HASH;
-            case neutrino::sdl::scancode::KP_SPACE: return scan_code_t::KP_SPACE;
-            case neutrino::sdl::scancode::KP_AT: return scan_code_t::KP_AT;
-            case neutrino::sdl::scancode::KP_EXCLAM: return scan_code_t::KP_EXCLAM;
-            case neutrino::sdl::scancode::KP_MEMSTORE: return scan_code_t::KP_MEMSTORE;
-            case neutrino::sdl::scancode::KP_MEMRECALL: return scan_code_t::KP_MEMRECALL;
-            case neutrino::sdl::scancode::KP_MEMCLEAR: return scan_code_t::KP_MEMCLEAR;
-            case neutrino::sdl::scancode::KP_MEMADD: return scan_code_t::KP_MEMADD;
-            case neutrino::sdl::scancode::KP_MEMSUBTRACT: return scan_code_t::KP_MEMSUBTRACT;
-            case neutrino::sdl::scancode::KP_MEMMULTIPLY: return scan_code_t::KP_MEMMULTIPLY;
-            case neutrino::sdl::scancode::KP_MEMDIVIDE: return scan_code_t::KP_MEMDIVIDE;
-            case neutrino::sdl::scancode::KP_PLUSMINUS: return scan_code_t::KP_PLUSMINUS;
-            case neutrino::sdl::scancode::KP_CLEAR: return scan_code_t::KP_CLEAR;
-            case neutrino::sdl::scancode::KP_CLEARENTRY: return scan_code_t::KP_CLEARENTRY;
-            case neutrino::sdl::scancode::KP_BINARY: return scan_code_t::KP_BINARY;
-            case neutrino::sdl::scancode::KP_OCTAL: return scan_code_t::KP_OCTAL;
-            case neutrino::sdl::scancode::KP_DECIMAL: return scan_code_t::KP_DECIMAL;
-            case neutrino::sdl::scancode::KP_HEXADECIMAL: return scan_code_t::KP_HEXADECIMAL;
-            case neutrino::sdl::scancode::LCTRL: return scan_code_t::LCTRL;
-            case neutrino::sdl::scancode::LSHIFT: return scan_code_t::LSHIFT;
-            case neutrino::sdl::scancode::LALT: return scan_code_t::LALT;
-            case neutrino::sdl::scancode::LGUI: return scan_code_t::LGUI;
-            case neutrino::sdl::scancode::RCTRL: return scan_code_t::RCTRL;
-            case neutrino::sdl::scancode::RSHIFT: return scan_code_t::RSHIFT;
-            case neutrino::sdl::scancode::RALT: return scan_code_t::RALT;
-            case neutrino::sdl::scancode::RGUI: return scan_code_t::RGUI;
-            case neutrino::sdl::scancode::MODE: return scan_code_t::MODE;
-            case neutrino::sdl::scancode::AUDIONEXT: return scan_code_t::AUDIONEXT;
-            case neutrino::sdl::scancode::AUDIOPREV: return scan_code_t::AUDIOPREV;
-            case neutrino::sdl::scancode::AUDIOSTOP: return scan_code_t::AUDIOSTOP;
-            case neutrino::sdl::scancode::AUDIOPLAY: return scan_code_t::AUDIOPLAY;
-            case neutrino::sdl::scancode::AUDIOMUTE: return scan_code_t::AUDIOMUTE;
-            case neutrino::sdl::scancode::MEDIASELECT: return scan_code_t::MEDIASELECT;
-            case neutrino::sdl::scancode::WWW: return scan_code_t::WWW;
-            case neutrino::sdl::scancode::MAIL: return scan_code_t::MAIL;
-            case neutrino::sdl::scancode::CALCULATOR: return scan_code_t::CALCULATOR;
-            case neutrino::sdl::scancode::COMPUTER: return scan_code_t::COMPUTER;
-            case neutrino::sdl::scancode::AC_SEARCH: return scan_code_t::AC_SEARCH;
-            case neutrino::sdl::scancode::AC_HOME: return scan_code_t::AC_HOME;
-            case neutrino::sdl::scancode::AC_BACK: return scan_code_t::AC_BACK;
-            case neutrino::sdl::scancode::AC_FORWARD: return scan_code_t::AC_FORWARD;
-            case neutrino::sdl::scancode::AC_STOP: return scan_code_t::AC_STOP;
-            case neutrino::sdl::scancode::AC_REFRESH: return scan_code_t::AC_REFRESH;
-            case neutrino::sdl::scancode::AC_BOOKMARKS: return scan_code_t::AC_BOOKMARKS;
-            case neutrino::sdl::scancode::BRIGHTNESSDOWN: return scan_code_t::BRIGHTNESSDOWN;
-            case neutrino::sdl::scancode::BRIGHTNESSUP: return scan_code_t::BRIGHTNESSUP;
-            case neutrino::sdl::scancode::DISPLAYSWITCH: return scan_code_t::DISPLAYSWITCH;
-            case neutrino::sdl::scancode::KBDILLUMTOGGLE: return scan_code_t::KBDILLUMTOGGLE;
-            case neutrino::sdl::scancode::KBDILLUMDOWN: return scan_code_t::KBDILLUMDOWN;
-            case neutrino::sdl::scancode::KBDILLUMUP: return scan_code_t::KBDILLUMUP;
-            case neutrino::sdl::scancode::EJECT: return scan_code_t::EJECT;
-            case neutrino::sdl::scancode::SLEEP: return scan_code_t::SLEEP;
-            case neutrino::sdl::scancode::APP1: return scan_code_t::APP1;
-            case neutrino::sdl::scancode::APP2: return scan_code_t::APP2;
-            default:
-                return scan_code_t::UNKNOWN;
-        }
+  scan_code_t map_scancode (neutrino::sdl::scancode sc) {
+    switch (sc) {
+      case neutrino::sdl::scancode::UNKNOWN:
+        return scan_code_t::UNKNOWN;
+      case neutrino::sdl::scancode::A:
+        return scan_code_t::A;
+      case neutrino::sdl::scancode::B:
+        return scan_code_t::B;
+      case neutrino::sdl::scancode::C:
+        return scan_code_t::C;
+      case neutrino::sdl::scancode::D:
+        return scan_code_t::D;
+      case neutrino::sdl::scancode::E:
+        return scan_code_t::E;
+      case neutrino::sdl::scancode::F:
+        return scan_code_t::F;
+      case neutrino::sdl::scancode::G:
+        return scan_code_t::G;
+      case neutrino::sdl::scancode::H:
+        return scan_code_t::H;
+      case neutrino::sdl::scancode::I:
+        return scan_code_t::I;
+      case neutrino::sdl::scancode::J:
+        return scan_code_t::J;
+      case neutrino::sdl::scancode::K:
+        return scan_code_t::K;
+      case neutrino::sdl::scancode::L:
+        return scan_code_t::L;
+      case neutrino::sdl::scancode::M:
+        return scan_code_t::M;
+      case neutrino::sdl::scancode::N:
+        return scan_code_t::N;
+      case neutrino::sdl::scancode::O:
+        return scan_code_t::O;
+      case neutrino::sdl::scancode::P:
+        return scan_code_t::P;
+      case neutrino::sdl::scancode::Q:
+        return scan_code_t::Q;
+      case neutrino::sdl::scancode::R:
+        return scan_code_t::R;
+      case neutrino::sdl::scancode::S:
+        return scan_code_t::S;
+      case neutrino::sdl::scancode::T:
+        return scan_code_t::T;
+      case neutrino::sdl::scancode::U:
+        return scan_code_t::U;
+      case neutrino::sdl::scancode::V:
+        return scan_code_t::V;
+      case neutrino::sdl::scancode::W:
+        return scan_code_t::W;
+      case neutrino::sdl::scancode::X:
+        return scan_code_t::X;
+      case neutrino::sdl::scancode::Y:
+        return scan_code_t::Y;
+      case neutrino::sdl::scancode::Z:
+        return scan_code_t::Z;
+      case neutrino::sdl::scancode::_1:
+        return scan_code_t::_1;
+      case neutrino::sdl::scancode::_2:
+        return scan_code_t::_2;
+      case neutrino::sdl::scancode::_3:
+        return scan_code_t::_3;
+      case neutrino::sdl::scancode::_4:
+        return scan_code_t::_4;
+      case neutrino::sdl::scancode::_5:
+        return scan_code_t::_5;
+      case neutrino::sdl::scancode::_6:
+        return scan_code_t::_6;
+      case neutrino::sdl::scancode::_7:
+        return scan_code_t::_7;
+      case neutrino::sdl::scancode::_8:
+        return scan_code_t::_8;
+      case neutrino::sdl::scancode::_9:
+        return scan_code_t::_9;
+      case neutrino::sdl::scancode::_0:
+        return scan_code_t::_0;
+      case neutrino::sdl::scancode::RETURN:
+        return scan_code_t::RETURN;
+      case neutrino::sdl::scancode::ESCAPE:
+        return scan_code_t::ESCAPE;
+      case neutrino::sdl::scancode::BACKSPACE:
+        return scan_code_t::BACKSPACE;
+      case neutrino::sdl::scancode::TAB:
+        return scan_code_t::TAB;
+      case neutrino::sdl::scancode::SPACE:
+        return scan_code_t::SPACE;
+      case neutrino::sdl::scancode::MINUS:
+        return scan_code_t::MINUS;
+      case neutrino::sdl::scancode::EQUALS:
+        return scan_code_t::EQUALS;
+      case neutrino::sdl::scancode::LEFTBRACKET:
+        return scan_code_t::LEFTBRACKET;
+      case neutrino::sdl::scancode::RIGHTBRACKET:
+        return scan_code_t::RIGHTBRACKET;
+      case neutrino::sdl::scancode::BACKSLASH:
+        return scan_code_t::BACKSLASH;
+      case neutrino::sdl::scancode::NONUSHASH:
+        return scan_code_t::NONUSHASH;
+      case neutrino::sdl::scancode::SEMICOLON:
+        return scan_code_t::SEMICOLON;
+      case neutrino::sdl::scancode::APOSTROPHE:
+        return scan_code_t::APOSTROPHE;
+      case neutrino::sdl::scancode::GRAVE:
+        return scan_code_t::GRAVE;
+      case neutrino::sdl::scancode::COMMA:
+        return scan_code_t::COMMA;
+      case neutrino::sdl::scancode::PERIOD:
+        return scan_code_t::PERIOD;
+      case neutrino::sdl::scancode::SLASH:
+        return scan_code_t::SLASH;
+      case neutrino::sdl::scancode::CAPSLOCK:
+        return scan_code_t::CAPSLOCK;
+      case neutrino::sdl::scancode::F1:
+        return scan_code_t::F1;
+      case neutrino::sdl::scancode::F2:
+        return scan_code_t::F2;
+      case neutrino::sdl::scancode::F3:
+        return scan_code_t::F3;
+      case neutrino::sdl::scancode::F4:
+        return scan_code_t::F4;
+      case neutrino::sdl::scancode::F5:
+        return scan_code_t::F5;
+      case neutrino::sdl::scancode::F6:
+        return scan_code_t::F6;
+      case neutrino::sdl::scancode::F7:
+        return scan_code_t::F7;
+      case neutrino::sdl::scancode::F8:
+        return scan_code_t::F8;
+      case neutrino::sdl::scancode::F9:
+        return scan_code_t::F9;
+      case neutrino::sdl::scancode::F10:
+        return scan_code_t::F10;
+      case neutrino::sdl::scancode::F11:
+        return scan_code_t::F11;
+      case neutrino::sdl::scancode::F12:
+        return scan_code_t::F12;
+      case neutrino::sdl::scancode::PRINTSCREEN:
+        return scan_code_t::PRINTSCREEN;
+      case neutrino::sdl::scancode::SCROLLLOCK:
+        return scan_code_t::SCROLLLOCK;
+      case neutrino::sdl::scancode::PAUSE:
+        return scan_code_t::PAUSE;
+      case neutrino::sdl::scancode::INSERT:
+        return scan_code_t::INSERT;
+      case neutrino::sdl::scancode::HOME:
+        return scan_code_t::HOME;
+      case neutrino::sdl::scancode::PAGEUP:
+        return scan_code_t::PAGEUP;
+      case neutrino::sdl::scancode::DEL:
+        return scan_code_t::DEL;
+      case neutrino::sdl::scancode::END:
+        return scan_code_t::END;
+      case neutrino::sdl::scancode::PAGEDOWN:
+        return scan_code_t::PAGEDOWN;
+      case neutrino::sdl::scancode::RIGHT:
+        return scan_code_t::RIGHT;
+      case neutrino::sdl::scancode::LEFT:
+        return scan_code_t::LEFT;
+      case neutrino::sdl::scancode::DOWN:
+        return scan_code_t::DOWN;
+      case neutrino::sdl::scancode::UP:
+        return scan_code_t::UP;
+      case neutrino::sdl::scancode::NUMLOCKCLEAR:
+        return scan_code_t::NUMLOCKCLEAR;
+      case neutrino::sdl::scancode::KP_DIVIDE:
+        return scan_code_t::KP_DIVIDE;
+      case neutrino::sdl::scancode::KP_MULTIPLY:
+        return scan_code_t::KP_MULTIPLY;
+      case neutrino::sdl::scancode::KP_MINUS:
+        return scan_code_t::KP_MINUS;
+      case neutrino::sdl::scancode::KP_PLUS:
+        return scan_code_t::KP_PLUS;
+      case neutrino::sdl::scancode::KP_ENTER:
+        return scan_code_t::KP_ENTER;
+      case neutrino::sdl::scancode::KP_1:
+        return scan_code_t::KP_1;
+      case neutrino::sdl::scancode::KP_2:
+        return scan_code_t::KP_2;
+      case neutrino::sdl::scancode::KP_3:
+        return scan_code_t::KP_3;
+      case neutrino::sdl::scancode::KP_4:
+        return scan_code_t::KP_4;
+      case neutrino::sdl::scancode::KP_5:
+        return scan_code_t::KP_5;
+      case neutrino::sdl::scancode::KP_6:
+        return scan_code_t::KP_6;
+      case neutrino::sdl::scancode::KP_7:
+        return scan_code_t::KP_7;
+      case neutrino::sdl::scancode::KP_8:
+        return scan_code_t::KP_8;
+      case neutrino::sdl::scancode::KP_9:
+        return scan_code_t::KP_9;
+      case neutrino::sdl::scancode::KP_0:
+        return scan_code_t::KP_0;
+      case neutrino::sdl::scancode::KP_PERIOD:
+        return scan_code_t::KP_PERIOD;
+      case neutrino::sdl::scancode::NONUSBACKSLASH:
+        return scan_code_t::NONUSBACKSLASH;
+      case neutrino::sdl::scancode::APPLICATION:
+        return scan_code_t::APPLICATION;
+      case neutrino::sdl::scancode::POWER:
+        return scan_code_t::POWER;
+      case neutrino::sdl::scancode::KP_EQUALS:
+        return scan_code_t::KP_EQUALS;
+      case neutrino::sdl::scancode::F13:
+        return scan_code_t::F13;
+      case neutrino::sdl::scancode::F14:
+        return scan_code_t::F14;
+      case neutrino::sdl::scancode::F15:
+        return scan_code_t::F15;
+      case neutrino::sdl::scancode::F16:
+        return scan_code_t::F16;
+      case neutrino::sdl::scancode::F17:
+        return scan_code_t::F17;
+      case neutrino::sdl::scancode::F18:
+        return scan_code_t::F18;
+      case neutrino::sdl::scancode::F19:
+        return scan_code_t::F19;
+      case neutrino::sdl::scancode::F20:
+        return scan_code_t::F20;
+      case neutrino::sdl::scancode::F21:
+        return scan_code_t::F21;
+      case neutrino::sdl::scancode::F22:
+        return scan_code_t::F22;
+      case neutrino::sdl::scancode::F23:
+        return scan_code_t::F23;
+      case neutrino::sdl::scancode::F24:
+        return scan_code_t::F24;
+      case neutrino::sdl::scancode::EXECUTE:
+        return scan_code_t::EXECUTE;
+      case neutrino::sdl::scancode::HELP:
+        return scan_code_t::HELP;
+      case neutrino::sdl::scancode::MENU:
+        return scan_code_t::MENU;
+      case neutrino::sdl::scancode::SELECT:
+        return scan_code_t::SELECT;
+      case neutrino::sdl::scancode::STOP:
+        return scan_code_t::STOP;
+      case neutrino::sdl::scancode::AGAIN:
+        return scan_code_t::AGAIN;
+      case neutrino::sdl::scancode::UNDO:
+        return scan_code_t::UNDO;
+      case neutrino::sdl::scancode::CUT:
+        return scan_code_t::CUT;
+      case neutrino::sdl::scancode::COPY:
+        return scan_code_t::COPY;
+      case neutrino::sdl::scancode::PASTE:
+        return scan_code_t::PASTE;
+      case neutrino::sdl::scancode::FIND:
+        return scan_code_t::FIND;
+      case neutrino::sdl::scancode::MUTE:
+        return scan_code_t::MUTE;
+      case neutrino::sdl::scancode::VOLUMEUP:
+        return scan_code_t::VOLUMEUP;
+      case neutrino::sdl::scancode::VOLUMEDOWN:
+        return scan_code_t::VOLUMEDOWN;
+      case neutrino::sdl::scancode::KP_COMMA:
+        return scan_code_t::KP_COMMA;
+      case neutrino::sdl::scancode::KP_EQUALSAS400:
+        return scan_code_t::KP_EQUALSAS400;
+      case neutrino::sdl::scancode::INTERNATIONAL1:
+        return scan_code_t::INTERNATIONAL1;
+      case neutrino::sdl::scancode::INTERNATIONAL2:
+        return scan_code_t::INTERNATIONAL2;
+      case neutrino::sdl::scancode::INTERNATIONAL3:
+        return scan_code_t::INTERNATIONAL3;
+      case neutrino::sdl::scancode::INTERNATIONAL4:
+        return scan_code_t::INTERNATIONAL4;
+      case neutrino::sdl::scancode::INTERNATIONAL5:
+        return scan_code_t::INTERNATIONAL5;
+      case neutrino::sdl::scancode::INTERNATIONAL6:
+        return scan_code_t::INTERNATIONAL6;
+      case neutrino::sdl::scancode::INTERNATIONAL7:
+        return scan_code_t::INTERNATIONAL7;
+      case neutrino::sdl::scancode::INTERNATIONAL8:
+        return scan_code_t::INTERNATIONAL8;
+      case neutrino::sdl::scancode::INTERNATIONAL9:
+        return scan_code_t::INTERNATIONAL9;
+      case neutrino::sdl::scancode::LANG1:
+        return scan_code_t::LANG1;
+      case neutrino::sdl::scancode::LANG2:
+        return scan_code_t::LANG2;
+      case neutrino::sdl::scancode::LANG3:
+        return scan_code_t::LANG3;
+      case neutrino::sdl::scancode::LANG4:
+        return scan_code_t::LANG4;
+      case neutrino::sdl::scancode::LANG5:
+        return scan_code_t::LANG5;
+      case neutrino::sdl::scancode::LANG6:
+        return scan_code_t::LANG6;
+      case neutrino::sdl::scancode::LANG7:
+        return scan_code_t::LANG7;
+      case neutrino::sdl::scancode::LANG8:
+        return scan_code_t::LANG8;
+      case neutrino::sdl::scancode::LANG9:
+        return scan_code_t::LANG9;
+      case neutrino::sdl::scancode::ALTERASE:
+        return scan_code_t::ALTERASE;
+      case neutrino::sdl::scancode::SYSREQ:
+        return scan_code_t::SYSREQ;
+      case neutrino::sdl::scancode::CANCEL:
+        return scan_code_t::CANCEL;
+      case neutrino::sdl::scancode::CLEAR:
+        return scan_code_t::CLEAR;
+      case neutrino::sdl::scancode::PRIOR:
+        return scan_code_t::PRIOR;
+      case neutrino::sdl::scancode::RETURN2:
+        return scan_code_t::RETURN2;
+      case neutrino::sdl::scancode::SEPARATOR:
+        return scan_code_t::SEPARATOR;
+      case neutrino::sdl::scancode::KBD_OUT:
+        return scan_code_t::KBD_OUT;
+      case neutrino::sdl::scancode::OPER:
+        return scan_code_t::OPER;
+      case neutrino::sdl::scancode::CLEARAGAIN:
+        return scan_code_t::CLEARAGAIN;
+      case neutrino::sdl::scancode::CRSEL:
+        return scan_code_t::CRSEL;
+      case neutrino::sdl::scancode::EXSEL:
+        return scan_code_t::EXSEL;
+      case neutrino::sdl::scancode::KP_00:
+        return scan_code_t::KP_00;
+      case neutrino::sdl::scancode::KP_000:
+        return scan_code_t::KP_000;
+      case neutrino::sdl::scancode::THOUSANDSSEPARATOR:
+        return scan_code_t::THOUSANDSSEPARATOR;
+      case neutrino::sdl::scancode::DECIMALSEPARATOR:
+        return scan_code_t::DECIMALSEPARATOR;
+      case neutrino::sdl::scancode::CURRENCYUNIT:
+        return scan_code_t::CURRENCYUNIT;
+      case neutrino::sdl::scancode::CURRENCYSUBUNIT:
+        return scan_code_t::CURRENCYSUBUNIT;
+      case neutrino::sdl::scancode::KP_LEFTPAREN:
+        return scan_code_t::KP_LEFTPAREN;
+      case neutrino::sdl::scancode::KP_RIGHTPAREN:
+        return scan_code_t::KP_RIGHTPAREN;
+      case neutrino::sdl::scancode::KP_LEFTBRACE:
+        return scan_code_t::KP_LEFTBRACE;
+      case neutrino::sdl::scancode::KP_RIGHTBRACE:
+        return scan_code_t::KP_RIGHTBRACE;
+      case neutrino::sdl::scancode::KP_TAB:
+        return scan_code_t::KP_TAB;
+      case neutrino::sdl::scancode::KP_BACKSPACE:
+        return scan_code_t::KP_BACKSPACE;
+      case neutrino::sdl::scancode::KP_A:
+        return scan_code_t::KP_A;
+      case neutrino::sdl::scancode::KP_B:
+        return scan_code_t::KP_B;
+      case neutrino::sdl::scancode::KP_C:
+        return scan_code_t::KP_C;
+      case neutrino::sdl::scancode::KP_D:
+        return scan_code_t::KP_D;
+      case neutrino::sdl::scancode::KP_E:
+        return scan_code_t::KP_E;
+      case neutrino::sdl::scancode::KP_F:
+        return scan_code_t::KP_F;
+      case neutrino::sdl::scancode::KP_XOR:
+        return scan_code_t::KP_XOR;
+      case neutrino::sdl::scancode::KP_POWER:
+        return scan_code_t::KP_POWER;
+      case neutrino::sdl::scancode::KP_PERCENT:
+        return scan_code_t::KP_PERCENT;
+      case neutrino::sdl::scancode::KP_LESS:
+        return scan_code_t::KP_LESS;
+      case neutrino::sdl::scancode::KP_GREATER:
+        return scan_code_t::KP_GREATER;
+      case neutrino::sdl::scancode::KP_AMPERSAND:
+        return scan_code_t::KP_AMPERSAND;
+      case neutrino::sdl::scancode::KP_DBLAMPERSAND:
+        return scan_code_t::KP_DBLAMPERSAND;
+      case neutrino::sdl::scancode::KP_VERTICALBAR:
+        return scan_code_t::KP_VERTICALBAR;
+      case neutrino::sdl::scancode::KP_DBLVERTICALBAR:
+        return scan_code_t::KP_DBLVERTICALBAR;
+      case neutrino::sdl::scancode::KP_COLON:
+        return scan_code_t::KP_COLON;
+      case neutrino::sdl::scancode::KP_HASH:
+        return scan_code_t::KP_HASH;
+      case neutrino::sdl::scancode::KP_SPACE:
+        return scan_code_t::KP_SPACE;
+      case neutrino::sdl::scancode::KP_AT:
+        return scan_code_t::KP_AT;
+      case neutrino::sdl::scancode::KP_EXCLAM:
+        return scan_code_t::KP_EXCLAM;
+      case neutrino::sdl::scancode::KP_MEMSTORE:
+        return scan_code_t::KP_MEMSTORE;
+      case neutrino::sdl::scancode::KP_MEMRECALL:
+        return scan_code_t::KP_MEMRECALL;
+      case neutrino::sdl::scancode::KP_MEMCLEAR:
+        return scan_code_t::KP_MEMCLEAR;
+      case neutrino::sdl::scancode::KP_MEMADD:
+        return scan_code_t::KP_MEMADD;
+      case neutrino::sdl::scancode::KP_MEMSUBTRACT:
+        return scan_code_t::KP_MEMSUBTRACT;
+      case neutrino::sdl::scancode::KP_MEMMULTIPLY:
+        return scan_code_t::KP_MEMMULTIPLY;
+      case neutrino::sdl::scancode::KP_MEMDIVIDE:
+        return scan_code_t::KP_MEMDIVIDE;
+      case neutrino::sdl::scancode::KP_PLUSMINUS:
+        return scan_code_t::KP_PLUSMINUS;
+      case neutrino::sdl::scancode::KP_CLEAR:
+        return scan_code_t::KP_CLEAR;
+      case neutrino::sdl::scancode::KP_CLEARENTRY:
+        return scan_code_t::KP_CLEARENTRY;
+      case neutrino::sdl::scancode::KP_BINARY:
+        return scan_code_t::KP_BINARY;
+      case neutrino::sdl::scancode::KP_OCTAL:
+        return scan_code_t::KP_OCTAL;
+      case neutrino::sdl::scancode::KP_DECIMAL:
+        return scan_code_t::KP_DECIMAL;
+      case neutrino::sdl::scancode::KP_HEXADECIMAL:
+        return scan_code_t::KP_HEXADECIMAL;
+      case neutrino::sdl::scancode::LCTRL:
+        return scan_code_t::LCTRL;
+      case neutrino::sdl::scancode::LSHIFT:
+        return scan_code_t::LSHIFT;
+      case neutrino::sdl::scancode::LALT:
+        return scan_code_t::LALT;
+      case neutrino::sdl::scancode::LGUI:
+        return scan_code_t::LGUI;
+      case neutrino::sdl::scancode::RCTRL:
+        return scan_code_t::RCTRL;
+      case neutrino::sdl::scancode::RSHIFT:
+        return scan_code_t::RSHIFT;
+      case neutrino::sdl::scancode::RALT:
+        return scan_code_t::RALT;
+      case neutrino::sdl::scancode::RGUI:
+        return scan_code_t::RGUI;
+      case neutrino::sdl::scancode::MODE:
+        return scan_code_t::MODE;
+      case neutrino::sdl::scancode::AUDIONEXT:
+        return scan_code_t::AUDIONEXT;
+      case neutrino::sdl::scancode::AUDIOPREV:
+        return scan_code_t::AUDIOPREV;
+      case neutrino::sdl::scancode::AUDIOSTOP:
+        return scan_code_t::AUDIOSTOP;
+      case neutrino::sdl::scancode::AUDIOPLAY:
+        return scan_code_t::AUDIOPLAY;
+      case neutrino::sdl::scancode::AUDIOMUTE:
+        return scan_code_t::AUDIOMUTE;
+      case neutrino::sdl::scancode::MEDIASELECT:
+        return scan_code_t::MEDIASELECT;
+      case neutrino::sdl::scancode::WWW:
+        return scan_code_t::WWW;
+      case neutrino::sdl::scancode::MAIL:
+        return scan_code_t::MAIL;
+      case neutrino::sdl::scancode::CALCULATOR:
+        return scan_code_t::CALCULATOR;
+      case neutrino::sdl::scancode::COMPUTER:
+        return scan_code_t::COMPUTER;
+      case neutrino::sdl::scancode::AC_SEARCH:
+        return scan_code_t::AC_SEARCH;
+      case neutrino::sdl::scancode::AC_HOME:
+        return scan_code_t::AC_HOME;
+      case neutrino::sdl::scancode::AC_BACK:
+        return scan_code_t::AC_BACK;
+      case neutrino::sdl::scancode::AC_FORWARD:
+        return scan_code_t::AC_FORWARD;
+      case neutrino::sdl::scancode::AC_STOP:
+        return scan_code_t::AC_STOP;
+      case neutrino::sdl::scancode::AC_REFRESH:
+        return scan_code_t::AC_REFRESH;
+      case neutrino::sdl::scancode::AC_BOOKMARKS:
+        return scan_code_t::AC_BOOKMARKS;
+      case neutrino::sdl::scancode::BRIGHTNESSDOWN:
+        return scan_code_t::BRIGHTNESSDOWN;
+      case neutrino::sdl::scancode::BRIGHTNESSUP:
+        return scan_code_t::BRIGHTNESSUP;
+      case neutrino::sdl::scancode::DISPLAYSWITCH:
+        return scan_code_t::DISPLAYSWITCH;
+      case neutrino::sdl::scancode::KBDILLUMTOGGLE:
+        return scan_code_t::KBDILLUMTOGGLE;
+      case neutrino::sdl::scancode::KBDILLUMDOWN:
+        return scan_code_t::KBDILLUMDOWN;
+      case neutrino::sdl::scancode::KBDILLUMUP:
+        return scan_code_t::KBDILLUMUP;
+      case neutrino::sdl::scancode::EJECT:
+        return scan_code_t::EJECT;
+      case neutrino::sdl::scancode::SLEEP:
+        return scan_code_t::SLEEP;
+      case neutrino::sdl::scancode::APP1:
+        return scan_code_t::APP1;
+      case neutrino::sdl::scancode::APP2:
+        return scan_code_t::APP2;
+      default:
+        return scan_code_t::UNKNOWN;
     }
+  }
 }

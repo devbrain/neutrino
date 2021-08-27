@@ -1,23 +1,25 @@
-#! /bin/sh
+#! /bin/
+sh
 #
+
 # Copyright (C) 2000-2020 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
+
 # This file is part of the FreeType project, and may only be used, modified,
 # and distributed under the terms of the FreeType project license,
 # LICENSE.TXT.  By continuing to use, modify, or distribute this file you
 # indicate that you have read the license and understand and accept it
 # fully.
 
-LC_ALL=C
+    LC_ALL = C
 export LC_ALL
-
 
 # if `pkg-config' is available, use values from `freetype2.pc'
 %PKG_CONFIG% --atleast-pkgconfig-version 0.24 >/dev/null 2>&1
 if test $? -eq 0 ; then
-  # note that option `--variable' is not affected by the
-  # PKG_CONFIG_SYSROOT_DIR environment variable
+# note that option `--variable' is not affected by the
+# PKG_CONFIG_SYSROOT_DIR environment variable
   if test "x$SYSROOT" != "x" ; then
     PKG_CONFIG_SYSROOT_DIR="$SYSROOT"
     export PKG_CONFIG_SYSROOT_DIR

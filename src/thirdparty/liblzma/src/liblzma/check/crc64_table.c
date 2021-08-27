@@ -19,4 +19,5 @@ extern const uint64_t lzma_crc64_table[4][256];
 #	include "crc64_table_be.h"
 #else
 #	include "crc64_table_le.h"
+
 #endif

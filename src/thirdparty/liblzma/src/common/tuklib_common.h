@@ -51,8 +51,8 @@
 
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
 #	define TUKLIB_GNUC_REQ(major, minor) \
-		((__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)) \
-			|| __GNUC__ > (major))
+        ((__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)) \
+            || __GNUC__ > (major))
 #else
 #	define TUKLIB_GNUC_REQ(major, minor) 0
 #endif
@@ -64,7 +64,7 @@
 #endif
 
 #if (defined(_WIN32) && !defined(__CYGWIN__)) \
-		|| defined(__OS2__) || defined(__MSDOS__)
+ || defined(__OS2__) || defined(__MSDOS__)
 #	define TUKLIB_DOSLIKE 1
 #endif
 

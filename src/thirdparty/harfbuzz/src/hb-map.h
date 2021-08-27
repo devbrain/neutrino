@@ -53,7 +53,6 @@ HB_BEGIN_DECLS
  **/
 typedef struct hb_map_t hb_map_t;
 
-
 HB_EXTERN hb_map_t *
 hb_map_create (void);
 
@@ -67,15 +66,15 @@ HB_EXTERN void
 hb_map_destroy (hb_map_t *map);
 
 HB_EXTERN hb_bool_t
-hb_map_set_user_data (hb_map_t           *map,
-		      hb_user_data_key_t *key,
-		      void *              data,
-		      hb_destroy_func_t   destroy,
-		      hb_bool_t           replace);
+hb_map_set_user_data (hb_map_t *map,
+                      hb_user_data_key_t *key,
+                      void *data,
+                      hb_destroy_func_t destroy,
+                      hb_bool_t replace);
 
 HB_EXTERN void *
-hb_map_get_user_data (hb_map_t           *map,
-		      hb_user_data_key_t *key);
+hb_map_get_user_data (hb_map_t *map,
+                      hb_user_data_key_t *key);
 
 
 /* Returns false if allocation has failed before */
@@ -92,22 +91,21 @@ HB_EXTERN unsigned int
 hb_map_get_population (const hb_map_t *map);
 
 HB_EXTERN void
-hb_map_set (hb_map_t       *map,
-	    hb_codepoint_t  key,
-	    hb_codepoint_t  value);
+hb_map_set (hb_map_t *map,
+            hb_codepoint_t key,
+            hb_codepoint_t value);
 
 HB_EXTERN hb_codepoint_t
 hb_map_get (const hb_map_t *map,
-	    hb_codepoint_t  key);
+            hb_codepoint_t key);
 
 HB_EXTERN void
-hb_map_del (hb_map_t       *map,
-	    hb_codepoint_t  key);
+hb_map_del (hb_map_t *map,
+            hb_codepoint_t key);
 
 HB_EXTERN hb_bool_t
 hb_map_has (const hb_map_t *map,
-	    hb_codepoint_t  key);
-
+            hb_codepoint_t key);
 
 HB_END_DECLS
 

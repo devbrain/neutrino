@@ -38,7 +38,6 @@ extern "C" {
 #  define ERR_STATIC static  /* this version may generate warnings for unused static functions; disable the relevant warning */
 #endif
 
-
 /*-****************************************
 *  Customization (error_public.h)
 ******************************************/
@@ -53,24 +52,28 @@ typedef ZSTD_ErrorCode ERR_enum;
 #define ERROR(name) ZSTD_ERROR(name)
 #define ZSTD_ERROR(name) ((size_t)-PREFIX(name))
 
-ERR_STATIC unsigned ERR_isError(size_t code) { return (code > ERROR(maxCode)); }
+ERR_STATIC unsigned ERR_isError (size_t code) {
+  return (code > ERROR(maxCode));
+}
 
-ERR_STATIC ERR_enum ERR_getErrorCode(size_t code) { if (!ERR_isError(code)) return (ERR_enum)0; return (ERR_enum) (0-code); }
+ERR_STATIC ERR_enum ERR_getErrorCode (size_t code) {
+  if (!ERR_isError (code))
+    return (ERR_enum) 0;
+  return (ERR_enum) (0 - code);
+}
 
 /* check and forward error code */
 #define CHECK_V_F(e, f) size_t const e = f; if (ERR_isError(e)) return e
 #define CHECK_F(f)   { CHECK_V_F(_var_err__, f); }
 
-
 /*-****************************************
 *  Error Strings
 ******************************************/
 
-const char* ERR_getErrorString(ERR_enum code);   /* error_private.c */
+const char *ERR_getErrorString (ERR_enum code);   /* error_private.c */
 
-ERR_STATIC const char* ERR_getErrorName(size_t code)
-{
-    return ERR_getErrorString(ERR_getErrorCode(code));
+ERR_STATIC const char *ERR_getErrorName (size_t code) {
+  return ERR_getErrorString (ERR_getErrorCode (code));
 }
 
 #if defined (__cplusplus)

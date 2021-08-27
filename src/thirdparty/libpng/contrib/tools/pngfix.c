@@ -18,16 +18,16 @@
 #include <errno.h>
 #include <assert.h>
 
-#define implies(x,y) assert(!(x) || (y))
+#define implies(x, y) assert(!(x) || (y))
 
 #ifdef __GNUC__
-   /* This is used to fix the error:
-    *
-    * pngfix.c:
-    * In function 'zlib_advance':
-    * pngfix.c:181:13: error: assuming signed overflow does not
-    *   occur when simplifying conditional to constant [-Werror=strict-overflow]
-    */
+/* This is used to fix the error:
+ *
+ * pngfix.c:
+ * In function 'zlib_advance':
+ * pngfix.c:181:13: error: assuming signed overflow does not
+ *   occur when simplifying conditional to constant [-Werror=strict-overflow]
+ */
 #  define FIX_GCC volatile
 #else
 #  define FIX_GCC
@@ -42,6 +42,7 @@
 #  include <png.h>
 #else
 #  include "../../png.h"
+
 #endif
 
 #if PNG_LIBPNG_VER < 10603 /* 1.6.3 */
@@ -4040,10 +4041,9 @@ main(void)
 #endif /* PNG_READ_SUPPORTED && PNG_EASY_ACCESS_SUPPORTED */
 #else /* No setjmp support */
 int
-main(void)
-{
-   fprintf(stderr, "pngfix does not work without setjmp support\n");
-   return 77;
+main (void) {
+  fprintf (stderr, "pngfix does not work without setjmp support\n");
+  return 77;
 }
 #endif /* PNG_SETJMP_SUPPORTED */
 

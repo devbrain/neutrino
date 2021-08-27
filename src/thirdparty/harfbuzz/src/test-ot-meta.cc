@@ -30,8 +30,7 @@
 #endif
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char **argv) {
   if (argc != 2) {
     fprintf (stderr, "usage: %s font-file\n", argv[0]);
     exit (1);
@@ -49,14 +48,13 @@ main (int argc, char **argv)
   count = hb_ot_meta_get_entry_tags (face, 0, nullptr, nullptr);
 
   hb_ot_meta_tag_t *tags = (hb_ot_meta_tag_t *)
-			   malloc (sizeof (hb_ot_meta_tag_t) * count);
+      malloc (sizeof (hb_ot_meta_tag_t) * count);
   hb_ot_meta_get_entry_tags (face, 0, &count, tags);
-  for (unsigned i = 0; i < count; ++i)
-  {
+  for (unsigned i = 0; i < count; ++i) {
     hb_blob_t *entry = hb_ot_meta_reference_entry (face, tags[i]);
     printf ("%c%c%c%c, size: %d: %.*s\n",
-	    HB_UNTAG (tags[i]), hb_blob_get_length (entry),
-	    hb_blob_get_length (entry), hb_blob_get_data (entry, nullptr));
+            HB_UNTAG (tags[i]), hb_blob_get_length (entry),
+            hb_blob_get_length (entry), hb_blob_get_data (entry, nullptr));
     hb_blob_destroy (entry);
   }
   free (tags);

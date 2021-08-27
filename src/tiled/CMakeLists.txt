@@ -21,6 +21,7 @@ my_add_library_static(tiled
         world/camera.cc
 
         ${PROJECT_INCLUDE}/neutrino/tiled/loader/tmx.hh
+        ${PROJECT_INCLUDE}/neutrino/tiled/loader/path_resolver.hh
         loader/tmx/tmx.cc
         loader/tmx/cell.hh
         loader/tmx/cell.cc
@@ -59,7 +60,7 @@ my_add_library_static(tiled
         loader/tmx/json_reader.hh
         loader/tmx/reader.hh
         loader/tmx/reader.cc
-        loader/tmx/path_resolver.hh
+
         loader/tmx/parse_data.cc
         loader/tmx/parse_data.hh
         loader/tmx/csv/parser.hpp
@@ -71,14 +72,14 @@ my_add_library_static(tiled
         video.cc
 
         DEPENDS_PUBLIC
-            neutrino::engine
+        neutrino::engine
         DEPENDS_PRIVATE
-            thirdparty::pugixml
-            thirdparty::json
+        thirdparty::pugixml
+        thirdparty::json
         )
 include(bin2c)
 
-set (TEST_DATA
+set(TEST_DATA
         test1/example.tmx
         test1/js_example.json
         test1/test_base64_level.tmx
@@ -104,12 +105,12 @@ set (TEST_DATA
         wang/js_isometric_staggered_grass_and_water.json
         )
 
-set (GENERATED_HEADERS )
-foreach(FILE ${TEST_DATA})
-    set (PATH "loader/tmx/test/data/${FILE}")
-    BIN2C(${PATH} generated)
-    LIST(APPEND GENERATED_HEADERS ${generated})
-endforeach()
+set(GENERATED_HEADERS)
+foreach (FILE ${TEST_DATA})
+    set(PATH "loader/tmx/test/data/${FILE}")
+    bin2c(${PATH} generated)
+    list(APPEND GENERATED_HEADERS ${generated})
+endforeach ()
 
 add_library(neutrino_tiled_with_tests OBJECT
         loader/tmx/test/test_color.cc
@@ -134,6 +135,6 @@ target_link_libraries(neutrino_tiled_with_tests
         thirdparty::doctest
         )
 target_include_directories(neutrino_tiled_with_tests
-        PUBLIC  ${PROJECT_INCLUDE} ${PROJECT_CONFIG_INCLUDE}
+        PUBLIC ${PROJECT_INCLUDE} ${PROJECT_CONFIG_INCLUDE}
         PRIVATE ${PROJECT_INCLUDE_PRIVATE} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/loader/tmx/test/data/
         )

@@ -44,7 +44,7 @@
  **/
 void
 hb_draw_funcs_set_move_to_func (hb_draw_funcs_t        *funcs,
-				hb_draw_move_to_func_t  move_to)
+                hb_draw_move_to_func_t  move_to)
 {
   if (unlikely (hb_object_is_immutable (funcs))) return;
   funcs->move_to = move_to;
@@ -61,7 +61,7 @@ hb_draw_funcs_set_move_to_func (hb_draw_funcs_t        *funcs,
  **/
 void
 hb_draw_funcs_set_line_to_func (hb_draw_funcs_t        *funcs,
-				hb_draw_line_to_func_t  line_to)
+                hb_draw_line_to_func_t  line_to)
 {
   if (unlikely (hb_object_is_immutable (funcs))) return;
   funcs->line_to = line_to;
@@ -78,7 +78,7 @@ hb_draw_funcs_set_line_to_func (hb_draw_funcs_t        *funcs,
  **/
 void
 hb_draw_funcs_set_quadratic_to_func (hb_draw_funcs_t             *funcs,
-				     hb_draw_quadratic_to_func_t  quadratic_to)
+                     hb_draw_quadratic_to_func_t  quadratic_to)
 {
   if (unlikely (hb_object_is_immutable (funcs))) return;
   funcs->quadratic_to = quadratic_to;
@@ -96,7 +96,7 @@ hb_draw_funcs_set_quadratic_to_func (hb_draw_funcs_t             *funcs,
  **/
 void
 hb_draw_funcs_set_cubic_to_func (hb_draw_funcs_t         *funcs,
-				 hb_draw_cubic_to_func_t  cubic_to)
+                 hb_draw_cubic_to_func_t  cubic_to)
 {
   if (unlikely (hb_object_is_immutable (funcs))) return;
   funcs->cubic_to = cubic_to;
@@ -113,7 +113,7 @@ hb_draw_funcs_set_cubic_to_func (hb_draw_funcs_t         *funcs,
  **/
 void
 hb_draw_funcs_set_close_path_func (hb_draw_funcs_t           *funcs,
-				   hb_draw_close_path_func_t  close_path)
+                   hb_draw_close_path_func_t  close_path)
 {
   if (unlikely (hb_object_is_immutable (funcs))) return;
   funcs->close_path = close_path;
@@ -127,14 +127,14 @@ _line_to_nil (hb_position_t to_x HB_UNUSED, hb_position_t to_y HB_UNUSED, void *
 
 static void
 _quadratic_to_nil (hb_position_t control_x HB_UNUSED, hb_position_t control_y HB_UNUSED,
-		   hb_position_t to_x HB_UNUSED, hb_position_t to_y HB_UNUSED,
-		   void *user_data HB_UNUSED) {}
+           hb_position_t to_x HB_UNUSED, hb_position_t to_y HB_UNUSED,
+           void *user_data HB_UNUSED) {}
 
 static void
 _cubic_to_nil (hb_position_t control1_x HB_UNUSED, hb_position_t control1_y HB_UNUSED,
-	       hb_position_t control2_x HB_UNUSED, hb_position_t control2_y HB_UNUSED,
-	       hb_position_t to_x HB_UNUSED, hb_position_t to_y HB_UNUSED,
-	       void *user_data HB_UNUSED) {}
+           hb_position_t control2_x HB_UNUSED, hb_position_t control2_y HB_UNUSED,
+           hb_position_t to_x HB_UNUSED, hb_position_t to_y HB_UNUSED,
+           void *user_data HB_UNUSED) {}
 
 static void
 _close_path_nil (void *user_data HB_UNUSED) {}
@@ -240,11 +240,11 @@ hb_draw_funcs_is_immutable (hb_draw_funcs_t *funcs)
  **/
 hb_bool_t
 hb_font_draw_glyph (hb_font_t *font, hb_codepoint_t glyph,
-		    const hb_draw_funcs_t *funcs,
-		    void *user_data)
+            const hb_draw_funcs_t *funcs,
+            void *user_data)
 {
   if (unlikely (funcs == &Null (hb_draw_funcs_t) ||
-		glyph >= font->face->get_num_glyphs ()))
+        glyph >= font->face->get_num_glyphs ()))
     return false;
 
   draw_helper_t draw_helper (funcs, user_data);

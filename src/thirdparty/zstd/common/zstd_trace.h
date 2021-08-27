@@ -52,52 +52,52 @@ struct ZSTD_DCtx_s;
 struct ZSTD_CCtx_params_s;
 
 typedef struct {
-    /**
-     * ZSTD_VERSION_NUMBER
-     *
-     * This is guaranteed to be the first member of ZSTD_trace.
-     * Otherwise, this struct is not stable between versions. If
-     * the version number does not match your expectation, you
-     * should not interpret the rest of the struct.
-     */
-    unsigned version;
-    /**
-     * Non-zero if streaming (de)compression is used.
-     */
-    unsigned streaming;
-    /**
-     * The dictionary ID.
-     */
-    unsigned dictionaryID;
-    /**
-     * Is the dictionary cold?
-     * Only set on decompression.
-     */
-    unsigned dictionaryIsCold;
-    /**
-     * The dictionary size or zero if no dictionary.
-     */
-    size_t dictionarySize;
-    /**
-     * The uncompressed size of the data.
-     */
-    size_t uncompressedSize;
-    /**
-     * The compressed size of the data.
-     */
-    size_t compressedSize;
-    /**
-     * The fully resolved CCtx parameters (NULL on decompression).
-     */
-    struct ZSTD_CCtx_params_s const* params;
-    /**
-     * The ZSTD_CCtx pointer (NULL on decompression).
-     */
-    struct ZSTD_CCtx_s const* cctx;
-    /**
-     * The ZSTD_DCtx pointer (NULL on compression).
-     */
-    struct ZSTD_DCtx_s const* dctx;
+  /**
+   * ZSTD_VERSION_NUMBER
+   *
+   * This is guaranteed to be the first member of ZSTD_trace.
+   * Otherwise, this struct is not stable between versions. If
+   * the version number does not match your expectation, you
+   * should not interpret the rest of the struct.
+   */
+  unsigned version;
+  /**
+   * Non-zero if streaming (de)compression is used.
+   */
+  unsigned streaming;
+  /**
+   * The dictionary ID.
+   */
+  unsigned dictionaryID;
+  /**
+   * Is the dictionary cold?
+   * Only set on decompression.
+   */
+  unsigned dictionaryIsCold;
+  /**
+   * The dictionary size or zero if no dictionary.
+   */
+  size_t dictionarySize;
+  /**
+   * The uncompressed size of the data.
+   */
+  size_t uncompressedSize;
+  /**
+   * The compressed size of the data.
+   */
+  size_t compressedSize;
+  /**
+   * The fully resolved CCtx parameters (NULL on decompression).
+   */
+  struct ZSTD_CCtx_params_s const *params;
+  /**
+   * The ZSTD_CCtx pointer (NULL on decompression).
+   */
+  struct ZSTD_CCtx_s const *cctx;
+  /**
+   * The ZSTD_DCtx pointer (NULL on compression).
+   */
+  struct ZSTD_DCtx_s const *dctx;
 } ZSTD_Trace;
 
 /**
@@ -123,17 +123,17 @@ typedef unsigned long long ZSTD_TraceCtx;
  * @returns Non-zero if tracing is enabled. The return value is
  *          passed to ZSTD_trace_compress_end().
  */
-ZSTD_WEAK_ATTR ZSTD_TraceCtx ZSTD_trace_compress_begin(
-    struct ZSTD_CCtx_s const* cctx);
+ZSTD_WEAK_ATTR ZSTD_TraceCtx ZSTD_trace_compress_begin (
+    struct ZSTD_CCtx_s const *cctx);
 
 /**
  * Trace the end of a compression call.
  * @param ctx The return value of ZSTD_trace_compress_begin().
  * @param trace The zstd tracing info.
  */
-ZSTD_WEAK_ATTR void ZSTD_trace_compress_end(
+ZSTD_WEAK_ATTR void ZSTD_trace_compress_end (
     ZSTD_TraceCtx ctx,
-    ZSTD_Trace const* trace);
+    ZSTD_Trace const *trace);
 
 /**
  * Trace the beginning of a decompression call.
@@ -142,17 +142,17 @@ ZSTD_WEAK_ATTR void ZSTD_trace_compress_end(
  * @returns Non-zero if tracing is enabled. The return value is
  *          passed to ZSTD_trace_compress_end().
  */
-ZSTD_WEAK_ATTR ZSTD_TraceCtx ZSTD_trace_decompress_begin(
-    struct ZSTD_DCtx_s const* dctx);
+ZSTD_WEAK_ATTR ZSTD_TraceCtx ZSTD_trace_decompress_begin (
+    struct ZSTD_DCtx_s const *dctx);
 
 /**
  * Trace the end of a decompression call.
  * @param ctx The return value of ZSTD_trace_decompress_begin().
  * @param trace The zstd tracing info.
  */
-ZSTD_WEAK_ATTR void ZSTD_trace_decompress_end(
+ZSTD_WEAK_ATTR void ZSTD_trace_decompress_end (
     ZSTD_TraceCtx ctx,
-    ZSTD_Trace const* trace);
+    ZSTD_Trace const *trace);
 
 #endif /* ZSTD_TRACE */
 

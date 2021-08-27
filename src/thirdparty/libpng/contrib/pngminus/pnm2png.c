@@ -41,8 +41,7 @@ png_uint_32 get_value (FILE *pnm_file, int depth);
  *  main
  */
 
-int main (int argc, char *argv[])
-{
+int main (int argc, char *argv[]) {
   FILE *fp_rd = stdin;
   FILE *fp_al = NULL;
   FILE *fp_wr = stdout;
@@ -50,20 +49,16 @@ int main (int argc, char *argv[])
   BOOL alpha = FALSE;
   int argi;
 
-  for (argi = 1; argi < argc; argi++)
-  {
-    if (argv[argi][0] == '-')
-    {
-      switch (argv[argi][1])
-      {
+  for (argi = 1; argi < argc; argi++) {
+    if (argv[argi][0] == '-') {
+      switch (argv[argi][1]) {
         case 'i':
           interlace = TRUE;
           break;
         case 'a':
           alpha = TRUE;
           argi++;
-          if ((fp_al = fopen (argv[argi], "rb")) == NULL)
-          {
+          if ((fp_al = fopen (argv[argi], "rb")) == NULL) {
             fprintf (stderr, "PNM2PNG\n");
             fprintf (stderr, "Error:  alpha-channel file %s does not exist\n",
                      argv[argi]);
@@ -83,26 +78,21 @@ int main (int argc, char *argv[])
           break;
       } /* end switch */
     }
-    else if (fp_rd == stdin)
-    {
-      if ((fp_rd = fopen (argv[argi], "rb")) == NULL)
-      {
+    else if (fp_rd == stdin) {
+      if ((fp_rd = fopen (argv[argi], "rb")) == NULL) {
         fprintf (stderr, "PNM2PNG\n");
         fprintf (stderr, "Error:  file %s does not exist\n", argv[argi]);
         exit (1);
       }
     }
-    else if (fp_wr == stdout)
-    {
-      if ((fp_wr = fopen (argv[argi], "wb")) == NULL)
-      {
+    else if (fp_wr == stdout) {
+      if ((fp_wr = fopen (argv[argi], "wb")) == NULL) {
         fprintf (stderr, "PNM2PNG\n");
         fprintf (stderr, "Error:  cannot create PNG-file %s\n", argv[argi]);
         exit (1);
       }
     }
-    else
-    {
+    else {
       fprintf (stderr, "PNM2PNG\n");
       fprintf (stderr, "Error:  too many parameters\n");
       usage ();
@@ -121,8 +111,7 @@ int main (int argc, char *argv[])
 #endif
 
   /* call the conversion program itself */
-  if (pnm2png (fp_rd, fp_wr, fp_al, interlace, alpha) == FALSE)
-  {
+  if (pnm2png (fp_rd, fp_wr, fp_al, interlace, alpha) == FALSE) {
     fprintf (stderr, "PNM2PNG\n");
     fprintf (stderr, "Error:  unsuccessful converting to PNG-image\n");
     exit (1);
@@ -143,8 +132,7 @@ int main (int argc, char *argv[])
  *  usage
  */
 
-void usage ()
-{
+void usage () {
   fprintf (stderr, "PNM2PNG\n");
   fprintf (stderr, "   by Willem van Schaik, 1999\n");
   fprintf (stderr, "Usage:  pnm2png [options] <file>.<pnm> [<file>.png]\n");
@@ -152,7 +140,7 @@ void usage ()
   fprintf (stderr, "Options:\n");
   fprintf (stderr, "   -i[nterlace]   write png-file with interlacing on\n");
   fprintf (stderr,
-      "   -a[lpha] <file>.pgm read PNG alpha channel as pgm-file\n");
+           "   -a[lpha] <file>.pgm read PNG alpha channel as pgm-file\n");
   fprintf (stderr, "   -h | -?  print this help-information\n");
 }
 
@@ -161,47 +149,44 @@ void usage ()
  */
 
 BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
-              BOOL interlace, BOOL alpha)
-{
-  png_struct    *png_ptr = NULL;
-  png_info      *info_ptr = NULL;
-  png_byte      *png_pixels = NULL;
-  png_byte      **row_pointers = NULL;
-  png_byte      *pix_ptr = NULL;
+              BOOL interlace, BOOL alpha) {
+  png_struct *png_ptr = NULL;
+  png_info *info_ptr = NULL;
+  png_byte *png_pixels = NULL;
+  png_byte **row_pointers = NULL;
+  png_byte *pix_ptr = NULL;
   volatile png_uint_32 row_bytes;
 
-  char          type_token[16];
-  char          width_token[16];
-  char          height_token[16];
-  char          maxval_token[16];
-  volatile int  color_type = 1;
+  char type_token[16];
+  char width_token[16];
+  char height_token[16];
+  char maxval_token[16];
+  volatile int color_type = 1;
   unsigned long ul_width = 0, ul_alpha_width = 0;
   unsigned long ul_height = 0, ul_alpha_height = 0;
   unsigned long ul_maxval = 0;
   volatile png_uint_32 width = 0, height = 0;
   volatile png_uint_32 alpha_width = 0, alpha_height = 0;
-  png_uint_32   maxval;
-  volatile int  bit_depth = 0;
-  int           channels = 0;
-  int           alpha_depth = 0;
-  int           alpha_present = 0;
-  int           row, col;
-  BOOL          raw, alpha_raw = FALSE;
+  png_uint_32 maxval;
+  volatile int bit_depth = 0;
+  int channels = 0;
+  int alpha_depth = 0;
+  int alpha_present = 0;
+  int row, col;
+  BOOL raw, alpha_raw = FALSE;
 #if defined(PNG_WRITE_INVERT_SUPPORTED) || defined(PNG_WRITE_PACK_SUPPORTED)
   BOOL          packed_bitmap = FALSE;
 #endif
-  png_uint_32   tmp16;
-  int           i;
+  png_uint_32 tmp16;
+  int i;
 
   /* read header of PNM file */
 
   get_token (pnm_file, type_token, sizeof (type_token));
-  if (type_token[0] != 'P')
-  {
+  if (type_token[0] != 'P') {
     return FALSE;
   }
-  else if ((type_token[1] == '1') || (type_token[1] == '4'))
-  {
+  else if ((type_token[1] == '1') || (type_token[1] == '4')) {
 #if defined(PNG_WRITE_INVERT_SUPPORTED) || defined(PNG_WRITE_PACK_SUPPORTED)
     raw = (type_token[1] == '4');
     color_type = PNG_COLOR_TYPE_GRAY;
@@ -219,8 +204,7 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
     return FALSE;
 #endif
   }
-  else if ((type_token[1] == '2') || (type_token[1] == '5'))
-  {
+  else if ((type_token[1] == '2') || (type_token[1] == '5')) {
     raw = (type_token[1] == '5');
     color_type = PNG_COLOR_TYPE_GRAY;
     get_token (pnm_file, width_token, sizeof (width_token));
@@ -246,8 +230,7 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
     else /* maxval > 65535U */
       return FALSE;
   }
-  else if ((type_token[1] == '3') || (type_token[1] == '6'))
-  {
+  else if ((type_token[1] == '3') || (type_token[1] == '6')) {
     raw = (type_token[1] == '6');
     color_type = PNG_COLOR_TYPE_RGB;
     get_token (pnm_file, width_token, sizeof (width_token));
@@ -272,27 +255,23 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
     else /* maxval > 65535U */
       return FALSE;
   }
-  else
-  {
+  else {
     return FALSE;
   }
 
   /* read header of PGM file with alpha channel */
 
-  if (alpha)
-  {
+  if (alpha) {
     if (color_type == PNG_COLOR_TYPE_GRAY)
       color_type = PNG_COLOR_TYPE_GRAY_ALPHA;
     if (color_type == PNG_COLOR_TYPE_RGB)
       color_type = PNG_COLOR_TYPE_RGB_ALPHA;
 
     get_token (alpha_file, type_token, sizeof (type_token));
-    if (type_token[0] != 'P')
-    {
+    if (type_token[0] != 'P') {
       return FALSE;
     }
-    else if ((type_token[1] == '2') || (type_token[1] == '5'))
-    {
+    else if ((type_token[1] == '2') || (type_token[1] == '5')) {
       alpha_raw = (type_token[1] == '5');
       get_token (alpha_file, width_token, sizeof (width_token));
       sscanf (width_token, "%lu", &ul_alpha_width);
@@ -322,8 +301,7 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
       if (alpha_depth != bit_depth)
         return FALSE;
     }
-    else
-    {
+    else {
       return FALSE;
     }
   } /* end if alpha */
@@ -358,14 +336,12 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
   }
 
   if ((row_bytes == 0) ||
-      ((size_t) height > (size_t) (-1) / (size_t) row_bytes))
-  {
+      ((size_t) height > (size_t) (-1) / (size_t) row_bytes)) {
     /* too big */
     return FALSE;
   }
   if ((png_pixels = (png_byte *)
-       malloc ((size_t) row_bytes * (size_t) height)) == NULL)
-  {
+      malloc ((size_t) row_bytes * (size_t) height)) == NULL) {
     /* out of memory */
     return FALSE;
   }
@@ -373,8 +349,7 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
   /* read data from PNM file */
   pix_ptr = png_pixels;
 
-  for (row = 0; row < (int) height; row++)
-  {
+  for (row = 0; row < (int) height; row++) {
 #if defined(PNG_WRITE_INVERT_SUPPORTED) || defined(PNG_WRITE_PACK_SUPPORTED)
     if (packed_bitmap)
     {
@@ -387,22 +362,16 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
     else
 #endif
     {
-      for (col = 0; col < (int) width; col++)
-      {
-        for (i = 0; i < (channels - alpha_present); i++)
-        {
-          if (raw)
-          {
+      for (col = 0; col < (int) width; col++) {
+        for (i = 0; i < (channels - alpha_present); i++) {
+          if (raw) {
             *pix_ptr++ = get_data (pnm_file, bit_depth);
           }
-          else
-          {
-            if (bit_depth <= 8)
-            {
+          else {
+            if (bit_depth <= 8) {
               *pix_ptr++ = get_value (pnm_file, bit_depth);
             }
-            else
-            {
+            else {
               tmp16 = get_value (pnm_file, bit_depth);
               *pix_ptr = (png_byte) ((tmp16 >> 8) & 0xFF);
               pix_ptr++;
@@ -414,18 +383,14 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
 
         if (alpha) /* read alpha-channel from pgm file */
         {
-          if (alpha_raw)
-          {
+          if (alpha_raw) {
             *pix_ptr++ = get_data (alpha_file, alpha_depth);
           }
-          else
-          {
-            if (alpha_depth <= 8)
-            {
+          else {
+            if (alpha_depth <= 8) {
               *pix_ptr++ = get_value (alpha_file, bit_depth);
             }
-            else
-            {
+            else {
               tmp16 = get_value (alpha_file, bit_depth);
               *pix_ptr++ = (png_byte) ((tmp16 >> 8) & 0xFF);
               *pix_ptr++ = (png_byte) (tmp16 & 0xFF);
@@ -437,16 +402,14 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
   } /* end for row */
 
   /* prepare the standard PNG structures */
-  png_ptr = png_create_write_struct (png_get_libpng_ver(NULL),
+  png_ptr = png_create_write_struct (png_get_libpng_ver (NULL),
                                      NULL, NULL, NULL);
-  if (!png_ptr)
-  {
+  if (!png_ptr) {
     free (png_pixels);
     return FALSE;
   }
   info_ptr = png_create_info_struct (png_ptr);
-  if (!info_ptr)
-  {
+  if (!info_ptr) {
     png_destroy_write_struct (&png_ptr, NULL);
     free (png_pixels);
     return FALSE;
@@ -460,8 +423,7 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
   }
 #endif
 
-  if (setjmp (png_jmpbuf (png_ptr)))
-  {
+  if (setjmp (png_jmpbuf (png_ptr))) {
     png_destroy_write_struct (&png_ptr, &info_ptr);
     free (png_pixels);
     return FALSE;
@@ -479,11 +441,9 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
   png_write_info (png_ptr, info_ptr);
 
   /* if needed we will allocate memory for an new array of row-pointers */
-  if (row_pointers == NULL)
-  {
+  if (row_pointers == NULL) {
     if ((row_pointers = (png_byte **)
-         malloc (height * sizeof (png_byte *))) == NULL)
-    {
+        malloc (height * sizeof (png_byte * ))) == NULL) {
       png_destroy_write_struct (&png_ptr, &info_ptr);
       free (png_pixels);
       return FALSE;
@@ -515,35 +475,33 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
  * get_token - gets the first string after whitespace
  */
 
-void get_token (FILE *pnm_file, char *token_buf, size_t token_buf_size)
-{
+void get_token (FILE *pnm_file, char *token_buf, size_t token_buf_size) {
   size_t i = 0;
   int ret;
 
   /* remove white-space and comment lines */
-  do
-  {
+  do {
     ret = fgetc (pnm_file);
-    if (ret == '#')
-    {
+    if (ret == '#') {
       /* the rest of this line is a comment */
-      do
-      {
+      do {
         ret = fgetc (pnm_file);
       }
       while ((ret != '\n') && (ret != '\r') && (ret != EOF));
     }
-    if (ret == EOF) break;
+    if (ret == EOF)
+      break;
     token_buf[i] = (char) ret;
   }
   while ((ret == '\n') || (ret == '\r') || (ret == ' '));
 
   /* read string */
-  do
-  {
+  do {
     ret = fgetc (pnm_file);
-    if (ret == EOF) break;
-    if (++i == token_buf_size - 1) break;
+    if (ret == EOF)
+      break;
+    if (++i == token_buf_size - 1)
+      break;
     token_buf[i] = (char) ret;
   }
   while ((ret != '\n') && (ret != '\r') && (ret != ' '));
@@ -559,8 +517,7 @@ void get_token (FILE *pnm_file, char *token_buf, size_t token_buf_size)
  *             using the bit-depth to fill up a byte (0Ah -> AAh)
  */
 
-png_uint_32 get_data (FILE *pnm_file, int depth)
-{
+png_uint_32 get_data (FILE *pnm_file, int depth) {
   static int bits_left = 0;
   static int old_value = 0;
   static int mask = 0;
@@ -571,8 +528,7 @@ png_uint_32 get_data (FILE *pnm_file, int depth)
     for (i = 0; i < depth; i++)
       mask = (mask >> 1) | 0x80;
 
-  if (bits_left <= 0)
-  {
+  if (bits_left <= 0) {
     old_value = fgetc (pnm_file);
     bits_left = 8;
   }
@@ -592,8 +548,7 @@ png_uint_32 get_data (FILE *pnm_file, int depth)
  *              using the bit-depth to fill up a byte (0Ah -> AAh)
  */
 
-png_uint_32 get_value (FILE *pnm_file, int depth)
-{
+png_uint_32 get_value (FILE *pnm_file, int depth) {
   static png_uint_32 mask = 0;
   char token[16];
   unsigned long ul_ret_value;

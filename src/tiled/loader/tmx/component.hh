@@ -15,38 +15,42 @@
 #include "reader.hh"
 #include "color.hh"
 
-namespace neutrino::tiled::tmx
-{
-    namespace detail {
-        struct object_id_s;
-    }
-    using object_id = strong::type<int, detail::object_id_s, strong::ordered, strong::equality>;
+namespace neutrino::tiled::tmx {
+  namespace detail {
+    struct object_id_s;
+  }
+  using object_id = strong::type<int, detail::object_id_s, strong::ordered, strong::equality>;
 
-    using typed_string = std::tuple<std::string, std::string>; // < type, value >
+  using typed_string = std::tuple<std::string, std::string>; // < type, value >
 
-    using property_t = std::variant<std::string, int64_t, bool, float, colori, std::filesystem::path, object_id, typed_string>;
+  using property_t = std::variant<std::string,
+                                  int64_t,
+                                  bool,
+                                  float,
+                                  colori,
+                                  std::filesystem::path,
+                                  object_id,
+                                  typed_string>;
 
-    class component
-    {
+  class component {
     public:
 
-       static void parse(component& obj, const reader& elt, const component* parent = nullptr);
+      static void parse (component &obj, const reader &elt, const component *parent = nullptr);
 
-        template <typename T>
-        void add(const std::string& name, T&& v) {
-            m_prop.insert(std::make_pair(name, property_t{ std::forward<T>(v) }));
-        }
+      template <typename T>
+      void add (const std::string &name, T &&v) {
+        m_prop.insert (std::make_pair (name, property_t{std::forward<T> (v)}));
+      }
 
-        [[nodiscard]] bool empty() const noexcept ;
+      [[nodiscard]] bool empty () const noexcept;
 
-        [[nodiscard]] bool contains(const std::string& name) const noexcept ;
+      [[nodiscard]] bool contains (const std::string &name) const noexcept;
 
-        [[nodiscard]] std::optional<property_t> get(const std::string& name) const noexcept ;
+      [[nodiscard]] std::optional<property_t> get (const std::string &name) const noexcept;
 
     private:
-        std::map<std::string, property_t> m_prop;
-    };
+      std::map<std::string, property_t> m_prop;
+  };
 }
-
 
 #endif //NEUTRINO_COMPONENT_HH

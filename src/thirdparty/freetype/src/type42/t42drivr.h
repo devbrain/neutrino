@@ -19,17 +19,14 @@
 #ifndef T42DRIVR_H_
 #define T42DRIVR_H_
 
-
 #include <ft2build.h>
 #include FT_INTERNAL_DRIVER_H
 
-
 FT_BEGIN_HEADER
 
-  FT_EXPORT_VAR( const FT_Driver_ClassRec )  t42_driver_class;
+FT_EXPORT_VAR(const FT_Driver_ClassRec) t42_driver_class;
 
 FT_END_HEADER
-
 
 #endif /* T42DRIVR_H_ */
 
