@@ -1,16 +1,16 @@
 include(bin2c)
 
-MACRO(add_demo name)
+macro(add_demo name)
     my_add_executable(${name}
             SOURCES
             ${name}.cc
             FOLDER Demos
             )
     target_link_libraries(${name} neutrino::demoscene thirdparty::sdl2-main)
-ENDMACRO()
+endmacro()
 
-MACRO(add_demo_gen name gen)
-    BIN2C(${gen} GENERATED)
+macro(add_demo_gen name gen)
+    bin2c(${gen} GENERATED)
 
     my_add_executable(${name}
             SOURCES
@@ -20,7 +20,7 @@ MACRO(add_demo_gen name gen)
             )
     target_include_directories(${name} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     target_link_libraries(${name} neutrino::demoscene thirdparty::sdl2-main)
-ENDMACRO()
+endmacro()
 
 add_demo(fire)
 add_demo(plasma)

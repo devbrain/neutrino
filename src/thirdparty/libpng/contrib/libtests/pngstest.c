@@ -33,6 +33,7 @@
 #  include <png.h>
 #else
 #  include "../../png.h"
+
 #endif
 
 /* 1.6.1 added support for the configure test harness, which uses 77 to indicate
@@ -3823,10 +3824,9 @@ main(int argc, char **argv)
 }
 
 #else /* !PNG_SIMPLIFIED_READ_SUPPORTED */
-int main(void)
-{
-   fprintf(stderr, "pngstest: no read support in libpng, test skipped\n");
-   /* So the test is skipped: */
-   return SKIP;
+int main (void) {
+  fprintf (stderr, "pngstest: no read support in libpng, test skipped\n");
+  /* So the test is skipped: */
+  return SKIP;
 }
 #endif /* PNG_SIMPLIFIED_READ_SUPPORTED */

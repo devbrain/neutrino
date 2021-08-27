@@ -12,23 +12,24 @@
 #define _INFUTIL_H
 
 typedef enum {
-      TYPE,     /* get type bits (3, including end bit) */
-      LENS,     /* get lengths for stored */
-      STORED,   /* processing stored block */
-      TABLE,    /* get table lengths */
-      BTREE,    /* get bit lengths tree for a dynamic block */
-      DTREE,    /* get length, distance trees for a dynamic block */
-      CODES,    /* processing fixed or dynamic block */
-      DRY,      /* output remaining window bytes */
-      DONE,     /* finished last block, done */
-      BAD}      /* got a data error--stuck here */
+  TYPE,     /* get type bits (3, including end bit) */
+  LENS,     /* get lengths for stored */
+  STORED,   /* processing stored block */
+  TABLE,    /* get table lengths */
+  BTREE,    /* get bit lengths tree for a dynamic block */
+  DTREE,    /* get length, distance trees for a dynamic block */
+  CODES,    /* processing fixed or dynamic block */
+  DRY,      /* output remaining window bytes */
+  DONE,     /* finished last block, done */
+  BAD
+}      /* got a data error--stuck here */
 inflate_block_mode;
 
 /* inflate blocks semi-private state */
 struct inflate_blocks_state {
 
   /* mode */
-  inflate_block_mode  mode;     /* current inflate_block mode */
+  inflate_block_mode mode;     /* current inflate_block mode */
 
   /* mode dependent information */
   union {
@@ -42,7 +43,7 @@ struct inflate_blocks_state {
     } trees;            /* if DTREE, decoding info for trees */
     struct {
       inflate_codes_statef
-         *codes;
+          *codes;
     } decode;           /* if CODES, current state */
   } sub;                /* submode */
   uInt last;            /* true if this block is the last block */
@@ -91,8 +92,8 @@ local const uInt inflate_mask[17];
 
 /* copy as much as possible from the sliding window to the output area */
 local int inflate_flush OF((
-    inflate_blocks_statef *,
-    z_streamp ,
-    int));
+                               inflate_blocks_statef * ,
+                                   z_streamp,
+                               int));
 
 #endif

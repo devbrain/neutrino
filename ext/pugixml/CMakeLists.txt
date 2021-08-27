@@ -1,9 +1,9 @@
-FetchContent_Declare(
+fetchcontent_declare(
         PUGIXML
         GIT_REPOSITORY "https://github.com/zeux/pugixml.git"
 )
-FetchContent_MakeAvailable(PUGIXML)
+fetchcontent_makeavailable(PUGIXML)
 
-SET_TARGET_PROPERTIES(pugixml-static PROPERTIES FOLDER "ThirdParty")
+set_target_properties(pugixml-static PROPERTIES FOLDER "ThirdParty")
 add_library(thirdparty::pugixml ALIAS pugixml)
 

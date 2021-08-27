@@ -23,69 +23,65 @@
 #include FT_SERVICE_BDF_H
 
 
-  /* documentation is in ftbdf.h */
+/* documentation is in ftbdf.h */
 
-  FT_EXPORT_DEF( FT_Error )
-  FT_Get_BDF_Charset_ID( FT_Face       face,
-                         const char*  *acharset_encoding,
-                         const char*  *acharset_registry )
-  {
-    FT_Error     error;
-    const char*  encoding = NULL;
-    const char*  registry = NULL;
+FT_EXPORT_DEF(FT_Error)
+FT_Get_BDF_Charset_ID (FT_Face face,
+                       const char **acharset_encoding,
+                       const char **acharset_registry) {
+  FT_Error error;
+  const char *encoding = NULL;
+  const char *registry = NULL;
 
-    FT_Service_BDF  service;
+  FT_Service_BDF service;
 
+  if (!face)
+    return FT_THROW(Invalid_Face_Handle);
 
-    if ( !face )
-      return FT_THROW( Invalid_Face_Handle );
+  FT_FACE_FIND_SERVICE(face, service, BDF);
 
-    FT_FACE_FIND_SERVICE( face, service, BDF );
+  if (service && service->get_charset_id)
+    error = service->get_charset_id (face, &encoding, &registry);
+  else
+    error = FT_THROW(Invalid_Argument);
 
-    if ( service && service->get_charset_id )
-      error = service->get_charset_id( face, &encoding, &registry );
-    else
-      error = FT_THROW( Invalid_Argument );
+  if (acharset_encoding)
+    *acharset_encoding = encoding;
 
-    if ( acharset_encoding )
-      *acharset_encoding = encoding;
+  if (acharset_registry)
+    *acharset_registry = registry;
 
-    if ( acharset_registry )
-      *acharset_registry = registry;
-
-    return error;
-  }
+  return error;
+}
 
 
-  /* documentation is in ftbdf.h */
+/* documentation is in ftbdf.h */
 
-  FT_EXPORT_DEF( FT_Error )
-  FT_Get_BDF_Property( FT_Face           face,
-                       const char*       prop_name,
-                       BDF_PropertyRec  *aproperty )
-  {
-    FT_Error  error;
+FT_EXPORT_DEF(FT_Error)
+FT_Get_BDF_Property (FT_Face face,
+                     const char *prop_name,
+                     BDF_PropertyRec *aproperty) {
+  FT_Error error;
 
-    FT_Service_BDF  service;
+  FT_Service_BDF service;
 
+  if (!face)
+    return FT_THROW(Invalid_Face_Handle);
 
-    if ( !face )
-      return FT_THROW( Invalid_Face_Handle );
+  if (!aproperty)
+    return FT_THROW(Invalid_Argument);
 
-    if ( !aproperty )
-      return FT_THROW( Invalid_Argument );
+  aproperty->type = BDF_PROPERTY_TYPE_NONE;
 
-    aproperty->type = BDF_PROPERTY_TYPE_NONE;
+  FT_FACE_FIND_SERVICE(face, service, BDF);
 
-    FT_FACE_FIND_SERVICE( face, service, BDF );
+  if (service && service->get_property)
+    error = service->get_property (face, prop_name, aproperty);
+  else
+    error = FT_THROW(Invalid_Argument);
 
-    if ( service && service->get_property )
-      error = service->get_property( face, prop_name, aproperty );
-    else
-      error = FT_THROW( Invalid_Argument );
-
-    return error;
-  }
+  return error;
+}
 
 
 /* END */

@@ -8,15 +8,16 @@
 #include <hal/sdl/surface.hh>
 
 namespace neutrino::hal::detail {
-    struct surface_impl {
-        surface_impl() = default;
+  struct surface_impl {
+    surface_impl () = default;
 
-        template <typename ... Args>
-        explicit surface_impl(Args&& ... args) : surface(std::forward<Args>(args)...) {
+    template <typename ... Args>
+    explicit surface_impl (Args &&... args)
+        : surface (std::forward<Args> (args)...) {
 
-        }
-        sdl::surface surface;
-    };
+    }
+    sdl::surface surface;
+  };
 }
 
 #endif

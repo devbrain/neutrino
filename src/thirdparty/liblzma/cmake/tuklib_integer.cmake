@@ -19,9 +19,9 @@ function(tuklib_integer TARGET_OR_ALL)
     # variable unset so we can catch that situation here instead of continuing
     # as if we were little endian.
     test_big_endian(WORDS_BIGENDIAN)
-    if(NOT DEFINED WORDS_BIGENDIAN)
+    if (NOT DEFINED WORDS_BIGENDIAN)
         message(FATAL_ERROR "Cannot determine endianness")
-    endif()
+    endif ()
     tuklib_add_definition_if("${TARGET_OR_ALL}" WORDS_BIGENDIAN)
 
     # Look for a byteswapping method.
@@ -34,12 +34,12 @@ function(tuklib_integer TARGET_OR_ALL)
                 return 0;
             }
         "
-        HAVE___BUILTIN_BSWAPXX)
-    if(HAVE___BUILTIN_BSWAPXX)
+            HAVE___BUILTIN_BSWAPXX)
+    if (HAVE___BUILTIN_BSWAPXX)
         tuklib_add_definitions("${TARGET_OR_ALL}" HAVE___BUILTIN_BSWAPXX)
-    else()
+    else ()
         check_include_file(byteswap.h HAVE_BYTESWAP_H)
-        if(HAVE_BYTESWAP_H)
+        if (HAVE_BYTESWAP_H)
             tuklib_add_definitions("${TARGET_OR_ALL}" HAVE_BYTESWAP_H)
             check_symbol_exists(bswap_16 byteswap.h HAVE_BSWAP_16)
             tuklib_add_definition_if("${TARGET_OR_ALL}" HAVE_BSWAP_16)
@@ -47,17 +47,17 @@ function(tuklib_integer TARGET_OR_ALL)
             tuklib_add_definition_if("${TARGET_OR_ALL}" HAVE_BSWAP_32)
             check_symbol_exists(bswap_64 byteswap.h HAVE_BSWAP_64)
             tuklib_add_definition_if("${TARGET_OR_ALL}" HAVE_BSWAP_64)
-        else()
+        else ()
             check_include_file(sys/endian.h HAVE_SYS_ENDIAN_H)
-            if(HAVE_SYS_ENDIAN_H)
+            if (HAVE_SYS_ENDIAN_H)
                 tuklib_add_definitions("${TARGET_OR_ALL}" HAVE_SYS_ENDIAN_H)
-            else()
+            else ()
                 check_include_file(sys/byteorder.h HAVE_SYS_BYTEORDER_H)
                 tuklib_add_definition_if("${TARGET_OR_ALL}"
-                                         HAVE_SYS_BYTEORDER_H)
-            endif()
-        endif()
-    endif()
+                        HAVE_SYS_BYTEORDER_H)
+            endif ()
+        endif ()
+    endif ()
 
     # 16-bit and 32-bit unaligned access is fast on x86(-64),
     # big endian PowerPC, and usually on 32/64-bit ARM too.
@@ -72,31 +72,31 @@ function(tuklib_integer TARGET_OR_ALL)
     # NOTE: Compared to the Autoconf test, this lacks the GCC/Clang test
     #       on ARM and always assumes that unaligned is fast on ARM.
     set(FAST_UNALIGNED_GUESS OFF)
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES
-       "[Xx3456]86|^[Xx]64|^[Aa][Mm][Dd]64|^[Aa][Rr][Mm]|^aarch|^powerpc|^ppc")
-        if(NOT WORDS_BIGENDIAN OR
-           NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^powerpc|^ppc")
-           set(FAST_UNALIGNED_GUESS ON)
-        endif()
-    endif()
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES
+            "[Xx3456]86|^[Xx]64|^[Aa][Mm][Dd]64|^[Aa][Rr][Mm]|^aarch|^powerpc|^ppc")
+        if (NOT WORDS_BIGENDIAN OR
+                NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^powerpc|^ppc")
+            set(FAST_UNALIGNED_GUESS ON)
+        endif ()
+    endif ()
     option(TUKLIB_FAST_UNALIGNED_ACCESS
-           "Enable if the system supports *fast* unaligned memory access \
+            "Enable if the system supports *fast* unaligned memory access \
 with 16-bit and 32-bit integers."
-           "${FAST_UNALIGNED_GUESS}")
+            "${FAST_UNALIGNED_GUESS}")
     tuklib_add_definition_if("${TARGET_OR_ALL}" TUKLIB_FAST_UNALIGNED_ACCESS)
 
     # Unsafe type punning:
     option(TUKLIB_USE_UNSAFE_TYPE_PUNNING
-           "This introduces strict aliasing violations and \
+            "This introduces strict aliasing violations and \
 may result in broken code. However, this might improve performance \
 in some cases, especially with old compilers \
 (e.g. GCC 3 and early 4.x on x86, GCC < 6 on ARMv6 and ARMv7)."
-           OFF)
+            OFF)
     tuklib_add_definition_if("${TARGET_OR_ALL}" TUKLIB_USE_UNSAFE_TYPE_PUNNING)
 
     # Check for GCC/Clang __builtin_assume_aligned().
     check_c_source_compiles(
-        "int main(void) { __builtin_assume_aligned(\"\", 1); return 0; }"
-        HAVE___BUILTIN_ASSUME_ALIGNED)
+            "int main(void) { __builtin_assume_aligned(\"\", 1); return 0; }"
+            HAVE___BUILTIN_ASSUME_ALIGNED)
     tuklib_add_definition_if("${TARGET_OR_ALL}" HAVE___BUILTIN_ASSUME_ALIGNED)
 endfunction()

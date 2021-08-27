@@ -56,7 +56,10 @@ extern "C" {
 *  Definitions
 ******************************/
 #include "zstd_deps.h"
-typedef enum { XXH_OK=0, XXH_ERROR } XXH_errorcode;
+
+typedef enum {
+  XXH_OK = 0, XXH_ERROR
+} XXH_errorcode;
 
 
 /* ****************************
@@ -100,8 +103,8 @@ Note that no change is required within the calling program as long as it include
 regular symbol name will be automatically translated by this header.
 */
 #ifdef XXH_NAMESPACE
-#  define XXH_CAT(A,B) A##B
-#  define XXH_NAME2(A,B) XXH_CAT(A,B)
+#  define XXH_CAT(A, B) A##B
+#  define XXH_NAME2(A, B) XXH_CAT(A,B)
 #  define XXH32 XXH_NAME2(XXH_NAMESPACE, XXH32)
 #  define XXH64 XXH_NAME2(XXH_NAMESPACE, XXH64)
 #  define XXH_versionNumber XXH_NAME2(XXH_NAMESPACE, XXH_versionNumber)
@@ -133,15 +136,14 @@ regular symbol name will be automatically translated by this header.
 #define XXH_VERSION_NUMBER  (XXH_VERSION_MAJOR *100*100 + XXH_VERSION_MINOR *100 + XXH_VERSION_RELEASE)
 XXH_PUBLIC_API unsigned XXH_versionNumber (void);
 
-
 /* ****************************
 *  Simple Hash Functions
 ******************************/
-typedef unsigned int       XXH32_hash_t;
+typedef unsigned int XXH32_hash_t;
 typedef unsigned long long XXH64_hash_t;
 
-XXH_PUBLIC_API XXH32_hash_t XXH32 (const void* input, size_t length, unsigned int seed);
-XXH_PUBLIC_API XXH64_hash_t XXH64 (const void* input, size_t length, unsigned long long seed);
+XXH_PUBLIC_API XXH32_hash_t XXH32 (const void *input, size_t length, unsigned int seed);
+XXH_PUBLIC_API XXH64_hash_t XXH64 (const void *input, size_t length, unsigned long long seed);
 
 /*!
 XXH32() :
@@ -164,22 +166,22 @@ typedef struct XXH64_state_s XXH64_state_t;   /* incomplete type */
 
 /*! State allocation, compatible with dynamic libraries */
 
-XXH_PUBLIC_API XXH32_state_t* XXH32_createState(void);
-XXH_PUBLIC_API XXH_errorcode  XXH32_freeState(XXH32_state_t* statePtr);
+XXH_PUBLIC_API XXH32_state_t *XXH32_createState (void);
+XXH_PUBLIC_API XXH_errorcode  XXH32_freeState (XXH32_state_t *statePtr);
 
-XXH_PUBLIC_API XXH64_state_t* XXH64_createState(void);
-XXH_PUBLIC_API XXH_errorcode  XXH64_freeState(XXH64_state_t* statePtr);
+XXH_PUBLIC_API XXH64_state_t *XXH64_createState (void);
+XXH_PUBLIC_API XXH_errorcode  XXH64_freeState (XXH64_state_t *statePtr);
 
 
 /* hash streaming */
 
-XXH_PUBLIC_API XXH_errorcode XXH32_reset  (XXH32_state_t* statePtr, unsigned int seed);
-XXH_PUBLIC_API XXH_errorcode XXH32_update (XXH32_state_t* statePtr, const void* input, size_t length);
-XXH_PUBLIC_API XXH32_hash_t  XXH32_digest (const XXH32_state_t* statePtr);
+XXH_PUBLIC_API XXH_errorcode XXH32_reset (XXH32_state_t *statePtr, unsigned int seed);
+XXH_PUBLIC_API XXH_errorcode XXH32_update (XXH32_state_t *statePtr, const void *input, size_t length);
+XXH_PUBLIC_API XXH32_hash_t  XXH32_digest (const XXH32_state_t *statePtr);
 
-XXH_PUBLIC_API XXH_errorcode XXH64_reset  (XXH64_state_t* statePtr, unsigned long long seed);
-XXH_PUBLIC_API XXH_errorcode XXH64_update (XXH64_state_t* statePtr, const void* input, size_t length);
-XXH_PUBLIC_API XXH64_hash_t  XXH64_digest (const XXH64_state_t* statePtr);
+XXH_PUBLIC_API XXH_errorcode XXH64_reset (XXH64_state_t *statePtr, unsigned long long seed);
+XXH_PUBLIC_API XXH_errorcode XXH64_update (XXH64_state_t *statePtr, const void *input, size_t length);
+XXH_PUBLIC_API XXH64_hash_t  XXH64_digest (const XXH64_state_t *statePtr);
 
 /*
 These functions generate the xxHash of an input provided in multiple segments.
@@ -211,8 +213,8 @@ When done, free XXH state space if it was allocated dynamically.
 #  define restrict   /* disable restrict */
 #endif
 
-XXH_PUBLIC_API void XXH32_copyState(XXH32_state_t* restrict dst_state, const XXH32_state_t* restrict src_state);
-XXH_PUBLIC_API void XXH64_copyState(XXH64_state_t* restrict dst_state, const XXH64_state_t* restrict src_state);
+XXH_PUBLIC_API void XXH32_copyState (XXH32_state_t *restrict dst_state, const XXH32_state_t *restrict src_state);
+XXH_PUBLIC_API void XXH64_copyState (XXH64_state_t *restrict dst_state, const XXH64_state_t *restrict src_state);
 
 
 /* **************************
@@ -223,14 +225,18 @@ XXH_PUBLIC_API void XXH64_copyState(XXH64_state_t* restrict dst_state, const XXH
 *  These functions allow transformation of hash result into and from its canonical format.
 *  This way, hash values can be written into a file / memory, and remain comparable on different systems and programs.
 */
-typedef struct { unsigned char digest[4]; } XXH32_canonical_t;
-typedef struct { unsigned char digest[8]; } XXH64_canonical_t;
+typedef struct {
+  unsigned char digest[4];
+} XXH32_canonical_t;
+typedef struct {
+  unsigned char digest[8];
+} XXH64_canonical_t;
 
-XXH_PUBLIC_API void XXH32_canonicalFromHash(XXH32_canonical_t* dst, XXH32_hash_t hash);
-XXH_PUBLIC_API void XXH64_canonicalFromHash(XXH64_canonical_t* dst, XXH64_hash_t hash);
+XXH_PUBLIC_API void XXH32_canonicalFromHash (XXH32_canonical_t *dst, XXH32_hash_t hash);
+XXH_PUBLIC_API void XXH64_canonicalFromHash (XXH64_canonical_t *dst, XXH64_hash_t hash);
 
-XXH_PUBLIC_API XXH32_hash_t XXH32_hashFromCanonical(const XXH32_canonical_t* src);
-XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical(const XXH64_canonical_t* src);
+XXH_PUBLIC_API XXH32_hash_t XXH32_hashFromCanonical (const XXH32_canonical_t *src);
+XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical (const XXH64_canonical_t *src);
 
 #endif /* XXHASH_H_5627135585666179 */
 
@@ -249,28 +255,28 @@ XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical(const XXH64_canonical_t* src
    statically, on stack, or in a struct for example.
    Do not use members directly. */
 
-   struct XXH32_state_s {
-       unsigned total_len_32;
-       unsigned large_len;
-       unsigned v1;
-       unsigned v2;
-       unsigned v3;
-       unsigned v4;
-       unsigned mem32[4];   /* buffer defined as U32 for alignment */
-       unsigned memsize;
-       unsigned reserved;   /* never read nor write, will be removed in a future version */
-   };   /* typedef'd to XXH32_state_t */
+struct XXH32_state_s {
+  unsigned total_len_32;
+  unsigned large_len;
+  unsigned v1;
+  unsigned v2;
+  unsigned v3;
+  unsigned v4;
+  unsigned mem32[4];   /* buffer defined as U32 for alignment */
+  unsigned memsize;
+  unsigned reserved;   /* never read nor write, will be removed in a future version */
+};   /* typedef'd to XXH32_state_t */
 
-   struct XXH64_state_s {
-       unsigned long long total_len;
-       unsigned long long v1;
-       unsigned long long v2;
-       unsigned long long v3;
-       unsigned long long v4;
-       unsigned long long mem64[4];   /* buffer defined as U64 for alignment */
-       unsigned memsize;
-       unsigned reserved[2];          /* never read nor write, will be removed in a future version */
-   };   /* typedef'd to XXH64_state_t */
+struct XXH64_state_s {
+  unsigned long long total_len;
+  unsigned long long v1;
+  unsigned long long v2;
+  unsigned long long v3;
+  unsigned long long v4;
+  unsigned long long mem64[4];   /* buffer defined as U64 for alignment */
+  unsigned memsize;
+  unsigned reserved[2];          /* never read nor write, will be removed in a future version */
+};   /* typedef'd to XXH64_state_t */
 
 
 #  ifdef XXH_PRIVATE_API
@@ -278,7 +284,6 @@ XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical(const XXH64_canonical_t* src
 #  endif
 
 #endif /* XXH_STATIC_LINKING_ONLY && XXH_STATIC_H_3543687687345 */
-
 
 #if defined (__cplusplus)
 }

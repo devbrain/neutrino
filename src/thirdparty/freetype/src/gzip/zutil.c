@@ -11,7 +11,6 @@
 extern void exit OF((int));
 #endif
 
-
 #ifndef HAVE_MEMCPY
 
 void zmemcpy(dest, source, len)
@@ -128,7 +127,6 @@ void  zcfree (voidpf opaque, voidpf ptr)
 #endif
 #endif /* MSDOS && __TURBOC__ */
 
-
 #if defined(M_I86) && !defined(__32BIT__) && !defined( MY_ZCALLOC )
 /* Microsoft C in 16-bit mode */
 
@@ -152,7 +150,6 @@ void  zcfree (voidpf opaque, voidpf ptr)
 }
 
 #endif /* MSC */
-
 
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 

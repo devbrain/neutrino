@@ -19,17 +19,13 @@
 #ifndef WOFF2TAGS_H
 #define WOFF2TAGS_H
 
-
 #include <ft2build.h>
 #include FT_INTERNAL_OBJECTS_H
 
-
 FT_BEGIN_HEADER
 
-
-  FT_LOCAL( FT_ULong )
-  woff2_known_tags( FT_Byte  index );
-
+FT_LOCAL(FT_ULong)
+woff2_known_tags (FT_Byte index);
 
 FT_END_HEADER
 

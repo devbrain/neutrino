@@ -39,17 +39,14 @@
 #include "hb-ot-var-fvar-table.hh"
 #include "hb-ot-stat-table.hh"
 
-
-typedef hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> script_langsys_map;
+typedef hb_hashmap_t<unsigned, hb_set_t *, (unsigned) -1, nullptr> script_langsys_map;
 #ifndef HB_NO_SUBSET_CFF
 static inline void
 _add_cff_seac_components (const OT::cff1::accelerator_t &cff,
-			  hb_codepoint_t gid,
-			  hb_set_t *gids_to_retain)
-{
+                          hb_codepoint_t gid,
+                          hb_set_t *gids_to_retain) {
   hb_codepoint_t base_gid, accent_gid;
-  if (cff.get_seac_components (gid, &base_gid, &accent_gid))
-  {
+  if (cff.get_seac_components (gid, &base_gid, &accent_gid)) {
     gids_to_retain->add (base_gid);
     gids_to_retain->add (accent_gid);
   }
@@ -58,13 +55,10 @@ _add_cff_seac_components (const OT::cff1::accelerator_t &cff,
 
 static void
 _remap_palette_indexes (const hb_set_t *palette_indexes,
-                        hb_map_t       *mapping /* OUT */)
-{
+                        hb_map_t *mapping /* OUT */) {
   unsigned new_idx = 0;
-  for (unsigned palette_index : palette_indexes->iter ())
-  {
-    if (palette_index == 0xFFFF)
-    {
+  for (unsigned palette_index : palette_indexes->iter ()) {
+    if (palette_index == 0xFFFF) {
       mapping->set (palette_index, palette_index);
       continue;
     }
@@ -75,11 +69,10 @@ _remap_palette_indexes (const hb_set_t *palette_indexes,
 
 static void
 _remap_indexes (const hb_set_t *indexes,
-		hb_map_t       *mapping /* OUT */)
-{
+                hb_map_t *mapping /* OUT */) {
   unsigned count = indexes->get_population ();
 
-  for (auto _ : + hb_zip (indexes->iter (), hb_range (count)))
+  for (auto _ : +hb_zip (indexes->iter (), hb_range (count)))
     mapping->set (_.first, _.second);
 
 }
@@ -87,28 +80,28 @@ _remap_indexes (const hb_set_t *indexes,
 #ifndef HB_NO_SUBSET_LAYOUT
 typedef void (*layout_collect_func_t) (hb_face_t *face, hb_tag_t table_tag, const hb_tag_t *scripts, const hb_tag_t *languages, const hb_tag_t *features, hb_set_t *lookup_indexes /* OUT */);
 
-static void _collect_subset_layout (hb_face_t            *face,
-				    hb_tag_t              table_tag,
-				    const hb_set_t       *layout_features_to_retain,
-				    bool                  retain_all_features,
-				    layout_collect_func_t layout_collect_func,
-				    hb_set_t             *lookup_indices /* OUT */)
-{
-  if (retain_all_features)
-  {
+static void _collect_subset_layout (hb_face_t *face,
+                                    hb_tag_t table_tag,
+                                    const hb_set_t *layout_features_to_retain,
+                                    bool retain_all_features,
+                                    layout_collect_func_t layout_collect_func,
+                                    hb_set_t *lookup_indices /* OUT */) {
+  if (retain_all_features) {
     layout_collect_func (face,
-			 table_tag,
-			 nullptr,
-			 nullptr,
-			 nullptr,
-			 lookup_indices);
+                         table_tag,
+                         nullptr,
+                         nullptr,
+                         nullptr,
+                         lookup_indices);
     return;
   }
 
-  if (hb_set_is_empty (layout_features_to_retain)) return;
+  if (hb_set_is_empty (layout_features_to_retain))
+    return;
   unsigned num = layout_features_to_retain->get_population () + 1;
   hb_tag_t *features = (hb_tag_t *) malloc (num * sizeof (hb_tag_t));
-  if (!features) return;
+  if (!features)
+    return;
 
   unsigned i = 0;
   for (hb_tag_t f : layout_features_to_retain->iter ())
@@ -117,52 +110,51 @@ static void _collect_subset_layout (hb_face_t            *face,
   features[i] = 0;
 
   layout_collect_func (face,
-		       table_tag,
-		       nullptr,
-		       nullptr,
-		       features,
-		       lookup_indices);
+                       table_tag,
+                       nullptr,
+                       nullptr,
+                       features,
+                       lookup_indices);
 
   free (features);
 }
 
 template <typename T>
 static inline void
-_closure_glyphs_lookups_features (hb_face_t          *face,
-				  hb_set_t           *gids_to_retain,
-				  const hb_set_t     *layout_features_to_retain,
-				  bool                retain_all_features,
-				  hb_map_t           *lookups,
-				  hb_map_t           *features,
-				  script_langsys_map *langsys_map)
-{
+_closure_glyphs_lookups_features (hb_face_t *face,
+                                  hb_set_t *gids_to_retain,
+                                  const hb_set_t *layout_features_to_retain,
+                                  bool retain_all_features,
+                                  hb_map_t *lookups,
+                                  hb_map_t *features,
+                                  script_langsys_map *langsys_map) {
   hb_blob_ptr_t<T> table = hb_sanitize_context_t ().reference_table<T> (face);
   hb_tag_t table_tag = table->tableTag;
   hb_set_t lookup_indices;
   _collect_subset_layout (face,
-			  table_tag,
-			  layout_features_to_retain,
-			  retain_all_features,
-			  hb_ot_layout_collect_lookups,
-			  &lookup_indices);
+                          table_tag,
+                          layout_features_to_retain,
+                          retain_all_features,
+                          hb_ot_layout_collect_lookups,
+                          &lookup_indices);
 
   if (table_tag == HB_OT_TAG_GSUB)
     hb_ot_layout_lookups_substitute_closure (face,
-					    &lookup_indices,
-					     gids_to_retain);
+                                             &lookup_indices,
+                                             gids_to_retain);
   table->closure_lookups (face,
-			  gids_to_retain,
-			 &lookup_indices);
+                          gids_to_retain,
+                          &lookup_indices);
   _remap_indexes (&lookup_indices, lookups);
 
   // Collect and prune features
   hb_set_t feature_indices;
   _collect_subset_layout (face,
-			  table_tag,
-			  layout_features_to_retain,
-			  retain_all_features,
-			  hb_ot_layout_collect_features,
-			  &feature_indices);
+                          table_tag,
+                          layout_features_to_retain,
+                          retain_all_features,
+                          hb_ot_layout_collect_features,
+                          &feature_indices);
 
   table->prune_features (lookups, &feature_indices);
   hb_map_t duplicate_feature_map;
@@ -179,17 +171,15 @@ _closure_glyphs_lookups_features (hb_face_t          *face,
 
 #ifndef HB_NO_VAR
 static inline void
-  _collect_layout_variation_indices (hb_face_t *face,
-				     const hb_set_t *glyphset,
-				     const hb_map_t *gpos_lookups,
-				     hb_set_t  *layout_variation_indices,
-				     hb_map_t  *layout_variation_idx_map)
-{
+_collect_layout_variation_indices (hb_face_t *face,
+                                   const hb_set_t *glyphset,
+                                   const hb_map_t *gpos_lookups,
+                                   hb_set_t *layout_variation_indices,
+                                   hb_map_t *layout_variation_idx_map) {
   hb_blob_ptr_t<OT::GDEF> gdef = hb_sanitize_context_t ().reference_table<OT::GDEF> (face);
   hb_blob_ptr_t<OT::GPOS> gpos = hb_sanitize_context_t ().reference_table<OT::GPOS> (face);
 
-  if (!gdef->has_data ())
-  {
+  if (!gdef->has_data ()) {
     gdef.destroy ();
     gpos.destroy ();
     return;
@@ -208,10 +198,9 @@ static inline void
 #endif
 
 static inline void
-_cmap_closure (hb_face_t           *face,
-	       const hb_set_t      *unicodes,
-	       hb_set_t            *glyphset)
-{
+_cmap_closure (hb_face_t *face,
+               const hb_set_t *unicodes,
+               hb_set_t *glyphset) {
   OT::cmap::accelerator_t cmap;
   cmap.init (face);
   cmap.table->closure_glyphs (unicodes, glyphset);
@@ -220,24 +209,21 @@ _cmap_closure (hb_face_t           *face,
 
 static inline void
 _remove_invalid_gids (hb_set_t *glyphs,
-		      unsigned int num_glyphs)
-{
+                      unsigned int num_glyphs) {
   hb_codepoint_t gid = HB_SET_VALUE_INVALID;
-  while (glyphs->next (&gid))
-  {
+  while (glyphs->next (&gid)) {
     if (gid >= num_glyphs)
       glyphs->del (gid);
   }
 }
 
 static void
-_populate_gids_to_retain (hb_subset_plan_t* plan,
-			  const hb_set_t *unicodes,
-			  const hb_set_t *input_glyphs_to_retain,
-			  bool close_over_gsub,
-			  bool close_over_gpos,
-			  bool close_over_gdef)
-{
+_populate_gids_to_retain (hb_subset_plan_t *plan,
+                          const hb_set_t *unicodes,
+                          const hb_set_t *input_glyphs_to_retain,
+                          bool close_over_gsub,
+                          bool close_over_gpos,
+                          bool close_over_gdef) {
   OT::cmap::accelerator_t cmap;
   OT::glyf::accelerator_t glyf;
 #ifndef HB_NO_SUBSET_CFF
@@ -255,11 +241,9 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   hb_set_union (plan->_glyphset_gsub, input_glyphs_to_retain);
 
   hb_codepoint_t cp = HB_SET_VALUE_INVALID;
-  while (unicodes->next (&cp))
-  {
+  while (unicodes->next (&cp)) {
     hb_codepoint_t gid;
-    if (!cmap.get_nominal_glyph (cp, &gid))
-    {
+    if (!cmap.get_nominal_glyph (cp, &gid)) {
       DEBUG_MSG(SUBSET, nullptr, "Drop U+%04X; no gid", cp);
       continue;
     }
@@ -281,10 +265,9 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   _remove_invalid_gids (plan->_glyphset_gsub, plan->source->get_num_glyphs ());
 
   // Collect all glyphs referenced by COLRv0
-  hb_set_t* cur_glyphset = plan->_glyphset_gsub;
+  hb_set_t *cur_glyphset = plan->_glyphset_gsub;
   hb_set_t glyphset_colrv0;
-  if (colr.is_valid ())
-  {
+  if (colr.is_valid ()) {
     glyphset_colrv0.union_ (*cur_glyphset);
     for (hb_codepoint_t gid : cur_glyphset->iter ())
       colr.closure_glyphs (gid, &glyphset_colrv0);
@@ -303,8 +286,7 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 
   // Populate a full set of glyphs to retain by adding all referenced
   // composite glyphs.
-  for (hb_codepoint_t gid : cur_glyphset->iter ())
-  {
+  for (hb_codepoint_t gid : cur_glyphset->iter ()) {
     glyf.add_gid_and_children (gid, plan->_glyphset);
 #ifndef HB_NO_SUBSET_CFF
     if (cff.is_valid ())
@@ -313,7 +295,6 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   }
 
   _remove_invalid_gids (plan->_glyphset, plan->source->get_num_glyphs ());
-
 
 #ifndef HB_NO_VAR
   if (close_over_gdef)
@@ -333,43 +314,37 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 
 static void
 _create_old_gid_to_new_gid_map (const hb_face_t *face,
-				bool             retain_gids,
-				const hb_set_t  *all_gids_to_retain,
-				hb_map_t        *glyph_map, /* OUT */
-				hb_map_t        *reverse_glyph_map, /* OUT */
-				unsigned int    *num_glyphs /* OUT */)
-{
-  if (!retain_gids)
-  {
-    + hb_enumerate (hb_iter (all_gids_to_retain), (hb_codepoint_t) 0)
-    | hb_sink (reverse_glyph_map)
-    ;
+                                bool retain_gids,
+                                const hb_set_t *all_gids_to_retain,
+                                hb_map_t *glyph_map, /* OUT */
+                                hb_map_t *reverse_glyph_map, /* OUT */
+                                unsigned int *num_glyphs /* OUT */) {
+  if (!retain_gids) {
+    +hb_enumerate (hb_iter (all_gids_to_retain), (hb_codepoint_t) 0)
+    | hb_sink (reverse_glyph_map);
     *num_glyphs = reverse_glyph_map->get_population ();
-  } else {
-    + hb_iter (all_gids_to_retain)
+  }
+  else {
+    +hb_iter (all_gids_to_retain)
     | hb_map ([] (hb_codepoint_t _) {
-		return hb_pair_t<hb_codepoint_t, hb_codepoint_t> (_, _);
-	      })
-    | hb_sink (reverse_glyph_map)
-    ;
+      return hb_pair_t<hb_codepoint_t, hb_codepoint_t> (_, _);
+    })
+    | hb_sink (reverse_glyph_map);
 
     unsigned max_glyph =
-    + hb_iter (all_gids_to_retain)
-    | hb_reduce (hb_max, 0u)
-    ;
+        +hb_iter (all_gids_to_retain)
+        | hb_reduce (hb_max, 0u);
     *num_glyphs = max_glyph + 1;
   }
 
-  + reverse_glyph_map->iter ()
+  +reverse_glyph_map->iter ()
   | hb_map (&hb_pair_t<hb_codepoint_t, hb_codepoint_t>::reverse)
-  | hb_sink (glyph_map)
-  ;
+  | hb_sink (glyph_map);
 }
 
 static void
 _nameid_closure (hb_face_t *face,
-		 hb_set_t  *nameids)
-{
+                 hb_set_t *nameids) {
 #ifndef HB_NO_STYLE
   face->table.STAT->collect_name_ids (nameids);
 #endif
@@ -389,9 +364,8 @@ _nameid_closure (hb_face_t *face,
  * Since: 1.7.5
  **/
 hb_subset_plan_t *
-hb_subset_plan_create (hb_face_t         *face,
-		       hb_subset_input_t *input)
-{
+hb_subset_plan_create (hb_face_t *face,
+                       hb_subset_input_t *input) {
   hb_subset_plan_t *plan;
   if (unlikely (!(plan = hb_object_create<hb_subset_plan_t> ())))
     return const_cast<hb_subset_plan_t *> (&Null (hb_subset_plan_t));
@@ -440,18 +414,18 @@ hb_subset_plan_create (hb_face_t         *face,
   }
 
   _populate_gids_to_retain (plan,
-			    input->unicodes,
-			    input->glyphs,
-			    !input->drop_tables->has (HB_OT_TAG_GSUB),
-			    !input->drop_tables->has (HB_OT_TAG_GPOS),
-			    !input->drop_tables->has (HB_OT_TAG_GDEF));
+                            input->unicodes,
+                            input->glyphs,
+                            !input->drop_tables->has (HB_OT_TAG_GSUB),
+                            !input->drop_tables->has (HB_OT_TAG_GPOS),
+                            !input->drop_tables->has (HB_OT_TAG_GDEF));
 
   _create_old_gid_to_new_gid_map (face,
-				  input->retain_gids,
-				  plan->_glyphset,
-				  plan->glyph_map,
-				  plan->reverse_glyph_map,
-				  &plan->_num_output_glyphs);
+                                  input->retain_gids,
+                                  plan->_glyphset,
+                                  plan->glyph_map,
+                                  plan->reverse_glyph_map,
+                                  &plan->_num_output_glyphs);
 
   return plan;
 }
@@ -462,9 +436,9 @@ hb_subset_plan_create (hb_face_t         *face,
  * Since: 1.7.5
  **/
 void
-hb_subset_plan_destroy (hb_subset_plan_t *plan)
-{
-  if (!hb_object_destroy (plan)) return;
+hb_subset_plan_destroy (hb_subset_plan_t *plan) {
+  if (!hb_object_destroy (plan))
+    return;
 
   hb_set_destroy (plan->unicodes);
   hb_set_destroy (plan->name_ids);
@@ -488,8 +462,7 @@ hb_subset_plan_destroy (hb_subset_plan_t *plan)
   hb_set_destroy (plan->layout_variation_indices);
   hb_map_destroy (plan->layout_variation_idx_map);
 
-  if (plan->gsub_langsys)
-  {
+  if (plan->gsub_langsys) {
     for (auto _ : plan->gsub_langsys->iter ())
       hb_set_destroy (_.second);
 
@@ -498,8 +471,7 @@ hb_subset_plan_destroy (hb_subset_plan_t *plan)
     free (plan->gsub_langsys);
   }
 
-  if (plan->gpos_langsys)
-  {
+  if (plan->gpos_langsys) {
     for (auto _ : plan->gpos_langsys->iter ())
       hb_set_destroy (_.second);
 

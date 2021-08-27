@@ -23,7 +23,6 @@
 #include FT_IMAGE_H
 #include FT_INTERNAL_OBJECTS_H
 
-
 #ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
 
 /* define USE_LEGACY to implement the legacy filter */
@@ -368,69 +367,61 @@
 
 #else /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
-  /* add padding to accommodate outline shifts */
-  FT_BASE_DEF (void)
-  ft_lcd_padding( FT_BBox*        cbox,
-                  FT_GlyphSlot    slot,
-                  FT_Render_Mode  mode )
-  {
-    FT_Vector*  sub = slot->library->lcd_geometry;
+/* add padding to accommodate outline shifts */
+FT_BASE_DEF (void)
+ft_lcd_padding (FT_BBox *cbox,
+                FT_GlyphSlot slot,
+                FT_Render_Mode mode) {
+  FT_Vector *sub = slot->library->lcd_geometry;
 
-    if ( mode == FT_RENDER_MODE_LCD )
-    {
-      cbox->xMin -= FT_MAX( FT_MAX( sub[0].x, sub[1].x ), sub[2].x );
-      cbox->xMax -= FT_MIN( FT_MIN( sub[0].x, sub[1].x ), sub[2].x );
-      cbox->yMin -= FT_MAX( FT_MAX( sub[0].y, sub[1].y ), sub[2].y );
-      cbox->yMax -= FT_MIN( FT_MIN( sub[0].y, sub[1].y ), sub[2].y );
-    }
-    else if ( mode == FT_RENDER_MODE_LCD_V )
-    {
-      cbox->xMin -= FT_MAX( FT_MAX( sub[0].y, sub[1].y ), sub[2].y );
-      cbox->xMax -= FT_MIN( FT_MIN( sub[0].y, sub[1].y ), sub[2].y );
-      cbox->yMin += FT_MIN( FT_MIN( sub[0].x, sub[1].x ), sub[2].x );
-      cbox->yMax += FT_MAX( FT_MAX( sub[0].x, sub[1].x ), sub[2].x );
-    }
+  if (mode == FT_RENDER_MODE_LCD) {
+    cbox->xMin -= FT_MAX(FT_MAX (sub[0].x, sub[1].x), sub[2].x);
+    cbox->xMax -= FT_MIN(FT_MIN (sub[0].x, sub[1].x), sub[2].x);
+    cbox->yMin -= FT_MAX(FT_MAX (sub[0].y, sub[1].y), sub[2].y);
+    cbox->yMax -= FT_MIN(FT_MIN (sub[0].y, sub[1].y), sub[2].y);
   }
-
-
-  FT_EXPORT_DEF( FT_Error )
-  FT_Library_SetLcdFilterWeights( FT_Library      library,
-                                  unsigned char  *weights )
-  {
-    FT_UNUSED( library );
-    FT_UNUSED( weights );
-
-    return FT_THROW( Unimplemented_Feature );
+  else if (mode == FT_RENDER_MODE_LCD_V) {
+    cbox->xMin -= FT_MAX(FT_MAX (sub[0].y, sub[1].y), sub[2].y);
+    cbox->xMax -= FT_MIN(FT_MIN (sub[0].y, sub[1].y), sub[2].y);
+    cbox->yMin += FT_MIN(FT_MIN (sub[0].x, sub[1].x), sub[2].x);
+    cbox->yMax += FT_MAX(FT_MAX (sub[0].x, sub[1].x), sub[2].x);
   }
+}
+
+FT_EXPORT_DEF(FT_Error)
+FT_Library_SetLcdFilterWeights (FT_Library library,
+                                unsigned char *weights) {
+  FT_UNUSED(library);
+  FT_UNUSED(weights);
+
+  return FT_THROW(Unimplemented_Feature);
+}
+
+FT_EXPORT_DEF(FT_Error)
+FT_Library_SetLcdFilter (FT_Library library,
+                         FT_LcdFilter filter) {
+  FT_UNUSED(library);
+  FT_UNUSED(filter);
+
+  return FT_THROW(Unimplemented_Feature);
+}
 
 
-  FT_EXPORT_DEF( FT_Error )
-  FT_Library_SetLcdFilter( FT_Library    library,
-                           FT_LcdFilter  filter )
-  {
-    FT_UNUSED( library );
-    FT_UNUSED( filter );
+/* documentation in ftlcdfil.h */
 
-    return FT_THROW( Unimplemented_Feature );
-  }
+FT_EXPORT_DEF(FT_Error)
+FT_Library_SetLcdGeometry (FT_Library library,
+                           FT_Vector sub[3]) {
+  if (!library)
+    return FT_THROW(Invalid_Library_Handle);
 
+  if (!sub)
+    return FT_THROW(Invalid_Argument);
 
-  /* documentation in ftlcdfil.h */
+  ft_memcpy (library->lcd_geometry, sub, 3 * sizeof (FT_Vector));
 
-  FT_EXPORT_DEF( FT_Error )
-  FT_Library_SetLcdGeometry( FT_Library  library,
-                             FT_Vector   sub[3] )
-  {
-    if ( !library )
-      return FT_THROW( Invalid_Library_Handle );
-
-    if ( !sub )
-      return FT_THROW( Invalid_Argument );
-
-    ft_memcpy( library->lcd_geometry, sub, 3 * sizeof( FT_Vector ) );
-
-    return FT_THROW( Unimplemented_Feature );
-  }
+  return FT_THROW(Unimplemented_Feature);
+}
 
 #endif /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 

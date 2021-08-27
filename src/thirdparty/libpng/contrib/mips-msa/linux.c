@@ -26,42 +26,38 @@
 #include <stdlib.h>
 
 static int
-png_have_msa(png_structp png_ptr)
-{
-   FILE *f = fopen("/proc/cpuinfo", "rb");
+png_have_msa (png_structp png_ptr) {
+  FILE *f = fopen ("/proc/cpuinfo", "rb");
 
-   char *string = "msa";
-   char word[10];
+  char *string = "msa";
+  char word[10];
 
-   if (f != NULL)
-   {
-      while(!feof(f))
-      {
-         int ch = fgetc(f);
-         static int i = 0;
+  if (f != NULL) {
+    while (!feof (f)) {
+      int ch = fgetc (f);
+      static int i = 0;
 
-         while(!(ch <= 32))
-         {
-            word[i++] = ch;
-            ch = fgetc(f);
-         }
-
-         int val = strcmp(string, word);
-
-         if (val == 0) {
-            fclose(f);
-            return 1;
-         }
-
-         i = 0;
-         memset(word, 0, 10);
+      while (!(ch <= 32)) {
+        word[i++] = ch;
+        ch = fgetc (f);
       }
 
-      fclose(f);
-   }
+      int val = strcmp (string, word);
+
+      if (val == 0) {
+        fclose (f);
+        return 1;
+      }
+
+      i = 0;
+      memset (word, 0, 10);
+    }
+
+    fclose (f);
+  }
 #ifdef PNG_WARNINGS_SUPPORTED
-   else
-      png_warning(png_ptr, "/proc/cpuinfo open failed");
+  else
+     png_warning(png_ptr, "/proc/cpuinfo open failed");
 #endif
-   return 0;
+  return 0;
 }

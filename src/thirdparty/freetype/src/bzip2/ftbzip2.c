@@ -29,7 +29,6 @@
 #include FT_BZIP2_H
 #include FT_CONFIG_STANDARD_LIBRARY_H
 
-
 #include FT_MODULE_ERRORS_H
 
 #undef FTERRORS_H_
@@ -39,7 +38,6 @@
 #define FT_ERR_BASE    FT_Mod_Err_Bzip2
 
 #include FT_ERRORS_H
-
 
 #ifdef FT_CONFIG_OPTION_USE_BZIP2
 
@@ -505,15 +503,14 @@
 
 #else  /* !FT_CONFIG_OPTION_USE_BZIP2 */
 
-  FT_EXPORT_DEF( FT_Error )
-  FT_Stream_OpenBzip2( FT_Stream  stream,
-                       FT_Stream  source )
-  {
-    FT_UNUSED( stream );
-    FT_UNUSED( source );
+FT_EXPORT_DEF(FT_Error)
+FT_Stream_OpenBzip2 (FT_Stream stream,
+                     FT_Stream source) {
+  FT_UNUSED(stream);
+  FT_UNUSED(source);
 
-    return FT_THROW( Unimplemented_Feature );
-  }
+  return FT_THROW(Unimplemented_Feature);
+}
 
 #endif /* !FT_CONFIG_OPTION_USE_BZIP2 */
 

@@ -52,12 +52,14 @@
 #  include <png.h>
 #else
 #  include "../../png.h"
+
 #endif
 
 #ifdef PNG_ZLIB_HEADER
 #  include PNG_ZLIB_HEADER
 #else
 #  include <zlib.h>   /* For crc32 */
+
 #endif
 
 /* 1.6.1 added support for the configure test harness, which uses 77 to indicate
@@ -71,7 +73,7 @@
 
 /* pngvalid requires write support and one of the fixed or floating point APIs.
  */
-#if defined(PNG_WRITE_SUPPORTED) &&\
+#if defined(PNG_WRITE_SUPPORTED) && \
    (defined(PNG_FIXED_POINT_SUPPORTED) || defined(PNG_FLOATING_POINT_SUPPORTED))
 
 #if PNG_LIBPNG_VER < 10500
@@ -7025,7 +7027,7 @@ transform_test(png_modifier *pmIn, png_uint_32 idIn,
 #define IT(name)\
 static image_transform ITSTRUCT(name) =\
 {\
-   #name,\
+#name,\
    1, /*enable*/\
    &PT, /*list*/\
    0, /*global_use*/\
@@ -12269,11 +12271,10 @@ int main(int argc, char **argv)
    return 0;
 }
 #else /* write or low level APIs not supported */
-int main(void)
-{
-   fprintf(stderr,
-      "pngvalid: no low level write support in libpng, all tests skipped\n");
-   /* So the test is skipped: */
-   return SKIP;
+int main (void) {
+  fprintf (stderr,
+           "pngvalid: no low level write support in libpng, all tests skipped\n");
+  /* So the test is skipped: */
+  return SKIP;
 }
 #endif

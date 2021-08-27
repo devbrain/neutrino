@@ -35,7 +35,6 @@
 #include "config.h"
 #endif
 
-
 #ifdef HB_TINY
 #define HB_LEAN
 #define HB_MINI
@@ -157,6 +156,5 @@
 #define HB_OPTIMIZE_SIZE
 #endif
 #endif
-
 
 #endif /* HB_CONFIG_HH */

@@ -29,36 +29,30 @@
 #include "hb-repacker.hh"
 #include "hb-open-type.hh"
 
-static void start_object(const char* tag,
-                         unsigned len,
-                         hb_serialize_context_t* c)
-{
+static void start_object (const char *tag,
+                          unsigned len,
+                          hb_serialize_context_t *c) {
   c->push ();
-  char* obj = c->allocate_size<char> (len);
+  char *obj = c->allocate_size<char> (len);
   strncpy (obj, tag, len);
 }
 
-
-static unsigned add_object(const char* tag,
-                           unsigned len,
-                           hb_serialize_context_t* c)
-{
+static unsigned add_object (const char *tag,
+                            unsigned len,
+                            hb_serialize_context_t *c) {
   start_object (tag, len, c);
   return c->pop_pack (false);
 }
 
-
 static void add_offset (unsigned id,
-                        hb_serialize_context_t* c)
-{
-  OT::Offset16* offset = c->start_embed<OT::Offset16> ();
+                        hb_serialize_context_t *c) {
+  OT::Offset16 *offset = c->start_embed<OT::Offset16> ();
   c->extend_min (offset);
   c->add_link (*offset, id);
 }
 
 static void
-populate_serializer_simple (hb_serialize_context_t* c)
-{
+populate_serializer_simple (hb_serialize_context_t *c) {
   c->start_serialize<char> ();
 
   unsigned obj_1 = add_object ("ghi", 3, c);
@@ -69,18 +63,17 @@ populate_serializer_simple (hb_serialize_context_t* c)
   add_offset (obj_1, c);
   c->pop_pack ();
 
-  c->end_serialize();
+  c->end_serialize ();
 }
 
 static void
-populate_serializer_with_overflow (hb_serialize_context_t* c)
-{
-  std::string large_string(50000, 'a');
+populate_serializer_with_overflow (hb_serialize_context_t *c) {
+  std::string large_string (50000, 'a');
   c->start_serialize<char> ();
 
-  unsigned obj_1 = add_object (large_string.c_str(), 10000, c);
-  unsigned obj_2 = add_object (large_string.c_str(), 20000, c);
-  unsigned obj_3 = add_object (large_string.c_str(), 50000, c);
+  unsigned obj_1 = add_object (large_string.c_str (), 10000, c);
+  unsigned obj_2 = add_object (large_string.c_str (), 20000, c);
+  unsigned obj_3 = add_object (large_string.c_str (), 50000, c);
 
   start_object ("abc", 3, c);
   add_offset (obj_3, c);
@@ -88,32 +81,30 @@ populate_serializer_with_overflow (hb_serialize_context_t* c)
   add_offset (obj_1, c);
   c->pop_pack ();
 
-  c->end_serialize();
+  c->end_serialize ();
 }
 
 static void
-populate_serializer_with_dedup_overflow (hb_serialize_context_t* c)
-{
-  std::string large_string(70000, 'a');
+populate_serializer_with_dedup_overflow (hb_serialize_context_t *c) {
+  std::string large_string (70000, 'a');
   c->start_serialize<char> ();
 
   unsigned obj_1 = add_object ("def", 3, c);
 
-  start_object (large_string.c_str(), 60000, c);
+  start_object (large_string.c_str (), 60000, c);
   add_offset (obj_1, c);
   unsigned obj_2 = c->pop_pack (false);
 
-  start_object (large_string.c_str(), 10000, c);
+  start_object (large_string.c_str (), 10000, c);
   add_offset (obj_2, c);
   add_offset (obj_1, c);
   c->pop_pack (false);
 
-  c->end_serialize();
+  c->end_serialize ();
 }
 
 static void
-populate_serializer_complex_1 (hb_serialize_context_t* c)
-{
+populate_serializer_complex_1 (hb_serialize_context_t *c) {
   c->start_serialize<char> ();
 
   unsigned obj_4 = add_object ("jkl", 3, c);
@@ -128,12 +119,11 @@ populate_serializer_complex_1 (hb_serialize_context_t* c)
   add_offset (obj_4, c);
   c->pop_pack ();
 
-  c->end_serialize();
+  c->end_serialize ();
 }
 
 static void
-populate_serializer_complex_2 (hb_serialize_context_t* c)
-{
+populate_serializer_complex_2 (hb_serialize_context_t *c) {
   c->start_serialize<char> ();
 
   unsigned obj_5 = add_object ("mn", 2, c);
@@ -154,12 +144,11 @@ populate_serializer_complex_2 (hb_serialize_context_t* c)
   add_offset (obj_5, c);
   c->pop_pack ();
 
-  c->end_serialize();
+  c->end_serialize ();
 }
 
 static void
-populate_serializer_complex_3 (hb_serialize_context_t* c)
-{
+populate_serializer_complex_3 (hb_serialize_context_t *c) {
   c->start_serialize<char> ();
 
   unsigned obj_6 = add_object ("opqrst", 6, c);
@@ -184,13 +173,12 @@ populate_serializer_complex_3 (hb_serialize_context_t* c)
   add_offset (obj_5, c);
   c->pop_pack ();
 
-  c->end_serialize();
+  c->end_serialize ();
 }
 
-static void test_sort_kahn_1 ()
-{
+static void test_sort_kahn_1 () {
   size_t buffer_size = 100;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_complex_1 (&c);
 
@@ -215,21 +203,19 @@ static void test_sort_kahn_1 ()
   free (buffer);
 }
 
-static void test_sort_kahn_2 ()
-{
+static void test_sort_kahn_2 () {
   size_t buffer_size = 100;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_complex_2 (&c);
 
   graph_t graph (c.object_graph ());
   graph.sort_kahn ();
 
-
   assert(strncmp (graph.object (4).head, "abc", 3) == 0);
   assert(graph.object (4).links.length == 3);
   assert(graph.object (4).links[0].objidx == 3);
-    assert(graph.object (4).links[1].objidx == 0);
+  assert(graph.object (4).links[1].objidx == 0);
   assert(graph.object (4).links[2].objidx == 2);
 
   assert(strncmp (graph.object (3).head, "def", 3) == 0);
@@ -249,10 +235,9 @@ static void test_sort_kahn_2 ()
   free (buffer);
 }
 
-static void test_sort_shortest ()
-{
+static void test_sort_shortest () {
   size_t buffer_size = 100;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_complex_2 (&c);
 
@@ -282,10 +267,9 @@ static void test_sort_shortest ()
   free (buffer);
 }
 
-static void test_duplicate_leaf ()
-{
+static void test_duplicate_leaf () {
   size_t buffer_size = 100;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_complex_2 (&c);
 
@@ -318,10 +302,9 @@ static void test_duplicate_leaf ()
   free (buffer);
 }
 
-static void test_duplicate_interior ()
-{
+static void test_duplicate_interior () {
   size_t buffer_size = 100;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_complex_3 (&c);
 
@@ -360,15 +343,14 @@ static void test_duplicate_interior ()
 }
 
 static void
-test_serialize ()
-{
+test_serialize () {
   size_t buffer_size = 100;
-  void* buffer_1 = malloc (buffer_size);
+  void *buffer_1 = malloc (buffer_size);
   hb_serialize_context_t c1 (buffer_1, buffer_size);
   populate_serializer_simple (&c1);
   hb_bytes_t expected = c1.copy_bytes ();
 
-  void* buffer_2 = malloc (buffer_size);
+  void *buffer_2 = malloc (buffer_size);
   hb_serialize_context_t c2 (buffer_2, buffer_size);
 
   graph_t graph (c1.object_graph ());
@@ -383,10 +365,9 @@ test_serialize ()
   free (buffer_2);
 }
 
-static void test_will_overflow_1 ()
-{
+static void test_will_overflow_1 () {
   size_t buffer_size = 100;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_complex_2 (&c);
   graph_t graph (c.object_graph ());
@@ -396,10 +377,9 @@ static void test_will_overflow_1 ()
   free (buffer);
 }
 
-static void test_will_overflow_2 ()
-{
+static void test_will_overflow_2 () {
   size_t buffer_size = 160000;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_with_overflow (&c);
   graph_t graph (c.object_graph ());
@@ -409,10 +389,9 @@ static void test_will_overflow_2 ()
   free (buffer);
 }
 
-static void test_will_overflow_3 ()
-{
+static void test_will_overflow_3 () {
   size_t buffer_size = 160000;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_with_dedup_overflow (&c);
   graph_t graph (c.object_graph ());
@@ -422,15 +401,14 @@ static void test_will_overflow_3 ()
   free (buffer);
 }
 
-static void test_resolve_overflows_via_sort ()
-{
+static void test_resolve_overflows_via_sort () {
   size_t buffer_size = 160000;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_with_overflow (&c);
   graph_t graph (c.object_graph ());
 
-  void* out_buffer = malloc (buffer_size);
+  void *out_buffer = malloc (buffer_size);
   hb_serialize_context_t out (out_buffer, buffer_size);
 
   hb_resolve_overflows (c.object_graph (), &out);
@@ -443,15 +421,14 @@ static void test_resolve_overflows_via_sort ()
   free (out_buffer);
 }
 
-static void test_resolve_overflows_via_duplication ()
-{
+static void test_resolve_overflows_via_duplication () {
   size_t buffer_size = 160000;
-  void* buffer = malloc (buffer_size);
+  void *buffer = malloc (buffer_size);
   hb_serialize_context_t c (buffer, buffer_size);
   populate_serializer_with_dedup_overflow (&c);
   graph_t graph (c.object_graph ());
 
-  void* out_buffer = malloc (buffer_size);
+  void *out_buffer = malloc (buffer_size);
   hb_serialize_context_t out (out_buffer, buffer_size);
 
   hb_resolve_overflows (c.object_graph (), &out);
@@ -469,8 +446,7 @@ static void test_resolve_overflows_via_duplication ()
 // TODO(garretrieger): add tests for priority raising.
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char **argv) {
   test_serialize ();
   test_sort_kahn_1 ();
   test_sort_kahn_2 ();

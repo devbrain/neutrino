@@ -190,7 +190,6 @@ is subject to change.
 #ifndef CEXCEPT_H
 #define CEXCEPT_H
 
-
 #include <setjmp.h>
 
 #define define_exception_type(etype) \
@@ -243,6 +242,5 @@ struct exception_context { \
 #define Throw \
   for (;; longjmp(*the_exception_context->penv, 1)) \
     the_exception_context->v.etmp =
-
 
 #endif /* CEXCEPT_H */

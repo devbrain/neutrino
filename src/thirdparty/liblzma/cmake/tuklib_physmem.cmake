@@ -16,11 +16,11 @@ include(CheckIncludeFile)
 
 function(tuklib_physmem_internal_check)
     # Shortcut on Windows:
-    if(WIN32 OR CYGWIN)
+    if (WIN32 OR CYGWIN)
         # Nothing to do, the tuklib_physmem.c handles it.
         set(TUKLIB_PHYSMEM_DEFINITIONS "" CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 
     # Full check for special cases:
     check_c_source_compiles("
@@ -32,12 +32,12 @@ function(tuklib_physmem_internal_check)
             compile error
             #endif
         "
-        TUKLIB_PHYSMEM_SPECIAL)
-    if(TUKLIB_PHYSMEM_SPECIAL)
+            TUKLIB_PHYSMEM_SPECIAL)
+    if (TUKLIB_PHYSMEM_SPECIAL)
         # Nothing to do, the tuklib_physmem.c handles it.
         set(TUKLIB_PHYSMEM_DEFINITIONS "" CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 
     # Look for AIX-specific solution before sysconf(), because the test
     # for sysconf() will pass on AIX but won't actually work
@@ -50,11 +50,11 @@ function(tuklib_physmem_internal_check)
                 return 0;
             }
         "
-        TUKLIB_PHYSMEM_AIX)
-    if(TUKLIB_PHYSMEM_AIX)
+            TUKLIB_PHYSMEM_AIX)
+    if (TUKLIB_PHYSMEM_AIX)
         set(TUKLIB_PHYSMEM_DEFINITIONS "TUKLIB_PHYSMEM_AIX" CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 
     # sysconf()
     check_c_source_compiles("
@@ -67,18 +67,18 @@ function(tuklib_physmem_internal_check)
                 return 0;
             }
         "
-        TUKLIB_PHYSMEM_SYSCONF)
-    if(TUKLIB_PHYSMEM_SYSCONF)
+            TUKLIB_PHYSMEM_SYSCONF)
+    if (TUKLIB_PHYSMEM_SYSCONF)
         set(TUKLIB_PHYSMEM_DEFINITIONS "TUKLIB_PHYSMEM_SYSCONF"
-            CACHE INTERNAL "")
+                CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 
     # sysctl()
     check_include_file(sys/param.h HAVE_SYS_PARAM_H)
-    if(HAVE_SYS_PARAM_H)
+    if (HAVE_SYS_PARAM_H)
         list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_SYS_PARAM_H)
-    endif()
+    endif ()
 
     check_c_source_compiles("
             #ifdef HAVE_SYS_PARAM_H
@@ -94,19 +94,19 @@ function(tuklib_physmem_internal_check)
                 return 0;
             }
         "
-        TUKLIB_PHYSMEM_SYSCTL)
-    if(TUKLIB_PHYSMEM_SYSCTL)
-        if(HAVE_SYS_PARAM_H)
+            TUKLIB_PHYSMEM_SYSCTL)
+    if (TUKLIB_PHYSMEM_SYSCTL)
+        if (HAVE_SYS_PARAM_H)
             set(TUKLIB_PHYSMEM_DEFINITIONS
-                "HAVE_PARAM_H;TUKLIB_PHYSMEM_SYSCTL"
-                CACHE INTERNAL "")
-        else()
+                    "HAVE_PARAM_H;TUKLIB_PHYSMEM_SYSCTL"
+                    CACHE INTERNAL "")
+        else ()
             set(TUKLIB_PHYSMEM_DEFINITIONS
-                "TUKLIB_PHYSMEM_SYSCTL"
-                CACHE INTERNAL "")
-        endif()
+                    "TUKLIB_PHYSMEM_SYSCTL"
+                    CACHE INTERNAL "")
+        endif ()
         return()
-    endif()
+    endif ()
 
     # HP-UX
     check_c_source_compiles("
@@ -121,30 +121,30 @@ function(tuklib_physmem_internal_check)
                 return 0;
             }
         "
-        TUKLIB_PHYSMEM_PSTAT_GETSTATIC)
-    if(TUKLIB_PHYSMEM_PSTAT_GETSTATIC)
+            TUKLIB_PHYSMEM_PSTAT_GETSTATIC)
+    if (TUKLIB_PHYSMEM_PSTAT_GETSTATIC)
         set(TUKLIB_PHYSMEM_DEFINITIONS "TUKLIB_PHYSMEM_PSTAT_GETSTATIC"
-            CACHE INTERNAL "")
+                CACHE INTERNAL "")
         return()
-    endif()
+    endif ()
 endfunction()
 
 function(tuklib_physmem TARGET_OR_ALL)
-    if(NOT DEFINED CACHE{TUKLIB_PHYSMEM_FOUND})
+    if (NOT DEFINED CACHE{TUKLIB_PHYSMEM_FOUND})
         message(STATUS "Checking how to detect the amount of physical memory")
         tuklib_physmem_internal_check()
 
-        if(DEFINED CACHE{TUKLIB_PHYSMEM_DEFINITIONS})
+        if (DEFINED CACHE{TUKLIB_PHYSMEM_DEFINITIONS})
             set(TUKLIB_PHYSMEM_FOUND 1 CACHE INTERNAL "")
-        else()
+        else ()
             set(TUKLIB_PHYSMEM_FOUND 0 CACHE INTERNAL "")
             message(WARNING
-                "No method to detect the amount of physical memory was found")
-        endif()
-    endif()
+                    "No method to detect the amount of physical memory was found")
+        endif ()
+    endif ()
 
-    if(TUKLIB_PHYSMEM_FOUND)
+    if (TUKLIB_PHYSMEM_FOUND)
         tuklib_add_definitions("${TARGET_OR_ALL}"
-                               "${TUKLIB_PHYSMEM_DEFINITIONS}")
-    endif()
+                "${TUKLIB_PHYSMEM_DEFINITIONS}")
+    endif ()
 endfunction()

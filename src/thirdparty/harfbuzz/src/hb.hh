@@ -29,7 +29,6 @@
 #ifndef HB_HH
 #define HB_HH
 
-
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC
 #ifdef _MSC_VER
 #pragma warning( disable: 4068 ) /* Unknown pragma */
@@ -112,13 +111,13 @@
 
 /* Ignored currently, but should be fixed at some point. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
-#pragma GCC diagnostic ignored "-Wconversion"			// TODO fix
-#pragma GCC diagnostic ignored "-Wformat-signedness"		// TODO fix
-#pragma GCC diagnostic ignored "-Wshadow"			// TODO fix
-#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"	// TODO fix
-#pragma GCC diagnostic ignored "-Wunused-parameter"		// TODO fix
+#pragma GCC diagnostic ignored "-Wconversion"            // TODO fix
+#pragma GCC diagnostic ignored "-Wformat-signedness"        // TODO fix
+#pragma GCC diagnostic ignored "-Wshadow"            // TODO fix
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"    // TODO fix
+#pragma GCC diagnostic ignored "-Wunused-parameter"        // TODO fix
 #if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wunused-result"		// TODO fix
+#pragma GCC diagnostic ignored "-Wunused-result"        // TODO fix
 #endif
 #endif
 
@@ -137,7 +136,6 @@
 
 #endif
 #endif
-
 
 #include "hb-config.hh"
 
@@ -173,10 +171,13 @@
 #endif
 
 #include "hb.h"
+
 #define HB_H_IN
 #include "hb-ot.h"
+
 #define HB_OT_H_IN
 #include "hb-aat.h"
+
 #define HB_AAT_H_IN
 
 #include <cassert>
@@ -204,17 +205,17 @@
 #include <winapifamily.h>
 #endif
 
-#define HB_PASTE1(a,b) a##b
-#define HB_PASTE(a,b) HB_PASTE1(a,b)
+#define HB_PASTE1(a, b) a##b
+#define HB_PASTE(a, b) HB_PASTE1(a,b)
 
 
 /* Compile-time custom allocator support. */
 
 #if !defined(HB_CUSTOM_MALLOC) \
-  && defined(hb_malloc_impl) \
-  && defined(hb_calloc_impl) \
-  && defined(hb_realloc_impl) \
-  && defined(hb_free_impl)
+ && defined(hb_malloc_impl) \
+ && defined(hb_calloc_impl) \
+ && defined(hb_realloc_impl) \
+ && defined(hb_free_impl)
 #define HB_CUSTOM_MALLOC
 #endif
 
@@ -253,7 +254,7 @@ extern "C" void  hb_free_impl(void *ptr);
 #define HB_PRINTF_FUNC(format_idx, arg_idx)
 #endif
 #if defined(__GNUC__) && (__GNUC__ >= 4) || (__clang__)
-#define HB_UNUSED	__attribute__((unused))
+#define HB_UNUSED    __attribute__((unused))
 #elif defined(_MSC_VER) /* https://github.com/harfbuzz/harfbuzz/issues/635 */
 #define HB_UNUSED __pragma(warning(suppress: 4100 4101))
 #else
@@ -264,10 +265,10 @@ extern "C" void  hb_free_impl(void *ptr);
 # if !defined(HB_NO_VISIBILITY) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(_MSC_VER) && !defined(__SUNPRO_CC)
 #  define HB_INTERNAL __attribute__((__visibility__("hidden")))
 # elif defined(__MINGW32__)
-   /* We use -export-symbols on mingw32, since it does not support visibility attributes. */
+/* We use -export-symbols on mingw32, since it does not support visibility attributes. */
 #  define HB_INTERNAL
 # elif defined (_MSC_VER) && defined (HB_DLL_EXPORT)
-   /* We do not try to export internal symbols on Visual Studio */
+/* We do not try to export internal symbols on Visual Studio */
 #  define HB_INTERNAL
 #else
 #  define HB_INTERNAL
@@ -312,16 +313,16 @@ extern "C" void  hb_free_impl(void *ptr);
  * }
  */
 #if defined(__clang__) && __cplusplus >= 201103L
-   /* clang's fallthrough annotations are only available starting in C++11. */
+/* clang's fallthrough annotations are only available starting in C++11. */
 #  define HB_FALLTHROUGH [[clang::fallthrough]]
 #elif defined(__GNUC__) && (__GNUC__ >= 7)
-   /* GNU fallthrough attribute is available from GCC7 */
+/* GNU fallthrough attribute is available from GCC7 */
 #  define HB_FALLTHROUGH __attribute__((fallthrough))
 #elif defined(_MSC_VER)
-   /*
-    * MSVC's __fallthrough annotations are checked by /analyze (Code Analysis):
-    * https://msdn.microsoft.com/en-us/library/ms235402%28VS.80%29.aspx
-    */
+/*
+ * MSVC's __fallthrough annotations are checked by /analyze (Code Analysis):
+ * https://msdn.microsoft.com/en-us/library/ms235402%28VS.80%29.aspx
+ */
 #  include <sal.h>
 #  define HB_FALLTHROUGH __fallthrough
 #else
@@ -348,11 +349,10 @@ extern "C" void  hb_free_impl(void *ptr);
 #define HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
 #endif
 
-
 #ifdef _WIN32
-   /* We need Windows Vista for both Uniscribe backend and for
-    * MemoryBarrier.  We don't support compiling on Windows XP,
-    * though we run on it fine. */
+/* We need Windows Vista for both Uniscribe backend and for
+ * MemoryBarrier.  We don't support compiling on Windows XP,
+ * though we run on it fine. */
 #  if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0600
 #    undef _WIN32_WINNT
 #  endif
@@ -369,7 +369,7 @@ extern "C" void  hb_free_impl(void *ptr);
 #  endif
 
 #  if defined(_WIN32_WCE)
-     /* Some things not defined on Windows CE. */
+  /* Some things not defined on Windows CE. */
 #    define vsnprintf _vsnprintf
 #    ifndef HB_NO_GETENV
 #      define HB_NO_GETENV
@@ -394,6 +394,7 @@ extern "C" void  hb_free_impl(void *ptr);
 
 #ifndef HB_NO_ERRNO
 #  include <cerrno>
+
 #else
 static int HB_UNUSED _hb_errno = 0;
 #  undef errno
@@ -405,7 +406,7 @@ static int HB_UNUSED _hb_errno = 0;
  * platforms.  Whitelist.
  * https://bugs.freedesktop.org/show_bug.cgi?id=82246 */
 #  if defined(__linux) && defined(__GLIBC_PREREQ)
-#    if __GLIBC_PREREQ(2,3)
+#    if __GLIBC_PREREQ(2, 3)
 /* From atexit() manpage, it's safe with glibc 2.2.3 on Linux. */
 #      define HB_USE_ATEXIT 1
 #    endif
@@ -452,13 +453,13 @@ static_assert ((sizeof (hb_var_int_t) == 4), "");
 #include "hb-meta.hh"
 #include "hb-mutex.hh"
 #include "hb-number.hh"
-#include "hb-atomic.hh"	// Requires: hb-meta
-#include "hb-null.hh"	// Requires: hb-meta
-#include "hb-algs.hh"	// Requires: hb-meta hb-null hb-number
-#include "hb-iter.hh"	// Requires: hb-algs hb-meta
-#include "hb-debug.hh"	// Requires: hb-algs hb-atomic
-#include "hb-array.hh"	// Requires: hb-algs hb-iter hb-null
-#include "hb-vector.hh"	// Requires: hb-array hb-null
-#include "hb-object.hh"	// Requires: hb-atomic hb-mutex hb-vector
+#include "hb-atomic.hh"    // Requires: hb-meta
+#include "hb-null.hh"    // Requires: hb-meta
+#include "hb-algs.hh"    // Requires: hb-meta hb-null hb-number
+#include "hb-iter.hh"    // Requires: hb-algs hb-meta
+#include "hb-debug.hh"    // Requires: hb-algs hb-atomic
+#include "hb-array.hh"    // Requires: hb-algs hb-iter hb-null
+#include "hb-vector.hh"    // Requires: hb-array hb-null
+#include "hb-object.hh"    // Requires: hb-atomic hb-mutex hb-vector
 
 #endif /* HB_HH */

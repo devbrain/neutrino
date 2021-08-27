@@ -12,7 +12,7 @@ using namespace neutrino::tiled::tmx;
 
 TEST_CASE("Parse a Map from Tiled's documentation")
 {
-    const std::string txt = R"(
+  const std::string txt = R"(
             {
               "backgroundcolor": "#656667",
               "compressionlevel": 2,
@@ -43,27 +43,26 @@ TEST_CASE("Parse a Map from Tiled's documentation")
             }
     )";
 
-    auto the_map = test::load_map(txt);
+  auto the_map = test::load_map (txt);
 
-    REQUIRE(the_map.background_color() == "#656667");
-    REQUIRE(the_map.width() == 4);
-    REQUIRE(the_map.height() == 4);
+  REQUIRE(the_map.background_color () == "#656667");
+  REQUIRE(the_map.width () == 4);
+  REQUIRE(the_map.height () == 4);
 
-    REQUIRE(the_map.orientation() == orientation_t::ORTHOGONAL);
-    REQUIRE(the_map.render_order() == render_order_t::RIGHT_DOWN);
-    REQUIRE(the_map.tile_width() == 32);
-    REQUIRE(the_map.tile_height() == 32);
+  REQUIRE(the_map.orientation () == orientation_t::ORTHOGONAL);
+  REQUIRE(the_map.render_order () == render_order_t::RIGHT_DOWN);
+  REQUIRE(the_map.tile_width () == 32);
+  REQUIRE(the_map.tile_height () == 32);
 
-    REQUIRE(the_map.version() == "1");
-    REQUIRE(the_map.get("mapProperty1") == test::to_prop(typed_string{"one", "string"}));
-    REQUIRE(the_map.get("mapProperty2") == test::to_prop(typed_string{"two", "string"}));
+  REQUIRE(the_map.version () == "1");
+  REQUIRE(the_map.get ("mapProperty1") == test::to_prop (typed_string{"one", "string"}));
+  REQUIRE(the_map.get ("mapProperty2") == test::to_prop (typed_string{"two", "string"}));
 }
 
 TEST_CASE("Parse a Layer from Tiled's documentation - read simple values")
 {
-    SUBCASE("Layer - Tile Layer format")
-    {
-        const std::string txt = R"(
+  SUBCASE("Layer - Tile Layer format") {
+    const std::string txt = R"(
             {
               "data": [1, 2, 1, 2, 3, 1, 3, 1, 2, 2, 3, 3, 4, 4, 4, 1 ],
               "height": 4,
@@ -84,26 +83,24 @@ TEST_CASE("Parse a Layer from Tiled's documentation - read simple values")
               "y": 0
             }
         )";
-        auto tl = tile_layer::parse(json_reader::load(txt.c_str(), txt.size(), nullptr),
-                                    nullptr);
+    auto tl = tile_layer::parse (json_reader::load (txt.c_str (), txt.size (), nullptr),
+                                 nullptr);
 
+    REQUIRE(tl.cells ().size () == 16);
+    REQUIRE(tl.width () == 4);
+    REQUIRE(tl.height () == 4);
+    REQUIRE(tl.name () == "ground");
+    REQUIRE(tl.opacity () == 1);
 
-        REQUIRE(tl.cells().size() == 16);
-        REQUIRE(tl.width() == 4);
-        REQUIRE(tl.height() == 4);
-        REQUIRE(tl.name() == "ground");
-        REQUIRE(tl.opacity() == 1);
+    REQUIRE(tl.visible ());
+    REQUIRE(tl.offset_x () == 0);
+    REQUIRE(tl.offset_y () == 0);
+    REQUIRE(tl.tint () == "#656667");
+    REQUIRE(tl.get ("tileLayerProp") == test::to_prop ((int) 1));
+  }
 
-        REQUIRE(tl.visible());
-        REQUIRE(tl.offset_x() == 0);
-        REQUIRE(tl.offset_y() == 0);
-        REQUIRE(tl.tint() == "#656667");
-        REQUIRE(tl.get("tileLayerProp") == test::to_prop((int) 1));
-    }
-
-    SUBCASE("Layer - Object Layer format")
-    {
-        const std::string txt = R"(
+  SUBCASE("Layer - Object Layer format") {
+    const std::string txt = R"(
             {
               "draworder": "topdown",
               "height": 8,
@@ -124,20 +121,20 @@ TEST_CASE("Parse a Layer from Tiled's documentation - read simple values")
               "y": 0
             }
 )";
-        auto tl = object_layer::parse(json_reader::load(txt.c_str(), txt.size(), nullptr),
-                                      nullptr);
-        REQUIRE(tl.draw_order() == draw_order_t::TOP_DOWN);
-        REQUIRE(tl.name() == "people");
-        REQUIRE(tl.opacity() == 1);
-        REQUIRE(tl.visible());
-        REQUIRE(tl.objects().empty());
-        REQUIRE(tl.get("layerProp1") == test::to_prop(std::string{"someStringValue"}));
-    }
+    auto tl = object_layer::parse (json_reader::load (txt.c_str (), txt.size (), nullptr),
+                                   nullptr);
+    REQUIRE(tl.draw_order () == draw_order_t::TOP_DOWN);
+    REQUIRE(tl.name () == "people");
+    REQUIRE(tl.opacity () == 1);
+    REQUIRE(tl.visible ());
+    REQUIRE(tl.objects ().empty ());
+    REQUIRE(tl.get ("layerProp1") == test::to_prop (std::string{"someStringValue"}));
+  }
 }
 
 TEST_CASE("Parse a Chunk from Tiled's documentation - read simple values")
 {
-    const std::string txt = R"(
+  const std::string txt = R"(
     {
         "data":[1, 2, 1, 2, 3, 1, 3, 1, 2, 2, 3, 3, 4, 4, 4, 1],
         "height":16,
@@ -146,28 +143,26 @@ TEST_CASE("Parse a Chunk from Tiled's documentation - read simple values")
         "y":-16
     }
     )";
-    auto c = chunk::parse(json_reader::load(txt.c_str(), txt.size(), nullptr), "", "");
-    REQUIRE(c.height() == 16);
-    REQUIRE(c.width() == 16);
-    REQUIRE(c.x() == 4);
-    REQUIRE(c.y() == -16);
-    REQUIRE(c.cells().size() == 16);
+  auto c = chunk::parse (json_reader::load (txt.c_str (), txt.size (), nullptr), "", "");
+  REQUIRE(c.height () == 16);
+  REQUIRE(c.width () == 16);
+  REQUIRE(c.x () == 4);
+  REQUIRE(c.y () == -16);
+  REQUIRE(c.cells ().size () == 16);
 }
 
-template<typename T>
-static T parse(const std::string& txt)
-{
-    auto objp = parse_object(json_reader::load(txt.c_str(), txt.size(), nullptr));
-    const auto* obj = std::get_if<T>(&objp);
-    REQUIRE(obj != nullptr);
-    return *obj;
+template <typename T>
+static T parse (const std::string &txt) {
+  auto objp = parse_object (json_reader::load (txt.c_str (), txt.size (), nullptr));
+  const auto *obj = std::get_if<T> (&objp);
+  REQUIRE(obj != nullptr);
+  return *obj;
 }
 
 TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
 {
-    SUBCASE("Object - regular")
-    {
-        auto obj = parse<object>(R"({
+  SUBCASE("Object - regular") {
+    auto obj = parse<object> (R"({
           "gid": 5,
           "height": 0,
           "id": 1,
@@ -187,21 +182,20 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
           "y": 32
         })");
 
-        REQUIRE(obj.gid() == 5);
-        REQUIRE(obj.id() == 1);
-        REQUIRE(obj.name() == "villager");
-        REQUIRE(obj.rotation() == 90);
-        REQUIRE(obj.type() == "npc");
-        REQUIRE(obj.visible());
-        REQUIRE(obj.width() == 0);
-        REQUIRE(obj.height() == 0);
-        REQUIRE(obj.origin() == neutrino::math::point2f(32, 32));
-        REQUIRE(obj.get("hp") == test::to_prop(12));
-    }
+    REQUIRE(obj.gid () == 5);
+    REQUIRE(obj.id () == 1);
+    REQUIRE(obj.name () == "villager");
+    REQUIRE(obj.rotation () == 90);
+    REQUIRE(obj.type () == "npc");
+    REQUIRE(obj.visible ());
+    REQUIRE(obj.width () == 0);
+    REQUIRE(obj.height () == 0);
+    REQUIRE(obj.origin () == neutrino::math::point2f (32, 32));
+    REQUIRE(obj.get ("hp") == test::to_prop (12));
+  }
 
-    SUBCASE("Object - ellipse")
-    {
-        auto obj = parse<ellipse>(R"(
+  SUBCASE("Object - ellipse") {
+    auto obj = parse<ellipse> (R"(
             {
                 "ellipse":true,
                 "height":152,
@@ -216,19 +210,18 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
             }
         )");
 
-        REQUIRE(obj.id() == 13);
-        REQUIRE(obj.name().empty());
-        REQUIRE(obj.rotation() == 0);
-        REQUIRE(obj.type().empty());
-        REQUIRE(obj.visible());
-        REQUIRE(obj.width() == 248);
-        REQUIRE(obj.height() == 152);
-        REQUIRE(obj.origin() == neutrino::math::point2f{560, 808});
-    }
+    REQUIRE(obj.id () == 13);
+    REQUIRE(obj.name ().empty ());
+    REQUIRE(obj.rotation () == 0);
+    REQUIRE(obj.type ().empty ());
+    REQUIRE(obj.visible ());
+    REQUIRE(obj.width () == 248);
+    REQUIRE(obj.height () == 152);
+    REQUIRE(obj.origin () == neutrino::math::point2f{560, 808});
+  }
 
-    SUBCASE("Object - point")
-    {
-        auto obj = parse<point>(R"(
+  SUBCASE("Object - point") {
+    auto obj = parse<point> (R"(
             {
                 "point":true,
                 "height":0,
@@ -242,19 +235,18 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
                 "y":350
                 }
         )");
-        REQUIRE(obj.id() == 20);
-        REQUIRE(obj.name().empty());
-        REQUIRE(obj.rotation() == 0);
-        REQUIRE(obj.type().empty());
-        REQUIRE(obj.visible());
-        REQUIRE(obj.width() == 0);
-        REQUIRE(obj.height() == 0);
-        REQUIRE(obj.origin() == neutrino::math::point2f{220, 350});
-    }
+    REQUIRE(obj.id () == 20);
+    REQUIRE(obj.name ().empty ());
+    REQUIRE(obj.rotation () == 0);
+    REQUIRE(obj.type ().empty ());
+    REQUIRE(obj.visible ());
+    REQUIRE(obj.width () == 0);
+    REQUIRE(obj.height () == 0);
+    REQUIRE(obj.origin () == neutrino::math::point2f{220, 350});
+  }
 
-    SUBCASE("Object - polygon")
-    {
-        auto obj = parse<polygon>(R"(
+  SUBCASE("Object - polygon") {
+    auto obj = parse<polygon> (R"(
         {
             "height":0,
             "id":15,
@@ -291,21 +283,20 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
             }
         )");
 
-        REQUIRE(obj.id() == 15);
-        REQUIRE(obj.name().empty());
-        REQUIRE(obj.rotation() == 0);
-        REQUIRE(obj.type().empty());
-        REQUIRE(obj.visible());
-        REQUIRE(obj.width() == 0);
-        REQUIRE(obj.height() == 0);
-        REQUIRE(obj.origin() == neutrino::math::point2f{-176, 432});
-        REQUIRE(obj.points().size() == 5);
-        REQUIRE(obj.points()[2] == neutrino::math::point2f{136, -128});
-    }
+    REQUIRE(obj.id () == 15);
+    REQUIRE(obj.name ().empty ());
+    REQUIRE(obj.rotation () == 0);
+    REQUIRE(obj.type ().empty ());
+    REQUIRE(obj.visible ());
+    REQUIRE(obj.width () == 0);
+    REQUIRE(obj.height () == 0);
+    REQUIRE(obj.origin () == neutrino::math::point2f{-176, 432});
+    REQUIRE(obj.points ().size () == 5);
+    REQUIRE(obj.points ()[2] == neutrino::math::point2f{136, -128});
+  }
 
-    SUBCASE("Object - polyline")
-    {
-        auto obj = parse<polyline>(R"(
+  SUBCASE("Object - polyline") {
+    auto obj = parse<polyline> (R"(
             {
             "height":0,
             "id":16,
@@ -344,21 +335,20 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
             "y":88
             }
         )");
-        REQUIRE(obj.id() == 16);
-        REQUIRE(obj.name().empty());
-        REQUIRE(obj.rotation() == 0);
-        REQUIRE(obj.type().empty());
-        REQUIRE(obj.visible());
-        REQUIRE(obj.width() == 0);
-        REQUIRE(obj.height() == 0);
-        REQUIRE(obj.origin() == neutrino::math::point2f{240, 88});
-        REQUIRE(obj.points().size() == 6);
-        REQUIRE(obj.points()[4] == neutrino::math::point2f{656, 120});
-    }
+    REQUIRE(obj.id () == 16);
+    REQUIRE(obj.name ().empty ());
+    REQUIRE(obj.rotation () == 0);
+    REQUIRE(obj.type ().empty ());
+    REQUIRE(obj.visible ());
+    REQUIRE(obj.width () == 0);
+    REQUIRE(obj.height () == 0);
+    REQUIRE(obj.origin () == neutrino::math::point2f{240, 88});
+    REQUIRE(obj.points ().size () == 6);
+    REQUIRE(obj.points ()[4] == neutrino::math::point2f{656, 120});
+  }
 
-    SUBCASE("Object - text")
-    {
-        auto obj = parse<text>(R"(
+  SUBCASE("Object - text") {
+    auto obj = parse<text> (R"(
             {
                 "height":19,
                 "id":15,
@@ -376,22 +366,22 @@ TEST_CASE("Parse an Object from Tiled's documentation - read simple values")
                 "y":136
                 }
         )");
-        REQUIRE(obj.id() == 15);
-        REQUIRE(obj.name().empty());
-        REQUIRE(obj.rotation() == 0);
-        REQUIRE(obj.type().empty());
-        REQUIRE(obj.visible());
-        REQUIRE(obj.width() == 248);
-        REQUIRE(obj.height() == 19);
-        REQUIRE(obj.origin() == neutrino::math::point2f{48, 136});
-        REQUIRE(obj.wrap());
-        REQUIRE(obj.data() == "Hello World");
-    }
+    REQUIRE(obj.id () == 15);
+    REQUIRE(obj.name ().empty ());
+    REQUIRE(obj.rotation () == 0);
+    REQUIRE(obj.type ().empty ());
+    REQUIRE(obj.visible ());
+    REQUIRE(obj.width () == 248);
+    REQUIRE(obj.height () == 19);
+    REQUIRE(obj.origin () == neutrino::math::point2f{48, 136});
+    REQUIRE(obj.wrap ());
+    REQUIRE(obj.data () == "Hello World");
+  }
 }
 
 TEST_CASE("Parse a Tileset from Tiled's documentation - read simple values")
 {
-    const std::string txt = R"(
+  const std::string txt = R"(
         {
             "columns":19,
             "firstgid":1,
@@ -415,27 +405,27 @@ TEST_CASE("Parse a Tileset from Tiled's documentation - read simple values")
             }
     )";
 
-    auto ts = tile_set::parse(json_reader::load(txt.c_str(), txt.size(), nullptr), test::null_resolver);
-    REQUIRE(ts.columns() == 19);
-    REQUIRE(ts.first_gid() == 1);
-    REQUIRE(ts.name().empty());
-    REQUIRE(ts.margin() == 3);
-    REQUIRE(ts.spacing() == 1);
-    REQUIRE(ts.tile_count() == 266);
-    REQUIRE(ts.tile_width() == 32);
-    REQUIRE(ts.tile_height() == 32);
-    REQUIRE(ts.get("myProperty1") == test::to_prop(std::string("myProperty1_value")));
-    const auto* img = ts.get_image();
-    REQUIRE(img);
-    REQUIRE(img->data().empty());
-    REQUIRE(img->width() == 640);
-    REQUIRE(img->height() == 480);
-    REQUIRE(img->source() == "../image/fishbaddie_parts.png");
+  auto ts = tile_set::parse (json_reader::load (txt.c_str (), txt.size (), nullptr), test::null_resolver);
+  REQUIRE(ts.columns () == 19);
+  REQUIRE(ts.first_gid () == 1);
+  REQUIRE(ts.name ().empty ());
+  REQUIRE(ts.margin () == 3);
+  REQUIRE(ts.spacing () == 1);
+  REQUIRE(ts.tile_count () == 266);
+  REQUIRE(ts.tile_width () == 32);
+  REQUIRE(ts.tile_height () == 32);
+  REQUIRE(ts.get ("myProperty1") == test::to_prop (std::string ("myProperty1_value")));
+  const auto *img = ts.get_image ();
+  REQUIRE(img);
+  REQUIRE(img->data ().empty ());
+  REQUIRE(img->width () == 640);
+  REQUIRE(img->height () == 480);
+  REQUIRE(img->source () == "../image/fishbaddie_parts.png");
 }
 
 TEST_CASE("Property-tests - Set properties from json")
 {
-    const std::string txt = R"(
+  const std::string txt = R"(
     {
             "properties" : [
                     {
@@ -470,20 +460,20 @@ TEST_CASE("Property-tests - Set properties from json")
                     }
         ]}
     )";
-    component c;
-    component::parse(c, json_reader::load(txt.c_str(), txt.size(), nullptr));
+  component c;
+  component::parse (c, json_reader::load (txt.c_str (), txt.size (), nullptr));
 
-    REQUIRE(c.get("color") == test::to_prop(colori("#ff268176")));
-    REQUIRE(c.get("file_ref") == test::to_prop(std::filesystem::path("../demo-tileset.png")));
-    REQUIRE(c.get("hp") == test::to_prop((int) 4));
-    REQUIRE(c.get("is_player") == test::to_prop(true));
-    REQUIRE(c.get("jump_force") == test::to_prop(10.0f));
-    REQUIRE(c.get("name") == test::to_prop(std::string{"Mario"}));
+  REQUIRE(c.get ("color") == test::to_prop (colori ("#ff268176")));
+  REQUIRE(c.get ("file_ref") == test::to_prop (std::filesystem::path ("../demo-tileset.png")));
+  REQUIRE(c.get ("hp") == test::to_prop ((int) 4));
+  REQUIRE(c.get ("is_player") == test::to_prop (true));
+  REQUIRE(c.get ("jump_force") == test::to_prop (10.0f));
+  REQUIRE(c.get ("name") == test::to_prop (std::string{"Mario"}));
 }
 
 TEST_CASE("Parse a Tile from Tiled's documentation - read simple values")
 {
-    const std::string txt = R"(
+  const std::string txt = R"(
         {
             "id":11,
             "properties":[
@@ -495,18 +485,18 @@ TEST_CASE("Parse a Tile from Tiled's documentation - read simple values")
             "terrain":[0, 1, 0, 1]
         }
     )";
-    const auto tl = tile::parse(json_reader::load(txt.c_str(), txt.size(), nullptr));
-    REQUIRE (tl.id() == 11);
-    REQUIRE(tl.get("myProperty2") == test::to_prop(std::string("myProperty2_value")));
-    REQUIRE (tl.terrain()[0] == 0);
-    REQUIRE (tl.terrain()[1] == 1);
-    REQUIRE (tl.terrain()[2] == 0);
-    REQUIRE (tl.terrain()[3] == 1);
+  const auto tl = tile::parse (json_reader::load (txt.c_str (), txt.size (), nullptr));
+  REQUIRE (tl.id () == 11);
+  REQUIRE(tl.get ("myProperty2") == test::to_prop (std::string ("myProperty2_value")));
+  REQUIRE (tl.terrain ()[0] == 0);
+  REQUIRE (tl.terrain ()[1] == 1);
+  REQUIRE (tl.terrain ()[2] == 0);
+  REQUIRE (tl.terrain ()[3] == 1);
 }
 
 TEST_CASE("Wang-tests - everything Wang - simple")
 {
-    const std::string txt = R"(
+  const std::string txt = R"(
             {
                 "colors":[
                 {
@@ -627,36 +617,36 @@ TEST_CASE("Wang-tests - everything Wang - simple")
             }
         )";
 
-    wang_set ws = wang_set::parse(json_reader::load(txt.c_str(), txt.size(), nullptr));
-    REQUIRE(ws.name() == "FirstWang");
-    REQUIRE(ws.local_tile() == -1);
-    REQUIRE(ws.colors().size() == 4);
-    REQUIRE(ws.get("is_wang") == test::to_prop(true));
+  wang_set ws = wang_set::parse (json_reader::load (txt.c_str (), txt.size (), nullptr));
+  REQUIRE(ws.name () == "FirstWang");
+  REQUIRE(ws.local_tile () == -1);
+  REQUIRE(ws.colors ().size () == 4);
+  REQUIRE(ws.get ("is_wang") == test::to_prop (true));
 
-    const auto& c = ws.colors()[3];
-    REQUIRE(c.color() == "#ff7700");
-    REQUIRE(c.name() == "Orange");
-    REQUIRE(c.prob() == 1);
-    REQUIRE(c.local_tile() == -1);
+  const auto &c = ws.colors ()[3];
+  REQUIRE(c.color () == "#ff7700");
+  REQUIRE(c.name () == "Orange");
+  REQUIRE(c.prob () == 1);
+  REQUIRE(c.local_tile () == -1);
 
-    REQUIRE(ws.tiles().size() == 11);
-    const auto& t = ws.tiles()[10];
+  REQUIRE(ws.tiles ().size () == 11);
+  const auto &t = ws.tiles ()[10];
 
-    REQUIRE(!t.diag_flipped());
-    REQUIRE(!t.hor_flipped());
-    REQUIRE(!t.vert_flipped());
-    REQUIRE(t.gid() == 18);
+  REQUIRE(!t.diag_flipped ());
+  REQUIRE(!t.hor_flipped ());
+  REQUIRE(!t.vert_flipped ());
+  REQUIRE(t.gid () == 18);
 
-    const auto& w = t.wang_id();
+  const auto &w = t.wang_id ();
 
-    REQUIRE(w[wang_tile::TOP] == 3);
-    REQUIRE(w[wang_tile::TOP_RIGHT] == 0);
-    REQUIRE(w[wang_tile::RIGHT] == 3);
-    REQUIRE(w[wang_tile::BOTTOM_RIGHT] == 0);
-    REQUIRE(w[wang_tile::BOTTOM] == 1);
-    REQUIRE(w[wang_tile::BOTTOM_LEFT] == 0);
-    REQUIRE(w[wang_tile::LEFT] == 1);
-    REQUIRE(w[wang_tile::TOP_LEFT] == 0);
+  REQUIRE(w[wang_tile::TOP] == 3);
+  REQUIRE(w[wang_tile::TOP_RIGHT] == 0);
+  REQUIRE(w[wang_tile::RIGHT] == 3);
+  REQUIRE(w[wang_tile::BOTTOM_RIGHT] == 0);
+  REQUIRE(w[wang_tile::BOTTOM] == 1);
+  REQUIRE(w[wang_tile::BOTTOM_LEFT] == 0);
+  REQUIRE(w[wang_tile::LEFT] == 1);
+  REQUIRE(w[wang_tile::TOP_LEFT] == 0);
 }
 
 #if 0

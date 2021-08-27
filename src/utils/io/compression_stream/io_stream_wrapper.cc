@@ -5,5 +5,5 @@
 #include "io_stream_wrapper.hh"
 
 namespace neutrino::utils::detail {
-    io_stream_wrapper::~io_stream_wrapper() = default;
+  io_stream_wrapper::~io_stream_wrapper () = default;
 }

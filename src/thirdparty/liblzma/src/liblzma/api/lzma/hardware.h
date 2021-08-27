@@ -33,7 +33,6 @@
 #	error Never include this file directly. Use <lzma.h> instead.
 #endif
 
-
 /**
  * \brief       Get the total amount of physical memory (RAM) in bytes
  *
@@ -47,8 +46,7 @@
  *              or if there is no code in liblzma to detect the amount
  *              of RAM on the specific operating system.
  */
-extern LZMA_API(uint64_t) lzma_physmem(void) lzma_nothrow;
-
+extern LZMA_API(uint64_t) lzma_physmem (void) lzma_nothrow;
 
 /**
  * \brief       Get the number of processor cores or threads
@@ -61,4 +59,4 @@ extern LZMA_API(uint64_t) lzma_physmem(void) lzma_nothrow;
  *              returned. If this information isn't available or an error
  *              occurs, zero is returned.
  */
-extern LZMA_API(uint32_t) lzma_cputhreads(void) lzma_nothrow;
+extern LZMA_API(uint32_t) lzma_cputhreads (void) lzma_nothrow;

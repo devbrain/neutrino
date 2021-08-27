@@ -86,8 +86,8 @@ hb_glib_script_from_script (hb_script_t script)
 
 static hb_unicode_combining_class_t
 hb_glib_unicode_combining_class (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-				 hb_codepoint_t      unicode,
-				 void               *user_data HB_UNUSED)
+                 hb_codepoint_t      unicode,
+                 void               *user_data HB_UNUSED)
 
 {
   return (hb_unicode_combining_class_t) g_unichar_combining_class (unicode);
@@ -95,8 +95,8 @@ hb_glib_unicode_combining_class (hb_unicode_funcs_t *ufuncs HB_UNUSED,
 
 static hb_unicode_general_category_t
 hb_glib_unicode_general_category (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-				  hb_codepoint_t      unicode,
-				  void               *user_data HB_UNUSED)
+                  hb_codepoint_t      unicode,
+                  void               *user_data HB_UNUSED)
 
 {
   /* hb_unicode_general_category_t and GUnicodeType are identical */
@@ -105,8 +105,8 @@ hb_glib_unicode_general_category (hb_unicode_funcs_t *ufuncs HB_UNUSED,
 
 static hb_codepoint_t
 hb_glib_unicode_mirroring (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-			   hb_codepoint_t      unicode,
-			   void               *user_data HB_UNUSED)
+               hb_codepoint_t      unicode,
+               void               *user_data HB_UNUSED)
 {
   g_unichar_get_mirror_char (unicode, &unicode);
   return unicode;
@@ -114,18 +114,18 @@ hb_glib_unicode_mirroring (hb_unicode_funcs_t *ufuncs HB_UNUSED,
 
 static hb_script_t
 hb_glib_unicode_script (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-			hb_codepoint_t      unicode,
-			void               *user_data HB_UNUSED)
+            hb_codepoint_t      unicode,
+            void               *user_data HB_UNUSED)
 {
   return hb_glib_script_to_script (g_unichar_get_script (unicode));
 }
 
 static hb_bool_t
 hb_glib_unicode_compose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-			 hb_codepoint_t      a,
-			 hb_codepoint_t      b,
-			 hb_codepoint_t     *ab,
-			 void               *user_data HB_UNUSED)
+             hb_codepoint_t      a,
+             hb_codepoint_t      b,
+             hb_codepoint_t     *ab,
+             void               *user_data HB_UNUSED)
 {
 #if GLIB_CHECK_VERSION(2,29,12)
   return g_unichar_compose (a, b, ab);
@@ -159,10 +159,10 @@ hb_glib_unicode_compose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
 
 static hb_bool_t
 hb_glib_unicode_decompose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
-			   hb_codepoint_t      ab,
-			   hb_codepoint_t     *a,
-			   hb_codepoint_t     *b,
-			   void               *user_data HB_UNUSED)
+               hb_codepoint_t      ab,
+               hb_codepoint_t     *a,
+               hb_codepoint_t     *b,
+               void               *user_data HB_UNUSED)
 {
 #if GLIB_CHECK_VERSION(2,29,12)
   return g_unichar_decompose (ab, a, b);
@@ -296,10 +296,10 @@ hb_glib_blob_create (GBytes *gbytes)
   gsize size = 0;
   gconstpointer data = g_bytes_get_data (gbytes, &size);
   return hb_blob_create ((const char *) data,
-			 size,
-			 HB_MEMORY_MODE_READONLY,
-			 g_bytes_ref (gbytes),
-			 _hb_g_bytes_unref);
+             size,
+             HB_MEMORY_MODE_READONLY,
+             g_bytes_ref (gbytes),
+             _hb_g_bytes_unref);
 }
 #endif
 

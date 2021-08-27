@@ -34,12 +34,14 @@
 
 #ifdef HAVE_INTTYPES_H
 #	include <inttypes.h>
+
 #endif
 
 // C99 says that inttypes.h always includes stdint.h, but some systems
 // don't do that, and require including stdint.h separately.
 #ifdef HAVE_STDINT_H
 #	include <stdint.h>
+
 #endif
 
 // Some pre-C99 systems have SIZE_MAX in limits.h instead of stdint.h. The
@@ -139,6 +141,7 @@
 //
 #ifdef HAVE_STDBOOL_H
 #	include <stdbool.h>
+
 #else
 #	if ! HAVE__BOOL
 typedef unsigned char _Bool;
@@ -190,7 +193,7 @@ typedef unsigned char _Bool;
 #endif
 
 #if defined(__GNUC__) \
-		&& ((__GNUC__ == 4 && __GNUC_MINOR__ >= 3) || __GNUC__ > 4)
+ && ((__GNUC__ == 4 && __GNUC_MINOR__ >= 3) || __GNUC__ > 4)
 #	define lzma_attr_alloc_size(x) __attribute__((__alloc_size__(x)))
 #else
 #	define lzma_attr_alloc_size(x)

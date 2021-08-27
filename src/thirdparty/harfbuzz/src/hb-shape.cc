@@ -55,10 +55,8 @@ static void free_static_shaper_list ();
 static const char *nil_shaper_list[] = {nullptr};
 
 static struct hb_shaper_list_lazy_loader_t : hb_lazy_loader_t<const char *,
-							      hb_shaper_list_lazy_loader_t>
-{
-  static const char ** create ()
-  {
+                                                              hb_shaper_list_lazy_loader_t> {
+  static const char **create () {
     const char **shaper_list = (const char **) calloc (1 + HB_SHAPERS_COUNT, sizeof (const char *));
     if (unlikely (!shaper_list))
       return nullptr;
@@ -75,20 +73,20 @@ static struct hb_shaper_list_lazy_loader_t : hb_lazy_loader_t<const char *,
 
     return shaper_list;
   }
-  static void destroy (const char **l)
-  { free (l); }
-  static const char ** get_null ()
-  { return nil_shaper_list; }
+  static void destroy (const char **l) {
+    free (l);
+  }
+  static const char **get_null () {
+    return nil_shaper_list;
+  }
 } static_shaper_list;
 
 #if HB_USE_ATEXIT
 static
-void free_static_shaper_list ()
-{
+void free_static_shaper_list () {
   static_shaper_list.free_instance ();
 }
 #endif
-
 
 /**
  * hb_shape_list_shapers:
@@ -101,11 +99,9 @@ void free_static_shaper_list ()
  * Since: 0.9.2
  **/
 const char **
-hb_shape_list_shapers ()
-{
+hb_shape_list_shapers () {
   return static_shaper_list.get_unconst ();
 }
-
 
 /**
  * hb_shape_full:
@@ -126,16 +122,15 @@ hb_shape_list_shapers ()
  * Since: 0.9.2
  **/
 hb_bool_t
-hb_shape_full (hb_font_t          *font,
-	       hb_buffer_t        *buffer,
-	       const hb_feature_t *features,
-	       unsigned int        num_features,
-	       const char * const *shaper_list)
-{
+hb_shape_full (hb_font_t *font,
+               hb_buffer_t *buffer,
+               const hb_feature_t *features,
+               unsigned int num_features,
+               const char *const *shaper_list) {
   hb_shape_plan_t *shape_plan = hb_shape_plan_create_cached2 (font->face, &buffer->props,
-							      features, num_features,
-							      font->coords, font->num_coords,
-							      shaper_list);
+                                                              features, num_features,
+                                                              font->coords, font->num_coords,
+                                                              shaper_list);
   hb_bool_t res = hb_shape_plan_execute (shape_plan, font, buffer, features, num_features);
   hb_shape_plan_destroy (shape_plan);
 
@@ -159,10 +154,9 @@ hb_shape_full (hb_font_t          *font,
  * Since: 0.9.2
  **/
 void
-hb_shape (hb_font_t           *font,
-	  hb_buffer_t         *buffer,
-	  const hb_feature_t  *features,
-	  unsigned int         num_features)
-{
+hb_shape (hb_font_t *font,
+          hb_buffer_t *buffer,
+          const hb_feature_t *features,
+          unsigned int num_features) {
   hb_shape_full (font, buffer, features, num_features, nullptr);
 }

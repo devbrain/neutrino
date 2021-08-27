@@ -56,5 +56,4 @@ HB_SHAPER_IMPLEMENT (coretext)
 HB_SHAPER_IMPLEMENT (fallback) /* <--- This should be last. */
 #endif
 
-
 #endif

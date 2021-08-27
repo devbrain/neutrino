@@ -5,13 +5,11 @@
 #ifndef NEUTRINO_HAL_EVENTS_SCANCODE_MAPPER_HH
 #define NEUTRINO_HAL_EVENTS_SCANCODE_MAPPER_HH
 
-
 #include <hal/sdl/events/event_types.hh>
 #include <neutrino/hal/events/scancodes.hh>
 
 namespace neutrino::hal::events {
-    scan_code_t map_scancode(neutrino::sdl::scancode sc);
+  scan_code_t map_scancode (neutrino::sdl::scancode sc);
 }
-
 
 #endif

@@ -9,42 +9,41 @@
 #include <vector>
 #include <chrono>
 
-namespace neutrino::tiled::tmx
-{
-    class frame{
+namespace neutrino::tiled::tmx {
+  class frame {
     public:
-        frame (int tileid, std::chrono::milliseconds duration)
-        : m_tileid(tileid), m_duration(duration) {}
+      frame (int tileid, std::chrono::milliseconds duration)
+          : m_tileid (tileid), m_duration (duration) {
+      }
 
-        frame(frame&&) = default;
+      frame (frame &&) = default;
 
-        [[nodiscard]] int id () const noexcept {
-            return m_tileid;
-        }
+      [[nodiscard]] int id () const noexcept {
+        return m_tileid;
+      }
 
-        [[nodiscard]] std::chrono::milliseconds duration () const noexcept {
-            return m_duration;
-        }
+      [[nodiscard]] std::chrono::milliseconds duration () const noexcept {
+        return m_duration;
+      }
     private:
-        int m_tileid;
-        std::chrono::milliseconds m_duration;
-    };
+      int m_tileid;
+      std::chrono::milliseconds m_duration;
+  };
 
-    class animation
-    {
+  class animation {
     public:
-        static animation parse(const reader& elt);
+      static animation parse (const reader &elt);
 
-        void add(frame f) {
-            m_frames.emplace_back(std::move(f));
-        }
+      void add (frame f) {
+        m_frames.emplace_back (std::move (f));
+      }
 
-        const std::vector<frame>& frames() const noexcept {
-            return m_frames;
-        }
+      const std::vector<frame> &frames () const noexcept {
+        return m_frames;
+      }
     private:
-        std::vector<frame> m_frames;
-    };
+      std::vector<frame> m_frames;
+  };
 }
 
 #endif //NEUTRINO_ANIMATION_HH

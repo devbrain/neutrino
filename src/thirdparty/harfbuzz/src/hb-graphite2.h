@@ -43,7 +43,6 @@ HB_BEGIN_DECLS
  **/
 #define HB_GRAPHITE2_TAG_SILF HB_TAG('S','i','l','f')
 
-
 HB_EXTERN gr_face *
 hb_graphite2_face_get_gr_face (hb_face_t *face);
 
@@ -53,7 +52,6 @@ HB_EXTERN HB_DEPRECATED_FOR (hb_graphite2_face_get_gr_face) gr_font *
 hb_graphite2_font_get_gr_font (hb_font_t *font);
 
 #endif
-
 
 HB_END_DECLS
 

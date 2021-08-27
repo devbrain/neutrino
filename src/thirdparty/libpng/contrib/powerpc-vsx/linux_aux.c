@@ -21,14 +21,13 @@
 #include "png.h"
 
 static int
-png_have_vsx(png_structp png_ptr)
-{
-   unsigned long auxv = getauxval(AT_HWCAP);
+png_have_vsx (png_structp png_ptr) {
+  unsigned long auxv = getauxval (AT_HWCAP);
 
-   PNG_UNUSED(png_ptr)
+  PNG_UNUSED (png_ptr)
 
-   if(auxv & (PPC_FEATURE_HAS_ALTIVEC|PPC_FEATURE_HAS_VSX))
-      return 1;
-   else
-      return 0;
+  if (auxv & (PPC_FEATURE_HAS_ALTIVEC | PPC_FEATURE_HAS_VSX))
+    return 1;
+  else
+    return 0;
 }

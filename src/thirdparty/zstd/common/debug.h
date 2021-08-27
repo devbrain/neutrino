@@ -66,7 +66,7 @@ extern "C" {
  * by modifying g_debug_level.
  */
 
-#if (DEBUGLEVEL>=1)
+#if (DEBUGLEVEL >= 1)
 #  define ZSTD_DEPS_NEED_ASSERT
 #  include "zstd_deps.h"
 #else
@@ -75,7 +75,7 @@ extern "C" {
 #  endif
 #endif
 
-#if (DEBUGLEVEL>=2)
+#if (DEBUGLEVEL >= 2)
 #  define ZSTD_DEPS_NEED_IO
 #  include "zstd_deps.h"
 extern int g_debuglevel; /* the variable is only declared,
@@ -98,7 +98,6 @@ extern int g_debuglevel; /* the variable is only declared,
 #  define RAWLOG(l, ...)      {}    /* disabled */
 #  define DEBUGLOG(l, ...)    {}    /* disabled */
 #endif
-
 
 #if defined (__cplusplus)
 }

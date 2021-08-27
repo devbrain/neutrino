@@ -21,14 +21,13 @@
 #include FT_ERRORS_H
 
 
-  /* documentation is in fterrors.h */
+/* documentation is in fterrors.h */
 
-  FT_EXPORT_DEF( const char* )
-  FT_Error_String( FT_Error  error_code )
-  {
-    if ( error_code <  0                                ||
-         error_code >= FT_ERR_CAT( FT_ERR_PREFIX, Max ) )
-      return NULL;
+FT_EXPORT_DEF(const char*)
+FT_Error_String (FT_Error error_code) {
+  if (error_code < 0 ||
+      error_code >= FT_ERR_CAT(FT_ERR_PREFIX, Max))
+    return NULL;
 
 #if defined( FT_CONFIG_OPTION_ERROR_STRINGS ) || \
     defined( FT_DEBUG_LEVEL_ERROR )
@@ -42,5 +41,5 @@
 
 #endif /* defined( FT_CONFIG_OPTION_ERROR_STRINGS ) || ... */
 
-    return NULL;
-  }
+  return NULL;
+}

@@ -3,10 +3,10 @@
 if (VULKAN_FOUND)
     message(STATUS "VULKAN found")
     set(VULKAN_TARGET Vulkan::Vulkan)
-endif()
+endif ()
 if (OPENGL_FOUND)
     message(STATUS "OPENGL found")
-endif()
+endif ()
 
 my_add_library_static(hal
         SOURCES
@@ -68,7 +68,6 @@ my_add_library_static(hal
         video/thirdparty/gfx/SDL2_rotozoom.h
 
 
-
         video/texture.cc
         video/texture_impl.hh
         ${PROJECT_INCLUDE}/neutrino/hal/video/texture.hh
@@ -98,11 +97,11 @@ my_add_library_static(hal
         sdl/window.hh
 
         DEPENDS_PUBLIC
-            neutrino::math
-            thirdparty::glm
-            thirdparty::bitflags
-            thirdparty::freetype
-            thirdparty::sdl2
-            ${VULKAN_LIBS}
+        neutrino::math
+        thirdparty::glm
+        thirdparty::bitflags
+        thirdparty::freetype
+        thirdparty::sdl2
+        ${VULKAN_LIBS}
         )
 

@@ -19,14 +19,12 @@
 #ifndef T1DRIVER_H_
 #define T1DRIVER_H_
 
-
 #include <ft2build.h>
 #include FT_INTERNAL_DRIVER_H
 
-
 FT_BEGIN_HEADER
 
-  FT_EXPORT_VAR( const FT_Driver_ClassRec )  t1_driver_class;
+FT_EXPORT_VAR(const FT_Driver_ClassRec) t1_driver_class;
 
 FT_END_HEADER
 

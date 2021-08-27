@@ -73,225 +73,398 @@ init_table(void)
 #	define ALIGN(pow2, abs) .align abs
 #endif
 
-	.text
-	.globl	LZMA_CRC32
+.text
+.
+globl LZMA_CRC32
 
 #if !defined(__APPLE__) && !defined(_WIN32) && !defined(__CYGWIN__) \
-		&& !defined(__MSDOS__)
-	.type	LZMA_CRC32, @function
+ && !defined(__MSDOS__)
+.
+type LZMA_CRC32,
+@function
 #endif
 
-	ALIGN(4, 16)
+ALIGN(4, 16)
 LZMA_CRC32:
-	/*
-	 * Register usage:
-	 * %eax crc
-	 * %esi buf
-	 * %edi size or buf + size
-	 * %ebx lzma_crc32_table
-	 * %ebp Table index
-	 * %ecx Temporary
-	 * %edx Temporary
-	 */
-	pushl	%ebx
-	pushl	%esi
-	pushl	%edi
-	pushl	%ebp
-	movl	0x14(%esp), %esi /* buf */
-	movl	0x18(%esp), %edi /* size */
-	movl	0x1C(%esp), %eax /* crc */
+/*
+ * Register usage:
+ * %eax crc
+ * %esi buf
+ * %edi size or buf + size
+ * %ebx lzma_crc32_table
+ * %ebp Table index
+ * %ecx Temporary
+ * %edx Temporary
+ */
+pushl    %
+ebx
+    pushl
+%
+esi
+    pushl
+%
+edi
+    pushl
+%
+ebp
+    movl
+0x14(%esp), %
+esi /* buf */
+movl
+0x18(%esp), %
+edi /* size */
+movl
+0x1C(%esp), %
+eax /* crc */
 
-	/*
-	 * Store the address of lzma_crc32_table to %ebx. This is needed to
-	 * get position-independent code (PIC).
-	 *
-	 * The PIC macro is defined by libtool, while __PIC__ is defined
-	 * by GCC but only on some systems. Testing for both makes it simpler
-	 * to test this code without libtool, and keeps the code working also
-	 * when built with libtool but using something else than GCC.
-	 *
-	 * I understood that libtool may define PIC on Windows even though
-	 * the code in Windows DLLs is not PIC in sense that it is in ELF
-	 * binaries, so we need a separate check to always use the non-PIC
-	 * code on Windows.
-	 */
+/*
+ * Store the address of lzma_crc32_table to %ebx. This is needed to
+ * get position-independent code (PIC).
+ *
+ * The PIC macro is defined by libtool, while __PIC__ is defined
+ * by GCC but only on some systems. Testing for both makes it simpler
+ * to test this code without libtool, and keeps the code working also
+ * when built with libtool but using something else than GCC.
+ *
+ * I understood that libtool may define PIC on Windows even though
+ * the code in Windows DLLs is not PIC in sense that it is in ELF
+ * binaries, so we need a separate check to always use the non-PIC
+ * code on Windows.
+ */
 #if (!defined(PIC) && !defined(__PIC__)) \
-		|| (defined(_WIN32) || defined(__CYGWIN__))
-	/* Not PIC */
-	movl	$ LZMA_CRC32_TABLE, %ebx
+ || (defined(_WIN32) || defined(__CYGWIN__))
+/* Not PIC */
+movl	$ LZMA_CRC32_TABLE, %ebx
 #elif defined(__APPLE__)
-	/* Mach-O */
-	call	.L_get_pc
+/* Mach-O */
+call	.L_get_pc
 .L_pic:
-	leal	.L_lzma_crc32_table$non_lazy_ptr-.L_pic(%ebx), %ebx
-	movl	(%ebx), %ebx
+leal	.L_lzma_crc32_table$non_lazy_ptr-.L_pic(%ebx), %ebx
+movl	(%ebx), %ebx
 #else
-	/* ELF */
-	call	.L_get_pc
-	addl	$_GLOBAL_OFFSET_TABLE_, %ebx
-	movl	LZMA_CRC32_TABLE@GOT(%ebx), %ebx
+/* ELF */
+call
+.
+L_get_pc
+    addl
+$_GLOBAL_OFFSET_TABLE_, %
+ebx
+    movl
+LZMA_CRC32_TABLE@GOT(%ebx), %
+ebx
 #endif
 
-	/* Complement the initial value. */
-	notl	%eax
+/* Complement the initial value. */
+notl
+%eax
 
-	ALIGN(4, 16)
+ALIGN(4, 16)
 .L_align:
-	/*
-	 * Check if there is enough input to use slicing-by-eight.
-	 * We need 16 bytes, because the loop pre-reads eight bytes.
-	 */
-	cmpl	$16, %edi
-	jb	.L_rest
+/*
+ * Check if there is enough input to use slicing-by-eight.
+ * We need 16 bytes, because the loop pre-reads eight bytes.
+ */
+cmpl $16,
+%
+edi
+    jb
+.
+L_rest
 
-	/* Check if we have reached alignment of eight bytes. */
-	testl	$7, %esi
-	jz	.L_slice
+/* Check if we have reached alignment of eight bytes. */
+testl
+$7, %
+esi
+    jz
+.
+L_slice
 
-	/* Calculate CRC of the next input byte. */
-	movzbl	(%esi), %ebp
-	incl	%esi
-	movzbl	%al, %ecx
-	xorl	%ecx, %ebp
-	shrl	$8, %eax
-	xorl	(%ebx, %ebp, 4), %eax
-	decl	%edi
-	jmp	.L_align
+/* Calculate CRC of the next input byte. */
+movzbl (
+%esi), %
+ebp
+    incl
+%
+esi
+    movzbl
+%al, %
+ecx
+    xorl
+%ecx, %
+ebp
+    shrl
+$8, %
+eax
+xorl (
+%ebx, %ebp, 4), %
+eax
+    decl
+%
+edi
+    jmp
+.L_align
 
-	ALIGN(2, 4)
+ALIGN(2, 4)
 .L_slice:
-	/*
-	 * If we get here, there's at least 16 bytes of aligned input
-	 * available. Make %edi multiple of eight bytes. Store the possible
-	 * remainder over the "size" variable in the argument stack.
-	 */
-	movl	%edi, 0x18(%esp)
-	andl	$-8, %edi
-	subl	%edi, 0x18(%esp)
+/*
+ * If we get here, there's at least 16 bytes of aligned input
+ * available. Make %edi multiple of eight bytes. Store the possible
+ * remainder over the "size" variable in the argument stack.
+ */
+movl    %edi, 0x18(%esp)
+andl $
+-8, %
+edi
+    subl
+%edi, 0x18(%esp)
 
-	/*
-	 * Let %edi be buf + size - 8 while running the main loop. This way
-	 * we can compare for equality to determine when exit the loop.
-	 */
-	addl	%esi, %edi
-	subl	$8, %edi
+/*
+ * Let %edi be buf + size - 8 while running the main loop. This way
+ * we can compare for equality to determine when exit the loop.
+ */
+addl    %esi, %
+edi
+    subl
+$8, %
+edi
 
-	/* Read in the first eight aligned bytes. */
-	xorl	(%esi), %eax
-	movl	4(%esi), %ecx
-	movzbl	%cl, %ebp
+/* Read in the first eight aligned bytes. */
+xorl (
+%esi), %
+eax
+    movl
+4(%esi), %
+ecx
+    movzbl
+%cl, %ebp
 
 .L_loop:
-	movl	0x0C00(%ebx, %ebp, 4), %edx
-	movzbl	%ch, %ebp
-	xorl	0x0800(%ebx, %ebp, 4), %edx
-	shrl	$16, %ecx
-	xorl	8(%esi), %edx
-	movzbl	%cl, %ebp
-	xorl	0x0400(%ebx, %ebp, 4), %edx
-	movzbl	%ch, %ebp
-	xorl	(%ebx, %ebp, 4), %edx
-	movzbl	%al, %ebp
+movl    0x0C00(%ebx, %ebp, 4), %
+edx
+    movzbl
+%ch, %
+ebp
+    xorl
+0x0800(%ebx, %ebp, 4), %
+edx
+    shrl
+$16, %
+ecx
+    xorl
+8(%esi), %
+edx
+    movzbl
+%cl, %
+ebp
+    xorl
+0x0400(%ebx, %ebp, 4), %
+edx
+    movzbl
+%ch, %
+ebp
+xorl (
+%ebx, %ebp, 4), %
+edx
+    movzbl
+%al, %
+ebp
 
-	/*
-	 * Read the next four bytes, for which the CRC is calculated
-	 * on the next interation of the loop.
-	 */
-	movl	12(%esi), %ecx
+/*
+ * Read the next four bytes, for which the CRC is calculated
+ * on the next interation of the loop.
+ */
+movl
+12(%esi), %
+ecx
 
-	xorl	0x1C00(%ebx, %ebp, 4), %edx
-	movzbl	%ah, %ebp
-	shrl	$16, %eax
-	xorl	0x1800(%ebx, %ebp, 4), %edx
-	movzbl	%ah, %ebp
-	movzbl	%al, %eax
-	movl	0x1400(%ebx, %eax, 4), %eax
-	addl	$8, %esi
-	xorl	%edx, %eax
-	xorl	0x1000(%ebx, %ebp, 4), %eax
+    xorl
+0x1C00(%ebx, %ebp, 4), %
+edx
+    movzbl
+%ah, %
+ebp
+    shrl
+$16, %
+eax
+    xorl
+0x1800(%ebx, %ebp, 4), %
+edx
+    movzbl
+%ah, %
+ebp
+    movzbl
+%al, %
+eax
+    movl
+0x1400(%ebx, %eax, 4), %
+eax
+    addl
+$8, %
+esi
+    xorl
+%edx, %
+eax
+    xorl
+0x1000(%ebx, %ebp, 4), %
+eax
 
-	/* Check for end of aligned input. */
-	cmpl	%edi, %esi
-	movzbl	%cl, %ebp
-	jne	.L_loop
+/* Check for end of aligned input. */
+cmpl
+%edi, %
+esi
+    movzbl
+%cl, %
+ebp
+    jne
+.
+L_loop
 
-	/*
-	 * Process the remaining eight bytes, which we have already
-	 * copied to %ecx and %edx.
-	 */
-	movl	0x0C00(%ebx, %ebp, 4), %edx
-	movzbl	%ch, %ebp
-	xorl	0x0800(%ebx, %ebp, 4), %edx
-	shrl	$16, %ecx
-	movzbl	%cl, %ebp
-	xorl	0x0400(%ebx, %ebp, 4), %edx
-	movzbl	%ch, %ebp
-	xorl	(%ebx, %ebp, 4), %edx
-	movzbl	%al, %ebp
+/*
+ * Process the remaining eight bytes, which we have already
+ * copied to %ecx and %edx.
+ */
+movl
+0x0C00(%ebx, %ebp, 4), %
+edx
+    movzbl
+%ch, %
+ebp
+    xorl
+0x0800(%ebx, %ebp, 4), %
+edx
+    shrl
+$16, %
+ecx
+    movzbl
+%cl, %
+ebp
+    xorl
+0x0400(%ebx, %ebp, 4), %
+edx
+    movzbl
+%ch, %
+ebp
+xorl (
+%ebx, %ebp, 4), %
+edx
+    movzbl
+%al, %
+ebp
 
-	xorl	0x1C00(%ebx, %ebp, 4), %edx
-	movzbl	%ah, %ebp
-	shrl	$16, %eax
-	xorl	0x1800(%ebx, %ebp, 4), %edx
-	movzbl	%ah, %ebp
-	movzbl	%al, %eax
-	movl	0x1400(%ebx, %eax, 4), %eax
-	addl	$8, %esi
-	xorl	%edx, %eax
-	xorl	0x1000(%ebx, %ebp, 4), %eax
+    xorl
+0x1C00(%ebx, %ebp, 4), %
+edx
+    movzbl
+%ah, %
+ebp
+    shrl
+$16, %
+eax
+    xorl
+0x1800(%ebx, %ebp, 4), %
+edx
+    movzbl
+%ah, %
+ebp
+    movzbl
+%al, %
+eax
+    movl
+0x1400(%ebx, %eax, 4), %
+eax
+    addl
+$8, %
+esi
+    xorl
+%edx, %
+eax
+    xorl
+0x1000(%ebx, %ebp, 4), %
+eax
 
-	/* Copy the number of remaining bytes to %edi. */
-	movl	0x18(%esp), %edi
+/* Copy the number of remaining bytes to %edi. */
+movl
+0x18(%esp), %edi
 
 .L_rest:
-	/* Check for end of input. */
-	testl	%edi, %edi
-	jz	.L_return
+/* Check for end of input. */
+testl    %edi, %
+edi
+    jz
+.
+L_return
 
-	/* Calculate CRC of the next input byte. */
-	movzbl	(%esi), %ebp
-	incl	%esi
-	movzbl	%al, %ecx
-	xorl	%ecx, %ebp
-	shrl	$8, %eax
-	xorl	(%ebx, %ebp, 4), %eax
-	decl	%edi
-	jmp	.L_rest
+/* Calculate CRC of the next input byte. */
+movzbl (
+%esi), %
+ebp
+    incl
+%
+esi
+    movzbl
+%al, %
+ecx
+    xorl
+%ecx, %
+ebp
+    shrl
+$8, %
+eax
+xorl (
+%ebx, %ebp, 4), %
+eax
+    decl
+%
+edi
+    jmp
+.L_rest
 
 .L_return:
-	/* Complement the final value. */
-	notl	%eax
+/* Complement the final value. */
+notl    %
+eax
 
-	popl	%ebp
-	popl	%edi
-	popl	%esi
-	popl	%ebx
-	ret
+    popl
+%
+ebp
+    popl
+%
+edi
+    popl
+%
+esi
+    popl
+%
+ebx
+    ret
 
 #if defined(PIC) || defined(__PIC__)
-	ALIGN(4, 16)
+ALIGN(4, 16)
 .L_get_pc:
-	movl	(%esp), %ebx
-	ret
+movl    (%esp), %
+ebx
+    ret
 #endif
 
 #if defined(__APPLE__) && (defined(PIC) || defined(__PIC__))
-	/* Mach-O PIC */
-	.section __IMPORT,__pointers,non_lazy_symbol_pointers
+/* Mach-O PIC */
+.section __IMPORT,__pointers,non_lazy_symbol_pointers
 .L_lzma_crc32_table$non_lazy_ptr:
-	.indirect_symbol LZMA_CRC32_TABLE
-	.long 0
+.indirect_symbol LZMA_CRC32_TABLE
+.long 0
 
 #elif defined(_WIN32) || defined(__CYGWIN__)
 #	ifdef DLL_EXPORT
-	/* This is equivalent of __declspec(dllexport). */
-	.section .drectve
-	.ascii " -export:lzma_crc32"
+/* This is equivalent of __declspec(dllexport). */
+.section .drectve
+.ascii " -export:lzma_crc32"
 #	endif
 
 #elif !defined(__MSDOS__)
-	/* ELF */
-	.size	LZMA_CRC32, .-LZMA_CRC32
+/* ELF */
+.
+size LZMA_CRC32,
+.-LZMA_CRC32
 #endif
 
 /*
@@ -300,5 +473,5 @@ LZMA_CRC32:
  * we are using GNU assembler.
  */
 #if defined(__ELF__) && defined(__linux__)
-	.section	.note.GNU-stack,"",@progbits
+.section    .note.GNU-stack,"",@progbits
 #endif

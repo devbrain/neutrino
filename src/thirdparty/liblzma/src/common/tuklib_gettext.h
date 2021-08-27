@@ -27,15 +27,15 @@
 #if TUKLIB_GETTEXT
 #	include <libintl.h>
 #	define tuklib_gettext_init(package, localedir) \
-		do { \
-			setlocale(LC_ALL, ""); \
-			bindtextdomain(package, localedir); \
-			textdomain(package); \
-		} while (0)
+        do { \
+            setlocale(LC_ALL, ""); \
+            bindtextdomain(package, localedir); \
+            textdomain(package); \
+        } while (0)
 #	define _(msgid) gettext(msgid)
 #else
 #	define tuklib_gettext_init(package, localedir) \
-		setlocale(LC_ALL, "")
+        setlocale(LC_ALL, "")
 #	define _(msgid) (msgid)
 #	define ngettext(msgid1, msgid2, n) ((n) == 1 ? (msgid1) : (msgid2))
 #endif

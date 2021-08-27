@@ -5,5 +5,5 @@
 #include "decompression_stream_wrapper.hh"
 
 namespace neutrino::utils::detail {
-    decompression_stream_wrapper::~decompression_stream_wrapper() = default;
+  decompression_stream_wrapper::~decompression_stream_wrapper () = default;
 }

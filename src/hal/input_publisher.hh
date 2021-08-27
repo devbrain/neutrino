@@ -9,19 +9,18 @@
 #include <neutrino/utils/observer.hh>
 
 namespace neutrino::hal {
-    class input_publisher : private utils::publisher<sdl::events::all_events_t>
-    {
+  class input_publisher : private utils::publisher<sdl::events::all_events_t> {
     public:
-        using publisher<sdl::events::all_events_t>::attach;
-        using publisher<sdl::events::all_events_t>::detach;
+      using publisher<sdl::events::all_events_t>::attach;
+      using publisher<sdl::events::all_events_t>::detach;
 
-        void run() {
-            SDL_Event ev;
-            while( SDL_PollEvent( &ev ) != 0 ) {
-                this->notify(sdl::map_event(ev));
-            }
-       }
-    };
+      void run () {
+        SDL_Event ev;
+        while (SDL_PollEvent (&ev) != 0) {
+          this->notify (sdl::map_event (ev));
+        }
+      }
+  };
 }
 
 #endif

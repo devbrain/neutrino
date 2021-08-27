@@ -19,7 +19,6 @@
 #ifndef TTAGS_H_
 #define TTAGS_H_
 
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -29,9 +28,7 @@
 #error "so that freetype.h of FreeType 2 is found first."
 #endif
 
-
 FT_BEGIN_HEADER
-
 
 #define TTAG_avar  FT_MAKE_TAG( 'a', 'v', 'a', 'r' )
 #define TTAG_BASE  FT_MAKE_TAG( 'B', 'A', 'S', 'E' )
@@ -114,7 +111,6 @@ FT_BEGIN_HEADER
 
 /* used by "LastResort.dfont" on legacy Mac OS X */
 #define TTAG_0xA5lst  FT_MAKE_TAG( 0xA5, 'l', 's', 't' )
-
 
 FT_END_HEADER
 

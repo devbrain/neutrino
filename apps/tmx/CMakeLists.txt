@@ -7,8 +7,8 @@ set(MAPS
 
 set(GENERATED_HEADERS)
 foreach (FILE ${MAPS})
-    BIN2C(${FILE} generated)
-    LIST(APPEND GENERATED_HEADERS ${generated})
+    bin2c(${FILE} generated)
+    list(APPEND GENERATED_HEADERS ${generated})
 endforeach ()
 
 

@@ -5,5 +5,5 @@
 #include <neutrino/engine/application_monitor.hh>
 
 namespace neutrino::engine {
-    application_monitor::~application_monitor() = default;
+  application_monitor::~application_monitor () = default;
 }

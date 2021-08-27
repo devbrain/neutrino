@@ -70,6 +70,6 @@ set(hdr
 
 add_library(neutrino_zstd STATIC ${src} ${hdr})
 add_library(thirdparty::zstd ALIAS neutrino_zstd)
-set_target_properties(neutrino_zstd PROPERTIES  FOLDER ThirdParty)
+set_target_properties(neutrino_zstd PROPERTIES FOLDER ThirdParty)
 target_include_directories(neutrino_zstd PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(neutrino_zstd PRIVATE XXH_NAMESPACE=ZSTD_)

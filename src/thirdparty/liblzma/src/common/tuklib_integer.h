@@ -60,13 +60,13 @@
 ///////////////////
 
 #if defined(HAVE___BUILTIN_BSWAPXX)
-	// GCC >= 4.8 and Clang
+// GCC >= 4.8 and Clang
 #	define bswap16(n) __builtin_bswap16(n)
 #	define bswap32(n) __builtin_bswap32(n)
 #	define bswap64(n) __builtin_bswap64(n)
 
 #elif defined(HAVE_BYTESWAP_H)
-	// glibc, uClibc, dietlibc
+// glibc, uClibc, dietlibc
 #	include <byteswap.h>
 #	ifdef HAVE_BSWAP_16
 #		define bswap16(num) bswap_16(num)
@@ -79,11 +79,11 @@
 #	endif
 
 #elif defined(HAVE_SYS_ENDIAN_H)
-	// *BSDs and Darwin
+// *BSDs and Darwin
 #	include <sys/endian.h>
 
 #elif defined(HAVE_SYS_BYTEORDER_H)
-	// Solaris
+// Solaris
 #	include <sys/byteorder.h>
 #	ifdef BSWAP_16
 #		define bswap16(num) BSWAP_16(num)
@@ -116,31 +116,31 @@
 
 #ifndef bswap16
 #	define bswap16(n) (uint16_t)( \
-		  (((n) & 0x00FFU) << 8) \
-		| (((n) & 0xFF00U) >> 8) \
-	)
+          (((n) & 0x00FFU) << 8) \
+        | (((n) & 0xFF00U) >> 8) \
+    )
 #endif
 
 #ifndef bswap32
 #	define bswap32(n) (uint32_t)( \
-		  (((n) & UINT32_C(0x000000FF)) << 24) \
-		| (((n) & UINT32_C(0x0000FF00)) << 8) \
-		| (((n) & UINT32_C(0x00FF0000)) >> 8) \
-		| (((n) & UINT32_C(0xFF000000)) >> 24) \
-	)
+          (((n) & UINT32_C(0x000000FF)) << 24) \
+        | (((n) & UINT32_C(0x0000FF00)) << 8) \
+        | (((n) & UINT32_C(0x00FF0000)) >> 8) \
+        | (((n) & UINT32_C(0xFF000000)) >> 24) \
+    )
 #endif
 
 #ifndef bswap64
 #	define bswap64(n) (uint64_t)( \
-		  (((n) & UINT64_C(0x00000000000000FF)) << 56) \
-		| (((n) & UINT64_C(0x000000000000FF00)) << 40) \
-		| (((n) & UINT64_C(0x0000000000FF0000)) << 24) \
-		| (((n) & UINT64_C(0x00000000FF000000)) << 8) \
-		| (((n) & UINT64_C(0x000000FF00000000)) >> 8) \
-		| (((n) & UINT64_C(0x0000FF0000000000)) >> 24) \
-		| (((n) & UINT64_C(0x00FF000000000000)) >> 40) \
-		| (((n) & UINT64_C(0xFF00000000000000)) >> 56) \
-	)
+          (((n) & UINT64_C(0x00000000000000FF)) << 56) \
+        | (((n) & UINT64_C(0x000000000000FF00)) << 40) \
+        | (((n) & UINT64_C(0x0000000000FF0000)) << 24) \
+        | (((n) & UINT64_C(0x00000000FF000000)) << 8) \
+        | (((n) & UINT64_C(0x000000FF00000000)) >> 8) \
+        | (((n) & UINT64_C(0x0000FF0000000000)) >> 24) \
+        | (((n) & UINT64_C(0x00FF000000000000)) >> 40) \
+        | (((n) & UINT64_C(0xFF00000000000000)) >> 56) \
+    )
 #endif
 
 // Define conversion macros using the basic byte swapping macros.
@@ -205,140 +205,121 @@
 // Hopefully this is flexible enough in practice.
 
 static inline uint16_t
-read16ne(const uint8_t *buf)
-{
+read16ne (const uint8_t *buf) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
-		&& defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
-	return *(const uint16_t *)buf;
+ && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
+  return *(const uint16_t *)buf;
 #else
-	uint16_t num;
-	memcpy(&num, buf, sizeof(num));
-	return num;
+  uint16_t num;
+  memcpy (&num, buf, sizeof (num));
+  return num;
 #endif
 }
-
 
 static inline uint32_t
-read32ne(const uint8_t *buf)
-{
+read32ne (const uint8_t *buf) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
-		&& defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
-	return *(const uint32_t *)buf;
+ && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
+  return *(const uint32_t *)buf;
 #else
-	uint32_t num;
-	memcpy(&num, buf, sizeof(num));
-	return num;
+  uint32_t num;
+  memcpy (&num, buf, sizeof (num));
+  return num;
 #endif
 }
-
 
 static inline uint64_t
-read64ne(const uint8_t *buf)
-{
+read64ne (const uint8_t *buf) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
-		&& defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
-	return *(const uint64_t *)buf;
+ && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
+  return *(const uint64_t *)buf;
 #else
-	uint64_t num;
-	memcpy(&num, buf, sizeof(num));
-	return num;
+  uint64_t num;
+  memcpy (&num, buf, sizeof (num));
+  return num;
 #endif
 }
-
 
 static inline void
-write16ne(uint8_t *buf, uint16_t num)
-{
+write16ne (uint8_t *buf, uint16_t num) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
-		&& defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
-	*(uint16_t *)buf = num;
+ && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
+  *(uint16_t *)buf = num;
 #else
-	memcpy(buf, &num, sizeof(num));
+  memcpy (buf, &num, sizeof (num));
 #endif
-	return;
+  return;
 }
-
 
 static inline void
-write32ne(uint8_t *buf, uint32_t num)
-{
+write32ne (uint8_t *buf, uint32_t num) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
-		&& defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
-	*(uint32_t *)buf = num;
+ && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
+  *(uint32_t *)buf = num;
 #else
-	memcpy(buf, &num, sizeof(num));
+  memcpy (buf, &num, sizeof (num));
 #endif
-	return;
+  return;
 }
-
 
 static inline void
-write64ne(uint8_t *buf, uint64_t num)
-{
+write64ne (uint8_t *buf, uint64_t num) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
-		&& defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
-	*(uint64_t *)buf = num;
+ && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
+  *(uint64_t *)buf = num;
 #else
-	memcpy(buf, &num, sizeof(num));
+  memcpy (buf, &num, sizeof (num));
 #endif
-	return;
+  return;
 }
-
 
 static inline uint16_t
-read16be(const uint8_t *buf)
-{
+read16be (const uint8_t *buf) {
 #if defined(WORDS_BIGENDIAN) || defined(TUKLIB_FAST_UNALIGNED_ACCESS)
-	uint16_t num = read16ne(buf);
-	return conv16be(num);
+  uint16_t num = read16ne (buf);
+  return conv16be(num);
 #else
-	uint16_t num = ((uint16_t)buf[0] << 8) | (uint16_t)buf[1];
-	return num;
+  uint16_t num = ((uint16_t)buf[0] << 8) | (uint16_t)buf[1];
+  return num;
 #endif
 }
-
 
 static inline uint16_t
-read16le(const uint8_t *buf)
-{
+read16le (const uint8_t *buf) {
 #if !defined(WORDS_BIGENDIAN) || defined(TUKLIB_FAST_UNALIGNED_ACCESS)
-	uint16_t num = read16ne(buf);
-	return conv16le(num);
+  uint16_t num = read16ne (buf);
+  return conv16le(num);
 #else
-	uint16_t num = ((uint16_t)buf[0]) | ((uint16_t)buf[1] << 8);
-	return num;
+  uint16_t num = ((uint16_t)buf[0]) | ((uint16_t)buf[1] << 8);
+  return num;
 #endif
 }
 
-
 static inline uint32_t
-read32be(const uint8_t *buf)
-{
+read32be (const uint8_t *buf) {
 #if defined(WORDS_BIGENDIAN) || defined(TUKLIB_FAST_UNALIGNED_ACCESS)
-	uint32_t num = read32ne(buf);
-	return conv32be(num);
+  uint32_t num = read32ne (buf);
+  return conv32be(num);
 #else
-	uint32_t num = (uint32_t)buf[0] << 24;
-	num |= (uint32_t)buf[1] << 16;
-	num |= (uint32_t)buf[2] << 8;
-	num |= (uint32_t)buf[3];
-	return num;
+  uint32_t num = (uint32_t)buf[0] << 24;
+  num |= (uint32_t)buf[1] << 16;
+  num |= (uint32_t)buf[2] << 8;
+  num |= (uint32_t)buf[3];
+  return num;
 #endif
 }
 
-
 static inline uint32_t
-read32le(const uint8_t *buf)
-{
+read32le (const uint8_t *buf) {
 #if !defined(WORDS_BIGENDIAN) || defined(TUKLIB_FAST_UNALIGNED_ACCESS)
-	uint32_t num = read32ne(buf);
-	return conv32le(num);
+  uint32_t num = read32ne (buf);
+  return conv32le(num);
 #else
-	uint32_t num = (uint32_t)buf[0];
-	num |= (uint32_t)buf[1] << 8;
-	num |= (uint32_t)buf[2] << 16;
-	num |= (uint32_t)buf[3] << 24;
-	return num;
+  uint32_t num = (uint32_t)buf[0];
+  num |= (uint32_t)buf[1] << 8;
+  num |= (uint32_t)buf[2] << 16;
+  num |= (uint32_t)buf[3] << 24;
+  return num;
 #endif
 }
 
@@ -357,51 +338,47 @@ read32le(const uint8_t *buf)
 #	define write32le(buf, num) write32ne(buf, conv32le(num))
 #endif
 
-
 #ifndef write16be
 static inline void
 write16be(uint8_t *buf, uint16_t num)
 {
-	buf[0] = (uint8_t)(num >> 8);
-	buf[1] = (uint8_t)num;
-	return;
+    buf[0] = (uint8_t)(num >> 8);
+    buf[1] = (uint8_t)num;
+    return;
 }
 #endif
-
 
 #ifndef write16le
 static inline void
 write16le(uint8_t *buf, uint16_t num)
 {
-	buf[0] = (uint8_t)num;
-	buf[1] = (uint8_t)(num >> 8);
-	return;
+    buf[0] = (uint8_t)num;
+    buf[1] = (uint8_t)(num >> 8);
+    return;
 }
 #endif
-
 
 #ifndef write32be
 static inline void
 write32be(uint8_t *buf, uint32_t num)
 {
-	buf[0] = (uint8_t)(num >> 24);
-	buf[1] = (uint8_t)(num >> 16);
-	buf[2] = (uint8_t)(num >> 8);
-	buf[3] = (uint8_t)num;
-	return;
+    buf[0] = (uint8_t)(num >> 24);
+    buf[1] = (uint8_t)(num >> 16);
+    buf[2] = (uint8_t)(num >> 8);
+    buf[3] = (uint8_t)num;
+    return;
 }
 #endif
-
 
 #ifndef write32le
 static inline void
 write32le(uint8_t *buf, uint32_t num)
 {
-	buf[0] = (uint8_t)num;
-	buf[1] = (uint8_t)(num >> 8);
-	buf[2] = (uint8_t)(num >> 16);
-	buf[3] = (uint8_t)(num >> 24);
-	return;
+    buf[0] = (uint8_t)num;
+    buf[1] = (uint8_t)(num >> 8);
+    buf[2] = (uint8_t)(num >> 16);
+    buf[3] = (uint8_t)(num >> 24);
+    return;
 }
 #endif
 
@@ -432,139 +409,115 @@ write32le(uint8_t *buf, uint32_t num)
 // __builtin_assume_aligned is support by GCC >= 4.7 and clang >= 3.6.
 #ifdef HAVE___BUILTIN_ASSUME_ALIGNED
 #	define tuklib_memcpy_aligned(dest, src, size) \
-		memcpy(dest, __builtin_assume_aligned(src, size), size)
+        memcpy(dest, __builtin_assume_aligned(src, size), size)
 #else
 #	define tuklib_memcpy_aligned(dest, src, size) \
-		memcpy(dest, src, size)
+        memcpy(dest, src, size)
 #	ifndef TUKLIB_FAST_UNALIGNED_ACCESS
 #		define TUKLIB_USE_UNSAFE_ALIGNED_READS 1
 #	endif
 #endif
 
-
 static inline uint16_t
-aligned_read16ne(const uint8_t *buf)
-{
+aligned_read16ne (const uint8_t *buf) {
 #if defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING) \
-		|| defined(TUKLIB_USE_UNSAFE_ALIGNED_READS)
-	return *(const uint16_t *)buf;
+ || defined(TUKLIB_USE_UNSAFE_ALIGNED_READS)
+  return *(const uint16_t *)buf;
 #else
-	uint16_t num;
-	tuklib_memcpy_aligned(&num, buf, sizeof(num));
-	return num;
+  uint16_t num;
+  tuklib_memcpy_aligned(&num, buf, sizeof (num));
+  return num;
 #endif
 }
-
 
 static inline uint32_t
-aligned_read32ne(const uint8_t *buf)
-{
+aligned_read32ne (const uint8_t *buf) {
 #if defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING) \
-		|| defined(TUKLIB_USE_UNSAFE_ALIGNED_READS)
-	return *(const uint32_t *)buf;
+ || defined(TUKLIB_USE_UNSAFE_ALIGNED_READS)
+  return *(const uint32_t *)buf;
 #else
-	uint32_t num;
-	tuklib_memcpy_aligned(&num, buf, sizeof(num));
-	return num;
+  uint32_t num;
+  tuklib_memcpy_aligned(&num, buf, sizeof (num));
+  return num;
 #endif
 }
-
 
 static inline uint64_t
-aligned_read64ne(const uint8_t *buf)
-{
+aligned_read64ne (const uint8_t *buf) {
 #if defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING) \
-		|| defined(TUKLIB_USE_UNSAFE_ALIGNED_READS)
-	return *(const uint64_t *)buf;
+ || defined(TUKLIB_USE_UNSAFE_ALIGNED_READS)
+  return *(const uint64_t *)buf;
 #else
-	uint64_t num;
-	tuklib_memcpy_aligned(&num, buf, sizeof(num));
-	return num;
+  uint64_t num;
+  tuklib_memcpy_aligned(&num, buf, sizeof (num));
+  return num;
 #endif
 }
-
 
 static inline void
-aligned_write16ne(uint8_t *buf, uint16_t num)
-{
+aligned_write16ne (uint8_t *buf, uint16_t num) {
 #ifdef TUKLIB_USE_UNSAFE_TYPE_PUNNING
-	*(uint16_t *)buf = num;
+  *(uint16_t *)buf = num;
 #else
-	tuklib_memcpy_aligned(buf, &num, sizeof(num));
+  tuklib_memcpy_aligned(buf, &num, sizeof (num));
 #endif
-	return;
+  return;
 }
-
 
 static inline void
-aligned_write32ne(uint8_t *buf, uint32_t num)
-{
+aligned_write32ne (uint8_t *buf, uint32_t num) {
 #ifdef TUKLIB_USE_UNSAFE_TYPE_PUNNING
-	*(uint32_t *)buf = num;
+  *(uint32_t *)buf = num;
 #else
-	tuklib_memcpy_aligned(buf, &num, sizeof(num));
+  tuklib_memcpy_aligned(buf, &num, sizeof (num));
 #endif
-	return;
+  return;
 }
-
 
 static inline void
-aligned_write64ne(uint8_t *buf, uint64_t num)
-{
+aligned_write64ne (uint8_t *buf, uint64_t num) {
 #ifdef TUKLIB_USE_UNSAFE_TYPE_PUNNING
-	*(uint64_t *)buf = num;
+  *(uint64_t *)buf = num;
 #else
-	tuklib_memcpy_aligned(buf, &num, sizeof(num));
+  tuklib_memcpy_aligned(buf, &num, sizeof (num));
 #endif
-	return;
+  return;
 }
-
 
 static inline uint16_t
-aligned_read16be(const uint8_t *buf)
-{
-	uint16_t num = aligned_read16ne(buf);
-	return conv16be(num);
+aligned_read16be (const uint8_t *buf) {
+  uint16_t num = aligned_read16ne (buf);
+  return conv16be(num);
 }
-
 
 static inline uint16_t
-aligned_read16le(const uint8_t *buf)
-{
-	uint16_t num = aligned_read16ne(buf);
-	return conv16le(num);
+aligned_read16le (const uint8_t *buf) {
+  uint16_t num = aligned_read16ne (buf);
+  return conv16le(num);
 }
-
 
 static inline uint32_t
-aligned_read32be(const uint8_t *buf)
-{
-	uint32_t num = aligned_read32ne(buf);
-	return conv32be(num);
+aligned_read32be (const uint8_t *buf) {
+  uint32_t num = aligned_read32ne (buf);
+  return conv32be(num);
 }
-
 
 static inline uint32_t
-aligned_read32le(const uint8_t *buf)
-{
-	uint32_t num = aligned_read32ne(buf);
-	return conv32le(num);
+aligned_read32le (const uint8_t *buf) {
+  uint32_t num = aligned_read32ne (buf);
+  return conv32le(num);
 }
 
-
 static inline uint64_t
-aligned_read64be(const uint8_t *buf)
-{
-	uint64_t num = aligned_read64ne(buf);
-	return conv64be(num);
+aligned_read64be (const uint8_t *buf) {
+  uint64_t num = aligned_read64ne (buf);
+  return conv64be(num);
 }
 
-
 static inline uint64_t
-aligned_read64le(const uint8_t *buf)
-{
-	uint64_t num = aligned_read64ne(buf);
-	return conv64le(num);
+aligned_read64le (const uint8_t *buf) {
+  uint64_t num = aligned_read64ne (buf);
+  return conv64le(num);
 }
 
 
@@ -582,158 +535,153 @@ aligned_read64le(const uint8_t *buf)
 ////////////////////
 
 static inline uint32_t
-bsr32(uint32_t n)
-{
-	// Check for ICC first, since it tends to define __GNUC__ too.
+bsr32 (uint32_t n) {
+  // Check for ICC first, since it tends to define __GNUC__ too.
 #if defined(__INTEL_COMPILER)
-	return _bit_scan_reverse(n);
+  return _bit_scan_reverse(n);
 
 #elif TUKLIB_GNUC_REQ(3, 4) && UINT_MAX == UINT32_MAX
-	// GCC >= 3.4 has __builtin_clz(), which gives good results on
-	// multiple architectures. On x86, __builtin_clz() ^ 31U becomes
-	// either plain BSR (so the XOR gets optimized away) or LZCNT and
-	// XOR (if -march indicates that SSE4a instructions are supported).
-	return (uint32_t)__builtin_clz(n) ^ 31U;
+  // GCC >= 3.4 has __builtin_clz(), which gives good results on
+  // multiple architectures. On x86, __builtin_clz() ^ 31U becomes
+  // either plain BSR (so the XOR gets optimized away) or LZCNT and
+  // XOR (if -march indicates that SSE4a instructions are supported).
+  return (uint32_t) __builtin_clz (n) ^ 31U;
 
 #elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
-	uint32_t i;
-	__asm__("bsrl %1, %0" : "=r" (i) : "rm" (n));
-	return i;
+  uint32_t i;
+  __asm__("bsrl %1, %0" : "=r" (i) : "rm" (n));
+  return i;
 
 #elif defined(_MSC_VER)
-	unsigned long i;
-	_BitScanReverse(&i, n);
-	return i;
+  unsigned long i;
+  _BitScanReverse(&i, n);
+  return i;
 
 #else
-	uint32_t i = 31;
+  uint32_t i = 31;
 
-	if ((n & 0xFFFF0000) == 0) {
-		n <<= 16;
-		i = 15;
-	}
+  if ((n & 0xFFFF0000) == 0) {
+      n <<= 16;
+      i = 15;
+  }
 
-	if ((n & 0xFF000000) == 0) {
-		n <<= 8;
-		i -= 8;
-	}
+  if ((n & 0xFF000000) == 0) {
+      n <<= 8;
+      i -= 8;
+  }
 
-	if ((n & 0xF0000000) == 0) {
-		n <<= 4;
-		i -= 4;
-	}
+  if ((n & 0xF0000000) == 0) {
+      n <<= 4;
+      i -= 4;
+  }
 
-	if ((n & 0xC0000000) == 0) {
-		n <<= 2;
-		i -= 2;
-	}
+  if ((n & 0xC0000000) == 0) {
+      n <<= 2;
+      i -= 2;
+  }
 
-	if ((n & 0x80000000) == 0)
-		--i;
+  if ((n & 0x80000000) == 0)
+      --i;
 
-	return i;
+  return i;
 #endif
 }
 
-
 static inline uint32_t
-clz32(uint32_t n)
-{
+clz32 (uint32_t n) {
 #if defined(__INTEL_COMPILER)
-	return _bit_scan_reverse(n) ^ 31U;
+  return _bit_scan_reverse(n) ^ 31U;
 
 #elif TUKLIB_GNUC_REQ(3, 4) && UINT_MAX == UINT32_MAX
-	return (uint32_t)__builtin_clz(n);
+  return (uint32_t) __builtin_clz (n);
 
 #elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
-	uint32_t i;
-	__asm__("bsrl %1, %0\n\t"
-		"xorl $31, %0"
-		: "=r" (i) : "rm" (n));
-	return i;
+  uint32_t i;
+  __asm__("bsrl %1, %0\n\t"
+      "xorl $31, %0"
+      : "=r" (i) : "rm" (n));
+  return i;
 
 #elif defined(_MSC_VER)
-	unsigned long i;
-	_BitScanReverse(&i, n);
-	return i ^ 31U;
+  unsigned long i;
+  _BitScanReverse(&i, n);
+  return i ^ 31U;
 
 #else
-	uint32_t i = 0;
+  uint32_t i = 0;
 
-	if ((n & 0xFFFF0000) == 0) {
-		n <<= 16;
-		i = 16;
-	}
+  if ((n & 0xFFFF0000) == 0) {
+      n <<= 16;
+      i = 16;
+  }
 
-	if ((n & 0xFF000000) == 0) {
-		n <<= 8;
-		i += 8;
-	}
+  if ((n & 0xFF000000) == 0) {
+      n <<= 8;
+      i += 8;
+  }
 
-	if ((n & 0xF0000000) == 0) {
-		n <<= 4;
-		i += 4;
-	}
+  if ((n & 0xF0000000) == 0) {
+      n <<= 4;
+      i += 4;
+  }
 
-	if ((n & 0xC0000000) == 0) {
-		n <<= 2;
-		i += 2;
-	}
+  if ((n & 0xC0000000) == 0) {
+      n <<= 2;
+      i += 2;
+  }
 
-	if ((n & 0x80000000) == 0)
-		++i;
+  if ((n & 0x80000000) == 0)
+      ++i;
 
-	return i;
+  return i;
 #endif
 }
 
-
 static inline uint32_t
-ctz32(uint32_t n)
-{
+ctz32 (uint32_t n) {
 #if defined(__INTEL_COMPILER)
-	return _bit_scan_forward(n);
+  return _bit_scan_forward(n);
 
 #elif TUKLIB_GNUC_REQ(3, 4) && UINT_MAX >= UINT32_MAX
-	return (uint32_t)__builtin_ctz(n);
+  return (uint32_t) __builtin_ctz (n);
 
 #elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
-	uint32_t i;
-	__asm__("bsfl %1, %0" : "=r" (i) : "rm" (n));
-	return i;
+  uint32_t i;
+  __asm__("bsfl %1, %0" : "=r" (i) : "rm" (n));
+  return i;
 
 #elif defined(_MSC_VER)
-	unsigned long i;
-	_BitScanForward(&i, n);
-	return i;
+  unsigned long i;
+  _BitScanForward(&i, n);
+  return i;
 
 #else
-	uint32_t i = 0;
+  uint32_t i = 0;
 
-	if ((n & 0x0000FFFF) == 0) {
-		n >>= 16;
-		i = 16;
-	}
+  if ((n & 0x0000FFFF) == 0) {
+      n >>= 16;
+      i = 16;
+  }
 
-	if ((n & 0x000000FF) == 0) {
-		n >>= 8;
-		i += 8;
-	}
+  if ((n & 0x000000FF) == 0) {
+      n >>= 8;
+      i += 8;
+  }
 
-	if ((n & 0x0000000F) == 0) {
-		n >>= 4;
-		i += 4;
-	}
+  if ((n & 0x0000000F) == 0) {
+      n >>= 4;
+      i += 4;
+  }
 
-	if ((n & 0x00000003) == 0) {
-		n >>= 2;
-		i += 2;
-	}
+  if ((n & 0x00000003) == 0) {
+      n >>= 2;
+      i += 2;
+  }
 
-	if ((n & 0x00000001) == 0)
-		++i;
+  if ((n & 0x00000001) == 0)
+      ++i;
 
-	return i;
+  return i;
 #endif
 }
 

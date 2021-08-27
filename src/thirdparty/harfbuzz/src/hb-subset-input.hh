@@ -27,15 +27,13 @@
 #ifndef HB_SUBSET_INPUT_HH
 #define HB_SUBSET_INPUT_HH
 
-
 #include "hb.hh"
 
 #include "hb-subset.h"
 
 #include "hb-font.hh"
 
-struct hb_subset_input_t
-{
+struct hb_subset_input_t {
   hb_object_header_t header;
 
   hb_set_t *unicodes;
@@ -62,6 +60,5 @@ struct hb_subset_input_t
    * ...
    */
 };
-
 
 #endif /* HB_SUBSET_INPUT_HH */

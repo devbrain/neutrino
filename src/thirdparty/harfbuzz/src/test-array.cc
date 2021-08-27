@@ -28,11 +28,10 @@
 #include "hb-array.hh"
 
 static void
-test_reverse ()
-{
+test_reverse () {
   int values[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   hb_array_t<int> a (values, 9);
-  a.reverse();
+  a.reverse ();
 
   int expected_values[] = {9, 8, 7, 6, 5, 4, 3, 2, 1};
   hb_array_t<int> expected (expected_values, 9);
@@ -40,11 +39,10 @@ test_reverse ()
 }
 
 static void
-test_reverse_range ()
-{
+test_reverse_range () {
   int values[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   hb_array_t<int> a (values, 9);
-  a.reverse(2, 6);
+  a.reverse (2, 6);
 
   int expected_values[] = {1, 2, 6, 5, 4, 3, 7, 8, 9};
   hb_array_t<int> expected (expected_values, 9);
@@ -52,15 +50,14 @@ test_reverse_range ()
 }
 
 static void
-test_reverse_invalid ()
-{
+test_reverse_invalid () {
   int values[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   hb_array_t<int> a (values, 9);
 
-  a.reverse(4, 3);
-  a.reverse(2, 3);
-  a.reverse(5, 5);
-  a.reverse(12, 15);
+  a.reverse (4, 3);
+  a.reverse (2, 3);
+  a.reverse (5, 5);
+  a.reverse (12, 15);
 
   int expected_values[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   hb_array_t<int> expected (expected_values, 9);
@@ -68,8 +65,7 @@ test_reverse_invalid ()
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char **argv) {
   test_reverse ();
   test_reverse_range ();
   test_reverse_invalid ();

@@ -19,28 +19,23 @@
 #ifndef TTBDF_H_
 #define TTBDF_H_
 
-
 #include <ft2build.h>
 #include "ttload.h"
 #include FT_BDF_H
 
-
 FT_BEGIN_HEADER
-
 
 #ifdef TT_CONFIG_OPTION_BDF
 
-  FT_LOCAL( void )
-  tt_face_free_bdf_props( TT_Face  face );
+FT_LOCAL(void)
+tt_face_free_bdf_props (TT_Face face);
 
-
-  FT_LOCAL( FT_Error )
-  tt_face_find_bdf_prop( TT_Face           face,
-                         const char*       property_name,
-                         BDF_PropertyRec  *aprop );
+FT_LOCAL(FT_Error)
+tt_face_find_bdf_prop (TT_Face face,
+                       const char *property_name,
+                       BDF_PropertyRec *aprop);
 
 #endif /* TT_CONFIG_OPTION_BDF */
-
 
 FT_END_HEADER
 
