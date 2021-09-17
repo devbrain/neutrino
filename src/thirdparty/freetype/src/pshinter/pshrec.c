@@ -75,7 +75,7 @@ ps_hint_table_ensure (PS_Hint_Table table,
 static FT_Error
 ps_hint_table_alloc (PS_Hint_Table table,
                      FT_Memory memory,
-                     PS_Hint *ahint) {
+                     PS_Hint* ahint) {
   FT_Error error = FT_Err_Ok;
   FT_UInt count;
   PS_Hint hint = NULL;
@@ -151,7 +151,7 @@ ps_mask_test_bit (PS_Mask mask,
 static void
 ps_mask_clear_bit (PS_Mask mask,
                    FT_UInt idx) {
-  FT_Byte *p;
+  FT_Byte* p;
 
   if (idx >= mask->num_bits)
     return;
@@ -166,7 +166,7 @@ ps_mask_set_bit (PS_Mask mask,
                  FT_UInt idx,
                  FT_Memory memory) {
   FT_Error error = FT_Err_Ok;
-  FT_Byte *p;
+  FT_Byte* p;
 
   if (idx >= mask->num_bits) {
     error = ps_mask_ensure (mask, idx + 1, memory);
@@ -219,7 +219,7 @@ ps_mask_table_ensure (PS_Mask_Table table,
 static FT_Error
 ps_mask_table_alloc (PS_Mask_Table table,
                      FT_Memory memory,
-                     PS_Mask *amask) {
+                     PS_Mask* amask) {
   FT_UInt count;
   FT_Error error = FT_Err_Ok;
   PS_Mask mask = NULL;
@@ -247,7 +247,7 @@ ps_mask_table_alloc (PS_Mask_Table table,
 static FT_Error
 ps_mask_table_last (PS_Mask_Table table,
                     FT_Memory memory,
-                    PS_Mask *amask) {
+                    PS_Mask* amask) {
   FT_Error error = FT_Err_Ok;
   FT_UInt count;
   PS_Mask mask;
@@ -269,7 +269,7 @@ ps_mask_table_last (PS_Mask_Table table,
 /* set a new mask to a given bit range */
 static FT_Error
 ps_mask_table_set_bits (PS_Mask_Table table,
-                        const FT_Byte *source,
+                        const FT_Byte* source,
                         FT_UInt bit_pos,
                         FT_UInt bit_count,
                         FT_Memory memory) {
@@ -288,9 +288,9 @@ ps_mask_table_set_bits (PS_Mask_Table table,
 
   /* now, copy bits */
   {
-    FT_Byte *read = (FT_Byte *) source + (bit_pos >> 3);
+    FT_Byte* read = (FT_Byte*) source + (bit_pos >> 3);
     FT_Int rmask = 0x80 >> (bit_pos & 7);
-    FT_Byte *write = mask->bytes;
+    FT_Byte* write = mask->bytes;
     FT_Int wmask = 0x80;
     FT_Int val;
 
@@ -327,8 +327,8 @@ ps_mask_table_test_intersect (PS_Mask_Table table,
                               FT_UInt index2) {
   PS_Mask mask1 = table->masks + index1;
   PS_Mask mask2 = table->masks + index2;
-  FT_Byte *p1 = mask1->bytes;
-  FT_Byte *p2 = mask2->bytes;
+  FT_Byte* p1 = mask1->bytes;
+  FT_Byte* p2 = mask2->bytes;
   FT_UInt count1 = mask1->num_bits;
   FT_UInt count2 = mask2->num_bits;
   FT_UInt count;
@@ -377,8 +377,8 @@ ps_mask_table_merge (PS_Mask_Table table,
 
     if (count2 > 0) {
       FT_UInt pos;
-      FT_Byte *read;
-      FT_Byte *write;
+      FT_Byte* read;
+      FT_Byte* write;
 
 
       /* if "count2" is greater than "count1", we need to grow the */
@@ -550,7 +550,7 @@ ps_dimension_reset_mask (PS_Dimension dim,
 /* set a new mask, called from the "T2Stem" method */
 static FT_Error
 ps_dimension_set_mask_bits (PS_Dimension dim,
-                            const FT_Byte *source,
+                            const FT_Byte* source,
                             FT_UInt source_pos,
                             FT_UInt source_bits,
                             FT_UInt end_point,
@@ -577,7 +577,7 @@ ps_dimension_add_t1stem (PS_Dimension dim,
                          FT_Int pos,
                          FT_Int len,
                          FT_Memory memory,
-                         FT_Int *aindex) {
+                         FT_Int* aindex) {
   FT_Error error = FT_Err_Ok;
   FT_UInt flags = 0;
 
@@ -743,7 +743,7 @@ static void
 ps_hints_stem (PS_Hints hints,
                FT_UInt dimension,
                FT_Int count,
-               FT_Long *stems) {
+               FT_Long* stems) {
   PS_Dimension dim;
 
   if (hints->error)
@@ -783,7 +783,7 @@ ps_hints_stem (PS_Hints hints,
 static void
 ps_hints_t1stem3 (PS_Hints hints,
                   FT_UInt dimension,
-                  FT_Fixed *stems) {
+                  FT_Fixed* stems) {
   FT_Error error = FT_Err_Ok;
 
   if (!hints->error) {
@@ -871,7 +871,7 @@ static void
 ps_hints_t2mask (PS_Hints hints,
                  FT_UInt end_point,
                  FT_UInt bit_count,
-                 const FT_Byte *bytes) {
+                 const FT_Byte* bytes) {
   FT_Error error;
 
   if (!hints->error) {
@@ -911,7 +911,7 @@ ps_hints_t2mask (PS_Hints hints,
 static void
 ps_hints_t2counter (PS_Hints hints,
                     FT_UInt bit_count,
-                    const FT_Byte *bytes) {
+                    const FT_Byte* bytes) {
   FT_Error error;
 
   if (!hints->error) {
@@ -989,7 +989,7 @@ t1_hints_open (T1_Hints hints) {
 static void
 t1_hints_stem (T1_Hints hints,
                FT_UInt dimension,
-               FT_Fixed *coords) {
+               FT_Fixed* coords) {
   FT_Pos stems[2];
 
   stems[0] = FIXED_TO_INT(coords[0]);
@@ -999,7 +999,7 @@ t1_hints_stem (T1_Hints hints,
 }
 
 FT_LOCAL_DEF(void)
-t1_hints_funcs_init (T1_Hints_FuncsRec *funcs) {
+t1_hints_funcs_init (T1_Hints_FuncsRec* funcs) {
   FT_ZERO(funcs);
 
   funcs->open = (T1_Hints_OpenFunc) t1_hints_open;
@@ -1028,7 +1028,7 @@ static void
 t2_hints_stems (T2_Hints hints,
                 FT_UInt dimension,
                 FT_Int count,
-                FT_Fixed *coords) {
+                FT_Fixed* coords) {
   FT_Pos stems[32], y;
   FT_Int total = count, n;
 
@@ -1057,7 +1057,7 @@ t2_hints_stems (T2_Hints hints,
 }
 
 FT_LOCAL_DEF(void)
-t2_hints_funcs_init (T2_Hints_FuncsRec *funcs) {
+t2_hints_funcs_init (T2_Hints_FuncsRec* funcs) {
   FT_ZERO(funcs);
 
   funcs->open = (T2_Hints_OpenFunc) t2_hints_open;

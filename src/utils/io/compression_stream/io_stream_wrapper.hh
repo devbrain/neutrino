@@ -13,14 +13,14 @@ namespace neutrino::utils::detail {
       io_stream_wrapper () = default;
       virtual ~io_stream_wrapper ();
 
-      virtual const uint8_t *next_in () const = 0;
+      virtual const uint8_t* next_in () const = 0;
       virtual long avail_in () const = 0;
-      virtual uint8_t *next_out () const = 0;
+      virtual uint8_t* next_out () const = 0;
       virtual long avail_out () const = 0;
 
-      virtual void set_next_in (const unsigned char *in) = 0;
+      virtual void set_next_in (const unsigned char* in) = 0;
       virtual void set_avail_in (const long in) = 0;
-      virtual void set_next_out (const uint8_t *in) = 0;
+      virtual void set_next_out (const uint8_t* in) = 0;
       virtual void set_avail_out (const long in) = 0;
   };
 }

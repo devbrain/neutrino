@@ -19,7 +19,7 @@
 ///
 /// \return     The length of the longest match found
 extern uint32_t
-lzma_mf_find (lzma_mf *mf, uint32_t *count_ptr, lzma_match *matches) {
+lzma_mf_find (lzma_mf* mf, uint32_t* count_ptr, lzma_match* matches) {
   // Call the match finder. It returns the number of length-distance
   // pairs found.
   // FIXME: Minimum count is zero, what _exactly_ is the maximum?
@@ -58,11 +58,11 @@ lzma_mf_find (lzma_mf *mf, uint32_t *count_ptr, lzma_match *matches) {
 
       // Pointer to the byte we just ran through
       // the match finder.
-      const uint8_t *p1 = mf_ptr (mf) - 1;
+      const uint8_t* p1 = mf_ptr (mf) - 1;
 
       // Pointer to the beginning of the match. We need -1
       // here because the match distances are zero based.
-      const uint8_t *p2 = p1 - matches[count - 1].dist - 1;
+      const uint8_t* p2 = p1 - matches[count - 1].dist - 1;
 
       len_best = lzma_memcmplen (p1, p2, len_best, limit);
     }
@@ -102,7 +102,7 @@ lzma_mf_find (lzma_mf *mf, uint32_t *count_ptr, lzma_match *matches) {
 /// normalization, we drop values that indicate distance greater than the
 /// dictionary size, thus making space for new values.
 static void
-normalize (lzma_mf *mf) {
+normalize (lzma_mf* mf) {
   assert(mf->read_pos + mf->offset == MUST_NORMALIZE_POS);
 
   // In future we may not want to touch the lowest bits, because there
@@ -142,7 +142,7 @@ normalize (lzma_mf *mf) {
 
 /// Mark the current byte as processed from point of view of the match finder.
 static void
-move_pos (lzma_mf *mf) {
+move_pos (lzma_mf* mf) {
   if (++mf->cyclic_pos == mf->cyclic_size)
     mf->cyclic_pos = 0;
 
@@ -168,7 +168,7 @@ move_pos (lzma_mf *mf) {
 /// normalization. It will be done when the match finder's skip function
 /// catches up after a flush.
 static void
-move_pending (lzma_mf *mf) {
+move_pending (lzma_mf* mf) {
   ++mf->read_pos;
   assert(mf->read_pos <= mf->write_pos);
   ++mf->pending;
@@ -226,6 +226,7 @@ do { \
 ////////////////
 
 #if defined(HAVE_MF_HC3) || defined(HAVE_MF_HC4)
+
 ///
 ///
 /// \param      len_limit       Don't look for matches longer than len_limit.
@@ -238,17 +239,17 @@ do { \
 /// \param      cyclic_size
 /// \param      matches         Array to hold the matches.
 /// \param      len_best        The length of the longest match found so far.
-static lzma_match *
+static lzma_match*
 hc_find_func (
     const uint32_t len_limit,
     const uint32_t pos,
-    const uint8_t *const cur,
+    const uint8_t* const cur,
     uint32_t cur_match,
     uint32_t depth,
-    uint32_t *const son,
+    uint32_t* const son,
     const uint32_t cyclic_pos,
     const uint32_t cyclic_size,
-    lzma_match *matches,
+    lzma_match* matches,
     uint32_t len_best) {
   son[cyclic_pos] = cur_match;
 
@@ -257,7 +258,7 @@ hc_find_func (
     if (depth-- == 0 || delta >= cyclic_size)
       return matches;
 
-    const uint8_t *const pb = cur - delta;
+    const uint8_t* const pb = cur - delta;
     cur_match = son[cyclic_pos - delta
                     + (delta > cyclic_pos ? cyclic_size : 0)];
 
@@ -289,8 +290,9 @@ do { \
 #endif
 
 #ifdef HAVE_MF_HC3
+
 extern uint32_t
-lzma_mf_hc3_find (lzma_mf *mf, lzma_match *matches) {
+lzma_mf_hc3_find (lzma_mf* mf, lzma_match* matches) {
   header_find(false, 3);
 
   hash_3_calc();
@@ -321,14 +323,14 @@ lzma_mf_hc3_find (lzma_mf *mf, lzma_match *matches) {
 }
 
 extern void
-lzma_mf_hc3_skip (lzma_mf *mf, uint32_t amount) {
+lzma_mf_hc3_skip (lzma_mf* mf, uint32_t amount) {
   do {
     if (mf_avail (mf) < 3) {
       move_pending (mf);
       continue;
     }
 
-    const uint8_t *cur = mf_ptr (mf);
+    const uint8_t* cur = mf_ptr (mf);
     const uint32_t pos = mf->read_pos + mf->offset;
 
     hash_3_calc();
@@ -344,11 +346,13 @@ lzma_mf_hc3_skip (lzma_mf *mf, uint32_t amount) {
   }
   while (--amount != 0);
 }
+
 #endif
 
 #ifdef HAVE_MF_HC4
+
 extern uint32_t
-lzma_mf_hc4_find (lzma_mf *mf, lzma_match *matches) {
+lzma_mf_hc4_find (lzma_mf* mf, lzma_match* matches) {
   header_find(false, 4);
 
   hash_4_calc();
@@ -397,14 +401,14 @@ lzma_mf_hc4_find (lzma_mf *mf, lzma_match *matches) {
 }
 
 extern void
-lzma_mf_hc4_skip (lzma_mf *mf, uint32_t amount) {
+lzma_mf_hc4_skip (lzma_mf* mf, uint32_t amount) {
   do {
     if (mf_avail (mf) < 4) {
       move_pending (mf);
       continue;
     }
 
-    const uint8_t *cur = mf_ptr (mf);
+    const uint8_t* cur = mf_ptr (mf);
     const uint32_t pos = mf->read_pos + mf->offset;
 
     hash_4_calc();
@@ -421,6 +425,7 @@ lzma_mf_hc4_skip (lzma_mf *mf, uint32_t amount) {
   }
   while (--amount != 0);
 }
+
 #endif
 
 
@@ -429,20 +434,21 @@ lzma_mf_hc4_skip (lzma_mf *mf, uint32_t amount) {
 /////////////////
 
 #if defined(HAVE_MF_BT2) || defined(HAVE_MF_BT3) || defined(HAVE_MF_BT4)
-static lzma_match *
+
+static lzma_match*
 bt_find_func (
     const uint32_t len_limit,
     const uint32_t pos,
-    const uint8_t *const cur,
+    const uint8_t* const cur,
     uint32_t cur_match,
     uint32_t depth,
-    uint32_t *const son,
+    uint32_t* const son,
     const uint32_t cyclic_pos,
     const uint32_t cyclic_size,
-    lzma_match *matches,
+    lzma_match* matches,
     uint32_t len_best) {
-  uint32_t *ptr0 = son + (cyclic_pos << 1) + 1;
-  uint32_t *ptr1 = son + (cyclic_pos << 1);
+  uint32_t* ptr0 = son + (cyclic_pos << 1) + 1;
+  uint32_t* ptr1 = son + (cyclic_pos << 1);
 
   uint32_t len0 = 0;
   uint32_t len1 = 0;
@@ -455,11 +461,11 @@ bt_find_func (
       return matches;
     }
 
-    uint32_t *const pair = son + ((cyclic_pos - delta
+    uint32_t* const pair = son + ((cyclic_pos - delta
                                    + (delta > cyclic_pos ? cyclic_size : 0))
         << 1);
 
-    const uint8_t *const pb = cur - delta;
+    const uint8_t* const pb = cur - delta;
     uint32_t len = my_min(len0, len1);
 
     if (pb[len] == cur[len]) {
@@ -498,14 +504,14 @@ static void
 bt_skip_func (
     const uint32_t len_limit,
     const uint32_t pos,
-    const uint8_t *const cur,
+    const uint8_t* const cur,
     uint32_t cur_match,
     uint32_t depth,
-    uint32_t *const son,
+    uint32_t* const son,
     const uint32_t cyclic_pos,
     const uint32_t cyclic_size) {
-  uint32_t *ptr0 = son + (cyclic_pos << 1) + 1;
-  uint32_t *ptr1 = son + (cyclic_pos << 1);
+  uint32_t* ptr0 = son + (cyclic_pos << 1) + 1;
+  uint32_t* ptr1 = son + (cyclic_pos << 1);
 
   uint32_t len0 = 0;
   uint32_t len1 = 0;
@@ -518,10 +524,10 @@ bt_skip_func (
       return;
     }
 
-    uint32_t *pair = son + ((cyclic_pos - delta
+    uint32_t* pair = son + ((cyclic_pos - delta
                              + (delta > cyclic_pos ? cyclic_size : 0))
         << 1);
-    const uint8_t *pb = cur - delta;
+    const uint8_t* pb = cur - delta;
     uint32_t len = my_min(len0, len1);
 
     if (pb[len] == cur[len]) {
@@ -563,8 +569,9 @@ do { \
 #endif
 
 #ifdef HAVE_MF_BT2
+
 extern uint32_t
-lzma_mf_bt2_find (lzma_mf *mf, lzma_match *matches) {
+lzma_mf_bt2_find (lzma_mf* mf, lzma_match* matches) {
   header_find(true, 2);
 
   hash_2_calc();
@@ -576,7 +583,7 @@ lzma_mf_bt2_find (lzma_mf *mf, lzma_match *matches) {
 }
 
 extern void
-lzma_mf_bt2_skip (lzma_mf *mf, uint32_t amount) {
+lzma_mf_bt2_skip (lzma_mf* mf, uint32_t amount) {
   do {
     header_skip(true, 2);
 
@@ -590,11 +597,13 @@ lzma_mf_bt2_skip (lzma_mf *mf, uint32_t amount) {
   }
   while (--amount != 0);
 }
+
 #endif
 
 #ifdef HAVE_MF_BT3
+
 extern uint32_t
-lzma_mf_bt3_find (lzma_mf *mf, lzma_match *matches) {
+lzma_mf_bt3_find (lzma_mf* mf, lzma_match* matches) {
   header_find(true, 3);
 
   hash_3_calc();
@@ -625,7 +634,7 @@ lzma_mf_bt3_find (lzma_mf *mf, lzma_match *matches) {
 }
 
 extern void
-lzma_mf_bt3_skip (lzma_mf *mf, uint32_t amount) {
+lzma_mf_bt3_skip (lzma_mf* mf, uint32_t amount) {
   do {
     header_skip(true, 3);
 
@@ -642,11 +651,13 @@ lzma_mf_bt3_skip (lzma_mf *mf, uint32_t amount) {
   }
   while (--amount != 0);
 }
+
 #endif
 
 #ifdef HAVE_MF_BT4
+
 extern uint32_t
-lzma_mf_bt4_find (lzma_mf *mf, lzma_match *matches) {
+lzma_mf_bt4_find (lzma_mf* mf, lzma_match* matches) {
   header_find(true, 4);
 
   hash_4_calc();
@@ -695,7 +706,7 @@ lzma_mf_bt4_find (lzma_mf *mf, lzma_match *matches) {
 }
 
 extern void
-lzma_mf_bt4_skip (lzma_mf *mf, uint32_t amount) {
+lzma_mf_bt4_skip (lzma_mf* mf, uint32_t amount) {
   do {
     header_skip(true, 4);
 
@@ -713,4 +724,5 @@ lzma_mf_bt4_skip (lzma_mf *mf, uint32_t amount) {
   }
   while (--amount != 0);
 }
+
 #endif

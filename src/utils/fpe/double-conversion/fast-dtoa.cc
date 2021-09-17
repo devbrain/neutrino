@@ -181,7 +181,7 @@ namespace double_conversion {
                                 uint64_t rest,
                                 uint64_t ten_kappa,
                                 uint64_t unit,
-                                int *kappa) {
+                                int* kappa) {
     DOUBLE_CONVERSION_ASSERT(rest < ten_kappa);
     // The following tests are done in a specific order to avoid overflows. They
     // will work correctly with any uint64 values of rest < ten_kappa and unit.
@@ -240,8 +240,8 @@ namespace double_conversion {
 
   static void BiggestPowerTen (uint32_t number,
                                int number_bits,
-                               uint32_t *power,
-                               int *exponent_plus_one) {
+                               uint32_t* power,
+                               int* exponent_plus_one) {
     DOUBLE_CONVERSION_ASSERT(number < (1u << (number_bits + 1)));
     // 1233/4096 is approximately 1/lg(10).
     int exponent_plus_one_guess = ((number_bits + 1) * 1233 >> 12);
@@ -302,8 +302,8 @@ namespace double_conversion {
                         DiyFp w,
                         DiyFp high,
                         Vector<char> buffer,
-                        int *length,
-                        int *kappa) {
+                        int* length,
+                        int* kappa) {
     DOUBLE_CONVERSION_ASSERT(low.e () == w.e () && w.e () == high.e ());
     DOUBLE_CONVERSION_ASSERT(low.f () + 1 <= high.f () - 1);
     DOUBLE_CONVERSION_ASSERT(kMinimalTargetExponent <= w.e () && w.e () <= kMaximalTargetExponent);
@@ -427,8 +427,8 @@ namespace double_conversion {
   static bool DigitGenCounted (DiyFp w,
                                int requested_digits,
                                Vector<char> buffer,
-                               int *length,
-                               int *kappa) {
+                               int* length,
+                               int* kappa) {
     DOUBLE_CONVERSION_ASSERT(kMinimalTargetExponent <= w.e () && w.e () <= kMaximalTargetExponent);
     DOUBLE_CONVERSION_ASSERT(kMinimalTargetExponent >= -60);
     DOUBLE_CONVERSION_ASSERT(kMaximalTargetExponent <= -32);
@@ -519,8 +519,8 @@ namespace double_conversion {
   static bool Grisu3 (double v,
                       FastDtoaMode mode,
                       Vector<char> buffer,
-                      int *length,
-                      int *decimal_exponent) {
+                      int* length,
+                      int* decimal_exponent) {
     DiyFp w = Double (v).AsNormalizedDiyFp ();
     // boundary_minus and boundary_plus are the boundaries between v and its
     // closest floating-point neighbors. Any number strictly between
@@ -591,8 +591,8 @@ namespace double_conversion {
   static bool Grisu3Counted (double v,
                              int requested_digits,
                              Vector<char> buffer,
-                             int *length,
-                             int *decimal_exponent) {
+                             int* length,
+                             int* decimal_exponent) {
     DiyFp w = Double (v).AsNormalizedDiyFp ();
     DiyFp ten_mk;  // Cached power of ten: 10^-k
     int mk;        // -k
@@ -635,8 +635,8 @@ namespace double_conversion {
                  FastDtoaMode mode,
                  int requested_digits,
                  Vector<char> buffer,
-                 int *length,
-                 int *decimal_point) {
+                 int* length,
+                 int* decimal_point) {
     DOUBLE_CONVERSION_ASSERT(v > 0);
     DOUBLE_CONVERSION_ASSERT(!Double (v).IsSpecial ());
 

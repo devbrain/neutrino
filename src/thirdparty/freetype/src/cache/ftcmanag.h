@@ -144,7 +144,7 @@ FTC_Manager_FlushN (FTC_Manager manager,
 FT_LOCAL(FT_Error)
 FTC_Manager_RegisterCache (FTC_Manager manager,
                            FTC_CacheClass clazz,
-                           FTC_Cache *acache);
+                           FTC_Cache* acache);
 
 /* */
 

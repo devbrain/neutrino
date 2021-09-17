@@ -177,10 +177,10 @@ typedef struct FT_GZipFileRec_ {
 
   FT_Byte buffer[FT_GZIP_BUFFER_SIZE];  /* output buffer      */
   FT_ULong pos;                          /* position in output */
-  FT_Byte *cursor;
-  FT_Byte *limit;
+  FT_Byte* cursor;
+  FT_Byte* limit;
 
-} FT_GZipFileRec, *FT_GZipFile;
+} FT_GZipFileRec, * FT_GZipFile;
 
 
 /* gzip flag byte */
@@ -260,7 +260,7 @@ static FT_Error
 ft_gzip_file_init (FT_GZipFile zip,
                    FT_Stream stream,
                    FT_Stream source) {
-  z_stream *zstream = &zip->zstream;
+  z_stream* zstream = &zip->zstream;
   FT_Error error = FT_Err_Ok;
 
   zip->stream = stream;
@@ -300,7 +300,7 @@ ft_gzip_file_init (FT_GZipFile zip,
 
 static void
 ft_gzip_file_done (FT_GZipFile zip) {
-  z_stream *zstream = &zip->zstream;
+  z_stream* zstream = &zip->zstream;
 
   inflateEnd (zstream);
 
@@ -324,7 +324,7 @@ ft_gzip_file_reset (FT_GZipFile zip) {
   FT_Error error;
 
   if (!FT_STREAM_SEEK(zip->start)) {
-    z_stream *zstream = &zip->zstream;
+    z_stream* zstream = &zip->zstream;
 
     inflateReset (zstream);
 
@@ -343,7 +343,7 @@ ft_gzip_file_reset (FT_GZipFile zip) {
 
 static FT_Error
 ft_gzip_file_fill_input (FT_GZipFile zip) {
-  z_stream *zstream = &zip->zstream;
+  z_stream* zstream = &zip->zstream;
   FT_Stream stream = zip->source;
   FT_ULong size;
 
@@ -377,7 +377,7 @@ ft_gzip_file_fill_input (FT_GZipFile zip) {
 
 static FT_Error
 ft_gzip_file_fill_output (FT_GZipFile zip) {
-  z_stream *zstream = &zip->zstream;
+  z_stream* zstream = &zip->zstream;
   FT_Error error = FT_Err_Ok;
 
   zip->cursor = zip->buffer;
@@ -441,7 +441,7 @@ ft_gzip_file_skip_output (FT_GZipFile zip,
 static FT_ULong
 ft_gzip_file_io (FT_GZipFile zip,
                  FT_ULong pos,
-                 FT_Byte *buffer,
+                 FT_Byte* buffer,
                  FT_ULong count) {
   FT_ULong result = 0;
   FT_Error error;
@@ -522,7 +522,7 @@ ft_gzip_stream_close (FT_Stream stream) {
 static unsigned long
 ft_gzip_stream_io (FT_Stream stream,
                    unsigned long offset,
-                   unsigned char *buffer,
+                   unsigned char* buffer,
                    unsigned long count) {
   FT_GZipFile zip = (FT_GZipFile) stream->descriptor.pointer;
 
@@ -597,7 +597,7 @@ FT_Stream_OpenGzip (FT_Stream stream,
     FT_ULong zip_size = ft_gzip_get_uncompressed_size (source);
 
     if (zip_size != 0 && zip_size < 40 * 1024) {
-      FT_Byte *zip_buff = NULL;
+      FT_Byte* zip_buff = NULL;
 
       if (!FT_ALLOC(zip_buff, zip_size)) {
         FT_ULong count;
@@ -644,9 +644,9 @@ FT_Stream_OpenGzip (FT_Stream stream,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Gzip_Uncompress (FT_Memory memory,
-                    FT_Byte *output,
-                    FT_ULong *output_len,
-                    const FT_Byte *input,
+                    FT_Byte* output,
+                    FT_ULong* output_len,
+                    const FT_Byte* input,
                     FT_ULong input_len) {
   z_stream stream;
   int err;
@@ -659,7 +659,7 @@ FT_Gzip_Uncompress (FT_Memory memory,
 
   /* this function is modeled after zlib's `uncompress' function */
 
-  stream.next_in = (Bytef *) input;
+  stream.next_in = (Bytef*) input;
   stream.avail_in = (uInt) input_len;
 
   stream.next_out = output;

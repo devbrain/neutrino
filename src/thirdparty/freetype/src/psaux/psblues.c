@@ -65,7 +65,7 @@ FT_LOCAL_DEF(void)
 cf2_blues_init (CF2_Blues blues,
                 CF2_Font font) {
   /* pointer to parsed font object */
-  PS_Decoder *decoder = font->decoder;
+  PS_Decoder* decoder = font->decoder;
 
   CF2_Fixed zoneHeight;
   CF2_Fixed maxZoneHeight = 0;
@@ -76,10 +76,10 @@ cf2_blues_init (CF2_Blues blues,
   size_t numFamilyBlues;
   size_t numFamilyOtherBlues;
 
-  FT_Pos *blueValues;
-  FT_Pos *otherBlues;
-  FT_Pos *familyBlues;
-  FT_Pos *familyOtherBlues;
+  FT_Pos* blueValues;
+  FT_Pos* otherBlues;
+  FT_Pos* familyBlues;
+  FT_Pos* familyOtherBlues;
 
   size_t i;
   CF2_Fixed emBoxBottom, emBoxTop;

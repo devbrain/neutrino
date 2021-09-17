@@ -82,7 +82,7 @@ FT_TrueTypeGX_Free (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_ClassicKern_Validate (FT_Face face,
                          FT_UInt validation_flags,
-                         FT_Bytes *ckern_table) {
+                         FT_Bytes* ckern_table) {
   FT_Service_CKERNvalidate service;
   FT_Error error;
 

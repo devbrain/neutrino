@@ -55,13 +55,13 @@ namespace OT {
         return -t.cmp (tag);
       }
 
-      HB_INTERNAL static int cmp (const void *pa, const void *pb) {
-        const TableRecord *a = (const TableRecord *) pa;
-        const TableRecord *b = (const TableRecord *) pb;
+      HB_INTERNAL static int cmp (const void* pa, const void* pb) {
+        const TableRecord* a = (const TableRecord*) pa;
+        const TableRecord* b = (const TableRecord*) pb;
         return b->cmp (a->tag);
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this));
       }
@@ -81,12 +81,14 @@ namespace OT {
       unsigned int get_table_count () const {
         return tables.len;
       }
-      const TableRecord &get_table (unsigned int i) const {
+
+      const TableRecord& get_table (unsigned int i) const {
         return tables[i];
       }
+
       unsigned int get_table_tags (unsigned int start_offset,
-                                   unsigned int *table_count, /* IN/OUT */
-                                   hb_tag_t *table_tags /* OUT */) const {
+                                   unsigned int* table_count, /* IN/OUT */
+                                   hb_tag_t* table_tags /* OUT */) const {
         if (table_count) {
           +tables.sub_array (start_offset, table_count)
           | hb_map (&TableRecord::tag)
@@ -94,12 +96,14 @@ namespace OT {
         }
         return tables.len;
       }
-      bool find_table_index (hb_tag_t tag, unsigned int *table_index) const {
+
+      bool find_table_index (hb_tag_t tag, unsigned int* table_index) const {
         Tag t;
         t = tag;
         return tables.bfind (t, table_index, HB_BFIND_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
       }
-      const TableRecord &get_table_by_tag (hb_tag_t tag) const {
+
+      const TableRecord& get_table_by_tag (hb_tag_t tag) const {
         unsigned int table_index;
         find_table_index (tag, &table_index);
         return get_table (table_index);
@@ -108,7 +112,7 @@ namespace OT {
     public:
 
       template <typename item_t>
-      bool serialize (hb_serialize_context_t *c,
+      bool serialize (hb_serialize_context_t* c,
                       hb_tag_t sfnt_tag,
                       hb_array_t<item_t> items) {
         TRACE_SERIALIZE (this);
@@ -122,19 +126,19 @@ namespace OT {
         if (unlikely (!tables.serialize (c, items.length)))
           return_trace (false);
 
-        const char *dir_end = (const char *) c->head;
-        HBUINT32 *checksum_adjustment = nullptr;
+        const char* dir_end = (const char*) c->head;
+        HBUINT32* checksum_adjustment = nullptr;
 
         /* Write OffsetTables, alloc for and write actual table blobs. */
         for (unsigned int i = 0; i < tables.len; i++) {
-          TableRecord &rec = tables.arrayZ[i];
-          hb_blob_t *blob = items[i].blob;
+          TableRecord& rec = tables.arrayZ[i];
+          hb_blob_t* blob = items[i].blob;
           rec.tag = items[i].tag;
           rec.length = blob->length;
           rec.offset.serialize (c, this);
 
           /* Allocate room for the table and copy it. */
-          char *start = (char *) c->allocate_size<void> (rec.length);
+          char* start = (char*) c->allocate_size<void> (rec.length);
           if (unlikely (!start))
             return false;
 
@@ -143,11 +147,11 @@ namespace OT {
 
           /* 4-byte alignment. */
           c->align (4);
-          const char *end = (const char *) c->head;
+          const char* end = (const char*) c->head;
 
           if (items[i].tag == HB_OT_TAG_head &&
               (unsigned) (end - start) >= head::static_size) {
-            head *h = (head *) start;
+            head* h = (head*) start;
             checksum_adjustment = &h->checkSumAdjustment;
             *checksum_adjustment = 0;
           }
@@ -162,9 +166,9 @@ namespace OT {
 
           /* The following line is a slower version of the following block. */
           //checksum.set_for_data (this, (const char *) c->head - (const char *) this);
-          checksum.set_for_data (this, dir_end - (const char *) this);
+          checksum.set_for_data (this, dir_end - (const char*) this);
           for (unsigned int i = 0; i < items.length; i++) {
-            TableRecord &rec = tables.arrayZ[i];
+            TableRecord& rec = tables.arrayZ[i];
             checksum = checksum + rec.checkSum;
           }
 
@@ -174,7 +178,7 @@ namespace OT {
         return_trace (true);
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this) && tables.sanitize (c));
       }
@@ -197,11 +201,12 @@ namespace OT {
       unsigned int get_face_count () const {
         return table.len;
       }
-      const OpenTypeFontFace &get_face (unsigned int i) const {
+
+      const OpenTypeFontFace& get_face (unsigned int i) const {
         return this + table[i];
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (table.sanitize (c, this));
       }
@@ -231,7 +236,8 @@ namespace OT {
             return 0;
         }
       }
-      const OpenTypeFontFace &get_face (unsigned int i) const {
+
+      const OpenTypeFontFace& get_face (unsigned int i) const {
         switch (u.header.version.major) {
           case 2: /* version 2 is compatible with version 1 */
           case 1:
@@ -241,7 +247,7 @@ namespace OT {
         }
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         if (unlikely (!u.header.version.sanitize (c)))
           return_trace (false);
@@ -272,12 +278,12 @@ namespace OT {
  */
 
   struct ResourceRecord {
-      const OpenTypeFontFace &get_face (const void *data_base) const {
-        return *reinterpret_cast<const OpenTypeFontFace *> ((data_base + offset).arrayZ);
+      const OpenTypeFontFace& get_face (const void* data_base) const {
+        return *reinterpret_cast<const OpenTypeFontFace*> ((data_base + offset).arrayZ);
       }
 
-      bool sanitize (hb_sanitize_context_t *c,
-                     const void *data_base) const {
+      bool sanitize (hb_sanitize_context_t* c,
+                     const void* data_base) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this) &&
                       offset.sanitize (c, data_base) &&
@@ -308,14 +314,14 @@ namespace OT {
         return tag == HB_TAG_sfnt;
       }
 
-      const ResourceRecord &get_resource_record (unsigned int i,
-                                                 const void *type_base) const {
+      const ResourceRecord& get_resource_record (unsigned int i,
+                                                 const void* type_base) const {
         return (type_base + resourcesZ).as_array (get_resource_count ())[i];
       }
 
-      bool sanitize (hb_sanitize_context_t *c,
-                     const void *type_base,
-                     const void *data_base) const {
+      bool sanitize (hb_sanitize_context_t* c,
+                     const void* type_base,
+                     const void* data_base) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this) &&
                       resourcesZ.sanitize (c, type_base,
@@ -337,18 +343,18 @@ namespace OT {
       unsigned int get_face_count () const {
         unsigned int count = get_type_count ();
         for (unsigned int i = 0; i < count; i++) {
-          const ResourceTypeRecord &type = get_type_record (i);
+          const ResourceTypeRecord& type = get_type_record (i);
           if (type.is_sfnt ())
             return type.get_resource_count ();
         }
         return 0;
       }
 
-      const OpenTypeFontFace &get_face (unsigned int idx,
-                                        const void *data_base) const {
+      const OpenTypeFontFace& get_face (unsigned int idx,
+                                        const void* data_base) const {
         unsigned int count = get_type_count ();
         for (unsigned int i = 0; i < count; i++) {
-          const ResourceTypeRecord &type = get_type_record (i);
+          const ResourceTypeRecord& type = get_type_record (i);
           /* The check for idx < count is here because ResourceRecord is NOT null-safe.
            * Because an offset of 0 there does NOT mean null. */
           if (type.is_sfnt () && idx < type.get_resource_count ())
@@ -357,7 +363,7 @@ namespace OT {
         return Null (OpenTypeFontFace);
       }
 
-      bool sanitize (hb_sanitize_context_t *c, const void *data_base) const {
+      bool sanitize (hb_sanitize_context_t* c, const void* data_base) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this) &&
                       typeList.sanitize (c, this,
@@ -370,7 +376,7 @@ namespace OT {
         return (this + typeList).lenM1 + 1;
       }
 
-      const ResourceTypeRecord &get_type_record (unsigned int i) const {
+      const ResourceTypeRecord& get_type_record (unsigned int i) const {
         return (this + typeList)[i];
       }
 
@@ -393,15 +399,15 @@ namespace OT {
         return (this + map).get_face_count ();
       }
 
-      const OpenTypeFontFace &get_face (unsigned int idx,
-                                        unsigned int *base_offset = nullptr) const {
-        const OpenTypeFontFace &face = (this + map).get_face (idx, &(this + data));
+      const OpenTypeFontFace& get_face (unsigned int idx,
+                                        unsigned int* base_offset = nullptr) const {
+        const OpenTypeFontFace& face = (this + map).get_face (idx, &(this + data));
         if (base_offset)
-          *base_offset = (const char *) &face - (const char *) this;
+          *base_offset = (const char*) &face - (const char*) this;
         return face;
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this) &&
                       data.sanitize (c, this, dataLen) &&
@@ -454,7 +460,8 @@ namespace OT {
             return 0;
         }
       }
-      const OpenTypeFontFace &get_face (unsigned int i, unsigned int *base_offset = nullptr) const {
+
+      const OpenTypeFontFace& get_face (unsigned int i, unsigned int* base_offset = nullptr) const {
         if (base_offset)
           *base_offset = 0;
         switch (u.tag) {
@@ -476,7 +483,7 @@ namespace OT {
       }
 
       template <typename item_t>
-      bool serialize_single (hb_serialize_context_t *c,
+      bool serialize_single (hb_serialize_context_t* c,
                              hb_tag_t sfnt_tag,
                              hb_array_t<item_t> items) {
         TRACE_SERIALIZE (this);
@@ -486,7 +493,7 @@ namespace OT {
         return_trace (u.fontFace.serialize (c, sfnt_tag, items));
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         if (unlikely (!u.tag.sanitize (c)))
           return_trace (false);

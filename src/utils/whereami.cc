@@ -8,7 +8,8 @@
 #include "thirdparty/whereami.h"
 
 namespace {
-  using query_fn_t = int (*) (char *out, int capacity, int *dirname_length);
+  using query_fn_t = int (*) (char* out, int capacity, int* dirname_length);
+
   std::string get_wai_path (query_fn_t fn) {
     int length = fn (nullptr, 0, nullptr);
     if (length <= 0) {

@@ -12,7 +12,7 @@
 namespace neutrino::hal {
   class message_broker : public events_broker, public utils::observer<sdl::events::user> {
     private:
-      void on_event (const sdl::events::user &ev);
+      void on_event (const sdl::events::user& ev);
   };
 }
 

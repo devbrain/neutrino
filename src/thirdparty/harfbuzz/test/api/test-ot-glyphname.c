@@ -28,39 +28,36 @@
 #include "hb-ot.h"
 
 static void
-test_one_glyph (hb_font_t *font,  hb_codepoint_t gid, const char *name)
-{
-  char			buf[64];
-  hb_codepoint_t	glyph;
+test_one_glyph (hb_font_t* font, hb_codepoint_t gid, const char* name) {
+  char buf[64];
+  hb_codepoint_t glyph;
 
-  g_assert(hb_font_get_glyph_name (font, gid, buf, sizeof (buf)));
-  g_assert_cmpstr(buf, ==, name);
-  g_assert(hb_font_get_glyph_from_name (font, name, -1, &glyph));
-  g_assert_cmpint(glyph, ==, gid);
+  g_assert (hb_font_get_glyph_name (font, gid, buf, sizeof (buf)));
+  g_assert_cmpstr (buf, == , name);
+  g_assert (hb_font_get_glyph_from_name (font, name, -1, &glyph));
+  g_assert_cmpint (glyph, == , gid);
 }
 
 /* Unit tests for CFF glyph names  */
 
 static void
-test_standard_names (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/MathTestFontFull.otf");
-  hb_font_t *font = hb_font_create (face);
+test_standard_names (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/MathTestFontFull.otf");
+  hb_font_t* font = hb_font_create (face);
 
-  test_one_glyph (font, 0,   ".notdef");
-  test_one_glyph (font, 27,  "Z");
+  test_one_glyph (font, 0, ".notdef");
+  test_one_glyph (font, 27, "Z");
 
   hb_font_destroy (font);
   hb_face_destroy (face);
 }
 
 static void
-test_non_standard_names (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/MathTestFontFull.otf");
-  hb_font_t *font = hb_font_create (face);
+test_non_standard_names (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/MathTestFontFull.otf");
+  hb_font_t* font = hb_font_create (face);
 
-  test_one_glyph (font, 46,  "arrowdblright");
+  test_one_glyph (font, 46, "arrowdblright");
   test_one_glyph (font, 138, "uni21E7_size5");
 
   hb_font_destroy (font);
@@ -68,27 +65,25 @@ test_non_standard_names (void)
 }
 
 static void
-test_predef_charset_names (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/cff1_expert.otf");
-  hb_font_t *font = hb_font_create (face);
+test_predef_charset_names (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/cff1_expert.otf");
+  hb_font_t* font = hb_font_create (face);
 
-  test_one_glyph (font, 0,   ".notdef");
-  test_one_glyph (font, 29,  "centsuperior");
-  test_one_glyph (font, 86,  "commainferior");
+  test_one_glyph (font, 0, ".notdef");
+  test_one_glyph (font, 29, "centsuperior");
+  test_one_glyph (font, 86, "commainferior");
 
   hb_font_destroy (font);
   hb_face_destroy (face);
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_standard_names);
   hb_test_add (test_non_standard_names);
   hb_test_add (test_predef_charset_names);
 
-  return hb_test_run();
+  return hb_test_run ();
 }

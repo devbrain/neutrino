@@ -60,7 +60,7 @@ FT_BEGIN_HEADER
  *   @FT_MemoryRec structure.
  *
  */
-typedef struct FT_MemoryRec_ *FT_Memory;
+typedef struct FT_MemoryRec_* FT_Memory;
 
 /**************************************************************************
  *
@@ -81,9 +81,9 @@ typedef struct FT_MemoryRec_ *FT_Memory;
  *   Address of new memory block.  0~in case of failure.
  *
  */
-typedef void *
-(*FT_Alloc_Func) (FT_Memory memory,
-                  long size);
+typedef void*
+(* FT_Alloc_Func) (FT_Memory memory,
+                   long size);
 
 /**************************************************************************
  *
@@ -102,8 +102,8 @@ typedef void *
  *
  */
 typedef void
-(*FT_Free_Func) (FT_Memory memory,
-                 void *block);
+(* FT_Free_Func) (FT_Memory memory,
+                  void* block);
 
 /**************************************************************************
  *
@@ -133,11 +133,11 @@ typedef void
  *   In case of error, the old block must still be available.
  *
  */
-typedef void *
-(*FT_Realloc_Func) (FT_Memory memory,
-                    long cur_size,
-                    long new_size,
-                    void *block);
+typedef void*
+(* FT_Realloc_Func) (FT_Memory memory,
+                     long cur_size,
+                     long new_size,
+                     void* block);
 
 /**************************************************************************
  *
@@ -162,7 +162,7 @@ typedef void *
  *
  */
 struct FT_MemoryRec_ {
-  void *user;
+  void* user;
   FT_Alloc_Func alloc;
   FT_Free_Func free;
   FT_Realloc_Func realloc;
@@ -189,7 +189,7 @@ struct FT_MemoryRec_ {
  *   object.
  *
  */
-typedef struct FT_StreamRec_ *FT_Stream;
+typedef struct FT_StreamRec_* FT_Stream;
 
 /**************************************************************************
  *
@@ -203,7 +203,7 @@ typedef struct FT_StreamRec_ *FT_Stream;
  */
 typedef union FT_StreamDesc_ {
   long value;
-  void *pointer;
+  void* pointer;
 
 } FT_StreamDesc;
 
@@ -237,10 +237,10 @@ typedef union FT_StreamDesc_ {
  *
  */
 typedef unsigned long
-(*FT_Stream_IoFunc) (FT_Stream stream,
-                     unsigned long offset,
-                     unsigned char *buffer,
-                     unsigned long count);
+(* FT_Stream_IoFunc) (FT_Stream stream,
+                      unsigned long offset,
+                      unsigned char* buffer,
+                      unsigned long count);
 
 /**************************************************************************
  *
@@ -256,7 +256,7 @@ typedef unsigned long
  *
  */
 typedef void
-(*FT_Stream_CloseFunc) (FT_Stream stream);
+(* FT_Stream_CloseFunc) (FT_Stream stream);
 
 /**************************************************************************
  *
@@ -314,7 +314,7 @@ typedef void
  *
  */
 typedef struct FT_StreamRec_ {
-  unsigned char *base;
+  unsigned char* base;
   unsigned long size;
   unsigned long pos;
 
@@ -324,8 +324,8 @@ typedef struct FT_StreamRec_ {
   FT_Stream_CloseFunc close;
 
   FT_Memory memory;
-  unsigned char *cursor;
-  unsigned char *limit;
+  unsigned char* cursor;
+  unsigned char* limit;
 
 } FT_StreamRec;
 

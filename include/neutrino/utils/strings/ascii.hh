@@ -115,54 +115,67 @@ namespace neutrino::utils {
       return 0;
     }
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_ascii (int ch) {
     return (static_cast<uint32_t>(ch) & 0xFFFFFF80) == 0;
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::has_properties (int ch, unsigned int props) {
     return (properties (ch) & props) == props;
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::has_some_properties (int ch, unsigned int props) {
     return (properties (ch) & props) != 0;
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_space (int ch) {
     return has_properties (ch, ACP_SPACE);
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_digit (int ch) {
     return has_properties (ch, ACP_DIGIT);
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_hex_digit (int ch) {
     return has_properties (ch, ACP_HEXDIGIT);
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_punct (int ch) {
     return has_properties (ch, ACP_PUNCT);
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_alpha (int ch) {
     return has_properties (ch, ACP_ALPHA);
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_alpha_numeric (int ch) {
     return has_some_properties (ch, ACP_ALPHA | ACP_DIGIT);
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_lower (int ch) {
     return has_properties (ch, ACP_LOWER);
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_upper (int ch) {
     return has_properties (ch, ACP_UPPER);
   }
+
   // --------------------------------------------------------------------------------
   inline bool ascii::is_printable (int ch) {
     return has_properties (ch, ACP_PRINT);
   }
+
   // --------------------------------------------------------------------------------
   inline int ascii::to_lower (int ch) {
     if (is_upper (ch)) {
@@ -172,6 +185,7 @@ namespace neutrino::utils {
       return ch;
     }
   }
+
   // --------------------------------------------------------------------------------
   inline int ascii::to_upper (int ch) {
     if (is_lower (ch)) {

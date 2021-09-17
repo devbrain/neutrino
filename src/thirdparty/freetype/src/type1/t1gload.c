@@ -41,8 +41,8 @@
 static FT_Error
 T1_Parse_Glyph_And_Get_Char_String (T1_Decoder decoder,
                                     FT_UInt glyph_index,
-                                    FT_Data *char_string,
-                                    FT_Bool *force_scaling) {
+                                    FT_Data* char_string,
+                                    FT_Bool* force_scaling) {
   T1_Face face = (T1_Face) decoder->builder.face;
   T1_Font type1 = &face->type1;
   FT_Error error = FT_Err_Ok;
@@ -52,7 +52,7 @@ T1_Parse_Glyph_And_Get_Char_String (T1_Decoder decoder,
   PS_Decoder psdecoder;
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-  FT_Incremental_InterfaceRec *inc =
+  FT_Incremental_InterfaceRec* inc =
       face->root.internal->incremental_interface;
 #endif
 
@@ -93,7 +93,7 @@ T1_Parse_Glyph_And_Get_Char_String (T1_Decoder decoder,
     if (decoder->builder.metrics_only)
       error = decoder_funcs->parse_metrics (
           decoder,
-          (FT_Byte *) char_string->pointer,
+          (FT_Byte*) char_string->pointer,
           (FT_UInt) char_string->length);
 #endif
     else {
@@ -107,7 +107,7 @@ T1_Parse_Glyph_And_Get_Char_String (T1_Decoder decoder,
 
       error = decoder_funcs->parse_charstrings (
           &psdecoder,
-          (FT_Byte *) char_string->pointer,
+          (FT_Byte*) char_string->pointer,
           (FT_ULong) char_string->length);
 
       /* Adobe's engine uses 16.16 numbers everywhere;              */
@@ -122,7 +122,7 @@ T1_Parse_Glyph_And_Get_Char_String (T1_Decoder decoder,
 
         error = decoder_funcs->parse_charstrings (
             &psdecoder,
-            (FT_Byte *) char_string->pointer,
+            (FT_Byte*) char_string->pointer,
             (FT_ULong) char_string->length);
       }
     }
@@ -197,7 +197,7 @@ T1_Parse_Glyph (T1_Decoder decoder,
 
 FT_LOCAL_DEF(FT_Error)
 T1_Compute_Max_Advance (T1_Face face,
-                        FT_Pos *max_advance) {
+                        FT_Pos* max_advance) {
   FT_Error error;
   T1_DecoderRec decoder;
   FT_Int glyph_index;
@@ -213,7 +213,7 @@ T1_Compute_Max_Advance (T1_Face face,
                                          (FT_Face) face,
                                          0, /* size       */
                                          0, /* glyph slot */
-                                         (FT_Byte **) type1->glyph_names,
+                                         (FT_Byte**) type1->glyph_names,
                                          face->blend,
                                          0,
                                          FT_RENDER_MODE_NORMAL,
@@ -260,7 +260,7 @@ T1_Get_Advances (FT_Face t1face,        /* T1_Face */
                  FT_UInt first,
                  FT_UInt count,
                  FT_Int32 load_flags,
-                 FT_Fixed *advances) {
+                 FT_Fixed* advances) {
   T1_Face face = (T1_Face) t1face;
   T1_DecoderRec decoder;
   T1_Font type1 = &face->type1;
@@ -285,7 +285,7 @@ T1_Get_Advances (FT_Face t1face,        /* T1_Face */
                                          (FT_Face) face,
                                          0, /* size       */
                                          0, /* glyph slot */
-                                         (FT_Byte **) type1->glyph_names,
+                                         (FT_Byte**) type1->glyph_names,
                                          face->blend,
                                          0,
                                          FT_RENDER_MODE_NORMAL,
@@ -386,7 +386,7 @@ T1_Load_Glyph (FT_GlyphSlot t1glyph,          /* T1_GlyphSlot */
                                t1glyph->face,
                                t1size,
                                t1glyph,
-                               (FT_Byte **) type1->glyph_names,
+                               (FT_Byte**) type1->glyph_names,
                                face->blend,
                                hinting,
                                FT_LOAD_TARGET_MODE(load_flags),
@@ -448,7 +448,7 @@ T1_Load_Glyph (FT_GlyphSlot t1glyph,          /* T1_GlyphSlot */
     }
     else {
       FT_BBox cbox;
-      FT_Glyph_Metrics *metrics = &t1glyph->metrics;
+      FT_Glyph_Metrics* metrics = &t1glyph->metrics;
 
 
       /* copy the _unscaled_ advance width */
@@ -501,8 +501,8 @@ T1_Load_Glyph (FT_GlyphSlot t1glyph,          /* T1_GlyphSlot */
       if ((load_flags & FT_LOAD_NO_SCALE) == 0 || force_scaling) {
         /* scale the outline and the metrics */
         FT_Int n;
-        FT_Outline *cur = decoder.builder.base;
-        FT_Vector *vec = cur->points;
+        FT_Outline* cur = decoder.builder.base;
+        FT_Vector* vec = cur->points;
         FT_Fixed x_scale = glyph->x_scale;
         FT_Fixed y_scale = glyph->y_scale;
 
@@ -537,7 +537,7 @@ T1_Load_Glyph (FT_GlyphSlot t1glyph,          /* T1_GlyphSlot */
 
     /* Set control data to the glyph charstrings.  Note that this is */
     /* _not_ zero-terminated.                                        */
-    t1glyph->control_data = (FT_Byte *) glyph_data.pointer;
+    t1glyph->control_data = (FT_Byte*) glyph_data.pointer;
     t1glyph->control_len = glyph_data.length;
   }
 

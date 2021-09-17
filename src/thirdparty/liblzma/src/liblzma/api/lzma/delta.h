@@ -69,7 +69,7 @@ typedef struct {
   uint32_t reserved_int2;
   uint32_t reserved_int3;
   uint32_t reserved_int4;
-  void *reserved_ptr1;
-  void *reserved_ptr2;
+  void* reserved_ptr1;
+  void* reserved_ptr2;
 
 } lzma_options_delta;

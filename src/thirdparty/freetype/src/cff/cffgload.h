@@ -28,11 +28,11 @@ FT_BEGIN_HEADER
 FT_LOCAL(FT_Error)
 cff_get_glyph_data (TT_Face face,
                     FT_UInt glyph_index,
-                    FT_Byte **pointer,
-                    FT_ULong *length);
+                    FT_Byte** pointer,
+                    FT_ULong* length);
 FT_LOCAL(void)
 cff_free_glyph_data (TT_Face face,
-                     FT_Byte **pointer,
+                     FT_Byte** pointer,
                      FT_ULong length);
 
 #if 0  /* unused until we support pure CFF fonts */

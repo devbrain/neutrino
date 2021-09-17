@@ -92,7 +92,7 @@ FT_BEGIN_HEADER
  */
 FT_EXPORT(FT_ListNode)
 FT_List_Find (FT_List list,
-              void *data);
+              void* data);
 
 
 /**************************************************************************
@@ -191,8 +191,8 @@ FT_List_Up (FT_List list,
  *     to the iteration's state.
  */
 typedef FT_Error
-(*FT_List_Iterator) (FT_ListNode node,
-                     void *user);
+(* FT_List_Iterator) (FT_ListNode node,
+                      void* user);
 
 
 /**************************************************************************
@@ -220,7 +220,7 @@ typedef FT_Error
 FT_EXPORT(FT_Error)
 FT_List_Iterate (FT_List list,
                  FT_List_Iterator iterator,
-                 void *user);
+                 void* user);
 
 /**************************************************************************
  *
@@ -244,9 +244,9 @@ FT_List_Iterate (FT_List list,
  *     point to the iteration's state.
  */
 typedef void
-(*FT_List_Destructor) (FT_Memory memory,
-                       void *data,
-                       void *user);
+(* FT_List_Destructor) (FT_Memory memory,
+                        void* data,
+                        void* user);
 
 
 /**************************************************************************
@@ -280,7 +280,7 @@ FT_EXPORT(void)
 FT_List_Finalize (FT_List list,
                   FT_List_Destructor destroy,
                   FT_Memory memory,
-                  void *user);
+                  void* user);
 
 /* */
 

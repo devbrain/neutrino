@@ -32,7 +32,8 @@ namespace neutrino::tiled::tmx {
       using const_iterator = objects_vec_t::const_iterator;
     public:
 
-      static object_layer parse (const reader &elt, const group *parent = nullptr);
+      static object_layer parse (const reader& elt, const group* parent = nullptr);
+
       /**
        * @brief ObjectLayer constructor.
        */
@@ -46,20 +47,21 @@ namespace neutrino::tiled::tmx {
             m_order (order) {
       }
 
-      object_layer (object_layer &&) = default;
+      object_layer (object_layer&&) = default;
 
       /**
        * @brief Get the color used to display the objects.
        *
        * @return the color to display the objects
        */
-      [[nodiscard]] const colori &color () const noexcept {
+      [[nodiscard]] const colori& color () const noexcept {
         return m_color;
       }
 
       [[nodiscard]] draw_order_t draw_order () const noexcept {
         return m_order;
       }
+
       /**
        * @brief Add an object.
        *
@@ -69,7 +71,7 @@ namespace neutrino::tiled::tmx {
         m_objects.emplace_back (std::move (obj));
       }
 
-      [[nodiscard]] const objects_vec_t &objects () const noexcept {
+      [[nodiscard]] const objects_vec_t& objects () const noexcept {
         return m_objects;
       }
 

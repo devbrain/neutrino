@@ -134,7 +134,7 @@ static void
 psh_blues_set_zones_0 (PSH_Blues target,
                        FT_Bool is_others,
                        FT_UInt read_count,
-                       FT_Short *read,
+                       FT_Short* read,
                        PSH_Blue_Table top_table,
                        PSH_Blue_Table bot_table) {
   FT_UInt count_top = top_table->count;
@@ -219,9 +219,9 @@ psh_blues_set_zones_0 (PSH_Blues target,
 static void
 psh_blues_set_zones (PSH_Blues target,
                      FT_UInt count,
-                     FT_Short *blues,
+                     FT_Short* blues,
                      FT_UInt count_others,
-                     FT_Short *other_blues,
+                     FT_Short* other_blues,
                      FT_Int fuzz,
                      FT_Int family) {
   PSH_Blue_Table top_table, bot_table;
@@ -477,7 +477,7 @@ psh_blues_scale_zones (PSH_Blues blues,
 /* calculate the maximum height of given blue zones */
 static FT_Short
 psh_calc_max_height (FT_UInt num,
-                     const FT_Short *values,
+                     const FT_Short* values,
                      FT_Short cur_max) {
   FT_UInt count;
 
@@ -578,14 +578,14 @@ psh_globals_destroy (PSH_Globals globals) {
 
 static FT_Error
 psh_globals_new (FT_Memory memory,
-                 T1_Private *priv,
-                 PSH_Globals *aglobals) {
+                 T1_Private* priv,
+                 PSH_Globals* aglobals) {
   PSH_Globals globals = NULL;
   FT_Error error;
 
   if (!FT_NEW(globals)) {
     FT_UInt count;
-    FT_Short *read;
+    FT_Short* read;
 
     globals->memory = memory;
 
@@ -704,7 +704,7 @@ psh_globals_set_scale (PSH_Globals globals,
 }
 
 FT_LOCAL_DEF(void)
-psh_globals_funcs_init (PSH_Globals_FuncsRec *funcs) {
+psh_globals_funcs_init (PSH_Globals_FuncsRec* funcs) {
   funcs->create = psh_globals_new;
   funcs->set_scale = psh_globals_set_scale;
   funcs->destroy = psh_globals_destroy;

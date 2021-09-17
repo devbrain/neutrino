@@ -132,8 +132,8 @@ typedef struct timespec mythread_condtime;
 // Use pthread_sigmask() to set the signal mask in multi-threaded programs.
 // Do nothing on OpenVMS since it lacks pthread_sigmask().
 static inline void
-mythread_sigmask (int how, const sigset_t *restrict set,
-                  sigset_t *restrict oset) {
+mythread_sigmask (int how, const sigset_t* restrict set,
+                  sigset_t* restrict oset) {
 #ifdef __VMS
   (void)how;
   (void)set;
@@ -148,7 +148,7 @@ mythread_sigmask (int how, const sigset_t *restrict set,
 // Creates a new thread with all signals blocked. Returns zero on success
 // and non-zero on error.
 static inline int
-mythread_create (mythread *thread, void *(*func) (void *arg), void *arg) {
+mythread_create (mythread* thread, void* (* func) (void* arg), void* arg) {
   sigset_t old;
   sigset_t all;
   sigfillset (&all);
@@ -168,26 +168,26 @@ mythread_join (mythread thread) {
 
 // Initiatlizes a mutex. Returns zero on success and non-zero on error.
 static inline int
-mythread_mutex_init (mythread_mutex *mutex) {
+mythread_mutex_init (mythread_mutex* mutex) {
   return pthread_mutex_init (mutex, NULL);
 }
 
 static inline void
-mythread_mutex_destroy (mythread_mutex *mutex) {
+mythread_mutex_destroy (mythread_mutex* mutex) {
   int ret = pthread_mutex_destroy (mutex);
   assert(ret == 0);
   (void) ret;
 }
 
 static inline void
-mythread_mutex_lock (mythread_mutex *mutex) {
+mythread_mutex_lock (mythread_mutex* mutex) {
   int ret = pthread_mutex_lock (mutex);
   assert(ret == 0);
   (void) ret;
 }
 
 static inline void
-mythread_mutex_unlock (mythread_mutex *mutex) {
+mythread_mutex_unlock (mythread_mutex* mutex) {
   int ret = pthread_mutex_unlock (mutex);
   assert(ret == 0);
   (void) ret;
@@ -203,7 +203,7 @@ mythread_mutex_unlock (mythread_mutex *mutex) {
 //
 // If clock_gettime() isn't available at all, gettimeofday() will be used.
 static inline int
-mythread_cond_init (mythread_cond *mycond) {
+mythread_cond_init (mythread_cond* mycond) {
 #ifdef HAVE_CLOCK_GETTIME
   // NOTE: HAVE_DECL_CLOCK_MONOTONIC is always defined to 0 or 1.
 #	if defined(HAVE_PTHREAD_CONDATTR_SETCLOCK) && HAVE_DECL_CLOCK_MONOTONIC
@@ -240,21 +240,21 @@ mythread_cond_init (mythread_cond *mycond) {
 }
 
 static inline void
-mythread_cond_destroy (mythread_cond *cond) {
+mythread_cond_destroy (mythread_cond* cond) {
   int ret = pthread_cond_destroy (&cond->cond);
   assert(ret == 0);
   (void) ret;
 }
 
 static inline void
-mythread_cond_signal (mythread_cond *cond) {
+mythread_cond_signal (mythread_cond* cond) {
   int ret = pthread_cond_signal (&cond->cond);
   assert(ret == 0);
   (void) ret;
 }
 
 static inline void
-mythread_cond_wait (mythread_cond *cond, mythread_mutex *mutex) {
+mythread_cond_wait (mythread_cond* cond, mythread_mutex* mutex) {
   int ret = pthread_cond_wait (&cond->cond, mutex);
   assert(ret == 0);
   (void) ret;
@@ -263,8 +263,8 @@ mythread_cond_wait (mythread_cond *cond, mythread_mutex *mutex) {
 // Waits on a condition or until a timeout expires. If the timeout expires,
 // non-zero is returned, otherwise zero is returned.
 static inline int
-mythread_cond_timedwait (mythread_cond *cond, mythread_mutex *mutex,
-                         const mythread_condtime *condtime) {
+mythread_cond_timedwait (mythread_cond* cond, mythread_mutex* mutex,
+                         const mythread_condtime* condtime) {
   int ret = pthread_cond_timedwait (&cond->cond, mutex, condtime);
   assert(ret == 0 || ret == ETIMEDOUT);
   return ret;
@@ -273,7 +273,7 @@ mythread_cond_timedwait (mythread_cond *cond, mythread_mutex *mutex,
 // Sets condtime to the absolute time that is timeout_ms milliseconds
 // in the future. The type of the clock to use is taken from cond.
 static inline void
-mythread_condtime_set (mythread_condtime *condtime, const mythread_cond *cond,
+mythread_condtime_set (mythread_condtime* condtime, const mythread_cond* cond,
                        uint32_t timeout_ms) {
   condtime->tv_sec = timeout_ms / 1000;
   condtime->tv_nsec = (timeout_ms % 1000) * 1000000;

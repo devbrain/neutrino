@@ -50,7 +50,7 @@ typedef struct {
 } lzma_coder;
 
 static void
-lz_decoder_reset (lzma_coder *coder) {
+lz_decoder_reset (lzma_coder* coder) {
   coder->dict.pos = 0;
   coder->dict.full = 0;
   coder->dict.buf[coder->dict.size - 1] = '\0';
@@ -59,10 +59,10 @@ lz_decoder_reset (lzma_coder *coder) {
 }
 
 static lzma_ret
-decode_buffer (lzma_coder *coder,
-               const uint8_t *restrict in, size_t *restrict in_pos,
-               size_t in_size, uint8_t *restrict out,
-               size_t *restrict out_pos, size_t out_size) {
+decode_buffer (lzma_coder* coder,
+               const uint8_t* restrict in, size_t* restrict in_pos,
+               size_t in_size, uint8_t* restrict out,
+               size_t* restrict out_pos, size_t out_size) {
   while (true) {
     // Wrap the dictionary if needed.
     if (coder->dict.pos == coder->dict.size)
@@ -126,12 +126,12 @@ decode_buffer (lzma_coder *coder,
 }
 
 static lzma_ret
-lz_decode (void *coder_ptr, const lzma_allocator *allocator,
-           const uint8_t *restrict in, size_t *restrict in_pos,
-           size_t in_size, uint8_t *restrict out,
-           size_t *restrict out_pos, size_t out_size,
+lz_decode (void* coder_ptr, const lzma_allocator* allocator,
+           const uint8_t* restrict in, size_t* restrict in_pos,
+           size_t in_size, uint8_t* restrict out,
+           size_t* restrict out_pos, size_t out_size,
            lzma_action action) {
-  lzma_coder *coder = coder_ptr;
+  lzma_coder* coder = coder_ptr;
 
   if (coder->next.code == NULL)
     return decode_buffer (coder, in, in_pos, in_size,
@@ -184,8 +184,8 @@ lz_decode (void *coder_ptr, const lzma_allocator *allocator,
 }
 
 static void
-lz_decoder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_coder *coder = coder_ptr;
+lz_decoder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_coder* coder = coder_ptr;
 
   lzma_next_end (&coder->next, allocator);
   lzma_free (coder->dict.buf, allocator);
@@ -200,13 +200,13 @@ lz_decoder_end (void *coder_ptr, const lzma_allocator *allocator) {
 }
 
 extern lzma_ret
-lzma_lz_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                      const lzma_filter_info *filters,
-                      lzma_ret (*lz_init) (lzma_lz_decoder *lz,
-                                           const lzma_allocator *allocator, const void *options,
-                                           lzma_lz_options *lz_options)) {
+lzma_lz_decoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                      const lzma_filter_info* filters,
+                      lzma_ret (* lz_init) (lzma_lz_decoder* lz,
+                                            const lzma_allocator* allocator, const void* options,
+                                            lzma_lz_options* lz_options)) {
   // Allocate the base structure if it isn't already allocated.
-  lzma_coder *coder = next->coder;
+  lzma_coder* coder = next->coder;
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_coder), allocator);
     if (coder == NULL)
@@ -291,7 +291,7 @@ lzma_lz_decoder_memusage (size_t dictionary_size) {
 }
 
 extern void
-lzma_lz_decoder_uncompressed (void *coder_ptr, lzma_vli uncompressed_size) {
-  lzma_coder *coder = coder_ptr;
+lzma_lz_decoder_uncompressed (void* coder_ptr, lzma_vli uncompressed_size) {
+  lzma_coder* coder = coder_ptr;
   coder->lz.set_uncompressed (coder->lz.coder, uncompressed_size);
 }

@@ -106,7 +106,6 @@ HB_EXTERN GType
 hb_gobject_ot_math_glyph_part_get_type (void);
 #define HB_GOBJECT_TYPE_OT_MATH_GLYPH_PART (hb_gobject_ot_math_glyph_part_get_type ())
 
-
 HB_END_DECLS
 
 #endif /* HB_GOBJECT_H */

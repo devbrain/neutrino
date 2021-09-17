@@ -83,13 +83,13 @@ typedef struct _mainprog_info {
   double display_exponent;
   ulg width;
   ulg height;
-  void *png_ptr;
-  void *info_ptr;
-  void (*mainprog_init) (void);
-  void (*mainprog_display_row) (ulg row_num);
-  void (*mainprog_finish_display) (void);
-  uch *image_data;
-  uch **row_pointers;
+  void* png_ptr;
+  void* info_ptr;
+  void (* mainprog_init) (void);
+  void (* mainprog_display_row) (ulg row_num);
+  void (* mainprog_finish_display) (void);
+  uch* image_data;
+  uch** row_pointers;
   jmp_buf jmpbuf;
   int passes;              /* not used */
   int pass;
@@ -106,10 +106,10 @@ typedef struct _mainprog_info {
 
 void readpng2_version_info (void);
 
-int readpng2_check_sig (uch *sig, int num);
+int readpng2_check_sig (uch* sig, int num);
 
-int readpng2_init (mainprog_info *mainprog_ptr);
+int readpng2_init (mainprog_info* mainprog_ptr);
 
-int readpng2_decode_data (mainprog_info *mainprog_ptr, uch *rawbuf, ulg length);
+int readpng2_decode_data (mainprog_info* mainprog_ptr, uch* rawbuf, ulg length);
 
-void readpng2_cleanup (mainprog_info *mainprog_ptr);
+void readpng2_cleanup (mainprog_info* mainprog_ptr);

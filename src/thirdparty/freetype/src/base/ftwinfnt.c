@@ -27,7 +27,7 @@
 
 FT_EXPORT_DEF(FT_Error)
 FT_Get_WinFNT_Header (FT_Face face,
-                      FT_WinFNT_HeaderRec *header) {
+                      FT_WinFNT_HeaderRec* header) {
   FT_Service_WinFnt service;
   FT_Error error;
 

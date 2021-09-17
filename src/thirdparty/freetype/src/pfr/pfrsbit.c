@@ -36,17 +36,17 @@
 /*************************************************************************/
 
 typedef struct PFR_BitWriter_ {
-  FT_Byte *line;      /* current line start               */
+  FT_Byte* line;      /* current line start               */
   FT_Int pitch;     /* line size in bytes               */
   FT_UInt width;     /* width in pixels/bits             */
   FT_UInt rows;      /* number of remaining rows to scan */
   FT_UInt total;     /* total number of bits to draw     */
 
-} PFR_BitWriterRec, *PFR_BitWriter;
+} PFR_BitWriterRec, * PFR_BitWriter;
 
 static void
 pfr_bitwriter_init (PFR_BitWriter writer,
-                    FT_Bitmap *target,
+                    FT_Bitmap* target,
                     FT_Bool decreasing) {
   writer->line = target->buffer;
   writer->pitch = target->pitch;
@@ -62,11 +62,11 @@ pfr_bitwriter_init (PFR_BitWriter writer,
 
 static void
 pfr_bitwriter_decode_bytes (PFR_BitWriter writer,
-                            FT_Byte *p,
-                            FT_Byte *limit) {
+                            FT_Byte* p,
+                            FT_Byte* limit) {
   FT_UInt n, reload;
   FT_UInt left = writer->width;
-  FT_Byte *cur = writer->line;
+  FT_Byte* cur = writer->line;
   FT_UInt mask = 0x80;
   FT_UInt val = 0;
   FT_UInt c = 0;
@@ -110,12 +110,12 @@ pfr_bitwriter_decode_bytes (PFR_BitWriter writer,
 
 static void
 pfr_bitwriter_decode_rle1 (PFR_BitWriter writer,
-                           FT_Byte *p,
-                           FT_Byte *limit) {
+                           FT_Byte* p,
+                           FT_Byte* limit) {
   FT_Int phase, count, counts[2];
   FT_UInt n, reload;
   FT_UInt left = writer->width;
-  FT_Byte *cur = writer->line;
+  FT_Byte* cur = writer->line;
   FT_UInt mask = 0x80;
   FT_UInt c = 0;
 
@@ -181,12 +181,12 @@ pfr_bitwriter_decode_rle1 (PFR_BitWriter writer,
 
 static void
 pfr_bitwriter_decode_rle2 (PFR_BitWriter writer,
-                           FT_Byte *p,
-                           FT_Byte *limit) {
+                           FT_Byte* p,
+                           FT_Byte* limit) {
   FT_Int phase, count;
   FT_UInt n, reload;
   FT_UInt left = writer->width;
-  FT_Byte *cur = writer->line;
+  FT_Byte* cur = writer->line;
   FT_UInt mask = 0x80;
   FT_UInt c = 0;
 
@@ -247,16 +247,16 @@ pfr_bitwriter_decode_rle2 (PFR_BitWriter writer,
 /*************************************************************************/
 
 static void
-pfr_lookup_bitmap_data (FT_Byte *base,
-                        FT_Byte *limit,
+pfr_lookup_bitmap_data (FT_Byte* base,
+                        FT_Byte* limit,
                         FT_UInt count,
-                        FT_UInt *flags,
+                        FT_UInt* flags,
                         FT_UInt char_code,
-                        FT_ULong *found_offset,
-                        FT_ULong *found_size) {
+                        FT_ULong* found_offset,
+                        FT_ULong* found_size) {
   FT_UInt min, max, char_len;
   FT_Bool two = FT_BOOL(*flags & PFR_BITMAP_2BYTE_CHARCODE);
-  FT_Byte *buff;
+  FT_Byte* buff;
 
   char_len = 4;
   if (two)
@@ -267,8 +267,8 @@ pfr_lookup_bitmap_data (FT_Byte *base,
     char_len += 1;
 
   if (!(*flags & PFR_BITMAP_CHARCODES_VALIDATED)) {
-    FT_Byte *p;
-    FT_Byte *lim;
+    FT_Byte* p;
+    FT_Byte* lim;
     FT_UInt code;
     FT_Long prev_code;
 
@@ -358,19 +358,19 @@ pfr_lookup_bitmap_data (FT_Byte *base,
 /* before calling this function                                       */
 /*                                                                    */
 static FT_Error
-pfr_load_bitmap_metrics (FT_Byte **pdata,
-                         FT_Byte *limit,
+pfr_load_bitmap_metrics (FT_Byte** pdata,
+                         FT_Byte* limit,
                          FT_Long scaled_advance,
-                         FT_Long *axpos,
-                         FT_Long *aypos,
-                         FT_UInt *axsize,
-                         FT_UInt *aysize,
-                         FT_Long *aadvance,
-                         FT_UInt *aformat) {
+                         FT_Long* axpos,
+                         FT_Long* aypos,
+                         FT_UInt* axsize,
+                         FT_UInt* aysize,
+                         FT_Long* aadvance,
+                         FT_UInt* aformat) {
   FT_Error error = FT_Err_Ok;
   FT_Byte flags;
   FT_Byte b;
-  FT_Byte *p = *pdata;
+  FT_Byte* p = *pdata;
   FT_Long xpos, ypos, advance;
   FT_UInt xsize, ysize;
 
@@ -484,11 +484,11 @@ pfr_load_bitmap_metrics (FT_Byte **pdata,
 }
 
 static FT_Error
-pfr_load_bitmap_bits (FT_Byte *p,
-                      FT_Byte *limit,
+pfr_load_bitmap_bits (FT_Byte* p,
+                      FT_Byte* limit,
                       FT_UInt format,
                       FT_Bool decreasing,
-                      FT_Bitmap *target) {
+                      FT_Bitmap* target) {
   FT_Error error = FT_Err_Ok;
   PFR_BitWriterRec writer;
 
@@ -598,7 +598,7 @@ pfr_slot_load_bitmap (PFR_Slot glyph,
   {
     FT_Long xpos = 0, ypos = 0, advance = 0;
     FT_UInt xsize = 0, ysize = 0, format = 0;
-    FT_Byte *p;
+    FT_Byte* p;
 
 
     /* compute linear advance */

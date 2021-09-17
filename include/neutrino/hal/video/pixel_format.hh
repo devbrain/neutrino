@@ -128,7 +128,7 @@ namespace neutrino::hal {
     public:
       explicit pixel_format (format f);
       pixel_format (uint8_t bpp, uint32_t rmask, uint32_t gmask, uint32_t bmask, uint32_t amask);
-      explicit pixel_format (const description &d);
+      explicit pixel_format (const description& d);
 
       static pixel_format make_8bit ();
       static pixel_format make_rgba_32bit ();
@@ -159,12 +159,12 @@ namespace neutrino::hal {
       uint32_t m_value;
   };
 
-  std::ostream &operator<< (std::ostream &os, pixel_format::format f);
-  std::ostream &operator<< (std::ostream &os, pixel_format::layout f);
-  std::ostream &operator<< (std::ostream &os, pixel_format::array_order f);
-  std::ostream &operator<< (std::ostream &os, pixel_format::component_order f);
-  std::ostream &operator<< (std::ostream &os, pixel_format::order f);
-  std::ostream &operator<< (std::ostream &os, pixel_format::type f);
+  std::ostream& operator << (std::ostream& os, pixel_format::format f);
+  std::ostream& operator << (std::ostream& os, pixel_format::layout f);
+  std::ostream& operator << (std::ostream& os, pixel_format::array_order f);
+  std::ostream& operator << (std::ostream& os, pixel_format::component_order f);
+  std::ostream& operator << (std::ostream& os, pixel_format::order f);
+  std::ostream& operator << (std::ostream& os, pixel_format::type f);
 }
 
 #endif

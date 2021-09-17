@@ -14,7 +14,8 @@ namespace neutrino::tiled::tmx {
  */
   class terrain : public component {
     public:
-      static terrain parse (const reader &node);
+      static terrain parse (const reader& node);
+
       /**
        * @brief Terrain constructor.
        */
@@ -27,7 +28,7 @@ namespace neutrino::tiled::tmx {
        *
        * @returns the name of the terrain
        */
-      [[nodiscard]] const std::string &name () const noexcept {
+      [[nodiscard]] const std::string& name () const noexcept {
         return m_name;
       }
 

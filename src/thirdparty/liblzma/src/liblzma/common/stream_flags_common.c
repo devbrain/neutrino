@@ -17,7 +17,7 @@ const uint8_t lzma_footer_magic[2] = {0x59, 0x5A};
 
 extern LZMA_API(lzma_ret)
 lzma_stream_flags_compare (
-    const lzma_stream_flags *a, const lzma_stream_flags *b) {
+    const lzma_stream_flags* a, const lzma_stream_flags* b) {
   // We can compare only version 0 structures.
   if (a->version != 0 || b->version != 0)
     return LZMA_OPTIONS_ERROR;

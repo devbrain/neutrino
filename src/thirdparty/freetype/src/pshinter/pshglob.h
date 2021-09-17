@@ -63,21 +63,21 @@ typedef struct PSH_WidthRec_ {
   FT_Pos cur;
   FT_Pos fit;
 
-} PSH_WidthRec, *PSH_Width;
+} PSH_WidthRec, * PSH_Width;
 
 /* standard and snap widths table */
 typedef struct PSH_WidthsRec_ {
   FT_UInt count;
   PSH_WidthRec widths[PS_GLOBALS_MAX_STD_WIDTHS];
 
-} PSH_WidthsRec, *PSH_Widths;
+} PSH_WidthsRec, * PSH_Widths;
 
 typedef struct PSH_DimensionRec_ {
   PSH_WidthsRec stdw;
   FT_Fixed scale_mult;
   FT_Fixed scale_delta;
 
-} PSH_DimensionRec, *PSH_Dimension;
+} PSH_DimensionRec, * PSH_Dimension;
 
 /* blue zone descriptor */
 typedef struct PSH_Blue_ZoneRec_ {
@@ -91,13 +91,13 @@ typedef struct PSH_Blue_ZoneRec_ {
   FT_Pos cur_bottom;
   FT_Pos cur_top;
 
-} PSH_Blue_ZoneRec, *PSH_Blue_Zone;
+} PSH_Blue_ZoneRec, * PSH_Blue_Zone;
 
 typedef struct PSH_Blue_TableRec_ {
   FT_UInt count;
   PSH_Blue_ZoneRec zones[PS_GLOBALS_MAX_BLUE_ZONES];
 
-} PSH_Blue_TableRec, *PSH_Blue_Table;
+} PSH_Blue_TableRec, * PSH_Blue_Table;
 
 /* blue zones table */
 typedef struct PSH_BluesRec_ {
@@ -112,7 +112,7 @@ typedef struct PSH_BluesRec_ {
   FT_Int blue_fuzz;
   FT_Bool no_overshoots;
 
-} PSH_BluesRec, *PSH_Blues;
+} PSH_BluesRec, * PSH_Blues;
 
 
 /* font globals.                                         */
@@ -134,10 +134,10 @@ typedef struct PSH_AlignmentRec_ {
   FT_Pos align_top;
   FT_Pos align_bot;
 
-} PSH_AlignmentRec, *PSH_Alignment;
+} PSH_AlignmentRec, * PSH_Alignment;
 
 FT_LOCAL(void)
-psh_globals_funcs_init (PSH_Globals_FuncsRec *funcs);
+psh_globals_funcs_init (PSH_Globals_FuncsRec* funcs);
 
 #if 0
 /* snap a stem width to fitter coordinates.  `org_width' is in font */

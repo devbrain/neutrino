@@ -67,7 +67,7 @@ invsRGB (unsigned int i) {
 }
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   unsigned int i, i16, ibase;
   double min_error = 0;
   double max_error = 0;

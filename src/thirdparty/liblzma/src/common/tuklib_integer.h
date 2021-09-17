@@ -205,7 +205,7 @@
 // Hopefully this is flexible enough in practice.
 
 static inline uint16_t
-read16ne (const uint8_t *buf) {
+read16ne (const uint8_t* buf) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
  && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
   return *(const uint16_t *)buf;
@@ -217,7 +217,7 @@ read16ne (const uint8_t *buf) {
 }
 
 static inline uint32_t
-read32ne (const uint8_t *buf) {
+read32ne (const uint8_t* buf) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
  && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
   return *(const uint32_t *)buf;
@@ -229,7 +229,7 @@ read32ne (const uint8_t *buf) {
 }
 
 static inline uint64_t
-read64ne (const uint8_t *buf) {
+read64ne (const uint8_t* buf) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
  && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
   return *(const uint64_t *)buf;
@@ -241,7 +241,7 @@ read64ne (const uint8_t *buf) {
 }
 
 static inline void
-write16ne (uint8_t *buf, uint16_t num) {
+write16ne (uint8_t* buf, uint16_t num) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
  && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
   *(uint16_t *)buf = num;
@@ -252,7 +252,7 @@ write16ne (uint8_t *buf, uint16_t num) {
 }
 
 static inline void
-write32ne (uint8_t *buf, uint32_t num) {
+write32ne (uint8_t* buf, uint32_t num) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
  && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
   *(uint32_t *)buf = num;
@@ -263,7 +263,7 @@ write32ne (uint8_t *buf, uint32_t num) {
 }
 
 static inline void
-write64ne (uint8_t *buf, uint64_t num) {
+write64ne (uint8_t* buf, uint64_t num) {
 #if defined(TUKLIB_FAST_UNALIGNED_ACCESS) \
  && defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING)
   *(uint64_t *)buf = num;
@@ -274,7 +274,7 @@ write64ne (uint8_t *buf, uint64_t num) {
 }
 
 static inline uint16_t
-read16be (const uint8_t *buf) {
+read16be (const uint8_t* buf) {
 #if defined(WORDS_BIGENDIAN) || defined(TUKLIB_FAST_UNALIGNED_ACCESS)
   uint16_t num = read16ne (buf);
   return conv16be(num);
@@ -285,7 +285,7 @@ read16be (const uint8_t *buf) {
 }
 
 static inline uint16_t
-read16le (const uint8_t *buf) {
+read16le (const uint8_t* buf) {
 #if !defined(WORDS_BIGENDIAN) || defined(TUKLIB_FAST_UNALIGNED_ACCESS)
   uint16_t num = read16ne (buf);
   return conv16le(num);
@@ -296,7 +296,7 @@ read16le (const uint8_t *buf) {
 }
 
 static inline uint32_t
-read32be (const uint8_t *buf) {
+read32be (const uint8_t* buf) {
 #if defined(WORDS_BIGENDIAN) || defined(TUKLIB_FAST_UNALIGNED_ACCESS)
   uint32_t num = read32ne (buf);
   return conv32be(num);
@@ -310,7 +310,7 @@ read32be (const uint8_t *buf) {
 }
 
 static inline uint32_t
-read32le (const uint8_t *buf) {
+read32le (const uint8_t* buf) {
 #if !defined(WORDS_BIGENDIAN) || defined(TUKLIB_FAST_UNALIGNED_ACCESS)
   uint32_t num = read32ne (buf);
   return conv32le(num);
@@ -419,7 +419,7 @@ write32le(uint8_t *buf, uint32_t num)
 #endif
 
 static inline uint16_t
-aligned_read16ne (const uint8_t *buf) {
+aligned_read16ne (const uint8_t* buf) {
 #if defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING) \
  || defined(TUKLIB_USE_UNSAFE_ALIGNED_READS)
   return *(const uint16_t *)buf;
@@ -431,7 +431,7 @@ aligned_read16ne (const uint8_t *buf) {
 }
 
 static inline uint32_t
-aligned_read32ne (const uint8_t *buf) {
+aligned_read32ne (const uint8_t* buf) {
 #if defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING) \
  || defined(TUKLIB_USE_UNSAFE_ALIGNED_READS)
   return *(const uint32_t *)buf;
@@ -443,7 +443,7 @@ aligned_read32ne (const uint8_t *buf) {
 }
 
 static inline uint64_t
-aligned_read64ne (const uint8_t *buf) {
+aligned_read64ne (const uint8_t* buf) {
 #if defined(TUKLIB_USE_UNSAFE_TYPE_PUNNING) \
  || defined(TUKLIB_USE_UNSAFE_ALIGNED_READS)
   return *(const uint64_t *)buf;
@@ -455,7 +455,7 @@ aligned_read64ne (const uint8_t *buf) {
 }
 
 static inline void
-aligned_write16ne (uint8_t *buf, uint16_t num) {
+aligned_write16ne (uint8_t* buf, uint16_t num) {
 #ifdef TUKLIB_USE_UNSAFE_TYPE_PUNNING
   *(uint16_t *)buf = num;
 #else
@@ -465,7 +465,7 @@ aligned_write16ne (uint8_t *buf, uint16_t num) {
 }
 
 static inline void
-aligned_write32ne (uint8_t *buf, uint32_t num) {
+aligned_write32ne (uint8_t* buf, uint32_t num) {
 #ifdef TUKLIB_USE_UNSAFE_TYPE_PUNNING
   *(uint32_t *)buf = num;
 #else
@@ -475,7 +475,7 @@ aligned_write32ne (uint8_t *buf, uint32_t num) {
 }
 
 static inline void
-aligned_write64ne (uint8_t *buf, uint64_t num) {
+aligned_write64ne (uint8_t* buf, uint64_t num) {
 #ifdef TUKLIB_USE_UNSAFE_TYPE_PUNNING
   *(uint64_t *)buf = num;
 #else
@@ -485,37 +485,37 @@ aligned_write64ne (uint8_t *buf, uint64_t num) {
 }
 
 static inline uint16_t
-aligned_read16be (const uint8_t *buf) {
+aligned_read16be (const uint8_t* buf) {
   uint16_t num = aligned_read16ne (buf);
   return conv16be(num);
 }
 
 static inline uint16_t
-aligned_read16le (const uint8_t *buf) {
+aligned_read16le (const uint8_t* buf) {
   uint16_t num = aligned_read16ne (buf);
   return conv16le(num);
 }
 
 static inline uint32_t
-aligned_read32be (const uint8_t *buf) {
+aligned_read32be (const uint8_t* buf) {
   uint32_t num = aligned_read32ne (buf);
   return conv32be(num);
 }
 
 static inline uint32_t
-aligned_read32le (const uint8_t *buf) {
+aligned_read32le (const uint8_t* buf) {
   uint32_t num = aligned_read32ne (buf);
   return conv32le(num);
 }
 
 static inline uint64_t
-aligned_read64be (const uint8_t *buf) {
+aligned_read64be (const uint8_t* buf) {
   uint64_t num = aligned_read64ne (buf);
   return conv64be(num);
 }
 
 static inline uint64_t
-aligned_read64le (const uint8_t *buf) {
+aligned_read64le (const uint8_t* buf) {
   uint64_t num = aligned_read64ne (buf);
   return conv64le(num);
 }

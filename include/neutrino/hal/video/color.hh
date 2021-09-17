@@ -12,6 +12,7 @@ namespace neutrino::hal {
     color ()
         : r (0), g (0), b (0), a (0) {
     }
+
     color (uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_ = 0)
         : r (r_), g (g_), b (b_), a (a_) {
     }

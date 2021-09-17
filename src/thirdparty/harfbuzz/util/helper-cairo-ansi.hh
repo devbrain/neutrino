@@ -32,9 +32,8 @@
 #include <cairo.h>
 
 cairo_status_t
-helper_cairo_surface_write_to_ansi_stream (cairo_surface_t	*surface,
-					   cairo_write_func_t	write_func,
-					   void			*closure);
-
+helper_cairo_surface_write_to_ansi_stream (cairo_surface_t* surface,
+                                           cairo_write_func_t write_func,
+                                           void* closure);
 
 #endif

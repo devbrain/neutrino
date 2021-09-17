@@ -35,16 +35,16 @@ FT_BEGIN_HEADER
 /*************************************************************************/
 
 /* standard (and expert) encoding cmaps */
-typedef struct T1_CMapStdRec_ *T1_CMapStd;
+typedef struct T1_CMapStdRec_* T1_CMapStd;
 
 typedef struct T1_CMapStdRec_ {
   FT_CMapRec cmap;
 
-  const FT_UShort *code_to_sid;
+  const FT_UShort* code_to_sid;
   PS_Adobe_Std_StringsFunc sid_to_string;
 
   FT_UInt num_glyphs;
-  const char *const *glyph_names;
+  const char* const* glyph_names;
 
 } T1_CMapStdRec;
 
@@ -63,13 +63,13 @@ FT_CALLBACK_TABLE const FT_CMap_ClassRec
 /*************************************************************************/
 /*************************************************************************/
 
-typedef struct T1_CMapCustomRec_ *T1_CMapCustom;
+typedef struct T1_CMapCustomRec_* T1_CMapCustom;
 
 typedef struct T1_CMapCustomRec_ {
   FT_CMapRec cmap;
   FT_UInt first;
   FT_UInt count;
-  FT_UShort *indices;
+  FT_UShort* indices;
 
 } T1_CMapCustomRec;
 

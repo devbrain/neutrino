@@ -38,21 +38,20 @@
 #endif
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   if (argc != 4 && argc != 5) {
     fprintf (stderr, "usage: %s font-file lookup-index first-glyph [second-glyph]\n", argv[0]);
     exit (1);
   }
 
   /* Create the face */
-  hb_blob_t *blob = hb_blob_create_from_file_or_fail (argv[1]);
+  hb_blob_t* blob = hb_blob_create_from_file_or_fail (argv[1]);
   assert (blob);
-  hb_face_t *face = hb_face_create (blob, 0 /* first face */);
+  hb_face_t* face = hb_face_create (blob, 0 /* first face */);
   hb_blob_destroy (blob);
   blob = nullptr;
 
-  hb_font_t *font = hb_font_create (face);
+  hb_font_t* font = hb_font_create (face);
 #ifdef HAVE_FREETYPE
   hb_ft_font_set_funcs (font);
 #endif

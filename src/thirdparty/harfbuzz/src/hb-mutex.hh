@@ -98,27 +98,32 @@ struct hb_mutex_t {
   void init () {
     hb_mutex_impl_init   (&m);
   }
+
   void lock () {
     hb_mutex_impl_lock   (&m);
   }
+
   void unlock () {
     hb_mutex_impl_unlock (&m);
   }
+
   void fini () {
     hb_mutex_impl_finish (&m);
   }
 };
 
 struct hb_lock_t {
-    hb_lock_t (hb_mutex_t &mutex_)
+    hb_lock_t (hb_mutex_t& mutex_)
         : mutex (mutex_) {
       mutex.lock ();
     }
+
     ~hb_lock_t () {
       mutex.unlock ();
     }
+
   private:
-    hb_mutex_t &mutex;
+    hb_mutex_t& mutex;
 };
 
 #endif /* HB_MUTEX_HH */

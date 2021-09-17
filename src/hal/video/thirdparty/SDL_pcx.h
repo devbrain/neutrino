@@ -51,7 +51,7 @@ struct PCXheader {
 };
 
 /* See if an image is contained in a data source */
-int IMG_isPCX (SDL_RWops *src) {
+int IMG_isPCX (SDL_RWops* src) {
   Sint64 start;
   int is_PCX;
   const int ZSoft_Manufacturer = 10;
@@ -77,18 +77,18 @@ int IMG_isPCX (SDL_RWops *src) {
 }
 
 /* Load a PCX type image from an SDL datasource */
-SDL_Surface *IMG_LoadPCX_RW (SDL_RWops *src) {
+SDL_Surface* IMG_LoadPCX_RW (SDL_RWops* src) {
   Sint64 start;
   struct PCXheader pcxh;
   Uint32 Rmask;
   Uint32 Gmask;
   Uint32 Bmask;
   Uint32 Amask;
-  SDL_Surface *surface = NULL;
+  SDL_Surface* surface = NULL;
   int width, height;
   int y, bpl;
-  Uint8 *row, *buf = NULL;
-  char *error = NULL;
+  Uint8* row, * buf = NULL;
+  char* error = NULL;
   int bits, src_bits;
   int count = 0;
   Uint8 ch;
@@ -155,12 +155,12 @@ SDL_Surface *IMG_LoadPCX_RW (SDL_RWops *src) {
   }
 
   bpl = pcxh.NPlanes * pcxh.BytesPerLine;
-  buf = (Uint8 *) SDL_calloc (bpl, 1);
+  buf = (Uint8*) SDL_calloc (bpl, 1);
   if (!buf) {
     error = "Out of memory";
     goto done;
   }
-  row = (Uint8 *) surface->pixels;
+  row = (Uint8*) surface->pixels;
   for (y = 0; y < surface->h; ++y) {
     /* decode a scan line to a temporary buffer first */
     int i;
@@ -195,7 +195,7 @@ SDL_Surface *IMG_LoadPCX_RW (SDL_RWops *src) {
 
     if (src_bits <= 4) {
       /* expand planes to 1 byte/pixel */
-      Uint8 *innerSrc = buf;
+      Uint8* innerSrc = buf;
       int plane;
       for (plane = 0; plane < pcxh.NPlanes; plane++) {
         int j, k, x = 0;
@@ -217,11 +217,11 @@ SDL_Surface *IMG_LoadPCX_RW (SDL_RWops *src) {
     }
     else if (src_bits == 24) {
       /* de-interlace planes */
-      Uint8 *innerSrc = buf;
+      Uint8* innerSrc = buf;
       int plane;
       for (plane = 0; plane < pcxh.NPlanes; plane++) {
         int x;
-        Uint8 *dst = row + plane;
+        Uint8* dst = row + plane;
         for (x = 0; x < width; x++) {
           if (dst >= row + surface->pitch) {
             error = "decoding out of bounds (corrupt?)";
@@ -237,7 +237,7 @@ SDL_Surface *IMG_LoadPCX_RW (SDL_RWops *src) {
   }
 
   if (bits == 8) {
-    SDL_Color *colors = surface->format->palette->colors;
+    SDL_Color* colors = surface->format->palette->colors;
     int nc = 1 << src_bits;
     int i;
 

@@ -26,17 +26,17 @@ FT_BEGIN_HEADER
 #define FT_SERVICE_ID_CID  "CID"
 
 typedef FT_Error
-(*FT_CID_GetRegistryOrderingSupplementFunc) (FT_Face face,
-                                             const char **registry,
-                                             const char **ordering,
-                                             FT_Int *supplement);
+(* FT_CID_GetRegistryOrderingSupplementFunc) (FT_Face face,
+                                              const char** registry,
+                                              const char** ordering,
+                                              FT_Int* supplement);
 typedef FT_Error
-(*FT_CID_GetIsInternallyCIDKeyedFunc) (FT_Face face,
-                                       FT_Bool *is_cid);
+(* FT_CID_GetIsInternallyCIDKeyedFunc) (FT_Face face,
+                                        FT_Bool* is_cid);
 typedef FT_Error
-(*FT_CID_GetCIDFromGlyphIndexFunc) (FT_Face face,
-                                    FT_UInt glyph_index,
-                                    FT_UInt *cid);
+(* FT_CID_GetCIDFromGlyphIndexFunc) (FT_Face face,
+                                     FT_UInt glyph_index,
+                                     FT_UInt* cid);
 
 FT_DEFINE_SERVICE(CID) {
   FT_CID_GetRegistryOrderingSupplementFunc get_ros;

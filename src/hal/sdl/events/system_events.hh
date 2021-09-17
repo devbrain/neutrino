@@ -30,7 +30,7 @@ namespace neutrino::sdl::events {
       const keycode key_code;
       const uint16_t key_mod;
 
-      explicit keyboard (const SDL_KeyboardEvent &e)
+      explicit keyboard (const SDL_KeyboardEvent& e)
           : detail::window_event (e.windowID),
             pressed (e.state == SDL_PRESSED),
             repeat (e.repeat > 0),
@@ -95,7 +95,7 @@ namespace neutrino::sdl::events {
       unsigned x;
       unsigned y;
 
-      explicit window_moved (const SDL_WindowEvent &e)
+      explicit window_moved (const SDL_WindowEvent& e)
           : detail::window_event (e.windowID),
             x (static_cast <unsigned> (e.data1)),
             y (static_cast <unsigned> (e.data2)) {
@@ -108,7 +108,7 @@ namespace neutrino::sdl::events {
       unsigned w;
       unsigned h;
 
-      explicit window_resized (const SDL_WindowEvent &e)
+      explicit window_resized (const SDL_WindowEvent& e)
           : detail::window_event (e.windowID),
             w (static_cast <unsigned> (e.data1)),
             h (static_cast <unsigned> (e.data2)) {
@@ -121,11 +121,11 @@ namespace neutrino::sdl::events {
     public:
       static constexpr size_t MAX_TEXT_LENGTH = SDL_TEXTEDITINGEVENT_TEXT_SIZE;
 
-      const char *text;
+      const char* text;
       unsigned start;
       unsigned length;
 
-      explicit text_editing (const SDL_TextEditingEvent &e)
+      explicit text_editing (const SDL_TextEditingEvent& e)
           : detail::window_event (e.windowID),
             text (e.text),
             start (static_cast<unsigned>(e.start)),
@@ -138,9 +138,9 @@ namespace neutrino::sdl::events {
     public:
       static constexpr size_t MAX_TEXT_LENGTH = SDL_TEXTEDITINGEVENT_TEXT_SIZE;
 
-      const char *text;
+      const char* text;
 
-      explicit text_input (const SDL_TextInputEvent &e)
+      explicit text_input (const SDL_TextInputEvent& e)
           : detail::window_event (e.windowID),
             text (e.text) {
       }
@@ -166,7 +166,7 @@ namespace neutrino::sdl::events {
       int xrel;
       int yrel;
 
-      explicit mouse_motion (const SDL_MouseMotionEvent &e)
+      explicit mouse_motion (const SDL_MouseMotionEvent& e)
           : detail::window_event (e.windowID),
             mouse_id (static_cast <mouse_id_t> (e.which)),
             button (static_cast <mousebutton> (e.state)),
@@ -186,7 +186,7 @@ namespace neutrino::sdl::events {
       int xrel;
       int yrel;
 
-      explicit touch_device_motion (const SDL_MouseMotionEvent &e)
+      explicit touch_device_motion (const SDL_MouseMotionEvent& e)
           : detail::window_event (e.windowID),
             button (static_cast <mousebutton> (e.state)),
             x (e.x),
@@ -205,7 +205,7 @@ namespace neutrino::sdl::events {
       int y;
       bool pressed;
 
-      explicit mouse_button (const SDL_MouseButtonEvent &e)
+      explicit mouse_button (const SDL_MouseButtonEvent& e)
           : detail::window_event (e.windowID),
             mouse_id (static_cast <mouse_id_t> (e.which)),
             button (static_cast <mousebutton> (e.button)),
@@ -223,7 +223,7 @@ namespace neutrino::sdl::events {
       int y;
       bool pressed;
 
-      explicit touch_device_button (const SDL_MouseButtonEvent &e)
+      explicit touch_device_button (const SDL_MouseButtonEvent& e)
           : detail::window_event (e.windowID),
             button (static_cast <mousebutton> (e.button)),
             x (e.x),
@@ -239,7 +239,7 @@ namespace neutrino::sdl::events {
       int x;
       int y;
 
-      explicit mouse_wheel (const SDL_MouseWheelEvent &e)
+      explicit mouse_wheel (const SDL_MouseWheelEvent& e)
           : detail::window_event (e.windowID),
             mouse_id (static_cast <mouse_id_t> (e.which)),
             x (e.x),
@@ -253,7 +253,7 @@ namespace neutrino::sdl::events {
       int x;
       int y;
 
-      explicit touch_device_wheel (const SDL_MouseWheelEvent &e)
+      explicit touch_device_wheel (const SDL_MouseWheelEvent& e)
           : detail::window_event (e.windowID),
             x (e.x),
             y (e.y) {
@@ -268,7 +268,7 @@ namespace neutrino::sdl::events {
       uint8_t axis;
       signed short value;
 
-      explicit joystick_axis (const SDL_JoyAxisEvent &e)
+      explicit joystick_axis (const SDL_JoyAxisEvent& e)
           : joystick (e.which),
             axis (e.axis),
             value (e.value) {
@@ -283,7 +283,7 @@ namespace neutrino::sdl::events {
       signed short xrel;
       signed short yrel;
 
-      explicit joystick_ball (const SDL_JoyBallEvent &e)
+      explicit joystick_ball (const SDL_JoyBallEvent& e)
           : joystick (e.which),
             ball (e.ball),
             xrel (e.xrel),
@@ -298,7 +298,7 @@ namespace neutrino::sdl::events {
       Uint8 button;
       bool pressed;
 
-      explicit joystick_button (const SDL_JoyButtonEvent &e)
+      explicit joystick_button (const SDL_JoyButtonEvent& e)
           : joystick (e.which),
             button (e.button),
             pressed (e.state == SDL_PRESSED) {
@@ -326,7 +326,7 @@ namespace neutrino::sdl::events {
       Uint8 value;
       joystick_hat_state state;
 
-      explicit joystick_hat (const SDL_JoyHatEvent &e)
+      explicit joystick_hat (const SDL_JoyHatEvent& e)
           : joystick (e.which),
             value (e.value),
             state (static_cast <joystick_hat_state>(e.value)) {
@@ -337,7 +337,7 @@ namespace neutrino::sdl::events {
   struct user {
     public:
 
-      explicit user (const SDL_UserEvent &u)
+      explicit user (const SDL_UserEvent& u)
           : code (u.code),
             data1 (u.data1),
             data2 (u.data2) {
@@ -350,15 +350,15 @@ namespace neutrino::sdl::events {
             data2 (nullptr) {
       }
 
-      user (int32_t code_, void *d1, void *d2 = nullptr)
+      user (int32_t code_, void* d1, void* d2 = nullptr)
           : code (code_),
             data1 (d1),
             data2 (d2) {
       }
 
       int32_t code;
-      void *data1;
-      void *data2;
+      void* data1;
+      void* data2;
   };
   // ==================================================================================================
   using all_events_t = mp::type_list<

@@ -47,7 +47,7 @@ FT_BEGIN_HEADER
 /*************************************************************************/
 
 /* handle to hint record */
-typedef struct PS_HintRec_ *PS_Hint;
+typedef struct PS_HintRec_* PS_Hint;
 
 /* hint types */
 typedef enum PS_Hint_Type_ {
@@ -79,16 +79,16 @@ typedef struct PS_Hint_TableRec_ {
   FT_UInt max_hints;
   PS_Hint hints;
 
-} PS_Hint_TableRec, *PS_Hint_Table;
+} PS_Hint_TableRec, * PS_Hint_Table;
 
 /* hint and counter mask descriptor */
 typedef struct PS_MaskRec_ {
   FT_UInt num_bits;
   FT_UInt max_bits;
-  FT_Byte *bytes;
+  FT_Byte* bytes;
   FT_UInt end_point;
 
-} PS_MaskRec, *PS_Mask;
+} PS_MaskRec, * PS_Mask;
 
 /* masks and counters table descriptor */
 typedef struct PS_Mask_TableRec_ {
@@ -96,7 +96,7 @@ typedef struct PS_Mask_TableRec_ {
   FT_UInt max_masks;
   PS_Mask masks;
 
-} PS_Mask_TableRec, *PS_Mask_Table;
+} PS_Mask_TableRec, * PS_Mask_Table;
 
 /* dimension-specific hints descriptor */
 typedef struct PS_DimensionRec_ {
@@ -104,7 +104,7 @@ typedef struct PS_DimensionRec_ {
   PS_Mask_TableRec masks;
   PS_Mask_TableRec counters;
 
-} PS_DimensionRec, *PS_Dimension;
+} PS_DimensionRec, * PS_Dimension;
 
 
 /* glyph hints descriptor                                */
@@ -117,7 +117,7 @@ typedef struct PS_HintsRec_ {
   PS_Hint_Type hint_type;
   PS_DimensionRec dimension[2];
 
-} PS_HintsRec, *PS_Hints;
+} PS_HintsRec, * PS_Hints;
 
 /* */
 
@@ -132,11 +132,11 @@ ps_hints_done (PS_Hints hints);
 
 /* initialize Type1 hints recorder interface */
 FT_LOCAL(void)
-t1_hints_funcs_init (T1_Hints_FuncsRec *funcs);
+t1_hints_funcs_init (T1_Hints_FuncsRec* funcs);
 
 /* initialize Type2 hints recorder interface */
 FT_LOCAL(void)
-t2_hints_funcs_init (T2_Hints_FuncsRec *funcs);
+t2_hints_funcs_init (T2_Hints_FuncsRec* funcs);
 
 #ifdef DEBUG_HINTER
 extern PS_Hints  ps_debug_hints;

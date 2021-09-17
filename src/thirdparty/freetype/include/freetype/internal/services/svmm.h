@@ -34,65 +34,65 @@ FT_BEGIN_HEADER
 #define FT_SERVICE_ID_MULTI_MASTERS  "multi-masters"
 
 typedef FT_Error
-(*FT_Get_MM_Func) (FT_Face face,
-                   FT_Multi_Master *master);
+(* FT_Get_MM_Func) (FT_Face face,
+                    FT_Multi_Master* master);
 
 typedef FT_Error
-(*FT_Get_MM_Var_Func) (FT_Face face,
-                       FT_MM_Var **master);
+(* FT_Get_MM_Var_Func) (FT_Face face,
+                        FT_MM_Var** master);
 
 typedef FT_Error
-(*FT_Set_MM_Design_Func) (FT_Face face,
+(* FT_Set_MM_Design_Func) (FT_Face face,
+                           FT_UInt num_coords,
+                           FT_Long* coords);
+
+/* use return value -1 to indicate that the new coordinates  */
+/* are equal to the current ones; no changes are thus needed */
+typedef FT_Error
+(* FT_Set_Var_Design_Func) (FT_Face face,
+                            FT_UInt num_coords,
+                            FT_Fixed* coords);
+
+/* use return value -1 to indicate that the new coordinates  */
+/* are equal to the current ones; no changes are thus needed */
+typedef FT_Error
+(* FT_Set_MM_Blend_Func) (FT_Face face,
                           FT_UInt num_coords,
-                          FT_Long *coords);
-
-/* use return value -1 to indicate that the new coordinates  */
-/* are equal to the current ones; no changes are thus needed */
-typedef FT_Error
-(*FT_Set_Var_Design_Func) (FT_Face face,
-                           FT_UInt num_coords,
-                           FT_Fixed *coords);
-
-/* use return value -1 to indicate that the new coordinates  */
-/* are equal to the current ones; no changes are thus needed */
-typedef FT_Error
-(*FT_Set_MM_Blend_Func) (FT_Face face,
-                         FT_UInt num_coords,
-                         FT_Long *coords);
+                          FT_Long* coords);
 
 typedef FT_Error
-(*FT_Get_Var_Design_Func) (FT_Face face,
-                           FT_UInt num_coords,
-                           FT_Fixed *coords);
+(* FT_Get_Var_Design_Func) (FT_Face face,
+                            FT_UInt num_coords,
+                            FT_Fixed* coords);
 
 typedef FT_Error
-(*FT_Set_Instance_Func) (FT_Face face,
-                         FT_UInt instance_index);
+(* FT_Set_Instance_Func) (FT_Face face,
+                          FT_UInt instance_index);
 
 typedef FT_Error
-(*FT_Get_MM_Blend_Func) (FT_Face face,
-                         FT_UInt num_coords,
-                         FT_Long *coords);
+(* FT_Get_MM_Blend_Func) (FT_Face face,
+                          FT_UInt num_coords,
+                          FT_Long* coords);
 
 typedef FT_Error
-(*FT_Get_Var_Blend_Func) (FT_Face face,
-                          FT_UInt *num_coords,
-                          FT_Fixed **coords,
-                          FT_Fixed **normalizedcoords,
-                          FT_MM_Var **mm_var);
+(* FT_Get_Var_Blend_Func) (FT_Face face,
+                           FT_UInt* num_coords,
+                           FT_Fixed** coords,
+                           FT_Fixed** normalizedcoords,
+                           FT_MM_Var** mm_var);
 
 typedef void
-(*FT_Done_Blend_Func) (FT_Face);
+(* FT_Done_Blend_Func) (FT_Face);
 
 typedef FT_Error
-(*FT_Set_MM_WeightVector_Func) (FT_Face face,
-                                FT_UInt len,
-                                FT_Fixed *weight_vector);
+(* FT_Set_MM_WeightVector_Func) (FT_Face face,
+                                 FT_UInt len,
+                                 FT_Fixed* weight_vector);
 
 typedef FT_Error
-(*FT_Get_MM_WeightVector_Func) (FT_Face face,
-                                FT_UInt *len,
-                                FT_Fixed *weight_vector);
+(* FT_Get_MM_WeightVector_Func) (FT_Face face,
+                                 FT_UInt* len,
+                                 FT_Fixed* weight_vector);
 
 FT_DEFINE_SERVICE(MultiMasters) {
   FT_Get_MM_Func get_mm;

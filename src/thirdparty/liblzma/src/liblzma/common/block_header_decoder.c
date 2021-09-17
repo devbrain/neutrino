@@ -14,7 +14,7 @@
 #include "check.h"
 
 static void
-free_properties (lzma_block *block, const lzma_allocator *allocator) {
+free_properties (lzma_block* block, const lzma_allocator* allocator) {
   // Free allocated filter options. The last array member is not
   // touched after the initialization in the beginning of
   // lzma_block_header_decode(), so we don't need to touch that here.
@@ -28,8 +28,8 @@ free_properties (lzma_block *block, const lzma_allocator *allocator) {
 }
 
 extern LZMA_API(lzma_ret)
-lzma_block_header_decode (lzma_block *block,
-                          const lzma_allocator *allocator, const uint8_t *in) {
+lzma_block_header_decode (lzma_block* block,
+                          const lzma_allocator* allocator, const uint8_t* in) {
   // NOTE: We consider the header to be corrupt not only when the
   // CRC32 doesn't match, but also when variable-length integers
   // are invalid or over 63 bits, or if the header is too small

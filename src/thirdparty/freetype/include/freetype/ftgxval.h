@@ -316,7 +316,7 @@ FT_TrueTypeGX_Free (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_ClassicKern_Validate (FT_Face face,
                          FT_UInt validation_flags,
-                         FT_Bytes *ckern_table);
+                         FT_Bytes* ckern_table);
 
 
 /**************************************************************************

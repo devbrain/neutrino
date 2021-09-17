@@ -16,11 +16,9 @@
 #define HB_OT_SHAPE_COMPLEX_ARABIC_JOINING_LIST_HH
 
 static bool
-has_arabic_joining (hb_script_t script)
-{
+has_arabic_joining (hb_script_t script) {
   /* List of scripts that have data in arabic-table. */
-  switch ((int) script)
-  {
+  switch ((int) script) {
     case HB_SCRIPT_ADLAM:
     case HB_SCRIPT_ARABIC:
     case HB_SCRIPT_CHORASMIAN:
@@ -39,7 +37,6 @@ has_arabic_joining (hb_script_t script)
       return false;
   }
 }
-
 
 #endif /* HB_OT_SHAPE_COMPLEX_ARABIC_JOINING_LIST_HH */
 

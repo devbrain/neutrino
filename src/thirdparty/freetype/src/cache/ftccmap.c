@@ -59,7 +59,7 @@ typedef struct FTC_CMapQueryRec_ {
   FT_UInt cmap_index;
   FT_UInt32 char_code;
 
-} FTC_CMapQueryRec, *FTC_CMapQuery;
+} FTC_CMapQueryRec, * FTC_CMapQuery;
 
 #define FTC_CMAP_QUERY(x)  ((FTC_CMapQuery)(x))
 
@@ -71,7 +71,7 @@ typedef struct FTC_CMapNodeRec_ {
   FT_UInt32 first;                         /* first character in node */
   FT_UInt16 indices[FTC_CMAP_INDICES_MAX]; /* array of glyph indices  */
 
-} FTC_CMapNodeRec, *FTC_CMapNode;
+} FTC_CMapNodeRec, * FTC_CMapNode;
 
 #define FTC_CMAP_NODE(x) ( (FTC_CMapNode)( x ) )
 
@@ -101,10 +101,10 @@ ftc_cmap_node_free (FTC_Node ftcnode,
 
 /* initialize a new cmap node */
 FT_CALLBACK_DEF(FT_Error)
-ftc_cmap_node_new (FTC_Node *ftcanode,
+ftc_cmap_node_new (FTC_Node* ftcanode,
                    FT_Pointer ftcquery,
                    FTC_Cache cache) {
-  FTC_CMapNode *anode = (FTC_CMapNode *) ftcanode;
+  FTC_CMapNode* anode = (FTC_CMapNode*) ftcanode;
   FTC_CMapQuery query = (FTC_CMapQuery) ftcquery;
   FT_Error error;
   FT_Memory memory = cache->memory;
@@ -142,7 +142,7 @@ FT_CALLBACK_DEF(FT_Bool)
 ftc_cmap_node_compare (FTC_Node ftcnode,
                        FT_Pointer ftcquery,
                        FTC_Cache cache,
-                       FT_Bool *list_changed) {
+                       FT_Bool* list_changed) {
   FTC_CMapNode node = (FTC_CMapNode) ftcnode;
   FTC_CMapQuery query = (FTC_CMapQuery) ftcquery;
   FT_UNUSED(cache);
@@ -163,7 +163,7 @@ FT_CALLBACK_DEF(FT_Bool)
 ftc_cmap_node_remove_faceid (FTC_Node ftcnode,
                              FT_Pointer ftcface_id,
                              FTC_Cache cache,
-                             FT_Bool *list_changed) {
+                             FT_Bool* list_changed) {
   FTC_CMapNode node = (FTC_CMapNode) ftcnode;
   FTC_FaceID face_id = (FTC_FaceID) ftcface_id;
   FT_UNUSED(cache);
@@ -202,7 +202,7 @@ const FTC_CacheClassRec ftc_cmap_cache_class =
 
 FT_EXPORT_DEF(FT_Error)
 FTC_CMapCache_New (FTC_Manager manager,
-                   FTC_CMapCache *acache) {
+                   FTC_CMapCache* acache) {
   return FTC_Manager_RegisterCache (manager,
                                     &ftc_cmap_cache_class,
                                     FTC_CACHE_P(acache));

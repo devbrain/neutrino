@@ -15,7 +15,7 @@
 /// Output buffer for a single thread
 typedef struct {
   /// Pointer to the output buffer of lzma_outq.buf_size_max bytes
-  uint8_t *buf;
+  uint8_t* buf;
 
   /// Amount of data written to buf
   size_t size;
@@ -34,10 +34,10 @@ typedef struct {
 
 typedef struct {
   /// Array of buffers that are used cyclically.
-  lzma_outbuf *bufs;
+  lzma_outbuf* bufs;
 
   /// Memory allocated for all the buffers
-  uint8_t *bufs_mem;
+  uint8_t* bufs_mem;
 
   /// Amount of buffer space available in each buffer
   size_t buf_size_max;
@@ -84,25 +84,25 @@ extern uint64_t lzma_outq_memusage (uint64_t buf_size_max, uint32_t threads);
 ///             - LZMA_MEM_ERROR
 ///
 extern lzma_ret lzma_outq_init (
-    lzma_outq *outq, const lzma_allocator *allocator,
+    lzma_outq* outq, const lzma_allocator* allocator,
     uint64_t buf_size_max, uint32_t threads);
 
 /// \brief      Free the memory associated with the output queue
-extern void lzma_outq_end (lzma_outq *outq, const lzma_allocator *allocator);
+extern void lzma_outq_end (lzma_outq* outq, const lzma_allocator* allocator);
 
 /// \brief      Get a new buffer
 ///
 /// lzma_outq_has_buf() must be used to check that there is a buffer
 /// available before calling lzma_outq_get_buf().
 ///
-extern lzma_outbuf *lzma_outq_get_buf (lzma_outq *outq);
+extern lzma_outbuf* lzma_outq_get_buf (lzma_outq* outq);
 
 /// \brief      Test if there is data ready to be read
 ///
 /// Call to this function must be protected with the same mutex that
 /// is used to protect lzma_outbuf.finished.
 ///
-extern bool lzma_outq_is_readable (const lzma_outq *outq);
+extern bool lzma_outq_is_readable (const lzma_outq* outq);
 
 /// \brief      Read finished data
 ///
@@ -123,22 +123,22 @@ extern bool lzma_outq_is_readable (const lzma_outq *outq);
 /// \note       This reads lzma_outbuf.finished variables and thus call
 ///             to this function needs to be protected with a mutex.
 ///
-extern lzma_ret lzma_outq_read (lzma_outq *restrict outq,
-                                uint8_t *restrict out, size_t *restrict out_pos,
-                                size_t out_size, lzma_vli *restrict unpadded_size,
-                                lzma_vli *restrict uncompressed_size);
+extern lzma_ret lzma_outq_read (lzma_outq* restrict outq,
+                                uint8_t* restrict out, size_t* restrict out_pos,
+                                size_t out_size, lzma_vli* restrict unpadded_size,
+                                lzma_vli* restrict uncompressed_size);
 
 /// \brief      Test if there is at least one buffer free
 ///
 /// This must be used before getting a new buffer with lzma_outq_get_buf().
 ///
 static inline bool
-lzma_outq_has_buf (const lzma_outq *outq) {
+lzma_outq_has_buf (const lzma_outq* outq) {
   return outq->bufs_used < outq->bufs_allocated;
 }
 
 /// \brief      Test if the queue is completely empty
 static inline bool
-lzma_outq_is_empty (const lzma_outq *outq) {
+lzma_outq_is_empty (const lzma_outq* outq) {
   return outq->bufs_used == 0;
 }

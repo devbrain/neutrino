@@ -28,7 +28,7 @@ namespace neutrino::utils::io {
         LITTLE_ENDIAN_BYTE_ORDER = 3,  /// little-endian byte-order
       };
 
-      explicit binary_reader (std::istream &istr, stream_byte_order byteOrder = NATIVE_BYTE_ORDER);
+      explicit binary_reader (std::istream& istr, stream_byte_order byteOrder = NATIVE_BYTE_ORDER);
       /// Creates the BinaryReader.
 
 
@@ -36,32 +36,32 @@ namespace neutrino::utils::io {
       ~binary_reader ();
       /// Destroys the BinaryReader.
 
-      binary_reader &operator>> (bool &value);
-      binary_reader &operator>> (char &value);
-      binary_reader &operator>> (unsigned char &value);
-      binary_reader &operator>> (signed char &value);
-      binary_reader &operator>> (short &value);
-      binary_reader &operator>> (unsigned short &value);
-      binary_reader &operator>> (int &value);
-      binary_reader &operator>> (unsigned int &value);
-      binary_reader &operator>> (long &value);
-      binary_reader &operator>> (unsigned long &value);
-      binary_reader &operator>> (float &value);
-      binary_reader &operator>> (double &value);
+      binary_reader& operator >> (bool& value);
+      binary_reader& operator >> (char& value);
+      binary_reader& operator >> (unsigned char& value);
+      binary_reader& operator >> (signed char& value);
+      binary_reader& operator >> (short& value);
+      binary_reader& operator >> (unsigned short& value);
+      binary_reader& operator >> (int& value);
+      binary_reader& operator >> (unsigned int& value);
+      binary_reader& operator >> (long& value);
+      binary_reader& operator >> (unsigned long& value);
+      binary_reader& operator >> (float& value);
+      binary_reader& operator >> (double& value);
 
-      binary_reader &operator>> (long long &value);
-      binary_reader &operator>> (unsigned long long &value);
+      binary_reader& operator >> (long long& value);
+      binary_reader& operator >> (unsigned long long& value);
 
-      binary_reader &operator>> (std::vector<char> &value);
-      binary_reader &operator>> (std::vector<unsigned char> &value);
+      binary_reader& operator >> (std::vector<char>& value);
+      binary_reader& operator >> (std::vector<unsigned char>& value);
 
-      void read_raw (std::streamsize length, std::string &value);
+      void read_raw (std::streamsize length, std::string& value);
       /// Reads length bytes of raw data into value.
 
-      void read_raw (char *buffer, std::streamsize length);
+      void read_raw (char* buffer, std::streamsize length);
       /// Reads length bytes of raw data into buffer.
 
-      void read_raw (unsigned char *buffer, std::streamsize length);
+      void read_raw (unsigned char* buffer, std::streamsize length);
       /// Reads length bytes of raw data into buffer.
 
       bool good ();
@@ -76,7 +76,7 @@ namespace neutrino::utils::io {
       bool eof ();
       /// Returns _istr.eof();
 
-      [[nodiscard]] std::istream &stream () const;
+      [[nodiscard]] std::istream& stream () const;
       /// Returns the underlying stream.
 
       [[nodiscard]] stream_byte_order byte_order () const;
@@ -90,7 +90,7 @@ namespace neutrino::utils::io {
       /// Returns the number of available bytes in the stream.
 
     private:
-      std::istream &m_istr;
+      std::istream& m_istr;
       bool m_flip_bytes;
   };
 
@@ -99,7 +99,7 @@ namespace neutrino::utils::io {
       /// A convenient wrapper for using Buffer and MemoryStream with BinaryReader.
   {
     public:
-      basic_memory_binary_reader (const char *data, std::size_t size, stream_byte_order byteOrder = NATIVE_BYTE_ORDER)
+      basic_memory_binary_reader (const char* data, std::size_t size, stream_byte_order byteOrder = NATIVE_BYTE_ORDER)
           :
           binary_reader (m_istr, byteOrder),
           m_istr (data, size) {
@@ -111,17 +111,18 @@ namespace neutrino::utils::io {
           m_istr (mem) {
       }
 
-      basic_memory_binary_reader (std::unique_ptr<std::vector<T>> &&mem, stream_byte_order byteOrder = NATIVE_BYTE_ORDER)
+      basic_memory_binary_reader (std::unique_ptr<std::vector<T>>&& mem,
+                                  stream_byte_order byteOrder = NATIVE_BYTE_ORDER)
           :
           binary_reader (m_istr, byteOrder),
           m_istr (std::move (mem)) {
       }
 
-      const memory_input_stream &stream () const {
+      const memory_input_stream& stream () const {
         return m_istr;
       }
 
-      memory_input_stream &stream () {
+      memory_input_stream& stream () {
         return m_istr;
       }
 
@@ -153,7 +154,7 @@ namespace neutrino::utils::io {
     return m_istr.eof ();
   }
 
-  inline std::istream &binary_reader::stream () const {
+  inline std::istream& binary_reader::stream () const {
     return m_istr;
   }
 

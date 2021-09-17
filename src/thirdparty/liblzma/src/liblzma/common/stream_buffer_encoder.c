@@ -38,10 +38,10 @@ lzma_stream_buffer_bound (size_t uncompressed_size) {
 }
 
 extern LZMA_API(lzma_ret)
-lzma_stream_buffer_encode (lzma_filter *filters, lzma_check check,
-                           const lzma_allocator *allocator,
-                           const uint8_t *in, size_t in_size,
-                           uint8_t *out, size_t *out_pos_ptr, size_t out_size) {
+lzma_stream_buffer_encode (lzma_filter* filters, lzma_check check,
+                           const lzma_allocator* allocator,
+                           const uint8_t* in, size_t in_size,
+                           uint8_t* out, size_t* out_pos_ptr, size_t out_size) {
   // Sanity checks
   if (filters == NULL || (unsigned int) (check) > LZMA_CHECK_ID_MAX
       || (in == NULL && in_size != 0) || out == NULL
@@ -97,7 +97,7 @@ lzma_stream_buffer_encode (lzma_filter *filters, lzma_check check,
     // Create an Index. It will have one Record if there was
     // at least one byte of input to encode. Otherwise the
     // Index will be empty.
-    lzma_index *i = lzma_index_init (allocator);
+    lzma_index* i = lzma_index_init (allocator);
     if (i == NULL)
       return LZMA_MEM_ERROR;
 

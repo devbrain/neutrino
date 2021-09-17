@@ -14,8 +14,7 @@ meson test -Cbuild --gdb testname
 
 ## Build and Run
 
-Depending on what area you are working in change or add `HB_DEBUG_<whatever>`.
-Values defined in `hb-debug.hh`.
+Depending on what area you are working in change or add `HB_DEBUG_<whatever>`. Values defined in `hb-debug.hh`.
 
 ```shell
 CPPFLAGS='-DHB_DEBUG_SUBSET=100' meson setup build --reconfigure

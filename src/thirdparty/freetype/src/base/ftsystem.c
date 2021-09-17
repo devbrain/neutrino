@@ -67,7 +67,7 @@
  * @Return:
  *   The address of newly allocated block.
  */
-FT_CALLBACK_DEF (void *)
+FT_CALLBACK_DEF (void*)
 ft_alloc( FT_Memory
 memory,
 long size
@@ -104,12 +104,12 @@ size );
  * @Return:
  *   The address of the reallocated memory block.
  */
-FT_CALLBACK_DEF (void *)
+FT_CALLBACK_DEF (void*)
 ft_realloc( FT_Memory
 memory,
 long cur_size,
 long new_size,
-void *block
+void* block
 )
 {
 FT_UNUSED( memory );
@@ -138,7 +138,7 @@ new_size );
 FT_CALLBACK_DEF (void)
 ft_free( FT_Memory
 memory,
-void *block
+void* block
 )
 {
 FT_UNUSED( memory );
@@ -224,11 +224,11 @@ FT_CALLBACK_DEF (unsigned long)
 ft_ansi_stream_io( FT_Stream
 stream,
 unsigned long offset,
-unsigned char *buffer,
+unsigned char* buffer,
 unsigned long count
 )
 {
-FT_FILE *file;
+FT_FILE* file;
 
 if ( !count && offset > stream->size )
 return 1;
@@ -249,10 +249,10 @@ ft_fread( buffer,
 FT_BASE_DEF( FT_Error )
 FT_Stream_Open( FT_Stream
 stream,
-const char *filepathname
+const char* filepathname
 )
 {
-FT_FILE *file;
+FT_FILE* file;
 
 if ( !stream )
 return
@@ -261,7 +261,7 @@ FT_THROW( Invalid_Stream_Handle );
 stream->descriptor.
 pointer = NULL;
 stream->pathname.
-pointer = (char *) filepathname;
+pointer = (char*) filepathname;
 stream->
 base = NULL;
 stream->
@@ -326,6 +326,7 @@ ft_mem_debug_done( FT_Memory  memory );
 /* documentation is in ftobjs.h */
 
 FT_BASE_DEF( FT_Memory )
+
 FT_New_Memory (void) {
   FT_Memory memory;
 

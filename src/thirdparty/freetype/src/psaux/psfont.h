@@ -77,7 +77,7 @@ struct CF2_FontRec_ {
   CFF_BlendRec blend;            /* cached charstring blend vector  */
   CF2_UInt vsindex;          /* current vsindex                 */
   CF2_UInt lenNDV;           /* current length NDV or zero      */
-  FT_Fixed *NDV;              /* ptr to current NDV or NULL      */
+  FT_Fixed* NDV;              /* ptr to current NDV or NULL      */
 
   CF2_Int unitsPerEm;
 
@@ -86,7 +86,7 @@ struct CF2_FontRec_ {
 
   /* FreeType related members */
   CF2_OutlineRec outline;       /* freetype glyph outline functions */
-  PS_Decoder *decoder;
+  PS_Decoder* decoder;
   CFF_SubFont lastSubfont;              /* FreeType parsed data; */
   /* top font or subfont   */
 
@@ -115,8 +115,8 @@ struct CF2_FontRec_ {
 FT_LOCAL(FT_Error)
 cf2_getGlyphOutline (CF2_Font font,
                      CF2_Buffer charstring,
-                     const CF2_Matrix *transform,
-                     CF2_F16Dot16 *glyphWidth);
+                     const CF2_Matrix* transform,
+                     CF2_F16Dot16* glyphWidth);
 
 FT_END_HEADER
 

@@ -14,10 +14,10 @@ namespace neutrino::tiled::tmx {
   // ==============================================================================
   namespace {
     template <typename T>
-    void parse_inner_data (T &result, const reader &e, const std::string &encoding, const std::string &compression) {
+    void parse_inner_data (T& result, const reader& e, const std::string& encoding, const std::string& compression) {
 
       std::string text;
-      if (const auto *xml_rdr = dynamic_cast<const xml_reader *>(&e); xml_rdr) {
+      if (const auto* xml_rdr = dynamic_cast<const xml_reader*>(&e); xml_rdr) {
         text = xml_rdr->get_text ();
       }
       else {
@@ -26,19 +26,19 @@ namespace neutrino::tiled::tmx {
       auto data = parse_data (encoding, compression, text);
       std::visit (
           utils::overload (
-              [&result] (const data_buff_t &buff) {
+              [&result] (const data_buff_t& buff) {
                 const auto sz = buff.size ();
                 ENFORCE(sz % 4 == 0);
                 for (std::size_t i = 0; i < sz; i += 4) {
                   union {
-                    uint8_t *bytes;
-                    uint32_t *words;
-                  } u = {(uint8_t *) buff.data () + i};
+                    uint8_t* bytes;
+                    uint32_t* words;
+                  } u = {(uint8_t*) buff.data () + i};
                   unsigned gid = neutrino::utils::byte_order::from_little_endian (*u.words);
                   result.add (cell::decode_gid (gid));
                 }
               },
-              [&result] (const int_buff_t &buff) {
+              [&result] (const int_buff_t& buff) {
                 for (auto gid : buff) {
                   result.add (cell::decode_gid (gid));
                 }
@@ -47,8 +47,9 @@ namespace neutrino::tiled::tmx {
       );
     }
   }
+
   // ==============================================================================
-  tile_layer tile_layer::parse (const reader &elt, const group *parent) {
+  tile_layer tile_layer::parse (const reader& elt, const group* parent) {
     json_reader::assert_type ("tilelayer", elt);
     auto[name, offsetx, offsety, opacity, visible, tint, id] = group::parse_content (elt, parent);
 
@@ -61,7 +62,7 @@ namespace neutrino::tiled::tmx {
       tile_layer result (name, opacity, visible, id, offsetx, offsety, (float) parallax_x, (float) parallax_y, tint, width, height);
 
       component::parse (result, elt, parent);
-      if (const auto *json_rdr = dynamic_cast<const json_reader *>(&elt); json_rdr) {
+      if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
         auto encoding = json_rdr->get_string_attribute ("encoding", "");
         auto compression = json_rdr->get_string_attribute ("compression", "");
         if (encoding.empty () && compression.empty ()) {
@@ -73,7 +74,7 @@ namespace neutrino::tiled::tmx {
         else {
           if (elt.has_child ("chunks")) {
             elt.parse_many_elements ("chunks", [&result, &encoding = std::as_const (encoding),
-                &compression = std::as_const (compression)] (const reader &rdr) {
+                &compression = std::as_const (compression)] (const reader& rdr) {
               result.add (chunk::parse (rdr, encoding, compression));
             });
           }
@@ -83,11 +84,11 @@ namespace neutrino::tiled::tmx {
         }
       }
       else {
-        elt.parse_one_element ("data", [&result] (const reader &e) {
+        elt.parse_one_element ("data", [&result] (const reader& e) {
           auto encoding = e.get_string_attribute ("encoding", "");
           auto compression = e.get_string_attribute ("compression", "");
           if (encoding.empty () && compression.empty ()) {
-            e.parse_many_elements ("tile", [&result] (const reader &telt) {
+            e.parse_many_elements ("tile", [&result] (const reader& telt) {
               auto gid = telt.get_uint_attribute ("gid");
               result.add (cell::decode_gid (gid));
             });
@@ -96,7 +97,7 @@ namespace neutrino::tiled::tmx {
             if (e.has_child ("chunk")) {
               int idx = 0;
               e.parse_many_elements ("chunk", [&result, &idx, &encoding = std::as_const (encoding),
-                  &compression = std::as_const (compression)] (const reader &celt) {
+                  &compression = std::as_const (compression)] (const reader& celt) {
                 result.add (chunk::parse (celt, encoding, compression, idx++));
               });
             }
@@ -108,13 +109,14 @@ namespace neutrino::tiled::tmx {
       }
       return result;
     }
-    catch (exception &e) {
+    catch (exception& e) {
       auto idx = elt.get_string_attribute ("id", "<missing>");
       RAISE_EX_WITH_CAUSE(std::move (e), "Failed to parse layer [", name, "], id [", idx, "]");
     }
   }
+
   // ===========================================================================================================
-  chunk chunk::parse (const reader &elt, const std::string &encoding, const std::string &compression, int chunk_id) {
+  chunk chunk::parse (const reader& elt, const std::string& encoding, const std::string& compression, int chunk_id) {
     try {
       auto x = elt.get_int_attribute ("x");
       auto y = elt.get_int_attribute ("y");
@@ -124,13 +126,13 @@ namespace neutrino::tiled::tmx {
       chunk result (x, y, w, h);
 
       if (encoding.empty () && compression.empty ()) {
-        if (const auto *json_rdr = dynamic_cast<const json_reader *>(&elt); json_rdr) {
+        if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
           json_rdr->iterate_data_array ([&result] (uint32_t gid) {
             result.add (cell::decode_gid (gid));
           });
         }
         else {
-          elt.parse_many_elements ("tile", [&result] (const reader &telt) {
+          elt.parse_many_elements ("tile", [&result] (const reader& telt) {
             auto gid = telt.get_uint_attribute ("gid");
             result.add (cell::decode_gid (gid));
           });
@@ -141,7 +143,7 @@ namespace neutrino::tiled::tmx {
       }
       return result;
     }
-    catch (exception &e) {
+    catch (exception& e) {
       RAISE_EX_WITH_CAUSE(std::move (e), "Failed to parse chunk #", chunk_id);
     }
   }

@@ -36,29 +36,29 @@ FT_BEGIN_HEADER
 
 /* create a new glyph object */
 typedef FT_Error
-(*FT_Glyph_InitFunc) (FT_Glyph glyph,
-                      FT_GlyphSlot slot);
+(* FT_Glyph_InitFunc) (FT_Glyph glyph,
+                       FT_GlyphSlot slot);
 
 /* destroys a given glyph object */
 typedef void
-(*FT_Glyph_DoneFunc) (FT_Glyph glyph);
+(* FT_Glyph_DoneFunc) (FT_Glyph glyph);
 
 typedef void
-(*FT_Glyph_TransformFunc) (FT_Glyph glyph,
-                           const FT_Matrix *matrix,
-                           const FT_Vector *delta);
+(* FT_Glyph_TransformFunc) (FT_Glyph glyph,
+                            const FT_Matrix* matrix,
+                            const FT_Vector* delta);
 
 typedef void
-(*FT_Glyph_GetBBoxFunc) (FT_Glyph glyph,
-                         FT_BBox *abbox);
+(* FT_Glyph_GetBBoxFunc) (FT_Glyph glyph,
+                          FT_BBox* abbox);
 
 typedef FT_Error
-(*FT_Glyph_CopyFunc) (FT_Glyph source,
-                      FT_Glyph target);
+(* FT_Glyph_CopyFunc) (FT_Glyph source,
+                       FT_Glyph target);
 
 typedef FT_Error
-(*FT_Glyph_PrepareFunc) (FT_Glyph glyph,
-                         FT_GlyphSlot slot);
+(* FT_Glyph_PrepareFunc) (FT_Glyph glyph,
+                          FT_GlyphSlot slot);
 
 /* deprecated */
 #define FT_Glyph_Init_Func       FT_Glyph_InitFunc
@@ -81,26 +81,26 @@ struct FT_Glyph_Class_ {
 };
 
 typedef FT_Error
-(*FT_Renderer_RenderFunc) (FT_Renderer renderer,
-                           FT_GlyphSlot slot,
-                           FT_Render_Mode mode,
-                           const FT_Vector *origin);
+(* FT_Renderer_RenderFunc) (FT_Renderer renderer,
+                            FT_GlyphSlot slot,
+                            FT_Render_Mode mode,
+                            const FT_Vector* origin);
 
 typedef FT_Error
-(*FT_Renderer_TransformFunc) (FT_Renderer renderer,
-                              FT_GlyphSlot slot,
-                              const FT_Matrix *matrix,
-                              const FT_Vector *delta);
+(* FT_Renderer_TransformFunc) (FT_Renderer renderer,
+                               FT_GlyphSlot slot,
+                               const FT_Matrix* matrix,
+                               const FT_Vector* delta);
 
 typedef void
-(*FT_Renderer_GetCBoxFunc) (FT_Renderer renderer,
-                            FT_GlyphSlot slot,
-                            FT_BBox *cbox);
+(* FT_Renderer_GetCBoxFunc) (FT_Renderer renderer,
+                             FT_GlyphSlot slot,
+                             FT_BBox* cbox);
 
 typedef FT_Error
-(*FT_Renderer_SetModeFunc) (FT_Renderer renderer,
-                            FT_ULong mode_tag,
-                            FT_Pointer mode_ptr);
+(* FT_Renderer_SetModeFunc) (FT_Renderer renderer,
+                             FT_ULong mode_tag,
+                             FT_Pointer mode_ptr);
 
 /* deprecated identifiers */
 #define FTRenderer_render  FT_Renderer_RenderFunc
@@ -150,7 +150,7 @@ typedef struct FT_Renderer_Class_ {
   FT_Renderer_GetCBoxFunc get_glyph_cbox;
   FT_Renderer_SetModeFunc set_mode;
 
-  FT_Raster_Funcs *raster_class;
+  FT_Raster_Funcs* raster_class;
 
 } FT_Renderer_Class;
 
@@ -223,7 +223,7 @@ FT_EXPORT(FT_Error)
 FT_Set_Renderer (FT_Library library,
                  FT_Renderer renderer,
                  FT_UInt num_params,
-                 FT_Parameter *parameters);
+                 FT_Parameter* parameters);
 
 /* */
 

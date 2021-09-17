@@ -88,7 +88,7 @@ FT_BEGIN_HEADER
  * @description:
  *   Opaque handle to a path stroker object.
  */
-typedef struct FT_StrokerRec_ *FT_Stroker;
+typedef struct FT_StrokerRec_* FT_Stroker;
 
 /**************************************************************************
  *
@@ -216,7 +216,7 @@ typedef enum FT_StrokerBorder_ {
  *   outlines.
  */
 FT_EXPORT(FT_StrokerBorder)
-FT_Outline_GetInsideBorder (FT_Outline *outline);
+FT_Outline_GetInsideBorder (FT_Outline* outline);
 
 
 /**************************************************************************
@@ -237,7 +237,7 @@ FT_Outline_GetInsideBorder (FT_Outline *outline);
  *   outlines.
  */
 FT_EXPORT(FT_StrokerBorder)
-FT_Outline_GetOutsideBorder (FT_Outline *outline);
+FT_Outline_GetOutsideBorder (FT_Outline* outline);
 
 
 /**************************************************************************
@@ -261,7 +261,7 @@ FT_Outline_GetOutsideBorder (FT_Outline *outline);
  */
 FT_EXPORT(FT_Error)
 FT_Stroker_New (FT_Library library,
-                FT_Stroker *astroker);
+                FT_Stroker* astroker);
 
 
 /**************************************************************************
@@ -361,7 +361,7 @@ FT_Stroker_Rewind (FT_Stroker stroker);
  */
 FT_EXPORT(FT_Error)
 FT_Stroker_ParseOutline (FT_Stroker stroker,
-                         FT_Outline *outline,
+                         FT_Outline* outline,
                          FT_Bool opened);
 
 
@@ -392,7 +392,7 @@ FT_Stroker_ParseOutline (FT_Stroker stroker,
  */
 FT_EXPORT(FT_Error)
 FT_Stroker_BeginSubPath (FT_Stroker stroker,
-                         FT_Vector *to,
+                         FT_Vector* to,
                          FT_Bool open);
 
 
@@ -445,7 +445,7 @@ FT_Stroker_EndSubPath (FT_Stroker stroker);
  */
 FT_EXPORT(FT_Error)
 FT_Stroker_LineTo (FT_Stroker stroker,
-                   FT_Vector *to);
+                   FT_Vector* to);
 
 
 /**************************************************************************
@@ -476,8 +476,8 @@ FT_Stroker_LineTo (FT_Stroker stroker,
  */
 FT_EXPORT(FT_Error)
 FT_Stroker_ConicTo (FT_Stroker stroker,
-                    FT_Vector *control,
-                    FT_Vector *to);
+                    FT_Vector* control,
+                    FT_Vector* to);
 
 
 /**************************************************************************
@@ -511,9 +511,9 @@ FT_Stroker_ConicTo (FT_Stroker stroker,
  */
 FT_EXPORT(FT_Error)
 FT_Stroker_CubicTo (FT_Stroker stroker,
-                    FT_Vector *control1,
-                    FT_Vector *control2,
-                    FT_Vector *to);
+                    FT_Vector* control1,
+                    FT_Vector* control2,
+                    FT_Vector* to);
 
 
 /**************************************************************************
@@ -558,8 +558,8 @@ FT_Stroker_CubicTo (FT_Stroker stroker,
 FT_EXPORT(FT_Error)
 FT_Stroker_GetBorderCounts (FT_Stroker stroker,
                             FT_StrokerBorder border,
-                            FT_UInt *anum_points,
-                            FT_UInt *anum_contours);
+                            FT_UInt* anum_points,
+                            FT_UInt* anum_contours);
 
 
 /**************************************************************************
@@ -602,7 +602,7 @@ FT_Stroker_GetBorderCounts (FT_Stroker stroker,
 FT_EXPORT(void)
 FT_Stroker_ExportBorder (FT_Stroker stroker,
                          FT_StrokerBorder border,
-                         FT_Outline *outline);
+                         FT_Outline* outline);
 
 
 /**************************************************************************
@@ -631,8 +631,8 @@ FT_Stroker_ExportBorder (FT_Stroker stroker,
  */
 FT_EXPORT(FT_Error)
 FT_Stroker_GetCounts (FT_Stroker stroker,
-                      FT_UInt *anum_points,
-                      FT_UInt *anum_contours);
+                      FT_UInt* anum_points,
+                      FT_UInt* anum_contours);
 
 
 /**************************************************************************
@@ -656,7 +656,7 @@ FT_Stroker_GetCounts (FT_Stroker stroker,
  */
 FT_EXPORT(void)
 FT_Stroker_Export (FT_Stroker stroker,
-                   FT_Outline *outline);
+                   FT_Outline* outline);
 
 
 /**************************************************************************
@@ -706,7 +706,7 @@ FT_Stroker_Done (FT_Stroker stroker);
  *   account for this added size.
  */
 FT_EXPORT(FT_Error)
-FT_Glyph_Stroke (FT_Glyph *pglyph,
+FT_Glyph_Stroke (FT_Glyph* pglyph,
                  FT_Stroker stroker,
                  FT_Bool destroy);
 
@@ -747,7 +747,7 @@ FT_Glyph_Stroke (FT_Glyph *pglyph,
  *   account for this added size.
  */
 FT_EXPORT(FT_Error)
-FT_Glyph_StrokeBorder (FT_Glyph *pglyph,
+FT_Glyph_StrokeBorder (FT_Glyph* pglyph,
                        FT_Stroker stroker,
                        FT_Bool inside,
                        FT_Bool destroy);

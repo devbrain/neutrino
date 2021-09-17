@@ -11,8 +11,9 @@ namespace neutrino::engine::detail {
         m_first_time (true) {
 
   }
+
   // ----------------------------------------------------------------------------------------
-  int scene_manager::add (scene *sc) {
+  int scene_manager::add (scene* sc) {
     auto itr = m_scenes.find (sc->id ());
     if (itr != m_scenes.end ()) {
       RAISE_EX("Scene ", sc->id (), " was already registered");
@@ -20,6 +21,7 @@ namespace neutrino::engine::detail {
     m_scenes[sc->id ()] = sc;
     return sc->id ();
   }
+
   // ----------------------------------------------------------------------------------------
   void scene_manager::activate (int scene_id) {
     auto itr = m_scenes.find (scene_id);
@@ -34,6 +36,7 @@ namespace neutrino::engine::detail {
       m_current_scene->on_enter ();
     }
   }
+
   // ----------------------------------------------------------------------------------------
   void scene_manager::update (std::chrono::milliseconds ms) {
     if (m_current_scene) {
@@ -44,26 +47,30 @@ namespace neutrino::engine::detail {
       m_current_scene->update (ms);
     }
   }
+
   // ----------------------------------------------------------------------------------------
   void scene_manager::on_input_focus_changed (bool keyboard_focus, bool mouse_focus) {
     if (m_current_scene) {
       m_current_scene->on_input_focus_changed (keyboard_focus, mouse_focus);
     }
   }
+
   // ----------------------------------------------------------------------------------------
   void scene_manager::on_visibility_change (bool is_visible) {
     if (m_current_scene) {
       m_current_scene->on_visibility_change (is_visible);
     }
   }
+
   // ----------------------------------------------------------------------------------------
-  void scene_manager::on_keyboard_input (const events::keyboard &ev) {
+  void scene_manager::on_keyboard_input (const events::keyboard& ev) {
     if (m_current_scene) {
       m_current_scene->on_keyboard_input (ev);
     }
   }
+
   // ----------------------------------------------------------------------------------------
-  void scene_manager::on_pointer_input (const events::pointer &ev) {
+  void scene_manager::on_pointer_input (const events::pointer& ev) {
     if (m_current_scene) {
       m_current_scene->on_pointer_input (ev);
     }

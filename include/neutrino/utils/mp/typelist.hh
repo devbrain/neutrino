@@ -24,6 +24,7 @@ namespace neutrino::mp {
     static constexpr size_type size () noexcept {
       return sizeof...(Ts);
     }
+
     static constexpr bool empty () noexcept {
       return sizeof...(Ts) == 0;
     }

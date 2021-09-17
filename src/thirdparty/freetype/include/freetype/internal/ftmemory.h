@@ -121,32 +121,32 @@ FT_BASE( long )         _ft_debug_lineno;
 FT_BASE(FT_Pointer)
 ft_mem_alloc (FT_Memory memory,
               FT_Long size,
-              FT_Error *p_error);
+              FT_Error* p_error);
 
 FT_BASE(FT_Pointer)
 ft_mem_qalloc (FT_Memory memory,
                FT_Long size,
-               FT_Error *p_error);
+               FT_Error* p_error);
 
 FT_BASE(FT_Pointer)
 ft_mem_realloc (FT_Memory memory,
                 FT_Long item_size,
                 FT_Long cur_count,
                 FT_Long new_count,
-                void *block,
-                FT_Error *p_error);
+                void* block,
+                FT_Error* p_error);
 
 FT_BASE(FT_Pointer)
 ft_mem_qrealloc (FT_Memory memory,
                  FT_Long item_size,
                  FT_Long cur_count,
                  FT_Long new_count,
-                 void *block,
-                 FT_Error *p_error);
+                 void* block,
+                 FT_Error* p_error);
 
 FT_BASE(void)
 ft_mem_free (FT_Memory memory,
-             const void *P);
+             const void* P);
 
 
 /* The `Q' variants of the macros below (`Q' for `quick') don't fill */
@@ -346,14 +346,14 @@ ft_mem_free (FT_Memory memory,
 
 FT_BASE(FT_Pointer)
 ft_mem_strdup (FT_Memory memory,
-               const char *str,
-               FT_Error *p_error);
+               const char* str,
+               FT_Error* p_error);
 
 FT_BASE(FT_Pointer)
 ft_mem_dup (FT_Memory memory,
-            const void *address,
+            const void* address,
             FT_ULong size,
-            FT_Error *p_error);
+            FT_Error* p_error);
 
 #define FT_MEM_STRDUP(dst, str)                                            \
           (dst) = (char*)ft_mem_strdup( memory, (const char*)(str), &error )
@@ -372,8 +372,8 @@ ft_mem_dup (FT_Memory memory,
 /* Return 0 if the source string fits the buffer. */
 /* This is *not* the same as strlcpy().           */
 FT_BASE(FT_Int)
-ft_mem_strcpyn (char *dst,
-                const char *src,
+ft_mem_strcpyn (char* dst,
+                const char* src,
                 FT_ULong size);
 
 #define FT_STRCPYN(dst, src, size)                                         \

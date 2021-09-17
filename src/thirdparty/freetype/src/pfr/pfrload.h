@@ -49,9 +49,9 @@ FT_BEGIN_HEADER
 /* handling extra items */
 
 typedef FT_Error
-(*PFR_ExtraItem_ParseFunc) (FT_Byte *p,
-                            FT_Byte *limit,
-                            FT_Pointer data);
+(* PFR_ExtraItem_ParseFunc) (FT_Byte* p,
+                             FT_Byte* limit,
+                             FT_Pointer data);
 
 typedef struct PFR_ExtraItemRec_ {
   FT_UInt type;
@@ -59,15 +59,15 @@ typedef struct PFR_ExtraItemRec_ {
 
 } PFR_ExtraItemRec;
 
-typedef const struct PFR_ExtraItemRec_ *PFR_ExtraItem;
+typedef const struct PFR_ExtraItemRec_* PFR_ExtraItem;
 
 FT_LOCAL(FT_Error)
-pfr_extra_items_skip (FT_Byte **pp,
-                      FT_Byte *limit);
+pfr_extra_items_skip (FT_Byte** pp,
+                      FT_Byte* limit);
 
 FT_LOCAL(FT_Error)
-pfr_extra_items_parse (FT_Byte **pp,
-                       FT_Byte *limit,
+pfr_extra_items_parse (FT_Byte** pp,
+                       FT_Byte* limit,
                        PFR_ExtraItem item_list,
                        FT_Pointer item_data);
 
@@ -86,7 +86,7 @@ pfr_header_check (PFR_Header header);
 FT_LOCAL(FT_Error)
 pfr_log_font_count (FT_Stream stream,
                     FT_UInt32 log_section_offset,
-                    FT_Long *acount);
+                    FT_Long* acount);
 
 /* load a pfr logical font entry */
 FT_LOCAL(FT_Error)

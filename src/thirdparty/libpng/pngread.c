@@ -78,6 +78,7 @@ PNG_FUNCTION(png_structp, PNGAPI
 }
 
 #ifdef PNG_SEQUENTIAL_READ_SUPPORTED
+
 /* Read the information before the actual image data.  This has been
  * changed in v0.90 to allow reading a file that already has the magic
  * bytes read from the stream.  You can tell libpng how many bytes have
@@ -251,6 +252,7 @@ png_read_info (png_structrp png_ptr, png_inforp info_ptr) {
                           PNG_HANDLE_CHUNK_AS_DEFAULT);
   }
 }
+
 #endif /* SEQUENTIAL_READ */
 
 /* Optional call to update the users info_ptr structure */
@@ -277,6 +279,7 @@ png_read_update_info (png_structrp png_ptr, png_inforp info_ptr) {
 }
 
 #ifdef PNG_SEQUENTIAL_READ_SUPPORTED
+
 /* Initialize palette, background, etc, after transformations
  * are set, but before any reading takes place.  This allows
  * the user to obtain a gamma-corrected palette, for example.
@@ -296,10 +299,12 @@ png_start_read_image (png_structrp png_ptr) {
                      "png_start_read_image/png_read_update_info: duplicate call");
   }
 }
+
 #endif /* SEQUENTIAL_READ */
 
 #ifdef PNG_SEQUENTIAL_READ_SUPPORTED
 #ifdef PNG_MNG_FEATURES_SUPPORTED
+
 /* Undoes intrapixel differencing,
  * NOTE: this is apparently only supported in the 'sequential' reader.
  */
@@ -357,6 +362,7 @@ png_do_read_intrapixel (png_row_infop row_info, png_bytep row) {
     }
   }
 }
+
 #endif /* MNG_FEATURES */
 
 void PNGAPI
@@ -579,9 +585,11 @@ png_read_row (png_structrp png_ptr, png_bytep row, png_bytep dsp_row) {
     (*(png_ptr->read_row_fn)) (png_ptr, png_ptr->row_number, png_ptr->pass);
 
 }
+
 #endif /* SEQUENTIAL_READ */
 
 #ifdef PNG_SEQUENTIAL_READ_SUPPORTED
+
 /* Read one or more rows of image data.  If the image is interlaced,
  * and png_set_interlace_handling() has been called, the rows need to
  * contain the contents of the rows from the previous pass.  If the
@@ -642,9 +650,11 @@ png_read_rows (png_structrp png_ptr, png_bytepp row,
       dp++;
     }
 }
+
 #endif /* SEQUENTIAL_READ */
 
 #ifdef PNG_SEQUENTIAL_READ_SUPPORTED
+
 /* Read the entire image.  If the image has an alpha channel or a tRNS
  * chunk, and you have called png_handle_alpha()[*], you will need to
  * initialize the image to the current image that PNG will be overlaying.
@@ -710,9 +720,11 @@ png_read_image (png_structrp png_ptr, png_bytepp image) {
     }
   }
 }
+
 #endif /* SEQUENTIAL_READ */
 
 #ifdef PNG_SEQUENTIAL_READ_SUPPORTED
+
 /* Read the end of the PNG file.  Will not read past the end of the
  * file, will verify the end is accurate, and will read any comments
  * or time information at the end of the file, if info is not NULL.
@@ -884,6 +896,7 @@ png_read_end (png_structrp png_ptr, png_inforp info_ptr) {
   }
   while ((png_ptr->mode & PNG_HAVE_IEND) == 0);
 }
+
 #endif /* SEQUENTIAL_READ */
 
 /* Free all memory used in the read struct */
@@ -990,6 +1003,7 @@ png_set_read_status_fn (png_structrp png_ptr, png_read_status_ptr read_row_fn) {
 
 #ifdef PNG_SEQUENTIAL_READ_SUPPORTED
 #ifdef PNG_INFO_IMAGE_SUPPORTED
+
 void PNGAPI
 png_read_png (png_structrp png_ptr, png_inforp info_ptr,
               int transforms, voidp params) {
@@ -1189,6 +1203,7 @@ png_read_png (png_structrp png_ptr, png_inforp info_ptr,
 
   PNG_UNUSED(params)
 }
+
 #endif /* INFO_IMAGE */
 #endif /* SEQUENTIAL_READ */
 
@@ -1401,8 +1416,9 @@ png_image_read_header (png_voidp argument) {
 }
 
 #ifdef PNG_STDIO_SUPPORTED
+
 int PNGAPI
-png_image_begin_read_from_stdio (png_imagep image, FILE *file) {
+png_image_begin_read_from_stdio (png_imagep image, FILE* file) {
   if (image != NULL && image->version == PNG_IMAGE_VERSION) {
     if (file != NULL) {
       if (png_image_read_init (image) != 0) {
@@ -1428,10 +1444,10 @@ png_image_begin_read_from_stdio (png_imagep image, FILE *file) {
 }
 
 int PNGAPI
-png_image_begin_read_from_file (png_imagep image, const char *file_name) {
+png_image_begin_read_from_file (png_imagep image, const char* file_name) {
   if (image != NULL && image->version == PNG_IMAGE_VERSION) {
     if (file_name != NULL) {
-      FILE *fp = fopen (file_name, "rb");
+      FILE* fp = fopen (file_name, "rb");
 
       if (fp != NULL) {
         if (png_image_read_init (image) != 0) {
@@ -1459,6 +1475,7 @@ png_image_begin_read_from_file (png_imagep image, const char *file_name) {
 
   return 0;
 }
+
 #endif /* STDIO */
 
 static void PNGCBAPI
@@ -1520,6 +1537,7 @@ int PNGAPI png_image_begin_read_from_memory (png_imagep image,
  * read functions and an appropriate macro to call it.
  */
 #ifdef PNG_HANDLE_AS_UNKNOWN_SUPPORTED
+
 static void
 png_image_skip_unused_chunks (png_structrp png_ptr) {
   /* Prepare the reader to ignore all recognized chunks whose data will not
@@ -1577,7 +1595,7 @@ png_image_skip_unused_chunks (png_structrp png_ptr) {
 
 /* Utility functions to make particular color-maps */
 static void
-set_file_encoding (png_image_read_control *display) {
+set_file_encoding (png_image_read_control* display) {
   png_fixed_point g = display->image->opaque->png_ptr->colorspace.gamma;
   if (png_gamma_significant (g) != 0) {
     if (png_gamma_not_sRGB (g) != 0) {
@@ -1594,7 +1612,7 @@ set_file_encoding (png_image_read_control *display) {
 }
 
 static unsigned int
-decode_gamma (png_image_read_control *display, png_uint_32 value, int encoding) {
+decode_gamma (png_image_read_control* display, png_uint_32 value, int encoding) {
   if (encoding == P_FILE) /* double check */
     encoding = display->file_encoding;
 
@@ -1631,7 +1649,7 @@ decode_gamma (png_image_read_control *display, png_uint_32 value, int encoding) 
 }
 
 static png_uint_32
-png_colormap_compose (png_image_read_control *display,
+png_colormap_compose (png_image_read_control* display,
                       png_uint_32 foreground, int foreground_encoding, png_uint_32 alpha,
                       png_uint_32 background, int encoding) {
   /* The file value is composed on the background, the background has the given
@@ -1666,7 +1684,7 @@ png_colormap_compose (png_image_read_control *display,
  * be 8-bit.
  */
 static void
-png_create_colormap_entry (png_image_read_control *display,
+png_create_colormap_entry (png_image_read_control* display,
                            png_uint_32 ip, png_uint_32 red, png_uint_32 green, png_uint_32 blue,
                            png_uint_32 alpha, int encoding) {
   png_imagep image = display->image;
@@ -1870,7 +1888,7 @@ png_create_colormap_entry (png_image_read_control *display,
 }
 
 static int
-make_gray_file_colormap (png_image_read_control *display) {
+make_gray_file_colormap (png_image_read_control* display) {
   unsigned int i;
 
   for (i = 0; i < 256; ++i)
@@ -1880,7 +1898,7 @@ make_gray_file_colormap (png_image_read_control *display) {
 }
 
 static int
-make_gray_colormap (png_image_read_control *display) {
+make_gray_colormap (png_image_read_control* display) {
   unsigned int i;
 
   for (i = 0; i < 256; ++i)
@@ -1888,10 +1906,11 @@ make_gray_colormap (png_image_read_control *display) {
 
   return (int) i;
 }
+
 #define PNG_GRAY_COLORMAP_ENTRIES 256
 
 static int
-make_ga_colormap (png_image_read_control *display) {
+make_ga_colormap (png_image_read_control* display) {
   unsigned int i, a;
 
   /* Alpha is retained, the output will be a color-map with entries
@@ -1943,7 +1962,7 @@ make_ga_colormap (png_image_read_control *display) {
 #define PNG_GA_COLORMAP_ENTRIES 256
 
 static int
-make_rgb_colormap (png_image_read_control *display) {
+make_rgb_colormap (png_image_read_control* display) {
   unsigned int i, r;
 
   /* Build a 6x6x6 opaque RGB cube */
@@ -1970,7 +1989,7 @@ make_rgb_colormap (png_image_read_control *display) {
 
 static int
 png_image_read_colormap (png_voidp argument) {
-  png_image_read_control *display =
+  png_image_read_control* display =
       png_voidcast(png_image_read_control*, argument);
   png_imagep image = display->image;
 
@@ -2783,7 +2802,7 @@ png_image_read_colormap (png_voidp argument) {
 /* The final part of the color-map read called from png_image_finish_read. */
 static int
 png_image_read_and_map (png_voidp argument) {
-  png_image_read_control *display = png_voidcast(png_image_read_control*,
+  png_image_read_control* display = png_voidcast(png_image_read_control*,
                                                  argument);
   png_imagep image = display->image;
   png_structrp png_ptr = image->opaque->png_ptr;
@@ -2966,7 +2985,7 @@ png_image_read_and_map (png_voidp argument) {
 
 static int
 png_image_read_colormapped (png_voidp argument) {
-  png_image_read_control *display = png_voidcast(png_image_read_control*,
+  png_image_read_control* display = png_voidcast(png_image_read_control*,
                                                  argument);
   png_imagep image = display->image;
   png_controlp control = image->opaque;
@@ -3050,7 +3069,7 @@ png_image_read_colormapped (png_voidp argument) {
        * a signed or an unsigned result.
        */
     if (row_bytes < 0) {
-      char *ptr = png_voidcast(char*, first_row);
+      char* ptr = png_voidcast(char*, first_row);
       ptr += (image->height - 1) * (-row_bytes);
       first_row = png_voidcast(png_voidp, ptr);
     }
@@ -3091,7 +3110,7 @@ png_image_read_colormapped (png_voidp argument) {
 /* Just the row reading part of png_image_read. */
 static int
 png_image_read_composite (png_voidp argument) {
-  png_image_read_control *display = png_voidcast(png_image_read_control*,
+  png_image_read_control* display = png_voidcast(png_image_read_control*,
                                                  argument);
   png_imagep image = display->image;
   png_structrp png_ptr = image->opaque->png_ptr;
@@ -3210,7 +3229,7 @@ png_image_read_composite (png_voidp argument) {
  */
 static int
 png_image_read_background (png_voidp argument) {
-  png_image_read_control *display = png_voidcast(png_image_read_control*,
+  png_image_read_control* display = png_voidcast(png_image_read_control*,
                                                  argument);
   png_imagep image = display->image;
   png_structrp png_ptr = image->opaque->png_ptr;
@@ -3474,7 +3493,7 @@ png_image_read_background (png_voidp argument) {
 /* The guts of png_image_finish_read as a png_safe_execute callback. */
 static int
 png_image_read_direct (png_voidp argument) {
-  png_image_read_control *display = png_voidcast(png_image_read_control*,
+  png_image_read_control* display = png_voidcast(png_image_read_control*,
                                                  argument);
   png_imagep image = display->image;
   png_structrp png_ptr = image->opaque->png_ptr;
@@ -3831,7 +3850,7 @@ png_image_read_direct (png_voidp argument) {
        * a signed or an unsigned result.
        */
     if (row_bytes < 0) {
-      char *ptr = png_voidcast(char*, first_row);
+      char* ptr = png_voidcast(char*, first_row);
       ptr += (image->height - 1) * (-row_bytes);
       first_row = png_voidcast(png_voidp, ptr);
     }
@@ -3883,7 +3902,7 @@ png_image_read_direct (png_voidp argument) {
 
 int PNGAPI
 png_image_finish_read (png_imagep image, png_const_colorp background,
-                       void *buffer, png_int_32 row_stride, void *colormap) {
+                       void* buffer, png_int_32 row_stride, void* colormap) {
   if (image != NULL && image->version == PNG_IMAGE_VERSION) {
     /* Check for row_stride overflow.  This check is not performed on the
        * original PNG format because it may not occur in the output PNG format

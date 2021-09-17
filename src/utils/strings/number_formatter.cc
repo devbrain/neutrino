@@ -48,183 +48,183 @@ namespace neutrino::utils {
     }
   }
 
-  void number_formatter::append (std::string &str, int value) {
+  void number_formatter::append (std::string& str, int value) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     int_to_str (value, 10, result, sz);
     str.append (result, sz);
   }
 
-  void number_formatter::append (std::string &str, int value, int width) {
+  void number_formatter::append (std::string& str, int value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     int_to_str (value, 10, result, sz, false, width);
     str.append (result, sz);
   }
 
-  void number_formatter::append0 (std::string &str, int value, int width) {
+  void number_formatter::append0 (std::string& str, int value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     int_to_str (value, 10, result, sz, false, width, '0');
     str.append (result, sz);
   }
 
-  void number_formatter::appendHex (std::string &str, int value) {
+  void number_formatter::appendHex (std::string& str, int value) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (static_cast<unsigned int>(value), 0x10, result, sz);
     str.append (result, sz);
   }
 
-  void number_formatter::appendHex (std::string &str, int value, int width) {
+  void number_formatter::appendHex (std::string& str, int value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (static_cast<unsigned int>(value), 0x10, result, sz, false, width, '0');
     str.append (result, sz);
   }
 
-  void number_formatter::append (std::string &str, unsigned value) {
+  void number_formatter::append (std::string& str, unsigned value) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 10, result, sz);
     str.append (result, sz);
   }
 
-  void number_formatter::append (std::string &str, unsigned value, int width) {
+  void number_formatter::append (std::string& str, unsigned value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 10, result, sz, false, width);
     str.append (result, sz);
   }
 
-  void number_formatter::append0 (std::string &str, unsigned int value, int width) {
+  void number_formatter::append0 (std::string& str, unsigned int value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 10, result, sz, false, width, '0');
     str.append (result, sz);
   }
 
-  void number_formatter::appendHex (std::string &str, unsigned value) {
+  void number_formatter::appendHex (std::string& str, unsigned value) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 0x10, result, sz);
     str.append (result, sz);
   }
 
-  void number_formatter::appendHex (std::string &str, unsigned value, int width) {
+  void number_formatter::appendHex (std::string& str, unsigned value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 0x10, result, sz, false, width, '0');
     str.append (result, sz);
   }
 
-  void number_formatter::append (std::string &str, int64_t value) {
+  void number_formatter::append (std::string& str, int64_t value) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     int_to_str (value, 10, result, sz);
     str.append (result, sz);
   }
 
-  void number_formatter::append (std::string &str, int64_t value, int width) {
+  void number_formatter::append (std::string& str, int64_t value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     int_to_str (value, 10, result, sz, false, width);
     str.append (result, sz);
   }
 
-  void number_formatter::append0 (std::string &str, int64_t value, int width) {
+  void number_formatter::append0 (std::string& str, int64_t value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     int_to_str (value, 10, result, sz, false, width, '0');
     str.append (result, sz);
   }
 
-  void number_formatter::append_hex (std::string &str, int64_t value) {
+  void number_formatter::append_hex (std::string& str, int64_t value) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (static_cast<unsigned long>(value), 0x10, result, sz);
     str.append (result, sz);
   }
 
-  void number_formatter::append_hex (std::string &str, int64_t value, int width) {
+  void number_formatter::append_hex (std::string& str, int64_t value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (static_cast<unsigned long>(value), 0x10, result, sz, false, width, '0');
     str.append (result, sz);
   }
 
-  void number_formatter::append (std::string &str, uint64_t value) {
+  void number_formatter::append (std::string& str, uint64_t value) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 10, result, sz);
     str.append (result, sz);
   }
 
-  void number_formatter::append (std::string &str, uint64_t value, int width) {
+  void number_formatter::append (std::string& str, uint64_t value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 10, result, sz, false, width, '0');
     str.append (result, sz);
   }
 
-  void number_formatter::append0 (std::string &str, uint64_t value, int width) {
+  void number_formatter::append0 (std::string& str, uint64_t value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 10, result, sz, false, width, '0');
     str.append (result, sz);
   }
 
-  void number_formatter::append_hex (std::string &str, uint64_t value) {
+  void number_formatter::append_hex (std::string& str, uint64_t value) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 0x10, result, sz);
     str.append (result, sz);
   }
 
-  void number_formatter::append_hex (std::string &str, uint64_t value, int width) {
+  void number_formatter::append_hex (std::string& str, uint64_t value, int width) {
     char result[NF_MAX_INT_STRING_LEN];
     std::size_t sz = NF_MAX_INT_STRING_LEN;
     uint_to_str (value, 0x10, result, sz, false, width, '0');
     str.append (result, sz);
   }
 
-  void number_formatter::append (std::string &str, float value) {
+  void number_formatter::append (std::string& str, float value) {
     char buffer[NF_MAX_FLT_STRING_LEN];
     float_to_str (buffer, NEUTRINO_MAX_FLT_STRING_LEN, value);
     str.append (buffer);
   }
 
-  void number_formatter::append (std::string &str, float value, int precision) {
+  void number_formatter::append (std::string& str, float value, int precision) {
     char buffer[NF_MAX_FLT_STRING_LEN];
     float_to_fixed_str (buffer, NEUTRINO_MAX_FLT_STRING_LEN, value, precision);
     str.append (buffer);
   }
 
-  void number_formatter::append (std::string &str, float value, int width, int precision) {
+  void number_formatter::append (std::string& str, float value, int width, int precision) {
     std::string result;
     str.append (float_to_fixed_str (result, value, precision, width));
   }
 
-  void number_formatter::append (std::string &str, double value) {
+  void number_formatter::append (std::string& str, double value) {
     char buffer[NF_MAX_FLT_STRING_LEN];
     double_to_str (buffer, NEUTRINO_MAX_FLT_STRING_LEN, value);
     str.append (buffer);
   }
 
-  void number_formatter::append (std::string &str, double value, int precision) {
+  void number_formatter::append (std::string& str, double value, int precision) {
     char buffer[NF_MAX_FLT_STRING_LEN];
     double_to_fixed_str (buffer, NEUTRINO_MAX_FLT_STRING_LEN, value, precision);
     str.append (buffer);
   }
 
-  void number_formatter::append (std::string &str, double value, int width, int precision) {
+  void number_formatter::append (std::string& str, double value, int width, int precision) {
     std::string result;
     str.append (double_to_fixed_str (result, value, precision, width));
   }
 
-  void number_formatter::append (std::string &str, const void *ptr) {
+  void number_formatter::append (std::string& str, const void* ptr) {
     char buffer[24];
-    if constexpr(sizeof (void *) == 8) {
+    if constexpr(sizeof (void*) == 8) {
       std::sprintf (buffer, "%016" PRIXPTR, (uintptr_t) ptr);
     }
     else {

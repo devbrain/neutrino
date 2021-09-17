@@ -75,42 +75,42 @@ namespace neutrino::mp {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) &>
+    struct member_function_traits<Ret(Class::*) (Args...)&>
         : impl::member_function_traits_q<Class, Ret (Args...), lref_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) const &>
+    struct member_function_traits<Ret(Class::*) (Args...) const&>
         : impl::member_function_traits_q<Class, Ret (Args...), const_tag, lref_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) volatile &>
+    struct member_function_traits<Ret(Class::*) (Args...) volatile&>
         : impl::member_function_traits_q<Class, Ret (Args...), volatile_tag, lref_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) const volatile &>
+    struct member_function_traits<Ret(Class::*) (Args...) const volatile&>
         : impl::member_function_traits_q<Class, Ret (Args...), const_tag, volatile_tag, lref_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) &&>
+    struct member_function_traits<Ret(Class::*) (Args...)&&>
         : impl::member_function_traits_q<Class, Ret (Args...), rref_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) const &&>
+    struct member_function_traits<Ret(Class::*) (Args...) const&&>
         : impl::member_function_traits_q<Class, Ret (Args...), const_tag, rref_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) volatile &&>
+    struct member_function_traits<Ret(Class::*) (Args...) volatile&&>
         : impl::member_function_traits_q<Class, Ret (Args...), volatile_tag, rref_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) const volatile &&>
+    struct member_function_traits<Ret(Class::*) (Args...) const volatile&&>
         : impl::member_function_traits_q<Class, Ret (Args...), const_tag, volatile_tag, rref_tag> {
     };
 
@@ -136,42 +136,42 @@ namespace neutrino::mp {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) &noexcept>
+    struct member_function_traits<Ret(Class::*) (Args...)& noexcept>
         : impl::member_function_traits_q<Class, Ret (Args...), lref_tag, noexcept_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) const &noexcept>
+    struct member_function_traits<Ret(Class::*) (Args...) const& noexcept>
         : impl::member_function_traits_q<Class, Ret (Args...), const_tag, lref_tag, noexcept_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) volatile &noexcept>
+    struct member_function_traits<Ret(Class::*) (Args...) volatile& noexcept>
         : impl::member_function_traits_q<Class, Ret (Args...), volatile_tag, lref_tag, noexcept_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) const volatile &noexcept>
+    struct member_function_traits<Ret(Class::*) (Args...) const volatile& noexcept>
         : impl::member_function_traits_q<Class, Ret (Args...), const_tag, volatile_tag, lref_tag, noexcept_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) &&noexcept>
+    struct member_function_traits<Ret(Class::*) (Args...)&& noexcept>
         : impl::member_function_traits_q<Class, Ret (Args...), rref_tag, noexcept_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) const &&noexcept>
+    struct member_function_traits<Ret(Class::*) (Args...) const&& noexcept>
         : impl::member_function_traits_q<Class, Ret (Args...), const_tag, rref_tag, noexcept_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) volatile &&noexcept>
+    struct member_function_traits<Ret(Class::*) (Args...) volatile&& noexcept>
         : impl::member_function_traits_q<Class, Ret (Args...), volatile_tag, rref_tag, noexcept_tag> {
     };
 
     template <typename Class, typename Ret, typename... Args>
-    struct member_function_traits<Ret(Class::*) (Args...) const volatile &&noexcept>
+    struct member_function_traits<Ret(Class::*) (Args...) const volatile&& noexcept>
         : impl::member_function_traits_q<Class, Ret (Args...), const_tag, volatile_tag, rref_tag, noexcept_tag> {
     };
 #endif // __cpp_noexcept_function_type

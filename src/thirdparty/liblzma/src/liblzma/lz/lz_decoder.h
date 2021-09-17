@@ -20,7 +20,7 @@ typedef struct {
   /// Pointer to the dictionary buffer. It can be an allocated buffer
   /// internal to liblzma, or it can a be a buffer given by the
   /// application when in single-call mode (not implemented yet).
-  uint8_t *buf;
+  uint8_t* buf;
 
   /// Write position in dictionary. The next byte will be written to
   /// buf[pos].
@@ -44,26 +44,26 @@ typedef struct {
 
 typedef struct {
   size_t dict_size;
-  const uint8_t *preset_dict;
+  const uint8_t* preset_dict;
   size_t preset_dict_size;
 } lzma_lz_options;
 
 typedef struct {
   /// Data specific to the LZ-based decoder
-  void *coder;
+  void* coder;
 
   /// Function to decode from in[] to *dict
-  lzma_ret (*code) (void *coder,
-                    lzma_dict *restrict dict, const uint8_t *restrict in,
-                    size_t *restrict in_pos, size_t in_size);
+  lzma_ret (* code) (void* coder,
+                     lzma_dict* restrict dict, const uint8_t* restrict in,
+                     size_t* restrict in_pos, size_t in_size);
 
-  void (*reset) (void *coder, const void *options);
+  void (* reset) (void* coder, const void* options);
 
   /// Set the uncompressed size
-  void (*set_uncompressed) (void *coder, lzma_vli uncompressed_size);
+  void (* set_uncompressed) (void* coder, lzma_vli uncompressed_size);
 
   /// Free allocated resources
-  void (*end) (void *coder, const lzma_allocator *allocator);
+  void (* end) (void* coder, const lzma_allocator* allocator);
 
 } lzma_lz_decoder;
 
@@ -76,17 +76,17 @@ typedef struct {
         .end = NULL, \
     }
 
-extern lzma_ret lzma_lz_decoder_init (lzma_next_coder *next,
-                                      const lzma_allocator *allocator,
-                                      const lzma_filter_info *filters,
-                                      lzma_ret (*lz_init) (lzma_lz_decoder *lz,
-                                                           const lzma_allocator *allocator, const void *options,
-                                                           lzma_lz_options *lz_options));
+extern lzma_ret lzma_lz_decoder_init (lzma_next_coder* next,
+                                      const lzma_allocator* allocator,
+                                      const lzma_filter_info* filters,
+                                      lzma_ret (* lz_init) (lzma_lz_decoder* lz,
+                                                            const lzma_allocator* allocator, const void* options,
+                                                            lzma_lz_options* lz_options));
 
 extern uint64_t lzma_lz_decoder_memusage (size_t dictionary_size);
 
 extern void lzma_lz_decoder_uncompressed (
-    void *coder, lzma_vli uncompressed_size);
+    void* coder, lzma_vli uncompressed_size);
 
 
 //////////////////////
@@ -95,26 +95,26 @@ extern void lzma_lz_decoder_uncompressed (
 
 /// Get a byte from the history buffer.
 static inline uint8_t
-dict_get (const lzma_dict *const dict, const uint32_t distance) {
+dict_get (const lzma_dict* const dict, const uint32_t distance) {
   return dict->buf[dict->pos - distance - 1
                    + (distance < dict->pos ? 0 : dict->size)];
 }
 
 /// Test if dictionary is empty.
 static inline bool
-dict_is_empty (const lzma_dict *const dict) {
+dict_is_empty (const lzma_dict* const dict) {
   return dict->full == 0;
 }
 
 /// Validate the match distance
 static inline bool
-dict_is_distance_valid (const lzma_dict *const dict, const size_t distance) {
+dict_is_distance_valid (const lzma_dict* const dict, const size_t distance) {
   return dict->full > distance;
 }
 
 /// Repeat *len bytes at distance.
 static inline bool
-dict_repeat (lzma_dict *dict, uint32_t distance, uint32_t *len) {
+dict_repeat (lzma_dict* dict, uint32_t distance, uint32_t* len) {
   // Don't write past the end of the dictionary.
   const size_t dict_avail = dict->limit - dict->pos;
   uint32_t left = my_min(dict_avail, *len);
@@ -175,7 +175,7 @@ dict_repeat (lzma_dict *dict, uint32_t distance, uint32_t *len) {
 /// Puts one byte into the dictionary. Returns true if the dictionary was
 /// already full and the byte couldn't be added.
 static inline bool
-dict_put (lzma_dict *dict, uint8_t byte) {
+dict_put (lzma_dict* dict, uint8_t byte) {
   if (unlikely(dict->pos == dict->limit))
     return true;
 
@@ -189,9 +189,9 @@ dict_put (lzma_dict *dict, uint8_t byte) {
 
 /// Copies arbitrary amount of data into the dictionary.
 static inline void
-dict_write (lzma_dict *restrict dict, const uint8_t *restrict in,
-            size_t *restrict in_pos, size_t in_size,
-            size_t *restrict left) {
+dict_write (lzma_dict* restrict dict, const uint8_t* restrict in,
+            size_t* restrict in_pos, size_t in_size,
+            size_t* restrict left) {
   // NOTE: If we are being given more data than the size of the
   // dictionary, it could be possible to optimize the LZ decoder
   // so that not everything needs to go through the dictionary.
@@ -212,7 +212,7 @@ dict_write (lzma_dict *restrict dict, const uint8_t *restrict in,
 }
 
 static inline void
-dict_reset (lzma_dict *dict) {
+dict_reset (lzma_dict* dict) {
   dict->need_reset = true;
   return;
 }

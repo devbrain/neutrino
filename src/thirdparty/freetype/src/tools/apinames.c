@@ -37,24 +37,24 @@ typedef enum OutputFormat_ {
 } OutputFormat;
 
 static void
-panic (const char *message) {
+panic (const char* message) {
   fprintf (stderr, "PANIC: %s\n", message);
   exit (2);
 }
 
 typedef struct NameRec_ {
-  char *name;
+  char* name;
   unsigned int hash;
 
-} NameRec, *Name;
+} NameRec, * Name;
 
 static Name the_names;
 static int num_names;
 static int max_names;
 
 static void
-names_add (const char *name,
-           const char *end) {
+names_add (const char* name,
+           const char* end) {
   unsigned int h;
   int nn, len;
   Name nm;
@@ -82,15 +82,15 @@ names_add (const char *name,
   /* add new name */
   if (num_names >= max_names) {
     max_names += (max_names >> 1) + 4;
-    the_names = (NameRec *) realloc (the_names,
-                                     sizeof (the_names[0]) * max_names);
+    the_names = (NameRec*) realloc (the_names,
+                                    sizeof (the_names[0]) * max_names);
     if (!the_names)
       panic ("not enough memory");
   }
   nm = &the_names[num_names++];
 
   nm->hash = h;
-  nm->name = (char *) malloc (len + 1);
+  nm->name = (char*) malloc (len + 1);
   if (!nm->name)
     panic ("not enough memory");
 
@@ -99,8 +99,8 @@ names_add (const char *name,
 }
 
 static int
-name_compare (const void *name1,
-              const void *name2) {
+name_compare (const void* name1,
+              const void* name2) {
   Name n1 = (Name) name1;
   Name n2 = (Name) name2;
 
@@ -114,9 +114,9 @@ names_sort (void) {
 }
 
 static void
-names_dump (FILE *out,
+names_dump (FILE* out,
             OutputFormat format,
-            const char *dll_name) {
+            const char* dll_name) {
   int nn;
 
   switch (format) {
@@ -145,7 +145,7 @@ names_dump (FILE *out,
       break;
 
     case OUTPUT_WATCOM_LBC: {
-      const char *dot;
+      const char* dot;
       char temp[512];
 
       if (!dll_name) {
@@ -165,7 +165,7 @@ names_dump (FILE *out,
         memcpy (temp, dll_name, len);
         temp[len] = 0;
 
-        dll_name = (const char *) temp;
+        dll_name = (const char*) temp;
       }
 
       for (nn = 0; nn < num_names; nn++)
@@ -212,13 +212,13 @@ typedef enum State_ {
 } State;
 
 static int
-read_header_file (FILE *file,
+read_header_file (FILE* file,
                   int verbose) {
   static char buff[LINEBUFF_SIZE + 1];
   State state = STATE_START;
 
   while (!feof (file)) {
-    char *p;
+    char* p;
 
     if (!fgets (buff, LINEBUFF_SIZE, file))
       break;
@@ -266,7 +266,7 @@ read_header_file (FILE *file,
         /* fall-through */
 
       case STATE_TYPE: {
-        char *name = p;
+        char* name = p;
 
         while (isalnum (*p) || *p == '_')
           p++;
@@ -294,7 +294,7 @@ read_header_file (FILE *file,
 
 static void
 usage (void) {
-  static const char *const format =
+  static const char* const format =
       "%s %s: extract FreeType API names from header files\n"
       "\n"
       "This program extracts the list of public FreeType API functions.\n"
@@ -325,19 +325,19 @@ usage (void) {
 
 int
 main (int argc,
-      const char *const *argv) {
+      const char* const* argv) {
   int from_stdin = 0;
   int verbose = 0;
   OutputFormat format = OUTPUT_LIST;  /* the default */
-  FILE *out = stdout;
-  const char *library_name = NULL;
+  FILE* out = stdout;
+  const char* library_name = NULL;
 
   if (argc < 2)
     usage ();
 
   /* `-' used as a single argument means read source file from stdin */
   while (argc > 1 && argv[1][0] == '-') {
-    const char *arg = argv[1];
+    const char* arg = argv[1];
 
     switch (arg[1]) {
       case 'v':
@@ -428,7 +428,7 @@ main (int argc,
     read_header_file (stdin, verbose);
   else {
     for (--argc, argv++; argc > 0; argc--, argv++) {
-      FILE *file = fopen (argv[0], "rb");
+      FILE* file = fopen (argv[0], "rb");
 
       if (!file)
         fprintf (stderr, "unable to open '%s'\n", argv[0]);

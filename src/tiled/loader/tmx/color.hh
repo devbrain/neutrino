@@ -12,16 +12,18 @@ namespace neutrino::tiled::tmx {
   namespace detail {
     template <typename T>
     struct rgb_hex_extractor {
-      static T parse (const std::string &color, std::string::size_type idx) {
+      static T parse (const std::string& color, std::string::size_type idx) {
         unsigned x;
         if (!utils::number_parser::try_parse_hex (color.substr (idx, 2), x)) {
           RAISE_EX("Failed to parse ", color.substr (idx, 2), " as hex number");
         }
         return static_cast<T>(x);
       }
+
       static constexpr T unit () noexcept {
         return 255;
       }
+
       static constexpr T zero () noexcept {
         return 0;
       }
@@ -29,23 +31,25 @@ namespace neutrino::tiled::tmx {
 
     template <>
     struct rgb_hex_extractor<float> {
-      static float parse (const std::string &color, std::string::size_type idx) {
+      static float parse (const std::string& color, std::string::size_type idx) {
         unsigned x;
         if (!utils::number_parser::try_parse_hex (color.substr (idx, 2), x)) {
           RAISE_EX("Failed to parse ", color.substr (idx, 2), " as hex number");
         }
         return (float) x / 255.0f;
       }
+
       static constexpr float unit () noexcept {
         return 1.0f;
       }
+
       static constexpr float zero () noexcept {
         return 0.0f;
       }
     };
 
     template <typename T>
-    std::tuple<T, T, T, T> parse_hex_color (const std::string &color) {
+    std::tuple<T, T, T, T> parse_hex_color (const std::string& color) {
       if (color.size () == 9) {
         return std::make_tuple (
             rgb_hex_extractor<T>::parse (color, 3),
@@ -72,13 +76,13 @@ namespace neutrino::tiled::tmx {
        * @param color Color in "#rrggbbaa" hex format.
        * @example "#ffaa07ff" and "#aa07ff". In cases where alpha is not a value, it is set to 255.
       */
-      explicit color (const std::string &color);
+      explicit color (const std::string& color);
       color (T red, T green, T blue, T alpha);
       color ();
 
-      bool operator== (const color &rhs) const;
-      bool operator== (const std::string &rhs) const;
-      bool operator!= (const color &rhs) const;
+      bool operator == (const color& rhs) const;
+      bool operator == (const std::string& rhs) const;
+      bool operator != (const color& rhs) const;
 
       color<float> as_float ();
       color<uint8_t> as_int ();
@@ -101,15 +105,17 @@ namespace neutrino::tiled::tmx {
 // ===============================================================================
 namespace neutrino::tiled::tmx {
   template <typename T>
-  color<T>::color (const std::string &color) {
+  color<T>::color (const std::string& color) {
     std::tie (r, g, b, a) = detail::parse_hex_color<T> (color);
   }
+
   // ---------------------------------------------------------------------------
   template <typename T>
   color<T>::color (T red, T green, T blue, T alpha)
       : r (red), g (green), b (blue), a (alpha) {
 
   }
+
   // ---------------------------------------------------------------------------
   template <typename T>
   color<T>::color ()
@@ -119,24 +125,28 @@ namespace neutrino::tiled::tmx {
         a (detail::rgb_hex_extractor<T>::unit ()) {
 
   }
+
   // ---------------------------------------------------------------------------
   template <typename T>
-  bool color<T>::operator== (const color &rhs) const {
+  bool color<T>::operator == (const color& rhs) const {
     return r == rhs.r &&
            g == rhs.g &&
            b == rhs.b &&
            a == rhs.a;
   }
+
   // ---------------------------------------------------------------------------
   template <typename T>
-  bool color<T>::operator== (const std::string &rhs) const {
+  bool color<T>::operator == (const std::string& rhs) const {
     return *this == color<T> (rhs);
   }
+
   // ---------------------------------------------------------------------------
   template <typename T>
-  bool color<T>::operator!= (const color &rhs) const {
+  bool color<T>::operator != (const color& rhs) const {
     return !(*this == rhs);
   }
+
   // ---------------------------------------------------------------------------
   template <typename T>
   color<float> color<T>::as_float () {
@@ -147,6 +157,7 @@ namespace neutrino::tiled::tmx {
       return color<float> ((float) r / 255, (float) g / 255, (float) b / 255, (float) a / 255);
     }
   }
+
   // ---------------------------------------------------------------------------
   template <typename T>
   color<uint8_t> color<T>::as_int () {

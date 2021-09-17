@@ -1,19 +1,27 @@
 # Overview
-This version of Selawik is a test case and demonstration of OpenType 1.8 Font Variations technology and tables. It also includes some handy debugging characters.
 
-This version of Selawik is intended for testing only, and is not recommended for shipping in applications, etc. For that, it is better to use the main branch of [Selawik](https://github.com/Microsoft/Selawik).
+This version of Selawik is a test case and demonstration of OpenType 1.8 Font Variations technology and tables. It also
+includes some handy debugging characters.
+
+This version of Selawik is intended for testing only, and is not recommended for shipping in applications, etc. For
+that, it is better to use the main branch of [Selawik](https://github.com/Microsoft/Selawik).
 
 # Features
 
 * Full TrueType hinting with VTT source tables included. See [Hinting](#hinting) for details.
-* All tables required for OpenType 1.8 are present (see [Table Status](#table-status), below). This includes cvar (varied CVTs), GPOS/GDEF (kerning varies), and avar (coordinate space warping to match Segoe UI).
+* All tables required for OpenType 1.8 are present (see [Table Status](#table-status), below). This includes cvar (
+  varied CVTs), GPOS/GDEF (kerning varies), and avar (coordinate space warping to match Segoe UI).
 
-	Note: This version of Selawik does not include an MVAR because its vertical metrics do not change anywhere in the design space, thus there is no need for MVAR. A future release will contain an axis that varies vertical metrics as an excuse to have an MVAR.
+  Note: This version of Selawik does not include an MVAR because its vertical metrics do not change anywhere in the
+  design space, thus there is no need for MVAR. A future release will contain an axis that varies vertical metrics as an
+  excuse to have an MVAR.
 
-* Numerous interesting debugging glyphs (requires liga to be enabled). For example, \axis1 will show the current normalized wght coordinate. See [Debugging Glyphs](#debugging-glyphs) for details.
+* Numerous interesting debugging glyphs (requires liga to be enabled). For example, \axis1 will show the current
+  normalized wght coordinate. See [Debugging Glyphs](#debugging-glyphs) for details.
 * 1 axis: weight
 
 ## Table status
+
 The following tables are currently supported:
 
 - [x] fvar
@@ -24,18 +32,22 @@ The following tables are currently supported:
 - [x] GPOS/GDEF - kerning
 - [x] HVAR
 
-Not yet complete: 
+Not yet complete:
 
 - [ ] GSUB/GDEF - to change dollar signs in the bold
 - [ ] MVAR (future release)
 
 ## To do
-* Add a second axis that varies vertical metrics so we need an MVAR table. This axis will not be one of the standard axes listed in the [OpenType 1.8 specification] (https://www.microsoft.com/typography/otspec/fvar.htm), so that it becomes an example of out to do a foundry-defined axis.
+
+* Add a second axis that varies vertical metrics so we need an MVAR table. This axis will not be one of the standard
+  axes listed in the [OpenType 1.8 specification] (https://www.microsoft.com/typography/otspec/fvar.htm), so that it
+  becomes an example of out to do a foundry-defined axis.
 * Add Feature Variations (GPOS/GDEF) to switch dollar sign glyphs across weights.
 
-
 # Debugging glyphs
-Thanks to Greg Hitchcock's TrueType coding wizardry, this font includes many glyphs that are helpful for debugging implementations of variable fonts. It has a number of substitutions implemented as liga features:
+
+Thanks to Greg Hitchcock's TrueType coding wizardry, this font includes many glyphs that are helpful for debugging
+implementations of variable fonts. It has a number of substitutions implemented as liga features:
 
 Feature | Description
 -------- | ----------
@@ -51,10 +63,15 @@ Feature | Description
 \family | Shows the family name of the font.
 \version | Shows the version of this font
 
-
-
-
 # Hinting
-This version of Selawik is primarily hinted with the light Latin hinting style Microsoft recommends for variable Latin fonts. The VTT Light Latin autohinter was used to create the first round of hints, which were then reviewed and touched up. 
 
-This hinting style only uses CVTs for vertical metrics anchors (ascender, descender, cap height, x-height, and baseline). While this makes for an easy job hinting a Latin font, it makes for a poor test case because Selawik doesn't vary vertical metrics with weight, thus doesn't vary CVTs, thus doesn't need a cvar. So, to make it more interesting, we added CVT-based stem hints to the lowercase only. This provided the need to vary CVTs and thus require a cvar. Note that this was only done for testing purposes. For variable fonts, Microsoft recommends the light hinting style using the `ResYDist()` command instead of a CVT-based stem hint. 
+This version of Selawik is primarily hinted with the light Latin hinting style Microsoft recommends for variable Latin
+fonts. The VTT Light Latin autohinter was used to create the first round of hints, which were then reviewed and touched
+up.
+
+This hinting style only uses CVTs for vertical metrics anchors (ascender, descender, cap height, x-height, and baseline)
+. While this makes for an easy job hinting a Latin font, it makes for a poor test case because Selawik doesn't vary
+vertical metrics with weight, thus doesn't vary CVTs, thus doesn't need a cvar. So, to make it more interesting, we
+added CVT-based stem hints to the lowercase only. This provided the need to vary CVTs and thus require a cvar. Note that
+this was only done for testing purposes. For variable fonts, Microsoft recommends the light hinting style using
+the `ResYDist()` command instead of a CVT-based stem hint. 

@@ -31,14 +31,14 @@ namespace neutrino {
 
 namespace neutrino::hal {
   template <typename Flag>
-  sdl::renderer::flags get_flag (const renderer::flags &flags, Flag f, sdl::renderer::flags x) {
+  sdl::renderer::flags get_flag (const renderer::flags& flags, Flag f, sdl::renderer::flags x) {
     if (flags & f) {
       return x;
     }
     return sdl::renderer::flags::NONE;
   }
 
-  renderer::renderer (const window &w, flags f)
+  renderer::renderer (const window& w, flags f)
       : m_pimpl (spimpl::make_unique_impl<detail::renderer_impl> (w.m_pimpl->sdl_window,
                                                                   get_flag (f, flags::SOFTWARE, sdl::renderer::flags::SOFTWARE),
                                                                   get_flag (f, flags::ACCELERATED, sdl::renderer::flags::ACCELERATED),
@@ -48,12 +48,12 @@ namespace neutrino::hal {
 
   }
 
-  renderer::renderer (const window &w)
+  renderer::renderer (const window& w)
       : m_pimpl (spimpl::make_unique_impl<detail::renderer_impl> (w.m_pimpl->sdl_window)) {
 
   }
 
-  renderer::renderer (const surface &s)
+  renderer::renderer (const surface& s)
       : m_pimpl (spimpl::make_unique_impl<detail::renderer_impl> (s.m_pimpl->surface)) {
 
   }
@@ -79,7 +79,7 @@ namespace neutrino::hal {
     return cast (m_pimpl->renderer.active_color ());
   }
 
-  void renderer::active_color (const color &c) {
+  void renderer::active_color (const color& c) {
     m_pimpl->renderer.active_color (cast (c));
   }
 
@@ -87,7 +87,7 @@ namespace neutrino::hal {
     return cast (m_pimpl->renderer.clip ());
   }
 
-  void renderer::clip (const math::rect &area) {
+  void renderer::clip (const math::rect& area) {
     m_pimpl->renderer.clip (cast (area));
   }
 
@@ -110,6 +110,7 @@ namespace neutrino::hal {
   std::pair<unsigned, unsigned> renderer::logical_size () const {
     return m_pimpl->renderer.logical_size ();
   }
+
   void renderer::logical_size (unsigned x, unsigned y) {
     m_pimpl->renderer.logical_size (x, y);
   }
@@ -126,7 +127,7 @@ namespace neutrino::hal {
     return cast (m_pimpl->renderer.viewport ());
   }
 
-  void renderer::viewport (const math::rect &area) {
+  void renderer::viewport (const math::rect& area) {
     m_pimpl->renderer.viewport (cast (area));
   }
 
@@ -134,11 +135,11 @@ namespace neutrino::hal {
     m_pimpl->renderer.disable_viewport ();
   }
 
-  void renderer::read_pixels (const pixel_format &fmt, void *dst, std::size_t pitch) const {
+  void renderer::read_pixels (const pixel_format& fmt, void* dst, std::size_t pitch) const {
     m_pimpl->renderer.read_pixels (sdl::pixel_format (fmt.value ()), dst, pitch);
   }
 
-  void renderer::read_pixels (const math::rect &area, const pixel_format &fmt, void *dst, std::size_t pitch) const {
+  void renderer::read_pixels (const math::rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const {
     m_pimpl->renderer.read_pixels (cast (area), sdl::pixel_format (fmt.value ()), dst, pitch);
   }
 
@@ -150,7 +151,7 @@ namespace neutrino::hal {
     return std::nullopt;
   }
 
-  void renderer::target (texture &t) {
+  void renderer::target (texture& t) {
     m_pimpl->renderer.target (t.m_pimpl->texture);
   }
 
@@ -166,24 +167,25 @@ namespace neutrino::hal {
     m_pimpl->renderer.clear ();
   }
 
-  void renderer::copy (const texture &t, flip flip_) {
+  void renderer::copy (const texture& t, flip flip_) {
     m_pimpl->renderer.copy (t.m_pimpl->texture, cast (flip_));
   }
 
-  void renderer::copy (const texture &t, const math::rect &srcrect, flip flip_) {
+  void renderer::copy (const texture& t, const math::rect& srcrect, flip flip_) {
     m_pimpl->renderer.copy (t.m_pimpl->texture, cast (srcrect), cast (flip_));
   }
 
-  void renderer::copy (const texture &t, const math::rect &srcrect, const math::rect &dstrect, flip flip_) {
+  void renderer::copy (const texture& t, const math::rect& srcrect, const math::rect& dstrect, flip flip_) {
     m_pimpl->renderer.copy (t.m_pimpl->texture, cast (srcrect), cast (dstrect), cast (flip_));
   }
-  void renderer::copy (const texture &t, const math::rect &srcrect, const math::rect &dstrect, double angle,
+
+  void renderer::copy (const texture& t, const math::rect& srcrect, const math::rect& dstrect, double angle,
                        flip flip_) {
     m_pimpl->renderer.copy (t.m_pimpl->texture, cast (srcrect), cast (dstrect), angle, cast (flip_));
   }
 
-  void renderer::copy (const texture &t, const math::rect &srcrect, const math::rect &dstrect, double angle,
-                       const math::point2d &pt, flip flip_) {
+  void renderer::copy (const texture& t, const math::rect& srcrect, const math::rect& dstrect, double angle,
+                       const math::point2d& pt, flip flip_) {
     m_pimpl->renderer.copy (t.m_pimpl->texture, cast (srcrect), cast (dstrect), angle, cast (pt), cast (flip_));
   }
 
@@ -191,21 +193,23 @@ namespace neutrino::hal {
     m_pimpl->renderer.draw (x1, y1, x2, y2);
   }
 
-  void renderer::line (const math::point2d &p1, const math::point2d &p2) {
+  void renderer::line (const math::point2d& p1, const math::point2d& p2) {
     m_pimpl->renderer.draw (cast (p1), cast (p2));
   }
 
   void renderer::point (int x, int y) {
     m_pimpl->renderer.draw (x, y);
   }
-  void renderer::point (const math::point2d &p) {
+
+  void renderer::point (const math::point2d& p) {
     m_pimpl->renderer.draw (cast (p));
   }
 
-  void renderer::rectangle (const math::rect &rec) {
+  void renderer::rectangle (const math::rect& rec) {
     m_pimpl->renderer.draw (cast (rec));
   }
-  void renderer::rectangle_filled (const math::rect &rec) {
+
+  void renderer::rectangle_filled (const math::rect& rec) {
     m_pimpl->renderer.draw_filled (cast (rec));
   }
 
@@ -217,10 +221,12 @@ namespace neutrino::hal {
 #pragma warning ( push )
 #pragma warning ( disable : 4244)
 #endif
+
   void renderer::hline (int x1, int x2, int y) {
     auto col = m_pimpl->renderer.active_color ();
     hlineRGBA (m_pimpl->renderer.handle (), x1, x2, y, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::vline (int x, int y1, int y2) {
     auto col = m_pimpl->renderer.active_color ();
@@ -228,122 +234,147 @@ namespace neutrino::hal {
   }
   // ---------------------------------------------------------------------------
 
-  void renderer::rounded_rectangle (const math::rect &r, int radius) {
+  void renderer::rounded_rectangle (const math::rect& r, int radius) {
     auto col = m_pimpl->renderer.active_color ();
     roundedRectangleRGBA (m_pimpl->renderer.handle (),
                           r.point[0], r.point[1],
                           r.point[0] + r.dims[0], r.point[1] + r.dims[1], radius, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::rounded_rectangle_filled (const math::rect &r, int radius) {
+  void renderer::rounded_rectangle_filled (const math::rect& r, int radius) {
     auto col = m_pimpl->renderer.active_color ();
     roundedBoxRGBA (m_pimpl->renderer.handle (),
                     r.point[0], r.point[1],
                     r.point[0] + r.dims[0], r.point[1] + r.dims[1], radius, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::aa_line (int x1, int y1, int x2, int y2) {
     auto col = m_pimpl->renderer.active_color ();
     aalineRGBA (m_pimpl->renderer.handle (), x1, y1, x2, y2, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::aa_line (const math::point2d &a, const math::point2d &b) {
+  void renderer::aa_line (const math::point2d& a, const math::point2d& b) {
     aa_line (a[0], a[1], b[0], b[1]);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::thick_line (int x1, int y1, int x2, int y2, int width) {
     auto col = m_pimpl->renderer.active_color ();
     thickLineRGBA (m_pimpl->renderer.handle (), x1, y1, x2, y2, width, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::thick_line (const math::point2d &a, const math::point2d &b, int width) {
+  void renderer::thick_line (const math::point2d& a, const math::point2d& b, int width) {
     thick_line (a[0], a[1], b[0], b[1], width);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::circle (int x, int y, int radius) {
     auto col = m_pimpl->renderer.active_color ();
     circleRGBA (m_pimpl->renderer.handle (), x, y, radius, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::circle (const math::point2d &p, int radius) {
+  void renderer::circle (const math::point2d& p, int radius) {
     circle (p[0], p[1], radius);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::aa_circle (int x, int y, int radius) {
     auto col = m_pimpl->renderer.active_color ();
     aacircleRGBA (m_pimpl->renderer.handle (), x, y, radius, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::aa_circle (const math::point2d &p, int radius) {
+  void renderer::aa_circle (const math::point2d& p, int radius) {
     aa_circle (p[0], p[1], radius);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::circle_filled (int x, int y, int radius) {
     auto col = m_pimpl->renderer.active_color ();
     filledCircleRGBA (m_pimpl->renderer.handle (), x, y, radius, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::circle_filled (const math::point2d &p, int radius) {
+  void renderer::circle_filled (const math::point2d& p, int radius) {
     circle_filled (p[0], p[1], radius);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::ellipse (int x, int y, int rx, int ry) {
     auto col = m_pimpl->renderer.active_color ();
     ellipseRGBA (m_pimpl->renderer.handle (), x, y, rx, ry, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::ellipse (const math::point2d &p, int rx, int ry) {
+  void renderer::ellipse (const math::point2d& p, int rx, int ry) {
     ellipse (p[0], p[1], rx, ry);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::aa_ellipse (int x, int y, int rx, int ry) {
     auto col = m_pimpl->renderer.active_color ();
     aaellipseRGBA (m_pimpl->renderer.handle (), x, y, rx, ry, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::aa_ellipse (const math::point2d &p, int rx, int ry) {
+  void renderer::aa_ellipse (const math::point2d& p, int rx, int ry) {
     aa_ellipse (p[0], p[1], rx, ry);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::ellipse_filled (int x, int y, int rx, int ry) {
     auto col = m_pimpl->renderer.active_color ();
     filledEllipseRGBA (m_pimpl->renderer.handle (), x, y, rx, ry, col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::ellipse_filled (const math::point2d &p, int rx, int ry) {
+  void renderer::ellipse_filled (const math::point2d& p, int rx, int ry) {
     ellipse_filled (p[0], p[1], rx, ry);
   }
+
   // ---------------------------------------------------------------------------
   static int deg (float radian) {
     return radian * 180 / M_PI;
   }
+
   // ---------------------------------------------------------------------------
   void renderer::arc (int x, int y, int rad, float start, float end) {
     auto col = m_pimpl->renderer.active_color ();
     arcRGBA (m_pimpl->renderer.handle (), x, y, rad, deg (start), deg (end), col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::arc (const math::point2d &p, int rad, float start_angle, float end_angle) {
+  void renderer::arc (const math::point2d& p, int rad, float start_angle, float end_angle) {
     arc (p[0], p[1], rad, start_angle, end_angle);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::pie (int x, int y, int rad, float start_angle, float end_angle) {
     auto col = m_pimpl->renderer.active_color ();
     pieRGBA (m_pimpl->renderer.handle (), x, y, rad, deg (start_angle), deg (end_angle), col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::pie (const math::point2d &p, int rad, float start_angle, float end_angle) {
+  void renderer::pie (const math::point2d& p, int rad, float start_angle, float end_angle) {
     pie (p[0], p[1], rad, start_angle, end_angle);
   }
+
   // ---------------------------------------------------------------------------
   void renderer::pie_filled (int x, int y, int rad, float start_angle, float end_angle) {
     auto col = m_pimpl->renderer.active_color ();
     filledPieRGBA (m_pimpl->renderer.handle (), x, y, rad, deg (start_angle), deg (end_angle), col.r, col.b, col.b, col.a);
   }
+
   // ---------------------------------------------------------------------------
-  void renderer::pie_filled (const math::point2d &p, int rad, float start_angle, float end_angle) {
+  void renderer::pie_filled (const math::point2d& p, int rad, float start_angle, float end_angle) {
     pie_filled (p[0], p[1], rad, start_angle, end_angle);
   }
+
 #if defined(_MSC_VER)
 #pragma warning ( pop )
 #endif

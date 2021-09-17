@@ -55,11 +55,11 @@ typedef struct Colr_ {
   FT_UShort num_base_glyphs;
   FT_UShort num_layers;
 
-  FT_Byte *base_glyphs;
-  FT_Byte *layers;
+  FT_Byte* base_glyphs;
+  FT_Byte* layers;
 
   /* The memory which backs up the `COLR' table. */
-  void *table;
+  void* table;
   FT_ULong table_size;
 
 } Colr;
@@ -80,10 +80,10 @@ tt_face_load_colr (TT_Face face,
   FT_Error error;
   FT_Memory memory = face->root.memory;
 
-  FT_Byte *table = NULL;
-  FT_Byte *p = NULL;
+  FT_Byte* table = NULL;
+  FT_Byte* p = NULL;
 
-  Colr *colr = NULL;
+  Colr* colr = NULL;
 
   FT_ULong base_glyph_offset, layer_offset;
   FT_ULong table_size;
@@ -129,8 +129,8 @@ tt_face_load_colr (TT_Face face,
   if (colr->num_layers * LAYER_SIZE > table_size - layer_offset)
     goto InvalidTable;
 
-  colr->base_glyphs = (FT_Byte *) (table + base_glyph_offset);
-  colr->layers = (FT_Byte *) (table + layer_offset);
+  colr->base_glyphs = (FT_Byte*) (table + base_glyph_offset);
+  colr->layers = (FT_Byte*) (table + layer_offset);
   colr->table = table;
   colr->table_size = table_size;
 
@@ -153,7 +153,7 @@ tt_face_free_colr (TT_Face face) {
   FT_Stream stream = face->root.stream;
   FT_Memory memory = face->root.memory;
 
-  Colr *colr = (Colr *) face->colr;
+  Colr* colr = (Colr*) face->colr;
 
   if (colr) {
     FT_FRAME_RELEASE(colr->table);
@@ -162,16 +162,16 @@ tt_face_free_colr (TT_Face face) {
 }
 
 static FT_Bool
-find_base_glyph_record (FT_Byte *base_glyph_begin,
+find_base_glyph_record (FT_Byte* base_glyph_begin,
                         FT_Int num_base_glyph,
                         FT_UInt glyph_id,
-                        BaseGlyphRecord *record) {
+                        BaseGlyphRecord* record) {
   FT_Int min = 0;
   FT_Int max = num_base_glyph - 1;
 
   while (min <= max) {
     FT_Int mid = min + (max - min) / 2;
-    FT_Byte *p = base_glyph_begin + mid * BASE_GLYPH_SIZE;
+    FT_Byte* p = base_glyph_begin + mid * BASE_GLYPH_SIZE;
 
     FT_UShort gid = FT_NEXT_USHORT(p);
 
@@ -194,10 +194,10 @@ find_base_glyph_record (FT_Byte *base_glyph_begin,
 FT_LOCAL_DEF(FT_Bool)
 tt_face_get_colr_layer (TT_Face face,
                         FT_UInt base_glyph,
-                        FT_UInt *aglyph_index,
-                        FT_UInt *acolor_index,
-                        FT_LayerIterator *iterator) {
-  Colr *colr = (Colr *) face->colr;
+                        FT_UInt* aglyph_index,
+                        FT_UInt* acolor_index,
+                        FT_LayerIterator* iterator) {
+  Colr* colr = (Colr*) face->colr;
   BaseGlyphRecord glyph_record;
 
   if (!colr)
@@ -255,8 +255,8 @@ tt_face_colr_blend_layer (TT_Face face,
   FT_Byte b, g, r, alpha;
 
   FT_ULong size;
-  FT_Byte *src;
-  FT_Byte *dst;
+  FT_Byte* src;
+  FT_Byte* dst;
 
   if (!dstSlot->bitmap.buffer) {
     /* Initialize destination of color bitmap */
@@ -300,9 +300,9 @@ tt_face_colr_blend_layer (TT_Face face,
       FT_UInt rows = (FT_UInt) (y_max - y_min);
       FT_UInt pitch = width * 4;
 
-      FT_Byte *buf = NULL;
-      FT_Byte *p;
-      FT_Byte *q;
+      FT_Byte* buf = NULL;
+      FT_Byte* p;
+      FT_Byte* q;
 
       size = rows * pitch;
       if (FT_ALLOC(buf, size))

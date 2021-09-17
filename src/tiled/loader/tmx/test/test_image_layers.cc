@@ -9,9 +9,9 @@
 
 using namespace neutrino::tiled::tmx;
 
-static void test_image_layers (const map &the_map) {
+static void test_image_layers (const map& the_map) {
   REQUIRE(the_map.layers ().size () == 2);
-  const auto *l = std::get_if<image_layer> (&the_map.layers ()[0]);
+  const auto* l = std::get_if<image_layer> (&the_map.layers ()[0]);
   REQUIRE(l);
   REQUIRE(l->name () == "Image Layer 1");
   REQUIRE(!l->get_image ());

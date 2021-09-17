@@ -21,6 +21,7 @@
 #ifdef PNG_WRITE_SUPPORTED
 
 #ifdef PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED
+
 /* Write out all the unknown chunks for the current given location */
 static void
 write_unknown_chunks (png_structrp png_ptr, png_const_inforp info_ptr,
@@ -68,6 +69,7 @@ write_unknown_chunks (png_structrp png_ptr, png_const_inforp info_ptr,
       }
   }
 }
+
 #endif /* WRITE_UNKNOWN_CHUNKS */
 
 /* Writes all the PNG information.  This is the suggested way to use the
@@ -444,8 +446,9 @@ png_write_end (png_structrp png_ptr, png_inforp info_ptr) {
 }
 
 #ifdef PNG_CONVERT_tIME_SUPPORTED
+
 void PNGAPI
-png_convert_from_struct_tm (png_timep ptime, const struct tm *ttime) {
+png_convert_from_struct_tm (png_timep ptime, const struct tm* ttime) {
   png_debug(1, "in png_convert_from_struct_tm");
 
   ptime->year = (png_uint_16) (1900 + ttime->tm_year);
@@ -458,13 +461,14 @@ png_convert_from_struct_tm (png_timep ptime, const struct tm *ttime) {
 
 void PNGAPI
 png_convert_from_time_t (png_timep ptime, time_t ttime) {
-  struct tm *tbuf;
+  struct tm* tbuf;
 
   png_debug(1, "in png_convert_from_time_t");
 
   tbuf = gmtime (&ttime);
   png_convert_from_struct_tm (ptime, tbuf);
 }
+
 #endif
 
 /* Initialize png_ptr structure, and allocate any memory needed */
@@ -594,6 +598,7 @@ png_write_image (png_structrp png_ptr, png_bytepp image) {
 }
 
 #ifdef PNG_MNG_FEATURES_SUPPORTED
+
 /* Performs intrapixel differencing  */
 static void
 png_do_write_intrapixel (png_row_infop row_info, png_bytep row) {
@@ -650,6 +655,7 @@ png_do_write_intrapixel (png_row_infop row_info, png_bytep row) {
 #endif /* WRITE_16BIT */
   }
 }
+
 #endif /* MNG_FEATURES */
 
 /* Called by user to write a row of image data */
@@ -848,6 +854,7 @@ png_write_row (png_structrp png_ptr, png_const_bytep row) {
 }
 
 #ifdef PNG_WRITE_FLUSH_SUPPORTED
+
 /* Set the automatic flush interval or 0 to turn flushing off */
 void PNGAPI
 png_set_flush (png_structrp png_ptr, int nrows) {
@@ -875,6 +882,7 @@ png_write_flush (png_structrp png_ptr) {
   png_ptr->flush_rows = 0;
   png_flush (png_ptr);
 }
+
 #endif /* WRITE_FLUSH */
 
 /* Free any memory used in png_ptr struct without freeing the struct itself. */
@@ -1066,6 +1074,7 @@ png_set_filter (png_structrp png_ptr, int method, int filters) {
 #ifdef PNG_WRITE_WEIGHTED_FILTER_SUPPORTED /* DEPRECATED */
 /* Provide floating and fixed point APIs */
 #ifdef PNG_FLOATING_POINT_SUPPORTED
+
 void PNGAPI
 png_set_filter_heuristics (png_structrp png_ptr, int heuristic_method,
                            int num_weights, png_const_doublep filter_weights,
@@ -1076,9 +1085,11 @@ png_set_filter_heuristics (png_structrp png_ptr, int heuristic_method,
   PNG_UNUSED(filter_weights)
   PNG_UNUSED(filter_costs)
 }
+
 #endif /* FLOATING_POINT */
 
 #ifdef PNG_FIXED_POINT_SUPPORTED
+
 void PNGAPI
 png_set_filter_heuristics_fixed (png_structrp png_ptr, int heuristic_method,
                                  int num_weights, png_const_fixed_point_p filter_weights,
@@ -1089,10 +1100,12 @@ png_set_filter_heuristics_fixed (png_structrp png_ptr, int heuristic_method,
   PNG_UNUSED(filter_weights)
   PNG_UNUSED(filter_costs)
 }
+
 #endif /* FIXED_POINT */
 #endif /* WRITE_WEIGHTED_FILTER */
 
 #ifdef PNG_WRITE_CUSTOMIZE_COMPRESSION_SUPPORTED
+
 void PNGAPI
 png_set_compression_level (png_structrp png_ptr, int level) {
   png_debug(1, "in png_set_compression_level");
@@ -1168,10 +1181,12 @@ png_set_compression_method (png_structrp png_ptr, int method) {
 
   png_ptr->zlib_method = method;
 }
+
 #endif /* WRITE_CUSTOMIZE_COMPRESSION */
 
 /* The following were added to libpng-1.5.4 */
 #ifdef PNG_WRITE_CUSTOMIZE_ZTXT_COMPRESSION_SUPPORTED
+
 void PNGAPI
 png_set_text_compression_level (png_structrp png_ptr, int level) {
   png_debug(1, "in png_set_text_compression_level");
@@ -1235,7 +1250,9 @@ png_set_text_compression_method (png_structrp png_ptr, int method) {
 
   png_ptr->zlib_text_method = method;
 }
+
 #endif /* WRITE_CUSTOMIZE_ZTXT_COMPRESSION */
+
 /* end of API added to libpng-1.5.4 */
 
 void PNGAPI
@@ -1247,6 +1264,7 @@ png_set_write_status_fn (png_structrp png_ptr, png_write_status_ptr write_row_fn
 }
 
 #ifdef PNG_WRITE_USER_TRANSFORM_SUPPORTED
+
 void PNGAPI
 png_set_write_user_transform_fn (png_structrp png_ptr, png_user_transform_ptr
 write_user_transform_fn) {
@@ -1258,9 +1276,11 @@ write_user_transform_fn) {
   png_ptr->transformations |= PNG_USER_TRANSFORM;
   png_ptr->write_user_transform_fn = write_user_transform_fn;
 }
+
 #endif
 
 #ifdef PNG_INFO_IMAGE_SUPPORTED
+
 void PNGAPI
 png_write_png (png_structrp png_ptr, png_inforp info_ptr,
                int transforms, voidp params) {
@@ -1377,9 +1397,11 @@ png_write_png (png_structrp png_ptr, png_inforp info_ptr,
 
   PNG_UNUSED(params)
 }
+
 #endif
 
 #ifdef PNG_SIMPLIFIED_WRITE_SUPPORTED
+
 /* Initialize the write structure - general purpose utility. */
 static int
 png_image_write_init (png_imagep image) {
@@ -1438,7 +1460,7 @@ typedef struct {
  */
 static int
 png_write_image_16bit (png_voidp argument) {
-  png_image_write_control *display = png_voidcast(png_image_write_control*,
+  png_image_write_control* display = png_voidcast(png_image_write_control*,
                                                   argument);
   png_imagep image = display->image;
   png_structrp png_ptr = image->opaque->png_ptr;
@@ -1588,7 +1610,7 @@ png_unpremultiply (png_uint_32 component, png_uint_32 alpha,
 
 static int
 png_write_image_8bit (png_voidp argument) {
-  png_image_write_control *display = png_voidcast(png_image_write_control*,
+  png_image_write_control* display = png_voidcast(png_image_write_control*,
                                                   argument);
   png_imagep image = display->image;
   png_structrp png_ptr = image->opaque->png_ptr;
@@ -1676,9 +1698,9 @@ png_write_image_8bit (png_voidp argument) {
 }
 
 static void
-png_image_set_PLTE (png_image_write_control *display) {
+png_image_set_PLTE (png_image_write_control* display) {
   png_imagep image = display->image;
-  const void *cmap = display->colormap;
+  const void* cmap = display->colormap;
   int entries = image->colormap_entries > 256 ? 256 :
                 (int) image->colormap_entries;
 
@@ -1819,7 +1841,7 @@ png_image_set_PLTE (png_image_write_control *display) {
 
 static int
 png_image_write_main (png_voidp argument) {
-  png_image_write_control *display = png_voidcast(png_image_write_control*,
+  png_image_write_control* display = png_voidcast(png_image_write_control*,
                                                   argument);
   png_imagep image = display->image;
   png_structrp png_ptr = image->opaque->png_ptr;
@@ -2041,7 +2063,7 @@ png_image_write_main (png_voidp argument) {
 
 static void (PNGCBAPI
 image_memory_write) (png_structp png_ptr, png_bytep/*const*/ data, size_t size) {
-  png_image_write_control *display = png_voidcast(png_image_write_control*,
+  png_image_write_control* display = png_voidcast(png_image_write_control*,
                                                   png_ptr->io_ptr/*backdoor: png_get_io_ptr(png_ptr)*/);
   png_alloc_size_t ob = display->output_bytes;
 
@@ -2068,7 +2090,7 @@ image_memory_flush) (png_structp png_ptr) {
 
 static int
 png_image_write_memory (png_voidp argument) {
-  png_image_write_control *display = png_voidcast(png_image_write_control*,
+  png_image_write_control* display = png_voidcast(png_image_write_control*,
                                                   argument);
 
   /* The rest of the memory-specific init and write_main in an error protected
@@ -2082,9 +2104,9 @@ png_image_write_memory (png_voidp argument) {
 }
 
 int PNGAPI
-png_image_write_to_memory (png_imagep image, void *memory,
-                           png_alloc_size_t *PNG_RESTRICT memory_bytes, int convert_to_8bit,
-                           const void *buffer, png_int_32 row_stride, const void *colormap) {
+png_image_write_to_memory (png_imagep image, void* memory,
+                           png_alloc_size_t* PNG_RESTRICT memory_bytes, int convert_to_8bit,
+                           const void* buffer, png_int_32 row_stride, const void* colormap) {
   /* Write the image to the given buffer, or count the bytes if it is NULL */
   if (image != NULL && image->version == PNG_IMAGE_VERSION) {
     if (memory_bytes != NULL && buffer != NULL) {
@@ -2143,9 +2165,10 @@ png_image_write_to_memory (png_imagep image, void *memory,
 }
 
 #ifdef PNG_SIMPLIFIED_WRITE_STDIO_SUPPORTED
+
 int PNGAPI
-png_image_write_to_stdio (png_imagep image, FILE *file, int convert_to_8bit,
-                          const void *buffer, png_int_32 row_stride, const void *colormap) {
+png_image_write_to_stdio (png_imagep image, FILE* file, int convert_to_8bit,
+                          const void* buffer, png_int_32 row_stride, const void* colormap) {
   /* Write the image to the given (FILE*). */
   if (image != NULL && image->version == PNG_IMAGE_VERSION) {
     if (file != NULL && buffer != NULL) {
@@ -2189,13 +2212,13 @@ png_image_write_to_stdio (png_imagep image, FILE *file, int convert_to_8bit,
 }
 
 int PNGAPI
-png_image_write_to_file (png_imagep image, const char *file_name,
-                         int convert_to_8bit, const void *buffer, png_int_32 row_stride,
-                         const void *colormap) {
+png_image_write_to_file (png_imagep image, const char* file_name,
+                         int convert_to_8bit, const void* buffer, png_int_32 row_stride,
+                         const void* colormap) {
   /* Write the image to the named file. */
   if (image != NULL && image->version == PNG_IMAGE_VERSION) {
     if (file_name != NULL && buffer != NULL) {
-      FILE *fp = fopen (file_name, "wb");
+      FILE* fp = fopen (file_name, "wb");
 
       if (fp != NULL) {
         if (png_image_write_to_stdio (image, fp, convert_to_8bit, buffer,
@@ -2246,6 +2269,7 @@ png_image_write_to_file (png_imagep image, const char *file_name,
   else
     return 0;
 }
+
 #endif /* SIMPLIFIED_WRITE_STDIO */
 #endif /* SIMPLIFIED_WRITE */
 #endif /* WRITE */

@@ -255,11 +255,11 @@ typedef struct FT_Bitmap_ {
   unsigned int rows;
   unsigned int width;
   int pitch;
-  unsigned char *buffer;
+  unsigned char* buffer;
   unsigned short num_grays;
   unsigned char pixel_mode;
   unsigned char palette_mode;
-  void *palette;
+  void* palette;
 
 } FT_Bitmap;
 
@@ -330,9 +330,9 @@ typedef struct FT_Outline_ {
   short n_contours;      /* number of contours in glyph        */
   short n_points;        /* number of points in the glyph      */
 
-  FT_Vector *points;          /* the outline's points               */
-  char *tags;            /* the points flags                   */
-  short *contours;        /* the contour end points             */
+  FT_Vector* points;          /* the outline's points               */
+  char* tags;            /* the points flags                   */
+  short* contours;        /* the contour end points             */
 
   int flags;           /* outline masks                      */
 
@@ -488,8 +488,8 @@ typedef struct FT_Outline_ {
  *   Error code.  0~means success.
  */
 typedef int
-(*FT_Outline_MoveToFunc) (const FT_Vector *to,
-                          void *user);
+(* FT_Outline_MoveToFunc) (const FT_Vector* to,
+                           void* user);
 
 #define FT_Outline_MoveTo_Func  FT_Outline_MoveToFunc
 
@@ -516,8 +516,8 @@ typedef int
  *   Error code.  0~means success.
  */
 typedef int
-(*FT_Outline_LineToFunc) (const FT_Vector *to,
-                          void *user);
+(* FT_Outline_LineToFunc) (const FT_Vector* to,
+                           void* user);
 
 #define FT_Outline_LineTo_Func  FT_Outline_LineToFunc
 
@@ -549,9 +549,9 @@ typedef int
  *   Error code.  0~means success.
  */
 typedef int
-(*FT_Outline_ConicToFunc) (const FT_Vector *control,
-                           const FT_Vector *to,
-                           void *user);
+(* FT_Outline_ConicToFunc) (const FT_Vector* control,
+                            const FT_Vector* to,
+                            void* user);
 
 #define FT_Outline_ConicTo_Func  FT_Outline_ConicToFunc
 
@@ -584,10 +584,10 @@ typedef int
  *   Error code.  0~means success.
  */
 typedef int
-(*FT_Outline_CubicToFunc) (const FT_Vector *control1,
-                           const FT_Vector *control2,
-                           const FT_Vector *to,
-                           void *user);
+(* FT_Outline_CubicToFunc) (const FT_Vector* control1,
+                            const FT_Vector* control2,
+                            const FT_Vector* to,
+                            void* user);
 
 #define FT_Outline_CubicTo_Func  FT_Outline_CubicToFunc
 
@@ -801,7 +801,7 @@ typedef enum FT_Glyph_Format_ {
  *   An opaque handle (pointer) to a raster object.  Each object can be
  *   used independently to convert an outline into a bitmap or pixmap.
  */
-typedef struct FT_RasterRec_ *FT_Raster;
+typedef struct FT_RasterRec_* FT_Raster;
 
 /**************************************************************************
  *
@@ -868,10 +868,10 @@ typedef struct FT_Span_ {
  *   background bitmap, and even perform translucency.
  */
 typedef void
-(*FT_SpanFunc) (int y,
-                int count,
-                const FT_Span *spans,
-                void *user);
+(* FT_SpanFunc) (int y,
+                 int count,
+                 const FT_Span* spans,
+                 void* user);
 
 #define FT_Raster_Span_Func  FT_SpanFunc
 
@@ -884,9 +884,9 @@ typedef void
  *   Deprecated, unimplemented.
  */
 typedef int
-(*FT_Raster_BitTest_Func) (int y,
-                           int x,
-                           void *user);
+(* FT_Raster_BitTest_Func) (int y,
+                            int x,
+                            void* user);
 
 /**************************************************************************
  *
@@ -897,9 +897,9 @@ typedef int
  *   Deprecated, unimplemented.
  */
 typedef void
-(*FT_Raster_BitSet_Func) (int y,
-                          int x,
-                          void *user);
+(* FT_Raster_BitSet_Func) (int y,
+                           int x,
+                           void* user);
 
 
 /**************************************************************************
@@ -997,14 +997,14 @@ typedef void
  *   Not supported by the monochrome rasterizer.
  */
 typedef struct FT_Raster_Params_ {
-  const FT_Bitmap *target;
-  const void *source;
+  const FT_Bitmap* target;
+  const void* source;
   int flags;
   FT_SpanFunc gray_spans;
   FT_SpanFunc black_spans;  /* unused */
   FT_Raster_BitTest_Func bit_test;     /* unused */
   FT_Raster_BitSet_Func bit_set;      /* unused */
-  void *user;
+  void* user;
   FT_BBox clip_box;
 
 } FT_Raster_Params;
@@ -1036,8 +1036,8 @@ typedef struct FT_Raster_Params_ {
  *   given raster implementation.
  */
 typedef int
-(*FT_Raster_NewFunc) (void *memory,
-                      FT_Raster *raster);
+(* FT_Raster_NewFunc) (void* memory,
+                       FT_Raster* raster);
 
 #define FT_Raster_New_Func  FT_Raster_NewFunc
 
@@ -1054,7 +1054,7 @@ typedef int
  *     A handle to the raster object.
  */
 typedef void
-(*FT_Raster_DoneFunc) (FT_Raster raster);
+(* FT_Raster_DoneFunc) (FT_Raster raster);
 
 #define FT_Raster_Done_Func  FT_Raster_DoneFunc
 
@@ -1087,9 +1087,9 @@ typedef void
  *   constructor).
  */
 typedef void
-(*FT_Raster_ResetFunc) (FT_Raster raster,
-                        unsigned char *pool_base,
-                        unsigned long pool_size);
+(* FT_Raster_ResetFunc) (FT_Raster raster,
+                         unsigned char* pool_base,
+                         unsigned long pool_size);
 
 #define FT_Raster_Reset_Func  FT_Raster_ResetFunc
 
@@ -1114,9 +1114,9 @@ typedef void
  *     A pointer to the new mode/property to use.
  */
 typedef int
-(*FT_Raster_SetModeFunc) (FT_Raster raster,
-                          unsigned long mode,
-                          void *args);
+(* FT_Raster_SetModeFunc) (FT_Raster raster,
+                           unsigned long mode,
+                           void* args);
 
 #define FT_Raster_Set_Mode_Func  FT_Raster_SetModeFunc
 
@@ -1151,8 +1151,8 @@ typedef int
  *   support direct composition.
  */
 typedef int
-(*FT_Raster_RenderFunc) (FT_Raster raster,
-                         const FT_Raster_Params *params);
+(* FT_Raster_RenderFunc) (FT_Raster raster,
+                          const FT_Raster_Params* params);
 
 #define FT_Raster_Render_Func  FT_Raster_RenderFunc
 

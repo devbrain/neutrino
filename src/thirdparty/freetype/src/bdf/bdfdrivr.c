@@ -53,9 +53,9 @@ THE SOFTWARE.
 typedef struct BDF_CMapRec_ {
   FT_CMapRec cmap;
   FT_ULong num_encodings; /* ftobjs.h: FT_CMap->clazz->size */
-  BDF_encoding_el *encodings;
+  BDF_encoding_el* encodings;
 
-} BDF_CMapRec, *BDF_CMap;
+} BDF_CMapRec, * BDF_CMap;
 
 FT_CALLBACK_DEF(FT_Error)
 bdf_cmap_init (FT_CMap bdfcmap,
@@ -82,7 +82,7 @@ FT_CALLBACK_DEF(FT_UInt)
 bdf_cmap_char_index (FT_CMap bdfcmap,
                      FT_UInt32 charcode) {
   BDF_CMap cmap = (BDF_CMap) bdfcmap;
-  BDF_encoding_el *encodings = cmap->encodings;
+  BDF_encoding_el* encodings = cmap->encodings;
   FT_ULong min, max, mid; /* num_encodings */
   FT_UShort result = 0; /* encodings->glyph */
 
@@ -120,9 +120,9 @@ bdf_cmap_char_index (FT_CMap bdfcmap,
 
 FT_CALLBACK_DEF(FT_UInt)
 bdf_cmap_char_next (FT_CMap bdfcmap,
-                    FT_UInt32 *acharcode) {
+                    FT_UInt32* acharcode) {
   BDF_CMap cmap = (BDF_CMap) bdfcmap;
-  BDF_encoding_el *encodings = cmap->encodings;
+  BDF_encoding_el* encodings = cmap->encodings;
   FT_ULong min, max, mid; /* num_encodings */
   FT_UShort result = 0;  /* encodings->glyph */
   FT_ULong charcode = *acharcode + 1;
@@ -190,10 +190,10 @@ bdf_interpret_style (BDF_Face bdf) {
   FT_Error error = FT_Err_Ok;
   FT_Face face = FT_FACE(bdf);
   FT_Memory memory = face->memory;
-  bdf_font_t *font = bdf->bdffont;
-  bdf_property_t *prop;
+  bdf_font_t* font = bdf->bdffont;
+  bdf_property_t* prop;
 
-  const char *strings[4] = {NULL, NULL, NULL, NULL};
+  const char* strings[4] = {NULL, NULL, NULL, NULL};
   size_t lengths[4], nn, len;
 
   face->style_flags = 0;
@@ -221,13 +221,13 @@ bdf_interpret_style (BDF_Face bdf) {
   if (prop && prop->format == BDF_ATOM &&
       prop->value.atom && *(prop->value.atom) &&
       !(*(prop->value.atom) == 'N' || *(prop->value.atom) == 'n'))
-    strings[3] = (const char *) (prop->value.atom);
+    strings[3] = (const char*) (prop->value.atom);
 
   prop = bdf_get_font_property (font, "ADD_STYLE_NAME");
   if (prop && prop->format == BDF_ATOM &&
       prop->value.atom && *(prop->value.atom) &&
       !(*(prop->value.atom) == 'N' || *(prop->value.atom) == 'n'))
-    strings[0] = (const char *) (prop->value.atom);
+    strings[0] = (const char*) (prop->value.atom);
 
   for (len = 0, nn = 0; nn < 4; nn++) {
     lengths[nn] = 0;
@@ -244,7 +244,7 @@ bdf_interpret_style (BDF_Face bdf) {
   }
 
   {
-    char *s;
+    char* s;
 
     if (FT_ALLOC(face->style_name, len))
       return error;
@@ -252,7 +252,7 @@ bdf_interpret_style (BDF_Face bdf) {
     s = face->style_name;
 
     for (nn = 0; nn < 4; nn++) {
-      const char *src = strings[nn];
+      const char* src = strings[nn];
 
       len = lengths[nn];
 
@@ -313,12 +313,12 @@ BDF_Face_Init (FT_Stream stream,
                FT_Face bdfface,        /* BDF_Face */
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params) {
+               FT_Parameter* params) {
   FT_Error error = FT_Err_Ok;
   BDF_Face face = (BDF_Face) bdfface;
   FT_Memory memory = FT_FACE_MEMORY(face);
 
-  bdf_font_t *font = NULL;
+  bdf_font_t* font = NULL;
   bdf_options_t options;
 
   FT_UNUSED(num_params);
@@ -358,7 +358,7 @@ BDF_Face_Init (FT_Stream stream,
   }
 
   {
-    bdf_property_t *prop = NULL;
+    bdf_property_t* prop = NULL;
 
     FT_TRACE4(("  number of glyphs: allocated %d (used %d)\n",
         font->glyphs_size,
@@ -403,7 +403,7 @@ BDF_Face_Init (FT_Stream stream,
       goto Exit;
 
     {
-      FT_Bitmap_Size *bsize = bdfface->available_sizes;
+      FT_Bitmap_Size* bsize = bdfface->available_sizes;
       FT_Short resolution_x = 0, resolution_y = 0;
       long value;
 
@@ -543,7 +543,7 @@ BDF_Face_Init (FT_Stream stream,
 
     /* encoding table */
     {
-      bdf_glyph_t *cur = font->glyphs;
+      bdf_glyph_t* cur = font->glyphs;
       unsigned long n;
 
       if (FT_NEW_ARRAY(face->en_table, font->glyphs_size))
@@ -567,7 +567,7 @@ BDF_Face_Init (FT_Stream stream,
 
     /* charmaps */
     {
-      bdf_property_t *charset_registry, *charset_encoding;
+      bdf_property_t* charset_registry, * charset_encoding;
       FT_Bool unicode_charmap = 0;
 
       charset_registry =
@@ -579,7 +579,7 @@ BDF_Face_Init (FT_Stream stream,
             charset_encoding->format == BDF_ATOM &&
             charset_registry->value.atom &&
             charset_encoding->value.atom) {
-          const char *s;
+          const char* s;
 
           if (FT_STRDUP(face->charset_encoding,
                         charset_encoding->value.atom) ||
@@ -656,7 +656,7 @@ BDF_Face_Init (FT_Stream stream,
 FT_CALLBACK_DEF(FT_Error)
 BDF_Size_Select (FT_Size size,
                  FT_ULong strike_index) {
-  bdf_font_t *bdffont = ((BDF_Face) size->face)->bdffont;
+  bdf_font_t* bdffont = ((BDF_Face) size->face)->bdffont;
 
   FT_Select_Metrics (size->face, strike_index);
 
@@ -671,8 +671,8 @@ FT_CALLBACK_DEF(FT_Error)
 BDF_Size_Request (FT_Size size,
                   FT_Size_Request req) {
   FT_Face face = size->face;
-  FT_Bitmap_Size *bsize = face->available_sizes;
-  bdf_font_t *bdffont = ((BDF_Face) face)->bdffont;
+  FT_Bitmap_Size* bsize = face->available_sizes;
+  bdf_font_t* bdffont = ((BDF_Face) face)->bdffont;
   FT_Error error = FT_ERR(Invalid_Pixel_Size);
   FT_Long height;
 
@@ -710,7 +710,7 @@ BDF_Glyph_Load (FT_GlyphSlot slot,
   BDF_Face bdf = (BDF_Face) FT_SIZE_FACE(size);
   FT_Face face = FT_FACE(bdf);
   FT_Error error = FT_Err_Ok;
-  FT_Bitmap *bitmap = &slot->bitmap;
+  FT_Bitmap* bitmap = &slot->bitmap;
   bdf_glyph_t glyph;
   int bpp = bdf->bdffont->bpp;
 
@@ -793,9 +793,9 @@ BDF_Glyph_Load (FT_GlyphSlot slot,
 
 static FT_Error
 bdf_get_bdf_property (BDF_Face face,
-                      const char *prop_name,
-                      BDF_PropertyRec *aproperty) {
-  bdf_property_t *prop;
+                      const char* prop_name,
+                      BDF_PropertyRec* aproperty) {
+  bdf_property_t* prop;
 
   FT_ASSERT(face && face->bdffont);
 
@@ -837,8 +837,8 @@ bdf_get_bdf_property (BDF_Face face,
 
 static FT_Error
 bdf_get_charset_id (BDF_Face face,
-                    const char **acharset_encoding,
-                    const char **acharset_registry) {
+                    const char** acharset_encoding,
+                    const char** acharset_registry) {
   *acharset_encoding = face->charset_encoding;
   *acharset_registry = face->charset_registry;
 
@@ -866,7 +866,7 @@ static const FT_ServiceDescRec bdf_services[] =
 
 FT_CALLBACK_DEF(FT_Module_Interface)
 bdf_driver_requester (FT_Module module,
-                      const char *name) {
+                      const char* name) {
   FT_UNUSED(module);
 
   return ft_service_list_lookup (bdf_services, name);

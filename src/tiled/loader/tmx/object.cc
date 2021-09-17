@@ -13,17 +13,17 @@
 
 namespace neutrino::tiled::tmx {
   namespace {
-    std::pair<float, bool> cnv (const std::string &x) {
+    std::pair<float, bool> cnv (const std::string& x) {
       auto v = utils::trim (x);
       double r = 0;
       bool status = utils::number_parser::try_parse_float (v, r);
       return {(float) r, status};
     }
 
-    std::vector<math::point2f> parse_points (const std::string &points) {
+    std::vector<math::point2f> parse_points (const std::string& points) {
       std::vector<math::point2f> res;
       utils::string_tokenizer grp (points, " ", utils::string_tokenizer::TOK_IGNORE_EMPTY);
-      for (const auto &g : grp) {
+      for (const auto& g : grp) {
         utils::string_tokenizer p (g, ",", utils::string_tokenizer::TOK_IGNORE_EMPTY);
         ENFORCE(p.count () == 2);
         auto[x, s1] = cnv (p[0]);
@@ -35,8 +35,8 @@ namespace neutrino::tiled::tmx {
       return res;
     }
 
-    std::vector<math::point2f> parse_points (const reader &elt, const char *name = nullptr) {
-      if (const auto *json_rdr = dynamic_cast<const json_reader *>(&elt); json_rdr) {
+    std::vector<math::point2f> parse_points (const reader& elt, const char* name = nullptr) {
+      if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
         return json_rdr->parse_points (name);
       }
       else {
@@ -46,14 +46,14 @@ namespace neutrino::tiled::tmx {
     }
   }
 
-  static bool get_object_discriminator (const reader &elt, const char *name) {
+  static bool get_object_discriminator (const reader& elt, const char* name) {
     if (reader::is_json (elt)) {
       return elt.get_bool_attribute (name, false);
     }
     return elt.has_child (name);
   }
 
-  object_t parse_object (const reader &elt) {
+  object_t parse_object (const reader& elt) {
 
     try {
       auto id = elt.get_uint_attribute ("id", (unsigned int) -1);
@@ -77,7 +77,7 @@ namespace neutrino::tiled::tmx {
         component::parse (obj, elt);
 
         if (!reader::is_json (elt)) {
-          elt.parse_one_element ("polygon", [&obj] (const reader &e) {
+          elt.parse_one_element ("polygon", [&obj] (const reader& e) {
             obj.points (parse_points (e));
           });
         }
@@ -93,7 +93,7 @@ namespace neutrino::tiled::tmx {
 
         component::parse (obj, elt);
         if (!reader::is_json (elt)) {
-          elt.parse_one_element ("polyline", [&obj] (const reader &e) {
+          elt.parse_one_element ("polyline", [&obj] (const reader& e) {
             obj.points (parse_points (e));
           });
         }
@@ -119,7 +119,7 @@ namespace neutrino::tiled::tmx {
       if (elt.has_child ("text")) {
         text obj (atts);
         component::parse (obj, elt);
-        elt.parse_one_element ("text", [&obj] (const reader &elt) {
+        elt.parse_one_element ("text", [&obj] (const reader& elt) {
           obj.parse (elt);
         });
         return obj;
@@ -129,14 +129,14 @@ namespace neutrino::tiled::tmx {
       component::parse (obj, elt);
       return obj;
     }
-    catch (exception &e) {
+    catch (exception& e) {
       auto id = elt.get_string_attribute ("id", "<missing>");
       auto name = elt.get_string_attribute ("name", "<unknown>");
       RAISE_EX_WITH_CAUSE(std::move (e), "Failed to parse object [", name, "], id [", id, "]");
     }
   }
 
-  void text::parse (const reader &elt) {
+  void text::parse (const reader& elt) {
     try {
       m_font_family = elt.get_string_attribute ("fontfamily", "sans-serif");
       m_pixel_size = elt.get_int_attribute ("pixelsize", 16);
@@ -162,17 +162,17 @@ namespace neutrino::tiled::tmx {
           {"bottom", text::valign_t::BOTTOM}
       };
       m_valign = elt.parse_enum ("valign", text::valign_t::TOP, vmp);
-      if (const auto *xml_rdr = dynamic_cast<const xml_reader *>(&elt); xml_rdr) {
+      if (const auto* xml_rdr = dynamic_cast<const xml_reader*>(&elt); xml_rdr) {
         m_data = xml_rdr->get_text ();
       }
-      else if (const auto *json_rdr = dynamic_cast<const json_reader *>(&elt); json_rdr) {
+      else if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
         m_data = json_rdr->get_string_attribute ("text");
       }
       else {
         RAISE_EX("Not implemeted yet");
       }
     }
-    catch (exception &e) {
+    catch (exception& e) {
       auto id = elt.get_string_attribute ("id", "<missing>");
       auto name = elt.get_string_attribute ("name", "<unknown>");
       RAISE_EX_WITH_CAUSE(std::move (e), "Failed to parse text object [", name, "], id [", id, "]");

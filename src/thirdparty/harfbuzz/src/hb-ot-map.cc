@@ -34,13 +34,13 @@
 #include "hb-ot-shape.hh"
 #include "hb-ot-layout.hh"
 
-void hb_ot_map_t::collect_lookups (unsigned int table_index, hb_set_t *lookups_out) const {
+void hb_ot_map_t::collect_lookups (unsigned int table_index, hb_set_t* lookups_out) const {
   for (unsigned int i = 0; i < lookups[table_index].length; i++)
     lookups_out->add (lookups[table_index][i].index);
 }
 
-hb_ot_map_builder_t::hb_ot_map_builder_t (hb_face_t *face_,
-                                          const hb_segment_properties_t *props_) {
+hb_ot_map_builder_t::hb_ot_map_builder_t (hb_face_t* face_,
+                                          const hb_segment_properties_t* props_) {
   memset (this, 0, sizeof (*this));
 
   feature_infos.init ();
@@ -79,7 +79,7 @@ void hb_ot_map_builder_t::add_feature (hb_tag_t tag,
                                        unsigned int value) {
   if (unlikely (!tag))
     return;
-  feature_info_t *info = feature_infos.push ();
+  feature_info_t* info = feature_infos.push ();
   info->tag = tag;
   info->seq = feature_infos.length;
   info->max_value = value;
@@ -90,7 +90,7 @@ void hb_ot_map_builder_t::add_feature (hb_tag_t tag,
 }
 
 void
-hb_ot_map_builder_t::add_lookups (hb_ot_map_t &m,
+hb_ot_map_builder_t::add_lookups (hb_ot_map_t& m,
                                   unsigned int table_index,
                                   unsigned int feature_index,
                                   unsigned int variations_index,
@@ -117,7 +117,7 @@ hb_ot_map_builder_t::add_lookups (hb_ot_map_t &m,
     for (unsigned int i = 0; i < len; i++) {
       if (lookup_indices[i] >= table_lookup_count)
         continue;
-      hb_ot_map_t::lookup_map_t *lookup = m.lookups[table_index].push ();
+      hb_ot_map_t::lookup_map_t* lookup = m.lookups[table_index].push ();
       lookup->mask = mask;
       lookup->index = lookup_indices[i];
       lookup->auto_zwnj = auto_zwnj;
@@ -131,7 +131,7 @@ hb_ot_map_builder_t::add_lookups (hb_ot_map_t &m,
 }
 
 void hb_ot_map_builder_t::add_pause (unsigned int table_index, hb_ot_map_t::pause_func_t pause_func) {
-  stage_info_t *s = stages[table_index].push ();
+  stage_info_t* s = stages[table_index].push ();
   s->index = current_stage[table_index];
   s->pause_func = pause_func;
 
@@ -139,8 +139,8 @@ void hb_ot_map_builder_t::add_pause (unsigned int table_index, hb_ot_map_t::paus
 }
 
 void
-hb_ot_map_builder_t::compile (hb_ot_map_t &m,
-                              const hb_ot_shape_plan_key_t &key) {
+hb_ot_map_builder_t::compile (hb_ot_map_t& m,
+                              const hb_ot_shape_plan_key_t& key) {
   static_assert ((!(HB_GLYPH_FLAG_DEFINED & (HB_GLYPH_FLAG_DEFINED + 1))), "");
   unsigned int global_bit_mask = HB_GLYPH_FLAG_DEFINED + 1;
   unsigned int global_bit_shift = hb_popcount (HB_GLYPH_FLAG_DEFINED);
@@ -198,7 +198,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t &m,
   unsigned int next_bit = global_bit_shift + 1;
 
   for (unsigned int i = 0; i < feature_infos.length; i++) {
-    const feature_info_t *info = &feature_infos[i];
+    const feature_info_t* info = &feature_infos[i];
 
     unsigned int bits_needed;
 
@@ -237,7 +237,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t &m,
     if (!found && !(info->flags & F_HAS_FALLBACK))
       continue;
 
-    hb_ot_map_t::feature_map_t *map = m.features.push ();
+    hb_ot_map_t::feature_map_t* map = m.features.push ();
 
     map->tag = info->tag;
     map->index[0] = feature_index[0];
@@ -310,7 +310,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t &m,
       last_num_lookups = m.lookups[table_index].length;
 
       if (stage_index < stages[table_index].length && stages[table_index][stage_index].index == stage) {
-        hb_ot_map_t::stage_map_t *stage_map = m.stages[table_index].push ();
+        hb_ot_map_t::stage_map_t* stage_map = m.stages[table_index].push ();
         stage_map->last_lookup = last_num_lookups;
         stage_map->pause_func = stages[table_index][stage_index].pause_func;
 

@@ -44,7 +44,7 @@
   }
 
 struct BufState {
-  const uint8_t *data;
+  const uint8_t* data;
   size_t bytes_left;
 };
 
@@ -53,7 +53,7 @@ struct PngObjectHandler {
   png_structp png_ptr = nullptr;
   png_infop end_info_ptr = nullptr;
   png_voidp row_ptr = nullptr;
-  BufState *buf_state = nullptr;
+  BufState* buf_state = nullptr;
 
   ~PngObjectHandler () {
     if (row_ptr)
@@ -69,7 +69,7 @@ struct PngObjectHandler {
 };
 
 void user_read_data (png_structp png_ptr, png_bytep data, size_t length) {
-  BufState *buf_state = static_cast<BufState *>(png_get_io_ptr (png_ptr));
+  BufState* buf_state = static_cast<BufState*>(png_get_io_ptr (png_ptr));
   if (length > buf_state->bytes_left) {
     png_error (png_ptr, "read error");
   }
@@ -78,7 +78,7 @@ void user_read_data (png_structp png_ptr, png_bytep data, size_t length) {
   buf_state->data += length;
 }
 
-void *limited_malloc (png_structp, png_alloc_size_t size) {
+void* limited_malloc (png_structp, png_alloc_size_t size) {
   // libpng may allocate large amounts of memory that the fuzzer reports as
   // an error. In order to silence these errors, make libpng fail when trying
   // to allocate a large amount. This allocator used to be in the Chromium
@@ -99,7 +99,7 @@ static const int kPngHeaderSize = 8;
 // Entry point for LibFuzzer.
 // Roughly follows the libpng book example:
 // http://www.libpng.org/pub/png/book/chapter13.html
-extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput (const uint8_t* data, size_t size) {
   if (size < kPngHeaderSize) {
     return 0;
   }

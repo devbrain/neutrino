@@ -34,7 +34,7 @@ FT_BEGIN_HEADER
  * @Description:
  *   A handle to a TrueType driver object.
  */
-typedef struct TT_DriverRec_ *TT_Driver;
+typedef struct TT_DriverRec_* TT_Driver;
 
 /**************************************************************************
  *
@@ -134,7 +134,7 @@ typedef enum TT_CodeRange_Tag_ {
 } TT_CodeRange_Tag;
 
 typedef struct TT_CodeRange_ {
-  FT_Byte *base;
+  FT_Byte* base;
   FT_Long size;
 
 } TT_CodeRange;
@@ -154,7 +154,7 @@ typedef struct TT_DefRecord_ {
   FT_Bool inline_delta;   /* is function that defines inline delta? */
   FT_ULong sph_fdef_flags; /* flags to identify special functions    */
 
-} TT_DefRecord, *TT_DefArray;
+} TT_DefRecord, * TT_DefArray;
 
 /**************************************************************************
  *
@@ -261,7 +261,7 @@ typedef struct TT_SizeRec_ {
 
   /* we have our own copy of metrics so that we can modify */
   /* it without affecting auto-hinting (when used)         */
-  FT_Size_Metrics *metrics;        /* for the current rendering mode */
+  FT_Size_Metrics* metrics;        /* for the current rendering mode */
   FT_Size_Metrics hinted_metrics; /* for the hinted rendering mode  */
 
   TT_Size_Metrics ttmetrics;
@@ -288,10 +288,10 @@ typedef struct TT_SizeRec_ {
   TT_GraphicsState GS;
 
   FT_ULong cvt_size;      /* the scaled control value table */
-  FT_Long *cvt;
+  FT_Long* cvt;
 
   FT_UShort storage_size; /* The storage area is now part of */
-  FT_Long *storage;      /* the instance                    */
+  FT_Long* storage;      /* the instance                    */
 
   TT_GlyphZoneRec twilight;     /* The instance's twilight zone    */
 
@@ -338,7 +338,7 @@ tt_face_init (FT_Stream stream,
               FT_Face ttface,      /* TT_Face */
               FT_Int face_index,
               FT_Int num_params,
-              FT_Parameter *params);
+              FT_Parameter* params);
 
 FT_LOCAL(void)
 tt_face_done (FT_Face ttface);          /* TT_Face */

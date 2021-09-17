@@ -17,7 +17,7 @@ namespace neutrino::tiled::tmx {
 
   class wang_color : public component {
     public:
-      static wang_color parse (const reader &elt);
+      static wang_color parse (const reader& elt);
 
       wang_color (colori color, std::string name, int cl, double p)
           : m_color (color), m_name (std::move (name)), m_cell (cl), m_prob (p) {
@@ -38,6 +38,7 @@ namespace neutrino::tiled::tmx {
       [[nodiscard]] double prob () const noexcept {
         return m_prob;
       }
+
     private:
       colori m_color;
       std::string m_name;
@@ -59,8 +60,8 @@ namespace neutrino::tiled::tmx {
       };
       using wang_data_t = std::array<unsigned, 8>;
     public:
-      static wang_tile parse (const reader &elt);
-      static wang_data_t parse_corners (const reader &elt);
+      static wang_tile parse (const reader& elt);
+      static wang_data_t parse_corners (const reader& elt);
 
       wang_tile (wang_data_t wang_id,
                  unsigned gid,
@@ -94,6 +95,7 @@ namespace neutrino::tiled::tmx {
       [[nodiscard]] bool diag_flipped () const noexcept {
         return m_dflip;
       }
+
     private:
       wang_data_t m_wang_id;
       unsigned m_gid;
@@ -104,7 +106,7 @@ namespace neutrino::tiled::tmx {
 
   class wang_set : public component {
     public:
-      static wang_set parse (const reader &elt);
+      static wang_set parse (const reader& elt);
 
       wang_set (std::string name, int tile_id)
           : m_name (std::move (name)),
@@ -114,6 +116,7 @@ namespace neutrino::tiled::tmx {
       [[nodiscard]] std::string name () const noexcept {
         return m_name;
       }
+
       [[nodiscard]] int local_tile () const noexcept {
         return m_cell;
       }
@@ -122,7 +125,7 @@ namespace neutrino::tiled::tmx {
         m_colors.emplace_back (std::move (wc));
       }
 
-      [[nodiscard]] const std::vector<wang_color> &colors () const noexcept {
+      [[nodiscard]] const std::vector<wang_color>& colors () const noexcept {
         return m_colors;
       }
 
@@ -130,7 +133,7 @@ namespace neutrino::tiled::tmx {
         m_tiles.emplace_back (std::move (tl));
       }
 
-      [[nodiscard]] const std::vector<wang_tile> &tiles () const noexcept {
+      [[nodiscard]] const std::vector<wang_tile>& tiles () const noexcept {
         return m_tiles;
       }
 

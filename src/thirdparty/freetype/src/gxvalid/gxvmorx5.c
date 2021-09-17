@@ -53,7 +53,7 @@ typedef struct GXV_morx_subtable_type5_StateOptRec_ {
   FT_ULong insertionGlyphList_length;
 
 } GXV_morx_subtable_type5_StateOptRec,
-    *GXV_morx_subtable_type5_StateOptRecData;
+    * GXV_morx_subtable_type5_StateOptRecData;
 
 #define GXV_MORX_SUBTABLE_TYPE5_HEADER_SIZE \
           ( GXV_STATETABLE_HEADER_SIZE + 4 )
@@ -76,9 +76,9 @@ gxv_morx_subtable_type5_subtable_setup (FT_ULong table_size,
                                         FT_ULong classTable,
                                         FT_ULong stateArray,
                                         FT_ULong entryTable,
-                                        FT_ULong *classTable_length_p,
-                                        FT_ULong *stateArray_length_p,
-                                        FT_ULong *entryTable_length_p,
+                                        FT_ULong* classTable_length_p,
+                                        FT_ULong* stateArray_length_p,
+                                        FT_ULong* entryTable_length_p,
                                         GXV_Validator gxvalid) {
   FT_ULong o[4];
   FT_ULong * l[4];

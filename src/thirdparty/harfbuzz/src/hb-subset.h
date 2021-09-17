@@ -39,87 +39,87 @@ HB_BEGIN_DECLS
 
 typedef struct hb_subset_input_t hb_subset_input_t;
 
-HB_EXTERN hb_subset_input_t *
+HB_EXTERN hb_subset_input_t*
 hb_subset_input_create_or_fail (void);
 
-HB_EXTERN hb_subset_input_t *
-hb_subset_input_reference (hb_subset_input_t *subset_input);
+HB_EXTERN hb_subset_input_t*
+hb_subset_input_reference (hb_subset_input_t* subset_input);
 
 HB_EXTERN void
-hb_subset_input_destroy (hb_subset_input_t *subset_input);
+hb_subset_input_destroy (hb_subset_input_t* subset_input);
 
-HB_EXTERN hb_set_t *
-hb_subset_input_unicode_set (hb_subset_input_t *subset_input);
+HB_EXTERN hb_set_t*
+hb_subset_input_unicode_set (hb_subset_input_t* subset_input);
 
-HB_EXTERN hb_set_t *
-hb_subset_input_glyph_set (hb_subset_input_t *subset_input);
+HB_EXTERN hb_set_t*
+hb_subset_input_glyph_set (hb_subset_input_t* subset_input);
 
-HB_EXTERN hb_set_t *
-hb_subset_input_nameid_set (hb_subset_input_t *subset_input);
+HB_EXTERN hb_set_t*
+hb_subset_input_nameid_set (hb_subset_input_t* subset_input);
 
-HB_EXTERN hb_set_t *
-hb_subset_input_namelangid_set (hb_subset_input_t *subset_input);
+HB_EXTERN hb_set_t*
+hb_subset_input_namelangid_set (hb_subset_input_t* subset_input);
 
-HB_EXTERN hb_set_t *
-hb_subset_input_layout_features_set (hb_subset_input_t *subset_input);
+HB_EXTERN hb_set_t*
+hb_subset_input_layout_features_set (hb_subset_input_t* subset_input);
 
 HB_EXTERN void
-hb_subset_input_set_retain_all_features (hb_subset_input_t *subset_input,
+hb_subset_input_set_retain_all_features (hb_subset_input_t* subset_input,
                                          hb_bool_t value);
 HB_EXTERN hb_bool_t
-hb_subset_input_get_retain_all_features (hb_subset_input_t *subset_input);
+hb_subset_input_get_retain_all_features (hb_subset_input_t* subset_input);
 
-HB_EXTERN hb_set_t *
-hb_subset_input_drop_tables_set (hb_subset_input_t *subset_input);
+HB_EXTERN hb_set_t*
+hb_subset_input_drop_tables_set (hb_subset_input_t* subset_input);
 
 HB_EXTERN void
-hb_subset_input_set_drop_hints (hb_subset_input_t *subset_input,
+hb_subset_input_set_drop_hints (hb_subset_input_t* subset_input,
                                 hb_bool_t drop_hints);
 HB_EXTERN hb_bool_t
-hb_subset_input_get_drop_hints (hb_subset_input_t *subset_input);
+hb_subset_input_get_drop_hints (hb_subset_input_t* subset_input);
 
 HB_EXTERN void
-hb_subset_input_set_desubroutinize (hb_subset_input_t *subset_input,
+hb_subset_input_set_desubroutinize (hb_subset_input_t* subset_input,
                                     hb_bool_t desubroutinize);
 HB_EXTERN hb_bool_t
-hb_subset_input_get_desubroutinize (hb_subset_input_t *subset_input);
+hb_subset_input_get_desubroutinize (hb_subset_input_t* subset_input);
 
 HB_EXTERN void
-hb_subset_input_set_retain_gids (hb_subset_input_t *subset_input,
+hb_subset_input_set_retain_gids (hb_subset_input_t* subset_input,
                                  hb_bool_t retain_gids);
 HB_EXTERN hb_bool_t
-hb_subset_input_get_retain_gids (hb_subset_input_t *subset_input);
+hb_subset_input_get_retain_gids (hb_subset_input_t* subset_input);
 
 HB_EXTERN void
-hb_subset_input_set_name_legacy (hb_subset_input_t *subset_input,
+hb_subset_input_set_name_legacy (hb_subset_input_t* subset_input,
                                  hb_bool_t name_legacy);
 HB_EXTERN hb_bool_t
-hb_subset_input_get_name_legacy (hb_subset_input_t *subset_input);
+hb_subset_input_get_name_legacy (hb_subset_input_t* subset_input);
 
 HB_EXTERN void
-hb_subset_input_set_overlaps_flag (hb_subset_input_t *subset_input,
+hb_subset_input_set_overlaps_flag (hb_subset_input_t* subset_input,
                                    hb_bool_t overlaps_flag);
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_overlaps_flag (hb_subset_input_t *subset_input);
+hb_subset_input_get_overlaps_flag (hb_subset_input_t* subset_input);
 
 HB_EXTERN void
-hb_subset_input_set_notdef_outline (hb_subset_input_t *subset_input,
+hb_subset_input_set_notdef_outline (hb_subset_input_t* subset_input,
                                     hb_bool_t notdef_outline);
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_notdef_outline (hb_subset_input_t *subset_input);
+hb_subset_input_get_notdef_outline (hb_subset_input_t* subset_input);
 
 HB_EXTERN void
-hb_subset_input_set_no_prune_unicode_ranges (hb_subset_input_t *subset_input,
+hb_subset_input_set_no_prune_unicode_ranges (hb_subset_input_t* subset_input,
                                              hb_bool_t no_prune_unicode_ranges);
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_no_prune_unicode_ranges (hb_subset_input_t *subset_input);
+hb_subset_input_get_no_prune_unicode_ranges (hb_subset_input_t* subset_input);
 
 /* hb_subset () */
-HB_EXTERN hb_face_t *
-hb_subset (hb_face_t *source, hb_subset_input_t *input);
+HB_EXTERN hb_face_t*
+hb_subset (hb_face_t* source, hb_subset_input_t* input);
 
 HB_END_DECLS
 

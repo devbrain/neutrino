@@ -34,8 +34,7 @@
 /* https://docs.microsoft.com/en-us/typography/opentype/spec/scripttags */
 
 static void
-test_simple_tags (const char *s, hb_script_t script)
-{
+test_simple_tags (const char* s, hb_script_t script) {
   hb_script_t tag;
   unsigned int count = 2;
   hb_tag_t t[2];
@@ -44,20 +43,19 @@ test_simple_tags (const char *s, hb_script_t script)
   tag = hb_tag_from_string (s, -1);
 
   hb_ot_tags_from_script_and_language (script,
-				       HB_LANGUAGE_INVALID,
-				       &count, t, NULL, NULL);
+                                       HB_LANGUAGE_INVALID,
+                                       &count, t, NULL, NULL);
 
   if (count)
-    g_assert_cmphex (t[0], ==, tag);
+    g_assert_cmphex (t[0], == , tag);
   else
-    g_assert_cmphex (HB_TAG_CHAR4 ("DFLT"), ==, tag);
+  g_assert_cmphex (HB_TAG_CHAR4 ("DFLT"), == , tag);
 
-  g_assert_cmphex (hb_ot_tag_to_script (tag), ==, script);
+  g_assert_cmphex (hb_ot_tag_to_script (tag), == , script);
 }
 
 static void
-test_script_tags_from_language (const char *s, const char *lang_s, hb_script_t script)
-{
+test_script_tags_from_language (const char* s, const char* lang_s, hb_script_t script) {
   hb_script_t tag;
   unsigned int count = 1;
   hb_tag_t t;
@@ -67,16 +65,14 @@ test_script_tags_from_language (const char *s, const char *lang_s, hb_script_t s
 
   hb_ot_tags_from_script_and_language (script, hb_language_from_string (lang_s, -1), &count, &t, NULL, NULL);
 
-  if (count != 0)
-  {
-    g_assert_cmpuint (count, ==, 1);
-    g_assert_cmphex (t, ==, tag);
+  if (count != 0) {
+    g_assert_cmpuint (count, == , 1);
+    g_assert_cmphex (t, == , tag);
   }
 }
 
 static void
-test_indic_tags (const char *s1, const char *s2, const char *s3, hb_script_t script)
-{
+test_indic_tags (const char* s1, const char* s2, const char* s3, hb_script_t script) {
   hb_script_t tag1, tag2, tag3;
   hb_tag_t t[3];
   unsigned int count = 3;
@@ -87,46 +83,44 @@ test_indic_tags (const char *s1, const char *s2, const char *s3, hb_script_t scr
   tag3 = hb_tag_from_string (s3, -1);
 
   hb_ot_tags_from_script_and_language (script,
-				       HB_LANGUAGE_INVALID,
-				       &count, t, NULL, NULL);
+                                       HB_LANGUAGE_INVALID,
+                                       &count, t, NULL, NULL);
 
-  g_assert_cmpuint (count, ==, 3);
-  g_assert_cmphex (t[0], ==, tag1);
-  g_assert_cmphex (t[1], ==, tag2);
-  g_assert_cmphex (t[2], ==, tag3);
+  g_assert_cmpuint (count, == , 3);
+  g_assert_cmphex (t[0], == , tag1);
+  g_assert_cmphex (t[1], == , tag2);
+  g_assert_cmphex (t[2], == , tag3);
 
-  g_assert_cmphex (hb_ot_tag_to_script (tag1), ==, script);
-  g_assert_cmphex (hb_ot_tag_to_script (tag2), ==, script);
-  g_assert_cmphex (hb_ot_tag_to_script (tag3), ==, script);
+  g_assert_cmphex (hb_ot_tag_to_script (tag1), == , script);
+  g_assert_cmphex (hb_ot_tag_to_script (tag2), == , script);
+  g_assert_cmphex (hb_ot_tag_to_script (tag3), == , script);
 }
 
 static void
-test_ot_tag_script_degenerate (void)
-{
+test_ot_tag_script_degenerate (void) {
   hb_tag_t t[2];
   unsigned int count = 2;
 
-  g_assert_cmphex (HB_TAG_CHAR4 ("DFLT"), ==, HB_OT_TAG_DEFAULT_SCRIPT);
+  g_assert_cmphex (HB_TAG_CHAR4 ("DFLT"), == , HB_OT_TAG_DEFAULT_SCRIPT);
 
   /* HIRAGANA and KATAKANA both map to 'kana' */
   test_simple_tags ("kana", HB_SCRIPT_KATAKANA);
 
   hb_ot_tags_from_script_and_language (HB_SCRIPT_HIRAGANA,
-				       HB_LANGUAGE_INVALID,
-				       &count, t, NULL, NULL);
+                                       HB_LANGUAGE_INVALID,
+                                       &count, t, NULL, NULL);
 
-  g_assert_cmpuint (count, ==, 1);
-  g_assert_cmphex (t[0], ==, HB_TAG_CHAR4 ("kana"));
+  g_assert_cmpuint (count, == , 1);
+  g_assert_cmphex (t[0], == , HB_TAG_CHAR4 ("kana"));
 
   test_simple_tags ("DFLT", HB_SCRIPT_INVALID);
 
   /* Spaces are replaced */
-  g_assert_cmphex (hb_ot_tag_to_script (HB_TAG_CHAR4 ("be  ")), ==, hb_script_from_string ("Beee", -1));
+  g_assert_cmphex (hb_ot_tag_to_script (HB_TAG_CHAR4 ("be  ")), == , hb_script_from_string ("Beee", -1));
 }
 
 static void
-test_ot_tag_script_simple (void)
-{
+test_ot_tag_script_simple (void) {
   /* Arbitrary non-existent script */
   test_simple_tags ("wwyz", hb_script_from_string ("wWyZ", -1));
 
@@ -157,8 +151,7 @@ test_ot_tag_script_simple (void)
 }
 
 static void
-test_ot_tag_script_from_language (void)
-{
+test_ot_tag_script_from_language (void) {
   test_script_tags_from_language (NULL, NULL, HB_SCRIPT_INVALID);
   test_script_tags_from_language (NULL, "en", HB_SCRIPT_INVALID);
   test_script_tags_from_language ("copt", "en", HB_SCRIPT_COPTIC);
@@ -186,8 +179,7 @@ test_ot_tag_script_from_language (void)
 }
 
 static void
-test_ot_tag_script_indic (void)
-{
+test_ot_tag_script_indic (void) {
   test_indic_tags ("bng3", "bng2", "beng", HB_SCRIPT_BENGALI);
   test_indic_tags ("dev3", "dev2", "deva", HB_SCRIPT_DEVANAGARI);
   test_indic_tags ("gjr3", "gjr2", "gujr", HB_SCRIPT_GUJARATI);
@@ -199,13 +191,10 @@ test_ot_tag_script_indic (void)
   test_indic_tags ("tel3", "tel2", "telu", HB_SCRIPT_TELUGU);
 }
 
-
-
 /* https://docs.microsoft.com/en-us/typography/opentype/spec/languagetags */
 
 static void
-test_language_two_way (const char *tag_s, const char *lang_s)
-{
+test_language_two_way (const char* tag_s, const char* lang_s) {
   hb_language_t lang = hb_language_from_string (lang_s, -1);
   hb_tag_t tag = hb_tag_from_string (tag_s, -1);
   hb_tag_t tag2;
@@ -214,19 +203,18 @@ test_language_two_way (const char *tag_s, const char *lang_s)
   g_test_message ("Testing language %s <-> tag %s", lang_s, tag_s);
 
   hb_ot_tags_from_script_and_language (HB_SCRIPT_INVALID,
-				       lang,
-				       NULL, NULL, &count, &tag2);
+                                       lang,
+                                       NULL, NULL, &count, &tag2);
 
   if (count)
-    g_assert_cmphex (tag, ==, tag2);
+    g_assert_cmphex (tag, == , tag2);
   else
-    g_assert_cmphex (tag, ==, HB_TAG_CHAR4 ("dflt"));
+  g_assert_cmphex (tag, == , HB_TAG_CHAR4 ("dflt"));
   g_assert (lang == hb_ot_tag_to_language (tag));
 }
 
 static void
-test_tag_from_language (const char *tag_s, const char *lang_s)
-{
+test_tag_from_language (const char* tag_s, const char* lang_s) {
   hb_language_t lang = hb_language_from_string (lang_s, -1);
   hb_tag_t tag = hb_tag_from_string (tag_s, -1);
   hb_tag_t tag2;
@@ -235,18 +223,17 @@ test_tag_from_language (const char *tag_s, const char *lang_s)
   g_test_message ("Testing language %s -> tag %s", lang_s, tag_s);
 
   hb_ot_tags_from_script_and_language (HB_SCRIPT_INVALID,
-				       lang,
-				       NULL, NULL, &count, &tag2);
+                                       lang,
+                                       NULL, NULL, &count, &tag2);
 
   if (count)
-    g_assert_cmphex (tag, ==, tag2);
+    g_assert_cmphex (tag, == , tag2);
   else
-    g_assert_cmphex (tag, ==, HB_TAG_CHAR4 ("dflt"));
+  g_assert_cmphex (tag, == , HB_TAG_CHAR4 ("dflt"));
 }
 
 static void
-test_tag_to_language (const char *tag_s, const char *lang_s)
-{
+test_tag_to_language (const char* tag_s, const char* lang_s) {
   hb_language_t lang = hb_language_from_string (lang_s, -1);
   hb_tag_t tag = hb_tag_from_string (tag_s, -1);
 
@@ -256,23 +243,21 @@ test_tag_to_language (const char *tag_s, const char *lang_s)
 }
 
 static void
-test_tags_to_script_and_language (const char *script_tag_s,
-				  const char *lang_tag_s,
-				  const char *script_s,
-				  const char *lang_s)
-{
+test_tags_to_script_and_language (const char* script_tag_s,
+                                  const char* lang_tag_s,
+                                  const char* script_s,
+                                  const char* lang_s) {
   hb_script_t actual_script[1];
   hb_language_t actual_lang[1];
   hb_tag_t script_tag = hb_tag_from_string (script_tag_s, -1);
   hb_tag_t lang_tag = hb_tag_from_string (lang_tag_s, -1);
   hb_ot_tags_to_script_and_language (script_tag, lang_tag, actual_script, actual_lang);
-  g_assert_cmphex (*actual_script, ==, hb_tag_from_string (script_s, -1));
-  g_assert_cmpstr (hb_language_to_string (*actual_lang), ==, lang_s);
+  g_assert_cmphex (*actual_script, == , hb_tag_from_string (script_s, -1));
+  g_assert_cmpstr (hb_language_to_string (*actual_lang), == , lang_s);
 }
 
 static void
-test_ot_tags_to_script_and_language (void)
-{
+test_ot_tags_to_script_and_language (void) {
   test_tags_to_script_and_language ("DFLT", "ENG", "", "en-x-hbsc-44464c54");
   test_tags_to_script_and_language ("latn", "ENG", "Latn", "en");
   test_tags_to_script_and_language ("deva", "MAR", "Deva", "mr-x-hbsc-64657661");
@@ -282,9 +267,8 @@ test_ot_tags_to_script_and_language (void)
 }
 
 static void
-test_ot_tag_language (void)
-{
-  g_assert_cmphex (HB_TAG_CHAR4 ("dflt"), ==, HB_OT_TAG_DEFAULT_LANGUAGE);
+test_ot_tag_language (void) {
+  g_assert_cmphex (HB_TAG_CHAR4 ("dflt"), == , HB_OT_TAG_DEFAULT_LANGUAGE);
   test_language_two_way ("dflt", NULL);
 
   test_language_two_way ("ALT", "alt");
@@ -495,18 +479,17 @@ test_ot_tag_language (void)
 }
 
 static void
-test_tags (hb_script_t  script,
-	   const char  *lang_s,
-	   unsigned int script_count,
-	   unsigned int language_count,
-	   unsigned int expected_script_count,
-	   unsigned int expected_language_count,
-	   ...)
-{
+test_tags (hb_script_t script,
+           const char* lang_s,
+           unsigned int script_count,
+           unsigned int language_count,
+           unsigned int expected_script_count,
+           unsigned int expected_language_count,
+           ...) {
   va_list expected_tags;
   unsigned int i;
-  hb_tag_t *script_tags = malloc (script_count * sizeof (hb_tag_t));
-  hb_tag_t *language_tags = malloc (language_count * sizeof (hb_tag_t));
+  hb_tag_t* script_tags = malloc (script_count * sizeof (hb_tag_t));
+  hb_tag_t* language_tags = malloc (language_count * sizeof (hb_tag_t));
   hb_language_t lang;
   g_assert (script_tags);
   g_assert (language_tags);
@@ -515,14 +498,15 @@ test_tags (hb_script_t  script,
 
   hb_ot_tags_from_script_and_language (script, lang, &script_count, script_tags, &language_count, language_tags);
 
-  g_assert_cmpuint (script_count, ==, expected_script_count);
-  g_assert_cmpuint (language_count, ==, expected_language_count);
+  g_assert_cmpuint (script_count, == , expected_script_count);
+  g_assert_cmpuint (language_count, == , expected_language_count);
 
-  for (i = 0; i < script_count + language_count; i++)
-  {
-    hb_tag_t expected_tag = hb_tag_from_string (va_arg (expected_tags, const char *), -1);
+  for (i = 0; i < script_count + language_count; i++) {
+    hb_tag_t
+    expected_tag = hb_tag_from_string (va_arg (expected_tags,
+    const char *), -1);
     hb_tag_t actual_tag = i < script_count ? script_tags[i] : language_tags[i - script_count];
-    g_assert_cmphex (actual_tag, ==, expected_tag);
+    g_assert_cmphex (actual_tag, == , expected_tag);
   }
 
   free (script_tags);
@@ -531,8 +515,7 @@ test_tags (hb_script_t  script,
 }
 
 static void
-test_ot_tag_full (void)
-{
+test_ot_tag_full (void) {
   test_tags (HB_SCRIPT_INVALID, "en", HB_OT_MAX_TAGS_PER_SCRIPT, HB_OT_MAX_TAGS_PER_LANGUAGE, 0, 1, "ENG");
   test_tags (HB_SCRIPT_INVALID, "en-x-hbscdflt", HB_OT_MAX_TAGS_PER_SCRIPT, HB_OT_MAX_TAGS_PER_LANGUAGE, 1, 1, "DFLT", "ENG");
   test_tags (HB_SCRIPT_LATIN, "en", HB_OT_MAX_TAGS_PER_SCRIPT, HB_OT_MAX_TAGS_PER_LANGUAGE, 1, 1, "latn", "ENG");
@@ -549,8 +532,7 @@ test_ot_tag_full (void)
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_ot_tag_script_degenerate);
@@ -564,5 +546,5 @@ main (int argc, char **argv)
 
   hb_test_add (test_ot_tag_full);
 
-  return hb_test_run();
+  return hb_test_run ();
 }

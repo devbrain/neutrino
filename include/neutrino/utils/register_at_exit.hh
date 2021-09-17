@@ -7,7 +7,7 @@
 
 namespace {
   using queue_t = std::queue<std::function<void ()>>;
-  static queue_t *callbacks = nullptr;
+  static queue_t* callbacks = nullptr;
 
   struct queue_init {
 
@@ -46,7 +46,7 @@ namespace neutrino {
   }
 
   template <typename T>
-  void delete_at_exit (T *ptr) {
+  void delete_at_exit (T* ptr) {
     register_at_exit ([ptr] () { delete ptr; });
   }
 }

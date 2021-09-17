@@ -263,7 +263,7 @@ typedef struct {
   } sequence;
 
   /// Base of the current probability tree
-  probability *probs;
+  probability* probs;
 
   /// Symbol being decoded. This is also used as an index variable in
   /// bittree decoders: probs[symbol]
@@ -283,10 +283,10 @@ typedef struct {
 } lzma_lzma1_decoder;
 
 static lzma_ret
-lzma_decode (void *coder_ptr, lzma_dict *restrict dictptr,
-             const uint8_t *restrict in,
-             size_t *restrict in_pos, size_t in_size) {
-  lzma_lzma1_decoder *restrict coder = coder_ptr;
+lzma_decode (void* coder_ptr, lzma_dict* restrict dictptr,
+             const uint8_t* restrict in,
+             size_t* restrict in_pos, size_t in_size) {
+  lzma_lzma1_decoder* restrict coder = coder_ptr;
 
   ////////////////////
   // Initialization //
@@ -324,7 +324,7 @@ lzma_decode (void *coder_ptr, lzma_dict *restrict dictptr,
 
   // These variables are actually needed only if we last time ran
   // out of input in the middle of the decoder loop.
-  probability *probs = coder->probs;
+  probability* probs = coder->probs;
   uint32_t symbol = coder->symbol;
   uint32_t limit = coder->limit;
   uint32_t offset = coder->offset;
@@ -849,15 +849,15 @@ case SEQ_ALIGN:
 }
 
 static void
-lzma_decoder_uncompressed (void *coder_ptr, lzma_vli uncompressed_size) {
-  lzma_lzma1_decoder *coder = coder_ptr;
+lzma_decoder_uncompressed (void* coder_ptr, lzma_vli uncompressed_size) {
+  lzma_lzma1_decoder* coder = coder_ptr;
   coder->uncompressed_size = uncompressed_size;
 }
 
 static void
-lzma_decoder_reset (void *coder_ptr, const void *opt) {
-  lzma_lzma1_decoder *coder = coder_ptr;
-  const lzma_options_lzma *options = opt;
+lzma_decoder_reset (void* coder_ptr, const void* opt) {
+  lzma_lzma1_decoder* coder = coder_ptr;
+  const lzma_options_lzma* options = opt;
 
   // NOTE: We assume that lc/lp/pb are valid since they were
   // successfully decoded with lzma_lzma_decode_properties().
@@ -936,8 +936,8 @@ lzma_decoder_reset (void *coder_ptr, const void *opt) {
 }
 
 extern lzma_ret
-lzma_lzma_decoder_create (lzma_lz_decoder *lz, const lzma_allocator *allocator,
-                          const void *opt, lzma_lz_options *lz_options) {
+lzma_lzma_decoder_create (lzma_lz_decoder* lz, const lzma_allocator* allocator,
+                          const void* opt, lzma_lz_options* lz_options) {
   if (lz->coder == NULL) {
     lz->coder = lzma_alloc (sizeof (lzma_lzma1_decoder), allocator);
     if (lz->coder == NULL)
@@ -950,7 +950,7 @@ lzma_lzma_decoder_create (lzma_lz_decoder *lz, const lzma_allocator *allocator,
 
   // All dictionary sizes are OK here. LZ decoder will take care of
   // the special cases.
-  const lzma_options_lzma *options = opt;
+  const lzma_options_lzma* options = opt;
   lz_options->dict_size = options->dict_size;
   lz_options->preset_dict = options->preset_dict;
   lz_options->preset_dict_size = options->preset_dict_size;
@@ -962,8 +962,8 @@ lzma_lzma_decoder_create (lzma_lz_decoder *lz, const lzma_allocator *allocator,
 /// initialization (lzma_lzma_decoder_init() passes function pointer to
 /// the LZ initialization).
 static lzma_ret
-lzma_decoder_init (lzma_lz_decoder *lz, const lzma_allocator *allocator,
-                   const void *options, lzma_lz_options *lz_options) {
+lzma_decoder_init (lzma_lz_decoder* lz, const lzma_allocator* allocator,
+                   const void* options, lzma_lz_options* lz_options) {
   if (!is_lclppb_valid (options))
     return LZMA_PROG_ERROR;
 
@@ -977,8 +977,8 @@ lzma_decoder_init (lzma_lz_decoder *lz, const lzma_allocator *allocator,
 }
 
 extern lzma_ret
-lzma_lzma_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                        const lzma_filter_info *filters) {
+lzma_lzma_decoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                        const lzma_filter_info* filters) {
   // LZMA can only be the last filter in the chain. This is enforced
   // by the raw_decoder initialization.
   assert(filters[1].init == NULL);
@@ -988,7 +988,7 @@ lzma_lzma_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern bool
-lzma_lzma_lclppb_decode (lzma_options_lzma *options, uint8_t byte) {
+lzma_lzma_lclppb_decode (lzma_options_lzma* options, uint8_t byte) {
   if (byte > (4 * 5 + 4) * 9 + 8)
     return true;
 
@@ -1002,14 +1002,14 @@ lzma_lzma_lclppb_decode (lzma_options_lzma *options, uint8_t byte) {
 }
 
 extern uint64_t
-lzma_lzma_decoder_memusage_nocheck (const void *options) {
-  const lzma_options_lzma *const opt = options;
+lzma_lzma_decoder_memusage_nocheck (const void* options) {
+  const lzma_options_lzma* const opt = options;
   return sizeof (lzma_lzma1_decoder)
          + lzma_lz_decoder_memusage (opt->dict_size);
 }
 
 extern uint64_t
-lzma_lzma_decoder_memusage (const void *options) {
+lzma_lzma_decoder_memusage (const void* options) {
   if (!is_lclppb_valid (options))
     return UINT64_MAX;
 
@@ -1017,12 +1017,12 @@ lzma_lzma_decoder_memusage (const void *options) {
 }
 
 extern lzma_ret
-lzma_lzma_props_decode (void **options, const lzma_allocator *allocator,
-                        const uint8_t *props, size_t props_size) {
+lzma_lzma_props_decode (void** options, const lzma_allocator* allocator,
+                        const uint8_t* props, size_t props_size) {
   if (props_size != 5)
     return LZMA_OPTIONS_ERROR;
 
-  lzma_options_lzma *opt
+  lzma_options_lzma* opt
       = lzma_alloc (sizeof (lzma_options_lzma), allocator);
   if (opt == NULL)
     return LZMA_MEM_ERROR;

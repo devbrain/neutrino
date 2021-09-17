@@ -21,7 +21,7 @@
 /////////////
 
 static inline void
-literal_matched (lzma_range_encoder *rc, probability *subcoder,
+literal_matched (lzma_range_encoder* rc, probability* subcoder,
                  uint32_t match_byte, uint32_t symbol) {
   uint32_t offset = 0x100;
   symbol += UINT32_C(1) << 8;
@@ -42,11 +42,11 @@ literal_matched (lzma_range_encoder *rc, probability *subcoder,
 }
 
 static inline void
-literal (lzma_lzma1_encoder *coder, lzma_mf *mf, uint32_t position) {
+literal (lzma_lzma1_encoder* coder, lzma_mf* mf, uint32_t position) {
   // Locate the literal byte to be encoded and the subcoder.
   const uint8_t cur_byte = mf->buffer[
       mf->read_pos - mf->read_ahead];
-  probability *subcoder = literal_subcoder(coder->literal,
+  probability* subcoder = literal_subcoder(coder->literal,
                                            coder->literal_context_bits, coder->literal_pos_mask,
                                            position, mf->buffer[mf->read_pos - mf->read_ahead - 1]);
 
@@ -74,7 +74,7 @@ literal (lzma_lzma1_encoder *coder, lzma_mf *mf, uint32_t position) {
 //////////////////
 
 static void
-length_update_prices (lzma_length_encoder *lc, const uint32_t pos_state) {
+length_update_prices (lzma_length_encoder* lc, const uint32_t pos_state) {
   const uint32_t table_size = lc->table_size;
   lc->counters[pos_state] = table_size;
 
@@ -82,7 +82,7 @@ length_update_prices (lzma_length_encoder *lc, const uint32_t pos_state) {
   const uint32_t a1 = rc_bit_1_price (lc->choice);
   const uint32_t b0 = a1 + rc_bit_0_price (lc->choice2);
   const uint32_t b1 = a1 + rc_bit_1_price (lc->choice2);
-  uint32_t *const prices = lc->prices[pos_state];
+  uint32_t* const prices = lc->prices[pos_state];
 
   uint32_t i;
   for (i = 0; i < table_size && i < LEN_LOW_SYMBOLS; ++i)
@@ -101,7 +101,7 @@ length_update_prices (lzma_length_encoder *lc, const uint32_t pos_state) {
 }
 
 static inline void
-length (lzma_range_encoder *rc, lzma_length_encoder *lc,
+length (lzma_range_encoder* rc, lzma_length_encoder* lc,
         const uint32_t pos_state, uint32_t len, const bool fast_mode) {
   assert(len <= MATCH_LEN_MAX);
   len -= MATCH_LEN_MIN;
@@ -138,7 +138,7 @@ length (lzma_range_encoder *rc, lzma_length_encoder *lc,
 ///////////
 
 static inline void
-match (lzma_lzma1_encoder *coder, const uint32_t pos_state,
+match (lzma_lzma1_encoder* coder, const uint32_t pos_state,
        const uint32_t distance, const uint32_t len) {
   update_match(coder->state);
 
@@ -185,7 +185,7 @@ match (lzma_lzma1_encoder *coder, const uint32_t pos_state,
 ////////////////////
 
 static inline void
-rep_match (lzma_lzma1_encoder *coder, const uint32_t pos_state,
+rep_match (lzma_lzma1_encoder* coder, const uint32_t pos_state,
            const uint32_t rep, const uint32_t len) {
   if (rep == 0) {
     rc_bit (&coder->rc, &coder->is_rep0[coder->state], 0);
@@ -231,7 +231,7 @@ rep_match (lzma_lzma1_encoder *coder, const uint32_t pos_state,
 //////////
 
 static void
-encode_symbol (lzma_lzma1_encoder *coder, lzma_mf *mf,
+encode_symbol (lzma_lzma1_encoder* coder, lzma_mf* mf,
                uint32_t back, uint32_t len, uint32_t position) {
   const uint32_t pos_state = position & coder->pos_mask;
 
@@ -265,7 +265,7 @@ encode_symbol (lzma_lzma1_encoder *coder, lzma_mf *mf,
 }
 
 static bool
-encode_init (lzma_lzma1_encoder *coder, lzma_mf *mf) {
+encode_init (lzma_lzma1_encoder* coder, lzma_mf* mf) {
   assert(mf_position (mf) == 0);
 
   if (mf->read_pos == mf->read_limit) {
@@ -292,7 +292,7 @@ encode_init (lzma_lzma1_encoder *coder, lzma_mf *mf) {
 }
 
 static void
-encode_eopm (lzma_lzma1_encoder *coder, uint32_t position) {
+encode_eopm (lzma_lzma1_encoder* coder, uint32_t position) {
   const uint32_t pos_state = position & coder->pos_mask;
   rc_bit (&coder->rc, &coder->is_match[coder->state][pos_state], 1);
   rc_bit (&coder->rc, &coder->is_rep[coder->state], 0);
@@ -306,8 +306,8 @@ encode_eopm (lzma_lzma1_encoder *coder, uint32_t position) {
 #define LOOP_INPUT_MAX (OPTS + 1)
 
 extern lzma_ret
-lzma_lzma_encode (lzma_lzma1_encoder *restrict coder, lzma_mf *restrict mf,
-                  uint8_t *restrict out, size_t *restrict out_pos,
+lzma_lzma_encode (lzma_lzma1_encoder* restrict coder, lzma_mf* restrict mf,
+                  uint8_t* restrict out, size_t* restrict out_pos,
                   size_t out_size, uint32_t limit) {
   // Initialize the stream if no data has been encoded yet.
   if (!coder->is_initialized && !encode_init (coder, mf))
@@ -397,8 +397,8 @@ lzma_lzma_encode (lzma_lzma1_encoder *restrict coder, lzma_mf *restrict mf,
 }
 
 static lzma_ret
-lzma_encode (void *coder, lzma_mf *restrict mf,
-             uint8_t *restrict out, size_t *restrict out_pos,
+lzma_encode (void* coder, lzma_mf* restrict mf,
+             uint8_t* restrict out, size_t* restrict out_pos,
              size_t out_size) {
   // Plain LZMA has no support for sync-flushing.
   if (unlikely(mf->action == LZMA_SYNC_FLUSH))
@@ -413,7 +413,7 @@ lzma_encode (void *coder, lzma_mf *restrict mf,
 ////////////////////
 
 static bool
-is_options_valid (const lzma_options_lzma *options) {
+is_options_valid (const lzma_options_lzma* options) {
   // Validate some of the options. LZ encoder validates nice_len too
   // but we need a valid value here earlier.
   return is_lclppb_valid (options)
@@ -424,7 +424,7 @@ is_options_valid (const lzma_options_lzma *options) {
 }
 
 static void
-set_lz_options (lzma_lz_options *lz_options, const lzma_options_lzma *options) {
+set_lz_options (lzma_lz_options* lz_options, const lzma_options_lzma* options) {
   // LZ encoder initialization does the validation for these so we
   // don't need to validate here.
   lz_options->before_size = OPTS;
@@ -440,7 +440,7 @@ set_lz_options (lzma_lz_options *lz_options, const lzma_options_lzma *options) {
 }
 
 static void
-length_encoder_reset (lzma_length_encoder *lencoder,
+length_encoder_reset (lzma_length_encoder* lencoder,
                       const uint32_t num_pos_states, const bool fast_mode) {
   bit_reset(lencoder->choice);
   bit_reset(lencoder->choice2);
@@ -461,8 +461,8 @@ length_encoder_reset (lzma_length_encoder *lencoder,
 }
 
 extern lzma_ret
-lzma_lzma_encoder_reset (lzma_lzma1_encoder *coder,
-                         const lzma_options_lzma *options) {
+lzma_lzma_encoder_reset (lzma_lzma1_encoder* coder,
+                         const lzma_options_lzma* options) {
   if (!is_options_valid (options))
     return LZMA_OPTIONS_ERROR;
 
@@ -532,9 +532,9 @@ lzma_lzma_encoder_reset (lzma_lzma1_encoder *coder,
 }
 
 extern lzma_ret
-lzma_lzma_encoder_create (void **coder_ptr,
-                          const lzma_allocator *allocator,
-                          const lzma_options_lzma *options, lzma_lz_options *lz_options) {
+lzma_lzma_encoder_create (void** coder_ptr,
+                          const lzma_allocator* allocator,
+                          const lzma_options_lzma* options, lzma_lz_options* lz_options) {
   // Allocate lzma_lzma1_encoder if it wasn't already allocated.
   if (*coder_ptr == NULL) {
     *coder_ptr = lzma_alloc (sizeof (lzma_lzma1_encoder), allocator);
@@ -542,7 +542,7 @@ lzma_lzma_encoder_create (void **coder_ptr,
       return LZMA_MEM_ERROR;
   }
 
-  lzma_lzma1_encoder *coder = *coder_ptr;
+  lzma_lzma1_encoder* coder = *coder_ptr;
 
   // Set compression mode. We haven't validates the options yet,
   // but it's OK here, since nothing bad happens with invalid
@@ -590,22 +590,22 @@ lzma_lzma_encoder_create (void **coder_ptr,
 }
 
 static lzma_ret
-lzma_encoder_init (lzma_lz_encoder *lz, const lzma_allocator *allocator,
-                   const void *options, lzma_lz_options *lz_options) {
+lzma_encoder_init (lzma_lz_encoder* lz, const lzma_allocator* allocator,
+                   const void* options, lzma_lz_options* lz_options) {
   lz->code = &lzma_encode;
   return lzma_lzma_encoder_create (
       &lz->coder, allocator, options, lz_options);
 }
 
 extern lzma_ret
-lzma_lzma_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                        const lzma_filter_info *filters) {
+lzma_lzma_encoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                        const lzma_filter_info* filters) {
   return lzma_lz_encoder_init (
       next, allocator, filters, &lzma_encoder_init);
 }
 
 extern uint64_t
-lzma_lzma_encoder_memusage (const void *options) {
+lzma_lzma_encoder_memusage (const void* options) {
   if (!is_options_valid (options))
     return UINT64_MAX;
 
@@ -620,7 +620,7 @@ lzma_lzma_encoder_memusage (const void *options) {
 }
 
 extern bool
-lzma_lzma_lclppb_encode (const lzma_options_lzma *options, uint8_t *byte) {
+lzma_lzma_lclppb_encode (const lzma_options_lzma* options, uint8_t* byte) {
   if (!is_lclppb_valid (options))
     return true;
 
@@ -631,9 +631,10 @@ lzma_lzma_lclppb_encode (const lzma_options_lzma *options, uint8_t *byte) {
 }
 
 #ifdef HAVE_ENCODER_LZMA1
+
 extern lzma_ret
-lzma_lzma_props_encode (const void *options, uint8_t *out) {
-  const lzma_options_lzma *const opt = options;
+lzma_lzma_props_encode (const void* options, uint8_t* out) {
+  const lzma_options_lzma* const opt = options;
 
   if (lzma_lzma_lclppb_encode (opt, out))
     return LZMA_PROG_ERROR;
@@ -642,6 +643,7 @@ lzma_lzma_props_encode (const void *options, uint8_t *out) {
 
   return LZMA_OK;
 }
+
 #endif
 
 extern LZMA_API(lzma_bool)

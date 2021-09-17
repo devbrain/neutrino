@@ -575,7 +575,7 @@ af_shaper_get_elem( AF_StyleMetrics  metrics,
 FT_Error
 af_shaper_get_coverage (AF_FaceGlobals globals,
                         AF_StyleClass style_class,
-                        FT_UShort *gstyles,
+                        FT_UShort* gstyles,
                         FT_Bool default_script) {
   FT_UNUSED(globals);
   FT_UNUSED(style_class);
@@ -585,7 +585,7 @@ af_shaper_get_coverage (AF_FaceGlobals globals,
   return FT_Err_Ok;
 }
 
-void *
+void*
 af_shaper_buf_create (FT_Face face) {
   FT_UNUSED(face);
 
@@ -594,19 +594,19 @@ af_shaper_buf_create (FT_Face face) {
 
 void
 af_shaper_buf_destroy (FT_Face face,
-                       void *buf) {
+                       void* buf) {
   FT_UNUSED(face);
   FT_UNUSED(buf);
 }
 
-const char *
-af_shaper_get_cluster (const char *p,
+const char*
+af_shaper_get_cluster (const char* p,
                        AF_StyleMetrics metrics,
-                       void *buf_,
-                       unsigned int *count) {
+                       void* buf_,
+                       unsigned int* count) {
   FT_Face face = metrics->globals->face;
   FT_ULong ch, dummy = 0;
-  FT_ULong *buf = (FT_ULong *) buf_;
+  FT_ULong* buf = (FT_ULong*) buf_;
 
   while (*p == ' ')
     p++;
@@ -632,12 +632,12 @@ af_shaper_get_cluster (const char *p,
 
 FT_ULong
 af_shaper_get_elem (AF_StyleMetrics metrics,
-                    void *buf_,
+                    void* buf_,
                     unsigned int idx,
-                    FT_Long *advance,
-                    FT_Long *y_offset) {
+                    FT_Long* advance,
+                    FT_Long* y_offset) {
   FT_Face face = metrics->globals->face;
-  FT_ULong glyph_index = *(FT_ULong *) buf_;
+  FT_ULong glyph_index = *(FT_ULong*) buf_;
 
   FT_UNUSED(idx);
 

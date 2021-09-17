@@ -19,7 +19,7 @@ put_uLong (uLong val) {
 }
 
 void
-put_chunk (const unsigned char *chunk, uInt length) {
+put_chunk (const unsigned char* chunk, uInt length) {
   uLong crc;
 
   put_uLong (length - 4); /* Exclude the tag */

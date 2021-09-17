@@ -71,14 +71,14 @@ FT_BEGIN_HEADER
 /*************************************************************************/
 /*************************************************************************/
 
-typedef struct GXV_ValidatorRec_ *GXV_Validator;
+typedef struct GXV_ValidatorRec_* GXV_Validator;
 
 #define DUMMY_LIMIT 0
 
 typedef void
-(*GXV_Validate_Func) (FT_Bytes table,
-                      FT_Bytes limit,
-                      GXV_Validator gxvalid);
+(* GXV_Validate_Func) (FT_Bytes table,
+                       FT_Bytes limit,
+                       GXV_Validator gxvalid);
 
 /* ====================== LookupTable Validator ======================== */
 
@@ -88,7 +88,7 @@ typedef union GXV_LookupValueDesc_ {
 
 } GXV_LookupValueDesc;
 
-typedef const GXV_LookupValueDesc *GXV_LookupValueCPtr;
+typedef const GXV_LookupValueDesc* GXV_LookupValueCPtr;
 
 typedef enum GXV_LookupValue_SignSpec_ {
   GXV_LOOKUPVALUE_UNSIGNED = 0,
@@ -97,15 +97,15 @@ typedef enum GXV_LookupValue_SignSpec_ {
 } GXV_LookupValue_SignSpec;
 
 typedef void
-(*GXV_Lookup_Value_Validate_Func) (FT_UShort glyph,
-                                   GXV_LookupValueCPtr value_p,
-                                   GXV_Validator gxvalid);
+(* GXV_Lookup_Value_Validate_Func) (FT_UShort glyph,
+                                    GXV_LookupValueCPtr value_p,
+                                    GXV_Validator gxvalid);
 
 typedef GXV_LookupValueDesc
-(*GXV_Lookup_Fmt4_Transit_Func) (FT_UShort relative_gindex,
-                                 GXV_LookupValueCPtr base_value_p,
-                                 FT_Bytes lookuptbl_limit,
-                                 GXV_Validator gxvalid);
+(* GXV_Lookup_Fmt4_Transit_Func) (FT_UShort relative_gindex,
+                                  GXV_LookupValueCPtr base_value_p,
+                                  FT_Bytes lookuptbl_limit,
+                                  GXV_Validator gxvalid);
 
 /* ====================== StateTable Validator ========================= */
 
@@ -138,20 +138,20 @@ typedef union GXV_StateTable_GlyphOffsetDesc_ {
 
 } GXV_StateTable_GlyphOffsetDesc;
 
-typedef const GXV_StateTable_GlyphOffsetDesc *GXV_StateTable_GlyphOffsetCPtr;
+typedef const GXV_StateTable_GlyphOffsetDesc* GXV_StateTable_GlyphOffsetCPtr;
 
 typedef void
-(*GXV_StateTable_Subtable_Setup_Func) (FT_UShort table_size,
-                                       FT_UShort classTable,
-                                       FT_UShort stateArray,
-                                       FT_UShort entryTable,
-                                       FT_UShort *classTable_length_p,
-                                       FT_UShort *stateArray_length_p,
-                                       FT_UShort *entryTable_length_p,
-                                       GXV_Validator gxvalid);
+(* GXV_StateTable_Subtable_Setup_Func) (FT_UShort table_size,
+                                        FT_UShort classTable,
+                                        FT_UShort stateArray,
+                                        FT_UShort entryTable,
+                                        FT_UShort* classTable_length_p,
+                                        FT_UShort* stateArray_length_p,
+                                        FT_UShort* entryTable_length_p,
+                                        GXV_Validator gxvalid);
 
 typedef void
-(*GXV_StateTable_Entry_Validate_Func) (
+(* GXV_StateTable_Entry_Validate_Func) (
     FT_Byte state,
     FT_UShort flags,
     GXV_StateTable_GlyphOffsetCPtr glyphOffset_p,
@@ -160,38 +160,38 @@ typedef void
     GXV_Validator gxvalid);
 
 typedef void
-(*GXV_StateTable_OptData_Load_Func) (FT_Bytes table,
-                                     FT_Bytes limit,
-                                     GXV_Validator gxvalid);
+(* GXV_StateTable_OptData_Load_Func) (FT_Bytes table,
+                                      FT_Bytes limit,
+                                      GXV_Validator gxvalid);
 
 typedef struct GXV_StateTable_ValidatorRec_ {
   GXV_GlyphOffset_Format entry_glyphoffset_fmt;
-  void *optdata;
+  void* optdata;
 
   GXV_StateTable_Subtable_Setup_Func subtable_setup_func;
   GXV_StateTable_Entry_Validate_Func entry_validate_func;
   GXV_StateTable_OptData_Load_Func optdata_load_func;
 
-} GXV_StateTable_ValidatorRec, *GXV_StateTable_ValidatorRecData;
+} GXV_StateTable_ValidatorRec, * GXV_StateTable_ValidatorRecData;
 
 /* ---------------------- 32bit XStateTable ---------------------------- */
 
 typedef GXV_StateTable_GlyphOffsetDesc GXV_XStateTable_GlyphOffsetDesc;
 
-typedef const GXV_XStateTable_GlyphOffsetDesc *GXV_XStateTable_GlyphOffsetCPtr;
+typedef const GXV_XStateTable_GlyphOffsetDesc* GXV_XStateTable_GlyphOffsetCPtr;
 
 typedef void
-(*GXV_XStateTable_Subtable_Setup_Func) (FT_ULong table_size,
-                                        FT_ULong classTable,
-                                        FT_ULong stateArray,
-                                        FT_ULong entryTable,
-                                        FT_ULong *classTable_length_p,
-                                        FT_ULong *stateArray_length_p,
-                                        FT_ULong *entryTable_length_p,
-                                        GXV_Validator gxvalid);
+(* GXV_XStateTable_Subtable_Setup_Func) (FT_ULong table_size,
+                                         FT_ULong classTable,
+                                         FT_ULong stateArray,
+                                         FT_ULong entryTable,
+                                         FT_ULong* classTable_length_p,
+                                         FT_ULong* stateArray_length_p,
+                                         FT_ULong* entryTable_length_p,
+                                         GXV_Validator gxvalid);
 
 typedef void
-(*GXV_XStateTable_Entry_Validate_Func) (
+(* GXV_XStateTable_Entry_Validate_Func) (
     FT_UShort state,
     FT_UShort flags,
     GXV_StateTable_GlyphOffsetCPtr glyphOffset_p,
@@ -203,7 +203,7 @@ typedef GXV_StateTable_OptData_Load_Func GXV_XStateTable_OptData_Load_Func;
 
 typedef struct GXV_XStateTable_ValidatorRec_ {
   int entry_glyphoffset_fmt;
-  void *optdata;
+  void* optdata;
 
   GXV_XStateTable_Subtable_Setup_Func subtable_setup_func;
   GXV_XStateTable_Entry_Validate_Func entry_validate_func;
@@ -212,7 +212,7 @@ typedef struct GXV_XStateTable_ValidatorRec_ {
   FT_ULong nClasses;
   FT_UShort maxClassID;
 
-} GXV_XStateTable_ValidatorRec, *GXV_XStateTable_ValidatorRecData;
+} GXV_XStateTable_ValidatorRec, * GXV_XStateTable_ValidatorRecData;
 
 /* ===================================================================== */
 
@@ -220,7 +220,7 @@ typedef struct GXV_ValidatorRec_ {
   FT_Validator root;
 
   FT_Face face;
-  void *table_data;
+  void* table_data;
 
   FT_ULong subtable_length;
 
@@ -350,8 +350,8 @@ typedef struct GXV_ValidatorRec_ {
 FT_LOCAL(void)
 gxv_BinSrchHeader_validate (FT_Bytes p,
                             FT_Bytes limit,
-                            FT_UShort *unitSize_p,
-                            FT_UShort *nUnits_p,
+                            FT_UShort* unitSize_p,
+                            FT_UShort* nUnits_p,
                             GXV_Validator gxvalid);
 
 FT_LOCAL(void)
@@ -415,9 +415,9 @@ gxv_StateTable_subtable_setup (FT_UShort table_size,
                                FT_UShort classTable,
                                FT_UShort stateArray,
                                FT_UShort entryTable,
-                               FT_UShort *classTable_length_p,
-                               FT_UShort *stateArray_length_p,
-                               FT_UShort *entryTable_length_p,
+                               FT_UShort* classTable_length_p,
+                               FT_UShort* stateArray_length_p,
+                               FT_UShort* entryTable_length_p,
                                GXV_Validator gxvalid);
 
 FT_LOCAL(void)
@@ -425,9 +425,9 @@ gxv_XStateTable_subtable_setup (FT_ULong table_size,
                                 FT_ULong classTable,
                                 FT_ULong stateArray,
                                 FT_ULong entryTable,
-                                FT_ULong *classTable_length_p,
-                                FT_ULong *stateArray_length_p,
-                                FT_ULong *entryTable_length_p,
+                                FT_ULong* classTable_length_p,
+                                FT_ULong* stateArray_length_p,
+                                FT_ULong* entryTable_length_p,
                                 GXV_Validator gxvalid);
 
 FT_LOCAL(void)
@@ -452,29 +452,29 @@ gxv_XStateTable_validate (FT_Bytes table,
 FT_LOCAL(void)
 gxv_array_getlimits_byte (FT_Bytes table,
                           FT_Bytes limit,
-                          FT_Byte *min,
-                          FT_Byte *max,
+                          FT_Byte* min,
+                          FT_Byte* max,
                           GXV_Validator gxvalid);
 
 FT_LOCAL(void)
 gxv_array_getlimits_ushort (FT_Bytes table,
                             FT_Bytes limit,
-                            FT_UShort *min,
-                            FT_UShort *max,
+                            FT_UShort* min,
+                            FT_UShort* max,
                             GXV_Validator gxvalid);
 
 FT_LOCAL(void)
-gxv_set_length_by_ushort_offset (FT_UShort *offset,
-                                 FT_UShort **length,
-                                 FT_UShort *buff,
+gxv_set_length_by_ushort_offset (FT_UShort* offset,
+                                 FT_UShort** length,
+                                 FT_UShort* buff,
                                  FT_UInt nmemb,
                                  FT_UShort limit,
                                  GXV_Validator gxvalid);
 
 FT_LOCAL(void)
-gxv_set_length_by_ulong_offset (FT_ULong *offset,
-                                FT_ULong **length,
-                                FT_ULong *buff,
+gxv_set_length_by_ulong_offset (FT_ULong* offset,
+                                FT_ULong** length,
+                                FT_ULong* buff,
                                 FT_UInt nmemb,
                                 FT_ULong limit,
                                 GXV_Validator gxvalid);
@@ -513,20 +513,20 @@ gxv_set_length_by_ulong_offset (FT_ULong *offset,
 typedef struct GXV_odtect_DataRec_ {
   FT_Bytes start;
   FT_ULong length;
-  FT_String *name;
+  FT_String* name;
 
-} GXV_odtect_DataRec, *GXV_odtect_Data;
+} GXV_odtect_DataRec, * GXV_odtect_Data;
 
 typedef struct GXV_odtect_RangeRec_ {
   FT_UInt nRanges;
   GXV_odtect_Data range;
 
-} GXV_odtect_RangeRec, *GXV_odtect_Range;
+} GXV_odtect_RangeRec, * GXV_odtect_Range;
 
 FT_LOCAL(void)
 gxv_odtect_add_range (FT_Bytes start,
                       FT_ULong length,
-                      const FT_String *name,
+                      const FT_String* name,
                       GXV_odtect_Range odtect);
 
 FT_LOCAL(void)

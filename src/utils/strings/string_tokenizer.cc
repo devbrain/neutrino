@@ -7,7 +7,7 @@
 #include <algorithm>
 
 namespace neutrino::utils {
-  string_tokenizer::string_tokenizer (const std::string &str, const std::string &separators, unsigned int options) {
+  string_tokenizer::string_tokenizer (const std::string& str, const std::string& separators, unsigned int options) {
     std::string::const_iterator it = str.begin ();
     std::string::const_iterator end = str.end ();
     std::string token;
@@ -48,8 +48,9 @@ namespace neutrino::utils {
       }
     }
   }
+
   // ----------------------------------------------------------------------------------------
-  void string_tokenizer::trim (std::string &token) {
+  void string_tokenizer::trim (std::string& token) {
     std::string::size_type front = 0;
     std::string::size_type back = 0;
     std::string::size_type length = token.length ();
@@ -71,8 +72,9 @@ namespace neutrino::utils {
     }
     token = token.substr (front, length - back - front);
   }
+
   // ----------------------------------------------------------------------------------------
-  std::size_t string_tokenizer::count (const std::string &token) const {
+  std::size_t string_tokenizer::count (const std::string& token) const {
     std::size_t result = 0;
     auto it = std::find (m_tokens.begin (), m_tokens.end (), token);
     while (it != m_tokens.end ()) {
@@ -81,22 +83,25 @@ namespace neutrino::utils {
     }
     return result;
   }
+
   // ----------------------------------------------------------------------------------------
-  std::string::size_type string_tokenizer::find (const std::string &token, std::string::size_type pos) const {
+  std::string::size_type string_tokenizer::find (const std::string& token, std::string::size_type pos) const {
     auto it = std::find (m_tokens.begin () + pos, m_tokens.end (), token);
     if (it != m_tokens.end ()) {
       return it - m_tokens.begin ();
     }
     RAISE_EX("Token ", token, " not found");
   }
+
   // ----------------------------------------------------------------------------------------
-  bool string_tokenizer::has (const std::string &token) const {
+  bool string_tokenizer::has (const std::string& token) const {
     auto it = std::find (m_tokens.begin (), m_tokens.end (), token);
     return it != m_tokens.end ();
   }
+
   // ----------------------------------------------------------------------------------------
   std::size_t
-  string_tokenizer::replace (const std::string &oldToken, const std::string &newToken, std::string::size_type pos) {
+  string_tokenizer::replace (const std::string& oldToken, const std::string& newToken, std::string::size_type pos) {
     std::size_t result = 0;
     auto it = std::find (m_tokens.begin () + pos, m_tokens.end (), oldToken);
     while (it != m_tokens.end ()) {

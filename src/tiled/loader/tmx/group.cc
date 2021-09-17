@@ -6,7 +6,7 @@
 #include "layer.hh"
 
 namespace neutrino::tiled::tmx {
-  group group::parse (const reader &elt, const group *parent) {
+  group group::parse (const reader& elt, const group* parent) {
     group res;
 
     if (parent) {
@@ -35,14 +35,14 @@ namespace neutrino::tiled::tmx {
       }
       component::parse (res, elt, parent);
     }
-    catch (exception &e) {
+    catch (exception& e) {
       RAISE_EX_WITH_CAUSE(std::move (e), "Failed to parse group [", name, "]");
     }
     return res;
   }
 
   std::tuple<std::string, int, int, float, bool, colori, int>
-  group::parse_content (const reader &elt, const group *self) {
+  group::parse_content (const reader& elt, const group* self) {
     auto[name, opacity, visible, id] = layer::parse (elt);
 
     int offsetx = default_offset_x, offsety = default_offset_y;

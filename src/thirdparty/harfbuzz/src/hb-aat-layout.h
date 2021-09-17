@@ -721,13 +721,13 @@ typedef enum {
 } hb_aat_layout_feature_selector_t;
 
 HB_EXTERN unsigned int
-hb_aat_layout_get_feature_types (hb_face_t *face,
+hb_aat_layout_get_feature_types (hb_face_t* face,
                                  unsigned int start_offset,
-                                 unsigned int *feature_count, /* IN/OUT.  May be NULL. */
-                                 hb_aat_layout_feature_type_t *features       /* OUT.     May be NULL. */);
+                                 unsigned int* feature_count, /* IN/OUT.  May be NULL. */
+                                 hb_aat_layout_feature_type_t* features       /* OUT.     May be NULL. */);
 
 HB_EXTERN hb_ot_name_id_t
-hb_aat_layout_feature_type_get_name_id (hb_face_t *face,
+hb_aat_layout_feature_type_get_name_id (hb_face_t* face,
                                         hb_aat_layout_feature_type_t feature_type);
 
 /**
@@ -756,12 +756,12 @@ typedef struct hb_aat_layout_feature_selector_info_t {
 #define HB_AAT_LAYOUT_NO_SELECTOR_INDEX        0xFFFFu
 
 HB_EXTERN unsigned int
-hb_aat_layout_feature_type_get_selector_infos (hb_face_t *face,
+hb_aat_layout_feature_type_get_selector_infos (hb_face_t* face,
                                                hb_aat_layout_feature_type_t feature_type,
                                                unsigned int start_offset,
-                                               unsigned int *selector_count, /* IN/OUT.  May be NULL. */
-                                               hb_aat_layout_feature_selector_info_t *selectors,      /* OUT.     May be NULL. */
-                                               unsigned int *default_index   /* OUT.     May be NULL. */);
+                                               unsigned int* selector_count, /* IN/OUT.  May be NULL. */
+                                               hb_aat_layout_feature_selector_info_t* selectors,      /* OUT.     May be NULL. */
+                                               unsigned int* default_index   /* OUT.     May be NULL. */);
 
 
 /*
@@ -769,7 +769,7 @@ hb_aat_layout_feature_type_get_selector_infos (hb_face_t *face,
  */
 
 HB_EXTERN hb_bool_t
-hb_aat_layout_has_substitution (hb_face_t *face);
+hb_aat_layout_has_substitution (hb_face_t* face);
 
 
 /*
@@ -777,7 +777,7 @@ hb_aat_layout_has_substitution (hb_face_t *face);
  */
 
 HB_EXTERN hb_bool_t
-hb_aat_layout_has_positioning (hb_face_t *face);
+hb_aat_layout_has_positioning (hb_face_t* face);
 
 
 /*
@@ -785,7 +785,7 @@ hb_aat_layout_has_positioning (hb_face_t *face);
  */
 
 HB_EXTERN hb_bool_t
-hb_aat_layout_has_tracking (hb_face_t *face);
+hb_aat_layout_has_tracking (hb_face_t* face);
 
 HB_END_DECLS
 

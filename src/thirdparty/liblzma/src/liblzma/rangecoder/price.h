@@ -40,7 +40,7 @@ rc_bit_1_price (const probability prob) {
 }
 
 static inline uint32_t
-rc_bittree_price (const probability *const probs,
+rc_bittree_price (const probability* const probs,
                   const uint32_t bit_levels, uint32_t symbol) {
   uint32_t price = 0;
   symbol += UINT32_C(1) << bit_levels;
@@ -56,7 +56,7 @@ rc_bittree_price (const probability *const probs,
 }
 
 static inline uint32_t
-rc_bittree_reverse_price (const probability *const probs,
+rc_bittree_reverse_price (const probability* const probs,
                           uint32_t bit_levels, uint32_t symbol) {
   uint32_t price = 0;
   uint32_t model_index = 1;

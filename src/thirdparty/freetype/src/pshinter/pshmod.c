@@ -30,7 +30,7 @@ typedef struct PS_Hinter_Module_Rec_ {
   T1_Hints_FuncsRec t1_funcs;
   T2_Hints_FuncsRec t2_funcs;
 
-} PS_Hinter_ModuleRec, *PS_Hinter_Module;
+} PS_Hinter_ModuleRec, * PS_Hinter_Module;
 
 
 /* finalize module */
@@ -47,7 +47,7 @@ ps_hinter_done (PS_Hinter_Module module) {
 FT_CALLBACK_DEF(FT_Error)
 ps_hinter_init (PS_Hinter_Module module) {
   FT_Memory memory = module->root.memory;
-  void *ph = &module->ps_hints;
+  void* ph = &module->ps_hints;
 
   ps_hints_init (&module->ps_hints, memory);
 

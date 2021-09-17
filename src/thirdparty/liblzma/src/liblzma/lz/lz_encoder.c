@@ -41,7 +41,7 @@ typedef struct {
 /// buffer. At the same time, data older than keep_size_before is dropped.
 ///
 static void
-move_window (lzma_mf *mf) {
+move_window (lzma_mf* mf) {
   // Align the move to a multiple of 16 bytes. Some LZ-based encoders
   // like LZMA use the lowest bits of mf->read_pos to know the
   // alignment of the uncompressed data. We also get better speed
@@ -74,8 +74,8 @@ move_window (lzma_mf *mf) {
 /// This function must not be called once it has returned LZMA_STREAM_END.
 ///
 static lzma_ret
-fill_window (lzma_coder *coder, const lzma_allocator *allocator,
-             const uint8_t *in, size_t *in_pos, size_t in_size,
+fill_window (lzma_coder* coder, const lzma_allocator* allocator,
+             const uint8_t* in, size_t* in_pos, size_t in_size,
              lzma_action action) {
   assert(coder->mf.read_pos <= coder->mf.write_pos);
 
@@ -153,12 +153,12 @@ fill_window (lzma_coder *coder, const lzma_allocator *allocator,
 }
 
 static lzma_ret
-lz_encode (void *coder_ptr, const lzma_allocator *allocator,
-           const uint8_t *restrict in, size_t *restrict in_pos,
+lz_encode (void* coder_ptr, const lzma_allocator* allocator,
+           const uint8_t* restrict in, size_t* restrict in_pos,
            size_t in_size,
-           uint8_t *restrict out, size_t *restrict out_pos,
+           uint8_t* restrict out, size_t* restrict out_pos,
            size_t out_size, lzma_action action) {
-  lzma_coder *coder = coder_ptr;
+  lzma_coder* coder = coder_ptr;
 
   while (*out_pos < out_size
          && (*in_pos < in_size || action != LZMA_RUN)) {
@@ -184,8 +184,8 @@ lz_encode (void *coder_ptr, const lzma_allocator *allocator,
 }
 
 static bool
-lz_encoder_prepare (lzma_mf *mf, const lzma_allocator *allocator,
-                    const lzma_lz_options *lz_options) {
+lz_encoder_prepare (lzma_mf* mf, const lzma_allocator* allocator,
+                    const lzma_lz_options* lz_options) {
   // For now, the dictionary size is limited to 1.5 GiB. This may grow
   // in the future if needed, but it needs a little more work than just
   // changing this check.
@@ -361,8 +361,8 @@ lz_encoder_prepare (lzma_mf *mf, const lzma_allocator *allocator,
 }
 
 static bool
-lz_encoder_init (lzma_mf *mf, const lzma_allocator *allocator,
-                 const lzma_lz_options *lz_options) {
+lz_encoder_init (lzma_mf* mf, const lzma_allocator* allocator,
+                 const lzma_lz_options* lz_options) {
   // Allocate the history buffer.
   if (mf->buffer == NULL) {
     // lzma_memcmplen() is used for the dictionary buffer
@@ -453,7 +453,7 @@ lz_encoder_init (lzma_mf *mf, const lzma_allocator *allocator,
 }
 
 extern uint64_t
-lzma_lz_encoder_memusage (const lzma_lz_options *lz_options) {
+lzma_lz_encoder_memusage (const lzma_lz_options* lz_options) {
   // Old buffers must not exist when calling lz_encoder_prepare().
   lzma_mf mf = {
       .buffer = NULL,
@@ -473,8 +473,8 @@ lzma_lz_encoder_memusage (const lzma_lz_options *lz_options) {
 }
 
 static void
-lz_encoder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_coder *coder = coder_ptr;
+lz_encoder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_coder* coder = coder_ptr;
 
   lzma_next_end (&coder->next, allocator);
 
@@ -492,10 +492,10 @@ lz_encoder_end (void *coder_ptr, const lzma_allocator *allocator) {
 }
 
 static lzma_ret
-lz_encoder_update (void *coder_ptr, const lzma_allocator *allocator,
-                   const lzma_filter *filters_null lzma_attribute((__unused__)),
-                   const lzma_filter *reversed_filters) {
-  lzma_coder *coder = coder_ptr;
+lz_encoder_update (void* coder_ptr, const lzma_allocator* allocator,
+                   const lzma_filter* filters_null lzma_attribute((__unused__)),
+                   const lzma_filter* reversed_filters) {
+  lzma_coder* coder = coder_ptr;
 
   if (coder->lz.options_update == NULL)
     return LZMA_PROG_ERROR;
@@ -508,18 +508,18 @@ lz_encoder_update (void *coder_ptr, const lzma_allocator *allocator,
 }
 
 extern lzma_ret
-lzma_lz_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                      const lzma_filter_info *filters,
-                      lzma_ret (*lz_init) (lzma_lz_encoder *lz,
-                                           const lzma_allocator *allocator, const void *options,
-                                           lzma_lz_options *lz_options)) {
+lzma_lz_encoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                      const lzma_filter_info* filters,
+                      lzma_ret (* lz_init) (lzma_lz_encoder* lz,
+                                            const lzma_allocator* allocator, const void* options,
+                                            lzma_lz_options* lz_options)) {
 #ifdef HAVE_SMALL
   // We need that the CRC32 table has been initialized.
   lzma_crc32_init();
 #endif
 
   // Allocate and initialize the base data structure.
-  lzma_coder *coder = next->coder;
+  lzma_coder* coder = next->coder;
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_coder), allocator);
     if (coder == NULL)

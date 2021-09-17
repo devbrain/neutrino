@@ -63,7 +63,7 @@
 
 FT_LOCAL_DEF(void)
 cf2_hintmask_init (CF2_HintMask hintmask,
-                   FT_Error *error) {
+                   FT_Error* error) {
   FT_ZERO(hintmask);
 
   hintmask->error = error;
@@ -261,8 +261,8 @@ static void
 cf2_doStems (const CF2_Font font,
              CF2_Stack opStack,
              CF2_ArrStack stemHintArray,
-             CF2_Fixed *width,
-             FT_Bool *haveWidth,
+             CF2_Fixed* width,
+             FT_Bool* haveWidth,
              CF2_Fixed hintOffset) {
   CF2_UInt i;
   CF2_UInt count = cf2_stack_count (opStack);
@@ -309,10 +309,10 @@ cf2_doStems (const CF2_Font font,
 
 static void
 cf2_doFlex (CF2_Stack opStack,
-            CF2_Fixed *curX,
-            CF2_Fixed *curY,
+            CF2_Fixed* curX,
+            CF2_Fixed* curY,
             CF2_GlyphPath glyphPath,
-            const FT_Bool *readFromStack,
+            const FT_Bool* readFromStack,
             FT_Bool doConditionalLastRead) {
   CF2_Fixed vals[14];
   CF2_UInt idx;
@@ -395,7 +395,7 @@ cf2_doBlend (const CFF_Blend blend,
   delta = base + numBlends;
 
   for (i = 0; i < numBlends; i++) {
-    const CF2_Fixed *weight = &blend->BV[1];
+    const CF2_Fixed* weight = &blend->BV[1];
 
     /* start with first term */
     CF2_Fixed sum = cf2_stack_getReal (opStack, i + base);
@@ -435,18 +435,18 @@ FT_LOCAL_DEF(void)
 cf2_interpT2CharString (CF2_Font font,
                         CF2_Buffer buf,
                         CF2_OutlineCallbacks callbacks,
-                        const FT_Vector *translation,
+                        const FT_Vector* translation,
                         FT_Bool doingSeac,
                         CF2_Fixed curX,
                         CF2_Fixed curY,
-                        CF2_Fixed *width) {
+                        CF2_Fixed* width) {
   /* lastError is used for errors that are immediately tested */
   FT_Error lastError = FT_Err_Ok;
 
   /* pointer to parsed font object */
-  PS_Decoder *decoder = font->decoder;
+  PS_Decoder* decoder = font->decoder;
 
-  FT_Error *error = &font->error;
+  FT_Error* error = &font->error;
   FT_Memory memory = font->memory;
 
   CF2_Fixed scaleY = font->innerTransform.d;
@@ -921,7 +921,7 @@ cf2_interpT2CharString (CF2_Font font,
         subrNum = cf2_stack_popInt (opStack);
 
         if (font->isT1 && decoder->locals_hash) {
-          size_t *val = ft_hash_num_lookup (subrNum,
+          size_t* val = ft_hash_num_lookup (subrNum,
                                             decoder->locals_hash);
 
           if (val)
@@ -1384,7 +1384,7 @@ cf2_interpT2CharString (CF2_Font font,
                     FT_TRACE4((" unknown op (12, %d)\n", op2));
                   else {
                     CF2_Fixed lsb_x, lsb_y;
-                    PS_Builder *builder;
+                    PS_Builder* builder;
 
                     FT_TRACE4((" sbw"));
 
@@ -2243,7 +2243,7 @@ cf2_interpT2CharString (CF2_Font font,
           FT_TRACE4((" unknown op (%d)\n", op1));
         else {
           CF2_Fixed lsb_x;
-          PS_Builder *builder;
+          PS_Builder* builder;
 
           FT_TRACE4((" hsbw\n"));
 

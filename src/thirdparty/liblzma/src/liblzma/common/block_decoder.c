@@ -26,7 +26,7 @@ typedef struct {
 
   /// Decoding options; we also write Compressed Size and Uncompressed
   /// Size back to this structure when the decoding has been finished.
-  lzma_block *block;
+  lzma_block* block;
 
   /// Compressed Size calculated while decoding
   lzma_vli compressed_size;
@@ -50,7 +50,7 @@ typedef struct {
 } lzma_block_coder;
 
 static inline bool
-update_size (lzma_vli *size, lzma_vli add, lzma_vli limit) {
+update_size (lzma_vli* size, lzma_vli add, lzma_vli limit) {
   if (limit > LZMA_VLI_MAX)
     limit = LZMA_VLI_MAX;
 
@@ -68,11 +68,11 @@ is_size_valid (lzma_vli size, lzma_vli reference) {
 }
 
 static lzma_ret
-block_decode (void *coder_ptr, const lzma_allocator *allocator,
-              const uint8_t *restrict in, size_t *restrict in_pos,
-              size_t in_size, uint8_t *restrict out,
-              size_t *restrict out_pos, size_t out_size, lzma_action action) {
-  lzma_block_coder *coder = coder_ptr;
+block_decode (void* coder_ptr, const lzma_allocator* allocator,
+              const uint8_t* restrict in, size_t* restrict in_pos,
+              size_t in_size, uint8_t* restrict out,
+              size_t* restrict out_pos, size_t out_size, lzma_action action) {
+  lzma_block_coder* coder = coder_ptr;
 
   switch (coder->sequence) {
     case SEQ_CODE: {
@@ -171,16 +171,16 @@ block_decode (void *coder_ptr, const lzma_allocator *allocator,
 }
 
 static void
-block_decoder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_block_coder *coder = coder_ptr;
+block_decoder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_block_coder* coder = coder_ptr;
   lzma_next_end (&coder->next, allocator);
   lzma_free (coder, allocator);
   return;
 }
 
 extern lzma_ret
-lzma_block_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                         lzma_block *block) {
+lzma_block_decoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                         lzma_block* block) {
   lzma_next_coder_init(&lzma_block_decoder_init, next, allocator);
 
   // Validate the options. lzma_block_unpadded_size() does that for us
@@ -191,7 +191,7 @@ lzma_block_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
     return LZMA_PROG_ERROR;
 
   // Allocate *next->coder if needed.
-  lzma_block_coder *coder = next->coder;
+  lzma_block_coder* coder = next->coder;
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_block_coder), allocator);
     if (coder == NULL)
@@ -234,7 +234,7 @@ lzma_block_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern LZMA_API(lzma_ret)
-lzma_block_decoder (lzma_stream *strm, lzma_block *block) {
+lzma_block_decoder (lzma_stream* strm, lzma_block* block) {
   lzma_next_strm_init(lzma_block_decoder_init, strm, block);
 
   strm->internal->supported_actions[LZMA_RUN] = true;

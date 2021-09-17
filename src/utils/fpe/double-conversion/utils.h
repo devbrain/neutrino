@@ -194,7 +194,7 @@ typedef uint16_t uc16;
 
 namespace double_conversion {
 
-  inline int StrLength (const char *string) {
+  inline int StrLength (const char* string) {
     size_t length = strlen (string);
     DOUBLE_CONVERSION_ASSERT(length == static_cast<size_t>(static_cast<int>(length)));
     return static_cast<int>(length);
@@ -207,7 +207,8 @@ namespace double_conversion {
       Vector ()
           : start_ (NULL), length_ (0) {
       }
-      Vector (T *data, int len)
+
+      Vector (T* data, int len)
           : start_ (data), length_ (len) {
         DOUBLE_CONVERSION_ASSERT(len == 0 || (len > 0 && data != NULL));
       }
@@ -232,21 +233,21 @@ namespace double_conversion {
       }
 
       // Returns the pointer to the start of the data in the vector.
-      T *start () const {
+      T* start () const {
         return start_;
       }
 
       // Access individual vector elements - checks bounds in debug mode.
-      T &operator[] (int index) const {
+      T& operator [] (int index) const {
         DOUBLE_CONVERSION_ASSERT(0 <= index && index < length_);
         return start_[index];
       }
 
-      T &first () {
+      T& first () {
         return start_[0];
       }
 
-      T &last () {
+      T& last () {
         return start_[length_ - 1];
       }
 
@@ -256,7 +257,7 @@ namespace double_conversion {
       }
 
     private:
-      T *start_;
+      T* start_;
       int length_;
   };
 
@@ -265,7 +266,7 @@ namespace double_conversion {
 // buffer bounds on all operations in debug mode.
   class StringBuilder {
     public:
-      StringBuilder (char *buffer, int buffer_size)
+      StringBuilder (char* buffer, int buffer_size)
           : buffer_ (buffer, buffer_size), position_ (0) {
       }
 
@@ -300,13 +301,13 @@ namespace double_conversion {
 
       // Add an entire string to the builder. Uses strlen() internally to
       // compute the length of the input string.
-      void AddString (const char *s) {
+      void AddString (const char* s) {
         AddSubstring (s, StrLength (s));
       }
 
       // Add the first 'n' characters of the given string 's' to the
       // builder. The input string must have enough characters.
-      void AddSubstring (const char *s, int n) {
+      void AddSubstring (const char* s, int n) {
         DOUBLE_CONVERSION_ASSERT(!is_finalized () && position_ + n < buffer_.length ());
         DOUBLE_CONVERSION_ASSERT(static_cast<size_t>(n) <= strlen (s));
         memmove (&buffer_[position_], s, n);
@@ -322,7 +323,7 @@ namespace double_conversion {
       }
 
       // Finalize the string by 0-terminating it and returning the buffer.
-      char *Finalize () {
+      char* Finalize () {
         DOUBLE_CONVERSION_ASSERT(!is_finalized () && position_ < buffer_.length ());
         buffer_[position_] = '\0';
         // Make sure nobody managed to add a 0-character to the
@@ -369,7 +370,7 @@ namespace double_conversion {
 // enough that it can no longer see that you have cast one pointer type to
 // another thus avoiding the warning.
   template <class Dest, class Source>
-  Dest BitCast (const Source &source) {
+  Dest BitCast (const Source& source) {
     // Compile time assertion: sizeof(Dest) == sizeof(Source)
     // A compile error here means your Dest and Source have different sizes.
 #if __cplusplus >= 201103L
@@ -386,7 +387,7 @@ namespace double_conversion {
   }
 
   template <class Dest, class Source>
-  Dest BitCast (Source *source) {
+  Dest BitCast (Source* source) {
     return BitCast<Dest> (reinterpret_cast<uintptr_t>(source));
   }
 

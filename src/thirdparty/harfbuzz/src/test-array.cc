@@ -65,7 +65,7 @@ test_reverse_invalid () {
 }
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   test_reverse ();
   test_reverse_range ();
   test_reverse_invalid ();

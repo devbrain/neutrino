@@ -27,7 +27,7 @@ namespace neutrino::hal {
       void run (int fps);
       void quit ();
 
-      events_broker &broker ();
+      events_broker& broker ();
     protected:
       virtual void setup ();
       virtual void on_terminating ();
@@ -50,7 +50,7 @@ namespace neutrino::hal {
       spimpl::unique_impl_ptr<impl> m_pimpl;
   };
 
-  application *get_application ();
+  application* get_application ();
 }
 
 #endif

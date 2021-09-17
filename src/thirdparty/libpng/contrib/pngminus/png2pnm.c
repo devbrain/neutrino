@@ -29,19 +29,19 @@
 
 /* function prototypes */
 
-int main (int argc, char *argv[]);
+int main (int argc, char* argv[]);
 void usage ();
-BOOL png2pnm (FILE *png_file, FILE *pnm_file, FILE *alpha_file,
+BOOL png2pnm (FILE* png_file, FILE* pnm_file, FILE* alpha_file,
               BOOL raw, BOOL alpha);
 
 /*
  *  main
  */
 
-int main (int argc, char *argv[]) {
-  FILE *fp_rd = stdin;
-  FILE *fp_wr = stdout;
-  FILE *fp_al = NULL;
+int main (int argc, char* argv[]) {
+  FILE* fp_rd = stdin;
+  FILE* fp_wr = stdout;
+  FILE* fp_al = NULL;
   BOOL raw = TRUE;
   BOOL alpha = FALSE;
   int argi;
@@ -148,14 +148,14 @@ void usage () {
  *  png2pnm
  */
 
-BOOL png2pnm (FILE *png_file, FILE *pnm_file, FILE *alpha_file,
+BOOL png2pnm (FILE* png_file, FILE* pnm_file, FILE* alpha_file,
               BOOL raw, BOOL alpha) {
-  png_struct *png_ptr = NULL;
-  png_info *info_ptr = NULL;
+  png_struct* png_ptr = NULL;
+  png_info* info_ptr = NULL;
   png_byte buf[8];
-  png_byte *png_pixels = NULL;
-  png_byte **row_pointers = NULL;
-  png_byte *pix_ptr = NULL;
+  png_byte* png_pixels = NULL;
+  png_byte** row_pointers = NULL;
+  png_byte* pix_ptr = NULL;
   png_uint_32 row_bytes;
 
   png_uint_32 width;
@@ -278,13 +278,13 @@ BOOL png2pnm (FILE *png_file, FILE *pnm_file, FILE *alpha_file,
     png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
     return FALSE;
   }
-  if ((png_pixels = (png_byte *)
+  if ((png_pixels = (png_byte*)
       malloc ((size_t) row_bytes * (size_t) height)) == NULL) {
     png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
     return FALSE;
   }
 
-  if ((row_pointers = (png_byte **)
+  if ((row_pointers = (png_byte**)
       malloc ((size_t) height * sizeof (png_byte * ))) == NULL) {
     png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
     free (png_pixels);

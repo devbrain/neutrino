@@ -47,7 +47,7 @@ struct remap_sid_t : hb_inc_bimap_t {
       return sid;
   }
 
-  unsigned int operator[] (unsigned int sid) const {
+  unsigned int operator [] (unsigned int sid) const {
     if (is_std_std (sid) || (sid == CFF_UNDEF_SID))
       return sid;
     else
@@ -59,9 +59,11 @@ struct remap_sid_t : hb_inc_bimap_t {
   static bool is_std_std (unsigned int sid) {
     return sid < num_std_strings;
   }
+
   static unsigned int offset_sid (unsigned int sid) {
     return sid + num_std_strings;
   }
+
   static unsigned int unoffset_sid (unsigned int sid) {
     return sid - num_std_strings;
   }
@@ -82,7 +84,7 @@ struct cff1_sub_table_info_t : cff_sub_table_info_t {
 
 /* a copy of a parsed out cff1_top_dict_values_t augmented with additional operators */
 struct cff1_top_dict_values_mod_t : cff1_top_dict_values_t {
-    void init (const cff1_top_dict_values_t *base_ = &Null (cff1_top_dict_values_t)) {
+    void init (const cff1_top_dict_values_t* base_ = &Null (cff1_top_dict_values_t)) {
       SUPER::init ();
       base = base_;
     }
@@ -94,41 +96,43 @@ struct cff1_top_dict_values_mod_t : cff1_top_dict_values_t {
     unsigned get_count () const {
       return base->get_count () + SUPER::get_count ();
     }
-    const cff1_top_dict_val_t &get_value (unsigned int i) const {
+
+    const cff1_top_dict_val_t& get_value (unsigned int i) const {
       if (i < base->get_count ())
         return (*base)[i];
       else
         return SUPER::values[i - base->get_count ()];
     }
-    const cff1_top_dict_val_t &operator[] (unsigned int i) const {
+
+    const cff1_top_dict_val_t& operator [] (unsigned int i) const {
       return get_value (i);
     }
 
-    void reassignSIDs (const remap_sid_t &sidmap) {
+    void reassignSIDs (const remap_sid_t& sidmap) {
       for (unsigned int i = 0; i < name_dict_values_t::ValCount; i++)
         nameSIDs[i] = sidmap[base->nameSIDs[i]];
     }
 
   protected:
     typedef cff1_top_dict_values_t SUPER;
-    const cff1_top_dict_values_t *base;
+    const cff1_top_dict_values_t* base;
 };
 
 struct top_dict_modifiers_t {
-  top_dict_modifiers_t (const cff1_sub_table_info_t &info_,
-                        const unsigned int (&nameSIDs_)[name_dict_values_t::ValCount])
+  top_dict_modifiers_t (const cff1_sub_table_info_t& info_,
+                        const unsigned int (& nameSIDs_)[name_dict_values_t::ValCount])
       : info (info_),
         nameSIDs (nameSIDs_) {
   }
 
-  const cff1_sub_table_info_t &info;
-  const unsigned int    (&nameSIDs)[name_dict_values_t::ValCount];
+  const cff1_sub_table_info_t& info;
+  const unsigned int    (& nameSIDs)[name_dict_values_t::ValCount];
 };
 
 struct cff1_top_dict_op_serializer_t : cff_top_dict_op_serializer_t<cff1_top_dict_val_t> {
-  bool serialize (hb_serialize_context_t *c,
-                  const cff1_top_dict_val_t &opstr,
-                  const top_dict_modifiers_t &mod) const {
+  bool serialize (hb_serialize_context_t* c,
+                  const cff1_top_dict_val_t& opstr,
+                  const top_dict_modifiers_t& mod) const {
     TRACE_SERIALIZE (this);
 
     op_code_t op = opstr.op;
@@ -182,9 +186,9 @@ struct cff1_top_dict_op_serializer_t : cff_top_dict_op_serializer_t<cff1_top_dic
 };
 
 struct cff1_font_dict_op_serializer_t : cff_font_dict_op_serializer_t {
-    bool serialize (hb_serialize_context_t *c,
-                    const op_str_t &opstr,
-                    const cff1_font_dict_values_mod_t &mod) const {
+    bool serialize (hb_serialize_context_t* c,
+                    const op_str_t& opstr,
+                    const cff1_font_dict_values_mod_t& mod) const {
       TRACE_SERIALIZE (this);
 
       if (opstr.op == OpCode_FontName)
@@ -198,7 +202,7 @@ struct cff1_font_dict_op_serializer_t : cff_font_dict_op_serializer_t {
 };
 
 struct cff1_cs_opset_flatten_t : cff1_cs_opset_t<cff1_cs_opset_flatten_t, flatten_param_t> {
-    static void flush_args_and_op (op_code_t op, cff1_cs_interp_env_t &env, flatten_param_t &param) {
+    static void flush_args_and_op (op_code_t op, cff1_cs_interp_env_t& env, flatten_param_t& param) {
       if (env.arg_start > 0)
         flush_width (env, param);
 
@@ -221,25 +225,26 @@ struct cff1_cs_opset_flatten_t : cff1_cs_opset_t<cff1_cs_opset_flatten_t, flatte
           break;
       }
     }
-    static void flush_args (cff1_cs_interp_env_t &env, flatten_param_t &param) {
+
+    static void flush_args (cff1_cs_interp_env_t& env, flatten_param_t& param) {
       str_encoder_t encoder (param.flatStr);
       for (unsigned int i = env.arg_start; i < env.argStack.get_count (); i++)
         encoder.encode_num (env.eval_arg (i));
       SUPER::flush_args (env, param);
     }
 
-    static void flush_op (op_code_t op, cff1_cs_interp_env_t &env, flatten_param_t &param) {
+    static void flush_op (op_code_t op, cff1_cs_interp_env_t& env, flatten_param_t& param) {
       str_encoder_t encoder (param.flatStr);
       encoder.encode_op (op);
     }
 
-    static void flush_width (cff1_cs_interp_env_t &env, flatten_param_t &param) {
+    static void flush_width (cff1_cs_interp_env_t& env, flatten_param_t& param) {
       assert (env.has_width);
       str_encoder_t encoder (param.flatStr);
       encoder.encode_num (env.width);
     }
 
-    static void flush_hintmask (op_code_t op, cff1_cs_interp_env_t &env, flatten_param_t &param) {
+    static void flush_hintmask (op_code_t op, cff1_cs_interp_env_t& env, flatten_param_t& param) {
       SUPER::flush_hintmask (op, env, param);
       if (!param.drop_hints) {
         str_encoder_t encoder (param.flatStr);
@@ -257,7 +262,7 @@ struct range_list_t : hb_vector_t<code_pair_t> {
   bool complete (unsigned int last_glyph) {
     bool two_byte = false;
     for (unsigned int i = (*this).length; i > 0; i--) {
-      code_pair_t &pair = (*this)[i - 1];
+      code_pair_t& pair = (*this)[i - 1];
       unsigned int nLeft = last_glyph - pair.glyph - 1;
       if (nLeft >= 0x100)
         two_byte = true;
@@ -269,7 +274,7 @@ struct range_list_t : hb_vector_t<code_pair_t> {
 };
 
 struct cff1_cs_opset_subr_subset_t : cff1_cs_opset_t<cff1_cs_opset_subr_subset_t, subr_subset_param_t> {
-    static void process_op (op_code_t op, cff1_cs_interp_env_t &env, subr_subset_param_t &param) {
+    static void process_op (op_code_t op, cff1_cs_interp_env_t& env, subr_subset_param_t& param) {
       switch (op) {
 
         case OpCode_return:
@@ -302,8 +307,8 @@ struct cff1_cs_opset_subr_subset_t : cff1_cs_opset_t<cff1_cs_opset_subr_subset_t
 
   protected:
     static void process_call_subr (op_code_t op, cs_type_t type,
-                                   cff1_cs_interp_env_t &env, subr_subset_param_t &param,
-                                   cff1_biased_subrs_t &subrs, hb_set_t *closure) {
+                                   cff1_cs_interp_env_t& env, subr_subset_param_t& param,
+                                   cff1_biased_subrs_t& subrs, hb_set_t* closure) {
       byte_str_ref_t str_ref = env.str_ref;
       env.call_subr (subrs, type);
       param.current_parsed_str->add_call_op (op, str_ref, env.context.subr_num);
@@ -321,11 +326,11 @@ struct cff1_subr_subsetter_t : subr_subsetter_t<cff1_subr_subsetter_t,
                                                 cff1_cs_interp_env_t,
                                                 cff1_cs_opset_subr_subset_t,
                                                 OpCode_endchar> {
-  cff1_subr_subsetter_t (const OT::cff1::accelerator_subset_t &acc_, const hb_subset_plan_t *plan_)
+  cff1_subr_subsetter_t (const OT::cff1::accelerator_subset_t& acc_, const hb_subset_plan_t* plan_)
       : subr_subsetter_t (acc_, plan_) {
   }
 
-  static void complete_parsed_str (cff1_cs_interp_env_t &env, subr_subset_param_t &param, parsed_cs_str_t &charstring) {
+  static void complete_parsed_str (cff1_cs_interp_env_t& env, subr_subset_param_t& param, parsed_cs_str_t& charstring) {
     /* insert width at the beginning of the charstring as necessary */
     if (env.has_width)
       charstring.set_prefix (env.width);
@@ -335,7 +340,7 @@ struct cff1_subr_subsetter_t : subr_subsetter_t<cff1_subr_subsetter_t,
      */
     param.current_parsed_str->set_parsed ();
     for (unsigned int i = 0; i < env.callStack.get_count (); i++) {
-      parsed_cs_str_t *parsed_str = param.get_parsed_str_for_context (env.callStack[i]);
+      parsed_cs_str_t* parsed_str = param.get_parsed_str_for_context (env.callStack[i]);
       if (likely (parsed_str))
         parsed_str->set_parsed ();
       else
@@ -381,8 +386,8 @@ struct cff_subset_plan {
     sidmap.fini ();
   }
 
-  void plan_subset_encoding (const OT::cff1::accelerator_subset_t &acc, hb_subset_plan_t *plan) {
-    const Encoding *encoding = acc.encoding;
+  void plan_subset_encoding (const OT::cff1::accelerator_subset_t& acc, hb_subset_plan_t* plan) {
+    const Encoding* encoding = acc.encoding;
     unsigned int size0, size1;
     hb_codepoint_t code, last_code = CFF_UNDEF_CODE;
     hb_vector_t<hb_codepoint_t> supp_codes;
@@ -437,7 +442,7 @@ struct cff_subset_plan {
       subset_enc_format = 1;
   }
 
-  void plan_subset_charset (const OT::cff1::accelerator_subset_t &acc, hb_subset_plan_t *plan) {
+  void plan_subset_charset (const OT::cff1::accelerator_subset_t& acc, hb_subset_plan_t* plan) {
     unsigned int size0, size_ranges;
     hb_codepoint_t sid, last_sid = CFF_UNDEF_CODE;
 
@@ -481,7 +486,7 @@ struct cff_subset_plan {
       subset_charset_format = 2;
   }
 
-  bool collect_sids_in_dicts (const OT::cff1::accelerator_subset_t &acc) {
+  bool collect_sids_in_dicts (const OT::cff1::accelerator_subset_t& acc) {
     sidmap.reset ();
 
     for (unsigned int i = 0; i < name_dict_values_t::ValCount; i++) {
@@ -500,8 +505,8 @@ struct cff_subset_plan {
     return true;
   }
 
-  bool create (const OT::cff1::accelerator_subset_t &acc,
-               hb_subset_plan_t *plan) {
+  bool create (const OT::cff1::accelerator_subset_t& acc,
+               hb_subset_plan_t* plan) {
     /* make sure notdef is first */
     hb_codepoint_t old_glyph;
     if (!plan->old_gid_for_new_gid (0, &old_glyph) || (old_glyph != 0))
@@ -614,8 +619,8 @@ struct cff_subset_plan {
       fontdicts_mod.push (cff1_font_dict_values_mod_t ());
     else {
       +hb_iter (acc.fontDicts)
-      | hb_filter ([&] (const cff1_font_dict_values_t &_) { return fdmap.has (&_ - &acc.fontDicts[0]); })
-      | hb_map ([&] (const cff1_font_dict_values_t &_) {
+      | hb_filter ([&] (const cff1_font_dict_values_t& _) { return fdmap.has (&_ - &acc.fontDicts[0]); })
+      | hb_map ([&] (const cff1_font_dict_values_t& _) {
         cff1_font_dict_values_mod_t mod;
         mod.init (&_, sidmap[_.fontName]);
         return mod;
@@ -664,16 +669,16 @@ struct cff_subset_plan {
   bool desubroutinize;
 };
 
-static bool _serialize_cff1 (hb_serialize_context_t *c,
-                             cff_subset_plan &plan,
-                             const OT::cff1::accelerator_subset_t &acc,
+static bool _serialize_cff1 (hb_serialize_context_t* c,
+                             cff_subset_plan& plan,
+                             const OT::cff1::accelerator_subset_t& acc,
                              unsigned int num_glyphs) {
   /* private dicts & local subrs */
   for (int i = (int) acc.privateDicts.length; --i >= 0;) {
     if (plan.fdmap.has (i)) {
       objidx_t subrs_link = 0;
       if (plan.subset_localsubrs[i].length > 0) {
-        CFF1Subrs *dest = c->start_embed<CFF1Subrs> ();
+        CFF1Subrs* dest = c->start_embed<CFF1Subrs> ();
         if (unlikely (!dest))
           return false;
         c->push ();
@@ -685,7 +690,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
         }
       }
 
-      PrivateDict *pd = c->start_embed<PrivateDict> ();
+      PrivateDict* pd = c->start_embed<PrivateDict> ();
       if (unlikely (!pd))
         return false;
       c->push ();
@@ -708,7 +713,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
 
   /* CharStrings */
   {
-    CFF1CharStrings *cs = c->start_embed<CFF1CharStrings> ();
+    CFF1CharStrings* cs = c->start_embed<CFF1CharStrings> ();
     if (unlikely (!cs))
       return false;
     c->push ();
@@ -722,7 +727,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
 
   /* FDArray (FD Index) */
   if (acc.fdArray != &Null (CFF1FDArray)) {
-    CFF1FDArray *fda = c->start_embed<CFF1FDArray> ();
+    CFF1FDArray* fda = c->start_embed<CFF1FDArray> ();
     if (unlikely (!fda))
       return false;
     c->push ();
@@ -751,7 +756,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
 
   /* Charset */
   if (plan.subset_charset) {
-    Charset *dest = c->start_embed<Charset> ();
+    Charset* dest = c->start_embed<Charset> ();
     if (unlikely (!dest))
       return false;
     c->push ();
@@ -768,7 +773,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
 
   /* Encoding */
   if (plan.subset_encoding) {
-    Encoding *dest = c->start_embed<Encoding> ();
+    Encoding* dest = c->start_embed<Encoding> ();
     if (unlikely (!dest))
       return false;
     c->push ();
@@ -787,7 +792,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
   /* global subrs */
   {
     c->push ();
-    CFF1Subrs *dest = c->start_embed<CFF1Subrs> ();
+    CFF1Subrs* dest = c->start_embed<CFF1Subrs> ();
     if (unlikely (!dest))
       return false;
     if (likely (dest->serialize (c, plan.subset_globalsubrs)))
@@ -800,7 +805,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
 
   /* String INDEX */
   {
-    CFF1StringIndex *dest = c->start_embed<CFF1StringIndex> ();
+    CFF1StringIndex* dest = c->start_embed<CFF1StringIndex> ();
     if (unlikely (!dest))
       return false;
     c->push ();
@@ -812,7 +817,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
     }
   }
 
-  OT::cff1 *cff = c->allocate_min<OT::cff1> ();
+  OT::cff1* cff = c->allocate_min<OT::cff1> ();
   if (unlikely (!cff))
     return false;
 
@@ -829,7 +834,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
   /* top dict INDEX */
   {
     /* serialize singleton TopDict */
-    TopDict *top = c->start_embed<TopDict> ();
+    TopDict* top = c->start_embed<TopDict> ();
     if (!top)
       return false;
     c->push ();
@@ -845,7 +850,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
       return false;
     }
     /* serialize INDEX header for above */
-    CFF1Index *dest = c->start_embed<CFF1Index> ();
+    CFF1Index* dest = c->start_embed<CFF1Index> ();
     if (!dest)
       return false;
     return dest->serialize_header (c, hb_iter (hb_array_t<unsigned> (&top_size, 1)));
@@ -853,8 +858,8 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
 }
 
 static bool
-_hb_subset_cff1 (const OT::cff1::accelerator_subset_t &acc,
-                 hb_subset_context_t *c) {
+_hb_subset_cff1 (const OT::cff1::accelerator_subset_t& acc,
+                 hb_subset_context_t* c) {
   cff_subset_plan cff_plan;
 
   if (unlikely (!cff_plan.create (acc, c->plan))) {
@@ -872,7 +877,7 @@ _hb_subset_cff1 (const OT::cff1::accelerator_subset_t &acc,
  * Return value: subsetted cff table.
  **/
 bool
-hb_subset_cff1 (hb_subset_context_t *c) {
+hb_subset_cff1 (hb_subset_context_t* c) {
   OT::cff1::accelerator_subset_t acc;
   acc.init (c->plan->source);
   bool result = likely (acc.is_valid ()) && _hb_subset_cff1 (acc, c);

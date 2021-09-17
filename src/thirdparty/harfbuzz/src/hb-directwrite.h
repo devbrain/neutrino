@@ -29,11 +29,11 @@
 
 HB_BEGIN_DECLS
 
-HB_EXTERN hb_face_t *
-hb_directwrite_face_create (IDWriteFontFace *font_face);
+HB_EXTERN hb_face_t*
+hb_directwrite_face_create (IDWriteFontFace* font_face);
 
-HB_EXTERN IDWriteFontFace *
-hb_directwrite_face_get_font_face (hb_face_t *face);
+HB_EXTERN IDWriteFontFace*
+hb_directwrite_face_get_font_face (hb_face_t* face);
 
 HB_END_DECLS
 

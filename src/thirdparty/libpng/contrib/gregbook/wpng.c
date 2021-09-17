@@ -138,7 +138,7 @@
 
 /* local prototypes */
 
-static int wpng_isvalid_latin1 (uch *p, int len);
+static int wpng_isvalid_latin1 (uch* p, int len);
 static void wpng_cleanup (void);
 
 #ifdef DOS_OS2_W32
@@ -149,17 +149,17 @@ static mainprog_info wpng_info;   /* lone global */
 
 
 
-int main (int argc, char **argv) {
+int main (int argc, char** argv) {
 #ifndef DOS_OS2_W32
-  FILE *keybd;
+  FILE* keybd;
 #endif
 #ifdef sgi
   FILE *tmpfile;      /* or we could just use keybd, since no overlap */
   char tmpline[80];
 #endif
-  char *inname = NULL, outname[256];
-  char *p, pnmchar, pnmline[256];
-  char *bgstr, *textbuf = NULL;
+  char* inname = NULL, outname[256];
+  char* p, pnmchar, pnmline[256];
+  char* bgstr, * textbuf = NULL;
   ulg rowbytes;
   int rc, len = 0;
   int error = 0;
@@ -446,7 +446,7 @@ int main (int argc, char **argv) {
       #ifndef DOS_OS2_W32
       (keybd = fdopen (fileno (stderr), "r")) != NULL &&
       #endif
-      (textbuf = (char *) malloc ((5 + 9) * 75)) != NULL) {
+      (textbuf = (char*) malloc ((5 + 9) * 75)) != NULL) {
     int i, valid, result;
 
     fprintf (stderr,
@@ -464,7 +464,7 @@ int main (int argc, char **argv) {
           p[--len] = '\0';
         wpng_info.title = p;
         wpng_info.have_text |= TEXT_TITLE;
-        if ((result = wpng_isvalid_latin1 ((uch *) p, len)) >= 0) {
+        if ((result = wpng_isvalid_latin1 ((uch*) p, len)) >= 0) {
           fprintf (stderr, "    " PROGNAME " warning:  character code"
                            " %u is %sdiscouraged by the PNG\n    specification "
                            "[first occurrence was at character position #%d]\n",
@@ -495,7 +495,7 @@ int main (int argc, char **argv) {
           p[--len] = '\0';
         wpng_info.author = p;
         wpng_info.have_text |= TEXT_AUTHOR;
-        if ((result = wpng_isvalid_latin1 ((uch *) p, len)) >= 0) {
+        if ((result = wpng_isvalid_latin1 ((uch*) p, len)) >= 0) {
           fprintf (stderr, "    " PROGNAME " warning:  character code"
                            " %u is %sdiscouraged by the PNG\n    specification "
                            "[first occurrence was at character position #%d]\n",
@@ -536,7 +536,7 @@ int main (int argc, char **argv) {
         wpng_info.desc = textbuf + TEXT_DESC_OFFSET;
         wpng_info.have_text |= TEXT_DESC;
         p = textbuf + TEXT_DESC_OFFSET;
-        if ((result = wpng_isvalid_latin1 ((uch *) p, len)) >= 0) {
+        if ((result = wpng_isvalid_latin1 ((uch*) p, len)) >= 0) {
           fprintf (stderr, "    " PROGNAME " warning:  character code"
                            " %u is %sdiscouraged by the PNG\n    specification "
                            "[first occurrence was at character position #%d]\n",
@@ -567,7 +567,7 @@ int main (int argc, char **argv) {
           p[--len] = '\0';
         wpng_info.copyright = p;
         wpng_info.have_text |= TEXT_COPY;
-        if ((result = wpng_isvalid_latin1 ((uch *) p, len)) >= 0) {
+        if ((result = wpng_isvalid_latin1 ((uch*) p, len)) >= 0) {
           fprintf (stderr, "    " PROGNAME " warning:  character code"
                            " %u is %sdiscouraged by the PNG\n    specification "
                            "[first occurrence was at character position #%d]\n",
@@ -598,7 +598,7 @@ int main (int argc, char **argv) {
           p[--len] = '\0';
         wpng_info.email = p;
         wpng_info.have_text |= TEXT_EMAIL;
-        if ((result = wpng_isvalid_latin1 ((uch *) p, len)) >= 0) {
+        if ((result = wpng_isvalid_latin1 ((uch*) p, len)) >= 0) {
           fprintf (stderr, "    " PROGNAME " warning:  character code"
                            " %u is %sdiscouraged by the PNG\n    specification "
                            "[first occurrence was at character position #%d]\n",
@@ -629,7 +629,7 @@ int main (int argc, char **argv) {
           p[--len] = '\0';
         wpng_info.url = p;
         wpng_info.have_text |= TEXT_URL;
-        if ((result = wpng_isvalid_latin1 ((uch *) p, len)) >= 0) {
+        if ((result = wpng_isvalid_latin1 ((uch*) p, len)) >= 0) {
           fprintf (stderr, "    " PROGNAME " warning:  character code"
                            " %u is %sdiscouraged by the PNG\n    specification "
                            "[first occurrence was at character position #%d]\n",
@@ -729,8 +729,8 @@ int main (int argc, char **argv) {
 
     image_bytes = rowbytes * wpng_info.height;
 
-    wpng_info.image_data = (uch *) malloc (image_bytes);
-    wpng_info.row_pointers = (uch **) malloc (wpng_info.height * sizeof (uch *));
+    wpng_info.image_data = (uch*) malloc (image_bytes);
+    wpng_info.row_pointers = (uch**) malloc (wpng_info.height * sizeof (uch*));
     if (wpng_info.image_data == NULL || wpng_info.row_pointers == NULL) {
       fprintf (stderr, PROGNAME ":  insufficient memory for image data\n");
       writepng_cleanup (&wpng_info);
@@ -758,7 +758,7 @@ int main (int argc, char **argv) {
     long j;
     ulg bytes;
 
-    wpng_info.image_data = (uch *) malloc (rowbytes);
+    wpng_info.image_data = (uch*) malloc (rowbytes);
     if (wpng_info.image_data == NULL) {
       fprintf (stderr, PROGNAME ":  insufficient memory for row data\n");
       writepng_cleanup (&wpng_info);
@@ -808,7 +808,7 @@ int main (int argc, char **argv) {
   return 0;
 }
 
-static int wpng_isvalid_latin1 (uch *p, int len) {
+static int wpng_isvalid_latin1 (uch* p, int len) {
   int i, result = -1;
 
   for (i = 0; i < len; ++i) {

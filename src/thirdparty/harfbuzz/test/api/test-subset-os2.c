@@ -29,31 +29,28 @@
 #include "hb-subset-test.h"
 
 static void
-test_subset_os2 (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
-  hb_face_t *face_b = hb_test_open_font_file ("fonts/Roboto-Regular.b.ttf");
+test_subset_os2 (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
+  hb_face_t * face_b = hb_test_open_font_file ("fonts/Roboto-Regular.b.ttf");
 
-  hb_set_t *codepoints = hb_set_create();
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 98);
   face_abc_subset = hb_subset_test_create_subset (face_abc, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_b, face_abc_subset, HB_TAG ('O','S','/','2'));
+  hb_subset_test_check (face_b, face_abc_subset, HB_TAG ('O', 'S', '/', '2'));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
   hb_face_destroy (face_b);
 }
 
-
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_subset_os2);
 
-  return hb_test_run();
+  return hb_test_run ();
 }

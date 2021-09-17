@@ -40,34 +40,34 @@ typedef struct PCF_TableRec_ {
   FT_ULong size;
   FT_ULong offset;
 
-} PCF_TableRec, *PCF_Table;
+} PCF_TableRec, * PCF_Table;
 
 typedef struct PCF_TocRec_ {
   FT_ULong version;
   FT_ULong count;
   PCF_Table tables;
 
-} PCF_TocRec, *PCF_Toc;
+} PCF_TocRec, * PCF_Toc;
 
 typedef struct PCF_ParsePropertyRec_ {
   FT_Long name;
   FT_Byte isString;
   FT_Long value;
 
-} PCF_ParsePropertyRec, *PCF_ParseProperty;
+} PCF_ParsePropertyRec, * PCF_ParseProperty;
 
 typedef struct PCF_PropertyRec_ {
-  FT_String *name;
+  FT_String* name;
   FT_Byte isString;
 
   union {
-    FT_String *atom;
+    FT_String* atom;
     FT_Long l;
     FT_ULong ul;
 
   } value;
 
-} PCF_PropertyRec, *PCF_Property;
+} PCF_PropertyRec, * PCF_Property;
 
 typedef struct PCF_Compressed_MetricRec_ {
   FT_Byte leftSideBearing;
@@ -76,7 +76,7 @@ typedef struct PCF_Compressed_MetricRec_ {
   FT_Byte ascent;
   FT_Byte descent;
 
-} PCF_Compressed_MetricRec, *PCF_Compressed_Metric;
+} PCF_Compressed_MetricRec, * PCF_Compressed_Metric;
 
 typedef struct PCF_MetricRec_ {
   FT_Short leftSideBearing;
@@ -88,7 +88,7 @@ typedef struct PCF_MetricRec_ {
 
   FT_ULong bits;  /* offset into the PCF_BITMAPS table */
 
-} PCF_MetricRec, *PCF_Metric;
+} PCF_MetricRec, * PCF_Metric;
 
 typedef struct PCF_EncRec_ {
   FT_UShort firstCol;
@@ -97,9 +97,9 @@ typedef struct PCF_EncRec_ {
   FT_UShort lastRow;
   FT_UShort defaultChar;
 
-  FT_UShort *offset;
+  FT_UShort* offset;
 
-} PCF_EncRec, *PCF_Enc;
+} PCF_EncRec, * PCF_Enc;
 
 typedef struct PCF_AccelRec_ {
   FT_Byte noOverlap;
@@ -117,7 +117,7 @@ typedef struct PCF_AccelRec_ {
   PCF_MetricRec ink_minbounds;
   PCF_MetricRec ink_maxbounds;
 
-} PCF_AccelRec, *PCF_Accel;
+} PCF_AccelRec, * PCF_Accel;
 
 /*
  * This file uses X11 terminology for PCF data; an `encoding' in X11 speak
@@ -129,8 +129,8 @@ typedef struct PCF_FaceRec_ {
   FT_StreamRec comp_stream;
   FT_Stream comp_source;
 
-  char *charset_encoding;
-  char *charset_registry;
+  char* charset_encoding;
+  char* charset_registry;
 
   PCF_TocRec toc;
   PCF_AccelRec accel;
@@ -145,14 +145,14 @@ typedef struct PCF_FaceRec_ {
 
   FT_ULong bitmapsFormat;
 
-} PCF_FaceRec, *PCF_Face;
+} PCF_FaceRec, * PCF_Face;
 
 typedef struct PCF_DriverRec_ {
   FT_DriverRec root;
 
   FT_Bool no_long_family_names;
 
-} PCF_DriverRec, *PCF_Driver;
+} PCF_DriverRec, * PCF_Driver;
 
 
 /* macros for pcf font format */

@@ -87,7 +87,7 @@ typedef enum BDF_PropertyType_ {
  *    A handle to a @BDF_PropertyRec structure to model a given BDF/PCF
  *    property.
  */
-typedef struct BDF_PropertyRec_ *BDF_Property;
+typedef struct BDF_PropertyRec_* BDF_Property;
 
 /**************************************************************************
  *
@@ -114,7 +114,7 @@ typedef struct BDF_PropertyRec_ *BDF_Property;
 typedef struct BDF_PropertyRec_ {
   BDF_PropertyType type;
   union {
-    const char *atom;
+    const char* atom;
     FT_Int32 integer;
     FT_UInt32 cardinal;
 
@@ -151,8 +151,8 @@ typedef struct BDF_PropertyRec_ {
  */
 FT_EXPORT(FT_Error)
 FT_Get_BDF_Charset_ID (FT_Face face,
-                       const char **acharset_encoding,
-                       const char **acharset_registry);
+                       const char** acharset_encoding,
+                       const char** acharset_registry);
 
 
 /**************************************************************************
@@ -195,8 +195,8 @@ FT_Get_BDF_Charset_ID (FT_Face face,
  */
 FT_EXPORT(FT_Error)
 FT_Get_BDF_Property (FT_Face face,
-                     const char *prop_name,
-                     BDF_PropertyRec *aproperty);
+                     const char* prop_name,
+                     BDF_PropertyRec* aproperty);
 
 /* */
 

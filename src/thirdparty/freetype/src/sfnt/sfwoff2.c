@@ -96,10 +96,10 @@ stream_close (FT_Stream stream) {
 }
 
 FT_CALLBACK_DEF(int)
-compare_tags (const void *a,
-              const void *b) {
-  WOFF2_Table table1 = *(WOFF2_Table *) a;
-  WOFF2_Table table2 = *(WOFF2_Table *) b;
+compare_tags (const void* a,
+              const void* b) {
+  WOFF2_Table table1 = *(WOFF2_Table*) a;
+  WOFF2_Table table2 = *(WOFF2_Table*) b;
 
   FT_ULong tag1 = table1->Tag;
   FT_ULong tag2 = table2->Tag;
@@ -114,7 +114,7 @@ compare_tags (const void *a,
 
 static FT_Error
 Read255UShort (FT_Stream stream,
-               FT_UShort *value) {
+               FT_UShort* value) {
   static const FT_Int oneMoreByteCode1 = 255;
   static const FT_Int oneMoreByteCode2 = 254;
   static const FT_Int wordCode = 253;
@@ -154,7 +154,7 @@ Read255UShort (FT_Stream stream,
 
 static FT_Error
 ReadBase128 (FT_Stream stream,
-             FT_ULong *value) {
+             FT_ULong* value) {
   FT_ULong result = 0;
   FT_Int i;
   FT_Byte code;
@@ -188,15 +188,15 @@ ReadBase128 (FT_Stream stream,
 
 /* Extend memory of `dst_bytes' buffer and copy data from `src'. */
 static FT_Error
-write_buf (FT_Byte **dst_bytes,
-           FT_ULong *dst_size,
-           FT_ULong *offset,
-           FT_Byte *src,
+write_buf (FT_Byte** dst_bytes,
+           FT_ULong* dst_size,
+           FT_ULong* offset,
+           FT_Byte* src,
            FT_ULong size,
            FT_Memory memory) {
   FT_Error error = FT_Err_Ok;
   /* We are reallocating memory for `dst', so its pointer may change. */
-  FT_Byte *dst = *dst_bytes;
+  FT_Byte* dst = *dst_bytes;
 
 
   /* Check whether we are within limits. */
@@ -228,11 +228,11 @@ write_buf (FT_Byte **dst_bytes,
 
 /* Pad buffer to closest multiple of 4. */
 static FT_Error
-pad4 (FT_Byte **sfnt_bytes,
-      FT_ULong *sfnt_size,
-      FT_ULong *out_offset,
+pad4 (FT_Byte** sfnt_bytes,
+      FT_ULong* sfnt_size,
+      FT_ULong* out_offset,
       FT_Memory memory) {
-  FT_Byte *sfnt = *sfnt_bytes;
+  FT_Byte* sfnt = *sfnt_bytes;
   FT_ULong dest_offset = *out_offset;
 
   FT_Byte zeroes[] = {0, 0, 0};
@@ -254,7 +254,7 @@ pad4 (FT_Byte **sfnt_bytes,
 
 /* Calculate table checksum of `buf'. */
 static FT_Long
-compute_ULong_sum (FT_Byte *buf,
+compute_ULong_sum (FT_Byte* buf,
                    FT_ULong size) {
   FT_ULong checksum = 0;
   FT_ULong aligned_size = size & ~3;
@@ -279,9 +279,9 @@ compute_ULong_sum (FT_Byte *buf,
 }
 
 static FT_Error
-woff2_decompress (FT_Byte *dst,
+woff2_decompress (FT_Byte* dst,
                   FT_ULong dst_size,
-                  const FT_Byte *src,
+                  const FT_Byte* src,
                   FT_ULong src_size) {
 #ifdef FT_CONFIG_OPTION_USE_BROTLI
 
@@ -313,7 +313,7 @@ woff2_decompress (FT_Byte *dst,
 }
 
 static WOFF2_Table
-find_table (WOFF2_Table *tables,
+find_table (WOFF2_Table* tables,
             FT_UShort num_tables,
             FT_ULong tag) {
   FT_Int i;
@@ -328,7 +328,7 @@ find_table (WOFF2_Table *tables,
 /* Read `numberOfHMetrics' field from `hhea' table. */
 static FT_Error
 read_num_hmetrics (FT_Stream stream,
-                   FT_UShort *num_hmetrics) {
+                   FT_UShort* num_hmetrics) {
   FT_Error error = FT_Err_Ok;
   FT_UShort num_metrics;
 
@@ -355,7 +355,7 @@ with_sign (FT_Byte flag,
 static FT_Int
 safe_int_addition (FT_Int a,
                    FT_Int b,
-                   FT_Int *result) {
+                   FT_Int* result) {
   if (((a > 0) && (b > FT_INT_MAX - a)) ||
       ((a < 0) && (b < FT_INT_MIN - a)))
     return FT_THROW(Invalid_Table);
@@ -371,12 +371,12 @@ safe_int_addition (FT_Int a,
    *   https://www.w3.org/TR/WOFF2/#triplet_decoding
    */
 static FT_Error
-triplet_decode (const FT_Byte *flags_in,
-                const FT_Byte *in,
+triplet_decode (const FT_Byte* flags_in,
+                const FT_Byte* in,
                 FT_ULong in_size,
                 FT_ULong n_points,
                 WOFF2_Point result,
-                FT_ULong *in_bytes_used) {
+                FT_ULong* in_bytes_used) {
   FT_Int x = 0;
   FT_Int y = 0;
   FT_Int dx;
@@ -476,9 +476,9 @@ store_points (FT_ULong n_points,
               const WOFF2_Point points,
               FT_UShort n_contours,
               FT_UShort instruction_len,
-              FT_Byte *dst,
+              FT_Byte* dst,
               FT_ULong dst_size,
-              FT_ULong *glyph_size) {
+              FT_ULong* glyph_size) {
   FT_UInt flag_offset = 10 + (2 * n_contours) + 2 + instruction_len;
   FT_Int last_flag = -1;
   FT_Int repeat_count = 0;
@@ -490,7 +490,7 @@ store_points (FT_ULong n_points,
   FT_UInt i;
   FT_UInt x_offset;
   FT_UInt y_offset;
-  FT_Byte *pointer;
+  FT_Byte* pointer;
 
   for (i = 0; i < n_points; ++i) {
     const WOFF2_PointRec point = points[i];
@@ -592,8 +592,8 @@ store_points (FT_ULong n_points,
 static void
 compute_bbox (FT_ULong n_points,
               const WOFF2_Point points,
-              FT_Byte *dst,
-              FT_UShort *src_x_min) {
+              FT_Byte* dst,
+              FT_UShort* src_x_min) {
   FT_Int x_min = 0;
   FT_Int y_min = 0;
   FT_Int x_max = 0;
@@ -602,7 +602,7 @@ compute_bbox (FT_ULong n_points,
   FT_UInt i;
 
   FT_ULong offset;
-  FT_Byte *pointer;
+  FT_Byte* pointer;
 
   if (n_points > 0) {
     x_min = points[0].x;
@@ -636,8 +636,8 @@ compute_bbox (FT_ULong n_points,
 static FT_Error
 compositeGlyph_size (FT_Stream stream,
                      FT_ULong offset,
-                     FT_ULong *size,
-                     FT_Bool *have_instructions) {
+                     FT_ULong* size,
+                     FT_Bool* have_instructions) {
   FT_Error error = FT_Err_Ok;
   FT_ULong start_offset = offset;
   FT_Bool we_have_inst = FALSE;
@@ -678,20 +678,20 @@ compositeGlyph_size (FT_Stream stream,
 
 /* Store loca values (provided by `reconstruct_glyf') to output stream. */
 static FT_Error
-store_loca (FT_ULong *loca_values,
+store_loca (FT_ULong* loca_values,
             FT_ULong loca_values_size,
             FT_UShort index_format,
-            FT_ULong *checksum,
-            FT_Byte **sfnt_bytes,
-            FT_ULong *sfnt_size,
-            FT_ULong *out_offset,
+            FT_ULong* checksum,
+            FT_Byte** sfnt_bytes,
+            FT_ULong* sfnt_size,
+            FT_ULong* out_offset,
             FT_Memory memory) {
   FT_Error error = FT_Err_Ok;
-  FT_Byte *sfnt = *sfnt_bytes;
+  FT_Byte* sfnt = *sfnt_bytes;
   FT_ULong dest_offset = *out_offset;
 
-  FT_Byte *loca_buf = NULL;
-  FT_Byte *dst = NULL;
+  FT_Byte* loca_buf = NULL;
+  FT_Byte* dst = NULL;
 
   FT_UInt i = 0;
   FT_ULong loca_buf_size;
@@ -738,15 +738,15 @@ store_loca (FT_ULong *loca_values,
 
 static FT_Error
 reconstruct_glyf (FT_Stream stream,
-                  FT_ULong *glyf_checksum,
-                  FT_ULong *loca_checksum,
-                  FT_Byte **sfnt_bytes,
-                  FT_ULong *sfnt_size,
-                  FT_ULong *out_offset,
+                  FT_ULong* glyf_checksum,
+                  FT_ULong* loca_checksum,
+                  FT_Byte** sfnt_bytes,
+                  FT_ULong* sfnt_size,
+                  FT_ULong* out_offset,
                   WOFF2_Info info,
                   FT_Memory memory) {
   FT_Error error = FT_Err_Ok;
-  FT_Byte *sfnt = *sfnt_bytes;
+  FT_Byte* sfnt = *sfnt_bytes;
 
   /* current position in stream */
   const FT_ULong pos = FT_STREAM_POS();
@@ -768,9 +768,9 @@ reconstruct_glyf (FT_Stream stream,
 
   WOFF2_Substream substreams = NULL;
 
-  FT_ULong *loca_values = NULL;
-  FT_UShort *n_points_arr = NULL;
-  FT_Byte *glyph_buf = NULL;
+  FT_ULong* loca_values = NULL;
+  FT_UShort* n_points_arr = NULL;
+  FT_Byte* glyph_buf = NULL;
   WOFF2_Point points = NULL;
 
   if (FT_NEW_ARRAY(substreams, num_substreams))
@@ -864,7 +864,7 @@ reconstruct_glyf (FT_Stream stream,
       FT_UShort instruction_size = 0;
       FT_ULong composite_size;
       FT_ULong size_needed;
-      FT_Byte *pointer = NULL;
+      FT_Byte* pointer = NULL;
 
 
       /* Composite glyphs must have explicit bbox. */
@@ -936,14 +936,14 @@ reconstruct_glyf (FT_Stream stream,
       FT_ULong flag_size;
       FT_ULong triplet_size;
       FT_ULong triplet_bytes_used;
-      FT_Byte *flags_buf = NULL;
-      FT_Byte *triplet_buf = NULL;
+      FT_Byte* flags_buf = NULL;
+      FT_Byte* triplet_buf = NULL;
       FT_UShort instruction_size;
       FT_ULong size_needed;
       FT_Int end_point;
       FT_UInt contour_ix;
 
-      FT_Byte *pointer = NULL;
+      FT_Byte* pointer = NULL;
 
       if (FT_NEW_ARRAY(n_points_arr, n_contours))
         goto Fail;
@@ -1147,7 +1147,7 @@ reconstruct_glyf (FT_Stream stream,
 /* Get `x_mins' for untransformed `glyf' table. */
 static FT_Error
 get_x_mins (FT_Stream stream,
-            WOFF2_Table *tables,
+            WOFF2_Table* tables,
             FT_UShort num_tables,
             WOFF2_Info info,
             FT_Memory memory) {
@@ -1235,14 +1235,14 @@ static FT_Error
 reconstruct_hmtx (FT_Stream stream,
                   FT_UShort num_glyphs,
                   FT_UShort num_hmetrics,
-                  FT_Short *x_mins,
-                  FT_ULong *checksum,
-                  FT_Byte **sfnt_bytes,
-                  FT_ULong *sfnt_size,
-                  FT_ULong *out_offset,
+                  FT_Short* x_mins,
+                  FT_ULong* checksum,
+                  FT_Byte** sfnt_bytes,
+                  FT_ULong* sfnt_size,
+                  FT_ULong* out_offset,
                   FT_Memory memory) {
   FT_Error error = FT_Err_Ok;
-  FT_Byte *sfnt = *sfnt_bytes;
+  FT_Byte* sfnt = *sfnt_bytes;
   FT_ULong dest_offset = *out_offset;
 
   FT_Byte hmtx_flags;
@@ -1250,10 +1250,10 @@ reconstruct_hmtx (FT_Stream stream,
   FT_ULong hmtx_table_size;
   FT_Int i;
 
-  FT_UShort *advance_widths = NULL;
-  FT_Short *lsbs = NULL;
-  FT_Byte *hmtx_table = NULL;
-  FT_Byte *dst = NULL;
+  FT_UShort* advance_widths = NULL;
+  FT_Short* lsbs = NULL;
+  FT_Byte* hmtx_table = NULL;
+  FT_Byte* dst = NULL;
 
   if (FT_READ_BYTE(hmtx_flags))
     goto Fail;
@@ -1365,23 +1365,23 @@ reconstruct_hmtx (FT_Stream stream,
 }
 
 static FT_Error
-reconstruct_font (FT_Byte *transformed_buf,
+reconstruct_font (FT_Byte* transformed_buf,
                   FT_ULong transformed_buf_size,
-                  WOFF2_Table *indices,
+                  WOFF2_Table* indices,
                   WOFF2_Header woff2,
                   WOFF2_Info info,
-                  FT_Byte **sfnt_bytes,
-                  FT_ULong *sfnt_size,
+                  FT_Byte** sfnt_bytes,
+                  FT_ULong* sfnt_size,
                   FT_Memory memory) {
   /* Memory management of `transformed_buf' is handled by the caller. */
 
   FT_Error error = FT_Err_Ok;
   FT_Stream stream = NULL;
-  FT_Byte *buf_cursor = NULL;
-  FT_Byte *table_entry = NULL;
+  FT_Byte* buf_cursor = NULL;
+  FT_Byte* table_entry = NULL;
 
   /* We are reallocating memory for `sfnt', so its pointer may change. */
-  FT_Byte *sfnt = *sfnt_bytes;
+  FT_Byte* sfnt = *sfnt_bytes;
 
   FT_UShort num_tables = woff2->num_tables;
   FT_ULong dest_offset = 12 + num_tables * 16UL;
@@ -1597,8 +1597,8 @@ reconstruct_font (FT_Byte *transformed_buf,
 FT_LOCAL_DEF(FT_Error)
 woff2_open_font (FT_Stream stream,
                  TT_Face face,
-                 FT_Int *face_instance_index,
-                 FT_Long *num_faces) {
+                 FT_Int* face_instance_index,
+                 FT_Long* num_faces) {
   FT_Memory memory = stream->memory;
   FT_Error error = FT_Err_Ok;
   FT_Int face_index;
@@ -1606,8 +1606,8 @@ woff2_open_font (FT_Stream stream,
   WOFF2_HeaderRec woff2;
   WOFF2_InfoRec info = {0, 0, 0, NULL, NULL, NULL, NULL};
   WOFF2_Table tables = NULL;
-  WOFF2_Table *indices = NULL;
-  WOFF2_Table *temp_indices = NULL;
+  WOFF2_Table* indices = NULL;
+  WOFF2_Table* temp_indices = NULL;
   WOFF2_Table last_table;
 
   FT_Int nn;
@@ -1620,12 +1620,12 @@ woff2_open_font (FT_Stream stream,
   FT_UInt loca_index;
   FT_UInt32 file_offset;
 
-  FT_Byte *sfnt = NULL;
+  FT_Byte* sfnt = NULL;
   FT_Stream sfnt_stream = NULL;
-  FT_Byte *sfnt_header;
+  FT_Byte* sfnt_header;
   FT_ULong sfnt_size;
 
-  FT_Byte *uncompressed_buf = NULL;
+  FT_Byte* uncompressed_buf = NULL;
 
   static const FT_Frame_Field woff2_header_fields[] =
       {

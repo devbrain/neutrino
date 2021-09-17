@@ -141,25 +141,25 @@ rpng_win_wndproc(HWND, UINT, WPARAM, LPARAM
 );
 
 static char titlebar[1024];
-static char *progname = PROGNAME;
-static char *appname = LONGNAME;
-static char *filename;
-static FILE *infile;
+static char* progname = PROGNAME;
+static char* appname = LONGNAME;
+static char* filename;
+static FILE* infile;
 
-static char *bgstr;
+static char* bgstr;
 static uch bg_red = 0, bg_green = 0, bg_blue = 0;
 
 static double display_exponent;
 
 static ulg image_width, image_height, image_rowbytes;
 static int image_channels;
-static uch *image_data;
+static uch* image_data;
 
 /* Windows-specific variables */
 static ulg wimage_rowbytes;
-static uch *dib;
-static uch *wimage_data;
-static BITMAPINFOHEADER *bmih;
+static uch* dib;
+static uch* wimage_data;
+static BITMAPINFOHEADER* bmih;
 
 static HWND global_hwnd;
 
@@ -171,8 +171,8 @@ cmd,
 int showmode
 )
 {
-char *args[1024];                 /* arbitrary limit, but should suffice */
-char *p, *q, **argv = args;
+char* args[1024];                 /* arbitrary limit, but should suffice */
+char* p, * q, ** argv = args;
 int argc = 0;
 int rc, alen, flen;
 int error = 0;
@@ -182,7 +182,7 @@ double CRT_exponent = 2.2;        /* just the monitor */
 double default_display_exponent;  /* whole display system */
 MSG msg;
 
-filename = (char *) NULL;
+filename = (char*) NULL;
 
 #ifndef __CYGWIN__
 /* First reenable console output, which normally goes to the bit bucket
@@ -281,7 +281,7 @@ NULL;   /* terminate the argv array itself */
 
 while (*++argv && !error) {
 if (!
-strncmp(*argv,
+strncmp(* argv,
 "-gamma", 2)) {
 if (!*++argv)
 ++
@@ -293,7 +293,7 @@ if (display_exponent <= 0.0)
 error;
 }
 } else if (!
-strncmp(*argv,
+strncmp(* argv,
 "-bgcolor", 2)) {
 if (!*++argv)
 ++
@@ -521,7 +521,7 @@ wParam;
 }
 
 static int rpng_win_create_window (HINSTANCE hInst, int showmode) {
-  uch *dest;
+  uch* dest;
   int extra_width, extra_height;
   ulg i, j;
   WNDCLASSEX wndclass;
@@ -540,8 +540,8 @@ static int rpng_win_create_window (HINSTANCE hInst, int showmode) {
     return 4;   /* fail */
   }
 
-  if (!(dib = (uch *) malloc (sizeof (BITMAPINFOHEADER) +
-                              wimage_rowbytes * image_height))) {
+  if (!(dib = (uch*) malloc (sizeof (BITMAPINFOHEADER) +
+                             wimage_rowbytes * image_height))) {
     return 4;   /* fail */
   }
 
@@ -553,7 +553,7 @@ static int rpng_win_create_window (HINSTANCE hInst, int showmode) {
   ---------------------------------------------------------------------------*/
 
   memset (dib, 0, sizeof (BITMAPINFOHEADER));
-  bmih = (BITMAPINFOHEADER *) dib;
+  bmih = (BITMAPINFOHEADER*) dib;
   bmih->biSize = sizeof (BITMAPINFOHEADER);
   bmih->biWidth = image_width;
   bmih->biHeight = -((long) image_height);
@@ -620,7 +620,7 @@ static int rpng_win_create_window (HINSTANCE hInst, int showmode) {
 
 
 static int rpng_win_display_image () {
-  uch *src, *dest;
+  uch* src, * dest;
   uch r, g, b, a;
   ulg i, row, lastrow;
   RECT rect;
@@ -742,7 +742,7 @@ hdc = BeginPaint (hwnd, &ps);
 rc = StretchDIBits (hdc, 0, 0, image_width, image_height,
     /*                    source                        */
                     0, 0, image_width, image_height,
-                    wimage_data, (BITMAPINFO *) bmih,
+                    wimage_data, (BITMAPINFO*) bmih,
     /*              iUsage: no clue                     */
                     0, SRCCOPY);
 EndPaint(hwnd,

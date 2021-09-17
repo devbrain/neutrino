@@ -17,7 +17,7 @@
 #endif
 
 namespace {
-  void pad (std::string &str, int precision, int width, char prefix = ' ', char decSep = '.')
+  void pad (std::string& str, int precision, int width, char prefix = ' ', char decSep = '.')
   /// Pads the string with prefix space and postfix 0.
   /// Alternative prefix (e.g. zero instead of space) can be supplied by caller.
   /// Used only internally.
@@ -93,7 +93,7 @@ namespace {
     }
   }
 
-  void insertThousandSep (std::string &str, char thSep, char decSep = '.')
+  void insertThousandSep (std::string& str, char thSep, char decSep = '.')
   /// Inserts thousand separators.
   /// Used only internally.
   {
@@ -149,7 +149,7 @@ namespace {
 
 namespace neutrino::utils {
 
-  void float_to_str (char *buffer, int bufferSize, float value, int lowDec, int highDec) {
+  void float_to_str (char* buffer, int bufferSize, float value, int lowDec, int highDec) {
     using namespace double_conversion;
 
     StringBuilder builder (buffer, bufferSize);
@@ -160,7 +160,7 @@ namespace neutrino::utils {
     builder.Finalize ();
   }
 
-  void float_to_fixed_str (char *buffer, int bufferSize, float value, int precision) {
+  void float_to_fixed_str (char* buffer, int bufferSize, float value, int precision) {
     using namespace double_conversion;
 
     StringBuilder builder (buffer, bufferSize);
@@ -172,7 +172,7 @@ namespace neutrino::utils {
     builder.Finalize ();
   }
 
-  std::string &float_to_str (std::string &str, float value, int precision, int width, char thSep, char decSep) {
+  std::string& float_to_str (std::string& str, float value, int precision, int width, char thSep, char decSep) {
     if (!decSep) {
       decSep = '.';
     }
@@ -197,7 +197,7 @@ namespace neutrino::utils {
     return str;
   }
 
-  std::string &float_to_fixed_str (std::string &str, float value, int precision, int width, char thSep, char decSep) {
+  std::string& float_to_fixed_str (std::string& str, float value, int precision, int width, char thSep, char decSep) {
     if (!decSep) {
       decSep = '.';
     }
@@ -222,7 +222,7 @@ namespace neutrino::utils {
     return str;
   }
 
-  void double_to_str (char *buffer, int bufferSize, double value, int lowDec, int highDec) {
+  void double_to_str (char* buffer, int bufferSize, double value, int lowDec, int highDec) {
     using namespace double_conversion;
 
     StringBuilder builder (buffer, bufferSize);
@@ -233,7 +233,7 @@ namespace neutrino::utils {
     builder.Finalize ();
   }
 
-  void double_to_fixed_str (char *buffer, int bufferSize, double value, int precision) {
+  void double_to_fixed_str (char* buffer, int bufferSize, double value, int precision) {
     using namespace double_conversion;
 
     StringBuilder builder (buffer, bufferSize);
@@ -245,7 +245,7 @@ namespace neutrino::utils {
     builder.Finalize ();
   }
 
-  std::string &double_to_str (std::string &str, double value, int precision, int width, char thSep, char decSep) {
+  std::string& double_to_str (std::string& str, double value, int precision, int width, char thSep, char decSep) {
     if (!decSep) {
       decSep = '.';
     }
@@ -271,7 +271,7 @@ namespace neutrino::utils {
     return str;
   }
 
-  std::string &double_to_fixed_str (std::string &str, double value, int precision, int width, char thSep, char decSep) {
+  std::string& double_to_fixed_str (std::string& str, double value, int precision, int width, char thSep, char decSep) {
     if (!decSep) {
       decSep = '.';
     }
@@ -297,7 +297,7 @@ namespace neutrino::utils {
     return str;
   }
 
-  float str_to_float (const char *str, const char *inf, const char *nan) {
+  float str_to_float (const char* str, const char* inf, const char* nan) {
     using namespace double_conversion;
 
     int processed;
@@ -308,7 +308,7 @@ namespace neutrino::utils {
     return result;
   }
 
-  double str_to_double (const char *str, const char *inf, const char *nan) {
+  double str_to_double (const char* str, const char* inf, const char* nan) {
     using namespace double_conversion;
     int processed;
     int flags = StringToDoubleConverter::ALLOW_LEADING_SPACES |
@@ -318,7 +318,7 @@ namespace neutrino::utils {
     return result;
   }
 
-  bool str_to_float (const std::string &str, float &result, char decSep, char thSep, const char *inf, const char *nan) {
+  bool str_to_float (const std::string& str, float& result, char decSep, char thSep, const char* inf, const char* nan) {
     using namespace double_conversion;
 
     std::string tmp (str);
@@ -332,7 +332,7 @@ namespace neutrino::utils {
   }
 
   bool
-  str_to_double (const std::string &str, double &result, char decSep, char thSep, const char *inf, const char *nan) {
+  str_to_double (const std::string& str, double& result, char decSep, char thSep, const char* inf, const char* nan) {
     if (str.empty ()) {
       return false;
     }

@@ -43,7 +43,7 @@
 namespace OT {
 
   struct OS2V1Tail {
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this));
       }
@@ -60,11 +60,11 @@ namespace OT {
         return sxHeight || sCapHeight;
       }
 
-      const OS2V2Tail *operator-> () const {
+      const OS2V2Tail* operator -> () const {
         return this;
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this));
       }
@@ -80,7 +80,7 @@ namespace OT {
   };
 
   struct OS2V5Tail {
-      inline bool get_optical_size (unsigned int *lower, unsigned int *upper) const {
+      inline bool get_optical_size (unsigned int* lower, unsigned int* upper) const {
         unsigned int lower_optical_size = usLowerOpticalPointSize;
         unsigned int upper_optical_size = usUpperOpticalPointSize;
 
@@ -95,7 +95,7 @@ namespace OT {
         return false;
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this));
       }
@@ -114,13 +114,15 @@ namespace OT {
         return usWeightClass || usWidthClass || usFirstCharIndex || usLastCharIndex;
       }
 
-      const OS2V1Tail &v1 () const {
+      const OS2V1Tail& v1 () const {
         return version >= 1 ? v1X : Null (OS2V1Tail);
       }
-      const OS2V2Tail &v2 () const {
+
+      const OS2V2Tail& v2 () const {
         return version >= 2 ? v2X : Null (OS2V2Tail);
       }
-      const OS2V5Tail &v5 () const {
+
+      const OS2V5Tail& v5 () const {
         return version >= 5 ? v5X : Null (OS2V5Tail);
       }
 
@@ -140,9 +142,11 @@ namespace OT {
       bool is_italic () const {
         return fsSelection & ITALIC;
       }
+
       bool is_oblique () const {
         return fsSelection & OBLIQUE;
       }
+
       bool use_typo_metrics () const {
         return fsSelection & USE_TYPO_METRICS;
       }
@@ -183,9 +187,9 @@ namespace OT {
         }
       }
 
-      bool subset (hb_subset_context_t *c) const {
+      bool subset (hb_subset_context_t* c) const {
         TRACE_SUBSET (this);
-        OS2 *os2_prime = c->serializer->embed (this);
+        OS2* os2_prime = c->serializer->embed (this);
         if (unlikely (!os2_prime))
           return_trace (false);
         if (!c->plan->prune_unicode_ranges)
@@ -219,7 +223,7 @@ namespace OT {
         return_trace (true);
       }
 
-      void _update_unicode_ranges (const hb_set_t *codepoints,
+      void _update_unicode_ranges (const hb_set_t* codepoints,
                                    HBUINT32 ulUnicodeRange[4]) const {
         HBUINT32 newBits[4];
         for (unsigned int i = 0; i < 4; i++)
@@ -246,9 +250,9 @@ namespace OT {
           ulUnicodeRange[i] = ulUnicodeRange[i] & newBits[i]; // set bits only if set in the original
       }
 
-      static void find_min_and_max_codepoint (const hb_set_t *codepoints,
-                                              uint16_t *min_cp, /* OUT */
-                                              uint16_t *max_cp  /* OUT */) {
+      static void find_min_and_max_codepoint (const hb_set_t* codepoints,
+                                              uint16_t* min_cp, /* OUT */
+                                              uint16_t* max_cp  /* OUT */) {
         *min_cp = hb_min (0xFFFFu, codepoints->get_min ());
         *max_cp = hb_min (0xFFFFu, codepoints->get_max ());
       }
@@ -263,6 +267,7 @@ namespace OT {
         FONT_PAGE_TRAD_FARSI = 0xBB00, /* Traditional Farsi Windows 3.1 font page */
         FONT_PAGE_THAI = 0xDE00  /* Thai Windows 3.1 font page */
       };
+
       font_page_t get_font_page () const {
         return (font_page_t) (version == 0 ? fsSelection & 0xFF00 : 0);
       }
@@ -278,7 +283,7 @@ namespace OT {
         return result;
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         if (unlikely (!c->check_struct (this)))
           return_trace (false);

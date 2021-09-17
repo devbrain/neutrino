@@ -9,7 +9,7 @@
 
 using namespace neutrino::tiled::tmx;
 
-static void test_wang (const map &the_map) {
+static void test_wang (const map& the_map) {
   REQUIRE(the_map.orientation () == orientation_t::STAGGERED);
   REQUIRE(the_map.render_order () == render_order_t::RIGHT_DOWN);
   REQUIRE(the_map.infinite ());
@@ -17,7 +17,7 @@ static void test_wang (const map &the_map) {
   REQUIRE(the_map.stagger_index () == stagger_index_t::ODD);
   REQUIRE(the_map.tile_sets ().size () == 1);
 
-  const auto &ts = the_map.tile_sets ()[0];
+  const auto& ts = the_map.tile_sets ()[0];
   REQUIRE(ts.wang_sets ().size () == 1);
   auto grid = ts.grid_info ();
   REQUIRE(grid);
@@ -25,22 +25,22 @@ static void test_wang (const map &the_map) {
   REQUIRE(grid->width () == 64);
   REQUIRE(grid->height () == 32);
 
-  const auto &ws = ts.wang_sets ()[0];
+  const auto& ws = ts.wang_sets ()[0];
   REQUIRE(ws.name () == "Terrains");
   REQUIRE(ws.local_tile () == 15);
 
   REQUIRE(ws.colors ().size () == 2);
-  const auto &ws_color = ws.colors ()[1];
+  const auto& ws_color = ws.colors ()[1];
   REQUIRE(ws_color.color () == "#729fcf");
   REQUIRE(ws_color.name () == "Water");
   REQUIRE(ws_color.local_tile () == 22);
   REQUIRE(ws_color.prob () == 1);
 
-  const auto &ws_tiles = ws.tiles ();
+  const auto& ws_tiles = ws.tiles ();
   REQUIRE(ws_tiles.size () == 24);
   const auto wtl = ws_tiles[8];
   REQUIRE(wtl.gid () == 8);
-  const auto &w = wtl.wang_id ();
+  const auto& w = wtl.wang_id ();
   REQUIRE(w[wang_tile::TOP] == 0);
   REQUIRE(w[wang_tile::TOP_RIGHT] == 2);
   REQUIRE(w[wang_tile::RIGHT] == 0);

@@ -78,17 +78,17 @@ HB_BEGIN_DECLS
  **/
 #define HB_CORETEXT_TAG_KERX HB_TAG('k','e','r','x')
 
-HB_EXTERN hb_face_t *
+HB_EXTERN hb_face_t*
 hb_coretext_face_create (CGFontRef cg_font);
 
-HB_EXTERN hb_font_t *
+HB_EXTERN hb_font_t*
 hb_coretext_font_create (CTFontRef ct_font);
 
 HB_EXTERN CGFontRef
-hb_coretext_face_get_cg_font (hb_face_t *face);
+hb_coretext_face_get_cg_font (hb_face_t* face);
 
 HB_EXTERN CTFontRef
-hb_coretext_font_get_ct_font (hb_font_t *font);
+hb_coretext_font_get_ct_font (hb_font_t* font);
 
 HB_END_DECLS
 

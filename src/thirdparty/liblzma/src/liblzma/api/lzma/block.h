@@ -196,7 +196,7 @@ typedef struct {
    *              have LZMA_FILTERS_MAX + 1 members or the Block
    *              Header decoder will overflow the buffer.
    */
-  lzma_filter *filters;
+  lzma_filter* filters;
 
   /**
    * \brief       Raw value stored in the Check field
@@ -222,9 +222,9 @@ typedef struct {
    * with the currently supported options, so it is safe to leave these
    * uninitialized.
    */
-  void *reserved_ptr1;
-  void *reserved_ptr2;
-  void *reserved_ptr3;
+  void* reserved_ptr1;
+  void* reserved_ptr2;
+  void* reserved_ptr3;
   uint32_t reserved_int1;
   uint32_t reserved_int2;
   lzma_vli reserved_int3;
@@ -304,7 +304,7 @@ typedef struct {
  *              filter chain, consider using lzma_memlimit_encoder() which as
  *              a side-effect validates the filter chain.
  */
-extern LZMA_API(lzma_ret) lzma_block_header_size (lzma_block *block)
+extern LZMA_API(lzma_ret) lzma_block_header_size (lzma_block* block)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -326,7 +326,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *                block->header_size is invalid or block->filters is NULL.
  */
 extern LZMA_API(lzma_ret) lzma_block_header_encode (
-    const lzma_block *block, uint8_t *out)
+    const lzma_block* block, uint8_t* out)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -369,8 +369,8 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR: Invalid arguments, for example
  *                block->header_size is invalid or block->filters is NULL.
  */
-extern LZMA_API(lzma_ret) lzma_block_header_decode (lzma_block *block,
-                                                    const lzma_allocator *allocator, const uint8_t *in)
+extern LZMA_API(lzma_ret) lzma_block_header_decode (lzma_block* block,
+                                                    const lzma_allocator* allocator, const uint8_t* in)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -401,7 +401,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *                between 8 and 1024 inclusive.
  */
 extern LZMA_API(lzma_ret) lzma_block_compressed_size (
-    lzma_block *block, lzma_vli unpadded_size)
+    lzma_block* block, lzma_vli unpadded_size)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -415,7 +415,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *
  * \return      Unpadded Size on success, or zero on error.
  */
-extern LZMA_API(lzma_vli) lzma_block_unpadded_size (const lzma_block *block)
+extern LZMA_API(lzma_vli) lzma_block_unpadded_size (const lzma_block* block)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -427,7 +427,7 @@ lzma_nothrow lzma_attr_pure;
  * \return      On success, total encoded size of the Block. On error,
  *              zero is returned.
  */
-extern LZMA_API(lzma_vli) lzma_block_total_size (const lzma_block *block)
+extern LZMA_API(lzma_vli) lzma_block_total_size (const lzma_block* block)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -445,7 +445,7 @@ lzma_nothrow lzma_attr_pure;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_block_encoder (
-    lzma_stream *strm, lzma_block *block)
+    lzma_stream* strm, lzma_block* block)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -462,7 +462,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_MEM_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_block_decoder (
-    lzma_stream *strm, lzma_block *block)
+    lzma_stream* strm, lzma_block* block)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -512,9 +512,9 @@ lzma_nothrow;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_block_buffer_encode (
-    lzma_block *block, const lzma_allocator *allocator,
-    const uint8_t *in, size_t in_size,
-    uint8_t *out, size_t *out_pos, size_t out_size)
+    lzma_block* block, const lzma_allocator* allocator,
+    const uint8_t* in, size_t in_size,
+    uint8_t* out, size_t* out_pos, size_t out_size)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -529,9 +529,9 @@ lzma_nothrow lzma_attr_warn_unused_result;
  * This function doesn't take lzma_allocator because this function doesn't
  * allocate any memory from the heap.
  */
-extern LZMA_API(lzma_ret) lzma_block_uncomp_encode (lzma_block *block,
-                                                    const uint8_t *in, size_t in_size,
-                                                    uint8_t *out, size_t *out_pos, size_t out_size)
+extern LZMA_API(lzma_ret) lzma_block_uncomp_encode (lzma_block* block,
+                                                    const uint8_t* in, size_t in_size,
+                                                    uint8_t* out, size_t* out_pos, size_t out_size)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -562,7 +562,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_block_buffer_decode (
-    lzma_block *block, const lzma_allocator *allocator,
-    const uint8_t *in, size_t *in_pos, size_t in_size,
-    uint8_t *out, size_t *out_pos, size_t out_size)
+    lzma_block* block, const lzma_allocator* allocator,
+    const uint8_t* in, size_t* in_pos, size_t in_size,
+    uint8_t* out, size_t* out_pos, size_t out_size)
 lzma_nothrow;

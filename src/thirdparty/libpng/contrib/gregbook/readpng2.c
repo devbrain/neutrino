@@ -84,13 +84,13 @@ void readpng2_version_info (void) {
            ZLIB_VERSION, zlib_version);
 }
 
-int readpng2_check_sig (uch *sig, int num) {
+int readpng2_check_sig (uch* sig, int num) {
   return !png_sig_cmp (sig, 0, num);
 }
 
 /* returns 0 for success, 2 for libpng problem, 4 for out of memory */
 
-int readpng2_init (mainprog_info *mainprog_ptr) {
+int readpng2_init (mainprog_info* mainprog_ptr) {
   png_structp png_ptr;       /* note:  temporary variables! */
   png_infop info_ptr;
 
@@ -170,7 +170,7 @@ int readpng2_init (mainprog_info *mainprog_ptr) {
 
 /* returns 0 for success, 2 for libpng (longjmp) problem */
 
-int readpng2_decode_data (mainprog_info *mainprog_ptr, uch *rawbuf, ulg length) {
+int readpng2_decode_data (mainprog_info* mainprog_ptr, uch* rawbuf, ulg length) {
   png_structp png_ptr = (png_structp) mainprog_ptr->png_ptr;
   png_infop info_ptr = (png_infop) mainprog_ptr->info_ptr;
 
@@ -194,7 +194,7 @@ int readpng2_decode_data (mainprog_info *mainprog_ptr, uch *rawbuf, ulg length) 
 }
 
 static void readpng2_info_callback (png_structp png_ptr, png_infop info_ptr) {
-  mainprog_info *mainprog_ptr;
+  mainprog_info* mainprog_ptr;
   int color_type, bit_depth;
   png_uint_32 width, height;
 #ifdef PNG_FLOATING_POINT_SUPPORTED
@@ -363,7 +363,7 @@ static void readpng2_info_callback (png_structp png_ptr, png_infop info_ptr) {
 
 static void readpng2_row_callback (png_structp png_ptr, png_bytep new_row,
                                    png_uint_32 row_num, int pass) {
-  mainprog_info *mainprog_ptr;
+  mainprog_info* mainprog_ptr;
 
 
   /* first check whether the row differs from the previous pass; if not,
@@ -404,7 +404,7 @@ static void readpng2_row_callback (png_structp png_ptr, png_bytep new_row,
 }
 
 static void readpng2_end_callback (png_structp png_ptr, png_infop info_ptr) {
-  mainprog_info *mainprog_ptr;
+  mainprog_info* mainprog_ptr;
 
 
   /* retrieve the pointer to our special-purpose struct */
@@ -429,7 +429,7 @@ static void readpng2_end_callback (png_structp png_ptr, png_infop info_ptr) {
   return;
 }
 
-void readpng2_cleanup (mainprog_info *mainprog_ptr) {
+void readpng2_cleanup (mainprog_info* mainprog_ptr) {
   png_structp png_ptr = (png_structp) mainprog_ptr->png_ptr;
   png_infop info_ptr = (png_infop) mainprog_ptr->info_ptr;
 
@@ -447,7 +447,7 @@ static void readpng2_warning_handler (png_structp png_ptr, png_const_charp msg) 
 }
 
 static void readpng2_error_handler (png_structp png_ptr, png_const_charp msg) {
-  mainprog_info *mainprog_ptr;
+  mainprog_info* mainprog_ptr;
 
   /* This function, aside from the extra step of retrieving the "error
    * pointer" (below) and the fact that it exists within the application

@@ -52,10 +52,10 @@ typedef struct {
 } lzma_lzma2_coder;
 
 static lzma_ret
-lzma2_decode (void *coder_ptr, lzma_dict *restrict dict,
-              const uint8_t *restrict in, size_t *restrict in_pos,
+lzma2_decode (void* coder_ptr, lzma_dict* restrict dict,
+              const uint8_t* restrict in, size_t* restrict in_pos,
               size_t in_size) {
-  lzma_lzma2_coder *restrict coder = coder_ptr;
+  lzma_lzma2_coder* restrict coder = coder_ptr;
 
   // With SEQ_LZMA it is possible that no new input is needed to do
   // some progress. The rest of the sequences assume that there is
@@ -211,8 +211,8 @@ lzma2_decode (void *coder_ptr, lzma_dict *restrict dict,
 }
 
 static void
-lzma2_decoder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_lzma2_coder *coder = coder_ptr;
+lzma2_decoder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_lzma2_coder* coder = coder_ptr;
 
   assert(coder->lzma.end == NULL);
   lzma_free (coder->lzma.coder, allocator);
@@ -223,9 +223,9 @@ lzma2_decoder_end (void *coder_ptr, const lzma_allocator *allocator) {
 }
 
 static lzma_ret
-lzma2_decoder_init (lzma_lz_decoder *lz, const lzma_allocator *allocator,
-                    const void *opt, lzma_lz_options *lz_options) {
-  lzma_lzma2_coder *coder = lz->coder;
+lzma2_decoder_init (lzma_lz_decoder* lz, const lzma_allocator* allocator,
+                    const void* opt, lzma_lz_options* lz_options) {
+  lzma_lzma2_coder* coder = lz->coder;
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_lzma2_coder), allocator);
     if (coder == NULL)
@@ -238,7 +238,7 @@ lzma2_decoder_init (lzma_lz_decoder *lz, const lzma_allocator *allocator,
     coder->lzma = LZMA_LZ_DECODER_INIT;
   }
 
-  const lzma_options_lzma *options = opt;
+  const lzma_options_lzma* options = opt;
 
   coder->sequence = SEQ_CONTROL;
   coder->need_properties = true;
@@ -250,8 +250,8 @@ lzma2_decoder_init (lzma_lz_decoder *lz, const lzma_allocator *allocator,
 }
 
 extern lzma_ret
-lzma_lzma2_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                         const lzma_filter_info *filters) {
+lzma_lzma2_decoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                         const lzma_filter_info* filters) {
   // LZMA2 can only be the last filter in the chain. This is enforced
   // by the raw_decoder initialization.
   assert(filters[1].init == NULL);
@@ -261,14 +261,14 @@ lzma_lzma2_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern uint64_t
-lzma_lzma2_decoder_memusage (const void *options) {
+lzma_lzma2_decoder_memusage (const void* options) {
   return sizeof (lzma_lzma2_coder)
          + lzma_lzma_decoder_memusage_nocheck (options);
 }
 
 extern lzma_ret
-lzma_lzma2_props_decode (void **options, const lzma_allocator *allocator,
-                         const uint8_t *props, size_t props_size) {
+lzma_lzma2_props_decode (void** options, const lzma_allocator* allocator,
+                         const uint8_t* props, size_t props_size) {
   if (props_size != 1)
     return LZMA_OPTIONS_ERROR;
 
@@ -280,7 +280,7 @@ lzma_lzma2_props_decode (void **options, const lzma_allocator *allocator,
   if (props[0] > 40)
     return LZMA_OPTIONS_ERROR;
 
-  lzma_options_lzma *opt = lzma_alloc (
+  lzma_options_lzma* opt = lzma_alloc (
       sizeof (lzma_options_lzma), allocator);
   if (opt == NULL)
     return LZMA_MEM_ERROR;

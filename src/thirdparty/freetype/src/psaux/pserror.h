@@ -92,7 +92,7 @@ FT_BEGIN_HEADER
 
 /* Set error code to a particular value. */
 FT_LOCAL(void)
-cf2_setError (FT_Error *error,
+cf2_setError (FT_Error* error,
               FT_Error value);
 
 

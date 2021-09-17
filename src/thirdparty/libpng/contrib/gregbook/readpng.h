@@ -77,11 +77,11 @@ typedef unsigned long ulg;
 
 void readpng_version_info (void);
 
-int readpng_init (FILE *infile, ulg *pWidth, ulg *pHeight);
+int readpng_init (FILE* infile, ulg* pWidth, ulg* pHeight);
 
-int readpng_get_bgcolor (uch *bg_red, uch *bg_green, uch *bg_blue);
+int readpng_get_bgcolor (uch* bg_red, uch* bg_green, uch* bg_blue);
 
-uch *readpng_get_image (double display_exponent, int *pChannels,
-                        ulg *pRowbytes);
+uch* readpng_get_image (double display_exponent, int* pChannels,
+                        ulg* pRowbytes);
 
 void readpng_cleanup (int free_image_data);

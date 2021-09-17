@@ -14,8 +14,8 @@
 
 namespace neutrino::hal {
 
-  surface load (std::istream &is);
-  surface load (const std::filesystem::path &path);
+  surface load (std::istream& is);
+  surface load (const std::filesystem::path& path);
 
   namespace detail {
     struct surface_impl;
@@ -25,10 +25,10 @@ namespace neutrino::hal {
     public:
       image_loader ();
       virtual ~image_loader ();
-      virtual surface load (std::istream &is) = 0;
-      virtual bool test (std::istream &is) const = 0;
+      virtual surface load (std::istream& is) = 0;
+      virtual bool test (std::istream& is) const = 0;
     protected:
-      static surface create (std::unique_ptr<detail::surface_impl> &&impl);
+      static surface create (std::unique_ptr<detail::surface_impl>&& impl);
   };
 }
 

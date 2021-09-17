@@ -80,8 +80,8 @@ typedef struct TBBox_Rec_ {
  *   Always 0.  Needed for the interface only.
  */
 static int
-BBox_Move_To (FT_Vector *to,
-              TBBox_Rec *user) {
+BBox_Move_To (FT_Vector* to,
+              TBBox_Rec* user) {
   FT_UPDATE_BBOX(to, user->bbox);
 
   user->last = *to;
@@ -112,8 +112,8 @@ BBox_Move_To (FT_Vector *to,
  *   Always 0.  Needed for the interface only.
  */
 static int
-BBox_Line_To (FT_Vector *to,
-              TBBox_Rec *user) {
+BBox_Line_To (FT_Vector* to,
+              TBBox_Rec* user) {
   user->last = *to;
 
   return 0;
@@ -150,8 +150,8 @@ static void
 BBox_Conic_Check (FT_Pos y1,
                   FT_Pos y2,
                   FT_Pos y3,
-                  FT_Pos *min,
-                  FT_Pos *max) {
+                  FT_Pos* min,
+                  FT_Pos* max) {
   /* This function is only called when a control off-point is outside */
   /* the bbox that contains all on-points.  It finds a local extremum */
   /* within the segment, equal to (y1*y3 - y2*y2)/(y1 - 2*y2 + y3).   */
@@ -197,9 +197,9 @@ BBox_Conic_Check (FT_Pos y1,
  *   extremum coordinates, as it is sufficiently fast.
  */
 static int
-BBox_Conic_To (FT_Vector *control,
-               FT_Vector *to,
-               TBBox_Rec *user) {
+BBox_Conic_To (FT_Vector* control,
+               FT_Vector* to,
+               TBBox_Rec* user) {
   /* in case `to' is implicit and not included in bbox yet */
   FT_UPDATE_BBOX(to, user->bbox);
 
@@ -343,8 +343,8 @@ BBox_Cubic_Check (FT_Pos p1,
                   FT_Pos p2,
                   FT_Pos p3,
                   FT_Pos p4,
-                  FT_Pos *min,
-                  FT_Pos *max) {
+                  FT_Pos* min,
+                  FT_Pos* max) {
   /* This function is only called when a control off-point is outside  */
   /* the bbox that contains all on-points.  So at least one of the     */
   /* conditions below holds and cubic_peak is called with at least one */
@@ -391,10 +391,10 @@ BBox_Cubic_Check (FT_Pos p1,
  *   extremum coordinates, we subdivide instead.
  */
 static int
-BBox_Cubic_To (FT_Vector *control1,
-               FT_Vector *control2,
-               FT_Vector *to,
-               TBBox_Rec *user) {
+BBox_Cubic_To (FT_Vector* control1,
+               FT_Vector* control2,
+               FT_Vector* to,
+               TBBox_Rec* user) {
   /* We don't need to check `to' since it is always an on-point,    */
   /* thus within the bbox.  Only segments with an off-point outside */
   /* the bbox can possibly reach new extreme values.                */
@@ -437,13 +437,13 @@ FT_DEFINE_OUTLINE_FUNCS(
 /* documentation is in ftbbox.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Outline_Get_BBox (FT_Outline *outline,
-                     FT_BBox *abbox) {
+FT_Outline_Get_BBox (FT_Outline* outline,
+                     FT_BBox* abbox) {
   FT_BBox cbox = {0x7FFFFFFFL, 0x7FFFFFFFL,
                   -0x7FFFFFFFL, -0x7FFFFFFFL};
   FT_BBox bbox = {0x7FFFFFFFL, 0x7FFFFFFFL,
                   -0x7FFFFFFFL, -0x7FFFFFFFL};
-  FT_Vector *vec;
+  FT_Vector* vec;
   FT_UShort n;
 
   if (!abbox)

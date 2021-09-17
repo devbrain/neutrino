@@ -102,22 +102,22 @@ typedef enum {
 
 /* Hashset for storing references to multiple ZSTD_DDict within ZSTD_DCtx */
 typedef struct {
-  const ZSTD_DDict **ddictPtrTable;
+  const ZSTD_DDict** ddictPtrTable;
   size_t ddictPtrTableSize;
   size_t ddictPtrCount;
 } ZSTD_DDictHashSet;
 
 struct ZSTD_DCtx_s {
-  const ZSTD_seqSymbol *LLTptr;
-  const ZSTD_seqSymbol *MLTptr;
-  const ZSTD_seqSymbol *OFTptr;
-  const HUF_DTable *HUFptr;
+  const ZSTD_seqSymbol* LLTptr;
+  const ZSTD_seqSymbol* MLTptr;
+  const ZSTD_seqSymbol* OFTptr;
+  const HUF_DTable* HUFptr;
   ZSTD_entropyDTables_t entropy;
   U32 workspace[HUF_DECOMPRESS_WORKSPACE_SIZE_U32];   /* space needed when building huffman tables */
-  const void *previousDstEnd;   /* detect continuity */
-  const void *prefixStart;      /* start of current segment */
-  const void *virtualStart;     /* virtual start of previous segment if it was just before current one */
-  const void *dictEnd;          /* end of previous segment */
+  const void* previousDstEnd;   /* detect continuity */
+  const void* prefixStart;      /* start of current segment */
+  const void* virtualStart;     /* virtual start of previous segment if it was just before current one */
+  const void* dictEnd;          /* end of previous segment */
   size_t expected;
   ZSTD_frameHeader fParams;
   U64 processedCSize;
@@ -131,7 +131,7 @@ struct ZSTD_DCtx_s {
   ZSTD_format_e format;
   ZSTD_forceIgnoreChecksum_e forceIgnoreChecksum;   /* User specified: if == 1, will ignore checksums in compressed frame. Default == 0 */
   U32 validateChecksum;         /* if == 1, will validate checksum. Is == 1 if (fParams.checksumFlag == 1) and (forceIgnoreChecksum == 0). */
-  const BYTE *litPtr;
+  const BYTE* litPtr;
   ZSTD_customMem customMem;
   size_t litSize;
   size_t rleSize;
@@ -139,26 +139,26 @@ struct ZSTD_DCtx_s {
   int bmi2;                     /* == 1 if the CPU supports BMI2 and 0 otherwise. CPU support is determined dynamically once per context lifetime. */
 
   /* dictionary */
-  ZSTD_DDict *ddictLocal;
-  const ZSTD_DDict *ddict;     /* set by ZSTD_initDStream_usingDDict(), or ZSTD_DCtx_refDDict() */
+  ZSTD_DDict* ddictLocal;
+  const ZSTD_DDict* ddict;     /* set by ZSTD_initDStream_usingDDict(), or ZSTD_DCtx_refDDict() */
   U32 dictID;
   int ddictIsCold;             /* if == 1 : dictionary is "new" for working context, and presumed "cold" (not in cpu cache) */
   ZSTD_dictUses_e dictUses;
-  ZSTD_DDictHashSet *ddictSet;                    /* Hash set for multiple ddicts */
+  ZSTD_DDictHashSet* ddictSet;                    /* Hash set for multiple ddicts */
   ZSTD_refMultipleDDicts_e refMultipleDDicts;     /* User specified: if == 1, will allow references to multiple DDicts. Default == 0 (disabled) */
 
   /* streaming */
   ZSTD_dStreamStage streamStage;
-  char *inBuff;
+  char* inBuff;
   size_t inBuffSize;
   size_t inPos;
   size_t maxWindowSize;
-  char *outBuff;
+  char* outBuff;
   size_t outBuffSize;
   size_t outStart;
   size_t outEnd;
   size_t lhSize;
-  void *legacyContext;
+  void* legacyContext;
   U32 previousLegacyVersion;
   U32 legacyVersion;
   U32 hostageByte;
@@ -191,14 +191,14 @@ struct ZSTD_DCtx_s {
 /*! ZSTD_loadDEntropy() :
  *  dict : must point at beginning of a valid zstd dictionary.
  * @return : size of dictionary header (size of magic number + dict ID + entropy tables) */
-size_t ZSTD_loadDEntropy (ZSTD_entropyDTables_t *entropy,
-                          const void *const dict, size_t const dictSize);
+size_t ZSTD_loadDEntropy (ZSTD_entropyDTables_t* entropy,
+                          const void* const dict, size_t const dictSize);
 
 /*! ZSTD_checkContinuity() :
  *  check if next `dst` follows previous position, where decompression ended.
  *  If yes, do nothing (continue on current segment).
  *  If not, classify previous segment as "external dictionary", and start a new segment.
  *  This function cannot fail. */
-void ZSTD_checkContinuity (ZSTD_DCtx *dctx, const void *dst, size_t dstSize);
+void ZSTD_checkContinuity (ZSTD_DCtx* dctx, const void* dst, size_t dstSize);
 
 #endif /* ZSTD_DECOMPRESS_INTERNAL_H */

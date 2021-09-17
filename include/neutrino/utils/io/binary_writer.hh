@@ -33,7 +33,7 @@ namespace neutrino::utils::io {
         LITTLE_ENDIAN_BYTE_ORDER = 3  /// little-endian byte-order
       };
 
-      explicit binary_writer (std::ostream &ostr, stream_byte_order_t byteOrder = NATIVE_BYTE_ORDER);
+      explicit binary_writer (std::ostream& ostr, stream_byte_order_t byteOrder = NATIVE_BYTE_ORDER);
       /// Creates the BinaryWriter.
 
 
@@ -41,26 +41,26 @@ namespace neutrino::utils::io {
       ~binary_writer ();
       /// Destroys the BinaryWriter.
 
-      binary_writer &operator<< (bool value);
-      binary_writer &operator<< (char value);
-      binary_writer &operator<< (unsigned char value);
-      binary_writer &operator<< (signed char value);
-      binary_writer &operator<< (short value);
-      binary_writer &operator<< (unsigned short value);
-      binary_writer &operator<< (int value);
-      binary_writer &operator<< (unsigned int value);
-      binary_writer &operator<< (long value);
-      binary_writer &operator<< (unsigned long value);
-      binary_writer &operator<< (float value);
-      binary_writer &operator<< (double value);
+      binary_writer& operator << (bool value);
+      binary_writer& operator << (char value);
+      binary_writer& operator << (unsigned char value);
+      binary_writer& operator << (signed char value);
+      binary_writer& operator << (short value);
+      binary_writer& operator << (unsigned short value);
+      binary_writer& operator << (int value);
+      binary_writer& operator << (unsigned int value);
+      binary_writer& operator << (long value);
+      binary_writer& operator << (unsigned long value);
+      binary_writer& operator << (float value);
+      binary_writer& operator << (double value);
 
-      binary_writer &operator<< (long long value);
-      binary_writer &operator<< (unsigned long long value);
+      binary_writer& operator << (long long value);
+      binary_writer& operator << (unsigned long long value);
 
-      void write_raw (const std::string &rawData);
+      void write_raw (const std::string& rawData);
       /// Writes the string as-is to the stream.
 
-      void write_raw (const char *buffer, std::streamsize length);
+      void write_raw (const char* buffer, std::streamsize length);
       /// Writes length raw bytes from the given buffer to the stream.
 
 
@@ -76,7 +76,7 @@ namespace neutrino::utils::io {
       bool bad ();
       /// Returns _ostr.bad();
 
-      [[nodiscard]] std::ostream &stream () const;
+      [[nodiscard]] std::ostream& stream () const;
       /// Returns the underlying stream.
 
       [[nodiscard]] stream_byte_order_t byteOrder () const;
@@ -84,7 +84,7 @@ namespace neutrino::utils::io {
       /// either BIG_ENDIAN_BYTE_ORDER or LITTLE_ENDIAN_BYTE_ORDER.
 
     private:
-      std::ostream &_ostr;
+      std::ostream& _ostr;
       bool _flipBytes;
   };
 
@@ -93,7 +93,7 @@ namespace neutrino::utils::io {
       /// A convenient wrapper for using Buffer and MemoryStream with BinarWriter.
   {
     public:
-      basic_memory_binary_writer (char *data, std::size_t size, stream_byte_order_t byteOrder = NATIVE_BYTE_ORDER)
+      basic_memory_binary_writer (char* data, std::size_t size, stream_byte_order_t byteOrder = NATIVE_BYTE_ORDER)
           :
           binary_writer (_ostr, byteOrder),
           _ostr (data, size) {
@@ -108,11 +108,11 @@ namespace neutrino::utils::io {
         }
       }
 
-      const memory_output_stream &stream () const {
+      const memory_output_stream& stream () const {
         return _ostr;
       }
 
-      memory_output_stream &stream () {
+      memory_output_stream& stream () {
         return _ostr;
       }
 
@@ -128,7 +128,7 @@ namespace neutrino::utils::io {
 //
 
 
-  inline std::ostream &binary_writer::stream () const {
+  inline std::ostream& binary_writer::stream () const {
     return _ostr;
   }
 

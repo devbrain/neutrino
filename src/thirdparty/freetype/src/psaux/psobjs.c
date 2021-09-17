@@ -88,7 +88,7 @@ ps_table_new (PS_Table table,
   table->capacity = 0;
   table->cursor = 0;
 
-  *(PS_Table_FuncsRec *) &table->funcs = ps_table_funcs;
+  *(PS_Table_FuncsRec*) &table->funcs = ps_table_funcs;
 
   Exit:
   if (error)
@@ -99,10 +99,10 @@ ps_table_new (PS_Table table,
 
 static void
 shift_elements (PS_Table table,
-                FT_Byte *old_base) {
+                FT_Byte* old_base) {
   FT_PtrDist delta = table->block - old_base;
-  FT_Byte **offset = table->elements;
-  FT_Byte **limit = offset + table->max_elems;
+  FT_Byte** offset = table->elements;
+  FT_Byte** limit = offset + table->max_elems;
 
   for (; offset < limit; offset++) {
     if (offset[0])
@@ -114,7 +114,7 @@ static FT_Error
 reallocate_t1_table (PS_Table table,
                      FT_Offset new_size) {
   FT_Memory memory = table->memory;
-  FT_Byte *old_base = table->block;
+  FT_Byte* old_base = table->block;
   FT_Error error;
 
 
@@ -166,7 +166,7 @@ reallocate_t1_table (PS_Table table,
 FT_LOCAL_DEF(FT_Error)
 ps_table_add (PS_Table table,
               FT_Int idx,
-              const void *object,
+              const void* object,
               FT_UInt length) {
   if (idx < 0 || idx >= table->max_elems) {
     FT_ERROR(("ps_table_add: invalid index\n"));
@@ -179,7 +179,7 @@ ps_table_add (PS_Table table,
     FT_Offset new_size = table->capacity;
     FT_PtrDist in_offset;
 
-    in_offset = (FT_Byte *) object - table->block;
+    in_offset = (FT_Byte*) object - table->block;
     if (in_offset < 0 || (FT_Offset) in_offset >= table->capacity)
       in_offset = -1;
 
@@ -229,7 +229,7 @@ FT_LOCAL_DEF(void)
 ps_table_done (PS_Table table) {
   FT_Memory memory = table->memory;
   FT_Error error;
-  FT_Byte *old_base = table->block;
+  FT_Byte* old_base = table->block;
 
 
   /* should never fail, because rec.cursor <= rec.size */
@@ -272,9 +272,9 @@ ps_table_release (PS_Table table) {
 /* first character must be already part of the comment */
 
 static void
-skip_comment (FT_Byte **acur,
-              FT_Byte *limit) {
-  FT_Byte *cur = *acur;
+skip_comment (FT_Byte** acur,
+              FT_Byte* limit) {
+  FT_Byte* cur = *acur;
 
   while (cur < limit) {
     if (IS_PS_NEWLINE(*cur))
@@ -286,9 +286,9 @@ skip_comment (FT_Byte **acur,
 }
 
 static void
-skip_spaces (FT_Byte **acur,
-             FT_Byte *limit) {
-  FT_Byte *cur = *acur;
+skip_spaces (FT_Byte** acur,
+             FT_Byte* limit) {
+  FT_Byte* cur = *acur;
 
   while (cur < limit) {
     if (!IS_PS_SPACE(*cur)) {
@@ -311,9 +311,9 @@ skip_spaces (FT_Byte **acur,
 /* *acur is positioned at the character after the closing `)' */
 
 static FT_Error
-skip_literal_string (FT_Byte **acur,
-                     FT_Byte *limit) {
-  FT_Byte *cur = *acur;
+skip_literal_string (FT_Byte** acur,
+                     FT_Byte* limit) {
+  FT_Byte* cur = *acur;
   FT_Int embed = 0;
   FT_Error error = FT_ERR(Invalid_File_Format);
   unsigned int i;
@@ -377,9 +377,9 @@ skip_literal_string (FT_Byte **acur,
 /* first character must be `<' */
 
 static FT_Error
-skip_string (FT_Byte **acur,
-             FT_Byte *limit) {
-  FT_Byte *cur = *acur;
+skip_string (FT_Byte** acur,
+             FT_Byte* limit) {
+  FT_Byte* cur = *acur;
   FT_Error err = FT_Err_Ok;
 
   while (++cur < limit) {
@@ -412,9 +412,9 @@ skip_string (FT_Byte **acur,
 /* even within a Type1 font                       */
 
 static FT_Error
-skip_procedure (FT_Byte **acur,
-                FT_Byte *limit) {
-  FT_Byte *cur;
+skip_procedure (FT_Byte** acur,
+                FT_Byte* limit) {
+  FT_Byte* cur;
   FT_Int embed = 0;
   FT_Error error = FT_Err_Ok;
 
@@ -472,8 +472,8 @@ ps_parser_skip_PS_token (PS_Parser parser) {
   /*       character in a name (PS Ref Manual, 3rd ed, p31).           */
   /*       PostScript delimiters are (, ), <, >, [, ], {, }, /, and %. */
 
-  FT_Byte *cur = parser->cursor;
-  FT_Byte *limit = parser->limit;
+  FT_Byte* cur = parser->cursor;
+  FT_Byte* limit = parser->limit;
   FT_Error error = FT_Err_Ok;
 
   skip_spaces (&cur, limit);             /* this also skips comments */
@@ -569,8 +569,8 @@ ps_parser_skip_spaces (PS_Parser parser) {
 FT_LOCAL_DEF(void)
 ps_parser_to_token (PS_Parser parser,
                     T1_Token token) {
-  FT_Byte *cur;
-  FT_Byte *limit;
+  FT_Byte* cur;
+  FT_Byte* limit;
   FT_Int embed;
 
   token->type = T1_TOKEN_TYPE_NONE;
@@ -666,7 +666,7 @@ FT_LOCAL_DEF(void)
 ps_parser_to_token_array (PS_Parser parser,
                           T1_Token tokens,
                           FT_UInt max_tokens,
-                          FT_Int *pnum_tokens) {
+                          FT_Int* pnum_tokens) {
   T1_TokenRec master;
 
   *pnum_tokens = -1;
@@ -675,8 +675,8 @@ ps_parser_to_token_array (PS_Parser parser,
   ps_parser_to_token (parser, &master);
 
   if (master.type == T1_TOKEN_TYPE_ARRAY) {
-    FT_Byte *old_cursor = parser->cursor;
-    FT_Byte *old_limit = parser->limit;
+    FT_Byte* old_cursor = parser->cursor;
+    FT_Byte* old_limit = parser->limit;
     T1_Token cur = tokens;
     T1_Token limit = cur + max_tokens;
 
@@ -711,11 +711,11 @@ ps_parser_to_token_array (PS_Parser parser,
 /*     array; in this case we ignore `max_coords'            */
 
 static FT_Int
-ps_tocoordarray (FT_Byte **acur,
-                 FT_Byte *limit,
+ps_tocoordarray (FT_Byte** acur,
+                 FT_Byte* limit,
                  FT_Int max_coords,
-                 FT_Short *coords) {
-  FT_Byte *cur = *acur;
+                 FT_Short* coords) {
+  FT_Byte* cur = *acur;
   FT_Int count = 0;
   FT_Byte c, ender;
 
@@ -738,7 +738,7 @@ ps_tocoordarray (FT_Byte **acur,
   /* now, read the coordinates */
   while (cur < limit) {
     FT_Short dummy;
-    FT_Byte *old_cur;
+    FT_Byte* old_cur;
 
 
     /* skip whitespace in front of data */
@@ -785,12 +785,12 @@ ps_tocoordarray (FT_Byte **acur,
 /* return number of successfully parsed values               */
 
 static FT_Int
-ps_tofixedarray (FT_Byte **acur,
-                 FT_Byte *limit,
+ps_tofixedarray (FT_Byte** acur,
+                 FT_Byte* limit,
                  FT_Int max_values,
-                 FT_Fixed *values,
+                 FT_Fixed* values,
                  FT_Int power_ten) {
-  FT_Byte *cur = *acur;
+  FT_Byte* cur = *acur;
   FT_Int count = 0;
   FT_Byte c, ender;
 
@@ -813,7 +813,7 @@ ps_tofixedarray (FT_Byte **acur,
   /* now, read the values */
   while (cur < limit) {
     FT_Fixed dummy;
-    FT_Byte *old_cur;
+    FT_Byte* old_cur;
 
 
     /* skip whitespace in front of data */
@@ -914,9 +914,9 @@ ps_tofixedarray (FT_Byte **acur,
 #endif /* 0 */
 
 static int
-ps_tobool (FT_Byte **acur,
-           FT_Byte *limit) {
-  FT_Byte *cur = *acur;
+ps_tobool (FT_Byte** acur,
+           FT_Byte* limit) {
+  FT_Byte* cur = *acur;
   FT_Bool result = 0;
 
 
@@ -949,12 +949,12 @@ ps_tobool (FT_Byte **acur,
 FT_LOCAL_DEF(FT_Error)
 ps_parser_load_field (PS_Parser parser,
                       const T1_Field field,
-                      void **objects,
+                      void** objects,
                       FT_UInt max_objects,
-                      FT_ULong *pflags) {
+                      FT_ULong* pflags) {
   T1_TokenRec token;
-  FT_Byte *cur;
-  FT_Byte *limit;
+  FT_Byte* cur;
+  FT_Byte* limit;
   FT_UInt count;
   FT_UInt idx;
   FT_Error error;
@@ -976,8 +976,8 @@ ps_parser_load_field (PS_Parser parser,
   /* we must detect arrays in /FontBBox */
   if (type == T1_FIELD_TYPE_BBOX) {
     T1_TokenRec token2;
-    FT_Byte *old_cur = parser->cursor;
-    FT_Byte *old_limit = parser->limit;
+    FT_Byte* old_cur = parser->cursor;
+    FT_Byte* old_limit = parser->limit;
 
 
     /* don't include delimiters */
@@ -1009,9 +1009,9 @@ ps_parser_load_field (PS_Parser parser,
   }
 
   for (; count > 0; count--, idx++) {
-    FT_Byte *q = (FT_Byte *) objects[idx] + field->offset;
+    FT_Byte* q = (FT_Byte*) objects[idx] + field->offset;
     FT_Long val;
-    FT_String *string = NULL;
+    FT_String* string = NULL;
 
     skip_spaces (&cur, limit);
 
@@ -1039,19 +1039,19 @@ ps_parser_load_field (PS_Parser parser,
       Store_Integer:
         switch (field->size) {
           case (8 / FT_CHAR_BIT):
-            *(FT_Byte *) q = (FT_Byte) val;
+            *(FT_Byte*) q = (FT_Byte) val;
             break;
 
           case (16 / FT_CHAR_BIT):
-            *(FT_UShort *) q = (FT_UShort) val;
+            *(FT_UShort*) q = (FT_UShort) val;
             break;
 
           case (32 / FT_CHAR_BIT):
-            *(FT_UInt32 *) q = (FT_UInt32) val;
+            *(FT_UInt32*) q = (FT_UInt32) val;
             break;
 
           default:                /* for 64-bit systems */
-            *(FT_Long *) q = val;
+            *(FT_Long*) q = val;
         }
         break;
 
@@ -1090,11 +1090,11 @@ ps_parser_load_field (PS_Parser parser,
 
         /* for this to work (FT_String**)q must have been */
         /* initialized to NULL                            */
-        if (*(FT_String **) q) {
+        if (*(FT_String**) q) {
           FT_TRACE0(("ps_parser_load_field: overwriting field %s\n",
               field->ident));
-          FT_FREE(*(FT_String **) q);
-          *(FT_String **) q = NULL;
+          FT_FREE(*(FT_String**) q);
+          *(FT_String**) q = NULL;
         }
 
         if (FT_ALLOC(string, len + 1))
@@ -1110,13 +1110,13 @@ ps_parser_load_field (PS_Parser parser,
             FT_TRACE4(( " /%s", string ));
 #endif
 
-        *(FT_String **) q = string;
+        *(FT_String**) q = string;
       }
         break;
 
       case T1_FIELD_TYPE_BBOX: {
         FT_Fixed temp[4];
-        FT_BBox *bbox = (FT_BBox *) q;
+        FT_BBox* bbox = (FT_BBox*) q;
         FT_Int result;
 
         result = ps_tofixedarray (&cur, limit, 4, temp, 0);
@@ -1143,7 +1143,7 @@ ps_parser_load_field (PS_Parser parser,
 
       case T1_FIELD_TYPE_MM_BBOX: {
         FT_Memory memory = parser->memory;
-        FT_Fixed *temp = NULL;
+        FT_Fixed* temp = NULL;
         FT_Int result;
         FT_UInt i;
 
@@ -1174,7 +1174,7 @@ ps_parser_load_field (PS_Parser parser,
 
         FT_TRACE4((" ["));
         for (i = 0; i < max_objects; i++) {
-          FT_BBox *bbox = (FT_BBox *) objects[i];
+          FT_BBox* bbox = (FT_BBox*) objects[i];
 
           bbox->xMin = FT_RoundFix (temp[i]);
           bbox->yMin = FT_RoundFix (temp[i + max_objects]);
@@ -1221,15 +1221,15 @@ ps_parser_load_field (PS_Parser parser,
 FT_LOCAL_DEF(FT_Error)
 ps_parser_load_field_table (PS_Parser parser,
                             const T1_Field field,
-                            void **objects,
+                            void** objects,
                             FT_UInt max_objects,
-                            FT_ULong *pflags) {
+                            FT_ULong* pflags) {
   T1_TokenRec elements[T1_MAX_TABLE_ELEMENTS];
   T1_Token token;
   FT_Int num_elements;
   FT_Error error = FT_Err_Ok;
-  FT_Byte *old_cursor;
-  FT_Byte *old_limit;
+  FT_Byte* old_cursor;
+  FT_Byte* old_limit;
   T1_FieldRec fieldrec = *(T1_Field) field;
 
   fieldrec.type = T1_FIELD_TYPE_INTEGER;
@@ -1252,7 +1252,7 @@ ps_parser_load_field_table (PS_Parser parser,
   /* we store the elements count if necessary;           */
   /* we further assume that `count_offset' can't be zero */
   if (field->type != T1_FIELD_TYPE_BBOX && field->count_offset != 0)
-    *(FT_Byte *) ((FT_Byte *) objects[0] + field->count_offset) =
+    *(FT_Byte*) ((FT_Byte*) objects[0] + field->count_offset) =
         (FT_Byte) num_elements;
 
   FT_TRACE4((" ["));
@@ -1301,12 +1301,12 @@ ps_parser_to_int (PS_Parser parser) {
 
 FT_LOCAL_DEF(FT_Error)
 ps_parser_to_bytes (PS_Parser parser,
-                    FT_Byte *bytes,
+                    FT_Byte* bytes,
                     FT_Offset max_bytes,
-                    FT_ULong *pnum_bytes,
+                    FT_ULong* pnum_bytes,
                     FT_Bool delimiters) {
   FT_Error error = FT_Err_Ok;
-  FT_Byte *cur;
+  FT_Byte* cur;
 
   ps_parser_skip_spaces (parser);
   cur = parser->cursor;
@@ -1355,7 +1355,7 @@ ps_parser_to_fixed (PS_Parser parser,
 FT_LOCAL_DEF(FT_Int)
 ps_parser_to_coord_array (PS_Parser parser,
                           FT_Int max_coords,
-                          FT_Short *coords) {
+                          FT_Short* coords) {
   ps_parser_skip_spaces (parser);
   return ps_tocoordarray (&parser->cursor, parser->limit,
                           max_coords, coords);
@@ -1364,7 +1364,7 @@ ps_parser_to_coord_array (PS_Parser parser,
 FT_LOCAL_DEF(FT_Int)
 ps_parser_to_fixed_array (PS_Parser parser,
                           FT_Int max_values,
-                          FT_Fixed *values,
+                          FT_Fixed* values,
                           FT_Int power_ten) {
   ps_parser_skip_spaces (parser);
   return ps_tofixedarray (&parser->cursor, parser->limit,
@@ -1390,8 +1390,8 @@ ps_parser_to_fixed_array (PS_Parser parser,
 
 FT_LOCAL_DEF(void)
 ps_parser_init (PS_Parser parser,
-                FT_Byte *base,
-                FT_Byte *limit,
+                FT_Byte* base,
+                FT_Byte* limit,
                 FT_Memory memory) {
   parser->error = FT_Err_Ok;
   parser->base = base;
@@ -1517,11 +1517,11 @@ t1_builder_add_point (T1_Builder builder,
                       FT_Pos x,
                       FT_Pos y,
                       FT_Byte flag) {
-  FT_Outline *outline = builder->current;
+  FT_Outline* outline = builder->current;
 
   if (builder->load_points) {
-    FT_Vector *point = outline->points + outline->n_points;
-    FT_Byte *control = (FT_Byte *) outline->tags + outline->n_points;
+    FT_Vector* point = outline->points + outline->n_points;
+    FT_Byte* control = (FT_Byte*) outline->tags + outline->n_points;
 
     point->x = FIXED_TO_INT(x);
     point->y = FIXED_TO_INT(y);
@@ -1549,7 +1549,7 @@ t1_builder_add_point1 (T1_Builder builder,
 /* check space for a new contour, then add it */
 FT_LOCAL_DEF(FT_Error)
 t1_builder_add_contour (T1_Builder builder) {
-  FT_Outline *outline = builder->current;
+  FT_Outline* outline = builder->current;
   FT_Error error;
 
 
@@ -1603,7 +1603,7 @@ t1_builder_start_point (T1_Builder builder,
 /* close the current contour */
 FT_LOCAL_DEF(void)
 t1_builder_close_contour (T1_Builder builder) {
-  FT_Outline *outline = builder->current;
+  FT_Outline* outline = builder->current;
   FT_Int first;
 
   if (!outline)
@@ -1622,9 +1622,9 @@ t1_builder_close_contour (T1_Builder builder) {
   /* We must not include the last point in the path if it */
   /* is located on the first point.                       */
   if (outline->n_points > 1) {
-    FT_Vector *p1 = outline->points + first;
-    FT_Vector *p2 = outline->points + outline->n_points - 1;
-    FT_Byte *control = (FT_Byte *) outline->tags + outline->n_points - 1;
+    FT_Vector* p1 = outline->points + first;
+    FT_Vector* p2 = outline->points + outline->n_points - 1;
+    FT_Byte* control = (FT_Byte*) outline->tags + outline->n_points - 1;
 
 
     /* `delete' last point only if it coincides with the first */
@@ -1683,7 +1683,7 @@ t1_builder_close_contour (T1_Builder builder) {
    *     Whether hinting is active.
    */
 FT_LOCAL_DEF(void)
-cff_builder_init (CFF_Builder *builder,
+cff_builder_init (CFF_Builder* builder,
                   TT_Face face,
                   CFF_Size size,
                   CFF_GlyphSlot glyph,
@@ -1711,7 +1711,7 @@ cff_builder_init (CFF_Builder *builder,
       CFF_Internal internal = (CFF_Internal) ftsize->internal->module_data;
 
       if (internal) {
-        builder->hints_globals = (void *) internal->topfont;
+        builder->hints_globals = (void*) internal->topfont;
         builder->hints_funcs = glyph->root.internal->glyph_hints;
       }
     }
@@ -1744,7 +1744,7 @@ cff_builder_init (CFF_Builder *builder,
    *     A pointer to the glyph builder to finalize.
    */
 FT_LOCAL_DEF(void)
-cff_builder_done (CFF_Builder *builder) {
+cff_builder_done (CFF_Builder* builder) {
   CFF_GlyphSlot glyph = builder->glyph;
 
   if (glyph)
@@ -1754,7 +1754,7 @@ cff_builder_done (CFF_Builder *builder) {
 
 /* check that there is enough space for `count' more points */
 FT_LOCAL_DEF(FT_Error)
-cff_check_points (CFF_Builder *builder,
+cff_check_points (CFF_Builder* builder,
                   FT_Int count) {
   return FT_GLYPHLOADER_CHECK_POINTS(builder->loader, count, 0);
 }
@@ -1762,15 +1762,15 @@ cff_check_points (CFF_Builder *builder,
 
 /* add a new point, do not check space */
 FT_LOCAL_DEF(void)
-cff_builder_add_point (CFF_Builder *builder,
+cff_builder_add_point (CFF_Builder* builder,
                        FT_Pos x,
                        FT_Pos y,
                        FT_Byte flag) {
-  FT_Outline *outline = builder->current;
+  FT_Outline* outline = builder->current;
 
   if (builder->load_points) {
-    FT_Vector *point = outline->points + outline->n_points;
-    FT_Byte *control = (FT_Byte *) outline->tags + outline->n_points;
+    FT_Vector* point = outline->points + outline->n_points;
+    FT_Byte* control = (FT_Byte*) outline->tags + outline->n_points;
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
                                                                                                                             PS_Driver  driver   = (PS_Driver)FT_FACE_DRIVER( builder->face );
@@ -1797,7 +1797,7 @@ cff_builder_add_point (CFF_Builder *builder,
 
 /* check space for a new on-curve point, then add it */
 FT_LOCAL_DEF(FT_Error)
-cff_builder_add_point1 (CFF_Builder *builder,
+cff_builder_add_point1 (CFF_Builder* builder,
                         FT_Pos x,
                         FT_Pos y) {
   FT_Error error;
@@ -1812,8 +1812,8 @@ cff_builder_add_point1 (CFF_Builder *builder,
 
 /* check space for a new contour, then add it */
 FT_LOCAL_DEF(FT_Error)
-cff_builder_add_contour (CFF_Builder *builder) {
-  FT_Outline *outline = builder->current;
+cff_builder_add_contour (CFF_Builder* builder) {
+  FT_Outline* outline = builder->current;
   FT_Error error;
 
   if (!builder->load_points) {
@@ -1836,7 +1836,7 @@ cff_builder_add_contour (CFF_Builder *builder) {
 
 /* if a path was begun, add its first on-curve point */
 FT_LOCAL_DEF(FT_Error)
-cff_builder_start_point (CFF_Builder *builder,
+cff_builder_start_point (CFF_Builder* builder,
                          FT_Pos x,
                          FT_Pos y) {
   FT_Error error = FT_Err_Ok;
@@ -1856,8 +1856,8 @@ cff_builder_start_point (CFF_Builder *builder,
 
 /* close the current contour */
 FT_LOCAL_DEF(void)
-cff_builder_close_contour (CFF_Builder *builder) {
-  FT_Outline *outline = builder->current;
+cff_builder_close_contour (CFF_Builder* builder) {
+  FT_Outline* outline = builder->current;
   FT_Int first;
 
   if (!outline)
@@ -1876,9 +1876,9 @@ cff_builder_close_contour (CFF_Builder *builder) {
   /* We must not include the last point in the path if it */
   /* is located on the first point.                       */
   if (outline->n_points > 1) {
-    FT_Vector *p1 = outline->points + first;
-    FT_Vector *p2 = outline->points + outline->n_points - 1;
-    FT_Byte *control = (FT_Byte *) outline->tags + outline->n_points - 1;
+    FT_Vector* p1 = outline->points + first;
+    FT_Vector* p2 = outline->points + outline->n_points - 1;
+    FT_Byte* control = (FT_Byte*) outline->tags + outline->n_points - 1;
 
 
     /* `delete' last point only if it coincides with the first    */
@@ -1936,8 +1936,8 @@ cff_builder_close_contour (CFF_Builder *builder) {
    *     Whether hinting should be applied.
    */
 FT_LOCAL_DEF(void)
-ps_builder_init (PS_Builder *ps_builder,
-                 void *builder,
+ps_builder_init (PS_Builder* ps_builder,
+                 void* builder,
                  FT_Bool is_t1) {
   FT_ZERO(ps_builder);
 
@@ -1965,7 +1965,7 @@ ps_builder_init (PS_Builder *ps_builder,
     ps_builder->metrics_only = t1builder->metrics_only;
   }
   else {
-    CFF_Builder *cffbuilder = (CFF_Builder *) builder;
+    CFF_Builder* cffbuilder = (CFF_Builder*) builder;
 
     ps_builder->memory = cffbuilder->memory;
     ps_builder->face = (FT_Face) cffbuilder->face;
@@ -2008,7 +2008,7 @@ ps_builder_init (PS_Builder *ps_builder,
    *     A pointer to the glyph builder to finalize.
    */
 FT_LOCAL_DEF(void)
-ps_builder_done (PS_Builder *builder) {
+ps_builder_done (PS_Builder* builder) {
   CFF_GlyphSlot glyph = builder->glyph;
 
   if (glyph)
@@ -2018,7 +2018,7 @@ ps_builder_done (PS_Builder *builder) {
 
 /* check that there is enough space for `count' more points */
 FT_LOCAL_DEF(FT_Error)
-ps_builder_check_points (PS_Builder *builder,
+ps_builder_check_points (PS_Builder* builder,
                          FT_Int count) {
   return FT_GLYPHLOADER_CHECK_POINTS(builder->loader, count, 0);
 }
@@ -2026,15 +2026,15 @@ ps_builder_check_points (PS_Builder *builder,
 
 /* add a new point, do not check space */
 FT_LOCAL_DEF(void)
-ps_builder_add_point (PS_Builder *builder,
+ps_builder_add_point (PS_Builder* builder,
                       FT_Pos x,
                       FT_Pos y,
                       FT_Byte flag) {
-  FT_Outline *outline = builder->current;
+  FT_Outline* outline = builder->current;
 
   if (builder->load_points) {
-    FT_Vector *point = outline->points + outline->n_points;
-    FT_Byte *control = (FT_Byte *) outline->tags + outline->n_points;
+    FT_Vector* point = outline->points + outline->n_points;
+    FT_Byte* control = (FT_Byte*) outline->tags + outline->n_points;
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
                                                                                                                             PS_Driver  driver   = (PS_Driver)FT_FACE_DRIVER( builder->face );
@@ -2073,7 +2073,7 @@ ps_builder_add_point (PS_Builder *builder,
 
 /* check space for a new on-curve point, then add it */
 FT_LOCAL_DEF(FT_Error)
-ps_builder_add_point1 (PS_Builder *builder,
+ps_builder_add_point1 (PS_Builder* builder,
                        FT_Pos x,
                        FT_Pos y) {
   FT_Error error;
@@ -2088,8 +2088,8 @@ ps_builder_add_point1 (PS_Builder *builder,
 
 /* check space for a new contour, then add it */
 FT_LOCAL_DEF(FT_Error)
-ps_builder_add_contour (PS_Builder *builder) {
-  FT_Outline *outline = builder->current;
+ps_builder_add_contour (PS_Builder* builder) {
+  FT_Outline* outline = builder->current;
   FT_Error error;
 
 
@@ -2119,7 +2119,7 @@ ps_builder_add_contour (PS_Builder *builder) {
 
 /* if a path was begun, add its first on-curve point */
 FT_LOCAL_DEF(FT_Error)
-ps_builder_start_point (PS_Builder *builder,
+ps_builder_start_point (PS_Builder* builder,
                         FT_Pos x,
                         FT_Pos y) {
   FT_Error error = FT_Err_Ok;
@@ -2139,8 +2139,8 @@ ps_builder_start_point (PS_Builder *builder,
 
 /* close the current contour */
 FT_LOCAL_DEF(void)
-ps_builder_close_contour (PS_Builder *builder) {
-  FT_Outline *outline = builder->current;
+ps_builder_close_contour (PS_Builder* builder) {
+  FT_Outline* outline = builder->current;
   FT_Int first;
 
   if (!outline)
@@ -2159,9 +2159,9 @@ ps_builder_close_contour (PS_Builder *builder) {
   /* We must not include the last point in the path if it */
   /* is located on the first point.                       */
   if (outline->n_points > 1) {
-    FT_Vector *p1 = outline->points + first;
-    FT_Vector *p2 = outline->points + outline->n_points - 1;
-    FT_Byte *control = (FT_Byte *) outline->tags + outline->n_points - 1;
+    FT_Vector* p1 = outline->points + first;
+    FT_Vector* p2 = outline->points + outline->n_points - 1;
+    FT_Byte* control = (FT_Byte*) outline->tags + outline->n_points - 1;
 
 
     /* `delete' last point only if it coincides with the first */
@@ -2215,8 +2215,8 @@ ps_builder_close_contour (PS_Builder *builder) {
    *     Flag indicating Type 1 or CFF
    */
 FT_LOCAL_DEF(void)
-ps_decoder_init (PS_Decoder *ps_decoder,
-                 void *decoder,
+ps_decoder_init (PS_Decoder* ps_decoder,
+                 void* decoder,
                  FT_Bool is_t1) {
   FT_ZERO(ps_decoder);
 
@@ -2246,7 +2246,7 @@ ps_decoder_init (PS_Decoder *ps_decoder,
     ps_decoder->lenIV = t1_decoder->lenIV;
   }
   else {
-    CFF_Decoder *cff_decoder = (CFF_Decoder *) decoder;
+    CFF_Decoder* cff_decoder = (CFF_Decoder*) decoder;
 
     ps_builder_init (&ps_decoder->builder,
                      &cff_decoder->builder,
@@ -2344,9 +2344,9 @@ t1_make_subfont (FT_Face face,
 
 
     /* compute random seed from some memory addresses */
-    seed = (FT_UInt32) ((FT_Offset) (char *) &seed ^
-                        (FT_Offset) (char *) &face ^
-                        (FT_Offset) (char *) &subfont);
+    seed = (FT_UInt32) ((FT_Offset) (char*) &seed ^
+                        (FT_Offset) (char*) &face ^
+                        (FT_Offset) (char*) &subfont);
     seed = seed ^ (seed >> 10) ^ (seed >> 20);
     if (seed == 0)
       seed = 0x7384;
@@ -2356,7 +2356,7 @@ t1_make_subfont (FT_Face face,
 }
 
 FT_LOCAL_DEF(void)
-t1_decrypt (FT_Byte *buffer,
+t1_decrypt (FT_Byte* buffer,
             FT_Offset length,
             FT_UShort seed) {
   PS_Conv_EexecDecode (&buffer,

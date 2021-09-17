@@ -32,22 +32,22 @@
 #endif
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   if (argc != 2) {
     fprintf (stderr, "usage: %s font-file\n", argv[0]);
     exit (1);
   }
 
-  hb_blob_t *blob = hb_blob_create_from_file_or_fail (argv[1]);
+  hb_blob_t* blob = hb_blob_create_from_file_or_fail (argv[1]);
   assert (blob);
-  hb_face_t *face = hb_face_create (blob, 0 /* first face */);
+  hb_face_t* face = hb_face_create (blob, 0 /* first face */);
   hb_blob_destroy (blob);
   blob = nullptr;
 
   unsigned int count = 0;
 
 #ifndef HB_NO_NAME
-  const hb_ot_name_entry_t *entries = hb_ot_name_list_names (face, &count);
+  const hb_ot_name_entry_t* entries = hb_ot_name_list_names (face, &count);
 
   for (unsigned int i = 0; i < count; i++) {
     printf ("%u	%s	",

@@ -17,7 +17,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #ifdef USE_BZ2
@@ -25,15 +24,15 @@
 #endif
 
 int
-main (int argc, char *argv[]) {
-  char *buf;
-  char *ident;
+main (int argc, char* argv[]) {
+  char* buf;
+  char* ident;
   unsigned int i, need_comma;
-  int file_size;
+  long file_size;
   int rc;
   struct stat info;
 
-  FILE *f_input, *f_output;
+  FILE* f_input, * f_output;
 
 #ifdef USE_BZ2
   char *bz2_buf;
@@ -78,7 +77,7 @@ main (int argc, char *argv[]) {
     return -1;
   }
 
-  buf = (char *) malloc (file_size);
+  buf = (char*) malloc (file_size);
   assert(buf);
 
   fread (buf, file_size, 1, f_input);
@@ -118,7 +117,7 @@ main (int argc, char *argv[]) {
 
   need_comma = 0;
 
-  fprintf (f_output, "static const unsigned char %s[%i] = {", ident, file_size);
+  fprintf (f_output, "static const unsigned char %s[%li] = {", ident, file_size);
   for (i = 0; i < file_size; ++i) {
     if (need_comma)
       fprintf (f_output, ", ");
@@ -130,7 +129,7 @@ main (int argc, char *argv[]) {
   }
   fprintf (f_output, "\n};\n\n");
 
-  fprintf (f_output, "static const unsigned int %s_length = %i;\n", ident, file_size);
+  fprintf (f_output, "static const unsigned int %s_length = %li;\n", ident, file_size);
 
 #ifdef USE_BZ2
   fprintf(f_output, "const int %s_length_uncompressed = %i;\n", ident,

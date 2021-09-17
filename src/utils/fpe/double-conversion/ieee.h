@@ -36,12 +36,15 @@ namespace double_conversion {
   static uint64_t double_to_uint64 (double d) {
     return BitCast<uint64_t> (d);
   }
+
   static double uint64_to_double (uint64_t d64) {
     return BitCast<double> (d64);
   }
+
   static uint32_t float_to_uint32 (float f) {
     return BitCast<uint32_t> (f);
   }
+
   static float uint32_to_float (uint32_t d32) {
     return BitCast<float> (d32);
   }
@@ -62,12 +65,15 @@ namespace double_conversion {
       Double ()
           : d64_ (0) {
       }
+
       explicit Double (double d)
           : d64_ (double_to_uint64 (d)) {
       }
+
       explicit Double (uint64_t d64)
           : d64_ (d64) {
       }
+
       explicit Double (DiyFp diy_fp)
           : d64_ (DiyFpToUint64 (diy_fp)) {
       }
@@ -201,7 +207,7 @@ namespace double_conversion {
       // The bigger boundary (m_plus) is normalized. The lower boundary has the same
       // exponent as m_plus.
       // Precondition: the value encoded by this Double must be greater than 0.
-      void NormalizedBoundaries (DiyFp *out_m_minus, DiyFp *out_m_plus) const {
+      void NormalizedBoundaries (DiyFp* out_m_minus, DiyFp* out_m_plus) const {
         DOUBLE_CONVERSION_ASSERT(value () > 0.0);
         DiyFp v = this->AsDiyFp ();
         DiyFp m_plus = DiyFp::Normalize (DiyFp ((v.f () << 1) + 1, v.e () - 1));
@@ -309,9 +315,11 @@ namespace double_conversion {
       Single ()
           : d32_ (0) {
       }
+
       explicit Single (float f)
           : d32_ (float_to_uint32 (f)) {
       }
+
       explicit Single (uint32_t d32)
           : d32_ (d32) {
       }
@@ -392,7 +400,7 @@ namespace double_conversion {
       // The bigger boundary (m_plus) is normalized. The lower boundary has the same
       // exponent as m_plus.
       // Precondition: the value encoded by this Single must be greater than 0.
-      void NormalizedBoundaries (DiyFp *out_m_minus, DiyFp *out_m_plus) const {
+      void NormalizedBoundaries (DiyFp* out_m_minus, DiyFp* out_m_plus) const {
         DOUBLE_CONVERSION_ASSERT(value () > 0.0);
         DiyFp v = this->AsDiyFp ();
         DiyFp m_plus = DiyFp::Normalize (DiyFp ((v.f () << 1) + 1, v.e () - 1));

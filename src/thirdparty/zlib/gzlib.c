@@ -89,9 +89,9 @@ local void gz_reset (state)
 
 /* Open a gzip file either by name or file descriptor. */
 local gzFile gz_open (path, fd, mode)
-    const void *path;
+    const void* path;
     int fd;
-    const char *mode;
+    const char* mode;
 {
   gz_statep state;
   z_size_t len;
@@ -196,8 +196,8 @@ local gzFile gz_open (path, fd, mode)
   }
   else
 #endif
-  len = strlen ((const char *) path);
-  state->path = (char *) malloc (len + 1);
+  len = strlen ((const char*) path);
+  state->path = (char*) malloc (len + 1);
   if (state->path == NULL) {
     free (state);
     return NULL;
@@ -211,7 +211,7 @@ local gzFile gz_open (path, fd, mode)
   else
 #endif
 #if !defined(NO_snprintf) && !defined(NO_vsnprintf)
-  (void) snprintf (state->path, len + 1, "%s", (const char *) path);
+  (void) snprintf (state->path, len + 1, "%s", (const char*) path);
 #else
   strcpy(state->path, path);
 #endif
@@ -242,7 +242,7 @@ O_BINARY |
 #ifdef WIDECHAR
       fd == -2 ? _wopen(path, oflag, 0666) :
 #endif
-      open ((const char *) path, oflag, 0666));
+      open ((const char*) path, oflag, 0666));
   if (state->fd == -1) {
     free (state->path);
     free (state);
@@ -269,16 +269,16 @@ O_BINARY |
 
 /* -- see zlib.h -- */
 gzFile ZEXPORT gzopen (path, mode)
-    const char *path;
-    const char *mode;
+    const char* path;
+    const char* mode;
 {
   return gz_open (path, -1, mode);
 }
 
 /* -- see zlib.h -- */
 gzFile ZEXPORT gzopen64 (path, mode)
-    const char *path;
-    const char *mode;
+    const char* path;
+    const char* mode;
 {
   return gz_open (path, -1, mode);
 }
@@ -286,12 +286,12 @@ gzFile ZEXPORT gzopen64 (path, mode)
 /* -- see zlib.h -- */
 gzFile ZEXPORT gzdopen (fd, mode)
     int fd;
-    const char *mode;
+    const char* mode;
 {
-  char *path;         /* identifier for error messages */
+  char* path;         /* identifier for error messages */
   gzFile gz;
 
-  if (fd == -1 || (path = (char *) malloc (7 + 3 * sizeof (int))) == NULL)
+  if (fd == -1 || (path = (char*) malloc (7 + 3 * sizeof (int))) == NULL)
     return NULL;
 #if !defined(NO_snprintf) && !defined(NO_vsnprintf)
   (void) snprintf (path, 7 + 3 * sizeof (int), "<fd:%d>", fd);
@@ -530,9 +530,9 @@ int ZEXPORT gzeof (file)
 }
 
 /* -- see zlib.h -- */
-const char *ZEXPORT gzerror (file, errnum)
+const char* ZEXPORT gzerror (file, errnum)
     gzFile file;
-    int *errnum;
+    int* errnum;
 {
   gz_statep state;
 
@@ -580,7 +580,7 @@ void ZEXPORT gzclearerr (file)
 void ZLIB_INTERNAL gz_error (state, err, msg)
     gz_statep state;
     int err;
-    const char *msg;
+    const char* msg;
 {
   /* free previously allocated message and clear */
   if (state->msg != NULL) {
@@ -603,7 +603,7 @@ void ZLIB_INTERNAL gz_error (state, err, msg)
     return;
 
   /* construct error message with path */
-  if ((state->msg = (char *) malloc (strlen (state->path) + strlen (msg) + 3)) ==
+  if ((state->msg = (char*) malloc (strlen (state->path) + strlen (msg) + 3)) ==
       NULL) {
     state->err = Z_MEM_ERROR;
     return;

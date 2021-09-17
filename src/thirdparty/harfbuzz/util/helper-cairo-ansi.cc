@@ -124,21 +124,21 @@ chafa_print_image_rgb24 (const void *data, int width, int height, int stride)
 #endif /* HAVE_CHAFA */
 
 cairo_status_t
-helper_cairo_surface_write_to_ansi_stream (cairo_surface_t	*surface,
-					   cairo_write_func_t	write_func,
-					   void			*closure)
-{
+helper_cairo_surface_write_to_ansi_stream (cairo_surface_t* surface,
+                                           cairo_write_func_t write_func,
+                                           void* closure) {
   unsigned int width = cairo_image_surface_get_width (surface);
   unsigned int height = cairo_image_surface_get_height (surface);
   if (cairo_image_surface_get_format (surface) != CAIRO_FORMAT_RGB24) {
-    cairo_surface_t *new_surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24, width, height);
-    cairo_t *cr = cairo_create (new_surface);
+    cairo_surface_t* new_surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24, width, height);
+    cairo_t* cr = cairo_create (new_surface);
     if (cairo_image_surface_get_format (surface) == CAIRO_FORMAT_A8) {
       cairo_set_source_rgb (cr, 0., 0., 0.);
       cairo_paint (cr);
       cairo_set_source_rgb (cr, 1., 1., 1.);
       cairo_mask_surface (cr, surface, 0, 0);
-    } else {
+    }
+    else {
       cairo_set_source_rgb (cr, 1., 1., 1.);
       cairo_paint (cr);
       cairo_set_source_surface (cr, surface, 0, 0);
@@ -146,25 +146,26 @@ helper_cairo_surface_write_to_ansi_stream (cairo_surface_t	*surface,
     }
     cairo_destroy (cr);
     surface = new_surface;
-  } else
+  }
+  else
     cairo_surface_reference (surface);
 
   unsigned int stride = cairo_image_surface_get_stride (surface);
-  const uint32_t *data = (uint32_t *) (void *) cairo_image_surface_get_data (surface);
+  const uint32_t* data = (uint32_t * ) (void * )
+  cairo_image_surface_get_data (surface);
 
   /* We don't have rows to spare on the terminal window...
    * Find the tight image top/bottom and only print in between. */
 
   /* Use corner color as background color. */
-  uint32_t bg_color = data ? * (uint32_t *) data : 0;
+  uint32_t bg_color = data ? *(uint32_t*) data : 0;
 
   /* Drop first row while empty */
-  while (height)
-  {
+  while (height) {
     unsigned int i;
     for (i = 0; i < width; i++)
       if (data[i] != bg_color)
-	break;
+        break;
     if (i < width)
       break;
     data += stride / 4;
@@ -173,13 +174,12 @@ helper_cairo_surface_write_to_ansi_stream (cairo_surface_t	*surface,
 
   /* Drop last row while empty */
   unsigned int orig_height = height;
-  while (height)
-  {
-    const uint32_t *row = data + (height - 1) * stride / 4;
+  while (height) {
+    const uint32_t* row = data + (height - 1) * stride / 4;
     unsigned int i;
     for (i = 0; i < width; i++)
       if (row[i] != bg_color)
-	break;
+        break;
     if (i < width)
       break;
     height--;
@@ -187,14 +187,13 @@ helper_cairo_surface_write_to_ansi_stream (cairo_surface_t	*surface,
   if (height < orig_height)
     height++; /* Add one last blank row for padding. */
 
-  if (width && height)
-  {
+  if (width && height) {
 #ifdef HAVE_CHAFA
     if (true)
       chafa_print_image_rgb24 (data, width, height, stride);
     else
 #endif
-      ansi_print_image_rgb24 (data, width, height, stride / 4);
+    ansi_print_image_rgb24 (data, width, height, stride / 4);
   }
 
   cairo_surface_destroy (surface);

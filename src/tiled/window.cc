@@ -9,10 +9,12 @@ namespace neutrino::tiled {
       : engine::main_window (w, h) {
 
   }
+
   // --------------------------------------------------------------------
   window::~window () noexcept {
 
   }
+
   // --------------------------------------------------------------------
   void window::after_window_opened () {
 

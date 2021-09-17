@@ -14,7 +14,7 @@
 
 namespace neutrino::hal {
 
-  static sdl::texture::access cast_flags (const texture::access &flags) {
+  static sdl::texture::access cast_flags (const texture::access& flags) {
     switch (flags) {
       case texture::access::STREAMING:
         return sdl::texture::access::STREAMING;
@@ -29,17 +29,17 @@ namespace neutrino::hal {
 
   texture::texture () = default;
 
-  texture::texture (const renderer &r, const pixel_format &format, unsigned w, unsigned h, access flags)
+  texture::texture (const renderer& r, const pixel_format& format, unsigned w, unsigned h, access flags)
       : m_pimpl (spimpl::make_unique_impl<detail::texture_impl> (r.m_pimpl->renderer, sdl::pixel_format (format.value ()), w, h, cast_flags (flags))) {
 
   }
 
-  texture::texture (const renderer &r, const surface &s)
+  texture::texture (const renderer& r, const surface& s)
       : m_pimpl (spimpl::make_unique_impl<detail::texture_impl> (r.m_pimpl->renderer, s.m_pimpl->surface)) {
 
   }
 
-  texture::texture (std::unique_ptr<detail::texture_impl> &&t)
+  texture::texture (std::unique_ptr<detail::texture_impl>&& t)
       : m_pimpl (std::move (t)) {
 
   }
@@ -76,7 +76,7 @@ namespace neutrino::hal {
     return cast<color> (m_pimpl->texture.color_mod ());
   }
 
-  void texture::color_mod (const color &c) {
+  void texture::color_mod (const color& c) {
     m_pimpl->texture.color_mod (cast (c));
   }
 
@@ -84,14 +84,15 @@ namespace neutrino::hal {
   Use this function to lock  whole texture for write-only pixel access.
   returns: pointer to pixels and pitch, ie., the length of one row in bytes
   */
-  std::pair<void *, std::size_t> texture::lock () const {
+  std::pair<void*, std::size_t> texture::lock () const {
     return m_pimpl->texture.lock ();
   }
+
   /*
   Use this function to lock a portion of the texture for write-only pixel access.
   returns: pointer to pixels and pitch, ie., the length of one row in bytes
   */
-  std::pair<void *, std::size_t> texture::lock (const math::rect &r) const {
+  std::pair<void*, std::size_t> texture::lock (const math::rect& r) const {
     return m_pimpl->texture.lock (cast (r));
   }
 
@@ -100,19 +101,19 @@ namespace neutrino::hal {
   }
 
   // slow updates
-  void texture::update (const void *pixels, std::size_t pitch) {
+  void texture::update (const void* pixels, std::size_t pitch) {
     m_pimpl->texture.update (pixels, pitch);
   }
 
-  void texture::update (const math::rect &area, const void *pixels, std::size_t pitch) {
+  void texture::update (const math::rect& area, const void* pixels, std::size_t pitch) {
     m_pimpl->texture.update (cast (area), pixels, pitch);
   }
 
-  uint32_t texture::map_rgba (const color &c) const {
+  uint32_t texture::map_rgba (const color& c) const {
     return SDL_MapRGBA (m_pimpl->format.const_handle (), c.r, c.g, c.b, c.a);
   }
 
-  uint32_t texture::map_rgb (const color &c) const {
+  uint32_t texture::map_rgb (const color& c) const {
     return SDL_MapRGB (m_pimpl->format.const_handle (), c.r, c.g, c.b);
   }
 }

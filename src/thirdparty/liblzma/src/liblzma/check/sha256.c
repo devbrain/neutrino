@@ -135,13 +135,13 @@ transform (uint32_t state[8], const uint32_t data[16]) {
 }
 
 static void
-process (lzma_check_state *check) {
+process (lzma_check_state* check) {
   transform (check->state.sha256.state, check->buffer.u32);
   return;
 }
 
 extern void
-lzma_sha256_init (lzma_check_state *check) {
+lzma_sha256_init (lzma_check_state* check) {
   static const uint32_t s[8] = {
       0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A,
       0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19,
@@ -154,7 +154,7 @@ lzma_sha256_init (lzma_check_state *check) {
 }
 
 extern void
-lzma_sha256_update (const uint8_t *buf, size_t size, lzma_check_state *check) {
+lzma_sha256_update (const uint8_t* buf, size_t size, lzma_check_state* check) {
   // Copy the input data into a properly aligned temporary buffer.
   // This way we can be called with arbitrarily sized buffers
   // (no need to be multiple of 64 bytes), and the code works also
@@ -179,7 +179,7 @@ lzma_sha256_update (const uint8_t *buf, size_t size, lzma_check_state *check) {
 }
 
 extern void
-lzma_sha256_finish (lzma_check_state *check) {
+lzma_sha256_finish (lzma_check_state* check) {
   // Add padding as described in RFC 3174 (it describes SHA-1 but
   // the same padding style is used for SHA-256 too).
   size_t pos = check->state.sha256.size & 0x3F;

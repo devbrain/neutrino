@@ -37,7 +37,7 @@ struct inflate_codes_state {
   uInt len;
   union {
     struct {
-      inflate_huft *tree;       /* pointer into tree */
+      inflate_huft* tree;       /* pointer into tree */
       uInt need;                /* bits needed */
     } code;             /* if LEN or DIST, where in tree */
     uInt lit;           /* if LIT, literal */
@@ -50,19 +50,19 @@ struct inflate_codes_state {
   /* mode independent information */
   Byte lbits;           /* ltree bits decoded per branch */
   Byte dbits;           /* dtree bits decoder per branch */
-  inflate_huft *ltree;          /* literal/length/eob tree */
-  inflate_huft *dtree;          /* distance tree */
+  inflate_huft* ltree;          /* literal/length/eob tree */
+  inflate_huft* dtree;          /* distance tree */
 
 };
 
-local inflate_codes_statef *inflate_codes_new ( /* bl, bd, tl, td, z) */
+local inflate_codes_statef* inflate_codes_new ( /* bl, bd, tl, td, z) */
     uInt bl, uInt bd,
-    inflate_huft *tl,
-    inflate_huft *td, /* need separate declaration for Borland C++ */
+    inflate_huft* tl,
+    inflate_huft* td, /* need separate declaration for Borland C++ */
     z_streamp z) {
-  inflate_codes_statef *c;
+  inflate_codes_statef* c;
 
-  if ((c = (inflate_codes_statef *)
+  if ((c = (inflate_codes_statef*)
       ZALLOC(z, 1, sizeof (struct inflate_codes_state))) != Z_NULL) {
     c->mode = START;
     c->lbits = (Byte) bl;
@@ -75,20 +75,20 @@ local inflate_codes_statef *inflate_codes_new ( /* bl, bd, tl, td, z) */
 }
 
 local int inflate_codes ( /* s, z, r) */
-    inflate_blocks_statef *s,
+    inflate_blocks_statef* s,
     z_streamp z,
     int r) {
   uInt j;               /* temporary storage */
-  inflate_huft *t;      /* temporary pointer */
+  inflate_huft* t;      /* temporary pointer */
   uInt e;               /* extra bits or operation */
   uLong b;              /* bit buffer */
   uInt k;               /* bits in bit buffer */
-  Bytef *p;             /* input data pointer */
+  Bytef* p;             /* input data pointer */
   uInt n;               /* bytes available there */
-  Bytef *q;             /* output window write pointer */
+  Bytef* q;             /* output window write pointer */
   uInt m;               /* bytes to end of window or read pointer */
-  Bytef *f;             /* pointer to copy strings from */
-  inflate_codes_statef *c = s->sub.decode.codes;  /* codes state */
+  Bytef* f;             /* pointer to copy strings from */
+  inflate_codes_statef* c = s->sub.decode.codes;  /* codes state */
 
   /* copy input/output information to locals (UPDATE macro restores) */
   LOAD
@@ -149,7 +149,7 @@ local int inflate_codes ( /* s, z, r) */
           break;
         }
         c->mode = BADCODE;        /* invalid code */
-        z->msg = (char *) "invalid literal/length code";
+        z->msg = (char*) "invalid literal/length code";
         r = Z_DATA_ERROR;
         LEAVE
       case LENEXT:        /* i: getting length extra (have base) */
@@ -182,7 +182,7 @@ local int inflate_codes ( /* s, z, r) */
           break;
         }
         c->mode = BADCODE;        /* invalid code */
-        z->msg = (char *) "invalid distance code";
+        z->msg = (char*) "invalid distance code";
         r = Z_DATA_ERROR;
         LEAVE
       case DISTEXT:       /* i: getting distance extra */
@@ -239,7 +239,7 @@ local int inflate_codes ( /* s, z, r) */
 }
 
 local void inflate_codes_free ( /* c, z) */
-    inflate_codes_statef *c,
+    inflate_codes_statef* c,
     z_streamp z) {
   ZFREE(z, c);
   Tracev((stderr, "inflate:       codes free\n"));

@@ -27,26 +27,26 @@ FT_BEGIN_HEADER
 #define FT_SERVICE_ID_POSTSCRIPT_INFO  "postscript-info"
 
 typedef FT_Error
-(*PS_GetFontInfoFunc) (FT_Face face,
-                       PS_FontInfoRec *afont_info);
+(* PS_GetFontInfoFunc) (FT_Face face,
+                        PS_FontInfoRec* afont_info);
 
 typedef FT_Error
-(*PS_GetFontExtraFunc) (FT_Face face,
-                        PS_FontExtraRec *afont_extra);
+(* PS_GetFontExtraFunc) (FT_Face face,
+                         PS_FontExtraRec* afont_extra);
 
 typedef FT_Int
-(*PS_HasGlyphNamesFunc) (FT_Face face);
+(* PS_HasGlyphNamesFunc) (FT_Face face);
 
 typedef FT_Error
-(*PS_GetFontPrivateFunc) (FT_Face face,
-                          PS_PrivateRec *afont_private);
+(* PS_GetFontPrivateFunc) (FT_Face face,
+                           PS_PrivateRec* afont_private);
 
 typedef FT_Long
-(*PS_GetFontValueFunc) (FT_Face face,
-                        PS_Dict_Keys key,
-                        FT_UInt idx,
-                        void *value,
-                        FT_Long value_len);
+(* PS_GetFontValueFunc) (FT_Face face,
+                         PS_Dict_Keys key,
+                         FT_UInt idx,
+                         void* value,
+                         FT_Long value_len);
 
 FT_DEFINE_SERVICE(PsInfo) {
   PS_GetFontInfoFunc ps_get_font_info;

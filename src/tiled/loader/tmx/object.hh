@@ -25,7 +25,7 @@ namespace neutrino::tiled::tmx {
 
   struct object_attribs {
     object_attribs (unsigned id, std::string name, std::string type,
-                    const math::point2f &origin, double width, double height, double rotation, bool visible,
+                    const math::point2f& origin, double width, double height, double rotation, bool visible,
                     unsigned gid, bool hflip, bool vflip, bool dflip)
         : m_id (id),
           m_name (std::move (name)),
@@ -76,7 +76,7 @@ namespace neutrino::tiled::tmx {
             m_dflip (atts.m_dflip) {
       }
 
-      object (const object &) = default;
+      object (const object&) = default;
 
       /**
        * @brief Get the id of the object.
@@ -142,6 +142,7 @@ namespace neutrino::tiled::tmx {
       [[nodiscard]] bool visible () const noexcept {
         return m_visible;
       }
+
       /**
       * @brief Get the global id of the refering tile (if needed)
       *
@@ -177,6 +178,7 @@ namespace neutrino::tiled::tmx {
       [[nodiscard]] bool is_diagonally_flipped () const noexcept {
         return m_dflip;
       }
+
     private:
       unsigned m_id;
       std::string m_name;
@@ -201,7 +203,7 @@ namespace neutrino::tiled::tmx {
           : object (std::move (a)) {
       }
 
-      ellipse (const ellipse &) = default;
+      ellipse (const ellipse&) = default;
   };
 
   class point : public object {
@@ -213,7 +215,7 @@ namespace neutrino::tiled::tmx {
           : object (std::move (a)) {
       }
 
-      point (const point &) = default;
+      point (const point&) = default;
   };
 
   /**
@@ -230,7 +232,7 @@ namespace neutrino::tiled::tmx {
           : object (std::move (a)) {
       }
 
-      chain (const chain &) = default;
+      chain (const chain&) = default;
 
       /**
        * @brief Set the points of the lines.
@@ -264,9 +266,10 @@ namespace neutrino::tiled::tmx {
         return m_points.cend ();
       }
 
-      [[nodiscard]] const std::vector<math::point2f> &points () const noexcept {
+      [[nodiscard]] const std::vector<math::point2f>& points () const noexcept {
         return m_points;
       }
+
     private:
       std::vector<math::point2f> m_points;
   };
@@ -283,7 +286,7 @@ namespace neutrino::tiled::tmx {
           : chain (std::move (a)) {
       }
 
-      polyline (const polyline &) = default;
+      polyline (const polyline&) = default;
 
   };
 
@@ -299,7 +302,7 @@ namespace neutrino::tiled::tmx {
           : chain (std::move (a)) {
       }
 
-      polygon (const polygon &) = default;
+      polygon (const polygon&) = default;
 
   };
 
@@ -321,7 +324,7 @@ namespace neutrino::tiled::tmx {
           : object (a) {
       }
 
-      void parse (const reader &elt);
+      void parse (const reader& elt);
 
       text (object_attribs a, std::string font_family, int pixel_size, bool wrap,
             colori color, bool bold, bool italic, bool underline, bool strike,
@@ -348,36 +351,47 @@ namespace neutrino::tiled::tmx {
       [[nodiscard]] int pixel_size () const noexcept {
         return m_pixel_size;
       }
+
       [[nodiscard]] bool wrap () const noexcept {
         return m_wrap;
       }
+
       [[nodiscard]] colori color () const noexcept {
         return m_color;
       }
+
       [[nodiscard]] bool bold () const noexcept {
         return m_bold;
       }
+
       [[nodiscard]] bool italic () const noexcept {
         return m_italic;
       }
+
       [[nodiscard]] bool underline () const noexcept {
         return m_underline;
       }
+
       [[nodiscard]] bool strike () const noexcept {
         return m_strike;
       }
+
       [[nodiscard]] bool kerning () const noexcept {
         return m_kerning;
       }
+
       [[nodiscard]] halign_t halign () const noexcept {
         return m_halign;
       }
+
       [[nodiscard]] valign_t valign () const noexcept {
         return m_valign;
       }
-      [[nodiscard]] const std::string &data () const noexcept {
+
+      [[nodiscard]] const std::string& data () const noexcept {
         return m_data;
       }
+
     private:
       std::string m_font_family;
       int m_pixel_size;
@@ -395,7 +409,7 @@ namespace neutrino::tiled::tmx {
 
   using object_t = std::variant<object, point, ellipse, polygon, polyline, text>;
 
-  object_t parse_object (const reader &elt);
+  object_t parse_object (const reader& elt);
 }
 
 #endif

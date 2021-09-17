@@ -233,10 +233,10 @@ ss_isqrt (int x) {
 /* Compares two suffixes. */
 static INLINE
 int
-ss_compare (const unsigned char *T,
-            const int *p1, const int *p2,
+ss_compare (const unsigned char* T,
+            const int* p1, const int* p2,
             int depth) {
-  const unsigned char *U1, *U2, *U1n, *U2n;
+  const unsigned char* U1, * U2, * U1n, * U2n;
 
   for (U1 = T + depth + *p1,
        U2 = T + depth + *p2,
@@ -259,9 +259,9 @@ ss_compare (const unsigned char *T,
 /* Insertionsort for small size groups */
 static
 void
-ss_insertionsort (const unsigned char *T, const int *PA,
-                  int *first, int *last, int depth) {
-  int *i, *j;
+ss_insertionsort (const unsigned char* T, const int* PA,
+                  int* first, int* last, int depth) {
+  int* i, * j;
   int t;
   int r;
 
@@ -291,8 +291,8 @@ ss_insertionsort (const unsigned char *T, const int *PA,
 
 static INLINE
 void
-ss_fixdown (const unsigned char *Td, const int *PA,
-            int *SA, int i, int size) {
+ss_fixdown (const unsigned char* Td, const int* PA,
+            int* SA, int i, int size) {
   int j, k;
   int v;
   int c, d, e;
@@ -313,7 +313,7 @@ ss_fixdown (const unsigned char *Td, const int *PA,
 /* Simple top-down heapsort. */
 static
 void
-ss_heapsort (const unsigned char *Td, const int *PA, int *SA, int size) {
+ss_heapsort (const unsigned char* Td, const int* PA, int* SA, int size) {
   int i, m;
   int t;
 
@@ -344,10 +344,10 @@ ss_heapsort (const unsigned char *Td, const int *PA, int *SA, int size) {
 
 /* Returns the median of three elements. */
 static INLINE
-int *
-ss_median3 (const unsigned char *Td, const int *PA,
-            int *v1, int *v2, int *v3) {
-  int *t;
+int*
+ss_median3 (const unsigned char* Td, const int* PA,
+            int* v1, int* v2, int* v3) {
+  int* t;
   if (Td[PA[*v1]] > Td[PA[*v2]]) {
     SWAP(v1, v2);
   }
@@ -364,10 +364,10 @@ ss_median3 (const unsigned char *Td, const int *PA,
 
 /* Returns the median of five elements. */
 static INLINE
-int *
-ss_median5 (const unsigned char *Td, const int *PA,
-            int *v1, int *v2, int *v3, int *v4, int *v5) {
-  int *t;
+int*
+ss_median5 (const unsigned char* Td, const int* PA,
+            int* v1, int* v2, int* v3, int* v4, int* v5) {
+  int* t;
   if (Td[PA[*v2]] > Td[PA[*v3]]) {
     SWAP(v2, v3);
   }
@@ -393,9 +393,9 @@ ss_median5 (const unsigned char *Td, const int *PA,
 
 /* Returns the pivot element. */
 static INLINE
-int *
-ss_pivot (const unsigned char *Td, const int *PA, int *first, int *last) {
-  int *middle;
+int*
+ss_pivot (const unsigned char* Td, const int* PA, int* first, int* last) {
+  int* middle;
   int t;
 
   t = last - first;
@@ -422,10 +422,10 @@ ss_pivot (const unsigned char *Td, const int *PA, int *first, int *last) {
 
 /* Binary partition for substrings. */
 static INLINE
-int *
-ss_partition (const int *PA,
-              int *first, int *last, int depth) {
-  int *a, *b;
+int*
+ss_partition (const int* PA,
+              int* first, int* last, int depth) {
+  int* a, * b;
   int t;
   for (a = first - 1, b = last;;) {
     for (; (++a < b) && ((PA[*a] + depth) >= (PA[*a + 1] + 1));) {
@@ -449,16 +449,16 @@ ss_partition (const int *PA,
 /* Multikey introsort for medium size groups. */
 static
 void
-ss_mintrosort (const unsigned char *T, const int *PA,
-               int *first, int *last,
+ss_mintrosort (const unsigned char* T, const int* PA,
+               int* first, int* last,
                int depth) {
 #define STACK_SIZE SS_MISORT_STACKSIZE
   struct {
-    int *a, *b, c;
+    int* a, * b, c;
     int d;
   } stack[STACK_SIZE];
-  const unsigned char *Td;
-  int *a, *b, *c, *d, *e, *f;
+  const unsigned char* Td;
+  int* a, * b, * c, * d, * e, * f;
   int s, t;
   int ssize;
   int limit;
@@ -631,7 +631,7 @@ ss_mintrosort (const unsigned char *T, const int *PA,
 
 static INLINE
 void
-ss_blockswap (int *a, int *b, int n) {
+ss_blockswap (int* a, int* b, int n) {
   int t;
   for (; 0 < n; --n, ++a, ++b) {
     t = *a, *a = *b, *b = t;
@@ -640,8 +640,8 @@ ss_blockswap (int *a, int *b, int n) {
 
 static INLINE
 void
-ss_rotate (int *first, int *middle, int *last) {
-  int *a, *b, t;
+ss_rotate (int* first, int* middle, int* last) {
+  int* a, * b, t;
   int l, r;
   l = middle - first, r = last - middle;
   for (; (0 < l) && (0 < r);) {
@@ -690,11 +690,11 @@ ss_rotate (int *first, int *middle, int *last) {
 
 static
 void
-ss_inplacemerge (const unsigned char *T, const int *PA,
-                 int *first, int *middle, int *last,
+ss_inplacemerge (const unsigned char* T, const int* PA,
+                 int* first, int* middle, int* last,
                  int depth) {
-  const int *p;
-  int *a, *b;
+  const int* p;
+  int* a, * b;
   int len, half;
   int q, r;
   int x;
@@ -749,10 +749,10 @@ ss_inplacemerge (const unsigned char *T, const int *PA,
 /* Merge-forward with internal buffer. */
 static
 void
-ss_mergeforward (const unsigned char *T, const int *PA,
-                 int *first, int *middle, int *last,
-                 int *buf, int depth) {
-  int *a, *b, *c, *bufend;
+ss_mergeforward (const unsigned char* T, const int* PA,
+                 int* first, int* middle, int* last,
+                 int* buf, int depth) {
+  int* a, * b, * c, * bufend;
   int t;
   int r;
 
@@ -815,11 +815,11 @@ ss_mergeforward (const unsigned char *T, const int *PA,
 /* Merge-backward with internal buffer. */
 static
 void
-ss_mergebackward (const unsigned char *T, const int *PA,
-                  int *first, int *middle, int *last,
-                  int *buf, int depth) {
-  const int *p1, *p2;
-  int *a, *b, *c, *bufend;
+ss_mergebackward (const unsigned char* T, const int* PA,
+                  int* first, int* middle, int* last,
+                  int* buf, int depth) {
+  const int* p1, * p2;
+  int* a, * b, * c, * bufend;
   int t;
   int r;
   int x;
@@ -940,9 +940,9 @@ ss_mergebackward (const unsigned char *T, const int *PA,
 /* D&C based merge. */
 static
 void
-ss_swapmerge (const unsigned char *T, const int *PA,
-              int *first, int *middle, int *last,
-              int *buf, int bufsize, int depth) {
+ss_swapmerge (const unsigned char* T, const int* PA,
+              int* first, int* middle, int* last,
+              int* buf, int bufsize, int depth) {
 #define STACK_SIZE SS_SMERGE_STACKSIZE
 #define GETIDX(a) ((0 <= (a)) ? (a) : (~(a)))
 #define MERGE_CHECK(a, b, c)\
@@ -956,10 +956,10 @@ ss_swapmerge (const unsigned char *T, const int *PA,
     }\
   } while(0)
   struct {
-    int *a, *b, *c;
+    int* a, * b, * c;
     int d;
   } stack[STACK_SIZE];
-  int *l, *r, *lm, *rm;
+  int* l, * r, * lm, * rm;
   int m, len, half;
   int ssize;
   int check, next;
@@ -1045,13 +1045,13 @@ ss_swapmerge (const unsigned char *T, const int *PA,
 /* Substring sort */
 static
 void
-sssort (const unsigned char *T, const int *PA,
-        int *first, int *last,
-        int *buf, int bufsize,
+sssort (const unsigned char* T, const int* PA,
+        int* first, int* last,
+        int* buf, int bufsize,
         int depth, int n, int lastsuffix) {
-  int *a;
+  int* a;
 #if SS_BLOCKSIZE != 0
-  int *b, *middle, *curbuf;
+  int* b, * middle, * curbuf;
   int j, k, curbufsize, limit;
 #endif
   int i;
@@ -1143,8 +1143,8 @@ tr_ilg (int n) {
 /* Simple insertionsort for small size groups. */
 static
 void
-tr_insertionsort (const int *ISAd, int *first, int *last) {
-  int *a, *b;
+tr_insertionsort (const int* ISAd, int* first, int* last) {
+  int* a, * b;
   int t, r;
 
   for (a = first + 1; a < last; ++a) {
@@ -1168,7 +1168,7 @@ tr_insertionsort (const int *ISAd, int *first, int *last) {
 
 static INLINE
 void
-tr_fixdown (const int *ISAd, int *SA, int i, int size) {
+tr_fixdown (const int* ISAd, int* SA, int i, int size) {
   int j, k;
   int v;
   int c, d, e;
@@ -1189,7 +1189,7 @@ tr_fixdown (const int *ISAd, int *SA, int i, int size) {
 /* Simple top-down heapsort. */
 static
 void
-tr_heapsort (const int *ISAd, int *SA, int size) {
+tr_heapsort (const int* ISAd, int* SA, int size) {
   int i, m;
   int t;
 
@@ -1220,9 +1220,9 @@ tr_heapsort (const int *ISAd, int *SA, int size) {
 
 /* Returns the median of three elements. */
 static INLINE
-int *
-tr_median3 (const int *ISAd, int *v1, int *v2, int *v3) {
-  int *t;
+int*
+tr_median3 (const int* ISAd, int* v1, int* v2, int* v3) {
+  int* t;
   if (ISAd[*v1] > ISAd[*v2]) {
     SWAP(v1, v2);
   }
@@ -1239,10 +1239,10 @@ tr_median3 (const int *ISAd, int *v1, int *v2, int *v3) {
 
 /* Returns the median of five elements. */
 static INLINE
-int *
-tr_median5 (const int *ISAd,
-            int *v1, int *v2, int *v3, int *v4, int *v5) {
-  int *t;
+int*
+tr_median5 (const int* ISAd,
+            int* v1, int* v2, int* v3, int* v4, int* v5) {
+  int* t;
   if (ISAd[*v2] > ISAd[*v3]) {
     SWAP(v2, v3);
   }
@@ -1268,9 +1268,9 @@ tr_median5 (const int *ISAd,
 
 /* Returns the pivot element. */
 static INLINE
-int *
-tr_pivot (const int *ISAd, int *first, int *last) {
-  int *middle;
+int*
+tr_pivot (const int* ISAd, int* first, int* last) {
+  int* middle;
   int t;
 
   t = last - first;
@@ -1304,14 +1304,14 @@ struct _trbudget_t {
 
 static INLINE
 void
-trbudget_init (trbudget_t *budget, int chance, int incval) {
+trbudget_init (trbudget_t* budget, int chance, int incval) {
   budget->chance = chance;
   budget->remain = budget->incval = incval;
 }
 
 static INLINE
 int
-trbudget_check (trbudget_t *budget, int size) {
+trbudget_check (trbudget_t* budget, int size) {
   if (size <= budget->remain) {
     budget->remain -= size;
     return 1;
@@ -1329,10 +1329,10 @@ trbudget_check (trbudget_t *budget, int size) {
 
 static INLINE
 void
-tr_partition (const int *ISAd,
-              int *first, int *middle, int *last,
-              int **pa, int **pb, int v) {
-  int *a, *b, *c, *d, *e, *f;
+tr_partition (const int* ISAd,
+              int* first, int* middle, int* last,
+              int** pa, int** pb, int v) {
+  int* a, * b, * c, * d, * e, * f;
   int t, s;
   int x = 0;
 
@@ -1393,12 +1393,12 @@ tr_partition (const int *ISAd,
 
 static
 void
-tr_copy (int *ISA, const int *SA,
-         int *first, int *a, int *b, int *last,
+tr_copy (int* ISA, const int* SA,
+         int* first, int* a, int* b, int* last,
          int depth) {
   /* sort suffixes of middle partition
      by using sorted order of suffixes of left and right partition. */
-  int *c, *d, *e;
+  int* c, * d, * e;
   int s, v;
 
   v = b - SA - 1;
@@ -1418,10 +1418,10 @@ tr_copy (int *ISA, const int *SA,
 
 static
 void
-tr_partialcopy (int *ISA, const int *SA,
-                int *first, int *a, int *b, int *last,
+tr_partialcopy (int* ISA, const int* SA,
+                int* first, int* a, int* b, int* last,
                 int depth) {
-  int *c, *d, *e;
+  int* c, * d, * e;
   int s, v;
   int rank, lastrank, newrank = -1;
 
@@ -1467,16 +1467,16 @@ tr_partialcopy (int *ISA, const int *SA,
 
 static
 void
-tr_introsort (int *ISA, const int *ISAd,
-              int *SA, int *first, int *last,
-              trbudget_t *budget) {
+tr_introsort (int* ISA, const int* ISAd,
+              int* SA, int* first, int* last,
+              trbudget_t* budget) {
 #define STACK_SIZE TR_STACKSIZE
   struct {
-    const int *a;
-    int *b, *c;
+    const int* a;
+    int* b, * c;
     int d, e;
   } stack[STACK_SIZE];
-  int *a, *b, *c;
+  int* a, * b, * c;
   int t;
   int v, x = 0;
   int incr = ISAd - ISA;
@@ -1761,9 +1761,9 @@ tr_introsort (int *ISA, const int *ISAd,
 /* Tandem repeat sort */
 static
 void
-trsort (int *ISA, int *SA, int n, int depth) {
-  int *ISAd;
-  int *first, *last;
+trsort (int* ISA, int* SA, int n, int depth) {
+  int* ISAd;
+  int* first, * last;
   trbudget_t budget;
   int t, skip, unsorted;
 
@@ -1816,10 +1816,10 @@ trsort (int *ISA, int *SA, int n, int depth) {
 /* Sorts suffixes of type B*. */
 static
 int
-sort_typeBstar (const unsigned char *T, int *SA,
-                int *bucket_A, int *bucket_B,
+sort_typeBstar (const unsigned char* T, int* SA,
+                int* bucket_A, int* bucket_B,
                 int n, int openMP) {
-  int *PAb, *ISAb, *buf;
+  int* PAb, * ISAb, * buf;
 #ifdef LIBBSC_OPENMP
   int *curbuf;
   int l;
@@ -2008,10 +2008,10 @@ note:
 /* Constructs the suffix array by using the sorted order of type B* suffixes. */
 static
 void
-construct_SA (const unsigned char *T, int *SA,
-              int *bucket_A, int *bucket_B,
+construct_SA (const unsigned char* T, int* SA,
+              int* bucket_A, int* bucket_B,
               int n, int m) {
-  int *i, *j, *k;
+  int* i, * j, * k;
   int s;
   int c0, c1, c2;
 
@@ -2081,10 +2081,10 @@ construct_SA (const unsigned char *T, int *SA,
    by using the sorted order of type B* suffixes. */
 static
 int
-construct_BWT (const unsigned char *T, int *SA,
-               int *bucket_A, int *bucket_B,
+construct_BWT (const unsigned char* T, int* SA,
+               int* bucket_A, int* bucket_B,
                int n, int m) {
-  int *i, *j, *k, *orig;
+  int* i, * j, * k, * orig;
   int s;
   int c0, c1, c2;
 
@@ -2163,11 +2163,11 @@ construct_BWT (const unsigned char *T, int *SA,
    by using the sorted order of type B* suffixes. */
 static
 int
-construct_BWT_indexes (const unsigned char *T, int *SA,
-                       int *bucket_A, int *bucket_B,
+construct_BWT_indexes (const unsigned char* T, int* SA,
+                       int* bucket_A, int* bucket_B,
                        int n, int m,
-                       unsigned char *num_indexes, int *indexes) {
-  int *i, *j, *k, *orig;
+                       unsigned char* num_indexes, int* indexes) {
+  int* i, * j, * k, * orig;
   int s;
   int c0, c1, c2;
 
@@ -2279,8 +2279,8 @@ construct_BWT_indexes (const unsigned char *T, int *SA,
 /*- Function -*/
 
 int
-divsufsort (const unsigned char *T, int *SA, int n, int openMP) {
-  int *bucket_A, *bucket_B;
+divsufsort (const unsigned char* T, int* SA, int n, int openMP) {
+  int* bucket_A, * bucket_B;
   int m;
   int err = 0;
 
@@ -2301,8 +2301,8 @@ divsufsort (const unsigned char *T, int *SA, int n, int openMP) {
     return 0;
   }
 
-  bucket_A = (int *) malloc (BUCKET_A_SIZE * sizeof (int));
-  bucket_B = (int *) malloc (BUCKET_B_SIZE * sizeof (int));
+  bucket_A = (int*) malloc (BUCKET_A_SIZE * sizeof (int));
+  bucket_B = (int*) malloc (BUCKET_B_SIZE * sizeof (int));
 
   /* Suffixsort. */
   if ((bucket_A != NULL) && (bucket_B != NULL)) {
@@ -2320,9 +2320,9 @@ divsufsort (const unsigned char *T, int *SA, int n, int openMP) {
 }
 
 int
-divbwt (const unsigned char *T, unsigned char *U, int *A, int n, unsigned char *num_indexes, int *indexes, int openMP) {
-  int *B;
-  int *bucket_A, *bucket_B;
+divbwt (const unsigned char* T, unsigned char* U, int* A, int n, unsigned char* num_indexes, int* indexes, int openMP) {
+  int* B;
+  int* bucket_A, * bucket_B;
   int m, pidx, i;
 
   /* Check arguments. */
@@ -2337,10 +2337,10 @@ divbwt (const unsigned char *T, unsigned char *U, int *A, int n, unsigned char *
   }
 
   if ((B = A) == NULL) {
-    B = (int *) malloc ((size_t) (n + 1) * sizeof (int));
+    B = (int*) malloc ((size_t) (n + 1) * sizeof (int));
   }
-  bucket_A = (int *) malloc (BUCKET_A_SIZE * sizeof (int));
-  bucket_B = (int *) malloc (BUCKET_B_SIZE * sizeof (int));
+  bucket_A = (int*) malloc (BUCKET_A_SIZE * sizeof (int));
+  bucket_B = (int*) malloc (BUCKET_B_SIZE * sizeof (int));
 
   /* Burrows-Wheeler Transform. */
   if ((B != NULL) && (bucket_A != NULL) && (bucket_B != NULL)) {

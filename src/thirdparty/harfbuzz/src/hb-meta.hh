@@ -99,14 +99,14 @@ template <typename T> struct hb_type_identity_t {
 template <typename T> using hb_type_identity = typename hb_type_identity_t<T>::type;
 
 struct {
-  template <typename T> constexpr T *
-  operator() (T &arg) const {
+  template <typename T> constexpr T*
+  operator () (T& arg) const {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
     /* https://en.cppreference.com/w/cpp/memory/addressof */
-    return reinterpret_cast<T *> (
-        &const_cast<char &> (
-            reinterpret_cast<const volatile char &> (arg)));
+    return reinterpret_cast<T*> (
+        &const_cast<char&> (
+            reinterpret_cast<const volatile char&> (arg)));
 #pragma GCC diagnostic pop
   }
 }
@@ -124,24 +124,24 @@ template <typename T> using hb_add_const = const T;
 #define hb_is_const(T) hb_match_const<T>::value
 template <typename T> struct hb_match_reference : hb_type_identity_t<T>, hb_bool_constant<false> {
 };
-template <typename T> struct hb_match_reference<T &> : hb_type_identity_t<T>, hb_bool_constant<true> {
+template <typename T> struct hb_match_reference<T&> : hb_type_identity_t<T>, hb_bool_constant<true> {
 };
-template <typename T> struct hb_match_reference<T &&> : hb_type_identity_t<T>, hb_bool_constant<true> {
+template <typename T> struct hb_match_reference<T&&> : hb_type_identity_t<T>, hb_bool_constant<true> {
 };
 template <typename T> using hb_remove_reference = typename hb_match_reference<T>::type;
-template <typename T> auto _hb_try_add_lvalue_reference (hb_priority<1>) -> hb_type_identity<T &>;
+template <typename T> auto _hb_try_add_lvalue_reference (hb_priority<1>) -> hb_type_identity<T&>;
 template <typename T> auto _hb_try_add_lvalue_reference (hb_priority<0>) -> hb_type_identity<T>;
 template <typename T> using hb_add_lvalue_reference = decltype (_hb_try_add_lvalue_reference<T> (hb_prioritize));
-template <typename T> auto _hb_try_add_rvalue_reference (hb_priority<1>) -> hb_type_identity<T &&>;
+template <typename T> auto _hb_try_add_rvalue_reference (hb_priority<1>) -> hb_type_identity<T&&>;
 template <typename T> auto _hb_try_add_rvalue_reference (hb_priority<0>) -> hb_type_identity<T>;
 template <typename T> using hb_add_rvalue_reference = decltype (_hb_try_add_rvalue_reference<T> (hb_prioritize));
 #define hb_is_reference(T) hb_match_reference<T>::value
 template <typename T> struct hb_match_pointer : hb_type_identity_t<T>, hb_bool_constant<false> {
 };
-template <typename T> struct hb_match_pointer<T *> : hb_type_identity_t<T>, hb_bool_constant<true> {
+template <typename T> struct hb_match_pointer<T*> : hb_type_identity_t<T>, hb_bool_constant<true> {
 };
 template <typename T> using hb_remove_pointer = typename hb_match_pointer<T>::type;
-template <typename T> auto _hb_try_add_pointer (hb_priority<1>) -> hb_type_identity<hb_remove_reference<T> *>;
+template <typename T> auto _hb_try_add_pointer (hb_priority<1>) -> hb_type_identity<hb_remove_reference<T>*>;
 template <typename T> auto _hb_try_add_pointer (hb_priority<1>) -> hb_type_identity<T>;
 template <typename T> using hb_add_pointer = decltype (_hb_try_add_pointer<T> (hb_prioritize));
 #define hb_is_pointer(T) hb_match_pointer<T>::value
@@ -185,7 +185,7 @@ struct hb_is_convertible {
 #define hb_is_convertible(From, To) hb_is_convertible<From, To>::value
 
 template <typename Base, typename Derived>
-using hb_is_base_of = hb_is_convertible<hb_decay<Derived> *, hb_decay<Base> *>;
+using hb_is_base_of = hb_is_convertible<hb_decay<Derived>*, hb_decay<Base>*>;
 #define hb_is_base_of(Base, Derived) hb_is_base_of<Base, Derived>::value
 
 template <typename From, typename To>
@@ -199,34 +199,35 @@ using hb_is_cr_convertible = hb_bool_constant<
 /* std::move and std::forward */
 
 template <typename T>
-static constexpr hb_remove_reference<T> &&hb_move (T &&t) {
-  return (hb_remove_reference<T> &&) (t);
+static constexpr hb_remove_reference<T>&& hb_move (T&& t) {
+  return (hb_remove_reference<T>&&) (t);
 }
 
 template <typename T>
-static constexpr T &&hb_forward (hb_remove_reference<T> &t) {
-  return (T &&) t;
+static constexpr T&& hb_forward (hb_remove_reference<T>& t) {
+  return (T&&) t;
 }
+
 template <typename T>
-static constexpr T &&hb_forward (hb_remove_reference<T> &&t) {
-  return (T &&) t;
+static constexpr T&& hb_forward (hb_remove_reference<T>&& t) {
+  return (T&&) t;
 }
 
 struct {
   template <typename T> constexpr auto
-  operator() (T &&v) const HB_AUTO_RETURN (hb_forward<T> (v))
+  operator () (T&& v) const HB_AUTO_RETURN (hb_forward<T> (v))
 
   template <typename T> constexpr auto
-  operator() (T *v) const HB_AUTO_RETURN (*v)
+  operator () (T* v) const HB_AUTO_RETURN (*v)
 }
 HB_FUNCOBJ (hb_deref);
 
 struct {
   template <typename T> constexpr auto
-  operator() (T &&v) const HB_AUTO_RETURN (hb_forward<T> (v))
+  operator () (T&& v) const HB_AUTO_RETURN (hb_forward<T> (v))
 
   template <typename T> constexpr auto
-  operator() (T &v) const HB_AUTO_RETURN (hb_addressof (v))
+  operator () (T& v) const HB_AUTO_RETURN (hb_addressof (v))
 }
 HB_FUNCOBJ (hb_ref);
 
@@ -235,39 +236,49 @@ struct hb_reference_wrapper {
   hb_reference_wrapper (T v)
       : v (v) {
   }
-  bool operator== (const hb_reference_wrapper &o) const {
+
+  bool operator == (const hb_reference_wrapper& o) const {
     return v == o.v;
   }
-  bool operator!= (const hb_reference_wrapper &o) const {
+
+  bool operator != (const hb_reference_wrapper& o) const {
     return v != o.v;
   }
+
   operator T () const {
     return v;
   }
+
   T get () const {
     return v;
   }
+
   T v;
 };
 
 template <typename T>
-struct hb_reference_wrapper<T &> {
-  hb_reference_wrapper (T &v)
+struct hb_reference_wrapper<T&> {
+  hb_reference_wrapper (T& v)
       : v (hb_addressof (v)) {
   }
-  bool operator== (const hb_reference_wrapper &o) const {
+
+  bool operator == (const hb_reference_wrapper& o) const {
     return v == o.v;
   }
-  bool operator!= (const hb_reference_wrapper &o) const {
+
+  bool operator != (const hb_reference_wrapper& o) const {
     return v != o.v;
   }
-  operator T & () const {
+
+  operator T& () const {
     return *v;
   }
-  T &get () const {
+
+  T& get () const {
     return *v;
   }
-  T *v;
+
+  T* v;
 };
 
 

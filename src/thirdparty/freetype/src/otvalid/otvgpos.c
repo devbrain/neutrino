@@ -901,7 +901,7 @@ OTV_Validator otvalid
 otvalid->
 type_count = 9;
 otvalid->
-type_funcs = (OTV_Validate_Func *) otv_gpos_validate_funcs;
+type_funcs = (OTV_Validate_Func*) otv_gpos_validate_funcs;
 
 otv_Lookup_validate( table, otvalid
 );
@@ -972,7 +972,7 @@ LookupList = FT_NEXT_USHORT (p);
 otvalid->
 type_count = 9;
 otvalid->
-type_funcs = (OTV_Validate_Func *) otv_gpos_validate_funcs;
+type_funcs = (OTV_Validate_Func*) otv_gpos_validate_funcs;
 otvalid->
 glyph_count = glyph_count;
 

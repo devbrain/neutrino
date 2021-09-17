@@ -58,8 +58,8 @@ unsigned int
 hb_face_t::load_num_glyphs () const {
   hb_sanitize_context_t c = hb_sanitize_context_t ();
   c.set_num_glyphs (0); /* So we don't recurse ad infinitum. */
-  hb_blob_t *maxp_blob = c.reference_table<OT::maxp> (this);
-  const OT::maxp *maxp_table = maxp_blob->as<OT::maxp> ();
+  hb_blob_t* maxp_blob = c.reference_table<OT::maxp> (this);
+  const OT::maxp* maxp_table = maxp_blob->as<OT::maxp> ();
 
   unsigned int ret = maxp_table->get_num_glyphs ();
   num_glyphs.set_relaxed (ret);
@@ -77,8 +77,8 @@ hb_face_t::load_upem () const {
 /* hb_user_data_array_t */
 
 bool
-hb_user_data_array_t::set (hb_user_data_key_t *key,
-                           void *data,
+hb_user_data_array_t::set (hb_user_data_key_t* key,
+                           void* data,
                            hb_destroy_func_t destroy,
                            hb_bool_t replace) {
   if (!key)
@@ -96,8 +96,8 @@ hb_user_data_array_t::set (hb_user_data_key_t *key,
   return ret;
 }
 
-void *
-hb_user_data_array_t::get (hb_user_data_key_t *key) {
+void*
+hb_user_data_array_t::get (hb_user_data_key_t* key) {
   hb_user_data_item_t item = {nullptr, nullptr, nullptr};
 
   return items.find (key, &item, lock) ? item.data : nullptr;

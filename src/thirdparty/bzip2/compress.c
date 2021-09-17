@@ -34,14 +34,14 @@
 /*---------------------------------------------------*/
 
 /*---------------------------------------------------*/
-void BZ2_bsInitWrite (EState *s) {
+void BZ2_bsInitWrite (EState* s) {
   s->bsLive = 0;
   s->bsBuff = 0;
 }
 
 /*---------------------------------------------------*/
 static
-void bsFinishWrite (EState *s) {
+void bsFinishWrite (EState* s) {
   while (s->bsLive > 0) {
     s->zbits[s->numZ] = (UChar) (s->bsBuff >> 24);
     s->numZ++;
@@ -66,7 +66,7 @@ void bsFinishWrite (EState *s) {
 /*---------------------------------------------------*/
 static
 __inline__
-void bsW (EState *s, Int32 n, UInt32 v) {
+void bsW (EState* s, Int32 n, UInt32 v) {
   bsNEEDW (n);
   s->bsBuff |= (v << (32 - s->bsLive - n));
   s->bsLive += n;
@@ -74,7 +74,7 @@ void bsW (EState *s, Int32 n, UInt32 v) {
 
 /*---------------------------------------------------*/
 static
-void bsPutUInt32 (EState *s, UInt32 u) {
+void bsPutUInt32 (EState* s, UInt32 u) {
   bsW (s, 8, (u >> 24) & 0xffL);
   bsW (s, 8, (u >> 16) & 0xffL);
   bsW (s, 8, (u >> 8) & 0xffL);
@@ -83,7 +83,7 @@ void bsPutUInt32 (EState *s, UInt32 u) {
 
 /*---------------------------------------------------*/
 static
-void bsPutUChar (EState *s, UChar c) {
+void bsPutUChar (EState* s, UChar c) {
   bsW (s, 8, (UInt32) c);
 }
 
@@ -94,7 +94,7 @@ void bsPutUChar (EState *s, UChar c) {
 
 /*---------------------------------------------------*/
 static
-void makeMaps_e (EState *s) {
+void makeMaps_e (EState* s) {
   Int32 i;
   s->nInUse = 0;
   for (i = 0; i < 256; i++)
@@ -106,7 +106,7 @@ void makeMaps_e (EState *s) {
 
 /*---------------------------------------------------*/
 static
-void generateMTFValues (EState *s) {
+void generateMTFValues (EState* s) {
   UChar yy[256];
   Int32 i, j;
   Int32 zPend;
@@ -135,9 +135,9 @@ void generateMTFValues (EState *s) {
      except for the last one, which is arranged in
      compressBlock().
   */
-  UInt32 *ptr = s->ptr;
-  UChar *block = s->block;
-  UInt16 *mtfv = s->mtfv;
+  UInt32* ptr = s->ptr;
+  UChar* block = s->block;
+  UInt16* mtfv = s->mtfv;
 
   makeMaps_e (s);
   EOB = s->nInUse + 1;
@@ -185,7 +185,7 @@ void generateMTFValues (EState *s) {
       }
       {
         register UChar rtmp;
-        register UChar *ryy_j;
+        register UChar* ryy_j;
         register UChar rll_i;
         rtmp = yy[1];
         yy[1] = yy[0];
@@ -241,7 +241,7 @@ void generateMTFValues (EState *s) {
 #define BZ_GREATER_ICOST 15
 
 static
-void sendMTFValues (EState *s) {
+void sendMTFValues (EState* s) {
   Int32 v, t, i, j, gs, ge, totc, bt, bc, iter;
   Int32 nSelectors, alphaSize, minLen, maxLen, selCtr;
   Int32 nGroups, nBytes;
@@ -260,7 +260,7 @@ void sendMTFValues (EState *s) {
   UInt16 cost[BZ_N_GROUPS];
   Int32 fave[BZ_N_GROUPS];
 
-  UInt16 *mtfv = s->mtfv;
+  UInt16* mtfv = s->mtfv;
 
   if (s->verbosity >= 3)
     VPrintf3("      %d in block, %d after MTF & 1-2 coding, "
@@ -674,9 +674,9 @@ void sendMTFValues (EState *s) {
     if (nGroups == 6 && 50 == ge - gs + 1) {
       /*--- fast track the common case ---*/
       UInt16 mtfv_i;
-      UChar *s_len_sel_selCtr
+      UChar* s_len_sel_selCtr
           = &(s->len[s->selector[selCtr]][0]);
-      Int32 *s_code_sel_selCtr
+      Int32* s_code_sel_selCtr
           = &(s->code[s->selector[selCtr]][0]);
 
 #           define BZ_ITAH(nn)                      \
@@ -758,7 +758,7 @@ void sendMTFValues (EState *s) {
 }
 
 /*---------------------------------------------------*/
-void BZ2_compressBlock (EState *s, Bool is_last_block) {
+void BZ2_compressBlock (EState* s, Bool is_last_block) {
   if (s->nblock > 0) {
 
     BZ_FINALISE_CRC (s->blockCRC);
@@ -775,7 +775,7 @@ void BZ2_compressBlock (EState *s, Bool is_last_block) {
     BZ2_blockSort (s);
   }
 
-  s->zbits = (UChar *) (&((UChar *) s->arr2)[s->nblock]);
+  s->zbits = (UChar*) (&((UChar*) s->arr2)[s->nblock]);
 
   /*-- If this is the first block, create the stream header. --*/
   if (s->blockNo == 1) {

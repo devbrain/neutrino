@@ -108,7 +108,7 @@ _pow10 (unsigned exponent) {
       };
   unsigned mask = 1 << (ARRAY_LENGTH (_powers_of_10) - 1);
   double result = 1;
-  for (const double *power = _powers_of_10; mask; ++power, mask >>= 1)
+  for (const double* power = _powers_of_10; mask; ++power, mask >>= 1)
     if (exponent & mask)
       result *= *power;
   return result;
@@ -116,7 +116,7 @@ _pow10 (unsigned exponent) {
 
 /* a variant of strtod that also gets end of buffer in its second argument */
 static inline double
-strtod_rl (const char *p, const char **end_ptr /* IN/OUT */) {
+strtod_rl (const char* p, const char** end_ptr /* IN/OUT */) {
   double value = 0;
   double frac = 0;
   double frac_count = 0;
@@ -125,7 +125,7 @@ strtod_rl (const char *p, const char **end_ptr /* IN/OUT */) {
   const unsigned long long MAX_FRACT = 0xFFFFFFFFFFFFFull; /* 2^52-1 */
   const unsigned MAX_EXP = 0x7FFu; /* 2^11-1 */
 
-  const char *pe = *end_ptr;
+  const char* pe = *end_ptr;
   while (p < pe && ISSPACE (*p))
     p++;
 
@@ -140,8 +140,8 @@ strtod_rl (const char *p, const char **end_ptr /* IN/OUT */) {
   {
     int _slen;
     int _trans;
-    const unsigned char *_keys;
-    const char *_inds;
+    const unsigned char* _keys;
+    const char* _inds;
     if (p == pe)
       goto _test_eof;
     if (cs == 0)

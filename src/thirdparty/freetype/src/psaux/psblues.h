@@ -151,7 +151,7 @@ typedef struct CF2_BluesRec_ {
 
   CF2_BlueRec zone[CF2_MAX_BLUES + CF2_MAX_OTHERBLUES];
 
-} CF2_BluesRec, *CF2_Blues;
+} CF2_BluesRec, * CF2_Blues;
 
 FT_LOCAL(void)
 cf2_blues_init (CF2_Blues blues,

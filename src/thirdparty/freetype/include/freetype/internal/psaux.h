@@ -44,7 +44,7 @@ typedef struct PS_DriverRec_ {
   FT_Int darken_params[8];
   FT_Int32 random_seed;
 
-} PS_DriverRec, *PS_Driver;
+} PS_DriverRec, * PS_Driver;
 
 
 /*************************************************************************/
@@ -56,8 +56,8 @@ typedef struct PS_DriverRec_ {
 /*************************************************************************/
 
 
-typedef struct PS_TableRec_ *PS_Table;
-typedef const struct PS_Table_FuncsRec_ *PS_Table_Funcs;
+typedef struct PS_TableRec_* PS_Table;
+typedef const struct PS_Table_FuncsRec_* PS_Table_Funcs;
 
 /**************************************************************************
  *
@@ -82,21 +82,21 @@ typedef const struct PS_Table_FuncsRec_ *PS_Table_Funcs;
  */
 typedef struct PS_Table_FuncsRec_ {
   FT_Error
-  (*init) (PS_Table table,
-           FT_Int count,
-           FT_Memory memory);
+  (* init) (PS_Table table,
+            FT_Int count,
+            FT_Memory memory);
 
   void
-  (*done) (PS_Table table);
+  (* done) (PS_Table table);
 
   FT_Error
-  (*add) (PS_Table table,
-          FT_Int idx,
-          const void *object,
-          FT_UInt length);
+  (* add) (PS_Table table,
+           FT_Int idx,
+           const void* object,
+           FT_UInt length);
 
   void
-  (*release) (PS_Table table);
+  (* release) (PS_Table table);
 
 } PS_Table_FuncsRec;
 
@@ -142,15 +142,15 @@ typedef struct PS_Table_FuncsRec_ {
  *     A table of method pointers for this object.
  */
 typedef struct PS_TableRec_ {
-  FT_Byte *block;          /* current memory block           */
+  FT_Byte* block;          /* current memory block           */
   FT_Offset cursor;         /* current cursor in memory block */
   FT_Offset capacity;       /* current size of memory block   */
   FT_ULong init;
 
   FT_Int max_elems;
   FT_Int num_elems;
-  FT_Byte **elements;       /* addresses of table elements */
-  FT_UInt *lengths;        /* lengths of table elements   */
+  FT_Byte** elements;       /* addresses of table elements */
+  FT_UInt* lengths;        /* lengths of table elements   */
 
   FT_Memory memory;
   PS_Table_FuncsRec funcs;
@@ -166,11 +166,11 @@ typedef struct PS_TableRec_ {
 /*************************************************************************/
 /*************************************************************************/
 
-typedef struct PS_ParserRec_ *PS_Parser;
+typedef struct PS_ParserRec_* PS_Parser;
 
-typedef struct T1_TokenRec_ *T1_Token;
+typedef struct T1_TokenRec_* T1_Token;
 
-typedef struct T1_FieldRec_ *T1_Field;
+typedef struct T1_FieldRec_* T1_Field;
 
 /* simple enumeration type used to identify token types */
 typedef enum T1_TokenType_ {
@@ -187,8 +187,8 @@ typedef enum T1_TokenType_ {
 
 /* a simple structure used to identify tokens */
 typedef struct T1_TokenRec_ {
-  FT_Byte *start;   /* first character of token in input stream */
-  FT_Byte *limit;   /* first character after the token          */
+  FT_Byte* start;   /* first character of token in input stream */
+  FT_Byte* limit;   /* first character after the token          */
   T1_TokenType type;    /* type of token                            */
 
 } T1_TokenRec;
@@ -230,12 +230,12 @@ typedef enum T1_FieldLocation_ {
 } T1_FieldLocation;
 
 typedef void
-(*T1_Field_ParseFunc) (FT_Face face,
-                       FT_Pointer parser);
+(* T1_Field_ParseFunc) (FT_Face face,
+                        FT_Pointer parser);
 
 /* structure type used to model object fields */
 typedef struct T1_FieldRec_ {
-  const char *ident;        /* field identifier               */
+  const char* ident;        /* field identifier               */
   T1_FieldLocation location;
   T1_FieldType type;         /* type of field                  */
   T1_Field_ParseFunc reader;
@@ -345,68 +345,68 @@ typedef struct T1_FieldRec_ {
 /*************************************************************************/
 /*************************************************************************/
 
-typedef const struct PS_Parser_FuncsRec_ *PS_Parser_Funcs;
+typedef const struct PS_Parser_FuncsRec_* PS_Parser_Funcs;
 
 typedef struct PS_Parser_FuncsRec_ {
   void
-  (*init) (PS_Parser parser,
-           FT_Byte *base,
-           FT_Byte *limit,
-           FT_Memory memory);
+  (* init) (PS_Parser parser,
+            FT_Byte* base,
+            FT_Byte* limit,
+            FT_Memory memory);
 
   void
-  (*done) (PS_Parser parser);
+  (* done) (PS_Parser parser);
 
   void
-  (*skip_spaces) (PS_Parser parser);
+  (* skip_spaces) (PS_Parser parser);
   void
-  (*skip_PS_token) (PS_Parser parser);
+  (* skip_PS_token) (PS_Parser parser);
 
   FT_Long
-  (*to_int) (PS_Parser parser);
+  (* to_int) (PS_Parser parser);
   FT_Fixed
-  (*to_fixed) (PS_Parser parser,
-               FT_Int power_ten);
+  (* to_fixed) (PS_Parser parser,
+                FT_Int power_ten);
 
   FT_Error
-  (*to_bytes) (PS_Parser parser,
-               FT_Byte *bytes,
-               FT_Offset max_bytes,
-               FT_ULong *pnum_bytes,
-               FT_Bool delimiters);
+  (* to_bytes) (PS_Parser parser,
+                FT_Byte* bytes,
+                FT_Offset max_bytes,
+                FT_ULong* pnum_bytes,
+                FT_Bool delimiters);
 
   FT_Int
-  (*to_coord_array) (PS_Parser parser,
-                     FT_Int max_coords,
-                     FT_Short *coords);
+  (* to_coord_array) (PS_Parser parser,
+                      FT_Int max_coords,
+                      FT_Short* coords);
   FT_Int
-  (*to_fixed_array) (PS_Parser parser,
-                     FT_Int max_values,
-                     FT_Fixed *values,
-                     FT_Int power_ten);
+  (* to_fixed_array) (PS_Parser parser,
+                      FT_Int max_values,
+                      FT_Fixed* values,
+                      FT_Int power_ten);
 
   void
-  (*to_token) (PS_Parser parser,
-               T1_Token token);
+  (* to_token) (PS_Parser parser,
+                T1_Token token);
   void
-  (*to_token_array) (PS_Parser parser,
-                     T1_Token tokens,
-                     FT_UInt max_tokens,
-                     FT_Int *pnum_tokens);
+  (* to_token_array) (PS_Parser parser,
+                      T1_Token tokens,
+                      FT_UInt max_tokens,
+                      FT_Int* pnum_tokens);
 
   FT_Error
-  (*load_field) (PS_Parser parser,
-                 const T1_Field field,
-                 void **objects,
-                 FT_UInt max_objects,
-                 FT_ULong *pflags);
+  (* load_field) (PS_Parser parser,
+                  const T1_Field field,
+                  void** objects,
+                  FT_UInt max_objects,
+                  FT_ULong* pflags);
 
   FT_Error
-  (*load_field_table) (PS_Parser parser,
-                       const T1_Field field,
-                       void **objects,
-                       FT_UInt max_objects,
-                       FT_ULong *pflags);
+  (* load_field_table) (PS_Parser parser,
+                        const T1_Field field,
+                        void** objects,
+                        FT_UInt max_objects,
+                        FT_ULong* pflags);
 
 } PS_Parser_FuncsRec;
 
@@ -438,9 +438,9 @@ typedef struct PS_Parser_FuncsRec_ {
  *     A table of functions for the parser.
  */
 typedef struct PS_ParserRec_ {
-  FT_Byte *cursor;
-  FT_Byte *base;
-  FT_Byte *limit;
+  FT_Byte* cursor;
+  FT_Byte* base;
+  FT_Byte* limit;
   FT_Error error;
   FT_Memory memory;
 
@@ -459,16 +459,16 @@ typedef struct PS_ParserRec_ {
 
 
 typedef struct PS_Builder_ PS_Builder;
-typedef const struct PS_Builder_FuncsRec_ *PS_Builder_Funcs;
+typedef const struct PS_Builder_FuncsRec_* PS_Builder_Funcs;
 
 typedef struct PS_Builder_FuncsRec_ {
   void
-  (*init) (PS_Builder *ps_builder,
-           void *builder,
-           FT_Bool is_t1);
+  (* init) (PS_Builder* ps_builder,
+            void* builder,
+            FT_Bool is_t1);
 
   void
-  (*done) (PS_Builder *builder);
+  (* done) (PS_Builder* builder);
 
 } PS_Builder_FuncsRec;
 
@@ -538,16 +538,16 @@ struct PS_Builder_ {
   FT_Face face;
   CFF_GlyphSlot glyph;
   FT_GlyphLoader loader;
-  FT_Outline *base;
-  FT_Outline *current;
+  FT_Outline* base;
+  FT_Outline* current;
 
-  FT_Pos *pos_x;
-  FT_Pos *pos_y;
+  FT_Pos* pos_x;
+  FT_Pos* pos_y;
 
-  FT_Vector *left_bearing;
-  FT_Vector *advance;
+  FT_Vector* left_bearing;
+  FT_Vector* advance;
 
-  FT_BBox *bbox;          /* bounding box */
+  FT_BBox* bbox;          /* bounding box */
   FT_Bool path_begun;
   FT_Bool load_points;
   FT_Bool no_recurse;
@@ -579,31 +579,31 @@ struct PS_Builder_ {
 /* execution context charstring zone */
 
 typedef struct PS_Decoder_Zone_ {
-  FT_Byte *base;
-  FT_Byte *limit;
-  FT_Byte *cursor;
+  FT_Byte* base;
+  FT_Byte* limit;
+  FT_Byte* cursor;
 
 } PS_Decoder_Zone;
 
 typedef FT_Error
-(*CFF_Decoder_Get_Glyph_Callback) (TT_Face face,
-                                   FT_UInt glyph_index,
-                                   FT_Byte **pointer,
-                                   FT_ULong *length);
+(* CFF_Decoder_Get_Glyph_Callback) (TT_Face face,
+                                    FT_UInt glyph_index,
+                                    FT_Byte** pointer,
+                                    FT_ULong* length);
 
 typedef void
-(*CFF_Decoder_Free_Glyph_Callback) (TT_Face face,
-                                    FT_Byte **pointer,
-                                    FT_ULong length);
+(* CFF_Decoder_Free_Glyph_Callback) (TT_Face face,
+                                     FT_Byte** pointer,
+                                     FT_ULong length);
 
 typedef struct PS_Decoder_ {
   PS_Builder builder;
 
   FT_Fixed stack[PS_MAX_OPERANDS + 1];
-  FT_Fixed *top;
+  FT_Fixed* top;
 
   PS_Decoder_Zone zones[PS_MAX_SUBRS_CALLS + 1];
-  PS_Decoder_Zone *zone;
+  PS_Decoder_Zone* zone;
 
   FT_Int flex_state;
   FT_Int num_flex_vectors;
@@ -611,9 +611,9 @@ typedef struct PS_Decoder_ {
 
   CFF_Font cff;
   CFF_SubFont current_subfont; /* for current glyph_index */
-  FT_Generic *cf2_instance;
+  FT_Generic* cf2_instance;
 
-  FT_Pos *glyph_width;
+  FT_Pos* glyph_width;
   FT_Bool width_only;
   FT_Int num_hints;
 
@@ -623,10 +623,10 @@ typedef struct PS_Decoder_ {
   FT_Int locals_bias;
   FT_Int globals_bias;
 
-  FT_Byte **locals;
-  FT_Byte **globals;
+  FT_Byte** locals;
+  FT_Byte** globals;
 
-  FT_Byte **glyph_names;   /* for pure CFF fonts only  */
+  FT_Byte** glyph_names;   /* for pure CFF fonts only  */
   FT_UInt num_glyphs;    /* number of glyphs in font */
 
   FT_Render_Mode hint_mode;
@@ -640,7 +640,7 @@ typedef struct PS_Decoder_ {
   FT_Service_PsCMaps psnames;      /* for seac */
 
   FT_Int lenIV;         /* internal for sub routine calls   */
-  FT_UInt *locals_len;    /* array of subrs length (optional) */
+  FT_UInt* locals_len;    /* array of subrs length (optional) */
   FT_Hash locals_hash;   /* used if `num_subrs' was massaged */
 
   FT_Matrix font_matrix;
@@ -648,7 +648,7 @@ typedef struct PS_Decoder_ {
 
   PS_Blend blend;         /* for multiple master support */
 
-  FT_Long *buildchar;
+  FT_Long* buildchar;
   FT_UInt len_buildchar;
 
 } PS_Decoder;
@@ -663,46 +663,46 @@ typedef struct PS_Decoder_ {
 /*************************************************************************/
 
 
-typedef struct T1_BuilderRec_ *T1_Builder;
+typedef struct T1_BuilderRec_* T1_Builder;
 
 typedef FT_Error
-(*T1_Builder_Check_Points_Func) (T1_Builder builder,
-                                 FT_Int count);
+(* T1_Builder_Check_Points_Func) (T1_Builder builder,
+                                  FT_Int count);
 
 typedef void
-(*T1_Builder_Add_Point_Func) (T1_Builder builder,
-                              FT_Pos x,
-                              FT_Pos y,
-                              FT_Byte flag);
-
-typedef FT_Error
-(*T1_Builder_Add_Point1_Func) (T1_Builder builder,
+(* T1_Builder_Add_Point_Func) (T1_Builder builder,
                                FT_Pos x,
-                               FT_Pos y);
+                               FT_Pos y,
+                               FT_Byte flag);
 
 typedef FT_Error
-(*T1_Builder_Add_Contour_Func) (T1_Builder builder);
-
-typedef FT_Error
-(*T1_Builder_Start_Point_Func) (T1_Builder builder,
+(* T1_Builder_Add_Point1_Func) (T1_Builder builder,
                                 FT_Pos x,
                                 FT_Pos y);
 
-typedef void
-(*T1_Builder_Close_Contour_Func) (T1_Builder builder);
+typedef FT_Error
+(* T1_Builder_Add_Contour_Func) (T1_Builder builder);
 
-typedef const struct T1_Builder_FuncsRec_ *T1_Builder_Funcs;
+typedef FT_Error
+(* T1_Builder_Start_Point_Func) (T1_Builder builder,
+                                 FT_Pos x,
+                                 FT_Pos y);
+
+typedef void
+(* T1_Builder_Close_Contour_Func) (T1_Builder builder);
+
+typedef const struct T1_Builder_FuncsRec_* T1_Builder_Funcs;
 
 typedef struct T1_Builder_FuncsRec_ {
   void
-  (*init) (T1_Builder builder,
-           FT_Face face,
-           FT_Size size,
-           FT_GlyphSlot slot,
-           FT_Bool hinting);
+  (* init) (T1_Builder builder,
+            FT_Face face,
+            FT_Size size,
+            FT_GlyphSlot slot,
+            FT_Bool hinting);
 
   void
-  (*done) (T1_Builder builder);
+  (* done) (T1_Builder builder);
 
   T1_Builder_Check_Points_Func check_points;
   T1_Builder_Add_Point_Func add_point;
@@ -791,8 +791,8 @@ typedef struct T1_BuilderRec_ {
   FT_Face face;
   FT_GlyphSlot glyph;
   FT_GlyphLoader loader;
-  FT_Outline *base;
-  FT_Outline *current;
+  FT_Outline* base;
+  FT_Outline* current;
 
   FT_Pos pos_x;
   FT_Pos pos_y;
@@ -807,8 +807,8 @@ typedef struct T1_BuilderRec_ {
 
   FT_Bool metrics_only;
 
-  void *hints_funcs;    /* hinter-specific */
-  void *hints_globals;  /* hinter-specific */
+  void* hints_funcs;    /* hinter-specific */
+  void* hints_globals;  /* hinter-specific */
 
   T1_Builder_FuncsRec funcs;
 
@@ -843,33 +843,33 @@ typedef struct T1_BuilderRec_ {
 #endif /* 0 */
 
 typedef struct T1_Decoder_ZoneRec_ {
-  FT_Byte *cursor;
-  FT_Byte *base;
-  FT_Byte *limit;
+  FT_Byte* cursor;
+  FT_Byte* base;
+  FT_Byte* limit;
 
-} T1_Decoder_ZoneRec, *T1_Decoder_Zone;
+} T1_Decoder_ZoneRec, * T1_Decoder_Zone;
 
-typedef struct T1_DecoderRec_ *T1_Decoder;
-typedef const struct T1_Decoder_FuncsRec_ *T1_Decoder_Funcs;
+typedef struct T1_DecoderRec_* T1_Decoder;
+typedef const struct T1_Decoder_FuncsRec_* T1_Decoder_Funcs;
 
 typedef FT_Error
-(*T1_Decoder_Callback) (T1_Decoder decoder,
-                        FT_UInt glyph_index);
+(* T1_Decoder_Callback) (T1_Decoder decoder,
+                         FT_UInt glyph_index);
 
 typedef struct T1_Decoder_FuncsRec_ {
   FT_Error
-  (*init) (T1_Decoder decoder,
-           FT_Face face,
-           FT_Size size,
-           FT_GlyphSlot slot,
-           FT_Byte **glyph_names,
-           PS_Blend blend,
-           FT_Bool hinting,
-           FT_Render_Mode hint_mode,
-           T1_Decoder_Callback callback);
+  (* init) (T1_Decoder decoder,
+            FT_Face face,
+            FT_Size size,
+            FT_GlyphSlot slot,
+            FT_Byte** glyph_names,
+            PS_Blend blend,
+            FT_Bool hinting,
+            FT_Render_Mode hint_mode,
+            T1_Decoder_Callback callback);
 
   void
-  (*done) (T1_Decoder decoder);
+  (* done) (T1_Decoder decoder);
 
 #ifdef T1_CONFIG_OPTION_OLD_ENGINE
   FT_Error
@@ -878,15 +878,15 @@ typedef struct T1_Decoder_FuncsRec_ {
                             FT_UInt     len );
 #else
   FT_Error
-  (*parse_metrics) (T1_Decoder decoder,
-                    FT_Byte *base,
-                    FT_UInt len);
+  (* parse_metrics) (T1_Decoder decoder,
+                     FT_Byte* base,
+                     FT_UInt len);
 #endif
 
   FT_Error
-  (*parse_charstrings) (PS_Decoder *decoder,
-                        FT_Byte *charstring_base,
-                        FT_ULong charstring_len);
+  (* parse_charstrings) (PS_Decoder* decoder,
+                         FT_Byte* charstring_base,
+                         FT_ULong charstring_len);
 
 } T1_Decoder_FuncsRec;
 
@@ -894,19 +894,19 @@ typedef struct T1_DecoderRec_ {
   T1_BuilderRec builder;
 
   FT_Long stack[T1_MAX_CHARSTRINGS_OPERANDS];
-  FT_Long *top;
+  FT_Long* top;
 
   T1_Decoder_ZoneRec zones[T1_MAX_SUBRS_CALLS + 1];
   T1_Decoder_Zone zone;
 
   FT_Service_PsCMaps psnames;      /* for seac */
   FT_UInt num_glyphs;
-  FT_Byte **glyph_names;
+  FT_Byte** glyph_names;
 
   FT_Int lenIV;        /* internal for sub routine calls */
   FT_Int num_subrs;
-  FT_Byte **subrs;
-  FT_UInt *subrs_len;    /* array of subrs length (optional) */
+  FT_Byte** subrs;
+  FT_UInt* subrs_len;    /* array of subrs length (optional) */
   FT_Hash subrs_hash;   /* used if `num_subrs' was massaged */
 
   FT_Matrix font_matrix;
@@ -923,7 +923,7 @@ typedef struct T1_DecoderRec_ {
   T1_Decoder_Callback parse_callback;
   T1_Decoder_FuncsRec funcs;
 
-  FT_Long *buildchar;
+  FT_Long* buildchar;
   FT_UInt len_buildchar;
 
   FT_Bool seac;
@@ -945,40 +945,40 @@ typedef struct T1_DecoderRec_ {
 typedef struct CFF_Builder_ CFF_Builder;
 
 typedef FT_Error
-(*CFF_Builder_Check_Points_Func) (CFF_Builder *builder,
-                                  FT_Int count);
+(* CFF_Builder_Check_Points_Func) (CFF_Builder* builder,
+                                   FT_Int count);
 
 typedef void
-(*CFF_Builder_Add_Point_Func) (CFF_Builder *builder,
-                               FT_Pos x,
-                               FT_Pos y,
-                               FT_Byte flag);
-typedef FT_Error
-(*CFF_Builder_Add_Point1_Func) (CFF_Builder *builder,
+(* CFF_Builder_Add_Point_Func) (CFF_Builder* builder,
                                 FT_Pos x,
-                                FT_Pos y);
+                                FT_Pos y,
+                                FT_Byte flag);
 typedef FT_Error
-(*CFF_Builder_Start_Point_Func) (CFF_Builder *builder,
+(* CFF_Builder_Add_Point1_Func) (CFF_Builder* builder,
                                  FT_Pos x,
                                  FT_Pos y);
+typedef FT_Error
+(* CFF_Builder_Start_Point_Func) (CFF_Builder* builder,
+                                  FT_Pos x,
+                                  FT_Pos y);
 typedef void
-(*CFF_Builder_Close_Contour_Func) (CFF_Builder *builder);
+(* CFF_Builder_Close_Contour_Func) (CFF_Builder* builder);
 
 typedef FT_Error
-(*CFF_Builder_Add_Contour_Func) (CFF_Builder *builder);
+(* CFF_Builder_Add_Contour_Func) (CFF_Builder* builder);
 
-typedef const struct CFF_Builder_FuncsRec_ *CFF_Builder_Funcs;
+typedef const struct CFF_Builder_FuncsRec_* CFF_Builder_Funcs;
 
 typedef struct CFF_Builder_FuncsRec_ {
   void
-  (*init) (CFF_Builder *builder,
-           TT_Face face,
-           CFF_Size size,
-           CFF_GlyphSlot glyph,
-           FT_Bool hinting);
+  (* init) (CFF_Builder* builder,
+            TT_Face face,
+            CFF_Size size,
+            CFF_GlyphSlot glyph,
+            FT_Bool hinting);
 
   void
-  (*done) (CFF_Builder *builder);
+  (* done) (CFF_Builder* builder);
 
   CFF_Builder_Check_Points_Func check_points;
   CFF_Builder_Add_Point_Func add_point;
@@ -1058,8 +1058,8 @@ struct CFF_Builder_ {
   TT_Face face;
   CFF_GlyphSlot glyph;
   FT_GlyphLoader loader;
-  FT_Outline *base;
-  FT_Outline *current;
+  FT_Outline* base;
+  FT_Outline* current;
 
   FT_Pos pos_x;
   FT_Pos pos_y;
@@ -1075,8 +1075,8 @@ struct CFF_Builder_ {
 
   FT_Bool metrics_only;
 
-  void *hints_funcs;     /* hinter-specific */
-  void *hints_globals;   /* hinter-specific */
+  void* hints_funcs;     /* hinter-specific */
+  void* hints_globals;   /* hinter-specific */
 
   CFF_Builder_FuncsRec funcs;
 };
@@ -1103,9 +1103,9 @@ struct CFF_Builder_ {
 /* execution context charstring zone */
 
 typedef struct CFF_Decoder_Zone_ {
-  FT_Byte *base;
-  FT_Byte *limit;
-  FT_Byte *cursor;
+  FT_Byte* base;
+  FT_Byte* limit;
+  FT_Byte* cursor;
 
 } CFF_Decoder_Zone;
 
@@ -1114,10 +1114,10 @@ typedef struct CFF_Decoder_ {
   CFF_Font cff;
 
   FT_Fixed stack[CFF_MAX_OPERANDS + 1];
-  FT_Fixed *top;
+  FT_Fixed* top;
 
   CFF_Decoder_Zone zones[CFF_MAX_SUBRS_CALLS + 1];
-  CFF_Decoder_Zone *zone;
+  CFF_Decoder_Zone* zone;
 
   FT_Int flex_state;
   FT_Int num_flex_vectors;
@@ -1137,10 +1137,10 @@ typedef struct CFF_Decoder_ {
   FT_Int locals_bias;
   FT_Int globals_bias;
 
-  FT_Byte **locals;
-  FT_Byte **globals;
+  FT_Byte** locals;
+  FT_Byte** globals;
 
-  FT_Byte **glyph_names;   /* for pure CFF fonts only  */
+  FT_Byte** glyph_names;   /* for pure CFF fonts only  */
   FT_UInt num_glyphs;    /* number of glyphs in font */
 
   FT_Render_Mode hint_mode;
@@ -1154,23 +1154,23 @@ typedef struct CFF_Decoder_ {
 
 } CFF_Decoder;
 
-typedef const struct CFF_Decoder_FuncsRec_ *CFF_Decoder_Funcs;
+typedef const struct CFF_Decoder_FuncsRec_* CFF_Decoder_Funcs;
 
 typedef struct CFF_Decoder_FuncsRec_ {
   void
-  (*init) (CFF_Decoder *decoder,
-           TT_Face face,
-           CFF_Size size,
-           CFF_GlyphSlot slot,
-           FT_Bool hinting,
-           FT_Render_Mode hint_mode,
-           CFF_Decoder_Get_Glyph_Callback get_callback,
-           CFF_Decoder_Free_Glyph_Callback free_callback);
+  (* init) (CFF_Decoder* decoder,
+            TT_Face face,
+            CFF_Size size,
+            CFF_GlyphSlot slot,
+            FT_Bool hinting,
+            FT_Render_Mode hint_mode,
+            CFF_Decoder_Get_Glyph_Callback get_callback,
+            CFF_Decoder_Free_Glyph_Callback free_callback);
 
   FT_Error
-  (*prepare) (CFF_Decoder *decoder,
-              CFF_Size size,
-              FT_UInt glyph_index);
+  (* prepare) (CFF_Decoder* decoder,
+               CFF_Size size,
+               FT_UInt glyph_index);
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
   FT_Error
@@ -1181,9 +1181,9 @@ typedef struct CFF_Decoder_FuncsRec_ {
 #endif
 
   FT_Error
-  (*parse_charstrings) (PS_Decoder *decoder,
-                        FT_Byte *charstring_base,
-                        FT_ULong charstring_len);
+  (* parse_charstrings) (PS_Decoder* decoder,
+                         FT_Byte* charstring_base,
+                         FT_ULong charstring_len);
 
 } CFF_Decoder_FuncsRec;
 
@@ -1196,24 +1196,24 @@ typedef struct CFF_Decoder_FuncsRec_ {
 /*************************************************************************/
 /*************************************************************************/
 
-typedef struct AFM_ParserRec_ *AFM_Parser;
+typedef struct AFM_ParserRec_* AFM_Parser;
 
 typedef struct AFM_Parser_FuncsRec_ {
   FT_Error
-  (*init) (AFM_Parser parser,
-           FT_Memory memory,
-           FT_Byte *base,
-           FT_Byte *limit);
+  (* init) (AFM_Parser parser,
+            FT_Memory memory,
+            FT_Byte* base,
+            FT_Byte* limit);
 
   void
-  (*done) (AFM_Parser parser);
+  (* done) (AFM_Parser parser);
 
   FT_Error
-  (*parse) (AFM_Parser parser);
+  (* parse) (AFM_Parser parser);
 
 } AFM_Parser_FuncsRec;
 
-typedef struct AFM_StreamRec_ *AFM_Stream;
+typedef struct AFM_StreamRec_* AFM_Stream;
 
 /**************************************************************************
  *
@@ -1243,11 +1243,11 @@ typedef struct AFM_ParserRec_ {
   AFM_FontInfo FontInfo;
 
   FT_Int
-  (*get_index) (const char *name,
-                FT_Offset len,
-                void *user_data);
+  (* get_index) (const char* name,
+                 FT_Offset len,
+                 void* user_data);
 
-  void *user_data;
+  void* user_data;
 
 } AFM_ParserRec;
 
@@ -1260,7 +1260,7 @@ typedef struct AFM_ParserRec_ {
 /*************************************************************************/
 /*************************************************************************/
 
-typedef const struct T1_CMap_ClassesRec_ *T1_CMap_Classes;
+typedef const struct T1_CMap_ClassesRec_* T1_CMap_Classes;
 
 typedef struct T1_CMap_ClassesRec_ {
   FT_CMap_Class standard;
@@ -1281,37 +1281,37 @@ typedef struct T1_CMap_ClassesRec_ {
 
 typedef struct PSAux_ServiceRec_ {
   /* don't use `PS_Table_Funcs' and friends to avoid compiler warnings */
-  const PS_Table_FuncsRec *ps_table_funcs;
-  const PS_Parser_FuncsRec *ps_parser_funcs;
-  const T1_Builder_FuncsRec *t1_builder_funcs;
-  const T1_Decoder_FuncsRec *t1_decoder_funcs;
+  const PS_Table_FuncsRec* ps_table_funcs;
+  const PS_Parser_FuncsRec* ps_parser_funcs;
+  const T1_Builder_FuncsRec* t1_builder_funcs;
+  const T1_Decoder_FuncsRec* t1_decoder_funcs;
 
   void
-  (*t1_decrypt) (FT_Byte *buffer,
-                 FT_Offset length,
-                 FT_UShort seed);
+  (* t1_decrypt) (FT_Byte* buffer,
+                  FT_Offset length,
+                  FT_UShort seed);
 
   FT_UInt32
-  (*cff_random) (FT_UInt32 r);
+  (* cff_random) (FT_UInt32 r);
 
   void
-  (*ps_decoder_init) (PS_Decoder *ps_decoder,
-                      void *decoder,
-                      FT_Bool is_t1);
+  (* ps_decoder_init) (PS_Decoder* ps_decoder,
+                       void* decoder,
+                       FT_Bool is_t1);
 
   void
-  (*t1_make_subfont) (FT_Face face,
-                      PS_Private priv,
-                      CFF_SubFont subfont);
+  (* t1_make_subfont) (FT_Face face,
+                       PS_Private priv,
+                       CFF_SubFont subfont);
 
   T1_CMap_Classes t1_cmap_classes;
 
   /* fields after this comment line were added after version 2.1.10 */
-  const AFM_Parser_FuncsRec *afm_parser_funcs;
+  const AFM_Parser_FuncsRec* afm_parser_funcs;
 
-  const CFF_Decoder_FuncsRec *cff_decoder_funcs;
+  const CFF_Decoder_FuncsRec* cff_decoder_funcs;
 
-} PSAux_ServiceRec, *PSAux_Service;
+} PSAux_ServiceRec, * PSAux_Service;
 
 /* backward compatible type definition */
 typedef PSAux_ServiceRec PSAux_Interface;

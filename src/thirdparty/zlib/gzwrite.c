@@ -21,7 +21,7 @@ local int gz_init (state)
   z_streamp strm = &(state->strm);
 
   /* allocate input buffer (double size for gzprintf) */
-  state->in = (unsigned char *) malloc (state->want << 1);
+  state->in = (unsigned char*) malloc (state->want << 1);
   if (state->in == NULL) {
     gz_error (state, Z_MEM_ERROR, "out of memory");
     return -1;
@@ -30,7 +30,7 @@ local int gz_init (state)
   /* only need output buffer and deflate state if compressing */
   if (!state->direct) {
     /* allocate output buffer */
-    state->out = (unsigned char *) malloc (state->want);
+    state->out = (unsigned char*) malloc (state->want);
     if (state->out == NULL) {
       free (state->in);
       gz_error (state, Z_MEM_ERROR, "out of memory");
@@ -214,7 +214,7 @@ local z_size_t gz_write (state, buf, len)
       memcpy (state->in + have, buf, copy);
       state->strm.avail_in += copy;
       state->x.pos += copy;
-      buf = (const char *) buf + copy;
+      buf = (const char*) buf + copy;
       len -= copy;
       if (len && gz_comp (state, Z_NO_FLUSH) == -1)
         return 0;
@@ -227,7 +227,7 @@ local z_size_t gz_write (state, buf, len)
       return 0;
 
     /* directly compress user buffer to file */
-    state->strm.next_in = (z_const Bytef *) buf;
+    state->strm.next_in = (z_const Bytef*) buf;
     do {
       unsigned n = (unsigned) -1;
       if (n > len)
@@ -354,7 +354,7 @@ int ZEXPORT gzputc (file, c)
 /* -- see zlib.h -- */
 int ZEXPORT gzputs (file, str)
     gzFile file;
-    const char *str;
+    const char* str;
 {
   int ret;
   z_size_t len;
@@ -379,10 +379,10 @@ int ZEXPORT gzputs (file, str)
 #include <stdarg.h>
 
 /* -- see zlib.h -- */
-int ZEXPORTVA gzvprintf (gzFile file, const char *format, va_list va) {
+int ZEXPORTVA gzvprintf (gzFile file, const char* format, va_list va) {
   int len;
   unsigned left;
-  char *next;
+  char* next;
   gz_statep state;
   z_streamp strm;
 
@@ -412,7 +412,7 @@ int ZEXPORTVA gzvprintf (gzFile file, const char *format, va_list va) {
      be state->size bytes available after the current contents */
   if (strm->avail_in == 0)
     strm->next_in = state->in;
-  next = (char *) (state->in + (strm->next_in - state->in) + strm->avail_in);
+  next = (char*) (state->in + (strm->next_in - state->in) + strm->avail_in);
   next[state->size - 1] = 0;
 #ifdef NO_vsnprintf
 #  ifdef HAS_vsprintf_void
@@ -450,7 +450,7 @@ int ZEXPORTVA gzvprintf (gzFile file, const char *format, va_list va) {
   return len;
 }
 
-int ZEXPORTVA gzprintf (gzFile file, const char *format, ...) {
+int ZEXPORTVA gzprintf (gzFile file, const char* format, ...) {
   va_list va;
   int ret;
 

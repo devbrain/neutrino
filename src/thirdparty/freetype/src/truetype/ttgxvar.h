@@ -39,7 +39,7 @@ typedef struct GX_AVarCorrespondenceRec_ {
   FT_Fixed fromCoord;
   FT_Fixed toCoord;
 
-} GX_AVarCorrespondenceRec_, *GX_AVarCorrespondence;
+} GX_AVarCorrespondenceRec_, * GX_AVarCorrespondence;
 
 /**************************************************************************
  *
@@ -54,17 +54,17 @@ typedef struct GX_AVarSegmentRec_ {
   FT_UShort pairCount;
   GX_AVarCorrespondence correspondence; /* array with pairCount entries */
 
-} GX_AVarSegmentRec, *GX_AVarSegment;
+} GX_AVarSegmentRec, * GX_AVarSegment;
 
 typedef struct GX_ItemVarDataRec_ {
   FT_UInt itemCount;      /* number of delta sets per item         */
   FT_UInt regionIdxCount; /* number of region indices in this data */
-  FT_UInt *regionIndices;  /* array of `regionCount' indices;       */
+  FT_UInt* regionIndices;  /* array of `regionCount' indices;       */
   /* these index `varRegionList'           */
-  FT_Short *deltaSet;       /* array of `itemCount' deltas           */
+  FT_Short* deltaSet;       /* array of `itemCount' deltas           */
   /* use `innerIndex' for this array       */
 
-} GX_ItemVarDataRec, *GX_ItemVarData;
+} GX_ItemVarDataRec, * GX_ItemVarData;
 
 /* contribution of one axis to a region */
 typedef struct GX_AxisCoordsRec_ {
@@ -72,12 +72,12 @@ typedef struct GX_AxisCoordsRec_ {
   FT_Fixed peakCoord;      /* zero means no effect (factor = 1) */
   FT_Fixed endCoord;
 
-} GX_AxisCoordsRec, *GX_AxisCoords;
+} GX_AxisCoordsRec, * GX_AxisCoords;
 
 typedef struct GX_VarRegionRec_ {
   GX_AxisCoords axisList;               /* array of axisCount records */
 
-} GX_VarRegionRec, *GX_VarRegion;
+} GX_VarRegionRec, * GX_VarRegion;
 
 /* item variation store */
 typedef struct GX_ItemVarStoreRec_ {
@@ -88,14 +88,14 @@ typedef struct GX_ItemVarStoreRec_ {
   FT_UInt regionCount;          /* total number of regions defined */
   GX_VarRegion varRegionList;
 
-} GX_ItemVarStoreRec, *GX_ItemVarStore;
+} GX_ItemVarStoreRec, * GX_ItemVarStore;
 
 typedef struct GX_DeltaSetIdxMapRec_ {
   FT_UInt mapCount;
-  FT_UInt *outerIndex;             /* indices to item var data */
-  FT_UInt *innerIndex;             /* indices to delta set     */
+  FT_UInt* outerIndex;             /* indices to item var data */
+  FT_UInt* innerIndex;             /* indices to delta set     */
 
-} GX_DeltaSetIdxMapRec, *GX_DeltaSetIdxMap;
+} GX_DeltaSetIdxMapRec, * GX_DeltaSetIdxMap;
 
 /**************************************************************************
  *
@@ -118,7 +118,7 @@ typedef struct GX_HVVarTableRec_ {
   GX_DeltaSetIdxMapRec  vorgMap;          /* not implemented */
 #endif
 
-} GX_HVVarTableRec, *GX_HVVarTable;
+} GX_HVVarTableRec, * GX_HVVarTable;
 
 #define MVAR_TAG_GASP_0  FT_MAKE_TAG( 'g', 's', 'p', '0' )
 #define MVAR_TAG_GASP_1  FT_MAKE_TAG( 'g', 's', 'p', '1' )
@@ -167,7 +167,7 @@ typedef struct GX_ValueRec_ {
 
   FT_Short unmodified;  /* values are either FT_Short or FT_UShort */
 
-} GX_ValueRec, *GX_Value;
+} GX_ValueRec, * GX_Value;
 
 /**************************************************************************
  *
@@ -183,7 +183,7 @@ typedef struct GX_MVarTableRec_ {
   GX_ItemVarStoreRec itemStore;        /* Item Variation Store  */
   GX_Value values;           /* Value Records         */
 
-} GX_MVarTableRec, *GX_MVarTable;
+} GX_MVarTableRec, * GX_MVarTable;
 
 /**************************************************************************
  *
@@ -276,13 +276,13 @@ typedef struct GX_MVarTableRec_ {
  */
 typedef struct GX_BlendRec_ {
   FT_UInt num_axis;
-  FT_Fixed *coords;
-  FT_Fixed *normalizedcoords;
+  FT_Fixed* coords;
+  FT_Fixed* normalizedcoords;
 
-  FT_MM_Var *mmvar;
+  FT_MM_Var* mmvar;
   FT_Offset mmvar_len;
 
-  FT_Fixed *normalized_stylecoords;
+  FT_Fixed* normalized_stylecoords;
   /* normalized_stylecoords[num_namedstyles][num_axis] */
 
   FT_Bool avar_loaded;
@@ -301,10 +301,10 @@ typedef struct GX_BlendRec_ {
   GX_MVarTable mvar_table;
 
   FT_UInt tuplecount;
-  FT_Fixed *tuplecoords;      /* tuplecoords[tuplecount][num_axis] */
+  FT_Fixed* tuplecoords;      /* tuplecoords[tuplecount][num_axis] */
 
   FT_UInt gv_glyphcnt;
-  FT_ULong *glyphoffsets;         /* glyphoffsets[gv_glyphcnt + 1] */
+  FT_ULong* glyphoffsets;         /* glyphoffsets[gv_glyphcnt + 1] */
 
   FT_ULong gvar_size;
 
@@ -351,26 +351,26 @@ typedef enum GX_TupleIndexFlags_ {
 FT_LOCAL(FT_Error)
 TT_Set_MM_Blend (TT_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords);
+                 FT_Fixed* coords);
 
 FT_LOCAL(FT_Error)
 TT_Get_MM_Blend (TT_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords);
+                 FT_Fixed* coords);
 
 FT_LOCAL(FT_Error)
 TT_Set_Var_Design (TT_Face face,
                    FT_UInt num_coords,
-                   FT_Fixed *coords);
+                   FT_Fixed* coords);
 
 FT_LOCAL(FT_Error)
 TT_Get_MM_Var (TT_Face face,
-               FT_MM_Var **master);
+               FT_MM_Var** master);
 
 FT_LOCAL(FT_Error)
 TT_Get_Var_Design (TT_Face face,
                    FT_UInt num_coords,
-                   FT_Fixed *coords);
+                   FT_Fixed* coords);
 
 FT_LOCAL(FT_Error)
 TT_Set_Named_Instance (TT_Face face,
@@ -383,29 +383,29 @@ tt_face_vary_cvt (TT_Face face,
 FT_LOCAL(FT_Error)
 TT_Vary_Apply_Glyph_Deltas (TT_Face face,
                             FT_UInt glyph_index,
-                            FT_Outline *outline,
-                            FT_Vector *unrounded,
+                            FT_Outline* outline,
+                            FT_Vector* unrounded,
                             FT_UInt n_points);
 
 FT_LOCAL(FT_Error)
 tt_hadvance_adjust (TT_Face face,
                     FT_UInt gindex,
-                    FT_Int *adelta);
+                    FT_Int* adelta);
 
 FT_LOCAL(FT_Error)
 tt_vadvance_adjust (TT_Face face,
                     FT_UInt gindex,
-                    FT_Int *adelta);
+                    FT_Int* adelta);
 
 FT_LOCAL(void)
 tt_apply_mvar (TT_Face face);
 
 FT_LOCAL(FT_Error)
 tt_get_var_blend (TT_Face face,
-                  FT_UInt *num_coords,
-                  FT_Fixed **coords,
-                  FT_Fixed **normalizedcoords,
-                  FT_MM_Var **mm_var);
+                  FT_UInt* num_coords,
+                  FT_Fixed** coords,
+                  FT_Fixed** normalizedcoords,
+                  FT_MM_Var** mm_var);
 
 FT_LOCAL(void)
 tt_done_blend (TT_Face face);

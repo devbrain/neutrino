@@ -136,11 +136,11 @@
    *   An array of FT_UShort containing the affected points or the
    *   special value ALL_POINTS.
    */
-static FT_UShort *
+static FT_UShort*
 ft_var_readpackedpoints (FT_Stream stream,
                          FT_ULong size,
-                         FT_UInt *point_cnt) {
-  FT_UShort *points = NULL;
+                         FT_UInt* point_cnt) {
+  FT_UShort* points = NULL;
   FT_UInt n;
   FT_UInt runcnt;
   FT_UInt i, j;
@@ -241,11 +241,11 @@ ft_var_readpackedpoints (FT_Stream stream,
    *   deltas (the rounding to integer values happens as the very last
    *   step).
    */
-static FT_Fixed *
+static FT_Fixed*
 ft_var_readpackeddeltas (FT_Stream stream,
                          FT_ULong size,
                          FT_UInt delta_cnt) {
-  FT_Fixed *deltas = NULL;
+  FT_Fixed* deltas = NULL;
   FT_UInt runcnt, cnt;
   FT_UInt i, j;
   FT_Memory memory = stream->memory;
@@ -402,7 +402,7 @@ ft_var_load_item_variation_store (TT_Face face,
   GX_Blend blend = face->blend;
   GX_ItemVarData varData;
 
-  FT_ULong *dataOffsetArray = NULL;
+  FT_ULong* dataOffsetArray = NULL;
 
   if (FT_STREAM_SEEK(offset) ||
       FT_READ_USHORT(format))
@@ -793,7 +793,7 @@ ft_var_get_item_delta (TT_Face face,
                        FT_UInt outerIndex,
                        FT_UInt innerIndex) {
   GX_ItemVarData varData;
-  FT_Short *deltaSet;
+  FT_Short* deltaSet;
 
   FT_UInt master, j;
   FT_Fixed netAdjustment = 0;     /* accumulated adjustment */
@@ -893,7 +893,7 @@ ft_var_get_item_delta (TT_Face face,
 static FT_Error
 tt_hvadvance_adjust (TT_Face face,
                      FT_UInt gindex,
-                     FT_Int *avalue,
+                     FT_Int* avalue,
                      FT_Bool vertical) {
   FT_Error error = FT_Err_Ok;
   FT_UInt innerIndex, outerIndex;
@@ -981,14 +981,14 @@ tt_hvadvance_adjust (TT_Face face,
 FT_LOCAL_DEF(FT_Error)
 tt_hadvance_adjust (TT_Face face,
                     FT_UInt gindex,
-                    FT_Int *avalue) {
+                    FT_Int* avalue) {
   return tt_hvadvance_adjust (face, gindex, avalue, 0);
 }
 
 FT_LOCAL_DEF(FT_Error)
 tt_vadvance_adjust (TT_Face face,
                     FT_UInt gindex,
-                    FT_Int *avalue) {
+                    FT_Int* avalue) {
   return tt_hvadvance_adjust (face, gindex, avalue, 1);
 }
 
@@ -1009,10 +1009,10 @@ tt_vadvance_adjust (TT_Face face,
               p = NULL;                                           \
             break
 
-static FT_Short *
+static FT_Short*
 ft_var_get_value_pointer (TT_Face face,
                           FT_ULong mvar_tag) {
-  FT_Short *p;
+  FT_Short* p;
 
   switch (mvar_tag) {
     GX_GASP_CASE(0);
@@ -1169,7 +1169,7 @@ ft_var_load_mvar (TT_Face face) {
 
   /* save original values of the data MVAR is going to modify */
   for (; value < limit; value++) {
-    FT_Short *p = ft_var_get_value_pointer (face, value->tag);
+    FT_Short* p = ft_var_get_value_pointer (face, value->tag);
 
     if (p)
       value->unmodified = *p;
@@ -1188,7 +1188,7 @@ ft_var_load_mvar (TT_Face face) {
 
 static FT_Error
 tt_size_reset_iterator (FT_ListNode node,
-                        void *user) {
+                        void* user) {
   TT_Size size = (TT_Size) node->data;
 
   FT_UNUSED(user);
@@ -1226,7 +1226,7 @@ tt_apply_mvar (TT_Face face) {
   limit = value + blend->mvar_table->valueCount;
 
   for (; value < limit; value++) {
-    FT_Short *p = ft_var_get_value_pointer (face, value->tag);
+    FT_Short* p = ft_var_get_value_pointer (face, value->tag);
     FT_Int delta;
 
     delta = ft_var_get_item_delta (face,
@@ -1564,9 +1564,9 @@ ft_var_load_gvar (TT_Face face) {
 static FT_Fixed
 ft_var_apply_tuple (GX_Blend blend,
                     FT_UShort tupleIndex,
-                    FT_Fixed *tuple_coords,
-                    FT_Fixed *im_start_coords,
-                    FT_Fixed *im_end_coords) {
+                    FT_Fixed* tuple_coords,
+                    FT_Fixed* im_start_coords,
+                    FT_Fixed* im_end_coords) {
   FT_UInt i;
   FT_Fixed apply = 0x10000L;
 
@@ -1651,12 +1651,12 @@ ft_var_apply_tuple (GX_Blend blend,
 static void
 ft_var_to_normalized (TT_Face face,
                       FT_UInt num_coords,
-                      FT_Fixed *coords,
-                      FT_Fixed *normalized) {
+                      FT_Fixed* coords,
+                      FT_Fixed* normalized) {
   GX_Blend blend;
-  FT_MM_Var *mmvar;
+  FT_MM_Var* mmvar;
   FT_UInt i, j;
-  FT_Var_Axis *a;
+  FT_Var_Axis* a;
   GX_AVarSegment av;
 
   blend = face->blend;
@@ -1736,11 +1736,11 @@ ft_var_to_normalized (TT_Face face,
 static void
 ft_var_to_design (TT_Face face,
                   FT_UInt num_coords,
-                  FT_Fixed *coords,
-                  FT_Fixed *design) {
+                  FT_Fixed* coords,
+                  FT_Fixed* design) {
   GX_Blend blend;
-  FT_MM_Var *mmvar;
-  FT_Var_Axis *a;
+  FT_MM_Var* mmvar;
+  FT_Var_Axis* a;
 
   FT_UInt i, j, nc;
 
@@ -1855,25 +1855,25 @@ typedef struct fvar_axis_ {
    */
 FT_LOCAL_DEF(FT_Error)
 TT_Get_MM_Var (TT_Face face,
-               FT_MM_Var **master) {
+               FT_MM_Var** master) {
   FT_Stream stream = face->root.stream;
   FT_Memory memory = face->root.memory;
   FT_ULong table_len;
   FT_Error error = FT_Err_Ok;
   FT_ULong fvar_start = 0;
   FT_UInt i, j;
-  FT_MM_Var *mmvar = NULL;
-  FT_Fixed *next_coords;
-  FT_Fixed *nsc;
-  FT_String *next_name;
-  FT_Var_Axis *a;
-  FT_Fixed *c;
-  FT_Var_Named_Style *ns;
+  FT_MM_Var* mmvar = NULL;
+  FT_Fixed* next_coords;
+  FT_Fixed* nsc;
+  FT_String* next_name;
+  FT_Var_Axis* a;
+  FT_Fixed* c;
+  FT_Var_Named_Style* ns;
   GX_FVar_Head fvar_head;
   FT_Bool usePsName = 0;
   FT_UInt num_instances;
   FT_UInt num_axes;
-  FT_UShort *axis_flags;
+  FT_UShort* axis_flags;
 
   FT_Offset mmvar_size;
   FT_Offset axis_flags_size;
@@ -2025,21 +2025,21 @@ TT_Get_MM_Var (TT_Face face,
 
     /* alas, no public field in `FT_Var_Axis' for axis flags */
     axis_flags =
-        (FT_UShort *) ((char *) mmvar + mmvar_size);
+        (FT_UShort*) ((char*) mmvar + mmvar_size);
     mmvar->axis =
-        (FT_Var_Axis *) ((char *) axis_flags + axis_flags_size);
+        (FT_Var_Axis*) ((char*) axis_flags + axis_flags_size);
     mmvar->namedstyle =
-        (FT_Var_Named_Style *) ((char *) mmvar->axis + axis_size);
+        (FT_Var_Named_Style*) ((char*) mmvar->axis + axis_size);
 
-    next_coords = (FT_Fixed *) ((char *) mmvar->namedstyle +
-                                namedstyle_size);
+    next_coords = (FT_Fixed*) ((char*) mmvar->namedstyle +
+                               namedstyle_size);
     for (i = 0; i < num_instances; i++) {
       mmvar->namedstyle[i].coords = next_coords;
       next_coords += num_axes;
     }
 
-    next_name = (FT_String *) ((char *) mmvar->namedstyle +
-                               namedstyle_size + next_coords_size);
+    next_name = (FT_String*) ((char*) mmvar->namedstyle +
+                              namedstyle_size + next_coords_size);
     for (i = 0; i < num_axes; i++) {
       mmvar->axis[i].name = next_name;
       next_name += 5;
@@ -2259,34 +2259,34 @@ TT_Get_MM_Var (TT_Face face,
     FT_MEM_COPY(mmvar, face->blend->mmvar, face->blend->mmvar_len);
 
     axis_flags =
-        (FT_UShort *) ((char *) mmvar + mmvar_size);
+        (FT_UShort*) ((char*) mmvar + mmvar_size);
     mmvar->axis =
-        (FT_Var_Axis *) ((char *) axis_flags + axis_flags_size);
+        (FT_Var_Axis*) ((char*) axis_flags + axis_flags_size);
     mmvar->namedstyle =
-        (FT_Var_Named_Style *) ((char *) mmvar->axis + axis_size);
+        (FT_Var_Named_Style*) ((char*) mmvar->axis + axis_size);
 
-    next_coords = (FT_Fixed *) ((char *) mmvar->namedstyle +
-                                namedstyle_size);
+    next_coords = (FT_Fixed*) ((char*) mmvar->namedstyle +
+                               namedstyle_size);
     for (n = 0; n < mmvar->num_namedstyles; n++) {
       mmvar->namedstyle[n].coords = next_coords;
       next_coords += num_axes;
     }
 
     a = mmvar->axis;
-    next_name = (FT_String *) ((char *) mmvar->namedstyle +
-                               namedstyle_size + next_coords_size);
+    next_name = (FT_String*) ((char*) mmvar->namedstyle +
+                              namedstyle_size + next_coords_size);
     for (n = 0; n < num_axes; n++) {
       a->name = next_name;
 
       /* standard PostScript names for some standard apple tags */
       if (a->tag == TTAG_wght)
-        a->name = (char *) "Weight";
+        a->name = (char*) "Weight";
       else if (a->tag == TTAG_wdth)
-        a->name = (char *) "Width";
+        a->name = (char*) "Width";
       else if (a->tag == TTAG_opsz)
-        a->name = (char *) "OpticalSize";
+        a->name = (char*) "OpticalSize";
       else if (a->tag == TTAG_slnt)
-        a->name = (char *) "Slant";
+        a->name = (char*) "Slant";
 
       next_name += 5;
       a++;
@@ -2302,11 +2302,11 @@ TT_Get_MM_Var (TT_Face face,
 static FT_Error
 tt_set_mm_blend (TT_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords,
+                 FT_Fixed* coords,
                  FT_Bool set_design_coords) {
   FT_Error error = FT_Err_Ok;
   GX_Blend blend;
-  FT_MM_Var *mmvar;
+  FT_MM_Var* mmvar;
   FT_UInt i;
 
   FT_Bool all_design_coords = FALSE;
@@ -2378,8 +2378,8 @@ tt_set_mm_blend (TT_Face face,
   else {
     FT_Bool have_diff = 0;
     FT_UInt j;
-    FT_Fixed *c;
-    FT_Fixed *n;
+    FT_Fixed* c;
+    FT_Fixed* n;
 
     manageCvt = mcvt_retain;
 
@@ -2506,7 +2506,7 @@ tt_set_mm_blend (TT_Face face,
 FT_LOCAL_DEF(FT_Error)
 TT_Set_MM_Blend (TT_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords) {
+                 FT_Fixed* coords) {
   FT_Error error;
 
   error = tt_set_mm_blend (face, num_coords, coords, 1);
@@ -2551,7 +2551,7 @@ TT_Set_MM_Blend (TT_Face face,
 FT_LOCAL_DEF(FT_Error)
 TT_Get_MM_Blend (TT_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords) {
+                 FT_Fixed* coords) {
   FT_Error error = FT_Err_Ok;
   GX_Blend blend;
   FT_UInt i, nc;
@@ -2625,16 +2625,16 @@ TT_Get_MM_Blend (TT_Face face,
 FT_LOCAL_DEF(FT_Error)
 TT_Set_Var_Design (TT_Face face,
                    FT_UInt num_coords,
-                   FT_Fixed *coords) {
+                   FT_Fixed* coords) {
   FT_Error error = FT_Err_Ok;
   GX_Blend blend;
-  FT_MM_Var *mmvar;
+  FT_MM_Var* mmvar;
   FT_UInt i;
   FT_Memory memory = face->root.memory;
 
-  FT_Fixed *c;
-  FT_Fixed *n;
-  FT_Fixed *normalized = NULL;
+  FT_Fixed* c;
+  FT_Fixed* n;
+  FT_Fixed* normalized = NULL;
 
   FT_Bool have_diff = 0;
 
@@ -2669,7 +2669,7 @@ TT_Set_Var_Design (TT_Face face,
 
   if (FT_IS_NAMED_INSTANCE(FT_FACE (face))) {
     FT_UInt instance_index;
-    FT_Var_Named_Style *named_style;
+    FT_Var_Named_Style* named_style;
 
     instance_index = (FT_UInt) face->root.face_index >> 16;
     named_style = mmvar->namedstyle + instance_index - 1;
@@ -2683,7 +2683,7 @@ TT_Set_Var_Design (TT_Face face,
     }
   }
   else {
-    FT_Var_Axis *a;
+    FT_Var_Axis* a;
 
     a = mmvar->axis + num_coords;
     for (; i < mmvar->num_axis; i++, a++, c++) {
@@ -2752,7 +2752,7 @@ TT_Set_Var_Design (TT_Face face,
 FT_LOCAL_DEF(FT_Error)
 TT_Get_Var_Design (TT_Face face,
                    FT_UInt num_coords,
-                   FT_Fixed *coords) {
+                   FT_Fixed* coords) {
   FT_Error error = FT_Err_Ok;
   GX_Blend blend;
   FT_UInt i, nc;
@@ -2820,7 +2820,7 @@ TT_Set_Named_Instance (TT_Face face,
                        FT_UInt instance_index) {
   FT_Error error;
   GX_Blend blend;
-  FT_MM_Var *mmvar;
+  FT_MM_Var* mmvar;
 
   FT_UInt num_instances;
 
@@ -2844,8 +2844,8 @@ TT_Set_Named_Instance (TT_Face face,
     FT_Memory memory = face->root.memory;
     SFNT_Service sfnt = (SFNT_Service) face->sfnt;
 
-    FT_Var_Named_Style *named_style;
-    FT_String *style_name;
+    FT_Var_Named_Style* named_style;
+    FT_String* style_name;
 
     named_style = mmvar->namedstyle + instance_index - 1;
 
@@ -2893,7 +2893,7 @@ TT_Set_Named_Instance (TT_Face face,
 
 static FT_Error
 tt_cvt_ready_iterator (FT_ListNode node,
-                       void *user) {
+                       void* user) {
   TT_Size size = (TT_Size) node->data;
 
   FT_UNUSED(user);
@@ -2944,21 +2944,21 @@ tt_face_vary_cvt (TT_Face face,
   FT_ULong here;
   FT_UInt i, j;
 
-  FT_Fixed *tuple_coords = NULL;
-  FT_Fixed *im_start_coords = NULL;
-  FT_Fixed *im_end_coords = NULL;
+  FT_Fixed* tuple_coords = NULL;
+  FT_Fixed* im_start_coords = NULL;
+  FT_Fixed* im_end_coords = NULL;
 
   GX_Blend blend = face->blend;
 
   FT_UInt point_count;
   FT_UInt spoint_count = 0;
 
-  FT_UShort *sharedpoints = NULL;
-  FT_UShort *localpoints = NULL;
-  FT_UShort *points;
+  FT_UShort* sharedpoints = NULL;
+  FT_UShort* localpoints = NULL;
+  FT_UShort* points;
 
-  FT_Fixed *deltas = NULL;
-  FT_Fixed *cvt_deltas = NULL;
+  FT_Fixed* deltas = NULL;
+  FT_Fixed* cvt_deltas = NULL;
 
   FT_TRACE2(("CVAR "));
 
@@ -3236,8 +3236,8 @@ static void
 tt_delta_shift (int p1,
                 int p2,
                 int ref,
-                FT_Vector *in_points,
-                FT_Vector *out_points) {
+                FT_Vector* in_points,
+                FT_Vector* out_points) {
   int p;
   FT_Vector delta;
 
@@ -3270,8 +3270,8 @@ tt_delta_interpolate (int p1,
                       int p2,
                       int ref1,
                       int ref2,
-                      FT_Vector *in_points,
-                      FT_Vector *out_points) {
+                      FT_Vector* in_points,
+                      FT_Vector* out_points) {
   int p, i;
 
   FT_Pos out, in1, in2, out1, out2, d1, d2;
@@ -3282,8 +3282,8 @@ tt_delta_interpolate (int p1,
   /* handle both horizontal and vertical coordinates */
   for (i = 0; i <= 1; i++) {
     /* shift array pointers so that we can access `foo.y' as `foo.x' */
-    in_points = (FT_Vector *) ((FT_Pos *) in_points + i);
-    out_points = (FT_Vector *) ((FT_Pos *) out_points + i);
+    in_points = (FT_Vector*) ((FT_Pos*) in_points + i);
+    out_points = (FT_Vector*) ((FT_Pos*) out_points + i);
 
     if (in_points[ref1].x > in_points[ref2].x) {
       p = ref1;
@@ -3327,10 +3327,10 @@ tt_delta_interpolate (int p1,
 /* modeled after `Ins_IUP */
 
 static void
-tt_interpolate_deltas (FT_Outline *outline,
-                       FT_Vector *out_points,
-                       FT_Vector *in_points,
-                       FT_Bool *has_delta) {
+tt_interpolate_deltas (FT_Outline* outline,
+                       FT_Vector* out_points,
+                       FT_Vector* in_points,
+                       FT_Bool* has_delta) {
   FT_Int first_point;
   FT_Int end_point;
 
@@ -3445,16 +3445,16 @@ tt_interpolate_deltas (FT_Outline *outline,
 FT_LOCAL_DEF(FT_Error)
 TT_Vary_Apply_Glyph_Deltas (TT_Face face,
                             FT_UInt glyph_index,
-                            FT_Outline *outline,
-                            FT_Vector *unrounded,
+                            FT_Outline* outline,
+                            FT_Vector* unrounded,
                             FT_UInt n_points) {
   FT_Error error;
   FT_Stream stream = face->root.stream;
   FT_Memory memory = stream->memory;
 
-  FT_Vector *points_org = NULL;  /* coordinates in 16.16 format */
-  FT_Vector *points_out = NULL;  /* coordinates in 16.16 format */
-  FT_Bool *has_delta = NULL;
+  FT_Vector* points_org = NULL;  /* coordinates in 16.16 format */
+  FT_Vector* points_out = NULL;  /* coordinates in 16.16 format */
+  FT_Bool* has_delta = NULL;
 
   FT_ULong glyph_start;
 
@@ -3465,23 +3465,23 @@ TT_Vary_Apply_Glyph_Deltas (TT_Face face,
   FT_ULong here;
   FT_UInt i, j;
 
-  FT_Fixed *tuple_coords = NULL;
-  FT_Fixed *im_start_coords = NULL;
-  FT_Fixed *im_end_coords = NULL;
+  FT_Fixed* tuple_coords = NULL;
+  FT_Fixed* im_start_coords = NULL;
+  FT_Fixed* im_end_coords = NULL;
 
   GX_Blend blend = face->blend;
 
   FT_UInt point_count;
   FT_UInt spoint_count = 0;
 
-  FT_UShort *sharedpoints = NULL;
-  FT_UShort *localpoints = NULL;
-  FT_UShort *points;
+  FT_UShort* sharedpoints = NULL;
+  FT_UShort* localpoints = NULL;
+  FT_UShort* points;
 
-  FT_Fixed *deltas_x = NULL;
-  FT_Fixed *deltas_y = NULL;
-  FT_Fixed *point_deltas_x = NULL;
-  FT_Fixed *point_deltas_y = NULL;
+  FT_Fixed* deltas_x = NULL;
+  FT_Fixed* deltas_y = NULL;
+  FT_Fixed* point_deltas_x = NULL;
+  FT_Fixed* point_deltas_y = NULL;
 
   if (!face->doblend || !blend)
     return FT_THROW(Invalid_Argument);
@@ -3851,10 +3851,10 @@ TT_Vary_Apply_Glyph_Deltas (TT_Face face,
    */
 FT_LOCAL_DEF(FT_Error)
 tt_get_var_blend (TT_Face face,
-                  FT_UInt *num_coords,
-                  FT_Fixed **coords,
-                  FT_Fixed **normalizedcoords,
-                  FT_MM_Var **mm_var) {
+                  FT_UInt* num_coords,
+                  FT_Fixed** coords,
+                  FT_Fixed** normalizedcoords,
+                  FT_MM_Var** mm_var) {
   if (face->blend) {
     if (num_coords)
       *num_coords = face->blend->num_axis;

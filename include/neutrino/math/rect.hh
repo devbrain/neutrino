@@ -15,9 +15,10 @@ namespace neutrino::math {
         : point{x, y}, dims{w, h} {
 
     }
+
     rect () = default;
 
-    rect (const point2d &corner, int w, int h)
+    rect (const point2d& corner, int w, int h)
         : point{corner}, dims{w, h} {
 
     }

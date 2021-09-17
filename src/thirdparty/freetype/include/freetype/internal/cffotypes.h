@@ -43,7 +43,7 @@ typedef struct CFF_SizeRec_ {
   FT_SizeRec root;
   FT_ULong strike_index;    /* 0xFFFFFFFF to indicate invalid */
 
-} CFF_SizeRec, *CFF_Size;
+} CFF_SizeRec, * CFF_Size;
 
 /**************************************************************************
  *
@@ -62,7 +62,7 @@ typedef struct CFF_GlyphSlotRec_ {
   FT_Fixed x_scale;
   FT_Fixed y_scale;
 
-} CFF_GlyphSlotRec, *CFF_GlyphSlot;
+} CFF_GlyphSlotRec, * CFF_GlyphSlot;
 
 /**************************************************************************
  *
@@ -76,7 +76,7 @@ typedef struct CFF_InternalRec_ {
   PSH_Globals topfont;
   PSH_Globals subfonts[CFF_MAX_CID_FONTS];
 
-} CFF_InternalRec, *CFF_Internal;
+} CFF_InternalRec, * CFF_Internal;
 
 /**************************************************************************
  *

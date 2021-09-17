@@ -45,6 +45,7 @@ namespace double_conversion {
       DiyFp ()
           : f_ (0), e_ (0) {
       }
+
       DiyFp (const uint64_t significand, const int32_t exponent)
           : f_ (significand), e_ (exponent) {
       }
@@ -53,7 +54,7 @@ namespace double_conversion {
       // The exponents of both numbers must be the same and the significand of this
       // must be greater or equal than the significand of other.
       // The result will not be normalized.
-      void Subtract (const DiyFp &other) {
+      void Subtract (const DiyFp& other) {
         DOUBLE_CONVERSION_ASSERT(e_ == other.e_);
         DOUBLE_CONVERSION_ASSERT(f_ >= other.f_);
         f_ -= other.f_;
@@ -62,14 +63,14 @@ namespace double_conversion {
       // Returns a - b.
       // The exponents of both numbers must be the same and a must be greater
       // or equal than b. The result will not be normalized.
-      static DiyFp Minus (const DiyFp &a, const DiyFp &b) {
+      static DiyFp Minus (const DiyFp& a, const DiyFp& b) {
         DiyFp result = a;
         result.Subtract (b);
         return result;
       }
 
       // this *= other.
-      void Multiply (const DiyFp &other) {
+      void Multiply (const DiyFp& other) {
         // Simply "emulates" a 128 bit multiplication.
         // However: the resulting number only contains 64 bits. The least
         // significant 64 bits are only used for rounding the most significant 64
@@ -91,7 +92,7 @@ namespace double_conversion {
       }
 
       // returns a * b;
-      static DiyFp Times (const DiyFp &a, const DiyFp &b) {
+      static DiyFp Times (const DiyFp& a, const DiyFp& b) {
         DiyFp result = a;
         result.Multiply (b);
         return result;
@@ -117,7 +118,7 @@ namespace double_conversion {
         e_ = exponent;
       }
 
-      static DiyFp Normalize (const DiyFp &a) {
+      static DiyFp Normalize (const DiyFp& a) {
         DiyFp result = a;
         result.Normalize ();
         return result;
@@ -126,6 +127,7 @@ namespace double_conversion {
       uint64_t f () const {
         return f_;
       }
+
       int32_t e () const {
         return e_;
       }
@@ -133,6 +135,7 @@ namespace double_conversion {
       void set_f (uint64_t new_value) {
         f_ = new_value;
       }
+
       void set_e (int32_t new_value) {
         e_ = new_value;
       }

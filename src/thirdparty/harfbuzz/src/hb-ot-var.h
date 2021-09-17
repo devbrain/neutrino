@@ -77,7 +77,7 @@ HB_BEGIN_DECLS
  */
 
 HB_EXTERN hb_bool_t
-hb_ot_var_has_data (hb_face_t *face);
+hb_ot_var_has_data (hb_face_t* face);
 
 
 /*
@@ -86,7 +86,7 @@ hb_ot_var_has_data (hb_face_t *face);
 
 
 HB_EXTERN unsigned int
-hb_ot_var_get_axis_count (hb_face_t *face);
+hb_ot_var_get_axis_count (hb_face_t* face);
 
 /**
  * hb_ot_var_axis_flags_t:
@@ -135,15 +135,15 @@ typedef struct hb_ot_var_axis_info_t {
 } hb_ot_var_axis_info_t;
 
 HB_EXTERN unsigned int
-hb_ot_var_get_axis_infos (hb_face_t *face,
+hb_ot_var_get_axis_infos (hb_face_t* face,
                           unsigned int start_offset,
-                          unsigned int *axes_count /* IN/OUT */,
-                          hb_ot_var_axis_info_t *axes_array /* OUT */);
+                          unsigned int* axes_count /* IN/OUT */,
+                          hb_ot_var_axis_info_t* axes_array /* OUT */);
 
 HB_EXTERN hb_bool_t
-hb_ot_var_find_axis_info (hb_face_t *face,
+hb_ot_var_find_axis_info (hb_face_t* face,
                           hb_tag_t axis_tag,
-                          hb_ot_var_axis_info_t *axis_info);
+                          hb_ot_var_axis_info_t* axis_info);
 
 
 /*
@@ -151,21 +151,21 @@ hb_ot_var_find_axis_info (hb_face_t *face,
  */
 
 HB_EXTERN unsigned int
-hb_ot_var_get_named_instance_count (hb_face_t *face);
+hb_ot_var_get_named_instance_count (hb_face_t* face);
 
 HB_EXTERN hb_ot_name_id_t
-hb_ot_var_named_instance_get_subfamily_name_id (hb_face_t *face,
+hb_ot_var_named_instance_get_subfamily_name_id (hb_face_t* face,
                                                 unsigned int instance_index);
 
 HB_EXTERN hb_ot_name_id_t
-hb_ot_var_named_instance_get_postscript_name_id (hb_face_t *face,
+hb_ot_var_named_instance_get_postscript_name_id (hb_face_t* face,
                                                  unsigned int instance_index);
 
 HB_EXTERN unsigned int
-hb_ot_var_named_instance_get_design_coords (hb_face_t *face,
+hb_ot_var_named_instance_get_design_coords (hb_face_t* face,
                                             unsigned int instance_index,
-                                            unsigned int *coords_length, /* IN/OUT */
-                                            float *coords         /* OUT */);
+                                            unsigned int* coords_length, /* IN/OUT */
+                                            float* coords         /* OUT */);
 
 
 /*
@@ -173,17 +173,17 @@ hb_ot_var_named_instance_get_design_coords (hb_face_t *face,
  */
 
 HB_EXTERN void
-hb_ot_var_normalize_variations (hb_face_t *face,
-                                const hb_variation_t *variations, /* IN */
+hb_ot_var_normalize_variations (hb_face_t* face,
+                                const hb_variation_t* variations, /* IN */
                                 unsigned int variations_length,
-                                int *coords, /* OUT */
+                                int* coords, /* OUT */
                                 unsigned int coords_length);
 
 HB_EXTERN void
-hb_ot_var_normalize_coords (hb_face_t *face,
+hb_ot_var_normalize_coords (hb_face_t* face,
                             unsigned int coords_length,
-                            const float *design_coords, /* IN */
-                            int *normalized_coords /* OUT */);
+                            const float* design_coords, /* IN */
+                            int* normalized_coords /* OUT */);
 
 HB_END_DECLS
 

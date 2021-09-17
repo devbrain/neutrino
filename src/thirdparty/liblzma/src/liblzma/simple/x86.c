@@ -21,15 +21,15 @@ typedef struct {
 } lzma_simple_x86;
 
 static size_t
-x86_code (void *simple_ptr, uint32_t now_pos, bool is_encoder,
-          uint8_t *buffer, size_t size) {
+x86_code (void* simple_ptr, uint32_t now_pos, bool is_encoder,
+          uint8_t* buffer, size_t size) {
   static const bool MASK_TO_ALLOWED_STATUS[8]
       = {true, true, true, false, true, false, false, false};
 
   static const uint32_t MASK_TO_BIT_NUMBER[8]
       = {0, 1, 2, 2, 3, 3, 3, 3};
 
-  lzma_simple_x86 *simple = simple_ptr;
+  lzma_simple_x86* simple = simple_ptr;
   uint32_t prev_mask = simple->prev_mask;
   uint32_t prev_pos = simple->prev_pos;
 
@@ -121,14 +121,14 @@ x86_code (void *simple_ptr, uint32_t now_pos, bool is_encoder,
 }
 
 static lzma_ret
-x86_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                const lzma_filter_info *filters, bool is_encoder) {
+x86_coder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                const lzma_filter_info* filters, bool is_encoder) {
   const lzma_ret ret = lzma_simple_coder_init (next, allocator, filters,
                                                &x86_code, sizeof (lzma_simple_x86), 5, 1, is_encoder);
 
   if (ret == LZMA_OK) {
-    lzma_simple_coder *coder = next->coder;
-    lzma_simple_x86 *simple = coder->simple;
+    lzma_simple_coder* coder = next->coder;
+    lzma_simple_x86* simple = coder->simple;
     simple->prev_mask = 0;
     simple->prev_pos = (uint32_t) (-5);
   }
@@ -137,15 +137,15 @@ x86_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern lzma_ret
-lzma_simple_x86_encoder_init (lzma_next_coder *next,
-                              const lzma_allocator *allocator,
-                              const lzma_filter_info *filters) {
+lzma_simple_x86_encoder_init (lzma_next_coder* next,
+                              const lzma_allocator* allocator,
+                              const lzma_filter_info* filters) {
   return x86_coder_init (next, allocator, filters, true);
 }
 
 extern lzma_ret
-lzma_simple_x86_decoder_init (lzma_next_coder *next,
-                              const lzma_allocator *allocator,
-                              const lzma_filter_info *filters) {
+lzma_simple_x86_decoder_init (lzma_next_coder* next,
+                              const lzma_allocator* allocator,
+                              const lzma_filter_info* filters) {
   return x86_coder_init (next, allocator, filters, false);
 }

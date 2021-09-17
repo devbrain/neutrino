@@ -27,7 +27,7 @@ namespace neutrino::sdl {
   class system {
     public:
       template <typename ... Args,
-          typename std::enable_if_t<std::conjunction_v<std::is_same<Args, init_flags>...>, void *> = nullptr>
+          typename std::enable_if_t<std::conjunction_v<std::is_same<Args, init_flags>...>, void*> = nullptr>
       explicit system (Args... flags);
 
       ~system () noexcept;
@@ -41,7 +41,7 @@ namespace neutrino::sdl {
 namespace neutrino::sdl {
 
   template <typename ... Args,
-      typename std::enable_if_t<std::conjunction_v<std::is_same<Args, init_flags>...>, void *>>
+      typename std::enable_if_t<std::conjunction_v<std::is_same<Args, init_flags>...>, void*>>
   system::system (Args... flags) {
     uint32_t f = (static_cast<std::uint32_t>(flags) | ... | 0u);
     if (f == 0) {
@@ -49,6 +49,7 @@ namespace neutrino::sdl {
     }
     SAFE_SDL_CALL(SDL_Init, f);
   }
+
   // -----------------------------------------------------------------------------------------------
   inline
   system::~system () noexcept {

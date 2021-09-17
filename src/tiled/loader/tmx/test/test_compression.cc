@@ -17,15 +17,15 @@ TEST_CASE("test tmx compression") {
   auto zsmap = test::load_map (tiled_base64_zstandard, tiled_base64_zstandard_length);
 
   REQUIRE(!zmap.layers ().empty ());
-  const auto *ztl = std::get_if<tile_layer> (&zmap.layers ()[0]);
+  const auto* ztl = std::get_if<tile_layer> (&zmap.layers ()[0]);
   REQUIRE(ztl);
 
   REQUIRE(!gmap.layers ().empty ());
-  const auto *gtl = std::get_if<tile_layer> (&gmap.layers ()[0]);
+  const auto* gtl = std::get_if<tile_layer> (&gmap.layers ()[0]);
   REQUIRE(gtl);
 
   REQUIRE(!zsmap.layers ().empty ());
-  const auto *zstl = std::get_if<tile_layer> (&zsmap.layers ()[0]);
+  const auto* zstl = std::get_if<tile_layer> (&zsmap.layers ()[0]);
   REQUIRE(zstl);
 
   REQUIRE(ztl->cells ().size () == 10000);
@@ -40,7 +40,7 @@ TEST_CASE("test json compression") {
   auto gmap = test::load_map (tiled_base64_gzip, tiled_base64_gzip_length);
 
   REQUIRE(!gmap.layers ().empty ());
-  const auto *gtl = std::get_if<tile_layer> (&gmap.layers ()[0]);
+  const auto* gtl = std::get_if<tile_layer> (&gmap.layers ()[0]);
   REQUIRE(gtl);
   REQUIRE(gtl->cells ().size () == 10000);
 

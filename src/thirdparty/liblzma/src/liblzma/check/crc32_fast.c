@@ -23,7 +23,7 @@
 // changes can very easily ruin the performance (and very probably is
 // very compiler dependent).
 extern LZMA_API(uint32_t)
-lzma_crc32 (const uint8_t *buf, size_t size, uint32_t crc) {
+lzma_crc32 (const uint8_t* buf, size_t size, uint32_t crc) {
   crc = ~crc;
 
 #ifdef WORDS_BIGENDIAN
@@ -39,7 +39,7 @@ lzma_crc32 (const uint8_t *buf, size_t size, uint32_t crc) {
     }
 
     // Calculate the position where to stop.
-    const uint8_t *const limit = buf + (size & ~(size_t) (7));
+    const uint8_t* const limit = buf + (size & ~(size_t) (7));
 
     // Calculate how many bytes must be calculated separately
     // before returning the result.

@@ -12,7 +12,7 @@
 namespace neutrino::tiled {
 
   namespace {
-    void clip (math::rect &window, int w, int h) {
+    void clip (math::rect& window, int w, int h) {
       if (window.dims[0] > w) {
         window.dims[0] = w;
       }
@@ -34,28 +34,30 @@ namespace neutrino::tiled {
       }
     }
   }
+
   // ------------------------------------------------------------------------------------------
-  world_renderer::world_renderer (hal::renderer &renderer, tile_sheet_manager &manager)
+  world_renderer::world_renderer (hal::renderer& renderer, tile_sheet_manager& manager)
       : m_renderer (renderer), m_tiles_manager (manager) {
     auto[w, h] = renderer.logical_size ();
     m_screen = {0, 0, (int) w, (int) h};
   }
+
   // ------------------------------------------------------------------------------------------
-  void world_renderer::draw (const world &w, const camera &c) const {
+  void world_renderer::draw (const world& w, const camera& c) const {
     for (std::size_t layer_id = 0; layer_id < w.m_layers.size (); layer_id++) {
 
       math::rect window = c.m_cameras[layer_id];
 
-      const auto &layer = w.m_layers[layer_id];
+      const auto& layer = w.m_layers[layer_id];
 
       std::visit (neutrino::utils::overload (
-          [this, &window] (const tiles_layer &tl) {
+          [this, &window] (const tiles_layer& tl) {
             int width_px = tl.tile_width * tl.w;
             int height_px = tl.tile_height * tl.tile_height;
             clip (window, width_px, height_px);
             draw (tl, window);
           },
-          [this, &window] (const image_layer &tl) {
+          [this, &window] (const image_layer& tl) {
             int width_px = tl.tile_width * tl.w;
             int height_px = tl.tile_height * tl.tile_height;
             clip (window, width_px, height_px);
@@ -64,14 +66,15 @@ namespace neutrino::tiled {
       ), layer);
 
       auto itr = w.m_sprites_to_layers.find (layer_id_t{layer_id});
-      const std::vector<std::size_t> *bound_sprites = nullptr;
+      const std::vector<std::size_t>* bound_sprites = nullptr;
       if (itr != w.m_sprites_to_layers.end ()) {
         bound_sprites = &itr->second;
       }
     }
   }
+
   // -----------------------------------------------------------------------------------
-  void world_renderer::draw (const tiles_layer &layer, const math::rect &view_port) const {
+  void world_renderer::draw (const tiles_layer& layer, const math::rect& view_port) const {
     int start_x = view_port.point[0];
     int start_y = view_port.point[0];
     int end_x = view_port.point[0] + view_port.dims[0];
@@ -97,10 +100,11 @@ namespace neutrino::tiled {
 
 
   }
+
   // -----------------------------------------------------------------------------------
-  void world_renderer::draw (const image_layer &layer, const math::rect &view_port) const {
+  void world_renderer::draw (const image_layer& layer, const math::rect& view_port) const {
     auto image = layer.image;
-    const auto &sheet = m_tiles_manager.get (image.tile_sheet_id);
+    const auto& sheet = m_tiles_manager.get (image.tile_sheet_id);
     //  sheet.draw(m_renderer, image, view_port, m_screen);
   }
   // -----------------------------------------------------------------------------------

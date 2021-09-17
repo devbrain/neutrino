@@ -47,7 +47,7 @@ typedef struct GXV_morx_subtable_type2_StateOptRec_ {
   FT_ULong ligatureTable_length;
 
 } GXV_morx_subtable_type2_StateOptRec,
-    *GXV_morx_subtable_type2_StateOptRecData;
+    * GXV_morx_subtable_type2_StateOptRecData;
 
 #define GXV_MORX_SUBTABLE_TYPE2_HEADER_SIZE \
           ( GXV_XSTATETABLE_HEADER_SIZE + 4 + 4 + 4 )
@@ -79,9 +79,9 @@ gxv_morx_subtable_type2_subtable_setup (FT_ULong table_size,
                                         FT_ULong classTable,
                                         FT_ULong stateArray,
                                         FT_ULong entryTable,
-                                        FT_ULong *classTable_length_p,
-                                        FT_ULong *stateArray_length_p,
-                                        FT_ULong *entryTable_length_p,
+                                        FT_ULong* classTable_length_p,
+                                        FT_ULong* stateArray_length_p,
+                                        FT_ULong* entryTable_length_p,
                                         GXV_Validator gxvalid) {
   FT_ULong o[6];
   FT_ULong * l[6];

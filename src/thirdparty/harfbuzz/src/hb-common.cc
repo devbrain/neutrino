@@ -55,10 +55,10 @@ _hb_options_init () {
   u.i = 0;
   u.opts.initialized = true;
 
-  const char *c = getenv ("HB_OPTIONS");
+  const char* c = getenv ("HB_OPTIONS");
   if (c) {
     while (*c) {
-      const char *p = strchr (c, ':');
+      const char* p = strchr (c, ':');
       if (!p)
         p = c + strlen (c);
 
@@ -96,7 +96,7 @@ _hb_options_init () {
  * Since: 0.9.2
  **/
 hb_tag_t
-hb_tag_from_string (const char *str, int len) {
+hb_tag_from_string (const char* str, int len) {
   char tag[4];
   unsigned int i;
 
@@ -124,7 +124,7 @@ hb_tag_from_string (const char *str, int len) {
  * Since: 0.9.5
  **/
 void
-hb_tag_to_string (hb_tag_t tag, char *buf) {
+hb_tag_to_string (hb_tag_t tag, char* buf) {
   buf[0] = (char) (uint8_t) (tag >> 24);
   buf[1] = (char) (uint8_t) (tag >> 16);
   buf[2] = (char) (uint8_t) (tag >> 8);
@@ -157,7 +157,7 @@ const char direction_strings[][4] = {
  * Since: 0.9.2
  **/
 hb_direction_t
-hb_direction_from_string (const char *str, int len) {
+hb_direction_from_string (const char* str, int len) {
   if (unlikely (!str || !len || !*str))
     return HB_DIRECTION_INVALID;
 
@@ -182,7 +182,7 @@ hb_direction_from_string (const char *str, int len) {
  *
  * Since: 0.9.2
  **/
-const char *
+const char*
 hb_direction_to_string (hb_direction_t direction) {
   if (likely ((unsigned int) (direction - HB_DIRECTION_LTR)
               < ARRAY_LENGTH (direction_strings)))
@@ -210,9 +210,9 @@ static const char canon_map[256] = {
 
 static bool
 lang_equal (hb_language_t v1,
-            const void *v2) {
-  const unsigned char *p1 = (const unsigned char *) v1;
-  const unsigned char *p2 = (const unsigned char *) v2;
+            const void* v2) {
+  const unsigned char* p1 = (const unsigned char*) v1;
+  const unsigned char* p2 = (const unsigned char*) v2;
 
   while (*p1 && *p1 == canon_map[*p2]) {
     p1++;
@@ -240,14 +240,14 @@ lang_hash (const void *key)
 
 struct hb_language_item_t {
 
-  struct hb_language_item_t *next;
+  struct hb_language_item_t* next;
   hb_language_t lang;
 
-  bool operator== (const char *s) const {
+  bool operator == (const char* s) const {
     return lang_equal (lang, s);
   }
 
-  hb_language_item_t &operator= (const char *s) {
+  hb_language_item_t& operator = (const char* s) {
     /* If a custom allocated is used calling strdup() pairs
     badly with a call to the custom free() in fini() below.
     Therefore don't call strdup(), implement its behavior.
@@ -255,8 +255,8 @@ struct hb_language_item_t {
     size_t len = strlen (s) + 1;
     lang = (hb_language_t) malloc (len);
     if (likely (lang)) {
-      memcpy ((unsigned char *) lang, s, len);
-      for (unsigned char *p = (unsigned char *) lang; *p; p++)
+      memcpy ((unsigned char*) lang, s, len);
+      for (unsigned char* p = (unsigned char*) lang; *p; p++)
         *p = canon_map[*p];
     }
 
@@ -264,7 +264,7 @@ struct hb_language_item_t {
   }
 
   void fini () {
-    free ((void *) lang);
+    free ((void*) lang);
   }
 };
 
@@ -273,33 +273,35 @@ struct hb_language_item_t {
 static hb_atomic_ptr_t<hb_language_item_t> langs;
 
 #if HB_USE_ATEXIT
+
 static void
 free_langs () {
   retry:
-  hb_language_item_t *first_lang = langs;
+  hb_language_item_t* first_lang = langs;
   if (unlikely (!langs.cmpexch (first_lang, nullptr)))
     goto retry;
 
   while (first_lang) {
-    hb_language_item_t *next = first_lang->next;
+    hb_language_item_t* next = first_lang->next;
     first_lang->fini ();
     free (first_lang);
     first_lang = next;
   }
 }
+
 #endif
 
-static hb_language_item_t *
-lang_find_or_insert (const char *key) {
+static hb_language_item_t*
+lang_find_or_insert (const char* key) {
   retry:
-  hb_language_item_t *first_lang = langs;
+  hb_language_item_t* first_lang = langs;
 
-  for (hb_language_item_t *lang = first_lang; lang; lang = lang->next)
+  for (hb_language_item_t* lang = first_lang; lang; lang = lang->next)
     if (*lang == key)
       return lang;
 
   /* Not found; allocate one. */
-  hb_language_item_t *lang = (hb_language_item_t *) calloc (1, sizeof (hb_language_item_t));
+  hb_language_item_t* lang = (hb_language_item_t*) calloc (1, sizeof (hb_language_item_t));
   if (unlikely (!lang))
     return nullptr;
   lang->next = first_lang;
@@ -338,11 +340,11 @@ lang_find_or_insert (const char *key) {
  * Since: 0.9.2
  **/
 hb_language_t
-hb_language_from_string (const char *str, int len) {
+hb_language_from_string (const char* str, int len) {
   if (!str || !len || !*str)
     return HB_LANGUAGE_INVALID;
 
-  hb_language_item_t *item = nullptr;
+  hb_language_item_t* item = nullptr;
   if (len >= 0) {
     /* NUL-terminate it. */
     char strbuf[64];
@@ -369,7 +371,7 @@ hb_language_from_string (const char *str, int len) {
  *
  * Since: 0.9.2
  **/
-const char *
+const char*
 hb_language_to_string (hb_language_t language) {
   if (unlikely (!language))
     return nullptr;
@@ -488,7 +490,7 @@ hb_script_from_iso15924_tag (hb_tag_t tag) {
  * Since: 0.9.2
  **/
 hb_script_t
-hb_script_from_string (const char *str, int len) {
+hb_script_from_string (const char* str, int len) {
   return hb_script_from_iso15924_tag (hb_tag_from_string (str, len));
 }
 
@@ -631,9 +633,9 @@ hb_script_get_horizontal_direction (hb_script_t script) {
  * Since: 0.9.2
  **/
 void
-hb_version (unsigned int *major,
-            unsigned int *minor,
-            unsigned int *micro) {
+hb_version (unsigned int* major,
+            unsigned int* minor,
+            unsigned int* micro) {
   *major = HB_VERSION_MAJOR;
   *minor = HB_VERSION_MINOR;
   *micro = HB_VERSION_MICRO;
@@ -648,7 +650,7 @@ hb_version (unsigned int *major,
  *
  * Since: 0.9.2
  **/
-const char *
+const char*
 hb_version_string () {
   return HB_VERSION_STRING;
 }
@@ -677,14 +679,14 @@ hb_version_atleast (unsigned int major,
 /* hb_feature_t and hb_variation_t */
 
 static bool
-parse_space (const char **pp, const char *end) {
+parse_space (const char** pp, const char* end) {
   while (*pp < end && ISSPACE (**pp))
     (*pp)++;
   return true;
 }
 
 static bool
-parse_char (const char **pp, const char *end, char c) {
+parse_char (const char** pp, const char* end, char c) {
   parse_space (pp, end);
 
   if (*pp == end || **pp != c)
@@ -695,7 +697,7 @@ parse_char (const char **pp, const char *end, char c) {
 }
 
 static bool
-parse_uint (const char **pp, const char *end, unsigned int *pv) {
+parse_uint (const char** pp, const char* end, unsigned int* pv) {
   /* Intentionally use hb_parse_int inside instead of hb_parse_uint,
    * such that -1 turns into "big number"... */
   int v;
@@ -707,7 +709,7 @@ parse_uint (const char **pp, const char *end, unsigned int *pv) {
 }
 
 static bool
-parse_uint32 (const char **pp, const char *end, uint32_t *pv) {
+parse_uint32 (const char** pp, const char* end, uint32_t* pv) {
   /* Intentionally use hb_parse_int inside instead of hb_parse_uint,
    * such that -1 turns into "big number"... */
   int v;
@@ -719,10 +721,10 @@ parse_uint32 (const char **pp, const char *end, uint32_t *pv) {
 }
 
 static bool
-parse_bool (const char **pp, const char *end, uint32_t *pv) {
+parse_bool (const char** pp, const char* end, uint32_t* pv) {
   parse_space (pp, end);
 
-  const char *p = *pp;
+  const char* p = *pp;
   while (*pp < end && ISALPHA (**pp))
     (*pp)++;
 
@@ -745,7 +747,7 @@ parse_bool (const char **pp, const char *end, uint32_t *pv) {
 /* hb_feature_t */
 
 static bool
-parse_feature_value_prefix (const char **pp, const char *end, hb_feature_t *feature) {
+parse_feature_value_prefix (const char** pp, const char* end, hb_feature_t* feature) {
   if (parse_char (pp, end, '-'))
     feature->value = 0;
   else {
@@ -757,7 +759,7 @@ parse_feature_value_prefix (const char **pp, const char *end, hb_feature_t *feat
 }
 
 static bool
-parse_tag (const char **pp, const char *end, hb_tag_t *tag) {
+parse_tag (const char** pp, const char* end, hb_tag_t* tag) {
   parse_space (pp, end);
 
   char quote = 0;
@@ -767,7 +769,7 @@ parse_tag (const char **pp, const char *end, hb_tag_t *tag) {
     (*pp)++;
   }
 
-  const char *p = *pp;
+  const char* p = *pp;
   while (*pp < end && (ISALNUM (**pp) || **pp == '_'))
     (*pp)++;
 
@@ -790,7 +792,7 @@ parse_tag (const char **pp, const char *end, hb_tag_t *tag) {
 }
 
 static bool
-parse_feature_indices (const char **pp, const char *end, hb_feature_t *feature) {
+parse_feature_indices (const char** pp, const char* end, hb_feature_t* feature) {
   parse_space (pp, end);
 
   bool has_start;
@@ -815,7 +817,7 @@ parse_feature_indices (const char **pp, const char *end, hb_feature_t *feature) 
 }
 
 static bool
-parse_feature_value_postfix (const char **pp, const char *end, hb_feature_t *feature) {
+parse_feature_value_postfix (const char** pp, const char* end, hb_feature_t* feature) {
   bool had_equal = parse_char (pp, end, '=');
   bool had_value = parse_uint32 (pp, end, &feature->value) ||
                    parse_bool (pp, end, &feature->value);
@@ -826,7 +828,7 @@ parse_feature_value_postfix (const char **pp, const char *end, hb_feature_t *fea
 }
 
 static bool
-parse_one_feature (const char **pp, const char *end, hb_feature_t *feature) {
+parse_one_feature (const char** pp, const char* end, hb_feature_t* feature) {
   return parse_feature_value_prefix (pp, end, feature) &&
          parse_tag (pp, end, &feature->tag) &&
          parse_feature_indices (pp, end, feature) &&
@@ -885,8 +887,8 @@ parse_one_feature (const char **pp, const char *end, hb_feature_t *feature) {
  * Since: 0.9.5
  **/
 hb_bool_t
-hb_feature_from_string (const char *str, int len,
-                        hb_feature_t *feature) {
+hb_feature_from_string (const char* str, int len,
+                        hb_feature_t* feature) {
   hb_feature_t feat;
 
   if (len < 0)
@@ -916,8 +918,8 @@ hb_feature_from_string (const char *str, int len,
  * Since: 0.9.5
  **/
 void
-hb_feature_to_string (hb_feature_t *feature,
-                      char *buf, unsigned int size) {
+hb_feature_to_string (hb_feature_t* feature,
+                      char* buf, unsigned int size) {
   if (unlikely (!size))
     return;
 
@@ -953,7 +955,7 @@ hb_feature_to_string (hb_feature_t *feature,
 /* hb_variation_t */
 
 static bool
-parse_variation_value (const char **pp, const char *end, hb_variation_t *variation) {
+parse_variation_value (const char** pp, const char* end, hb_variation_t* variation) {
   parse_char (pp, end, '='); /* Optional. */
   double v;
   if (unlikely (!hb_parse_double (pp, end, &v)))
@@ -964,7 +966,7 @@ parse_variation_value (const char **pp, const char *end, hb_variation_t *variati
 }
 
 static bool
-parse_one_variation (const char **pp, const char *end, hb_variation_t *variation) {
+parse_one_variation (const char** pp, const char* end, hb_variation_t* variation) {
   return parse_tag (pp, end, &variation->tag) &&
          parse_variation_value (pp, end, variation) &&
          parse_space (pp, end) &&
@@ -992,8 +994,8 @@ parse_one_variation (const char **pp, const char *end, hb_variation_t *variation
  * Since: 1.4.2
  */
 hb_bool_t
-hb_variation_from_string (const char *str, int len,
-                          hb_variation_t *variation) {
+hb_variation_from_string (const char* str, int len,
+                          hb_variation_t* variation) {
   hb_variation_t var;
 
   if (len < 0)
@@ -1023,8 +1025,8 @@ hb_variation_from_string (const char *str, int len,
  * Since: 1.4.2
  */
 void
-hb_variation_to_string (hb_variation_t *variation,
-                        char *buf, unsigned int size) {
+hb_variation_to_string (hb_variation_t* variation,
+                        char* buf, unsigned int size) {
   if (unlikely (!size))
     return;
 

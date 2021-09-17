@@ -76,8 +76,8 @@ tt_face_load_hmtx (TT_Face face,
                    FT_Bool vertical) {
   FT_Error error;
   FT_ULong tag, table_size;
-  FT_ULong *ptable_offset;
-  FT_ULong *ptable_size;
+  FT_ULong* ptable_offset;
+  FT_ULong* ptable_size;
 
   if (vertical) {
     tag = TTAG_vmtx;
@@ -128,7 +128,7 @@ tt_face_load_hhea (TT_Face face,
                    FT_Stream stream,
                    FT_Bool vertical) {
   FT_Error error;
-  TT_HoriHeader *header;
+  TT_HoriHeader* header;
 
   static const FT_Frame_Field metrics_header_fields[] =
       {
@@ -157,13 +157,13 @@ tt_face_load_hhea (TT_Face face,
       };
 
   if (vertical) {
-    void *v = &face->vertical;
+    void* v = &face->vertical;
 
     error = face->goto_table (face, TTAG_vhea, stream, 0);
     if (error)
       goto Fail;
 
-    header = (TT_HoriHeader *) v;
+    header = (TT_HoriHeader*) v;
   }
   else {
     error = face->goto_table (face, TTAG_hhea, stream, 0);
@@ -221,11 +221,11 @@ FT_LOCAL_DEF(void)
 tt_face_get_metrics (TT_Face face,
                      FT_Bool vertical,
                      FT_UInt gindex,
-                     FT_Short *abearing,
-                     FT_UShort *aadvance) {
+                     FT_Short* abearing,
+                     FT_UShort* aadvance) {
   FT_Error error;
   FT_Stream stream = face->root.stream;
-  TT_HoriHeader *header;
+  TT_HoriHeader* header;
   FT_ULong table_pos, table_size, table_end;
   FT_UShort k;
 
@@ -235,9 +235,9 @@ tt_face_get_metrics (TT_Face face,
 #endif
 
   if (vertical) {
-    void *v = &face->vertical;
+    void* v = &face->vertical;
 
-    header = (TT_HoriHeader *) v;
+    header = (TT_HoriHeader*) v;
     table_pos = face->vert_metrics_offset;
     table_size = face->vert_metrics_size;
   }

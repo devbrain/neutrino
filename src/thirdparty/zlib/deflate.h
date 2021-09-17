@@ -84,9 +84,9 @@ typedef struct ct_data_s {
 typedef struct static_tree_desc_s static_tree_desc;
 
 typedef struct tree_desc_s {
-  ct_data *dyn_tree;           /* the dynamic tree */
+  ct_data* dyn_tree;           /* the dynamic tree */
   int max_code;            /* largest code with non zero frequency */
-  const static_tree_desc *stat_desc;  /* the corresponding static tree */
+  const static_tree_desc* stat_desc;  /* the corresponding static tree */
 } FAR tree_desc;
 
 typedef ush Pos;
@@ -100,9 +100,9 @@ typedef unsigned IPos;
 typedef struct internal_state {
   z_streamp strm;      /* pointer back to this zlib stream */
   int status;        /* as the name implies */
-  Bytef *pending_buf;  /* output still pending */
+  Bytef* pending_buf;  /* output still pending */
   ulg pending_buf_size; /* size of pending_buf */
-  Bytef *pending_out;  /* next pending byte to output to the stream */
+  Bytef* pending_out;  /* next pending byte to output to the stream */
   ulg pending;       /* nb of bytes in the pending buffer */
   int wrap;          /* bit 0 true for zlib, bit 1 true for gzip */
   gz_headerp gzhead;  /* gzip header information to write */
@@ -116,7 +116,7 @@ typedef struct internal_state {
   uInt w_bits;        /* log2(w_size)  (8..16) */
   uInt w_mask;        /* w_size - 1 */
 
-  Bytef *window;
+  Bytef* window;
   /* Sliding window. Input bytes are read into the second half of the window,
    * and move to the first half later to keep a dictionary of at least wSize
    * bytes. With this organization, matches are limited to a distance of
@@ -131,13 +131,13 @@ typedef struct internal_state {
    * is directly used as sliding window.
    */
 
-  Posf *prev;
+  Posf* prev;
   /* Link to older string with same hash index. To limit the size of this
    * array to 64K, this link is maintained only for the last 32K strings.
    * An index in this array is thus a window index modulo 32K.
    */
 
-  Posf *head; /* Heads of the hash chains or NIL. */
+  Posf* head; /* Heads of the hash chains or NIL. */
 
   uInt ins_h;          /* hash index of string to be inserted */
   uInt hash_size;      /* number of elements in hash table */
@@ -217,7 +217,7 @@ typedef struct internal_state {
   /* Depth of each subtree used as tie breaker for trees of equal frequency
    */
 
-  uchf *l_buf;          /* buffer for literals or lengths */
+  uchf* l_buf;          /* buffer for literals or lengths */
 
   uInt lit_bufsize;
   /* Size of match buffer for literals/lengths.  There are 4 reasons for
@@ -241,7 +241,7 @@ typedef struct internal_state {
 
   uInt last_lit;      /* running index in l_buf */
 
-  ushf *d_buf;
+  ushf* d_buf;
   /* Buffer for distances. To simplify the code, d_buf and l_buf have
    * the same number of elements. To use different lengths, an extra flag
    * array would be necessary.

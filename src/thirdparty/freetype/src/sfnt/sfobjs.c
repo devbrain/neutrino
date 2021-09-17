@@ -54,12 +54,12 @@
 #define FT_COMPONENT  sfobjs
 
 /* convert a UTF-16 name entry to ASCII */
-static FT_String *
+static FT_String*
 tt_name_ascii_from_utf16 (TT_Name entry,
                           FT_Memory memory) {
-  FT_String *string = NULL;
+  FT_String* string = NULL;
   FT_UInt len, code, n;
-  FT_Byte *read = (FT_Byte *) entry->string;
+  FT_Byte* read = (FT_Byte*) entry->string;
   FT_Error error;
 
   len = (FT_UInt) entry->stringLength / 2;
@@ -85,12 +85,12 @@ tt_name_ascii_from_utf16 (TT_Name entry,
 }
 
 /* convert an Apple Roman or symbol name entry to ASCII */
-static FT_String *
+static FT_String*
 tt_name_ascii_from_other (TT_Name entry,
                           FT_Memory memory) {
-  FT_String *string = NULL;
+  FT_String* string = NULL;
   FT_UInt len, code, n;
-  FT_Byte *read = (FT_Byte *) entry->string;
+  FT_Byte* read = (FT_Byte*) entry->string;
   FT_Error error;
 
   len = (FT_UInt) entry->stringLength;
@@ -115,8 +115,8 @@ tt_name_ascii_from_other (TT_Name entry,
   return string;
 }
 
-typedef FT_String *(*TT_Name_ConvertFunc) (TT_Name entry,
-                                           FT_Memory memory);
+typedef FT_String* (* TT_Name_ConvertFunc) (TT_Name entry,
+                                            FT_Memory memory);
 
 
 /* documentation is in sfnt.h */
@@ -124,10 +124,10 @@ typedef FT_String *(*TT_Name_ConvertFunc) (TT_Name entry,
 FT_LOCAL_DEF(FT_Error)
 tt_face_get_name (TT_Face face,
                   FT_UShort nameid,
-                  FT_String **name) {
+                  FT_String** name) {
   FT_Memory memory = face->root.memory;
   FT_Error error = FT_Err_Ok;
-  FT_String *result = NULL;
+  FT_String* result = NULL;
   FT_UShort n;
   TT_Name rec;
 
@@ -289,7 +289,7 @@ sfnt_find_encoding (int platform_id,
           {TT_PLATFORM_MICROSOFT, TT_MS_ID_JOHAB, FT_ENCODING_JOHAB}
       };
 
-  const TEncoding *cur, *limit;
+  const TEncoding* cur, * limit;
 
   cur = tt_encodings;
   limit = cur + sizeof (tt_encodings) / sizeof (tt_encodings[0]);
@@ -311,8 +311,8 @@ sfnt_find_encoding (int platform_id,
 static FT_Error
 sfnt_open_font (FT_Stream stream,
                 TT_Face face,
-                FT_Int *face_instance_index,
-                FT_Long *woff2_num_faces) {
+                FT_Int* face_instance_index,
+                FT_Long* woff2_num_faces) {
   FT_Memory memory = stream->memory;
   FT_Error error;
   FT_ULong tag, offset;
@@ -439,7 +439,7 @@ sfnt_init_face (FT_Stream stream,
                 TT_Face face,
                 FT_Int face_instance_index,
                 FT_Int num_params,
-                FT_Parameter *params) {
+                FT_Parameter* params) {
   FT_Error error;
   FT_Library library = face->root.driver->root.library;
   SFNT_Service sfnt;
@@ -539,8 +539,8 @@ sfnt_init_face (FT_Stream stream,
 
     FT_Int instance_index;
 
-    FT_Byte *default_values = NULL;
-    FT_Byte *instance_values = NULL;
+    FT_Byte* default_values = NULL;
+    FT_Byte* instance_values = NULL;
 
     instance_index = FT_ABS(face_instance_index) >> 16;
 
@@ -598,7 +598,7 @@ sfnt_init_face (FT_Stream stream,
       FT_ULong array_start = FT_STREAM_POS() - 16 + offset;
       FT_ULong default_value_offset, instance_offset;
 
-      FT_Byte *p;
+      FT_Byte* p;
       FT_UInt i;
 
       default_value_offset = array_start + 8;
@@ -710,7 +710,7 @@ sfnt_load_face (FT_Stream stream,
                 TT_Face face,
                 FT_Int face_instance_index,
                 FT_Int num_params,
-                FT_Parameter *params) {
+                FT_Parameter* params) {
   FT_Error error;
 #ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
   FT_Error psnames_error;
@@ -1104,7 +1104,7 @@ sfnt_load_face (FT_Stream stream,
         FT_Short avgwidth = face->os2.xAvgCharWidth;
         FT_Size_Metrics metrics;
 
-        FT_UInt *sbit_strike_map = NULL;
+        FT_UInt* sbit_strike_map = NULL;
         FT_UInt strike_idx, bsize_idx;
 
         if (em_size == 0 || face->os2.version == 0xFFFFU) {
@@ -1121,7 +1121,7 @@ sfnt_load_face (FT_Stream stream,
 
         bsize_idx = 0;
         for (strike_idx = 0; strike_idx < count; strike_idx++) {
-          FT_Bitmap_Size *bsize = root->available_sizes + bsize_idx;
+          FT_Bitmap_Size* bsize = root->available_sizes + bsize_idx;
 
           error = sfnt->load_strike_metrics (face, strike_idx, &metrics);
           if (error)

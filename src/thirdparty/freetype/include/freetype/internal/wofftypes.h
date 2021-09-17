@@ -55,7 +55,7 @@ typedef struct WOFF_HeaderRec_ {
   FT_ULong privOffset;
   FT_ULong privLength;
 
-} WOFF_HeaderRec, *WOFF_Header;
+} WOFF_HeaderRec, * WOFF_Header;
 
 /**************************************************************************
  *
@@ -96,7 +96,7 @@ typedef struct WOFF_TableRec_ {
 
   FT_ULong OrigOffset;    /* uncompressed table file offset */
   /* (not in the WOFF file)         */
-} WOFF_TableRec, *WOFF_Table;
+} WOFF_TableRec, * WOFF_Table;
 
 /**************************************************************************
  *
@@ -120,9 +120,9 @@ typedef struct WOFF_TableRec_ {
 typedef struct WOFF2_TtcFontRec_ {
   FT_ULong flavor;
   FT_UShort num_tables;
-  FT_UShort *table_indices;
+  FT_UShort* table_indices;
 
-} WOFF2_TtcFontRec, *WOFF2_TtcFont;
+} WOFF2_TtcFontRec, * WOFF2_TtcFont;
 
 /**************************************************************************
  *
@@ -164,7 +164,7 @@ typedef struct WOFF2_HeaderRec_ {
 
   WOFF2_TtcFont ttc_fonts;        /* metadata for fonts in a TTC     */
 
-} WOFF2_HeaderRec, *WOFF2_Header;
+} WOFF2_HeaderRec, * WOFF2_Header;
 
 /**************************************************************************
  *
@@ -190,7 +190,7 @@ typedef struct WOFF2_TableRec_ {
   FT_ULong src_length;         /* compressed table length   */
   FT_ULong dst_offset;         /* uncompressed table offset */
 
-} WOFF2_TableRec, *WOFF2_Table;
+} WOFF2_TableRec, * WOFF2_Table;
 
 /**************************************************************************
  *
@@ -227,13 +227,13 @@ typedef struct WOFF2_InfoRec_ {
   FT_ULong header_checksum;
   FT_UShort num_glyphs;
   FT_UShort num_hmetrics;
-  FT_Short *x_mins;
+  FT_Short* x_mins;
 
   WOFF2_Table glyf_table;
   WOFF2_Table loca_table;
   WOFF2_Table head_table;
 
-} WOFF2_InfoRec, *WOFF2_Info;
+} WOFF2_InfoRec, * WOFF2_Info;
 
 /**************************************************************************
  *
@@ -259,7 +259,7 @@ typedef struct WOFF2_SubstreamRec_ {
   FT_ULong offset;
   FT_ULong size;
 
-} WOFF2_SubstreamRec, *WOFF2_Substream;
+} WOFF2_SubstreamRec, * WOFF2_Substream;
 
 /**************************************************************************
  *
@@ -285,7 +285,7 @@ typedef struct WOFF2_PointRec_ {
   FT_Int y;
   FT_Bool on_curve;
 
-} WOFF2_PointRec, *WOFF2_Point;
+} WOFF2_PointRec, * WOFF2_Point;
 
 FT_END_HEADER
 

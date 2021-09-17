@@ -31,16 +31,16 @@ FT_BEGIN_HEADER
 
 typedef struct TT_CMapRec_ {
   FT_CMapRec cmap;
-  FT_Byte *data;           /* pointer to in-memory cmap table */
+  FT_Byte* data;           /* pointer to in-memory cmap table */
   FT_Int flags;          /* for format 4 only               */
 
-} TT_CMapRec, *TT_CMap;
+} TT_CMapRec, * TT_CMap;
 
-typedef const struct TT_CMap_ClassRec_ *TT_CMap_Class;
+typedef const struct TT_CMap_ClassRec_* TT_CMap_Class;
 
 typedef FT_Error
-(*TT_CMap_ValidateFunc) (FT_Byte *data,
-                         FT_Validator valid);
+(* TT_CMap_ValidateFunc) (FT_Byte* data,
+                          FT_Validator valid);
 
 typedef struct TT_CMap_ClassRec_ {
   FT_CMap_ClassRec clazz;
@@ -88,7 +88,7 @@ typedef struct TT_ValidatorRec_ {
   FT_ValidatorRec validator;
   FT_UInt num_glyphs;
 
-} TT_ValidatorRec, *TT_Validator;
+} TT_ValidatorRec, * TT_Validator;
 
 #define TT_VALIDATOR(x)          ( (TT_Validator)( x ) )
 #define TT_VALID_GLYPH_COUNT(x)  TT_VALIDATOR( x )->num_glyphs
@@ -101,7 +101,7 @@ tt_face_build_cmaps (TT_Face face);
 /* used in tt-cmaps service */
 FT_LOCAL(FT_Error)
 tt_get_cmap_info (FT_CharMap charmap,
-                  TT_CMapInfo *cmap_info);
+                  TT_CMapInfo* cmap_info);
 
 FT_END_HEADER
 

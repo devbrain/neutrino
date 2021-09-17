@@ -32,13 +32,13 @@ lzma_version_string (void) {
 // Memory allocation //
 ///////////////////////
 
-extern void *lzma_attribute((__malloc__)) lzma_attr_alloc_size(1)
-lzma_alloc (size_t size, const lzma_allocator *allocator) {
+extern void* lzma_attribute((__malloc__)) lzma_attr_alloc_size(1)
+lzma_alloc (size_t size, const lzma_allocator* allocator) {
   // Some malloc() variants return NULL if called with size == 0.
   if (size == 0)
     size = 1;
 
-  void *ptr;
+  void* ptr;
 
   if (allocator != NULL && allocator->alloc != NULL)
     ptr = allocator->alloc (allocator->opaque, 1, size);
@@ -48,13 +48,13 @@ lzma_alloc (size_t size, const lzma_allocator *allocator) {
   return ptr;
 }
 
-extern void *lzma_attribute((__malloc__)) lzma_attr_alloc_size(1)
-lzma_alloc_zero (size_t size, const lzma_allocator *allocator) {
+extern void* lzma_attribute((__malloc__)) lzma_attr_alloc_size(1)
+lzma_alloc_zero (size_t size, const lzma_allocator* allocator) {
   // Some calloc() variants return NULL if called with size == 0.
   if (size == 0)
     size = 1;
 
-  void *ptr;
+  void* ptr;
 
   if (allocator != NULL && allocator->alloc != NULL) {
     ptr = allocator->alloc (allocator->opaque, 1, size);
@@ -69,7 +69,7 @@ lzma_alloc_zero (size_t size, const lzma_allocator *allocator) {
 }
 
 extern void
-lzma_free (void *ptr, const lzma_allocator *allocator) {
+lzma_free (void* ptr, const lzma_allocator* allocator) {
   if (allocator != NULL && allocator->free != NULL)
     allocator->free (allocator->opaque, ptr);
   else
@@ -84,9 +84,9 @@ lzma_free (void *ptr, const lzma_allocator *allocator) {
 //////////
 
 extern size_t
-lzma_bufcpy (const uint8_t *restrict in, size_t *restrict in_pos,
-             size_t in_size, uint8_t *restrict out,
-             size_t *restrict out_pos, size_t out_size) {
+lzma_bufcpy (const uint8_t* restrict in, size_t* restrict in_pos,
+             size_t in_size, uint8_t* restrict out,
+             size_t* restrict out_pos, size_t out_size) {
   const size_t in_avail = in_size - *in_pos;
   const size_t out_avail = out_size - *out_pos;
   const size_t copy_size = my_min(in_avail, out_avail);
@@ -104,8 +104,8 @@ lzma_bufcpy (const uint8_t *restrict in, size_t *restrict in_pos,
 }
 
 extern lzma_ret
-lzma_next_filter_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                       const lzma_filter_info *filters) {
+lzma_next_filter_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                       const lzma_filter_info* filters) {
   lzma_next_coder_init(filters[0].init, next, allocator);
   next->id = filters[0].id;
   return filters[0].init == NULL
@@ -113,8 +113,8 @@ lzma_next_filter_init (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern lzma_ret
-lzma_next_filter_update (lzma_next_coder *next, const lzma_allocator *allocator,
-                         const lzma_filter *reversed_filters) {
+lzma_next_filter_update (lzma_next_coder* next, const lzma_allocator* allocator,
+                         const lzma_filter* reversed_filters) {
   // Check that the application isn't trying to change the Filter ID.
   // End of filters is indicated with LZMA_VLI_UNKNOWN in both
   // reversed_filters[0].id and next->id.
@@ -129,7 +129,7 @@ lzma_next_filter_update (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern void
-lzma_next_end (lzma_next_coder *next, const lzma_allocator *allocator) {
+lzma_next_end (lzma_next_coder* next, const lzma_allocator* allocator) {
   if (next->init != (uintptr_t) (NULL)) {
     // To avoid tiny end functions that simply call
     // lzma_free(coder, allocator), we allow leaving next->end
@@ -153,7 +153,7 @@ lzma_next_end (lzma_next_coder *next, const lzma_allocator *allocator) {
 //////////////////////////////////////
 
 extern lzma_ret
-lzma_strm_init (lzma_stream *strm) {
+lzma_strm_init (lzma_stream* strm) {
   if (strm == NULL)
     return LZMA_PROG_ERROR;
 
@@ -178,7 +178,7 @@ lzma_strm_init (lzma_stream *strm) {
 }
 
 extern LZMA_API(lzma_ret)
-lzma_code (lzma_stream *strm, lzma_action action) {
+lzma_code (lzma_stream* strm, lzma_action action) {
   // Sanity checks
   if ((strm->next_in == NULL && strm->avail_in != 0)
       || (strm->next_out == NULL && strm->avail_out != 0)
@@ -337,7 +337,7 @@ lzma_code (lzma_stream *strm, lzma_action action) {
 }
 
 extern LZMA_API(void)
-lzma_end (lzma_stream *strm) {
+lzma_end (lzma_stream* strm) {
   if (strm != NULL && strm->internal != NULL) {
     lzma_next_end (&strm->internal->next, strm->allocator);
     lzma_free (strm->internal, strm->allocator);
@@ -348,8 +348,8 @@ lzma_end (lzma_stream *strm) {
 }
 
 extern LZMA_API(void)
-lzma_get_progress (lzma_stream *strm,
-                   uint64_t *progress_in, uint64_t *progress_out) {
+lzma_get_progress (lzma_stream* strm,
+                   uint64_t* progress_in, uint64_t* progress_out) {
   if (strm->internal->next.get_progress != NULL) {
     strm->internal->next.get_progress (strm->internal->next.coder,
                                        progress_in, progress_out);
@@ -363,7 +363,7 @@ lzma_get_progress (lzma_stream *strm,
 }
 
 extern LZMA_API(lzma_check)
-lzma_get_check (const lzma_stream *strm) {
+lzma_get_check (const lzma_stream* strm) {
   // Return LZMA_CHECK_NONE if we cannot know the check type.
   // It's a bug in the application if this happens.
   if (strm->internal->next.get_check == NULL)
@@ -373,7 +373,7 @@ lzma_get_check (const lzma_stream *strm) {
 }
 
 extern LZMA_API(uint64_t)
-lzma_memusage (const lzma_stream *strm) {
+lzma_memusage (const lzma_stream* strm) {
   uint64_t memusage;
   uint64_t old_memlimit;
 
@@ -388,7 +388,7 @@ lzma_memusage (const lzma_stream *strm) {
 }
 
 extern LZMA_API(uint64_t)
-lzma_memlimit_get (const lzma_stream *strm) {
+lzma_memlimit_get (const lzma_stream* strm) {
   uint64_t old_memlimit;
   uint64_t memusage;
 
@@ -403,7 +403,7 @@ lzma_memlimit_get (const lzma_stream *strm) {
 }
 
 extern LZMA_API(lzma_ret)
-lzma_memlimit_set (lzma_stream *strm, uint64_t new_memlimit) {
+lzma_memlimit_set (lzma_stream* strm, uint64_t new_memlimit) {
   // Dummy variables to simplify memconfig functions
   uint64_t old_memlimit;
   uint64_t memusage;

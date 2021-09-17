@@ -86,9 +86,9 @@
 #define APPLE_RESERVED_LENGTH  14
 
 typedef struct GX_Feature_RegistryRec_ {
-  const char *feat_name;
+  const char* feat_name;
   char exclusive;
-  char *setting_name[FEATREG_MAX_SETTING];
+  char* setting_name[FEATREG_MAX_SETTING];
 
 } GX_Feature_RegistryRec;
 
@@ -447,7 +447,7 @@ main (void) {
   for (i = 0;
        i < sizeof (featreg_table) / sizeof (GX_Feature_RegistryRec);
        i++) {
-    const char *feat_name;
+    const char* feat_name;
     int nSettings;
 
     feat_name = featreg_table[i].feat_name;

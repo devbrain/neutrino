@@ -62,8 +62,8 @@ namespace neutrino::hal {
       void open (int w, int h);
       void open (int w, int h, int x, int y);
 
-      void open (int w, int h, const std::string &title);
-      void open (int w, int h, int x, int y, const std::string &title);
+      void open (int w, int h, const std::string& title);
+      void open (int w, int h, int x, int y, const std::string& title);
 
       //Focuses on window
       void focus () noexcept;
@@ -79,7 +79,7 @@ namespace neutrino::hal {
 
       void toggle_fullscreen ();
       [[nodiscard]] std::string title () const;
-      void title (const std::string &v);
+      void title (const std::string& v);
 
       [[nodiscard]] handle_t id () const noexcept;
     protected:
@@ -90,8 +90,8 @@ namespace neutrino::hal {
       virtual void on_input_focus_changed (bool keyboard_focus, bool mouse_focus);
       virtual void on_visibility_change (bool is_visible);
 
-      virtual void on_keyboard_input (const events::keyboard &ev);
-      virtual void on_pointer_input (const events::pointer &ev);
+      virtual void on_keyboard_input (const events::keyboard& ev);
+      virtual void on_pointer_input (const events::pointer& ev);
 
       void quit ();
 

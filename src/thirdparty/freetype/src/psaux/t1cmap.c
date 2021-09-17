@@ -38,7 +38,7 @@ t1_cmap_std_init (T1_CMapStd cmap,
   FT_Service_PsCMaps psnames = (FT_Service_PsCMaps) face->psnames;
 
   cmap->num_glyphs = (FT_UInt) face->type1.num_glyphs;
-  cmap->glyph_names = (const char *const *) face->type1.glyph_names;
+  cmap->glyph_names = (const char* const*) face->type1.glyph_names;
   cmap->sid_to_string = psnames->adobe_std_strings;
   cmap->code_to_sid = is_expert ? psnames->adobe_expert_encoding
                                 : psnames->adobe_std_encoding;
@@ -61,7 +61,7 @@ t1_cmap_std_char_index (T1_CMapStd cmap,
 
   if (char_code < 256) {
     FT_UInt code, n;
-    const char *glyph_name;
+    const char* glyph_name;
 
 
     /* convert character code to Adobe SID string */
@@ -70,7 +70,7 @@ t1_cmap_std_char_index (T1_CMapStd cmap,
 
     /* look for the corresponding glyph name */
     for (n = 0; n < cmap->num_glyphs; n++) {
-      const char *gname = cmap->glyph_names[n];
+      const char* gname = cmap->glyph_names[n];
 
       if (gname && gname[0] == glyph_name[0] &&
           ft_strcmp (gname, glyph_name) == 0) {
@@ -85,7 +85,7 @@ t1_cmap_std_char_index (T1_CMapStd cmap,
 
 FT_CALLBACK_DEF(FT_UInt32)
 t1_cmap_std_char_next (T1_CMapStd cmap,
-                       FT_UInt32 *pchar_code) {
+                       FT_UInt32* pchar_code) {
   FT_UInt result = 0;
   FT_UInt32 char_code = *pchar_code + 1;
 
@@ -204,7 +204,7 @@ t1_cmap_custom_char_index (T1_CMapCustom cmap,
 
 FT_CALLBACK_DEF(FT_UInt32)
 t1_cmap_custom_char_next (T1_CMapCustom cmap,
-                          FT_UInt32 *pchar_code) {
+                          FT_UInt32* pchar_code) {
   FT_UInt result = 0;
   FT_UInt32 char_code = *pchar_code;
 
@@ -298,7 +298,7 @@ t1_cmap_unicode_char_index (PS_Unicodes unicodes,
 
 FT_CALLBACK_DEF(FT_UInt32)
 t1_cmap_unicode_char_next (PS_Unicodes unicodes,
-                           FT_UInt32 *pchar_code) {
+                           FT_UInt32* pchar_code) {
   T1_Face face = (T1_Face) FT_CMAP_FACE(unicodes);
   FT_Service_PsCMaps psnames = (FT_Service_PsCMaps) face->psnames;
 

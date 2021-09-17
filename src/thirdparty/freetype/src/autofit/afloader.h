@@ -48,7 +48,7 @@ typedef struct AF_LoaderRec_ {
   FT_Vector pp2;
   /* we don't handle vertical phantom points */
 
-} AF_LoaderRec, *AF_Loader;
+} AF_LoaderRec, * AF_Loader;
 
 FT_LOCAL(void)
 af_loader_init (AF_Loader loader,

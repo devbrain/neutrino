@@ -12,7 +12,7 @@
 
 namespace neutrino::sdl {
   inline
-  events::event_t map_event (const SDL_Event &e) {
+  events::event_t map_event (const SDL_Event& e) {
 #define d_EV_RUN(EVTYPE, MEMBER)                                                                     \
                 return {EVTYPE(e.MEMBER)}
 

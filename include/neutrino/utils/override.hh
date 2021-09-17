@@ -19,11 +19,13 @@ namespace neutrino::utils {
   template <class R, class...Args>
   struct override_helper<R(*) (Args...)> {
     struct type {
-      R (*f) (Args...);
-      R operator() (Args...args) const {
+      R (* f) (Args...);
+
+      R operator () (Args...args) const {
         return f (std::forward<Args> (args)...);
       }
-      type (R(*in) (Args...))
+
+      type (R(* in) (Args...))
           : f (in) {
       }
     };
@@ -35,7 +37,8 @@ namespace neutrino::utils {
 
   template <class...Fs>
   struct overload : override_helper_t<Fs> ... {
-    using override_helper_t<Fs>::operator()...;
+    using override_helper_t<Fs>::operator ()...;
+
     overload (Fs...fs)
         : override_helper_t<Fs> (std::move (fs))... {
     }

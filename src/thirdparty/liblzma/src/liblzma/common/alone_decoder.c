@@ -48,12 +48,12 @@ typedef struct {
 } lzma_alone_coder;
 
 static lzma_ret
-alone_decode (void *coder_ptr, const lzma_allocator *allocator,
-              const uint8_t *restrict in, size_t *restrict in_pos,
-              size_t in_size, uint8_t *restrict out,
-              size_t *restrict out_pos, size_t out_size,
+alone_decode (void* coder_ptr, const lzma_allocator* allocator,
+              const uint8_t* restrict in, size_t* restrict in_pos,
+              size_t in_size, uint8_t* restrict out,
+              size_t* restrict out_pos, size_t out_size,
               lzma_action action) {
-  lzma_alone_coder *coder = coder_ptr;
+  lzma_alone_coder* coder = coder_ptr;
 
   while (*out_pos < out_size
          && (coder->sequence == SEQ_CODE || *in_pos < in_size))
@@ -163,17 +163,17 @@ alone_decode (void *coder_ptr, const lzma_allocator *allocator,
 }
 
 static void
-alone_decoder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_alone_coder *coder = coder_ptr;
+alone_decoder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_alone_coder* coder = coder_ptr;
   lzma_next_end (&coder->next, allocator);
   lzma_free (coder, allocator);
   return;
 }
 
 static lzma_ret
-alone_decoder_memconfig (void *coder_ptr, uint64_t *memusage,
-                         uint64_t *old_memlimit, uint64_t new_memlimit) {
-  lzma_alone_coder *coder = coder_ptr;
+alone_decoder_memconfig (void* coder_ptr, uint64_t* memusage,
+                         uint64_t* old_memlimit, uint64_t new_memlimit) {
+  lzma_alone_coder* coder = coder_ptr;
 
   *memusage = coder->memusage;
   *old_memlimit = coder->memlimit;
@@ -189,11 +189,11 @@ alone_decoder_memconfig (void *coder_ptr, uint64_t *memusage,
 }
 
 extern lzma_ret
-lzma_alone_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
+lzma_alone_decoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
                          uint64_t memlimit, bool picky) {
   lzma_next_coder_init(&lzma_alone_decoder_init, next, allocator);
 
-  lzma_alone_coder *coder = next->coder;
+  lzma_alone_coder* coder = next->coder;
 
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_alone_coder), allocator);
@@ -221,7 +221,7 @@ lzma_alone_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern LZMA_API(lzma_ret)
-lzma_alone_decoder (lzma_stream *strm, uint64_t memlimit) {
+lzma_alone_decoder (lzma_stream* strm, uint64_t memlimit) {
   lzma_next_strm_init(lzma_alone_decoder_init, strm, memlimit, false);
 
   strm->internal->supported_actions[LZMA_RUN] = true;

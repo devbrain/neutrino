@@ -97,10 +97,10 @@ af_cjk_metrics_init_widths (AF_CJKMetrics metrics,
     void*     shaper_buf;
 #else
     FT_ULong shaper_buf_;
-    void *shaper_buf = &shaper_buf_;
+    void* shaper_buf = &shaper_buf_;
 #endif
 
-    const char *p;
+    const char* p;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     FT_ULong  ch = 0;
@@ -285,7 +285,7 @@ af_cjk_metrics_init_blues (AF_CJKMetrics metrics,
   AF_StyleClass sc = metrics->root.style_class;
 
   AF_Blue_Stringset bss = sc->blue_stringset;
-  const AF_Blue_StringRec *bs = &af_blue_stringsets[bss];
+  const AF_Blue_StringRec* bs = &af_blue_stringsets[bss];
 
   /* If HarfBuzz is not available, we need a pointer to a single */
   /* unsigned long value.                                        */
@@ -293,7 +293,7 @@ af_cjk_metrics_init_blues (AF_CJKMetrics metrics,
   void*     shaper_buf;
 #else
   FT_ULong shaper_buf_;
-  void *shaper_buf = &shaper_buf_;
+  void* shaper_buf = &shaper_buf_;
 #endif
 
 
@@ -310,9 +310,9 @@ af_cjk_metrics_init_blues (AF_CJKMetrics metrics,
 #endif
 
   for (; bs->string != AF_BLUE_STRING_MAX; bs++) {
-    const char *p = &af_blue_strings[bs->string];
-    FT_Pos *blue_ref;
-    FT_Pos *blue_shoot;
+    const char* p = &af_blue_strings[bs->string];
+    FT_Pos* blue_ref;
+    FT_Pos* blue_shoot;
 
     if (AF_CJK_IS_HORIZ_BLUE(bs))
       axis = &metrics->axis[AF_DIMENSION_HORZ];
@@ -347,7 +347,7 @@ af_cjk_metrics_init_blues (AF_CJKMetrics metrics,
       FT_ULong glyph_index;
       FT_Pos best_pos;       /* same as points.y or points.x, resp. */
       FT_Int best_point;
-      FT_Vector *points;
+      FT_Vector* points;
 
       unsigned int num_idx;
 
@@ -544,12 +544,12 @@ af_cjk_metrics_check_digits (AF_CJKMetrics metrics,
   void*     shaper_buf;
 #else
   FT_ULong shaper_buf_;
-  void *shaper_buf = &shaper_buf_;
+  void* shaper_buf = &shaper_buf_;
 #endif
 
   /* in all supported charmaps, digits have character codes 0x30-0x39 */
   const char digits[] = "0 1 2 3 4 5 6 7 8 9";
-  const char *p;
+  const char* p;
 
   p = digits;
 
@@ -720,8 +720,8 @@ af_cjk_metrics_scale (AF_CJKMetrics metrics,
 
 FT_LOCAL_DEF(void)
 af_cjk_get_standard_widths (AF_CJKMetrics metrics,
-                            FT_Pos *stdHW,
-                            FT_Pos *stdVW) {
+                            FT_Pos* stdHW,
+                            FT_Pos* stdVW) {
   if (stdHW)
     *stdHW = metrics->axis[AF_DIMENSION_VERT].standard_width;
 
@@ -2080,7 +2080,7 @@ af_cjk_align_edge_points (AF_GlyphHints hints,
 FT_LOCAL_DEF(FT_Error)
 af_cjk_hints_apply (FT_UInt glyph_index,
                     AF_GlyphHints hints,
-                    FT_Outline *outline,
+                    FT_Outline* outline,
                     AF_CJKMetrics metrics) {
   FT_Error error;
   int dim;

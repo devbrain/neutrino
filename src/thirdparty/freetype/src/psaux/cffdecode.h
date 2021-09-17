@@ -25,7 +25,7 @@
 FT_BEGIN_HEADER
 
 FT_LOCAL(void)
-cff_decoder_init (CFF_Decoder *decoder,
+cff_decoder_init (CFF_Decoder* decoder,
                   TT_Face face,
                   CFF_Size size,
                   CFF_GlyphSlot slot,
@@ -35,7 +35,7 @@ cff_decoder_init (CFF_Decoder *decoder,
                   CFF_Decoder_Free_Glyph_Callback free_callback);
 
 FT_LOCAL(FT_Error)
-cff_decoder_prepare (CFF_Decoder *decoder,
+cff_decoder_prepare (CFF_Decoder* decoder,
                      CFF_Size size,
                      FT_UInt glyph_index);
 

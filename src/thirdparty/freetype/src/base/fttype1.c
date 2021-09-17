@@ -27,7 +27,7 @@
 
 FT_EXPORT_DEF(FT_Error)
 FT_Get_PS_Font_Info (FT_Face face,
-                     PS_FontInfoRec *afont_info) {
+                     PS_FontInfoRec* afont_info) {
   FT_Error error;
   FT_Service_PsInfo service;
 
@@ -70,7 +70,7 @@ FT_Has_PS_Glyph_Names (FT_Face face) {
 
 FT_EXPORT_DEF(FT_Error)
 FT_Get_PS_Font_Private (FT_Face face,
-                        PS_PrivateRec *afont_private) {
+                        PS_PrivateRec* afont_private) {
   FT_Error error;
   FT_Service_PsInfo service;
 
@@ -97,7 +97,7 @@ FT_EXPORT_DEF(FT_Long)
 FT_Get_PS_Font_Value (FT_Face face,
                       PS_Dict_Keys key,
                       FT_UInt idx,
-                      void *value,
+                      void* value,
                       FT_Long value_len) {
   FT_Int result = 0;
   FT_Service_PsInfo service = NULL;

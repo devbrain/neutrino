@@ -25,7 +25,7 @@ namespace neutrino::utils {
       typedef std::vector<std::string> token_vec_t;
       typedef token_vec_t::const_iterator iterator;
 
-      string_tokenizer (const std::string &str, const std::string &separators, unsigned int options = 0);
+      string_tokenizer (const std::string& str, const std::string& separators, unsigned int options = 0);
       /// Splits the given string into tokens. The tokens are expected to be
       /// separated by one of the separator characters given in separators.
       /// Additionally, options can be specified:
@@ -36,23 +36,23 @@ namespace neutrino::utils {
       [[nodiscard]] iterator begin () const;
       [[nodiscard]] iterator end () const;
 
-      const std::string &operator[] (std::size_t index) const;
+      const std::string& operator [] (std::size_t index) const;
       /// Returns const reference the index'th token.
       /// Throws a RangeException if the index is out of range.
 
-      std::string &operator[] (std::size_t index);
+      std::string& operator [] (std::size_t index);
       /// Returns reference to the index'th token.
       /// Throws a RangeException if the index is out of range.
 
-      [[nodiscard]] bool has (const std::string &token) const;
+      [[nodiscard]] bool has (const std::string& token) const;
       /// Returns true if token exists, false otherwise.
 
-      std::string::size_type find (const std::string &token, std::string::size_type pos = 0) const;
+      std::string::size_type find (const std::string& token, std::string::size_type pos = 0) const;
       /// Returns the index of the first occurrence of the token
       /// starting at position pos.
       /// Throws a NotFoundException if the token is not found.
 
-      std::size_t replace (const std::string &oldToken, const std::string &newToken, std::string::size_type pos = 0);
+      std::size_t replace (const std::string& oldToken, const std::string& newToken, std::string::size_type pos = 0);
       /// Starting at position pos, replaces all subsequent tokens having value
       /// equal to oldToken with newToken.
       /// Returns the number of modified tokens.
@@ -60,11 +60,11 @@ namespace neutrino::utils {
       [[nodiscard]] std::size_t count () const;
       /// Returns the total number of tokens.
 
-      [[nodiscard]] std::size_t count (const std::string &token) const;
+      [[nodiscard]] std::size_t count (const std::string& token) const;
       /// Returns the number of tokens equal to the specified token.
 
     private:
-      static void trim (std::string &token);
+      static void trim (std::string& token);
 
       token_vec_t m_tokens;
   };
@@ -75,26 +75,30 @@ namespace neutrino::utils {
   inline string_tokenizer::iterator string_tokenizer::begin () const {
     return m_tokens.begin ();
   }
+
   // ----------------------------------------------------------------------------------------
   inline string_tokenizer::iterator string_tokenizer::end () const {
     return m_tokens.end ();
   }
+
   // ----------------------------------------------------------------------------------------
-  inline std::string &string_tokenizer::operator[] (std::size_t index) {
+  inline std::string& string_tokenizer::operator [] (std::size_t index) {
     if (index >= m_tokens.size ()) {
       RAISE_EX("Out of range");
     }
 
     return m_tokens[index];
   }
+
   // ----------------------------------------------------------------------------------------
-  inline const std::string &string_tokenizer::operator[] (std::size_t index) const {
+  inline const std::string& string_tokenizer::operator [] (std::size_t index) const {
     if (index >= m_tokens.size ()) {
       RAISE_EX("Out of range");
     }
 
     return m_tokens[index];
   }
+
   // ----------------------------------------------------------------------------------------
   inline std::size_t string_tokenizer::count () const {
     return m_tokens.size ();

@@ -127,10 +127,10 @@ const FT_Int t1_args_count[op_max] =
  *   glyph wasn't found.
  */
 FT_LOCAL_DEF(FT_Int)
-t1_lookup_glyph_by_stdcharcode_ps (PS_Decoder *decoder,
+t1_lookup_glyph_by_stdcharcode_ps (PS_Decoder* decoder,
                                    FT_Int charcode) {
   FT_UInt n;
-  const FT_String *glyph_name;
+  const FT_String* glyph_name;
   FT_Service_PsCMaps psnames = decoder->psnames;
 
 
@@ -142,7 +142,7 @@ t1_lookup_glyph_by_stdcharcode_ps (PS_Decoder *decoder,
       psnames->adobe_std_encoding[charcode]);
 
   for (n = 0; n < decoder->num_glyphs; n++) {
-    FT_String *name = (FT_String *) decoder->glyph_names[n];
+    FT_String* name = (FT_String*) decoder->glyph_names[n];
 
     if (name &&
         name[0] == glyph_name[0] &&
@@ -1683,11 +1683,11 @@ Stack_Underflow:
  */
 FT_LOCAL_DEF(FT_Error)
 t1_decoder_parse_metrics (T1_Decoder decoder,
-                          FT_Byte *charstring_base,
+                          FT_Byte* charstring_base,
                           FT_UInt charstring_len) {
   T1_Decoder_Zone zone;
-  FT_Byte *ip;
-  FT_Byte *limit;
+  FT_Byte* ip;
+  FT_Byte* limit;
   T1_Builder builder = &decoder->builder;
   FT_Bool large_int;
 
@@ -1711,7 +1711,7 @@ t1_decoder_parse_metrics (T1_Decoder decoder,
 
   /* now, execute loop */
   while (ip < limit) {
-    FT_Long *top = decoder->top;
+    FT_Long* top = decoder->top;
     T1_Operator op = op_none;
     FT_Int32 value = 0;
 
@@ -1970,7 +1970,7 @@ t1_decoder_init (T1_Decoder decoder,
                  FT_Face face,
                  FT_Size size,
                  FT_GlyphSlot slot,
-                 FT_Byte **glyph_names,
+                 FT_Byte** glyph_names,
                  PS_Blend blend,
                  FT_Bool hinting,
                  FT_Render_Mode hint_mode,

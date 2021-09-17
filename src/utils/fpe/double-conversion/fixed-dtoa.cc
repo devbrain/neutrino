@@ -39,6 +39,7 @@ namespace double_conversion {
       UInt128 ()
           : high_bits_ (0), low_bits_ (0) {
       }
+
       UInt128 (uint64_t high, uint64_t low)
           : high_bits_ (high), low_bits_ (low) {
       }
@@ -127,7 +128,7 @@ namespace double_conversion {
 
 
   static void FillDigits32FixedLength (uint32_t number, int requested_length,
-                                       Vector<char> buffer, int *length) {
+                                       Vector<char> buffer, int* length) {
     for (int i = requested_length - 1; i >= 0; --i) {
       buffer[(*length) + i] = '0' + number % 10;
       number /= 10;
@@ -135,7 +136,7 @@ namespace double_conversion {
     *length += requested_length;
   }
 
-  static void FillDigits32 (uint32_t number, Vector<char> buffer, int *length) {
+  static void FillDigits32 (uint32_t number, Vector<char> buffer, int* length) {
     int number_length = 0;
     // We fill the digits in reverse order and exchange them afterwards.
     while (number != 0) {
@@ -158,7 +159,7 @@ namespace double_conversion {
   }
 
   static void FillDigits64FixedLength (uint64_t number,
-                                       Vector<char> buffer, int *length) {
+                                       Vector<char> buffer, int* length) {
     const uint32_t kTen7 = 10000000;
     // For efficiency cut the number into 3 uint32_t parts, and print those.
     uint32_t part2 = static_cast<uint32_t>(number % kTen7);
@@ -171,7 +172,7 @@ namespace double_conversion {
     FillDigits32FixedLength (part2, 7, buffer, length);
   }
 
-  static void FillDigits64 (uint64_t number, Vector<char> buffer, int *length) {
+  static void FillDigits64 (uint64_t number, Vector<char> buffer, int* length) {
     const uint32_t kTen7 = 10000000;
     // For efficiency cut the number into 3 uint32_t parts, and print those.
     uint32_t part2 = static_cast<uint32_t>(number % kTen7);
@@ -193,7 +194,7 @@ namespace double_conversion {
     }
   }
 
-  static void RoundUp (Vector<char> buffer, int *length, int *decimal_point) {
+  static void RoundUp (Vector<char> buffer, int* length, int* decimal_point) {
     // An empty buffer represents 0.
     if (*length == 0) {
       buffer[0] = '1';
@@ -235,7 +236,7 @@ namespace double_conversion {
 // rounding-up will change the contents of the buffer to "20000".
   static void FillFractionals (uint64_t fractionals, int exponent,
                                int fractional_count, Vector<char> buffer,
-                               int *length, int *decimal_point) {
+                               int* length, int* decimal_point) {
     DOUBLE_CONVERSION_ASSERT(-128 <= exponent && exponent <= 0);
     // 'fractionals' is a fixed-point number, with binary point at bit
     // (-exponent). Inside the function the non-converted remainder of fractionals
@@ -297,7 +298,7 @@ namespace double_conversion {
 
 // Removes leading and trailing zeros.
 // If leading zeros are removed then the decimal point position is adjusted.
-  static void TrimZeros (Vector<char> buffer, int *length, int *decimal_point) {
+  static void TrimZeros (Vector<char> buffer, int* length, int* decimal_point) {
     while (*length > 0 && buffer[(*length) - 1] == '0') {
       (*length)--;
     }
@@ -317,8 +318,8 @@ namespace double_conversion {
   bool FastFixedDtoa (double v,
                       int fractional_count,
                       Vector<char> buffer,
-                      int *length,
-                      int *decimal_point) {
+                      int* length,
+                      int* decimal_point) {
     const uint32_t kMaxUInt32 = 0xFFFFFFFF;
     uint64_t significand = Double (v).Significand ();
     int exponent = Double (v).Exponent ();

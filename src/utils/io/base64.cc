@@ -34,8 +34,9 @@ namespace neutrino::utils::io {
         };
 
   }
+
   // ---------------------------------------------------------------------------------------------------
-  base64_encoder_buf::base64_encoder_buf (std::ostream &ostr, int options)
+  base64_encoder_buf::base64_encoder_buf (std::ostream& ostr, int options)
       :
       m_options (options),
       m_group_length (0),
@@ -44,6 +45,7 @@ namespace neutrino::utils::io {
       m_buf (*ostr.rdbuf ()),
       m_out_enc ((options & BASE64_URL_ENCODING) ? OUT_ENCODING_URL : OUT_ENCODING) {
   }
+
   // ---------------------------------------------------------------------------------------------------
   base64_encoder_buf::~base64_encoder_buf () {
     try {
@@ -52,14 +54,17 @@ namespace neutrino::utils::io {
     catch (...) {
     }
   }
+
   // ---------------------------------------------------------------------------------------------------
   void base64_encoder_buf::set_line_length (int lineLength) {
     m_line_length = lineLength;
   }
+
   // ---------------------------------------------------------------------------------------------------
   int base64_encoder_buf::get_line_length () const {
     return m_line_length;
   }
+
   // ---------------------------------------------------------------------------------------------------
   int base64_encoder_buf::write_to_device (char c) {
     static const int eof = std::char_traits<char>::eof ();
@@ -97,6 +102,7 @@ namespace neutrino::utils::io {
     }
     return char_to_int (c);
   }
+
   // ---------------------------------------------------------------------------------------------------
   int base64_encoder_buf::close () {
     static const int eof = std::char_traits<char>::eof ();
@@ -150,26 +156,32 @@ namespace neutrino::utils::io {
     m_group_length = 0;
     return m_buf.pubsync ();
   }
+
   // ---------------------------------------------------------------------------------------------------
-  base64_encoder_ios::base64_encoder_ios (std::ostream &ostr, int options)
+  base64_encoder_ios::base64_encoder_ios (std::ostream& ostr, int options)
       : m_buf (ostr, options) {
     te_ios_init(&m_buf);
   }
+
   // ---------------------------------------------------------------------------------------------------
   base64_encoder_ios::~base64_encoder_ios () {
   }
+
   // ---------------------------------------------------------------------------------------------------
   int base64_encoder_ios::close () {
     return m_buf.close ();
   }
+
   // ---------------------------------------------------------------------------------------------------
-  base64_encoder_buf *base64_encoder_ios::rdbuf () {
+  base64_encoder_buf* base64_encoder_ios::rdbuf () {
     return &m_buf;
   }
+
   // ---------------------------------------------------------------------------------------------------
-  base64_encoder::base64_encoder (std::ostream &ostr, int options)
+  base64_encoder::base64_encoder (std::ostream& ostr, int options)
       : base64_encoder_ios (ostr, options), std::ostream (&m_buf) {
   }
+
   // ---------------------------------------------------------------------------------------------------
   base64_encoder::~base64_encoder () {
   }
@@ -210,7 +222,7 @@ namespace neutrino::utils::io {
     };
   } // ns
   // ---------------------------------------------------------------------------------------------------
-  base64_decoder_buf::base64_decoder_buf (std::istream &istr, int options)
+  base64_decoder_buf::base64_decoder_buf (std::istream& istr, int options)
       :
       m_options (options),
       m_group_length (0),
@@ -220,8 +232,10 @@ namespace neutrino::utils::io {
     static static_initializer initializer_url (BASE64_URL_ENCODING);
     static static_initializer initializer (BASE64_NO_PADDING);
   }
+
   // ---------------------------------------------------------------------------------------------------
   base64_decoder_buf::~base64_decoder_buf () = default;
+
   // ---------------------------------------------------------------------------------------------------
   int base64_decoder_buf::read_from_device () {
     if (m_group_index < m_group_length) {
@@ -292,6 +306,7 @@ namespace neutrino::utils::io {
       return m_group[0];
     }
   }
+
   // ---------------------------------------------------------------------------------------------------
   int base64_decoder_buf::read_one () {
     int ch = m_buf.sbumpc ();
@@ -302,22 +317,27 @@ namespace neutrino::utils::io {
     }
     return ch;
   }
+
   // ---------------------------------------------------------------------------------------------------
-  base64_decoder_ios::base64_decoder_ios (std::istream &istr, int options)
+  base64_decoder_ios::base64_decoder_ios (std::istream& istr, int options)
       : m_buf (istr, options) {
     te_ios_init(&m_buf);
   }
+
   // ---------------------------------------------------------------------------------------------------
   base64_decoder_ios::~base64_decoder_ios () {
   }
+
   // ---------------------------------------------------------------------------------------------------
-  base64_decoder_buf *base64_decoder_ios::rdbuf () {
+  base64_decoder_buf* base64_decoder_ios::rdbuf () {
     return &m_buf;
   }
+
   // ---------------------------------------------------------------------------------------------------
-  base64_decoder::base64_decoder (std::istream &istr, int options)
+  base64_decoder::base64_decoder (std::istream& istr, int options)
       : base64_decoder_ios (istr, options), std::istream (&m_buf) {
   }
+
   // ---------------------------------------------------------------------------------------------------
   base64_decoder::~base64_decoder () {
   }

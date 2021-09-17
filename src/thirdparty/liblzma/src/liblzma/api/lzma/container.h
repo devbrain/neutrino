@@ -147,7 +147,7 @@ typedef struct {
    * If this is NULL, the preset above is used. Otherwise the preset
    * is ignored and the filter chain specified here is used.
    */
-  const lzma_filter *filters;
+  const lzma_filter* filters;
 
   /**
    * \brief       Integrity check type
@@ -176,10 +176,10 @@ typedef struct {
   uint64_t reserved_int6;
   uint64_t reserved_int7;
   uint64_t reserved_int8;
-  void *reserved_ptr1;
-  void *reserved_ptr2;
-  void *reserved_ptr3;
-  void *reserved_ptr4;
+  void* reserved_ptr1;
+  void* reserved_ptr2;
+  void* reserved_ptr3;
+  void* reserved_ptr4;
 
 } lzma_mt;
 
@@ -252,7 +252,7 @@ lzma_nothrow lzma_attr_pure;
  * there may be compression levels or flags that don't support LZMA_SYNC_FLUSH.
  */
 extern LZMA_API(lzma_ret) lzma_easy_encoder (
-    lzma_stream *strm, uint32_t preset, lzma_check check)
+    lzma_stream* strm, uint32_t preset, lzma_check check)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -285,9 +285,9 @@ lzma_nothrow lzma_attr_warn_unused_result;
  */
 extern LZMA_API(lzma_ret) lzma_easy_buffer_encode (
     uint32_t preset, lzma_check check,
-    const lzma_allocator *allocator,
-    const uint8_t *in, size_t in_size,
-    uint8_t *out, size_t *out_pos, size_t out_size) lzma_nothrow;
+    const lzma_allocator* allocator,
+    const uint8_t* in, size_t in_size,
+    uint8_t* out, size_t* out_pos, size_t out_size) lzma_nothrow;
 
 /**
  * \brief       Initialize .xz Stream encoder using a custom filter chain
@@ -305,8 +305,8 @@ extern LZMA_API(lzma_ret) lzma_easy_buffer_encode (
  *              - LZMA_OPTIONS_ERROR
  *              - LZMA_PROG_ERROR
  */
-extern LZMA_API(lzma_ret) lzma_stream_encoder (lzma_stream *strm,
-                                               const lzma_filter *filters, lzma_check check)
+extern LZMA_API(lzma_ret) lzma_stream_encoder (lzma_stream* strm,
+                                               const lzma_filter* filters, lzma_check check)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -325,7 +325,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              unsupported preset or filter chain, UINT64_MAX is returned.
  */
 extern LZMA_API(uint64_t) lzma_stream_encoder_mt_memusage (
-    const lzma_mt *options) lzma_nothrow lzma_attr_pure;
+    const lzma_mt* options) lzma_nothrow lzma_attr_pure;
 
 /**
  * \brief       Initialize multithreaded .xz Stream encoder
@@ -347,7 +347,7 @@ extern LZMA_API(uint64_t) lzma_stream_encoder_mt_memusage (
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_stream_encoder_mt (
-    lzma_stream *strm, const lzma_mt *options)
+    lzma_stream* strm, const lzma_mt* options)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -371,7 +371,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_alone_encoder (
-    lzma_stream *strm, const lzma_options_lzma *options)
+    lzma_stream* strm, const lzma_options_lzma* options)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -426,10 +426,10 @@ lzma_nothrow;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_stream_buffer_encode (
-    lzma_filter *filters, lzma_check check,
-    const lzma_allocator *allocator,
-    const uint8_t *in, size_t in_size,
-    uint8_t *out, size_t *out_pos, size_t out_size)
+    lzma_filter* filters, lzma_check check,
+    const lzma_allocator* allocator,
+    const uint8_t* in, size_t in_size,
+    uint8_t* out, size_t* out_pos, size_t out_size)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 
@@ -522,7 +522,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_stream_decoder (
-    lzma_stream *strm, uint64_t memlimit, uint32_t flags)
+    lzma_stream* strm, uint64_t memlimit, uint32_t flags)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -546,7 +546,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_auto_decoder (
-    lzma_stream *strm, uint64_t memlimit, uint32_t flags)
+    lzma_stream* strm, uint64_t memlimit, uint32_t flags)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -568,7 +568,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_alone_decoder (
-    lzma_stream *strm, uint64_t memlimit)
+    lzma_stream* strm, uint64_t memlimit)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -610,8 +610,8 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_stream_buffer_decode (
-    uint64_t *memlimit, uint32_t flags,
-    const lzma_allocator *allocator,
-    const uint8_t *in, size_t *in_pos, size_t in_size,
-    uint8_t *out, size_t *out_pos, size_t out_size)
+    uint64_t* memlimit, uint32_t flags,
+    const lzma_allocator* allocator,
+    const uint8_t* in, size_t* in_pos, size_t in_size,
+    uint8_t* out, size_t* out_pos, size_t out_size)
 lzma_nothrow lzma_attr_warn_unused_result;

@@ -32,8 +32,8 @@ namespace neutrino::hal {
     public:
       texture ();
 
-      texture (const renderer &r, const pixel_format &format, unsigned w, unsigned h, access flags);
-      texture (const renderer &r, const surface &s);
+      texture (const renderer& r, const pixel_format& format, unsigned w, unsigned h, access flags);
+      texture (const renderer& r, const surface& s);
 
       operator bool () const;
 
@@ -47,29 +47,29 @@ namespace neutrino::hal {
       void blend (blend_mode bm);
 
       [[nodiscard]] std::optional<color> color_mod () const;
-      void color_mod (const color &c);
+      void color_mod (const color& c);
 
       /*
       Use this function to lock  whole texture for write-only pixel access.
       returns: pointer to pixels and pitch, ie., the length of one row in bytes
       */
-      [[nodiscard]] std::pair<void *, std::size_t> lock () const;
+      [[nodiscard]] std::pair<void*, std::size_t> lock () const;
       /*
       Use this function to lock a portion of the texture for write-only pixel access.
       returns: pointer to pixels and pitch, ie., the length of one row in bytes
       */
-      [[nodiscard]] std::pair<void *, std::size_t> lock (const math::rect &r) const;
+      [[nodiscard]] std::pair<void*, std::size_t> lock (const math::rect& r) const;
 
       void unlock () const;
 
       // slow updates
-      void update (const void *pixels, std::size_t pitch);
-      void update (const math::rect &area, const void *pixels, std::size_t pitch);
+      void update (const void* pixels, std::size_t pitch);
+      void update (const math::rect& area, const void* pixels, std::size_t pitch);
 
-      [[nodiscard]] uint32_t map_rgba (const color &c) const;
-      [[nodiscard]] uint32_t map_rgb (const color &c) const;
+      [[nodiscard]] uint32_t map_rgba (const color& c) const;
+      [[nodiscard]] uint32_t map_rgb (const color& c) const;
     private:
-      explicit texture (std::unique_ptr<detail::texture_impl> &&t);
+      explicit texture (std::unique_ptr<detail::texture_impl>&& t);
     private:
       spimpl::unique_impl_ptr<detail::texture_impl> m_pimpl;
   };

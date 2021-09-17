@@ -13,10 +13,10 @@ TEST_CASE("test text object") {
 
   REQUIRE(!the_map.objects ().empty ());
 
-  const object_layer &ol = the_map.objects ()[0];
+  const object_layer& ol = the_map.objects ()[0];
   REQUIRE(ol.objects ().size () == 5);
 
-  const text *t = std::get_if<text> (&ol.objects ()[4]);
+  const text* t = std::get_if<text> (&ol.objects ()[4]);
   REQUIRE(t);
   REQUIRE(t->data () == "Hello World");
   REQUIRE(t->bold ());

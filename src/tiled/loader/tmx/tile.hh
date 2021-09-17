@@ -22,11 +22,12 @@ namespace neutrino::tiled::tmx {
     public:
       static constexpr auto INVALID_TERRAIN = static_cast<unsigned>(-1);
     public:
-      static tile parse (const reader &e);
+      static tile parse (const reader& e);
+
       /**
        * @brief Tile constructor.
        */
-      tile (unsigned id, const std::array<unsigned, 4> &terrain, unsigned probability)
+      tile (unsigned id, const std::array<unsigned, 4>& terrain, unsigned probability)
           : m_id (id), m_terrain (terrain), m_probability (probability), m_image (nullptr) {
       }
 
@@ -44,7 +45,7 @@ namespace neutrino::tiled::tmx {
        *
        * @returns the terrains
        */
-      [[nodiscard]] const std::array<unsigned, 4> &terrain () const noexcept {
+      [[nodiscard]] const std::array<unsigned, 4>& terrain () const noexcept {
         return m_terrain;
       }
 
@@ -116,20 +117,21 @@ namespace neutrino::tiled::tmx {
        *
        * @returns the image of this tile
        */
-      [[nodiscard]] const image *get_image () const noexcept {
+      [[nodiscard]] const image* get_image () const noexcept {
         return m_image.get ();
       }
 
-      [[nodiscard]] const animation &get_animation () const noexcept {
+      [[nodiscard]] const animation& get_animation () const noexcept {
         return m_animation;
       }
 
-      [[nodiscard]] const object_layer *objects () const noexcept {
+      [[nodiscard]] const object_layer* objects () const noexcept {
         if (m_objects) {
           return m_objects.get ();
         }
         return nullptr;
       }
+
     private:
       const unsigned m_id;
       const std::array<unsigned, 4> m_terrain;

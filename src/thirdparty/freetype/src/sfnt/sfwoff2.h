@@ -61,8 +61,8 @@ FT_BEGIN_HEADER
 FT_LOCAL(FT_Error)
 woff2_open_font (FT_Stream stream,
                  TT_Face face,
-                 FT_Int *face_index,
-                 FT_Long *num_faces);
+                 FT_Int* face_index,
+                 FT_Long* num_faces);
 
 FT_END_HEADER
 

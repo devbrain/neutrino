@@ -152,9 +152,9 @@ TEST_CASE("Parse a Chunk from Tiled's documentation - read simple values")
 }
 
 template <typename T>
-static T parse (const std::string &txt) {
+static T parse (const std::string& txt) {
   auto objp = parse_object (json_reader::load (txt.c_str (), txt.size (), nullptr));
-  const auto *obj = std::get_if<T> (&objp);
+  const auto* obj = std::get_if<T> (&objp);
   REQUIRE(obj != nullptr);
   return *obj;
 }
@@ -415,7 +415,7 @@ TEST_CASE("Parse a Tileset from Tiled's documentation - read simple values")
   REQUIRE(ts.tile_width () == 32);
   REQUIRE(ts.tile_height () == 32);
   REQUIRE(ts.get ("myProperty1") == test::to_prop (std::string ("myProperty1_value")));
-  const auto *img = ts.get_image ();
+  const auto* img = ts.get_image ();
   REQUIRE(img);
   REQUIRE(img->data ().empty ());
   REQUIRE(img->width () == 640);
@@ -623,21 +623,21 @@ TEST_CASE("Wang-tests - everything Wang - simple")
   REQUIRE(ws.colors ().size () == 4);
   REQUIRE(ws.get ("is_wang") == test::to_prop (true));
 
-  const auto &c = ws.colors ()[3];
+  const auto& c = ws.colors ()[3];
   REQUIRE(c.color () == "#ff7700");
   REQUIRE(c.name () == "Orange");
   REQUIRE(c.prob () == 1);
   REQUIRE(c.local_tile () == -1);
 
   REQUIRE(ws.tiles ().size () == 11);
-  const auto &t = ws.tiles ()[10];
+  const auto& t = ws.tiles ()[10];
 
   REQUIRE(!t.diag_flipped ());
   REQUIRE(!t.hor_flipped ());
   REQUIRE(!t.vert_flipped ());
   REQUIRE(t.gid () == 18);
 
-  const auto &w = t.wang_id ();
+  const auto& w = t.wang_id ();
 
   REQUIRE(w[wang_tile::TOP] == 3);
   REQUIRE(w[wang_tile::TOP_RIGHT] == 0);

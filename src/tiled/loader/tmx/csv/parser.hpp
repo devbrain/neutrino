@@ -18,7 +18,7 @@ namespace aria {
     using CSV = std::vector<std::vector<std::string>>;
 
     // Checking for '\n', '\r', and '\r\n' by default
-    inline bool operator== (const char c, const Term t) {
+    inline bool operator == (const char c, const Term t) {
       switch (t) {
         case Term::CRLF:
           return c == '\r' || c == '\n';
@@ -27,7 +27,7 @@ namespace aria {
       }
     }
 
-    inline bool operator!= (const char c, const Term t) {
+    inline bool operator != (const char c, const Term t) {
       return !(c == t);
     }
 
@@ -37,12 +37,13 @@ namespace aria {
       explicit Field (FieldType t)
           : type (t), data (nullptr) {
       }
-      explicit Field (const std::string &str)
+
+      explicit Field (const std::string& str)
           : type (FieldType::DATA), data (&str) {
       }
 
       FieldType type;
-      const std::string *data;
+      const std::string* data;
     };
 
     // Reads and parses lines from a csv file
@@ -63,7 +64,7 @@ namespace aria {
         char m_quote = '"';
         char m_delimiter = ',';
         Term m_terminator = Term::CRLF;
-        std::istream &m_input;
+        std::istream& m_input;
 
         // Buffer capacities
         static constexpr int FIELDBUF_CAP = 1024;
@@ -82,7 +83,7 @@ namespace aria {
         // Creates the CSV parser which by default, splits on commas,
         // uses quotes to escape, and handles CSV files that end in either
         // '\r', '\n', or '\r\n'.
-        explicit CsvParser (std::istream &input)
+        explicit CsvParser (std::istream& input)
             : m_input (input) {
           // Reserve space upfront to improve performance
           m_fieldbuf.reserve (FIELDBUF_CAP);
@@ -92,19 +93,19 @@ namespace aria {
         }
 
         // Change the quote character
-        CsvParser &quote (char c) noexcept {
+        CsvParser& quote (char c) noexcept {
           m_quote = c;
           return *this;
         }
 
         // Change the delimiter character
-        CsvParser &delimiter (char c) noexcept {
+        CsvParser& delimiter (char c) noexcept {
           m_delimiter = c;
           return *this;
         }
 
         // Change the terminator character
-        CsvParser &terminator (char c) noexcept {
+        CsvParser& terminator (char c) noexcept {
           m_terminator = static_cast<Term>(c);
           return *this;
         }
@@ -131,7 +132,7 @@ namespace aria {
           // This loop runs until either the parser has
           // read a full field or until there's no tokens left to read
           for (;;) {
-            char *maybe_token = top_token ();
+            char* maybe_token = top_token ();
 
             // If we're out of tokens to read return whatever's left in the
             // field and row buffers. If there's nothing left, return null.
@@ -225,6 +226,7 @@ namespace aria {
             }
           }
         }
+
       private:
         // When the parser hits the end of a line it needs
         // to check the special case of '\r\n' as a terminator.
@@ -235,7 +237,7 @@ namespace aria {
             return;
           }
 
-          char *token = top_token ();
+          char* token = top_token ();
           if (token && *token == '\n') {
             m_cursor++;
           }
@@ -244,7 +246,7 @@ namespace aria {
         // Pulls the next token from the input buffer, but does not move
         // the cursor forward. If the stream is empty and the input buffer
         // is also empty return a nullptr.
-        char *top_token () {
+        char* top_token () {
           // Return null if there's nothing left to read
           if (m_eof && m_cursor == m_inputbuf_size) {
             return nullptr;
@@ -271,6 +273,7 @@ namespace aria {
 
           return &m_inputbuf[m_cursor];
         }
+
       public:
         // Iterator implementation for the CSV parser, which reads
         // from the CSV row by row in the form of a vector of strings
@@ -278,11 +281,11 @@ namespace aria {
           public:
             using difference_type = std::ptrdiff_t;
             using value_type = std::vector<std::string>;
-            using pointer = const std::vector<std::string> *;
-            using reference = const std::vector<std::string> &;
+            using pointer = const std::vector<std::string>*;
+            using reference = const std::vector<std::string>&;
             using iterator_category = std::input_iterator_tag;
 
-            explicit iterator (CsvParser *p, bool end = false)
+            explicit iterator (CsvParser* p, bool end = false)
                 : m_parser (p) {
               if (!end) {
                 m_row.reserve (50);
@@ -291,36 +294,37 @@ namespace aria {
               }
             }
 
-            iterator &operator++ () {
+            iterator& operator ++ () {
               next ();
               return *this;
             }
 
-            iterator operator++ (int) {
+            iterator operator ++ (int) {
               iterator i = (*this);
               ++(*this);
               return i;
             }
 
-            bool operator== (const iterator &other) const {
+            bool operator == (const iterator& other) const {
               return m_current_row == other.m_current_row
                      && m_row.size () == other.m_row.size ();
             }
 
-            bool operator!= (const iterator &other) const {
+            bool operator != (const iterator& other) const {
               return !(*this == other);
             }
 
-            reference operator* () const {
+            reference operator * () const {
               return m_row;
             }
 
-            pointer operator-> () const {
+            pointer operator -> () const {
               return &m_row;
             }
+
           private:
             value_type m_row{};
-            CsvParser *m_parser;
+            CsvParser* m_parser;
             int m_current_row = -1;
 
             void next () {
@@ -356,6 +360,7 @@ namespace aria {
         iterator begin () {
           return iterator (this);
         };
+
         iterator end () {
           return iterator (this, true);
         };

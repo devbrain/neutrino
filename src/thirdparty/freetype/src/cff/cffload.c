@@ -205,7 +205,7 @@ cff_get_standard_encoding (FT_UInt charcode) {
 /* read an offset from the index's stream current position */
 static FT_ULong
 cff_index_read_offset (CFF_Index idx,
-                       FT_Error *errorp) {
+                       FT_Error* errorp) {
   FT_Error error;
   FT_Stream stream = idx->stream;
   FT_Byte tmp[4];
@@ -324,9 +324,9 @@ cff_index_load_offsets (CFF_Index idx) {
   if (idx->count > 0 && !idx->offsets) {
     FT_Byte offsize = idx->off_size;
     FT_ULong data_size;
-    FT_Byte *p;
-    FT_Byte *p_end;
-    FT_ULong *poff;
+    FT_Byte* p;
+    FT_Byte* p_end;
+    FT_ULong* poff;
 
     data_size = (FT_ULong) (idx->count + 1) * offsize;
 
@@ -336,7 +336,7 @@ cff_index_load_offsets (CFF_Index idx) {
       goto Exit;
 
     poff = idx->offsets;
-    p = (FT_Byte *) stream->cursor;
+    p = (FT_Byte*) stream->cursor;
     p_end = p + data_size;
 
     switch (offsize) {
@@ -376,14 +376,14 @@ cff_index_load_offsets (CFF_Index idx) {
 /* entries to C-style strings (this is, NULL-terminated).       */
 static FT_Error
 cff_index_get_pointers (CFF_Index idx,
-                        FT_Byte ***table,
-                        FT_Byte **pool,
-                        FT_ULong *pool_size) {
+                        FT_Byte*** table,
+                        FT_Byte** pool,
+                        FT_ULong* pool_size) {
   FT_Error error = FT_Err_Ok;
   FT_Memory memory = idx->stream->memory;
 
-  FT_Byte **t = NULL;
-  FT_Byte *new_bytes = NULL;
+  FT_Byte** t = NULL;
+  FT_Byte* new_bytes = NULL;
   FT_ULong new_size;
 
   *table = NULL;
@@ -401,7 +401,7 @@ cff_index_get_pointers (CFF_Index idx,
       (!pool || !FT_ALLOC(new_bytes, new_size))) {
     FT_ULong n, cur_offset;
     FT_ULong extra = 0;
-    FT_Byte *org_bytes = idx->bytes;
+    FT_Byte* org_bytes = idx->bytes;
 
 
     /* at this point, `idx->offsets' can't be NULL */
@@ -460,8 +460,8 @@ cff_index_get_pointers (CFF_Index idx,
 FT_LOCAL_DEF(FT_Error)
 cff_index_access_element (CFF_Index idx,
                           FT_UInt element,
-                          FT_Byte **pbytes,
-                          FT_ULong *pbyte_len) {
+                          FT_Byte** pbytes,
+                          FT_ULong* pbyte_len) {
   FT_Error error = FT_Err_Ok;
 
   if (idx && idx->count > element) {
@@ -544,7 +544,7 @@ cff_index_access_element (CFF_Index idx,
 
 FT_LOCAL_DEF(void)
 cff_index_forget_element (CFF_Index idx,
-                          FT_Byte **pbytes) {
+                          FT_Byte** pbytes) {
   if (idx->bytes == 0) {
     FT_Stream stream = idx->stream;
 
@@ -559,10 +559,10 @@ cff_index_get_name (CFF_Font font,
                     FT_UInt element) {
   CFF_Index idx = &font->name_index;
   FT_Memory memory;
-  FT_Byte *bytes;
+  FT_Byte* bytes;
   FT_ULong byte_len;
   FT_Error error;
-  FT_String *name = 0;
+  FT_String* name = 0;
 
   if (!idx->stream)  /* CFF2 does not include a name index */
     goto Exit;
@@ -590,7 +590,7 @@ FT_LOCAL_DEF(FT_String*)
 cff_index_get_string (CFF_Font font,
                       FT_UInt element) {
   return (element < font->num_strings)
-         ? (FT_String *) font->strings[element]
+         ? (FT_String*) font->strings[element]
          : NULL;
 }
 
@@ -610,7 +610,7 @@ cff_index_get_sid_string (CFF_Font font,
     return NULL;
 
   /* this is a standard string */
-  return (FT_String *) font->psnames->adobe_std_strings (sid);
+  return (FT_String*) font->psnames->adobe_std_strings (sid);
 }
 
 
@@ -707,8 +707,8 @@ cff_fd_select_get (CFF_FDSelect fdselect,
 
       /* then, look up the ranges array */
       {
-        FT_Byte *p = fdselect->data;
-        FT_Byte *p_limit = p + fdselect->data_size;
+        FT_Byte* p = fdselect->data;
+        FT_Byte* p_limit = p + fdselect->data_size;
         FT_Byte fd2;
         FT_UInt first, limit;
 
@@ -988,7 +988,7 @@ cff_charset_load (CFF_Charset charset,
 }
 
 static void
-cff_vstore_done (CFF_VStoreRec *vstore,
+cff_vstore_done (CFF_VStoreRec* vstore,
                  FT_Memory memory) {
   FT_UInt i;
 
@@ -1013,14 +1013,14 @@ cff_vstore_done (CFF_VStoreRec *vstore,
 #define FT_fdot14ToFixed(x)  ( (FT_Fixed)( (FT_ULong)(x) << 2 ) )
 
 static FT_Error
-cff_vstore_load (CFF_VStoreRec *vstore,
+cff_vstore_load (CFF_VStoreRec* vstore,
                  FT_Stream stream,
                  FT_ULong base_offset,
                  FT_ULong offset) {
   FT_Memory memory = stream->memory;
   FT_Error error = FT_ERR(Invalid_File_Format);
 
-  FT_ULong *dataOffsetArray = NULL;
+  FT_ULong* dataOffsetArray = NULL;
   FT_UInt i, j;
 
 
@@ -1073,13 +1073,13 @@ cff_vstore_load (CFF_VStoreRec *vstore,
       goto Exit;
 
     for (i = 0; i < vstore->regionCount; i++) {
-      CFF_VarRegion *region = &vstore->varRegionList[i];
+      CFF_VarRegion* region = &vstore->varRegionList[i];
 
       if (FT_NEW_ARRAY(region->axisList, vstore->axisCount))
         goto Exit;
 
       for (j = 0; j < vstore->axisCount; j++) {
-        CFF_AxisCoords *axis = &region->axisList[j];
+        CFF_AxisCoords* axis = &region->axisList[j];
 
         FT_Int16 start14, peak14, end14;
 
@@ -1099,7 +1099,7 @@ cff_vstore_load (CFF_VStoreRec *vstore,
       goto Exit;
 
     for (i = 0; i < vstore->dataCount; i++) {
-      CFF_VarData *data = &vstore->varData[i];
+      CFF_VarData* data = &vstore->varData[i];
 
       if (FT_STREAM_SEEK(vsOffset + dataOffsetArray[i]))
         goto Exit;
@@ -1189,8 +1189,8 @@ cff_blend_doBlend (CFF_SubFont subFont,
   /* check whether we have room for `numBlends' values at `blend_top' */
   size = 5 * numBlends;           /* add 5 bytes per entry    */
   if (subFont->blend_used + size > subFont->blend_alloc) {
-    FT_Byte *blend_stack_old = subFont->blend_stack;
-    FT_Byte *blend_top_old = subFont->blend_top;
+    FT_Byte* blend_stack_old = subFont->blend_stack;
+    FT_Byte* blend_top_old = subFont->blend_top;
 
 
     /* increase or allocate `blend_stack' and reset `blend_top'; */
@@ -1208,7 +1208,7 @@ cff_blend_doBlend (CFF_SubFont subFont,
     if (blend_stack_old &&
         subFont->blend_stack != blend_stack_old) {
       FT_PtrDist offset = subFont->blend_stack - blend_stack_old;
-      FT_Byte **p;
+      FT_Byte** p;
 
       for (p = parser->stack; p < parser->top; p++) {
         if (*p >= blend_stack_old && *p < blend_top_old)
@@ -1222,7 +1222,7 @@ cff_blend_doBlend (CFF_SubFont subFont,
   delta = base + numBlends;        /* index of first delta arg */
 
   for (i = 0; i < numBlends; i++) {
-    const FT_Int32 *weight = &blend->BV[1];
+    const FT_Int32* weight = &blend->BV[1];
     FT_UInt32 sum;
 
 
@@ -1262,13 +1262,13 @@ FT_LOCAL_DEF(FT_Error)
 cff_blend_build_vector (CFF_Blend blend,
                         FT_UInt vsindex,
                         FT_UInt lenNDV,
-                        FT_Fixed *NDV) {
+                        FT_Fixed* NDV) {
   FT_Error error = FT_Err_Ok;            /* for FT_REALLOC */
   FT_Memory memory = blend->font->memory;  /* for FT_REALLOC */
 
   FT_UInt len;
   CFF_VStore vs;
-  CFF_VarData *varData;
+  CFF_VarData* varData;
   FT_UInt master;
 
 
@@ -1313,7 +1313,7 @@ cff_blend_build_vector (CFF_Blend blend,
   for (master = 0; master < len; master++) {
     FT_UInt j;
     FT_UInt idx;
-    CFF_VarRegion *varRegion;
+    CFF_VarRegion* varRegion;
 
 
     /* default factor is always one */
@@ -1350,7 +1350,7 @@ cff_blend_build_vector (CFF_Blend blend,
 
     /* inner loop steps through axes in this region */
     for (j = 0; j < lenNDV; j++) {
-      CFF_AxisCoords *axis = &varRegion->axisList[j];
+      CFF_AxisCoords* axis = &varRegion->axisList[j];
       FT_Fixed axisScalar;
 
 
@@ -1425,7 +1425,7 @@ FT_LOCAL_DEF(FT_Bool)
 cff_blend_check_vector (CFF_Blend blend,
                         FT_UInt vsindex,
                         FT_UInt lenNDV,
-                        FT_Fixed *NDV) {
+                        FT_Fixed* NDV) {
   if (!blend->builtBV ||
       blend->lastVsindex != vsindex ||
       blend->lenNDV != lenNDV ||
@@ -1444,10 +1444,10 @@ cff_blend_check_vector (CFF_Blend blend,
 
 FT_LOCAL_DEF(FT_Error)
 cff_get_var_blend (CFF_Face face,
-                   FT_UInt *num_coords,
-                   FT_Fixed **coords,
-                   FT_Fixed **normalizedcoords,
-                   FT_MM_Var **mm_var) {
+                   FT_UInt* num_coords,
+                   FT_Fixed** coords,
+                   FT_Fixed** normalizedcoords,
+                   FT_MM_Var** mm_var) {
   FT_Service_MultiMasters mm = (FT_Service_MultiMasters) face->mm;
 
   return mm->get_var_blend (FT_FACE(face),
@@ -1523,7 +1523,7 @@ cff_encoding_load (CFF_Encoding encoding,
 
     switch (encoding->format & 0x7F) {
       case 0: {
-        FT_Byte *p;
+        FT_Byte* p;
 
 
         /* By convention, GID 0 is always ".notdef" and is never */
@@ -1535,7 +1535,7 @@ cff_encoding_load (CFF_Encoding encoding,
         if (FT_FRAME_ENTER(count))
           goto Exit;
 
-        p = (FT_Byte *) stream->cursor;
+        p = (FT_Byte*) stream->cursor;
 
         for (j = 1; j <= count; j++) {
           glyph_code = *p++;
@@ -1702,7 +1702,7 @@ FT_LOCAL_DEF(FT_Error)
 cff_load_private_dict (CFF_Font font,
                        CFF_SubFont subfont,
                        FT_UInt lenNDV,
-                       FT_Fixed *NDV) {
+                       FT_Fixed* NDV) {
   FT_Error error = FT_Err_Ok;
   CFF_ParserRec parser;
   CFF_FontRecDict top = &subfont->font_dict;
@@ -1752,8 +1752,8 @@ cff_load_private_dict (CFF_Font font,
 
   FT_TRACE4((" private dictionary:\n"));
   error = cff_parser_run (&parser,
-                          (FT_Byte *) stream->cursor,
-                          (FT_Byte *) stream->limit);
+                          (FT_Byte*) stream->cursor,
+                          (FT_Byte*) stream->limit);
   FT_FRAME_EXIT();
 
   if (error)
@@ -1813,7 +1813,7 @@ cff_subfont_load (CFF_SubFont subfont,
                   CFF_Face face) {
   FT_Error error;
   CFF_ParserRec parser;
-  FT_Byte *dict = NULL;
+  FT_Byte* dict = NULL;
   FT_ULong dict_len;
   CFF_FontRecDict top = &subfont->font_dict;
   CFF_Private priv = &subfont->private_dict;

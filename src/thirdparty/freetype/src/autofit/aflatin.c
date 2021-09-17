@@ -89,10 +89,10 @@ af_latin_metrics_init_widths (AF_LatinMetrics metrics,
     void*     shaper_buf;
 #else
     FT_ULong shaper_buf_;
-    void *shaper_buf = &shaper_buf_;
+    void* shaper_buf = &shaper_buf_;
 #endif
 
-    const char *p;
+    const char* p;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     FT_ULong  ch = 0;
@@ -262,7 +262,7 @@ af_latin_metrics_init_widths (AF_LatinMetrics metrics,
 
 static void
 af_latin_sort_blue (FT_UInt count,
-                    AF_LatinBlue *table) {
+                    AF_LatinBlue* table) {
   FT_UInt i, j;
   AF_LatinBlue swap;
 
@@ -315,7 +315,7 @@ af_latin_metrics_init_blues (AF_LatinMetrics metrics,
   AF_StyleClass sc = metrics->root.style_class;
 
   AF_Blue_Stringset bss = sc->blue_stringset;
-  const AF_Blue_StringRec *bs = &af_blue_stringsets[bss];
+  const AF_Blue_StringRec* bs = &af_blue_stringsets[bss];
 
   FT_Pos flat_threshold = FLAT_THRESHOLD(metrics->units_per_em);
 
@@ -325,7 +325,7 @@ af_latin_metrics_init_blues (AF_LatinMetrics metrics,
   void*     shaper_buf;
 #else
   FT_ULong shaper_buf_;
-  void *shaper_buf = &shaper_buf_;
+  void* shaper_buf = &shaper_buf_;
 #endif
 
 
@@ -341,9 +341,9 @@ af_latin_metrics_init_blues (AF_LatinMetrics metrics,
 #endif
 
   for (; bs->string != AF_BLUE_STRING_MAX; bs++) {
-    const char *p = &af_blue_strings[bs->string];
-    FT_Pos *blue_ref;
-    FT_Pos *blue_shoot;
+    const char* p = &af_blue_strings[bs->string];
+    FT_Pos* blue_ref;
+    FT_Pos* blue_shoot;
     FT_Pos ascender;
     FT_Pos descender;
 
@@ -408,7 +408,7 @@ af_latin_metrics_init_blues (AF_LatinMetrics metrics,
       FT_ULong glyph_index;
       FT_Long y_offset;
       FT_Int best_point, best_contour_first, best_contour_last;
-      FT_Vector *points;
+      FT_Vector* points;
 
       FT_Pos best_y_extremum;                      /* same as points.y */
       FT_Bool best_round = 0;
@@ -931,8 +931,8 @@ af_latin_metrics_init_blues (AF_LatinMetrics metrics,
 
     /* ...and adjust top values if necessary */
     for (i = 0; i < axis->blue_count - 1; i++) {
-      FT_Pos *a;
-      FT_Pos *b;
+      FT_Pos* a;
+      FT_Pos* b;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
       FT_Bool  a_is_top = 0;
@@ -972,7 +972,7 @@ af_latin_metrics_init_blues (AF_LatinMetrics metrics,
     /* disable hinting for the current style if there are no blue zones */
 
     AF_FaceGlobals globals = metrics->root.globals;
-    FT_UShort *gstyles = globals->glyph_styles;
+    FT_UShort* gstyles = globals->glyph_styles;
 
     FT_Long i;
 
@@ -1005,12 +1005,12 @@ af_latin_metrics_check_digits (AF_LatinMetrics metrics,
   void*     shaper_buf;
 #else
   FT_ULong shaper_buf_;
-  void *shaper_buf = &shaper_buf_;
+  void* shaper_buf = &shaper_buf_;
 #endif
 
   /* in all supported charmaps, digits have character codes 0x30-0x39 */
   const char digits[] = "0 1 2 3 4 5 6 7 8 9";
-  const char *p;
+  const char* p;
 
   p = digits;
 
@@ -1396,8 +1396,8 @@ af_latin_metrics_scale (AF_LatinMetrics metrics,
 
 FT_LOCAL_DEF(void)
 af_latin_get_standard_widths (AF_LatinMetrics metrics,
-                              FT_Pos *stdHW,
-                              FT_Pos *stdVW) {
+                              FT_Pos* stdHW,
+                              FT_Pos* stdVW) {
   if (stdHW)
     *stdHW = metrics->axis[AF_DIMENSION_VERT].standard_width;
 
@@ -1426,8 +1426,8 @@ af_latin_hints_compute_segments (AF_GlyphHints hints,
   FT_Error error = FT_Err_Ok;
   AF_Segment segment = NULL;
   AF_SegmentRec seg0;
-  AF_Point *contour = hints->contours;
-  AF_Point *contour_limit = contour + hints->num_contours;
+  AF_Point* contour = hints->contours;
+  AF_Point* contour_limit = contour + hints->num_contours;
   AF_Direction major_dir, segment_dir;
 
   FT_Pos flat_threshold = FLAT_THRESHOLD(metrics->units_per_em);
@@ -1809,7 +1809,7 @@ af_latin_hints_compute_segments (AF_GlyphHints hints,
 FT_LOCAL_DEF(void)
 af_latin_hints_link_segments (AF_GlyphHints hints,
                               FT_UInt width_count,
-                              AF_WidthRec *widths,
+                              AF_WidthRec* widths,
                               AF_Dimension dim) {
   AF_AxisHints axis = &hints->axis[dim];
   AF_Segment segments = axis->segments;
@@ -2259,7 +2259,7 @@ af_latin_hints_compute_edges (AF_GlyphHints hints,
 FT_LOCAL_DEF(FT_Error)
 af_latin_hints_detect_features (AF_GlyphHints hints,
                                 FT_UInt width_count,
-                                AF_WidthRec *widths,
+                                AF_WidthRec* widths,
                                 AF_Dimension dim) {
   FT_Error error;
 
@@ -3237,7 +3237,7 @@ af_latin_hint_edges (AF_GlyphHints hints,
 static FT_Error
 af_latin_hints_apply (FT_UInt glyph_index,
                       AF_GlyphHints hints,
-                      FT_Outline *outline,
+                      FT_Outline* outline,
                       AF_LatinMetrics metrics) {
   FT_Error error;
   int dim;

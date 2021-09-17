@@ -52,7 +52,7 @@ namespace double_conversion {
   namespace {
 
     inline char ToLower (char ch) {
-      static const std::ctype<char> &cType =
+      static const std::ctype<char>& cType =
           std::use_facet<std::ctype<char> > (std::locale::classic ());
       return cType.tolower (ch);
     }
@@ -62,9 +62,9 @@ namespace double_conversion {
     }
 
     template <class Iterator, class Converter>
-    static inline bool ConsumeSubStringImpl (Iterator *current,
+    static inline bool ConsumeSubStringImpl (Iterator* current,
                                              Iterator end,
-                                             const char *substring,
+                                             const char* substring,
                                              Converter converter) {
       DOUBLE_CONVERSION_ASSERT(converter (**current) == *substring);
       for (substring++; *substring != '\0'; substring++) {
@@ -80,9 +80,9 @@ namespace double_conversion {
 // Consumes the given substring from the iterator.
 // Returns false, if the substring does not match.
     template <class Iterator>
-    static bool ConsumeSubString (Iterator *current,
+    static bool ConsumeSubString (Iterator* current,
                                   Iterator end,
-                                  const char *substring,
+                                  const char* substring,
                                   bool allow_case_insensitivity) {
       if (allow_case_insensitivity) {
         return ConsumeSubStringImpl (current, end, substring, ToLower);
@@ -94,7 +94,7 @@ namespace double_conversion {
 
 // Consumes first character of the str is equal to ch
     inline bool ConsumeFirstCharacter (char ch,
-                                       const char *str,
+                                       const char* str,
                                        bool case_insensitivity) {
       return case_insensitivity ? ToLower (ch) == str[0] : ch == str[0];
     }
@@ -136,7 +136,7 @@ namespace double_conversion {
 
 // Returns true if a nonspace found and false if the end has reached.
   template <class Iterator>
-  static inline bool AdvanceToNonspace (Iterator *current, Iterator end) {
+  static inline bool AdvanceToNonspace (Iterator* current, Iterator end) {
     while (*current != end) {
       if (!isWhitespace (**current))
         return true;
@@ -169,10 +169,13 @@ namespace double_conversion {
   }
 #pragma optimize("",on)
 #else
+
   static bool inline IsDecimalDigitForRadix (int c, int radix) {
     return '0' <= c && c <= '9' && (c - '0') < radix;
   }
+
 #endif
+
 // Returns true if 'c' is a character digit that is valid for the given radix.
 // The 'a_character' should be 'a' or 'A'.
 //
@@ -186,7 +189,7 @@ namespace double_conversion {
 
 // Returns true, when the iterator is equal to end.
   template <class Iterator>
-  static bool Advance (Iterator *it, uc16 separator, int base, Iterator &end) {
+  static bool Advance (Iterator* it, uc16 separator, int base, Iterator& end) {
     if (separator == StringToDoubleConverter::kNoSeparator) {
       ++(*it);
       return *it == end;
@@ -263,7 +266,7 @@ namespace double_conversion {
 // If parse_as_hex_float is true, then the string must be a valid
 // hex-float.
   template <int radix_log_2, class Iterator>
-  static double RadixStringToIeee (Iterator *current,
+  static double RadixStringToIeee (Iterator* current,
                                    Iterator end,
                                    bool sign,
                                    uc16 separator,
@@ -271,7 +274,7 @@ namespace double_conversion {
                                    bool allow_trailing_junk,
                                    double junk_string_value,
                                    bool read_as_double,
-                                   bool *result_is_junk) {
+                                   bool* result_is_junk) {
     DOUBLE_CONVERSION_ASSERT(*current != end);
     DOUBLE_CONVERSION_ASSERT(!parse_as_hex_float ||
                              IsHexFloatString (*current, end, separator, allow_trailing_junk));
@@ -448,7 +451,7 @@ namespace double_conversion {
       Iterator input,
       int length,
       bool read_as_double,
-      int *processed_characters_count) const {
+      int* processed_characters_count) const {
     Iterator current = input;
     Iterator end = input + length;
 
@@ -752,7 +755,7 @@ namespace double_conversion {
     if (octal) {
       double result;
       bool result_is_junk;
-      char *start = buffer;
+      char* start = buffer;
       result = RadixStringToIeee<3> (&start,
                                      buffer + buffer_pos,
                                      sign,
@@ -793,64 +796,64 @@ namespace double_conversion {
   }
 
   double StringToDoubleConverter::StringToDouble (
-      const char *buffer,
+      const char* buffer,
       int length,
-      int *processed_characters_count) const {
+      int* processed_characters_count) const {
     return StringToIeee (buffer, length, true, processed_characters_count);
   }
 
   double StringToDoubleConverter::StringToDouble (
-      const uc16 *buffer,
+      const uc16* buffer,
       int length,
-      int *processed_characters_count) const {
+      int* processed_characters_count) const {
     return StringToIeee (buffer, length, true, processed_characters_count);
   }
 
   float StringToDoubleConverter::StringToFloat (
-      const char *buffer,
+      const char* buffer,
       int length,
-      int *processed_characters_count) const {
+      int* processed_characters_count) const {
     return static_cast<float>(StringToIeee (buffer, length, false,
                                             processed_characters_count));
   }
 
   float StringToDoubleConverter::StringToFloat (
-      const uc16 *buffer,
+      const uc16* buffer,
       int length,
-      int *processed_characters_count) const {
+      int* processed_characters_count) const {
     return static_cast<float>(StringToIeee (buffer, length, false,
                                             processed_characters_count));
   }
 
   template <>
   double StringToDoubleConverter::StringTo<double> (
-      const char *buffer,
+      const char* buffer,
       int length,
-      int *processed_characters_count) const {
+      int* processed_characters_count) const {
     return StringToDouble (buffer, length, processed_characters_count);
   }
 
   template <>
   float StringToDoubleConverter::StringTo<float> (
-      const char *buffer,
+      const char* buffer,
       int length,
-      int *processed_characters_count) const {
+      int* processed_characters_count) const {
     return StringToFloat (buffer, length, processed_characters_count);
   }
 
   template <>
   double StringToDoubleConverter::StringTo<double> (
-      const uc16 *buffer,
+      const uc16* buffer,
       int length,
-      int *processed_characters_count) const {
+      int* processed_characters_count) const {
     return StringToDouble (buffer, length, processed_characters_count);
   }
 
   template <>
   float StringToDoubleConverter::StringTo<float> (
-      const uc16 *buffer,
+      const uc16* buffer,
       int length,
-      int *processed_characters_count) const {
+      int* processed_characters_count) const {
     return StringToFloat (buffer, length, processed_characters_count);
   }
 

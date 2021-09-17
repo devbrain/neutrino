@@ -26,7 +26,7 @@ typedef struct {
   } sequence;
 
   /// LZMA encoder
-  void *lzma;
+  void* lzma;
 
   /// LZMA options currently in use.
   lzma_options_lzma opt_cur;
@@ -50,7 +50,7 @@ typedef struct {
 } lzma_lzma2_coder;
 
 static void
-lzma2_header_lzma (lzma_lzma2_coder *coder) {
+lzma2_header_lzma (lzma_lzma2_coder* coder) {
   assert(coder->uncompressed_size > 0);
   assert(coder->uncompressed_size <= LZMA2_UNCOMPRESSED_MAX);
   assert(coder->compressed_size > 0);
@@ -105,7 +105,7 @@ lzma2_header_lzma (lzma_lzma2_coder *coder) {
 }
 
 static void
-lzma2_header_uncompressed (lzma_lzma2_coder *coder) {
+lzma2_header_uncompressed (lzma_lzma2_coder* coder) {
   assert(coder->uncompressed_size > 0);
   assert(coder->uncompressed_size <= LZMA2_CHUNK_MAX);
 
@@ -128,10 +128,10 @@ lzma2_header_uncompressed (lzma_lzma2_coder *coder) {
 }
 
 static lzma_ret
-lzma2_encode (void *coder_ptr, lzma_mf *restrict mf,
-              uint8_t *restrict out, size_t *restrict out_pos,
+lzma2_encode (void* coder_ptr, lzma_mf* restrict mf,
+              uint8_t* restrict out, size_t* restrict out_pos,
               size_t out_size) {
-  lzma_lzma2_coder *restrict coder = coder_ptr;
+  lzma_lzma2_coder* restrict coder = coder_ptr;
 
   while (*out_pos < out_size)
     switch (coder->sequence) {
@@ -258,16 +258,16 @@ lzma2_encode (void *coder_ptr, lzma_mf *restrict mf,
 }
 
 static void
-lzma2_encoder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_lzma2_coder *coder = coder_ptr;
+lzma2_encoder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_lzma2_coder* coder = coder_ptr;
   lzma_free (coder->lzma, allocator);
   lzma_free (coder, allocator);
   return;
 }
 
 static lzma_ret
-lzma2_encoder_options_update (void *coder_ptr, const lzma_filter *filter) {
-  lzma_lzma2_coder *coder = coder_ptr;
+lzma2_encoder_options_update (void* coder_ptr, const lzma_filter* filter) {
+  lzma_lzma2_coder* coder = coder_ptr;
 
   // New options can be set only when there is no incomplete chunk.
   // This is the case at the beginning of the raw stream and right
@@ -277,7 +277,7 @@ lzma2_encoder_options_update (void *coder_ptr, const lzma_filter *filter) {
 
   // Look if there are new options. At least for now,
   // only lc/lp/pb can be changed.
-  const lzma_options_lzma *opt = filter->options;
+  const lzma_options_lzma* opt = filter->options;
   if (coder->opt_cur.lc != opt->lc || coder->opt_cur.lp != opt->lp
       || coder->opt_cur.pb != opt->pb) {
     // Validate the options.
@@ -299,12 +299,12 @@ lzma2_encoder_options_update (void *coder_ptr, const lzma_filter *filter) {
 }
 
 static lzma_ret
-lzma2_encoder_init (lzma_lz_encoder *lz, const lzma_allocator *allocator,
-                    const void *options, lzma_lz_options *lz_options) {
+lzma2_encoder_init (lzma_lz_encoder* lz, const lzma_allocator* allocator,
+                    const void* options, lzma_lz_options* lz_options) {
   if (options == NULL)
     return LZMA_PROG_ERROR;
 
-  lzma_lzma2_coder *coder = lz->coder;
+  lzma_lzma2_coder* coder = lz->coder;
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_lzma2_coder), allocator);
     if (coder == NULL)
@@ -318,7 +318,7 @@ lzma2_encoder_init (lzma_lz_encoder *lz, const lzma_allocator *allocator,
     coder->lzma = NULL;
   }
 
-  coder->opt_cur = *(const lzma_options_lzma *) (options);
+  coder->opt_cur = *(const lzma_options_lzma*) (options);
 
   coder->sequence = SEQ_INIT;
   coder->need_properties = true;
@@ -344,14 +344,14 @@ lzma2_encoder_init (lzma_lz_encoder *lz, const lzma_allocator *allocator,
 }
 
 extern lzma_ret
-lzma_lzma2_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                         const lzma_filter_info *filters) {
+lzma_lzma2_encoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                         const lzma_filter_info* filters) {
   return lzma_lz_encoder_init (
       next, allocator, filters, &lzma2_encoder_init);
 }
 
 extern uint64_t
-lzma_lzma2_encoder_memusage (const void *options) {
+lzma_lzma2_encoder_memusage (const void* options) {
   const uint64_t lzma_mem = lzma_lzma_encoder_memusage (options);
   if (lzma_mem == UINT64_MAX)
     return UINT64_MAX;
@@ -360,8 +360,8 @@ lzma_lzma2_encoder_memusage (const void *options) {
 }
 
 extern lzma_ret
-lzma_lzma2_props_encode (const void *options, uint8_t *out) {
-  const lzma_options_lzma *const opt = options;
+lzma_lzma2_props_encode (const void* options, uint8_t* out) {
+  const lzma_options_lzma* const opt = options;
   uint32_t d = my_max(opt->dict_size, LZMA_DICT_SIZE_MIN);
 
   // Round up to the next 2^n - 1 or 2^n + 2^(n - 1) - 1 depending
@@ -383,8 +383,8 @@ lzma_lzma2_props_encode (const void *options, uint8_t *out) {
 }
 
 extern uint64_t
-lzma_lzma2_block_size (const void *options) {
-  const lzma_options_lzma *const opt = options;
+lzma_lzma2_block_size (const void* options) {
+  const lzma_options_lzma* const opt = options;
 
   // Use at least 1 MiB to keep compression ratio better.
   return my_max((uint64_t) (opt->dict_size) * 3, UINT64_C (1) << 20);

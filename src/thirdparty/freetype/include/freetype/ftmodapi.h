@@ -146,7 +146,7 @@ typedef FT_Pointer FT_Module_Interface;
  *     The module to initialize.
  */
 typedef FT_Error
-(*FT_Module_Constructor) (FT_Module module);
+(* FT_Module_Constructor) (FT_Module module);
 
 /**************************************************************************
  *
@@ -161,7 +161,7 @@ typedef FT_Error
  *     The module to finalize.
  */
 typedef void
-(*FT_Module_Destructor) (FT_Module module);
+(* FT_Module_Destructor) (FT_Module module);
 
 /**************************************************************************
  *
@@ -179,8 +179,8 @@ typedef void
  *     The name of the interface in the module.
  */
 typedef FT_Module_Interface
-(*FT_Module_Requester) (FT_Module module,
-                        const char *name);
+(* FT_Module_Requester) (FT_Module module,
+                         const char* name);
 
 /**************************************************************************
  *
@@ -226,11 +226,11 @@ typedef FT_Module_Interface
 typedef struct FT_Module_Class_ {
   FT_ULong module_flags;
   FT_Long module_size;
-  const FT_String *module_name;
+  const FT_String* module_name;
   FT_Fixed module_version;
   FT_Fixed module_requires;
 
-  const void *module_interface;
+  const void* module_interface;
 
   FT_Module_Constructor module_init;
   FT_Module_Destructor module_done;
@@ -264,7 +264,7 @@ typedef struct FT_Module_Class_ {
  */
 FT_EXPORT(FT_Error)
 FT_Add_Module (FT_Library library,
-               const FT_Module_Class *clazz);
+               const FT_Module_Class* clazz);
 
 
 /**************************************************************************
@@ -291,7 +291,7 @@ FT_Add_Module (FT_Library library,
  */
 FT_EXPORT(FT_Module)
 FT_Get_Module (FT_Library library,
-               const char *module_name);
+               const char* module_name);
 
 
 /**************************************************************************
@@ -380,9 +380,9 @@ FT_Remove_Module (FT_Library library,
  */
 FT_EXPORT(FT_Error)
 FT_Property_Set (FT_Library library,
-                 const FT_String *module_name,
-                 const FT_String *property_name,
-                 const void *value);
+                 const FT_String* module_name,
+                 const FT_String* property_name,
+                 const void* value);
 
 
 /**************************************************************************
@@ -443,9 +443,9 @@ FT_Property_Set (FT_Library library,
  */
 FT_EXPORT(FT_Error)
 FT_Property_Get (FT_Library library,
-                 const FT_String *module_name,
-                 const FT_String *property_name,
-                 void *value);
+                 const FT_String* module_name,
+                 const FT_String* property_name,
+                 void* value);
 
 
 /**************************************************************************
@@ -558,7 +558,7 @@ FT_Reference_Library (FT_Library library);
  */
 FT_EXPORT(FT_Error)
 FT_New_Library (FT_Memory memory,
-                FT_Library *alibrary);
+                FT_Library* alibrary);
 
 
 /**************************************************************************
@@ -615,7 +615,7 @@ FT_Done_Library (FT_Library library);
  *     which is declared in FreeType's internal header file `tttypes.h`.
  */
 typedef FT_Error
-(*FT_DebugHook_Func) (void *arg);
+(* FT_DebugHook_Func) (void* arg);
 
 
 /**************************************************************************

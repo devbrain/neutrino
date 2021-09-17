@@ -185,12 +185,12 @@ local void write_table(out, table)
 /* =========================================================================
  * This function can be used by asm versions of crc32()
  */
-const z_crc_t FAR *ZEXPORT get_crc_table () {
+const z_crc_t FAR* ZEXPORT get_crc_table () {
 #ifdef DYNAMIC_CRC_TABLE
   if (crc_table_empty)
       make_crc_table();
 #endif /* DYNAMIC_CRC_TABLE */
-  return (const z_crc_t FAR *) crc_table;
+  return (const z_crc_t FAR*) crc_table;
 }
 
 /* ========================================================================= */
@@ -200,7 +200,7 @@ const z_crc_t FAR *ZEXPORT get_crc_table () {
 /* ========================================================================= */
 unsigned long ZEXPORT crc32_z (crc, buf, len)
     unsigned long crc;
-    const unsigned char FAR *buf;
+    const unsigned char FAR* buf;
     z_size_t len;
 {
   if (buf == Z_NULL)
@@ -238,7 +238,7 @@ unsigned long ZEXPORT crc32_z (crc, buf, len)
 /* ========================================================================= */
 unsigned long ZEXPORT crc32 (crc, buf, len)
     unsigned long crc;
-    const unsigned char FAR *buf;
+    const unsigned char FAR* buf;
     uInt len;
 {
   return crc32_z (crc, buf, len);
@@ -344,7 +344,7 @@ local unsigned long crc32_big(crc, buf, len)
 
 /* ========================================================================= */
 local unsigned long gf2_matrix_times (mat, vec)
-    unsigned long *mat;
+    unsigned long* mat;
     unsigned long vec;
 {
   unsigned long sum;
@@ -361,8 +361,8 @@ local unsigned long gf2_matrix_times (mat, vec)
 
 /* ========================================================================= */
 local void gf2_matrix_square (square, mat)
-    unsigned long *square;
-    unsigned long *mat;
+    unsigned long* square;
+    unsigned long* mat;
 {
   int n;
 

@@ -123,18 +123,18 @@
 
 
 FT_LOCAL_DEF(FT_Error)
-pfr_extra_items_skip (FT_Byte **pp,
-                      FT_Byte *limit) {
+pfr_extra_items_skip (FT_Byte** pp,
+                      FT_Byte* limit) {
   return pfr_extra_items_parse (pp, limit, NULL, NULL);
 }
 
 FT_LOCAL_DEF(FT_Error)
-pfr_extra_items_parse (FT_Byte **pp,
-                       FT_Byte *limit,
+pfr_extra_items_parse (FT_Byte** pp,
+                       FT_Byte* limit,
                        PFR_ExtraItem item_list,
                        FT_Pointer item_data) {
   FT_Error error = FT_Err_Ok;
-  FT_Byte *p = *pp;
+  FT_Byte* p = *pp;
   FT_UInt num_items, item_type, item_size;
 
       PFR_CHECK(1);
@@ -274,7 +274,7 @@ pfr_header_check (PFR_Header header) {
 FT_LOCAL_DEF(FT_Error)
 pfr_log_font_count (FT_Stream stream,
                     FT_UInt32 section_offset,
-                    FT_Long *acount) {
+                    FT_Long* acount) {
   FT_Error error;
   FT_UInt count;
   FT_UInt result = 0;
@@ -335,8 +335,8 @@ pfr_log_font_load (PFR_LogFont log_font,
 
   /* now, check the rest of the table before loading it */
   {
-    FT_Byte *p;
-    FT_Byte *limit;
+    FT_Byte* p;
+    FT_Byte* limit;
     FT_UInt local;
 
     if (FT_STREAM_SEEK(offset) ||
@@ -426,8 +426,8 @@ pfr_log_font_load (PFR_LogFont log_font,
 
 /* load bitmap strikes lists */
 FT_CALLBACK_DEF(FT_Error)
-pfr_extra_item_load_bitmap_info (FT_Byte *p,
-                                 FT_Byte *limit,
+pfr_extra_item_load_bitmap_info (FT_Byte* p,
+                                 FT_Byte* limit,
                                  PFR_PhyFont phy_font) {
   FT_Memory memory = phy_font->memory;
   PFR_Strike strike;
@@ -521,8 +521,8 @@ pfr_extra_item_load_bitmap_info (FT_Byte *p,
  * family.
  */
 FT_CALLBACK_DEF(FT_Error)
-pfr_extra_item_load_font_id (FT_Byte *p,
-                             FT_Byte *limit,
+pfr_extra_item_load_font_id (FT_Byte* p,
+                             FT_Byte* limit,
                              PFR_PhyFont phy_font) {
   FT_Error error = FT_Err_Ok;
   FT_Memory memory = phy_font->memory;
@@ -545,11 +545,11 @@ pfr_extra_item_load_font_id (FT_Byte *p,
 
 /* load stem snap tables */
 FT_CALLBACK_DEF(FT_Error)
-pfr_extra_item_load_stem_snaps (FT_Byte *p,
-                                FT_Byte *limit,
+pfr_extra_item_load_stem_snaps (FT_Byte* p,
+                                FT_Byte* limit,
                                 PFR_PhyFont phy_font) {
   FT_UInt count, num_vert, num_horz;
-  FT_Int *snaps = NULL;
+  FT_Int* snaps = NULL;
   FT_Error error = FT_Err_Ok;
   FT_Memory memory = phy_font->memory;
 
@@ -588,8 +588,8 @@ pfr_extra_item_load_stem_snaps (FT_Byte *p,
 
 /* load kerning pair data */
 FT_CALLBACK_DEF(FT_Error)
-pfr_extra_item_load_kerning_pairs (FT_Byte *p,
-                                   FT_Byte *limit,
+pfr_extra_item_load_kerning_pairs (FT_Byte* p,
+                                   FT_Byte* limit,
                                    PFR_PhyFont phy_font) {
   PFR_KernItem item = NULL;
   FT_Error error = FT_Err_Ok;
@@ -622,7 +622,7 @@ pfr_extra_item_load_kerning_pairs (FT_Byte *p,
   /* lookup later...                                     */
   if (item->pair_count > 0) {
     FT_UInt char1, char2;
-    FT_Byte *q;
+    FT_Byte* q;
 
     if (item->flags & PFR_KERN_2BYTE_CHAR) {
       q = p;
@@ -688,12 +688,12 @@ static const PFR_ExtraItemRec pfr_phy_font_extra_items[] =
  * strings from the font file, we need to be careful here.
  */
 static FT_Error
-pfr_aux_name_load (FT_Byte *p,
+pfr_aux_name_load (FT_Byte* p,
                    FT_UInt len,
                    FT_Memory memory,
-                   FT_String **astring) {
+                   FT_String** astring) {
   FT_Error error = FT_Err_Ok;
-  FT_String *result = NULL;
+  FT_String* result = NULL;
   FT_UInt n, ok;
 
   if (*astring)
@@ -773,8 +773,8 @@ pfr_phy_font_load (PFR_PhyFont phy_font,
   FT_Memory memory = stream->memory;
   FT_UInt flags;
   FT_ULong num_aux;
-  FT_Byte *p;
-  FT_Byte *limit;
+  FT_Byte* p;
+  FT_Byte* limit;
 
   phy_font->memory = memory;
   phy_font->offset = offset;
@@ -823,8 +823,8 @@ pfr_phy_font_load (PFR_PhyFont phy_font,
   num_aux = PFR_NEXT_ULONG(p);
 
   if (num_aux > 0) {
-    FT_Byte *q = p;
-    FT_Byte *q2;
+    FT_Byte* q = p;
+    FT_Byte* q2;
 
     PFR_CHECK_SIZE(num_aux);
     p += num_aux;

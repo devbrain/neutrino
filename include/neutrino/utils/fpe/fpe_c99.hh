@@ -25,9 +25,9 @@ namespace neutrino::utils {
         FP_INVALID_IMPL = FE_INVALID
       };
       fpe_impl ();
-      fpe_impl (const fpe_impl &env);
+      fpe_impl (const fpe_impl& env);
       ~fpe_impl ();
-      fpe_impl &operator= (const fpe_impl &env);
+      fpe_impl& operator = (const fpe_impl& env);
       void keepCurrentImpl ();
       static void clearFlagsImpl ();
       static bool isFlagImpl (FlagImpl flag);

@@ -19,7 +19,7 @@ struct fire_app : public demoscene::scene {
 
     }
 
-    void effect (demoscene::vga &vga) override {
+    void effect (demoscene::vga& vga) override {
 
       int j = SCREEN_WIDTH * (SCREEN_HEIGHT - 1);
       for (int i = 0; i < SCREEN_WIDTH - 1; i++) {
@@ -69,7 +69,7 @@ struct fire_app : public demoscene::scene {
         j -= SCREEN_WIDTH;
       }
 
-      uint8_t *image =
+      uint8_t* image =
           vga.surface ().data () + (SCREEN_WIDTH * SCREEN_HEIGHT) - 1;  /*start in the right bottom corner*/
 
       /* draw fire array to screen from bottom to top + 300*/
@@ -82,8 +82,8 @@ struct fire_app : public demoscene::scene {
       }
     }
 
-    void init (demoscene::vga &vga) override {
-      auto &colors = vga.palette ();
+    void init (demoscene::vga& vga) override {
+      auto& colors = vga.palette ();
       /* create a suitable fire palette, this is crucial for a good effect */
       /* black to blue, blue to red, red to yellow, yellow to white*/
 
@@ -117,11 +117,12 @@ struct fire_app : public demoscene::scene {
         colors[i + 224].b = 224 + i;
       }
     }
+
   private:
     std::vector<uint8_t> fire;
 };
 
-int main ([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
+int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   neutrino::engine::application app (nullptr);
 

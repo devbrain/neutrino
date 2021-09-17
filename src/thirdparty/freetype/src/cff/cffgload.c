@@ -43,8 +43,8 @@
 FT_LOCAL_DEF(FT_Error)
 cff_get_glyph_data (TT_Face face,
                     FT_UInt glyph_index,
-                    FT_Byte **pointer,
-                    FT_ULong *length) {
+                    FT_Byte** pointer,
+                    FT_ULong* length) {
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
   /* For incremental fonts get the character data using the */
   /* callback function.                                     */
@@ -55,7 +55,7 @@ cff_get_glyph_data (TT_Face face,
             face->root.internal->incremental_interface->object,
             glyph_index, &data);
 
-    *pointer = (FT_Byte *) data.pointer;
+    *pointer = (FT_Byte*) data.pointer;
     *length = (FT_ULong) data.length;
 
     return error;
@@ -73,7 +73,7 @@ cff_get_glyph_data (TT_Face face,
 
 FT_LOCAL_DEF(void)
 cff_free_glyph_data (TT_Face face,
-                     FT_Byte **pointer,
+                     FT_Byte** pointer,
                      FT_ULong length) {
 #ifndef FT_CONFIG_OPTION_INCREMENTAL
   FT_UNUSED( length );
@@ -368,7 +368,7 @@ cff_slot_load (CFF_GlyphSlot glyph,
     PS_Driver  driver = (PS_Driver)FT_FACE_DRIVER( face );
 #endif
 
-    FT_Byte *charstring;
+    FT_Byte* charstring;
     FT_ULong charstring_len;
 
     decoder_funcs->init (&decoder, face, size, glyph, hinting,
@@ -502,7 +502,7 @@ cff_slot_load (CFF_GlyphSlot glyph,
     }
     else {
       FT_BBox cbox;
-      FT_Glyph_Metrics *metrics = &glyph->root.metrics;
+      FT_Glyph_Metrics* metrics = &glyph->root.metrics;
       FT_Bool has_vertical_info;
 
       if (face->horizontal.number_Of_HMetrics) {
@@ -583,8 +583,8 @@ cff_slot_load (CFF_GlyphSlot glyph,
       if ((load_flags & FT_LOAD_NO_SCALE) == 0 || force_scaling) {
         /* scale the outline and the metrics */
         FT_Int n;
-        FT_Outline *cur = &glyph->root.outline;
-        FT_Vector *vec = cur->points;
+        FT_Outline* cur = &glyph->root.outline;
+        FT_Vector* vec = cur->points;
         FT_Fixed x_scale = glyph->x_scale;
         FT_Fixed y_scale = glyph->y_scale;
 

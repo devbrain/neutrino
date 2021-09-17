@@ -81,8 +81,8 @@ FT_BEGIN_HEADER
  *   eventually converted back to font units.
  */
 FT_EXPORT(FT_Error)
-FT_Outline_Get_BBox (FT_Outline *outline,
-                     FT_BBox *abbox);
+FT_Outline_Get_BBox (FT_Outline* outline,
+                     FT_BBox* abbox);
 
 /* */
 

@@ -36,29 +36,29 @@ FT_BEGIN_HEADER
 /*************************************************************************/
 /*************************************************************************/
 
-typedef struct PSH_GlobalsRec_ *PSH_Globals;
+typedef struct PSH_GlobalsRec_* PSH_Globals;
 
 typedef FT_Error
-(*PSH_Globals_NewFunc) (FT_Memory memory,
-                        T1_Private *private_dict,
-                        PSH_Globals *aglobals);
+(* PSH_Globals_NewFunc) (FT_Memory memory,
+                         T1_Private* private_dict,
+                         PSH_Globals* aglobals);
 
 typedef void
-(*PSH_Globals_SetScaleFunc) (PSH_Globals globals,
-                             FT_Fixed x_scale,
-                             FT_Fixed y_scale,
-                             FT_Fixed x_delta,
-                             FT_Fixed y_delta);
+(* PSH_Globals_SetScaleFunc) (PSH_Globals globals,
+                              FT_Fixed x_scale,
+                              FT_Fixed y_scale,
+                              FT_Fixed x_delta,
+                              FT_Fixed y_delta);
 
 typedef void
-(*PSH_Globals_DestroyFunc) (PSH_Globals globals);
+(* PSH_Globals_DestroyFunc) (PSH_Globals globals);
 
 typedef struct PSH_Globals_FuncsRec_ {
   PSH_Globals_NewFunc create;
   PSH_Globals_SetScaleFunc set_scale;
   PSH_Globals_DestroyFunc destroy;
 
-} PSH_Globals_FuncsRec, *PSH_Globals_Funcs;
+} PSH_Globals_FuncsRec, * PSH_Globals_Funcs;
 
 
 /*************************************************************************/
@@ -97,7 +97,7 @@ typedef struct PSH_Globals_FuncsRec_ {
  *   PostScript hinter.
  *
  */
-typedef struct T1_HintsRec_ *T1_Hints;
+typedef struct T1_HintsRec_* T1_Hints;
 
 /**************************************************************************
  *
@@ -109,7 +109,7 @@ typedef struct T1_HintsRec_ *T1_Hints;
  *   a given @T1_Hints object.
  *
  */
-typedef const struct T1_Hints_FuncsRec_ *T1_Hints_Funcs;
+typedef const struct T1_Hints_FuncsRec_* T1_Hints_Funcs;
 
 /**************************************************************************
  *
@@ -130,7 +130,7 @@ typedef const struct T1_Hints_FuncsRec_ *T1_Hints_Funcs;
  *
  */
 typedef void
-(*T1_Hints_OpenFunc) (T1_Hints hints);
+(* T1_Hints_OpenFunc) (T1_Hints hints);
 
 /**************************************************************************
  *
@@ -169,9 +169,9 @@ typedef void
  *
  */
 typedef void
-(*T1_Hints_SetStemFunc) (T1_Hints hints,
-                         FT_UInt dimension,
-                         FT_Fixed *coords);
+(* T1_Hints_SetStemFunc) (T1_Hints hints,
+                          FT_UInt dimension,
+                          FT_Fixed* coords);
 
 /**************************************************************************
  *
@@ -202,9 +202,9 @@ typedef void
  *
  */
 typedef void
-(*T1_Hints_SetStem3Func) (T1_Hints hints,
-                          FT_UInt dimension,
-                          FT_Fixed *coords);
+(* T1_Hints_SetStem3Func) (T1_Hints hints,
+                           FT_UInt dimension,
+                           FT_Fixed* coords);
 
 /**************************************************************************
  *
@@ -225,8 +225,8 @@ typedef void
  *
  */
 typedef void
-(*T1_Hints_ResetFunc) (T1_Hints hints,
-                       FT_UInt end_point);
+(* T1_Hints_ResetFunc) (T1_Hints hints,
+                        FT_UInt end_point);
 
 /**************************************************************************
  *
@@ -253,8 +253,8 @@ typedef void
  *
  */
 typedef FT_Error
-(*T1_Hints_CloseFunc) (T1_Hints hints,
-                       FT_UInt end_point);
+(* T1_Hints_CloseFunc) (T1_Hints hints,
+                        FT_UInt end_point);
 
 /**************************************************************************
  *
@@ -291,10 +291,10 @@ typedef FT_Error
  *
  */
 typedef FT_Error
-(*T1_Hints_ApplyFunc) (T1_Hints hints,
-                       FT_Outline *outline,
-                       PSH_Globals globals,
-                       FT_Render_Mode hint_mode);
+(* T1_Hints_ApplyFunc) (T1_Hints hints,
+                        FT_Outline* outline,
+                        PSH_Globals globals,
+                        FT_Render_Mode hint_mode);
 
 /**************************************************************************
  *
@@ -375,7 +375,7 @@ typedef struct T1_Hints_FuncsRec_ {
  *   Postscript hinter.
  *
  */
-typedef struct T2_HintsRec_ *T2_Hints;
+typedef struct T2_HintsRec_* T2_Hints;
 
 /**************************************************************************
  *
@@ -387,7 +387,7 @@ typedef struct T2_HintsRec_ *T2_Hints;
  *   a given @T2_Hints object.
  *
  */
-typedef const struct T2_Hints_FuncsRec_ *T2_Hints_Funcs;
+typedef const struct T2_Hints_FuncsRec_* T2_Hints_Funcs;
 
 /**************************************************************************
  *
@@ -408,7 +408,7 @@ typedef const struct T2_Hints_FuncsRec_ *T2_Hints_Funcs;
  *
  */
 typedef void
-(*T2_Hints_OpenFunc) (T2_Hints hints);
+(* T2_Hints_OpenFunc) (T2_Hints hints);
 
 /**************************************************************************
  *
@@ -447,10 +447,10 @@ typedef void
  *
  */
 typedef void
-(*T2_Hints_StemsFunc) (T2_Hints hints,
-                       FT_UInt dimension,
-                       FT_Int count,
-                       FT_Fixed *coordinates);
+(* T2_Hints_StemsFunc) (T2_Hints hints,
+                        FT_UInt dimension,
+                        FT_Int count,
+                        FT_Fixed* coordinates);
 
 /**************************************************************************
  *
@@ -488,10 +488,10 @@ typedef void
  *
  */
 typedef void
-(*T2_Hints_MaskFunc) (T2_Hints hints,
-                      FT_UInt end_point,
-                      FT_UInt bit_count,
-                      const FT_Byte *bytes);
+(* T2_Hints_MaskFunc) (T2_Hints hints,
+                       FT_UInt end_point,
+                       FT_UInt bit_count,
+                       const FT_Byte* bytes);
 
 /**************************************************************************
  *
@@ -529,9 +529,9 @@ typedef void
  *
  */
 typedef void
-(*T2_Hints_CounterFunc) (T2_Hints hints,
-                         FT_UInt bit_count,
-                         const FT_Byte *bytes);
+(* T2_Hints_CounterFunc) (T2_Hints hints,
+                          FT_UInt bit_count,
+                          const FT_Byte* bytes);
 
 /**************************************************************************
  *
@@ -558,8 +558,8 @@ typedef void
  *
  */
 typedef FT_Error
-(*T2_Hints_CloseFunc) (T2_Hints hints,
-                       FT_UInt end_point);
+(* T2_Hints_CloseFunc) (T2_Hints hints,
+                        FT_UInt end_point);
 
 /**************************************************************************
  *
@@ -595,10 +595,10 @@ typedef FT_Error
  *
  */
 typedef FT_Error
-(*T2_Hints_ApplyFunc) (T2_Hints hints,
-                       FT_Outline *outline,
-                       PSH_Globals globals,
-                       FT_Render_Mode hint_mode);
+(* T2_Hints_ApplyFunc) (T2_Hints hints,
+                        FT_Outline* outline,
+                        PSH_Globals globals,
+                        FT_Render_Mode hint_mode);
 
 /**************************************************************************
  *
@@ -646,13 +646,13 @@ typedef struct T2_Hints_FuncsRec_ {
 
 
 typedef struct PSHinter_Interface_ {
-  PSH_Globals_Funcs (*get_globals_funcs) (FT_Module module);
-  T1_Hints_Funcs (*get_t1_funcs) (FT_Module module);
-  T2_Hints_Funcs (*get_t2_funcs) (FT_Module module);
+  PSH_Globals_Funcs (* get_globals_funcs) (FT_Module module);
+  T1_Hints_Funcs (* get_t1_funcs) (FT_Module module);
+  T2_Hints_Funcs (* get_t2_funcs) (FT_Module module);
 
 } PSHinter_Interface;
 
-typedef PSHinter_Interface *PSHinter_Service;
+typedef PSHinter_Interface* PSHinter_Service;
 
 #define FT_DEFINE_PSHINTER_INTERFACE(\
           class_, \

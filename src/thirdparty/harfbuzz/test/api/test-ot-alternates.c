@@ -28,25 +28,23 @@
 #include <hb-ot.h>
 
 static void
-test_ot_layout_lookup_get_glyph_alternates (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/SourceSansPro-Regular.otf");
+test_ot_layout_lookup_get_glyph_alternates (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/SourceSansPro-Regular.otf");
 
   hb_codepoint_t alternates[3];
   unsigned alternates_count = 3;
-  g_assert_cmpuint (7, ==, hb_ot_layout_lookup_get_glyph_alternates (face, 1, 1091, 2, &alternates_count, alternates));
+  g_assert_cmpuint (7, == , hb_ot_layout_lookup_get_glyph_alternates (face, 1, 1091, 2, &alternates_count, alternates));
 
-  g_assert_cmpuint (3, ==, alternates_count);
-  g_assert_cmpuint (1606, ==, alternates[0]);
-  g_assert_cmpuint (1578, ==, alternates[1]);
-  g_assert_cmpuint (1592, ==, alternates[2]);
+  g_assert_cmpuint (3, == , alternates_count);
+  g_assert_cmpuint (1606, == , alternates[0]);
+  g_assert_cmpuint (1578, == , alternates[1]);
+  g_assert_cmpuint (1592, == , alternates[2]);
 
   hb_face_destroy (face);
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
   hb_test_add (test_ot_layout_lookup_get_glyph_alternates);
   return hb_test_run ();

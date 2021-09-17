@@ -36,7 +36,7 @@
 
 static FT_Error
 ft_face_get_mm_service (FT_Face face,
-                        FT_Service_MultiMasters *aservice) {
+                        FT_Service_MultiMasters* aservice) {
   FT_Error error;
 
   *aservice = NULL;
@@ -60,7 +60,7 @@ ft_face_get_mm_service (FT_Face face,
 
 static FT_Error
 ft_face_get_mvar_service (FT_Face face,
-                          FT_Service_MetricsVariations *aservice) {
+                          FT_Service_MetricsVariations* aservice) {
   FT_Error error;
 
   *aservice = NULL;
@@ -87,7 +87,7 @@ ft_face_get_mvar_service (FT_Face face,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Get_Multi_Master (FT_Face face,
-                     FT_Multi_Master *amaster) {
+                     FT_Multi_Master* amaster) {
   FT_Error error;
   FT_Service_MultiMasters service;
 
@@ -112,7 +112,7 @@ FT_Get_Multi_Master (FT_Face face,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Get_MM_Var (FT_Face face,
-               FT_MM_Var **amaster) {
+               FT_MM_Var** amaster) {
   FT_Error error;
   FT_Service_MultiMasters service;
 
@@ -137,7 +137,7 @@ FT_Get_MM_Var (FT_Face face,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Done_MM_Var (FT_Library library,
-                FT_MM_Var *amaster) {
+                FT_MM_Var* amaster) {
   FT_Memory memory;
 
   if (!library)
@@ -155,7 +155,7 @@ FT_Done_MM_Var (FT_Library library,
 FT_EXPORT_DEF(FT_Error)
 FT_Set_MM_Design_Coordinates (FT_Face face,
                               FT_UInt num_coords,
-                              FT_Long *coords) {
+                              FT_Long* coords) {
   FT_Error error;
   FT_Service_MultiMasters service;
 
@@ -187,7 +187,7 @@ FT_Set_MM_Design_Coordinates (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Set_MM_WeightVector (FT_Face face,
                         FT_UInt len,
-                        FT_Fixed *weightvector) {
+                        FT_Fixed* weightvector) {
   FT_Error error;
   FT_Service_MultiMasters service;
 
@@ -215,8 +215,8 @@ FT_Set_MM_WeightVector (FT_Face face,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Get_MM_WeightVector (FT_Face face,
-                        FT_UInt *len,
-                        FT_Fixed *weightvector) {
+                        FT_UInt* len,
+                        FT_Fixed* weightvector) {
   FT_Error error;
   FT_Service_MultiMasters service;
 
@@ -242,7 +242,7 @@ FT_Get_MM_WeightVector (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Set_Var_Design_Coordinates (FT_Face face,
                                FT_UInt num_coords,
-                               FT_Fixed *coords) {
+                               FT_Fixed* coords) {
   FT_Error error;
   FT_Service_MultiMasters service_mm = NULL;
   FT_Service_MetricsVariations service_mvar = NULL;
@@ -286,7 +286,7 @@ FT_Set_Var_Design_Coordinates (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Get_Var_Design_Coordinates (FT_Face face,
                                FT_UInt num_coords,
-                               FT_Fixed *coords) {
+                               FT_Fixed* coords) {
   FT_Error error;
   FT_Service_MultiMasters service;
 
@@ -312,7 +312,7 @@ FT_Get_Var_Design_Coordinates (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Set_MM_Blend_Coordinates (FT_Face face,
                              FT_UInt num_coords,
-                             FT_Fixed *coords) {
+                             FT_Fixed* coords) {
   FT_Error error;
   FT_Service_MultiMasters service_mm = NULL;
   FT_Service_MetricsVariations service_mvar = NULL;
@@ -359,7 +359,7 @@ FT_Set_MM_Blend_Coordinates (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Set_Var_Blend_Coordinates (FT_Face face,
                               FT_UInt num_coords,
-                              FT_Fixed *coords) {
+                              FT_Fixed* coords) {
   FT_Error error;
   FT_Service_MultiMasters service_mm = NULL;
   FT_Service_MetricsVariations service_mvar = NULL;
@@ -403,7 +403,7 @@ FT_Set_Var_Blend_Coordinates (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Get_MM_Blend_Coordinates (FT_Face face,
                              FT_UInt num_coords,
-                             FT_Fixed *coords) {
+                             FT_Fixed* coords) {
   FT_Error error;
   FT_Service_MultiMasters service;
 
@@ -432,7 +432,7 @@ FT_Get_MM_Blend_Coordinates (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Get_Var_Blend_Coordinates (FT_Face face,
                               FT_UInt num_coords,
-                              FT_Fixed *coords) {
+                              FT_Fixed* coords) {
   FT_Error error;
   FT_Service_MultiMasters service;
 
@@ -456,10 +456,10 @@ FT_Get_Var_Blend_Coordinates (FT_Face face,
 /* documentation is in ftmm.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Get_Var_Axis_Flags (FT_MM_Var *master,
+FT_Get_Var_Axis_Flags (FT_MM_Var* master,
                        FT_UInt axis_index,
-                       FT_UInt *flags) {
-  FT_UShort *axis_flags;
+                       FT_UInt* flags) {
+  FT_UShort* axis_flags;
 
   if (!master || !flags)
     return FT_THROW(Invalid_Argument);
@@ -468,7 +468,7 @@ FT_Get_Var_Axis_Flags (FT_MM_Var *master,
     return FT_THROW(Invalid_Argument);
 
   /* the axis flags array immediately follows the data of `master' */
-  axis_flags = (FT_UShort *) &(master[1]);
+  axis_flags = (FT_UShort*) &(master[1]);
   *flags = axis_flags[axis_index];
 
   return FT_Err_Ok;

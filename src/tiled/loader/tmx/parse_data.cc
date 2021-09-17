@@ -13,7 +13,7 @@
 #include <neutrino/utils/switch_by_string.hh>
 #include <neutrino/utils/exception.hh>
 
-static void decode_csv (const std::string &data, std::vector<int> &out) {
+static void decode_csv (const std::string& data, std::vector<int>& out) {
   using namespace aria::csv;
   std::istringstream is (data);
   // use heap here, because CSV parser abuses stack
@@ -37,7 +37,7 @@ static void decode_csv (const std::string &data, std::vector<int> &out) {
 }
 
 namespace neutrino::tiled::tmx {
-  parsed_buf_t parse_data (const std::string &encoding, const std::string &compression, const std::string &data) {
+  parsed_buf_t parse_data (const std::string& encoding, const std::string& compression, const std::string& data) {
     if (encoding == "csv" || encoding.empty ()) {
       if (!compression.empty ()) {
         RAISE_EX("compression ", compression, " is specified for CSV data");

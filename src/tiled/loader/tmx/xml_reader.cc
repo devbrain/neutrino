@@ -17,7 +17,7 @@ namespace neutrino::tiled::tmx {
     std::unique_ptr<pugi::xml_document> m_doc;
   };
 
-  xml_reader xml_reader::load (const char *xml, std::size_t size, const char *root_elt_name) {
+  xml_reader xml_reader::load (const char* xml, std::size_t size, const char* root_elt_name) {
     std::unique_ptr<pugi::xml_document> doc = std::make_unique<pugi::xml_document> ();
     pugi::xml_parse_result result = doc->load_buffer (xml, size);
     if (!result) {
@@ -32,17 +32,17 @@ namespace neutrino::tiled::tmx {
     return res;
   }
 
-  xml_reader::xml_reader (const pugi::xml_node &node)
+  xml_reader::xml_reader (const pugi::xml_node& node)
       : m_pimpl (spimpl::make_unique_impl<impl> (node)) {
   }
 
   xml_reader::~xml_reader () = default;
 
-  bool xml_reader::has_child (const char *name) const {
+  bool xml_reader::has_child (const char* name) const {
     return m_pimpl->m_node.child (name);
   }
 
-  std::optional<std::string> xml_reader::get_attribute_value (const char *name) const {
+  std::optional<std::string> xml_reader::get_attribute_value (const char* name) const {
     const auto a = m_pimpl->m_node.attribute (name);
     if (a) {
       return a.as_string ();
@@ -51,7 +51,7 @@ namespace neutrino::tiled::tmx {
   }
 
   std::string xml_reader::get_text () const {
-    const char *text = m_pimpl->m_node.text ().get ();
+    const char* text = m_pimpl->m_node.text ().get ();
     return text ? text : "";
   }
 
@@ -64,7 +64,7 @@ namespace neutrino::tiled::tmx {
     }
   }
 
-  void xml_reader::parse_many_elements (const char *name, visitor_t func) const {
+  void xml_reader::parse_many_elements (const char* name, visitor_t func) const {
     auto child = m_pimpl->m_node.child (name);
     while (child) {
       func (xml_reader (child));
@@ -72,7 +72,7 @@ namespace neutrino::tiled::tmx {
     }
   }
 
-  void xml_reader::parse_one_element (const char *name, visitor_t func) const {
+  void xml_reader::parse_one_element (const char* name, visitor_t func) const {
     auto child = m_pimpl->m_node.child (name);
 
     if (!child) {

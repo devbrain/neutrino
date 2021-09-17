@@ -26,7 +26,7 @@ FT_BEGIN_HEADER
 
 
 /* handle to Hint structure */
-typedef struct PSH_HintRec_ *PSH_Hint;
+typedef struct PSH_HintRec_* PSH_Hint;
 
 
 /* hint bit-flags */
@@ -65,24 +65,24 @@ typedef struct PSH_ZoneRec_ {
   FT_Pos min;
   FT_Pos max;
 
-} PSH_ZoneRec, *PSH_Zone;
+} PSH_ZoneRec, * PSH_Zone;
 
 typedef struct PSH_Hint_TableRec_ {
   FT_UInt max_hints;
   FT_UInt num_hints;
   PSH_Hint hints;
-  PSH_Hint *sort;
-  PSH_Hint *sort_global;
+  PSH_Hint* sort;
+  PSH_Hint* sort_global;
   FT_UInt num_zones;
-  PSH_ZoneRec *zones;
+  PSH_ZoneRec* zones;
   PSH_Zone zone;
   PS_Mask_Table hint_masks;
   PS_Mask_Table counter_masks;
 
-} PSH_Hint_TableRec, *PSH_Hint_Table;
+} PSH_Hint_TableRec, * PSH_Hint_Table;
 
-typedef struct PSH_PointRec_ *PSH_Point;
-typedef struct PSH_ContourRec_ *PSH_Contour;
+typedef struct PSH_PointRec_* PSH_Point;
+typedef struct PSH_ContourRec_* PSH_Contour;
 
 enum {
   PSH_DIR_NONE = 4,
@@ -177,7 +177,7 @@ typedef struct PSH_GlyphRec_ {
   PSH_Contour contours;
 
   FT_Memory memory;
-  FT_Outline *outline;
+  FT_Outline* outline;
   PSH_Globals globals;
   PSH_Hint_TableRec hint_tables[2];
 
@@ -191,7 +191,7 @@ typedef struct PSH_GlyphRec_ {
   FT_Bool do_vert_snapping;
   FT_Bool do_stem_adjust;
 
-} PSH_GlyphRec, *PSH_Glyph;
+} PSH_GlyphRec, * PSH_Glyph;
 
 #ifdef DEBUG_HINTER
 extern PSH_Hint_Table  ps_debug_hint_table;
@@ -207,7 +207,7 @@ extern PSH_Glyph       ps_debug_glyph;
 
 extern FT_Error
 ps_hints_apply (PS_Hints ps_hints,
-                FT_Outline *outline,
+                FT_Outline* outline,
                 PSH_Globals globals,
                 FT_Render_Mode hint_mode);
 

@@ -56,9 +56,9 @@ void dump_fontinfo (AFM_FontInfo fi) {
 }
 
 int
-dummy_get_index (const char *name,
+dummy_get_index (const char* name,
                  FT_Offset len,
-                 void *user_data) {
+                 void* user_data) {
   if (len)
     return name[0];
   else
@@ -99,7 +99,7 @@ parse_afm (FT_Library library,
 }
 
 int main (int argc,
-          char **argv) {
+          char** argv) {
   FT_Library library;
   FT_StreamRec stream;
   FT_Error error = FT_Err_Ok;

@@ -2320,7 +2320,7 @@ Stack_Overflow:
  *     The hinting mode.
  */
 FT_LOCAL_DEF(void)
-cff_decoder_init (CFF_Decoder *decoder,
+cff_decoder_init (CFF_Decoder* decoder,
                   TT_Face face,
                   CFF_Size size,
                   CFF_GlyphSlot slot,
@@ -2355,10 +2355,10 @@ cff_decoder_init (CFF_Decoder *decoder,
 /* this function is used to select the subfont */
 /* and the locals subrs array                  */
 FT_LOCAL_DEF(FT_Error)
-cff_decoder_prepare (CFF_Decoder *decoder,
+cff_decoder_prepare (CFF_Decoder* decoder,
                      CFF_Size size,
                      FT_UInt glyph_index) {
-  CFF_Builder *builder = &decoder->builder;
+  CFF_Builder* builder = &decoder->builder;
   CFF_Font cff = (CFF_Font) builder->face->extra.data;
   CFF_SubFont sub = &cff->top_font;
   FT_Error error = FT_Err_Ok;
@@ -2387,7 +2387,7 @@ cff_decoder_prepare (CFF_Decoder *decoder,
 
 
       /* for CFFs without subfonts, this value has already been set */
-      builder->hints_globals = (void *) internal->subfonts[fd_index];
+      builder->hints_globals = (void*) internal->subfonts[fd_index];
     }
   }
 

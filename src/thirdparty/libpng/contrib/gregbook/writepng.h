@@ -92,18 +92,18 @@ typedef struct _mainprog_info {
   long width;
   long height;
   time_t modtime;
-  FILE *infile;
-  FILE *outfile;
-  void *png_ptr;
-  void *info_ptr;
-  uch *image_data;
-  uch **row_pointers;
-  char *title;
-  char *author;
-  char *desc;
-  char *copyright;
-  char *email;
-  char *url;
+  FILE* infile;
+  FILE* outfile;
+  void* png_ptr;
+  void* info_ptr;
+  uch* image_data;
+  uch** row_pointers;
+  char* title;
+  char* author;
+  char* desc;
+  char* copyright;
+  char* email;
+  char* url;
   int filter;    /* command-line-filter flag, not PNG row filter! */
   int pnmtype;
   int sample_depth;
@@ -121,12 +121,12 @@ typedef struct _mainprog_info {
 
 void writepng_version_info (void);
 
-int writepng_init (mainprog_info *mainprog_ptr);
+int writepng_init (mainprog_info* mainprog_ptr);
 
-int writepng_encode_image (mainprog_info *mainprog_ptr);
+int writepng_encode_image (mainprog_info* mainprog_ptr);
 
-int writepng_encode_row (mainprog_info *mainprog_ptr);
+int writepng_encode_row (mainprog_info* mainprog_ptr);
 
-int writepng_encode_finish (mainprog_info *mainprog_ptr);
+int writepng_encode_finish (mainprog_info* mainprog_ptr);
 
-void writepng_cleanup (mainprog_info *mainprog_ptr);
+void writepng_cleanup (mainprog_info* mainprog_ptr);

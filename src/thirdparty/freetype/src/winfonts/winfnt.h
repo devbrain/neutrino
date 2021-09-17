@@ -116,17 +116,17 @@ typedef struct FNT_FontRec_ {
 
   FT_WinFNT_HeaderRec header;
 
-  FT_Byte *fnt_frame;
+  FT_Byte* fnt_frame;
   FT_ULong fnt_size;
-  FT_String *family_name;
+  FT_String* family_name;
 
-} FNT_FontRec, *FNT_Font;
+} FNT_FontRec, * FNT_Font;
 
 typedef struct FNT_FaceRec_ {
   FT_FaceRec root;
   FNT_Font font;
 
-} FNT_FaceRec, *FNT_Face;
+} FNT_FaceRec, * FNT_Face;
 
 FT_EXPORT_VAR(const FT_Driver_ClassRec) winfnt_driver_class;
 

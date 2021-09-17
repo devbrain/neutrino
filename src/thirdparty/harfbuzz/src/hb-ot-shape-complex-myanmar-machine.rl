@@ -37,64 +37,100 @@ enum myanmar_syllable_type_t {
 };
 
 %%{
-  machine myanmar_syllable_machine;
-  alphtype unsigned char;
-  write exports;
-  write data;
+machine myanmar_syllable_machine;
+alphtype unsigned char;
+write exports;
+write data;
 }%%
 
 %%{
 
-export A    = 10;
-export As   = 18;
-export C    = 1;
-export D    = 32;
-export D0   = 20;
-export DB   = 3;
-export GB   = 11;
-export H    = 4;
-export IV   = 2;
-export MH   = 21;
-export MR   = 22;
-export MW   = 23;
-export MY   = 24;
-export PT   = 25;
-export V    = 8;
+export A = 10;
+export As = 18;
+export C = 1;
+export D = 32;
+export D0 = 20;
+export DB = 3;
+export GB = 11;
+export H = 4;
+export IV = 2;
+export MH = 21;
+export MR = 22;
+export MW = 23;
+export MY = 24;
+export PT = 25;
+export V = 8;
 export VAbv = 26;
 export VBlw = 27;
 export VPre = 28;
 export VPst = 29;
-export VS   = 30;
-export ZWJ  = 6;
+export VS = 30;
+export ZWJ = 6;
 export ZWNJ = 5;
-export Ra   = 16;
-export P    = 31;
-export CS   = 19;
+export Ra = 16;
+export P = 31;
+export CS = 19;
 
-j = ZWJ|ZWNJ;			# Joiners
-k = (Ra As H);			# Kinzi
+j = ZWJ | ZWNJ;
+#
+Joiners
+    k = (Ra
+As H
+);            #
+Kinzi
 
-c = C|Ra;			# is_consonant
+    c = C | Ra;
+#
+is_consonant
 
-medial_group = MY? As? MR? ((MW MH? | MH) As?)?;
-main_vowel_group = (VPre.VS?)* VAbv* VBlw* A* (DB As?)?;
-post_vowel_group = VPst MH? As* VAbv* A* (DB As?)?;
-pwo_tone_group = PT A* DB? As?;
+    medial_group = MY ? As ? MR ? ((MW MH ?
+| MH) As?)?;
+main_vowel_group = (VPre.VS ?) * VAbv * VBlw * A * (DB
+As?)?;
+post_vowel_group = VPst
+MH?
+As* VAbv
+*
+A* (DB
+As?)?;
+pwo_tone_group = PT
+A* DB
+? As?;
 
-complex_syllable_tail = As* medial_group main_vowel_group post_vowel_group* pwo_tone_group* V* j?;
-syllable_tail = (H (c|IV).VS?)* (H | complex_syllable_tail);
+complex_syllable_tail = As * medial_group
+main_vowel_group post_vowel_group
+*
+pwo_tone_group* V
+* j?;
+syllable_tail = (H (c | IV).VS ?) * (H | complex_syllable_tail);
 
-consonant_syllable =	(k|CS)? (c|IV|D|GB).VS? syllable_tail;
-punctuation_cluster =	P V;
-broken_cluster =	k? VS? syllable_tail;
-other =			any;
+consonant_syllable = (k | CS) ? (c | IV | D | GB).VS ? syllable_tail;
+punctuation_cluster = P
+V;
+broken_cluster = k ? VS ? syllable_tail;
+other = any;
 
 main := |*
-	consonant_syllable	=> { found_syllable (myanmar_consonant_syllable); };
-	j			=> { found_syllable (myanmar_non_myanmar_cluster); };
-	punctuation_cluster	=> { found_syllable (myanmar_punctuation_cluster); };
-	broken_cluster		=> { found_syllable (myanmar_broken_cluster); };
-	other			=> { found_syllable (myanmar_non_myanmar_cluster); };
+consonant_syllable =
+> {
+found_syllable (myanmar_consonant_syllable);
+};
+j =
+> {
+found_syllable (myanmar_non_myanmar_cluster);
+};
+punctuation_cluster =
+> {
+found_syllable (myanmar_punctuation_cluster);
+};
+broken_cluster =
+> {
+found_syllable (myanmar_broken_cluster);
+};
+other =
+> {
+found_syllable (myanmar_non_myanmar_cluster);
+};
 *|;
 
 
@@ -110,14 +146,14 @@ main := |*
   } HB_STMT_END
 
 static void
-find_syllables_myanmar (hb_buffer_t *buffer)
-{
+find_syllables_myanmar (hb_buffer_t* buffer) {
   unsigned int p, pe, eof, ts, te, act HB_UNUSED;
   int cs;
-  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_info_t* info = buffer->info;
   %%{
     write init;
-    getkey info[p].myanmar_category();
+    getkey
+    info[p].myanmar_category ();
   }%%
 
   p = 0;

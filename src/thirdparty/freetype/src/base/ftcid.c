@@ -26,12 +26,12 @@
 
 FT_EXPORT_DEF(FT_Error)
 FT_Get_CID_Registry_Ordering_Supplement (FT_Face face,
-                                         const char **registry,
-                                         const char **ordering,
-                                         FT_Int *supplement) {
+                                         const char** registry,
+                                         const char** ordering,
+                                         FT_Int* supplement) {
   FT_Error error;
-  const char *r = NULL;
-  const char *o = NULL;
+  const char* r = NULL;
+  const char* o = NULL;
   FT_Int s = 0;
 
   error = FT_ERR(Invalid_Argument);
@@ -59,7 +59,7 @@ FT_Get_CID_Registry_Ordering_Supplement (FT_Face face,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Get_CID_Is_Internally_CID_Keyed (FT_Face face,
-                                    FT_Bool *is_cid) {
+                                    FT_Bool* is_cid) {
   FT_Error error = FT_ERR(Invalid_Argument);
   FT_Bool ic = 0;
 
@@ -81,7 +81,7 @@ FT_Get_CID_Is_Internally_CID_Keyed (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Get_CID_From_Glyph_Index (FT_Face face,
                              FT_UInt glyph_index,
-                             FT_UInt *cid) {
+                             FT_UInt* cid) {
   FT_Error error = FT_ERR(Invalid_Argument);
   FT_UInt c = 0;
 

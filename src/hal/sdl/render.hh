@@ -31,20 +31,20 @@ namespace neutrino::sdl {
 
       template <typename ... Args,
           typename std::enable_if<(std::is_same_v<flags, Args> && ...), int>::type = 0>
-      explicit renderer (const object<SDL_Window> &w, Args...flags);
-      explicit renderer (const object<SDL_Surface> &s);
+      explicit renderer (const object<SDL_Window>& w, Args...flags);
+      explicit renderer (const object<SDL_Surface>& s);
 
-      renderer (object<SDL_Renderer> &&other);
-      renderer &operator= (object<SDL_Renderer> &&other);
+      renderer (object<SDL_Renderer>&& other);
+      renderer& operator = (object<SDL_Renderer>&& other);
 
       [[nodiscard]] blend_mode blend () const;
       void blend (blend_mode bm);
 
       [[nodiscard]] color active_color () const;
-      void active_color (const color &c);
+      void active_color (const color& c);
 
       [[nodiscard]] rect clip () const;
-      void clip (const rect &area);
+      void clip (const rect& area);
       void disable_clippping ();
       [[nodiscard]] bool clipping_enabled () const;
 
@@ -58,7 +58,7 @@ namespace neutrino::sdl {
       void scaling (float x, float y);
 
       [[nodiscard]] rect viewport () const;
-      void viewport (const rect &area);
+      void viewport (const rect& area);
       void disable_viewport ();
 
       /**
@@ -69,33 +69,33 @@ namespace neutrino::sdl {
        *  of bytes per pixel, but it might contain additional padding
        *  (for example, 24bit RGB Windows Bitmap data pads all rows to multiples of 4 bytes).
        */
-      void read_pixels (const pixel_format &fmt, void *dst, std::size_t pitch) const;
-      void read_pixels (const rect &area, const pixel_format &fmt, void *dst, std::size_t pitch) const;
+      void read_pixels (const pixel_format& fmt, void* dst, std::size_t pitch) const;
+      void read_pixels (const rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const;
 
       std::optional<texture> target () const;
-      void target (texture &t);
+      void target (texture& t);
       void restore_default_target ();
 
       std::pair<unsigned, unsigned> output_size () const;
 
       void clear ();
 
-      void copy (const texture &t, flip flip_ = flip::NONE);
-      void copy (const texture &t, const rect &srcrect, flip flip_ = flip::NONE);
-      void copy (const texture &t, const rect &srcrect, const rect &dstrect, flip flip_ = flip::NONE);
-      void copy (const texture &t, const rect &srcrect, const rect &dstrect, double angle, flip flip_ = flip::NONE);
-      void copy (const texture &t, const rect &srcrect, const rect &dstrect, double angle, const point &pt, flip flip_);
+      void copy (const texture& t, flip flip_ = flip::NONE);
+      void copy (const texture& t, const rect& srcrect, flip flip_ = flip::NONE);
+      void copy (const texture& t, const rect& srcrect, const rect& dstrect, flip flip_ = flip::NONE);
+      void copy (const texture& t, const rect& srcrect, const rect& dstrect, double angle, flip flip_ = flip::NONE);
+      void copy (const texture& t, const rect& srcrect, const rect& dstrect, double angle, const point& pt, flip flip_);
 
       void draw (int x1, int y1, int x2, int y2);
-      void draw (const point &p1, const point &p2);
-      void draw_connected_lines (const utils::array_view1d<point> &vertices);
+      void draw (const point& p1, const point& p2);
+      void draw_connected_lines (const utils::array_view1d<point>& vertices);
       void draw (int x, int y);
-      void draw (const point &p);
-      void draw (const utils::array_view1d<point> &points);
-      void draw (const rect &rec);
-      void draw (const utils::array_view1d<rect> &rec);
-      void draw_filled (const rect &rec);
-      void draw_filled (const utils::array_view1d<rect> &rec);
+      void draw (const point& p);
+      void draw (const utils::array_view1d<point>& points);
+      void draw (const rect& rec);
+      void draw (const utils::array_view1d<rect>& rec);
+      void draw_filled (const rect& rec);
+      void draw_filled (const utils::array_view1d<rect>& rec);
 
       void present () noexcept;
 
@@ -109,32 +109,36 @@ namespace neutrino::sdl {
 namespace neutrino::sdl {
   template <typename ... Args,
       typename std::enable_if<(std::is_same_v<renderer::flags, Args> && ...), int>::type>
-  renderer::renderer (const object<SDL_Window> &w, Args...flags)
+  renderer::renderer (const object<SDL_Window>& w, Args...flags)
       : object<SDL_Renderer> (SAFE_SDL_CALL(SDL_CreateRenderer,
-                                            const_cast<SDL_Window *>(w.handle ()),
+                                            const_cast<SDL_Window*>(w.handle ()),
                                             -1,
                                             (static_cast<std::uint32_t>(flags) | ... | 0u)
                               ), true) {
 
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  renderer::renderer (const object<SDL_Surface> &s)
-      : object<SDL_Renderer> (SAFE_SDL_CALL(SDL_CreateSoftwareRenderer, const_cast<SDL_Surface *>(s.handle ())), true) {
+  renderer::renderer (const object<SDL_Surface>& s)
+      : object<SDL_Renderer> (SAFE_SDL_CALL(SDL_CreateSoftwareRenderer, const_cast<SDL_Surface*>(s.handle ())), true) {
 
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  renderer::renderer (object<SDL_Renderer> &&other)
+  renderer::renderer (object<SDL_Renderer>&& other)
       : object<SDL_Renderer> (std::move (other)) {
 
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  renderer &renderer::operator= (object<SDL_Renderer> &&other) {
-    object<SDL_Renderer>::operator= (std::move (other));
+  renderer& renderer::operator = (object<SDL_Renderer>&& other) {
+    object<SDL_Renderer>::operator = (std::move (other));
     return *this;
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   blend_mode renderer::blend () const {
@@ -142,11 +146,13 @@ namespace neutrino::sdl {
     SAFE_SDL_CALL(SDL_GetRenderDrawBlendMode, const_handle (), &m);
     return static_cast<blend_mode>(m);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::blend (blend_mode bm) {
     SAFE_SDL_CALL(SDL_SetRenderDrawBlendMode, handle (), static_cast<SDL_BlendMode>(bm));
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   color renderer::active_color () const {
@@ -154,11 +160,13 @@ namespace neutrino::sdl {
     SAFE_SDL_CALL(SDL_GetRenderDrawColor, const_handle (), &c.r, &c.g, &c.b, &c.a);
     return c;
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::active_color (const color &c) {
+  void renderer::active_color (const color& c) {
     SAFE_SDL_CALL(SDL_SetRenderDrawColor, handle (), c.r, c.g, c.b, c.a);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   rect renderer::clip () const {
@@ -166,31 +174,37 @@ namespace neutrino::sdl {
     SDL_RenderGetClipRect (const_handle (), &r);
     return r;
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::clip (const rect &area) {
+  void renderer::clip (const rect& area) {
     SAFE_SDL_CALL(SDL_RenderSetClipRect, handle (), &area);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::disable_clippping () {
     SAFE_SDL_CALL(SDL_RenderSetClipRect, handle (), nullptr);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   bool renderer::clipping_enabled () const {
     return SDL_RenderIsClipEnabled (const_handle ()) == SDL_TRUE;
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   bool renderer::integer_scaling () const {
     return SDL_TRUE == SDL_RenderGetIntegerScale (const_handle ());
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::integer_scaling (bool enabled) {
     SAFE_SDL_CALL(SDL_RenderSetIntegerScale, handle (), enabled ? SDL_TRUE : SDL_FALSE);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   std::pair<unsigned, unsigned> renderer::logical_size () const {
@@ -198,11 +212,13 @@ namespace neutrino::sdl {
     SDL_RenderGetLogicalSize (const_handle (), &w, &h);
     return {static_cast<unsigned >(w), static_cast<unsigned >(h)};
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::logical_size (unsigned x, unsigned y) {
     SAFE_SDL_CALL(SDL_RenderSetLogicalSize, handle (), static_cast<int>(x), static_cast<int>(y));
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   std::pair<float, float> renderer::scaling () const {
@@ -210,11 +226,13 @@ namespace neutrino::sdl {
     SDL_RenderGetScale (const_handle (), &x, &y);
     return {x, y};
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::scaling (float x, float y) {
     SAFE_SDL_CALL(SDL_RenderSetScale, handle (), x, y);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   rect renderer::viewport () const {
@@ -222,19 +240,22 @@ namespace neutrino::sdl {
     SDL_RenderGetViewport (const_handle (), &r);
     return r;
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::viewport (const rect &area) {
+  void renderer::viewport (const rect& area) {
     SAFE_SDL_CALL(SDL_RenderSetViewport, handle (), &area);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::disable_viewport () {
     SAFE_SDL_CALL(SDL_RenderSetViewport, handle (), nullptr);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::read_pixels (const pixel_format &fmt, void *dst, std::size_t pitch) const {
+  void renderer::read_pixels (const pixel_format& fmt, void* dst, std::size_t pitch) const {
     SAFE_SDL_CALL(SDL_RenderReadPixels,
                   const_handle (),
                   nullptr,
@@ -243,9 +264,10 @@ namespace neutrino::sdl {
                   static_cast<int>(pitch)
     );
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::read_pixels (const rect &area, const pixel_format &fmt, void *dst, std::size_t pitch) const {
+  void renderer::read_pixels (const rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const {
     SAFE_SDL_CALL(SDL_RenderReadPixels,
                   const_handle (),
                   &area,
@@ -254,25 +276,29 @@ namespace neutrino::sdl {
                   static_cast<int>(pitch)
     );
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   std::optional<texture> renderer::target () const {
-    SDL_Texture *t = SDL_GetRenderTarget (const_handle ());
+    SDL_Texture* t = SDL_GetRenderTarget (const_handle ());
     if (t) {
       return texture (std::move (object<SDL_Texture> (t, false)));
     }
     return std::nullopt;
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::target (texture &t) {
+  void renderer::target (texture& t) {
     SAFE_SDL_CALL(SDL_SetRenderTarget, handle (), t.handle ());
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::restore_default_target () {
     SAFE_SDL_CALL(SDL_SetRenderTarget, handle (), nullptr);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   std::pair<unsigned, unsigned> renderer::output_size () const {
@@ -280,14 +306,16 @@ namespace neutrino::sdl {
     SAFE_SDL_CALL(SDL_GetRendererOutputSize, const_handle (), &w, &h);
     return {static_cast<unsigned>(w), static_cast<unsigned>(h)};
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::clear () {
     SAFE_SDL_CALL(SDL_RenderClear, handle ());
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::copy (const texture &t, flip flip_) {
+  void renderer::copy (const texture& t, flip flip_) {
     SAFE_SDL_CALL(SDL_RenderCopyEx,
                   handle (),
                   t.const_handle (),
@@ -298,9 +326,10 @@ namespace neutrino::sdl {
                   static_cast<SDL_RendererFlip>(flip_)
     );
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::copy (const texture &t, const rect &srcrect, flip flip_) {
+  void renderer::copy (const texture& t, const rect& srcrect, flip flip_) {
     SAFE_SDL_CALL(SDL_RenderCopyEx,
                   handle (),
                   t.const_handle (),
@@ -311,9 +340,10 @@ namespace neutrino::sdl {
                   static_cast<SDL_RendererFlip>(flip_)
     );
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::copy (const texture &t, const rect &srcrect, const rect &dstrect, flip flip_) {
+  void renderer::copy (const texture& t, const rect& srcrect, const rect& dstrect, flip flip_) {
     SAFE_SDL_CALL(SDL_RenderCopyEx,
                   handle (),
                   t.const_handle (),
@@ -324,9 +354,10 @@ namespace neutrino::sdl {
                   static_cast<SDL_RendererFlip>(flip_)
     );
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::copy (const texture &t, const rect &srcrect, const rect &dstrect, double angle, flip flip_) {
+  void renderer::copy (const texture& t, const rect& srcrect, const rect& dstrect, double angle, flip flip_) {
     SAFE_SDL_CALL(SDL_RenderCopyEx,
                   handle (),
                   t.const_handle (),
@@ -337,10 +368,12 @@ namespace neutrino::sdl {
                   static_cast<SDL_RendererFlip>(flip_)
     );
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void
-  renderer::copy (const texture &t, const rect &srcrect, const rect &dstrect, double angle, const point &pt, flip flip_) {
+  renderer::copy (const texture& t, const rect& srcrect, const rect& dstrect, double angle, const point& pt,
+                  flip flip_) {
     SAFE_SDL_CALL(SDL_RenderCopyEx,
                   handle (),
                   t.const_handle (),
@@ -351,19 +384,22 @@ namespace neutrino::sdl {
                   static_cast<SDL_RendererFlip>(flip_)
     );
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::draw (int x1, int y1, int x2, int y2) {
     SAFE_SDL_CALL(SDL_RenderDrawLine, handle (), x1, y1, x2, y2);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::draw (const point &p1, const point &p2) {
+  void renderer::draw (const point& p1, const point& p2) {
     draw (p1.x, p1.y, p2.x, p2.y);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::draw_connected_lines (const utils::array_view1d<point> &vertices) {
+  void renderer::draw_connected_lines (const utils::array_view1d<point>& vertices) {
 #if defined(_MSC_VER)
 #pragma warning ( push )
 #pragma warning ( disable : 4267)
@@ -373,29 +409,34 @@ namespace neutrino::sdl {
 #pragma warning ( pop )
 #endif
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::draw (int x, int y) {
     SAFE_SDL_CALL(SDL_RenderDrawPoint, handle (), x, y);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::draw (const point &p) {
+  void renderer::draw (const point& p) {
     draw (p.x, p.y);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::draw (const utils::array_view1d<point> &points) {
+  void renderer::draw (const utils::array_view1d<point>& points) {
     SAFE_SDL_CALL(SDL_RenderDrawPoints, handle (), points.data (), points.size ());
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::draw (const rect &rec) {
+  void renderer::draw (const rect& rec) {
     SAFE_SDL_CALL(SDL_RenderDrawRect, handle (), &rec);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::draw (const utils::array_view1d<rect> &rec) {
+  void renderer::draw (const utils::array_view1d<rect>& rec) {
 #if defined(_MSC_VER)
 #pragma warning ( push )
 #pragma warning ( disable : 4267)
@@ -405,16 +446,19 @@ namespace neutrino::sdl {
 #pragma warning ( pop )
 #endif
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::draw_filled (const rect &rec) {
+  void renderer::draw_filled (const rect& rec) {
     SAFE_SDL_CALL(SDL_RenderFillRect, handle (), &rec);
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  void renderer::draw_filled (const utils::array_view1d<rect> &rec) {
+  void renderer::draw_filled (const utils::array_view1d<rect>& rec) {
     SAFE_SDL_CALL(SDL_RenderFillRects, handle (), rec.data (), rec.size ());
   }
+
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::present () noexcept {

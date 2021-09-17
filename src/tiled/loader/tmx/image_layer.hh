@@ -18,9 +18,9 @@ namespace neutrino::tiled::tmx {
   class image_layer : public layer {
     public:
 
-      static image_layer parse (const reader &elt, const group *parent = nullptr);
+      static image_layer parse (const reader& elt, const group* parent = nullptr);
 
-      image_layer (const std::string &name, double opacity, bool visible, int id,
+      image_layer (const std::string& name, double opacity, bool visible, int id,
                    int offsetx, int offsety, colori tint)
           : layer (name, opacity, visible, id),
             m_offsetx (offsetx),
@@ -33,7 +33,7 @@ namespace neutrino::tiled::tmx {
         m_image = std::move (aimage);
       }
 
-      [[nodiscard]] const image *get_image () const noexcept {
+      [[nodiscard]] const image* get_image () const noexcept {
         return m_image.get ();
       }
 
@@ -48,6 +48,7 @@ namespace neutrino::tiled::tmx {
       [[nodiscard]] colori tint () const noexcept {
         return m_tint;
       }
+
     private:
       int m_offsetx;
       int m_offsety;

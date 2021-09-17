@@ -227,7 +227,7 @@ typedef struct FT_WinFNT_HeaderRec_ {
  * @description:
  *   A handle to an @FT_WinFNT_HeaderRec structure.
  */
-typedef struct FT_WinFNT_HeaderRec_ *FT_WinFNT_Header;
+typedef struct FT_WinFNT_HeaderRec_* FT_WinFNT_Header;
 
 
 /**************************************************************************
@@ -255,7 +255,7 @@ typedef struct FT_WinFNT_HeaderRec_ *FT_WinFNT_Header;
  */
 FT_EXPORT(FT_Error)
 FT_Get_WinFNT_Header (FT_Face face,
-                      FT_WinFNT_HeaderRec *aheader);
+                      FT_WinFNT_HeaderRec* aheader);
 
 /* */
 

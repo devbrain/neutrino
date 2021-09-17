@@ -19,14 +19,14 @@ namespace neutrino::utils {
 // to rule this function out and switch to the base case for the recursion when the Index == Length
   template <std::size_t Length, std::size_t Index, typename Left, typename Right>
   constexpr auto
-  compare_characters (const Left &lhs, const Right &rhs) -> typename std::enable_if<Index != Length, bool>::type {
+  compare_characters (const Left& lhs, const Right& rhs) -> typename std::enable_if<Index != Length, bool>::type {
     return lhs[Index] == rhs[Index] && compare_characters<Length, Index + 1> (lhs, rhs);
   }
 
 // Recursion base case. If you run past the last index of
   template <std::size_t Length, std::size_t Index, typename Left, typename Right, typename std::enable_if<
       Index == Length, bool>::type = 0>
-  constexpr bool compare_characters ([[maybe_unused]] const Left &lhs, [[maybe_unused]]  const Right &rhs) {
+  constexpr bool compare_characters ([[maybe_unused]] const Left& lhs, [[maybe_unused]]  const Right& rhs) {
     return true;
   }
 
@@ -74,31 +74,31 @@ namespace neutrino::utils {
       // Copy constructor
       template <std::size_t... Indexes>
       constexpr
-      explicit string_constant (const string_constant<N> &rhs,
+      explicit string_constant (const string_constant<N>& rhs,
                                 [[maybe_unused]] std::index_sequence<Indexes...> dummy = string_constant<sizeof...(Indexes)>::g_indexes)
           : m_value{rhs[Indexes]..., '\0'} {
       }
 
       template <std::size_t X, std::size_t... Indexes>
-      constexpr string_constant (const string_constant<X> &rhs, [[maybe_unused]] std::index_sequence<Indexes...> dummy)
+      constexpr string_constant (const string_constant<X>& rhs, [[maybe_unused]] std::index_sequence<Indexes...> dummy)
           : m_value{rhs[Indexes]..., '\0'} {
       }
 
       template <std::size_t... Indexes>
-      constexpr string_constant (const char(&value)[N + 1], [[maybe_unused]] std::index_sequence<Indexes...> dummy)
+      constexpr string_constant (const char(& value)[N + 1], [[maybe_unused]] std::index_sequence<Indexes...> dummy)
           : string_constant (value[Indexes]...) {
       }
 
-      constexpr explicit string_constant (const char(&value)[N + 1])
+      constexpr explicit string_constant (const char(& value)[N + 1])
           : string_constant (value, std::make_index_sequence<N>{}) {
       }
 
       // Array subscript operator, with some basic range checking
-      constexpr char operator[] (const std::size_t index) const {
+      constexpr char operator [] (const std::size_t index) const {
         return index < N ? m_value[index] : throw std::out_of_range ("Index out of range");
       }
 
-      [[nodiscard]] constexpr const char *c_str () const {
+      [[nodiscard]] constexpr const char* c_str () const {
         return m_value.data ();
       }
 
@@ -128,7 +128,7 @@ namespace neutrino::utils {
   };
 
   template <std::size_t N>
-  struct length_of<const string_constant<N> &> {
+  struct length_of<const string_constant<N>&> {
     static constexpr std::size_t value = N;
   };
 
@@ -145,7 +145,7 @@ namespace neutrino::utils {
   };
 
   template <std::size_t N>
-  struct is_string_constant<string_constant<N> &> {
+  struct is_string_constant<string_constant<N>&> {
     static constexpr bool value = true;
   };
 
@@ -155,7 +155,7 @@ namespace neutrino::utils {
   };
 
   template <std::size_t N>
-  struct is_string_constant<const string_constant<N> &> {
+  struct is_string_constant<const string_constant<N>&> {
     static constexpr bool value = true;
   };
 
@@ -165,7 +165,7 @@ namespace neutrino::utils {
 // Less than human friendly concat function, wrapped by a huamn friendly one below
   template <typename Left, typename Right, std::size_t... IndexesLeft, std::size_t... IndexesRight>
   constexpr string_constant<sizeof...(IndexesLeft) + sizeof...(IndexesRight)>
-  concat_strings (const Left &lhs, const Right &rhs, [[maybe_unused]] std::index_sequence<IndexesLeft...> dummy1,
+  concat_strings (const Left& lhs, const Right& rhs, [[maybe_unused]] std::index_sequence<IndexesLeft...> dummy1,
                   [[maybe_unused]] std::index_sequence<IndexesRight...> dummy2) {
     return string_constant<sizeof...(IndexesLeft) + sizeof...(IndexesRight)> (lhs[IndexesLeft]...,
                                                                               rhs[IndexesRight]...);
@@ -174,7 +174,7 @@ namespace neutrino::utils {
 // Human friendly concat function for string literals
   template <typename Left, typename Right>
   constexpr string_constant<length_of<Left>::value + length_of<Right>::value>
-  concat_strings (const Left &lhs, const Right &rhs) {
+  concat_strings (const Left& lhs, const Right& rhs) {
     return concat_strings (lhs, rhs, typename std::make_index_sequence<length_of<decltype (lhs)>::value>{},
                            typename std::make_index_sequence<length_of<decltype (rhs)>::value>{});
   }
@@ -184,66 +184,66 @@ namespace neutrino::utils {
 
 // Addition operator
   template <std::size_t N, typename Right>
-  constexpr string_constant<N + length_of<Right>::value> operator+ (const string_constant<N> &lhs, const Right &rhs) {
+  constexpr string_constant<N + length_of<Right>::value> operator + (const string_constant<N>& lhs, const Right& rhs) {
     return concat_strings (lhs, rhs);
   }
 
   template <typename Left, std::size_t N>
-  constexpr string_constant<length_of<Left>::value + N> operator+ (const Left &lhs, const string_constant<N> &rhs) {
+  constexpr string_constant<length_of<Left>::value + N> operator + (const Left& lhs, const string_constant<N>& rhs) {
     return concat_strings (lhs, rhs);
   }
 
   template <std::size_t X, std::size_t Y>
-  constexpr string_constant<X + Y> operator+ (const string_constant<X> &lhs, const string_constant<Y> &rhs) {
+  constexpr string_constant<X + Y> operator + (const string_constant<X>& lhs, const string_constant<Y>& rhs) {
     return concat_strings (lhs, rhs);
   }
 
 // Equality operator
   template <std::size_t N, typename Right>
-  constexpr auto operator== (const string_constant<N> &lhs, const Right &rhs) -> typename std::enable_if<
+  constexpr auto operator == (const string_constant<N>& lhs, const Right& rhs) -> typename std::enable_if<
       N == length_of<Right>::value, bool>::type {
     return compare_characters<N, 0> (lhs, rhs);
   }
 
   template <typename Left, std::size_t N>
-  constexpr auto operator== (const Left &lhs, const string_constant<N> &rhs) -> typename std::enable_if<
+  constexpr auto operator == (const Left& lhs, const string_constant<N>& rhs) -> typename std::enable_if<
       length_of<Left>::value == N, bool>::type {
     return compare_characters<N, 0> (lhs, rhs);
   }
 
   template <std::size_t X, std::size_t Y>
-  constexpr auto operator== (const string_constant<X> &lhs, const string_constant<Y> &rhs) -> typename std::enable_if<
+  constexpr auto operator == (const string_constant<X>& lhs, const string_constant<Y>& rhs) -> typename std::enable_if<
       X == Y, bool>::type {
     return compare_characters<X, 0> (lhs, rhs);
   }
 
 // Different length strings can never be equal
   template <std::size_t N, typename Right, typename std::enable_if<N != length_of<Right>::value, bool>::type = 0>
-  constexpr bool operator== (const string_constant<N> &lhs, const Right &rhs) {
+  constexpr bool operator == (const string_constant<N>& lhs, const Right& rhs) {
     return false;
   }
 
 // Different length strings can never be equal
   template <typename Left, std::size_t N, typename std::enable_if<length_of<Left>::value != N, bool>::type = 0>
-  constexpr bool operator== (const Left &lhs, const string_constant<N> &rhs) {
+  constexpr bool operator == (const Left& lhs, const string_constant<N>& rhs) {
     return false;
   }
 
 // Different length strings can never be equal
   template <std::size_t X, std::size_t Y, typename std::enable_if<X != Y, bool>::type = 0>
-  constexpr bool operator== (const string_constant<X> &lhs, const string_constant<Y> &rhs) {
+  constexpr bool operator == (const string_constant<X>& lhs, const string_constant<Y>& rhs) {
     return false;
   }
 
   template <std::size_t N, std::size_t... Indexes>
-  constexpr auto string_factory (const char(&value)[N], [[maybe_unused]] std::index_sequence<Indexes...> dummy) {
+  constexpr auto string_factory (const char(& value)[N], [[maybe_unused]] std::index_sequence<Indexes...> dummy) {
     return string_constant<N - 1> (value[Indexes]...);
   }
 
 // A helper factory function for creating FixedStringConstant objects
 // which handles figuring out the length of the string for you
   template <std::size_t N>
-  constexpr auto string_factory (const char(&value)[N]) {
+  constexpr auto string_factory (const char(& value)[N]) {
     return string_factory (value, typename std::make_index_sequence<N - 1>{});
   }
 } // ns neutrino::utils

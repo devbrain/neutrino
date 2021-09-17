@@ -41,28 +41,35 @@
 static const char test_data[] = "test\0data";
 
 static hb_position_t
-glyph_h_advance_func (hb_font_t *font HB_UNUSED, void *font_data HB_UNUSED,
-		      hb_codepoint_t glyph,
-		      void *user_data HB_UNUSED)
-{
+glyph_h_advance_func (hb_font_t* font HB_UNUSED, void* font_data HB_UNUSED,
+                      hb_codepoint_t glyph,
+                      void* user_data HB_UNUSED) {
   switch (glyph) {
-  case 1: return 10;
-  case 2: return 6;
-  case 3: return 5;
+    case 1:
+      return 10;
+    case 2:
+      return 6;
+    case 3:
+      return 5;
   }
   return 0;
 }
 
 static hb_bool_t
-glyph_func (hb_font_t *font HB_UNUSED, void *font_data HB_UNUSED,
-	    hb_codepoint_t unicode,
-	    hb_codepoint_t *glyph,
-	    void *user_data HB_UNUSED)
-{
+glyph_func (hb_font_t* font HB_UNUSED, void* font_data HB_UNUSED,
+            hb_codepoint_t unicode,
+            hb_codepoint_t* glyph,
+            void* user_data HB_UNUSED) {
   switch (unicode) {
-  case 'T': *glyph = 1; return TRUE;
-  case 'e': *glyph = 2; return TRUE;
-  case 's': *glyph = 3; return TRUE;
+    case 'T':
+      *glyph = 1;
+      return TRUE;
+    case 'e':
+      *glyph = 2;
+      return TRUE;
+    case 's':
+      *glyph = 3;
+      return TRUE;
   }
   return FALSE;
 }
@@ -70,14 +77,13 @@ glyph_func (hb_font_t *font HB_UNUSED, void *font_data HB_UNUSED,
 static const char TesT[] = "TesT";
 
 static void
-test_font (hb_font_t *font)
-{
-  hb_buffer_t *buffer;
+test_font (hb_font_t* font) {
+  hb_buffer_t* buffer;
   unsigned int len;
-  hb_glyph_info_t *glyphs;
-  hb_glyph_position_t *positions;
+  hb_glyph_info_t* glyphs;
+  hb_glyph_position_t* positions;
 
-  buffer =  hb_buffer_create ();
+  buffer = hb_buffer_create ();
   hb_buffer_set_direction (buffer, HB_DIRECTION_LTR);
   hb_buffer_add_utf8 (buffer, TesT, 4, 0, 4);
 
@@ -92,16 +98,16 @@ test_font (hb_font_t *font)
     const hb_position_t output_x_advances[] = {10, 6, 5, 10};
     const hb_position_t output_x_offsets[] = {0, 0, 0, 0};
     unsigned int i;
-    g_assert_cmpint (len, ==, 4);
+    g_assert_cmpint (len, == , 4);
     for (i = 0; i < len; i++) {
-      g_assert_cmphex (glyphs[i].codepoint, ==, output_glyphs[i]);
-      g_assert_cmphex (glyphs[i].cluster,   ==, i);
+      g_assert_cmphex (glyphs[i].codepoint, == , output_glyphs[i]);
+      g_assert_cmphex (glyphs[i].cluster, == , i);
     }
     for (i = 0; i < len; i++) {
-      g_assert_cmpint (output_x_advances[i], ==, positions[i].x_advance);
-      g_assert_cmpint (output_x_offsets [i], ==, positions[i].x_offset);
-      g_assert_cmpint (0, ==, positions[i].y_advance);
-      g_assert_cmpint (0, ==, positions[i].y_offset);
+      g_assert_cmpint (output_x_advances[i], == , positions[i].x_advance);
+      g_assert_cmpint (output_x_offsets[i], == , positions[i].x_offset);
+      g_assert_cmpint (0, == , positions[i].y_advance);
+      g_assert_cmpint (0, == , positions[i].y_offset);
     }
   }
 
@@ -109,12 +115,11 @@ test_font (hb_font_t *font)
 }
 
 static void
-test_shape (void)
-{
-  hb_blob_t *blob;
-  hb_face_t *face;
-  hb_font_funcs_t *ffuncs;
-  hb_font_t *font, *sub_font;
+test_shape (void) {
+  hb_blob_t* blob;
+  hb_face_t * face;
+  hb_font_funcs_t* ffuncs;
+  hb_font_t* font, * sub_font;
 
   blob = hb_blob_create (test_data, sizeof (test_data), HB_MEMORY_MODE_READONLY, NULL, NULL);
   face = hb_face_create (blob, 0);
@@ -139,19 +144,18 @@ test_shape (void)
 }
 
 static void
-test_shape_clusters (void)
-{
-  hb_face_t *face;
-  hb_font_t *font;
-  hb_buffer_t *buffer;
+test_shape_clusters (void) {
+  hb_face_t * face;
+  hb_font_t* font;
+  hb_buffer_t* buffer;
   unsigned int len;
-  hb_glyph_info_t *glyphs;
+  hb_glyph_info_t* glyphs;
 
   face = hb_face_create (NULL, 0);
   font = hb_font_create (face);
   hb_face_destroy (face);
 
-  buffer =  hb_buffer_create ();
+  buffer = hb_buffer_create ();
   hb_buffer_set_direction (buffer, HB_DIRECTION_LTR);
   {
     /* https://crbug.com/497578 */
@@ -168,10 +172,10 @@ test_shape_clusters (void)
     const hb_codepoint_t output_glyphs[] = {0};
     const hb_position_t output_clusters[] = {0};
     unsigned int i;
-    g_assert_cmpint (len, ==, 1);
+    g_assert_cmpint (len, == , 1);
     for (i = 0; i < len; i++) {
-      g_assert_cmphex (glyphs[i].codepoint, ==, output_glyphs[i]);
-      g_assert_cmphex (glyphs[i].cluster,   ==, output_clusters[i]);
+      g_assert_cmphex (glyphs[i].codepoint, == , output_glyphs[i]);
+      g_assert_cmphex (glyphs[i].cluster, == , output_clusters[i]);
     }
   }
 
@@ -179,23 +183,19 @@ test_shape_clusters (void)
   hb_font_destroy (font);
 }
 
-
 static void
-test_shape_list (void)
-{
-  const char **shapers = hb_shape_list_shapers ();
+test_shape_list (void) {
+  const char** shapers = hb_shape_list_shapers ();
 
   unsigned int i;
-  for (i = 0; shapers[i]; i++)
-    ;
+  for (i = 0; shapers[i]; i++);
 
-  g_assert_cmpint (i, >, 1);
+  g_assert_cmpint (i, > , 1);
   g_assert (!strcmp (shapers[i - 1], "fallback"));
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_shape);
@@ -204,5 +204,5 @@ main (int argc, char **argv)
   /* TODO test shaper_full */
   hb_test_add (test_shape_list);
 
-  return hb_test_run();
+  return hb_test_run ();
 }

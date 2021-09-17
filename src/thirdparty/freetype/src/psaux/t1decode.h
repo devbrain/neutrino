@@ -30,7 +30,7 @@ FT_CALLBACK_TABLE
 const T1_Decoder_FuncsRec t1_decoder_funcs;
 
 FT_LOCAL(FT_Int)
-t1_lookup_glyph_by_stdcharcode_ps (PS_Decoder *decoder,
+t1_lookup_glyph_by_stdcharcode_ps (PS_Decoder* decoder,
                                    FT_Int charcode);
 
 #ifdef T1_CONFIG_OPTION_OLD_ENGINE
@@ -45,7 +45,7 @@ t1_decoder_parse_charstrings( T1_Decoder  decoder,
 #else
 FT_LOCAL(FT_Error)
 t1_decoder_parse_metrics (T1_Decoder decoder,
-                          FT_Byte *charstring_base,
+                          FT_Byte* charstring_base,
                           FT_UInt charstring_len);
 #endif
 
@@ -54,7 +54,7 @@ t1_decoder_init (T1_Decoder decoder,
                  FT_Face face,
                  FT_Size size,
                  FT_GlyphSlot slot,
-                 FT_Byte **glyph_names,
+                 FT_Byte** glyph_names,
                  PS_Blend blend,
                  FT_Bool hinting,
                  FT_Render_Mode hint_mode,

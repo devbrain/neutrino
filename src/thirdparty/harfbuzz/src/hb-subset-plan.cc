@@ -39,23 +39,25 @@
 #include "hb-ot-var-fvar-table.hh"
 #include "hb-ot-stat-table.hh"
 
-typedef hb_hashmap_t<unsigned, hb_set_t *, (unsigned) -1, nullptr> script_langsys_map;
+typedef hb_hashmap_t<unsigned, hb_set_t*, (unsigned) -1, nullptr> script_langsys_map;
 #ifndef HB_NO_SUBSET_CFF
+
 static inline void
-_add_cff_seac_components (const OT::cff1::accelerator_t &cff,
+_add_cff_seac_components (const OT::cff1::accelerator_t& cff,
                           hb_codepoint_t gid,
-                          hb_set_t *gids_to_retain) {
+                          hb_set_t* gids_to_retain) {
   hb_codepoint_t base_gid, accent_gid;
   if (cff.get_seac_components (gid, &base_gid, &accent_gid)) {
     gids_to_retain->add (base_gid);
     gids_to_retain->add (accent_gid);
   }
 }
+
 #endif
 
 static void
-_remap_palette_indexes (const hb_set_t *palette_indexes,
-                        hb_map_t *mapping /* OUT */) {
+_remap_palette_indexes (const hb_set_t* palette_indexes,
+                        hb_map_t* mapping /* OUT */) {
   unsigned new_idx = 0;
   for (unsigned palette_index : palette_indexes->iter ()) {
     if (palette_index == 0xFFFF) {
@@ -68,8 +70,8 @@ _remap_palette_indexes (const hb_set_t *palette_indexes,
 }
 
 static void
-_remap_indexes (const hb_set_t *indexes,
-                hb_map_t *mapping /* OUT */) {
+_remap_indexes (const hb_set_t* indexes,
+                hb_map_t* mapping /* OUT */) {
   unsigned count = indexes->get_population ();
 
   for (auto _ : +hb_zip (indexes->iter (), hb_range (count)))
@@ -78,14 +80,16 @@ _remap_indexes (const hb_set_t *indexes,
 }
 
 #ifndef HB_NO_SUBSET_LAYOUT
-typedef void (*layout_collect_func_t) (hb_face_t *face, hb_tag_t table_tag, const hb_tag_t *scripts, const hb_tag_t *languages, const hb_tag_t *features, hb_set_t *lookup_indexes /* OUT */);
+typedef void (* layout_collect_func_t) (hb_face_t* face, hb_tag_t table_tag, const hb_tag_t* scripts,
+                                        const hb_tag_t* languages, const hb_tag_t* features,
+                                        hb_set_t* lookup_indexes /* OUT */);
 
-static void _collect_subset_layout (hb_face_t *face,
+static void _collect_subset_layout (hb_face_t* face,
                                     hb_tag_t table_tag,
-                                    const hb_set_t *layout_features_to_retain,
+                                    const hb_set_t* layout_features_to_retain,
                                     bool retain_all_features,
                                     layout_collect_func_t layout_collect_func,
-                                    hb_set_t *lookup_indices /* OUT */) {
+                                    hb_set_t* lookup_indices /* OUT */) {
   if (retain_all_features) {
     layout_collect_func (face,
                          table_tag,
@@ -99,7 +103,7 @@ static void _collect_subset_layout (hb_face_t *face,
   if (hb_set_is_empty (layout_features_to_retain))
     return;
   unsigned num = layout_features_to_retain->get_population () + 1;
-  hb_tag_t *features = (hb_tag_t *) malloc (num * sizeof (hb_tag_t));
+  hb_tag_t* features = (hb_tag_t*) malloc (num * sizeof (hb_tag_t));
   if (!features)
     return;
 
@@ -121,13 +125,13 @@ static void _collect_subset_layout (hb_face_t *face,
 
 template <typename T>
 static inline void
-_closure_glyphs_lookups_features (hb_face_t *face,
-                                  hb_set_t *gids_to_retain,
-                                  const hb_set_t *layout_features_to_retain,
+_closure_glyphs_lookups_features (hb_face_t* face,
+                                  hb_set_t* gids_to_retain,
+                                  const hb_set_t* layout_features_to_retain,
                                   bool retain_all_features,
-                                  hb_map_t *lookups,
-                                  hb_map_t *features,
-                                  script_langsys_map *langsys_map) {
+                                  hb_map_t* lookups,
+                                  hb_map_t* features,
+                                  script_langsys_map* langsys_map) {
   hb_blob_ptr_t<T> table = hb_sanitize_context_t ().reference_table<T> (face);
   hb_tag_t table_tag = table->tableTag;
   hb_set_t lookup_indices;
@@ -170,12 +174,13 @@ _closure_glyphs_lookups_features (hb_face_t *face,
 #endif
 
 #ifndef HB_NO_VAR
+
 static inline void
-_collect_layout_variation_indices (hb_face_t *face,
-                                   const hb_set_t *glyphset,
-                                   const hb_map_t *gpos_lookups,
-                                   hb_set_t *layout_variation_indices,
-                                   hb_map_t *layout_variation_idx_map) {
+_collect_layout_variation_indices (hb_face_t* face,
+                                   const hb_set_t* glyphset,
+                                   const hb_map_t* gpos_lookups,
+                                   hb_set_t* layout_variation_indices,
+                                   hb_map_t* layout_variation_idx_map) {
   hb_blob_ptr_t<OT::GDEF> gdef = hb_sanitize_context_t ().reference_table<OT::GDEF> (face);
   hb_blob_ptr_t<OT::GPOS> gpos = hb_sanitize_context_t ().reference_table<OT::GPOS> (face);
 
@@ -195,12 +200,13 @@ _collect_layout_variation_indices (hb_face_t *face,
   gdef.destroy ();
   gpos.destroy ();
 }
+
 #endif
 
 static inline void
-_cmap_closure (hb_face_t *face,
-               const hb_set_t *unicodes,
-               hb_set_t *glyphset) {
+_cmap_closure (hb_face_t* face,
+               const hb_set_t* unicodes,
+               hb_set_t* glyphset) {
   OT::cmap::accelerator_t cmap;
   cmap.init (face);
   cmap.table->closure_glyphs (unicodes, glyphset);
@@ -208,7 +214,7 @@ _cmap_closure (hb_face_t *face,
 }
 
 static inline void
-_remove_invalid_gids (hb_set_t *glyphs,
+_remove_invalid_gids (hb_set_t* glyphs,
                       unsigned int num_glyphs) {
   hb_codepoint_t gid = HB_SET_VALUE_INVALID;
   while (glyphs->next (&gid)) {
@@ -218,9 +224,9 @@ _remove_invalid_gids (hb_set_t *glyphs,
 }
 
 static void
-_populate_gids_to_retain (hb_subset_plan_t *plan,
-                          const hb_set_t *unicodes,
-                          const hb_set_t *input_glyphs_to_retain,
+_populate_gids_to_retain (hb_subset_plan_t* plan,
+                          const hb_set_t* unicodes,
+                          const hb_set_t* input_glyphs_to_retain,
                           bool close_over_gsub,
                           bool close_over_gpos,
                           bool close_over_gdef) {
@@ -265,7 +271,7 @@ _populate_gids_to_retain (hb_subset_plan_t *plan,
   _remove_invalid_gids (plan->_glyphset_gsub, plan->source->get_num_glyphs ());
 
   // Collect all glyphs referenced by COLRv0
-  hb_set_t *cur_glyphset = plan->_glyphset_gsub;
+  hb_set_t* cur_glyphset = plan->_glyphset_gsub;
   hb_set_t glyphset_colrv0;
   if (colr.is_valid ()) {
     glyphset_colrv0.union_ (*cur_glyphset);
@@ -313,12 +319,12 @@ _populate_gids_to_retain (hb_subset_plan_t *plan,
 }
 
 static void
-_create_old_gid_to_new_gid_map (const hb_face_t *face,
+_create_old_gid_to_new_gid_map (const hb_face_t* face,
                                 bool retain_gids,
-                                const hb_set_t *all_gids_to_retain,
-                                hb_map_t *glyph_map, /* OUT */
-                                hb_map_t *reverse_glyph_map, /* OUT */
-                                unsigned int *num_glyphs /* OUT */) {
+                                const hb_set_t* all_gids_to_retain,
+                                hb_map_t* glyph_map, /* OUT */
+                                hb_map_t* reverse_glyph_map, /* OUT */
+                                unsigned int* num_glyphs /* OUT */) {
   if (!retain_gids) {
     +hb_enumerate (hb_iter (all_gids_to_retain), (hb_codepoint_t) 0)
     | hb_sink (reverse_glyph_map);
@@ -343,8 +349,8 @@ _create_old_gid_to_new_gid_map (const hb_face_t *face,
 }
 
 static void
-_nameid_closure (hb_face_t *face,
-                 hb_set_t *nameids) {
+_nameid_closure (hb_face_t* face,
+                 hb_set_t* nameids) {
 #ifndef HB_NO_STYLE
   face->table.STAT->collect_name_ids (nameids);
 #endif
@@ -363,12 +369,12 @@ _nameid_closure (hb_face_t *face,
  *
  * Since: 1.7.5
  **/
-hb_subset_plan_t *
-hb_subset_plan_create (hb_face_t *face,
-                       hb_subset_input_t *input) {
-  hb_subset_plan_t *plan;
+hb_subset_plan_t*
+hb_subset_plan_create (hb_face_t* face,
+                       hb_subset_input_t* input) {
+  hb_subset_plan_t* plan;
   if (unlikely (!(plan = hb_object_create<hb_subset_plan_t> ())))
-    return const_cast<hb_subset_plan_t *> (&Null (hb_subset_plan_t));
+    return const_cast<hb_subset_plan_t*> (&Null (hb_subset_plan_t));
 
   plan->successful = true;
   plan->drop_hints = input->drop_hints;
@@ -436,7 +442,7 @@ hb_subset_plan_create (hb_face_t *face,
  * Since: 1.7.5
  **/
 void
-hb_subset_plan_destroy (hb_subset_plan_t *plan) {
+hb_subset_plan_destroy (hb_subset_plan_t* plan) {
   if (!hb_object_destroy (plan))
     return;
 

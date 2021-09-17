@@ -88,7 +88,7 @@ to a situation where the program can segfault.
 /*!
 \brief Returns colorkey info for a surface
 */
-Uint32 _colorkey (SDL_Surface *src) {
+Uint32 _colorkey (SDL_Surface* src) {
   Uint32 key = 0;
   SDL_GetColorKey (src, &key);
   return key;
@@ -109,11 +109,11 @@ Assumes dst surface was allocated with the correct dimensions.
 
 \return 0 for success or -1 for error.
 */
-int _shrinkSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int factorx, int factory) {
+int _shrinkSurfaceRGBA (SDL_Surface* src, SDL_Surface* dst, int factorx, int factory) {
   int x, y, dx, dy, dgap, ra, ga, ba, aa;
   int n_average;
-  tColorRGBA *sp, *osp, *oosp;
-  tColorRGBA *dp;
+  tColorRGBA* sp, * osp, * oosp;
+  tColorRGBA* dp;
 
   /*
   * Averaging integer shrink
@@ -125,9 +125,9 @@ int _shrinkSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int factorx, int fac
   /*
   * Scan destination
   */
-  sp = (tColorRGBA *) src->pixels;
+  sp = (tColorRGBA*) src->pixels;
 
-  dp = (tColorRGBA *) dst->pixels;
+  dp = (tColorRGBA*) dst->pixels;
   dgap = dst->pitch - dst->w * 4;
 
   for (y = 0; y < dst->h; y++) {
@@ -148,12 +148,12 @@ int _shrinkSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int factorx, int fac
           sp++;
         }
         /* src dx loop */
-        sp = (tColorRGBA *) ((Uint8 *) sp + (src->pitch - 4 * factorx)); // next y
+        sp = (tColorRGBA*) ((Uint8*) sp + (src->pitch - 4 * factorx)); // next y
       }
       /* src dy loop */
 
       /* next box-x */
-      sp = (tColorRGBA *) ((Uint8 *) oosp + 4 * factorx);
+      sp = (tColorRGBA*) ((Uint8*) oosp + 4 * factorx);
 
       /* Store result in destination */
       dp->r = ra / n_average;
@@ -169,12 +169,12 @@ int _shrinkSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int factorx, int fac
     /* dst x loop */
 
     /* next box-y */
-    sp = (tColorRGBA *) ((Uint8 *) osp + src->pitch * factory);
+    sp = (tColorRGBA*) ((Uint8*) osp + src->pitch * factory);
 
     /*
     * Advance destination pointers
     */
-    dp = (tColorRGBA *) ((Uint8 *) dp + dgap);
+    dp = (tColorRGBA*) ((Uint8*) dp + dgap);
   }
   /* dst y loop */
 
@@ -196,11 +196,11 @@ Assumes dst surface was allocated with the correct dimensions.
 
 \return 0 for success or -1 for error.
 */
-int _shrinkSurfaceY (SDL_Surface *src, SDL_Surface *dst, int factorx, int factory) {
+int _shrinkSurfaceY (SDL_Surface* src, SDL_Surface* dst, int factorx, int factory) {
   int x, y, dx, dy, dgap, a;
   int n_average;
-  Uint8 *sp, *osp, *oosp;
-  Uint8 *dp;
+  Uint8* sp, * osp, * oosp;
+  Uint8* dp;
 
   /*
   * Averaging integer shrink
@@ -212,9 +212,9 @@ int _shrinkSurfaceY (SDL_Surface *src, SDL_Surface *dst, int factorx, int factor
   /*
   * Scan destination
   */
-  sp = (Uint8 *) src->pixels;
+  sp = (Uint8*) src->pixels;
 
-  dp = (Uint8 *) dst->pixels;
+  dp = (Uint8*) dst->pixels;
   dgap = dst->pitch - dst->w;
 
   for (y = 0; y < dst->h; y++) {
@@ -233,12 +233,12 @@ int _shrinkSurfaceY (SDL_Surface *src, SDL_Surface *dst, int factorx, int factor
         }
         /* end src dx loop */
         /* next y */
-        sp = (Uint8 *) ((Uint8 *) sp + (src->pitch - factorx));
+        sp = (Uint8*) ((Uint8*) sp + (src->pitch - factorx));
       }
       /* end src dy loop */
 
       /* next box-x */
-      sp = (Uint8 *) ((Uint8 *) oosp + factorx);
+      sp = (Uint8*) ((Uint8*) oosp + factorx);
 
       /* Store result in destination */
       *dp = a / n_average;
@@ -251,12 +251,12 @@ int _shrinkSurfaceY (SDL_Surface *src, SDL_Surface *dst, int factorx, int factor
     /* end dst x loop */
 
     /* next box-y */
-    sp = (Uint8 *) ((Uint8 *) osp + src->pitch * factory);
+    sp = (Uint8*) ((Uint8*) osp + src->pitch * factory);
 
     /*
     * Advance destination pointers
     */
-    dp = (Uint8 *) ((Uint8 *) dp + dgap);
+    dp = (Uint8*) ((Uint8*) dp + dgap);
   }
   /* end dst y loop */
 
@@ -278,19 +278,19 @@ Assumes dst surface was allocated with the correct dimensions.
 
 \return 0 for success or -1 for error.
 */
-int _zoomSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int flipx, int flipy, int smooth) {
-  int x, y, sx, sy, ssx, ssy, *sax, *say, *csax, *csay, *salast, csx, csy, ex, ey, cx, cy, sstep, sstepx, sstepy;
-  tColorRGBA *c00, *c01, *c10, *c11;
-  tColorRGBA *sp, *csp, *dp;
+int _zoomSurfaceRGBA (SDL_Surface* src, SDL_Surface* dst, int flipx, int flipy, int smooth) {
+  int x, y, sx, sy, ssx, ssy, * sax, * say, * csax, * csay, * salast, csx, csy, ex, ey, cx, cy, sstep, sstepx, sstepy;
+  tColorRGBA* c00, * c01, * c10, * c11;
+  tColorRGBA* sp, * csp, * dp;
   int spixelgap, spixelw, spixelh, dgap, t1, t2;
 
   /*
   * Allocate memory for row/column increments
   */
-  if ((sax = (int *) malloc ((dst->w + 1) * sizeof (Uint32))) == NULL) {
+  if ((sax = (int*) malloc ((dst->w + 1) * sizeof (Uint32))) == NULL) {
     return (-1);
   }
-  if ((say = (int *) malloc ((dst->h + 1) * sizeof (Uint32))) == NULL) {
+  if ((say = (int*) malloc ((dst->h + 1) * sizeof (Uint32))) == NULL) {
     free (sax);
     return (-1);
   }
@@ -341,8 +341,8 @@ int _zoomSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int flipx, int flipy, 
     }
   }
 
-  sp = (tColorRGBA *) src->pixels;
-  dp = (tColorRGBA *) dst->pixels;
+  sp = (tColorRGBA*) src->pixels;
+  dp = (tColorRGBA*) dst->pixels;
   dgap = dst->pitch - dst->w * 4;
   spixelgap = src->pitch / 4;
 
@@ -446,7 +446,7 @@ int _zoomSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int flipx, int flipy, 
       /*
       * Advance destination pointer y
       */
-      dp = (tColorRGBA *) ((Uint8 *) dp + dgap);
+      dp = (tColorRGBA*) ((Uint8*) dp + dgap);
     }
   }
   else {
@@ -492,7 +492,7 @@ int _zoomSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int flipx, int flipy, 
       /*
       * Advance destination pointer y
       */
-      dp = (tColorRGBA *) ((Uint8 *) dp + dgap);
+      dp = (tColorRGBA*) ((Uint8*) dp + dgap);
     }
   }
 
@@ -520,20 +520,20 @@ Assumes dst surface was allocated with the correct dimensions.
 
 \return 0 for success or -1 for error.
 */
-int _zoomSurfaceY (SDL_Surface *src, SDL_Surface *dst, int flipx, int flipy) {
+int _zoomSurfaceY (SDL_Surface* src, SDL_Surface* dst, int flipx, int flipy) {
   int x, y;
-  Uint32 *sax, *say, *csax, *csay;
+  Uint32* sax, * say, * csax, * csay;
   int csx, csy;
-  Uint8 *sp, *dp, *csp;
+  Uint8* sp, * dp, * csp;
   int dgap;
 
   /*
   * Allocate memory for row increments
   */
-  if ((sax = (Uint32 *) malloc ((dst->w + 1) * sizeof (Uint32))) == NULL) {
+  if ((sax = (Uint32*) malloc ((dst->w + 1) * sizeof (Uint32))) == NULL) {
     return (-1);
   }
-  if ((say = (Uint32 *) malloc ((dst->h + 1) * sizeof (Uint32))) == NULL) {
+  if ((say = (Uint32*) malloc ((dst->h + 1) * sizeof (Uint32))) == NULL) {
     free (sax);
     return (-1);
   }
@@ -541,14 +541,14 @@ int _zoomSurfaceY (SDL_Surface *src, SDL_Surface *dst, int flipx, int flipy) {
   /*
   * Pointer setup
   */
-  sp = csp = (Uint8 *) src->pixels;
-  dp = (Uint8 *) dst->pixels;
+  sp = csp = (Uint8*) src->pixels;
+  dp = (Uint8*) dst->pixels;
   dgap = dst->pitch - dst->w;
 
   if (flipx)
     csp += (src->w - 1);
   if (flipy)
-    csp = ((Uint8 *) csp + src->pitch * (src->h - 1));
+    csp = ((Uint8*) csp + src->pitch * (src->h - 1));
 
   /*
   * Precalculate row increments
@@ -641,10 +641,11 @@ Assumes dst surface was allocated with the correct dimensions.
 \param smooth Flag indicating anti-aliasing should be used.
 */
 void
-_transformSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int cx, int cy, int isin, int icos, int flipx, int flipy, int smooth) {
+_transformSurfaceRGBA (SDL_Surface* src, SDL_Surface* dst, int cx, int cy, int isin, int icos, int flipx, int flipy,
+                       int smooth) {
   int x, y, t1, t2, dx, dy, xd, yd, sdx, sdy, ax, ay, ex, ey, sw, sh;
   tColorRGBA c00, c01, c10, c11, cswap;
-  tColorRGBA *pc, *sp;
+  tColorRGBA* pc, * sp;
   int gap;
 
   /*
@@ -656,7 +657,7 @@ _transformSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int cx, int cy, int i
   ay = (cy << 16) - (isin * cx);
   sw = src->w - 1;
   sh = src->h - 1;
-  pc = (tColorRGBA *) dst->pixels;
+  pc = (tColorRGBA*) dst->pixels;
   gap = dst->pitch - dst->w * 4;
 
   /*
@@ -675,7 +676,7 @@ _transformSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int cx, int cy, int i
         if (flipy)
           dy = sh - dy;
         if ((dx > -1) && (dy > -1) && (dx < (src->w - 1)) && (dy < (src->h - 1))) {
-          sp = (tColorRGBA *) src->pixels;;
+          sp = (tColorRGBA*) src->pixels;;
           sp += ((src->pitch / 4) * dy);
           sp += dx;
           c00 = *sp;
@@ -723,7 +724,7 @@ _transformSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int cx, int cy, int i
         sdy += isin;
         pc++;
       }
-      pc = (tColorRGBA *) ((Uint8 *) pc + gap);
+      pc = (tColorRGBA*) ((Uint8*) pc + gap);
     }
   }
   else {
@@ -739,7 +740,7 @@ _transformSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int cx, int cy, int i
         if (flipy)
           dy = (src->h - 1) - dy;
         if ((dx >= 0) && (dy >= 0) && (dx < src->w) && (dy < src->h)) {
-          sp = (tColorRGBA *) ((Uint8 *) src->pixels + src->pitch * dy);
+          sp = (tColorRGBA*) ((Uint8*) src->pixels + src->pitch * dy);
           sp += dx;
           *pc = *sp;
         }
@@ -747,7 +748,7 @@ _transformSurfaceRGBA (SDL_Surface *src, SDL_Surface *dst, int cx, int cy, int i
         sdy += isin;
         pc++;
       }
-      pc = (tColorRGBA *) ((Uint8 *) pc + gap);
+      pc = (tColorRGBA*) ((Uint8*) pc + gap);
     }
   }
 }
@@ -770,9 +771,9 @@ Assumes dst surface was allocated with the correct dimensions.
 \param flipx Flag indicating horizontal mirroring should be applied.
 \param flipy Flag indicating vertical mirroring should be applied.
 */
-void transformSurfaceY (SDL_Surface *src, SDL_Surface *dst, int cx, int cy, int isin, int icos, int flipx, int flipy) {
+void transformSurfaceY (SDL_Surface* src, SDL_Surface* dst, int cx, int cy, int isin, int icos, int flipx, int flipy) {
   int x, y, dx, dy, xd, yd, sdx, sdy, ax, ay;
-  tColorY *pc, *sp;
+  tColorY* pc, * sp;
   int gap;
 
   /*
@@ -782,7 +783,7 @@ void transformSurfaceY (SDL_Surface *src, SDL_Surface *dst, int cx, int cy, int 
   yd = ((src->h - dst->h) << 15);
   ax = (cx << 16) - (icos * cx);
   ay = (cy << 16) - (isin * cx);
-  pc = (tColorY *) dst->pixels;
+  pc = (tColorY*) dst->pixels;
   gap = dst->pitch - dst->w;
   /*
   * Clear surface to colorkey
@@ -803,7 +804,7 @@ void transformSurfaceY (SDL_Surface *src, SDL_Surface *dst, int cx, int cy, int 
       if (flipy)
         dy = (src->h - 1) - dy;
       if ((dx >= 0) && (dy >= 0) && (dx < src->w) && (dy < src->h)) {
-        sp = (tColorY *) (src->pixels);
+        sp = (tColorY*) (src->pixels);
         sp += (src->pitch * dy + dx);
         *pc = *sp;
       }
@@ -828,12 +829,12 @@ no scanning or interpolation takes place. Input surface must be 8/16/24/32 bit.
 
 \returns The new, rotated surface; or NULL for surfaces with incorrect input format.
 */
-SDL_Surface *rotateSurface90Degrees (SDL_Surface *src, int numClockwiseTurns) {
+SDL_Surface* rotateSurface90Degrees (SDL_Surface* src, int numClockwiseTurns) {
   int row, col, newWidth, newHeight;
   int bpp, bpr;
-  SDL_Surface *dst;
-  Uint8 *srcBuf;
-  Uint8 *dstBuf;
+  SDL_Surface* dst;
+  Uint8* srcBuf;
+  Uint8* dstBuf;
   int normalizedClockwiseTurns;
 
   /* Has to be a valid surface pointer and be a Nbit surface where n is divisible by 8 */
@@ -896,8 +897,8 @@ SDL_Surface *rotateSurface90Degrees (SDL_Surface *src, int numClockwiseTurns) {
       }
       else {
         /* If the pitch differs, copy each row separately */
-        srcBuf = (Uint8 *) (src->pixels);
-        dstBuf = (Uint8 *) (dst->pixels);
+        srcBuf = (Uint8*) (src->pixels);
+        dstBuf = (Uint8*) (dst->pixels);
         bpr = src->w * bpp;
         for (row = 0; row < src->h; row++) {
           memcpy (dstBuf, srcBuf, bpr);
@@ -912,8 +913,8 @@ SDL_Surface *rotateSurface90Degrees (SDL_Surface *src, int numClockwiseTurns) {
     case 1: /* rotated 90 degrees clockwise */
     {
       for (row = 0; row < src->h; ++row) {
-        srcBuf = (Uint8 *) (src->pixels) + (row * src->pitch);
-        dstBuf = (Uint8 *) (dst->pixels) + (dst->w - row - 1) * bpp;
+        srcBuf = (Uint8*) (src->pixels) + (row * src->pitch);
+        dstBuf = (Uint8*) (dst->pixels) + (dst->w - row - 1) * bpp;
         for (col = 0; col < src->w; ++col) {
           memcpy (dstBuf, srcBuf, bpp);
           srcBuf += bpp;
@@ -926,8 +927,8 @@ SDL_Surface *rotateSurface90Degrees (SDL_Surface *src, int numClockwiseTurns) {
     case 2: /* rotated 180 degrees clockwise */
     {
       for (row = 0; row < src->h; ++row) {
-        srcBuf = (Uint8 *) (src->pixels) + (row * src->pitch);
-        dstBuf = (Uint8 *) (dst->pixels) + ((dst->h - row - 1) * dst->pitch) + (dst->w - 1) * bpp;
+        srcBuf = (Uint8*) (src->pixels) + (row * src->pitch);
+        dstBuf = (Uint8*) (dst->pixels) + ((dst->h - row - 1) * dst->pitch) + (dst->w - 1) * bpp;
         for (col = 0; col < src->w; ++col) {
           memcpy (dstBuf, srcBuf, bpp);
           srcBuf += bpp;
@@ -940,8 +941,8 @@ SDL_Surface *rotateSurface90Degrees (SDL_Surface *src, int numClockwiseTurns) {
     case 3: /* rotated 270 degrees clockwise */
     {
       for (row = 0; row < src->h; ++row) {
-        srcBuf = (Uint8 *) (src->pixels) + (row * src->pitch);
-        dstBuf = (Uint8 *) (dst->pixels) + (row * bpp) + ((dst->h - 1) * dst->pitch);
+        srcBuf = (Uint8*) (src->pixels) + (row * src->pitch);
+        dstBuf = (Uint8*) (dst->pixels) + (row * bpp) + ((dst->h - 1) * dst->pitch);
         for (col = 0; col < src->w; ++col) {
           memcpy (dstBuf, srcBuf, bpp);
           srcBuf += bpp;
@@ -978,8 +979,8 @@ SDL_Surface *rotateSurface90Degrees (SDL_Surface *src, int numClockwiseTurns) {
 
 */
 void _rotozoomSurfaceSizeTrig (int width, int height, double angle, double zoomx, double zoomy,
-                               int *dstwidth, int *dstheight,
-                               double *canglezoom, double *sanglezoom) {
+                               int* dstwidth, int* dstheight,
+                               double* canglezoom, double* sanglezoom) {
   double x, y, cx, cy, sx, sy;
   double radangle;
   int dstwidthhalf, dstheighthalf;
@@ -1019,7 +1020,7 @@ void _rotozoomSurfaceSizeTrig (int width, int height, double angle, double zoomx
 \param dstheight The calculated height of the rotozoomed destination surface.
 */
 void
-rotozoomSurfaceSizeXY (int width, int height, double angle, double zoomx, double zoomy, int *dstwidth, int *dstheight) {
+rotozoomSurfaceSizeXY (int width, int height, double angle, double zoomx, double zoomy, int* dstwidth, int* dstheight) {
   double dummy_sanglezoom, dummy_canglezoom;
 
   _rotozoomSurfaceSizeTrig (width, height, angle, zoomx, zoomy, dstwidth, dstheight, &dummy_sanglezoom, &dummy_canglezoom);
@@ -1035,7 +1036,7 @@ rotozoomSurfaceSizeXY (int width, int height, double angle, double zoomx, double
 \param dstwidth The calculated width of the rotozoomed destination surface.
 \param dstheight The calculated height of the rotozoomed destination surface.
 */
-void rotozoomSurfaceSize (int width, int height, double angle, double zoom, int *dstwidth, int *dstheight) {
+void rotozoomSurfaceSize (int width, int height, double angle, double zoom, int* dstwidth, int* dstheight) {
   double dummy_sanglezoom, dummy_canglezoom;
 
   _rotozoomSurfaceSizeTrig (width, height, angle, zoom, zoom, dstwidth, dstheight, &dummy_sanglezoom, &dummy_canglezoom);
@@ -1056,7 +1057,7 @@ or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
 
 \return The new rotozoomed surface.
 */
-SDL_Surface *rotozoomSurface (SDL_Surface *src, double angle, double zoom, int smooth) {
+SDL_Surface* rotozoomSurface (SDL_Surface* src, double angle, double zoom, int smooth) {
   return rotozoomSurfaceXY (src, angle, zoom, zoom, smooth);
 }
 
@@ -1076,9 +1077,9 @@ or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
 
 \return The new rotozoomed surface.
 */
-SDL_Surface *rotozoomSurfaceXY (SDL_Surface *src, double angle, double zoomx, double zoomy, int smooth) {
-  SDL_Surface *rz_src;
-  SDL_Surface *rz_dst;
+SDL_Surface* rotozoomSurfaceXY (SDL_Surface* src, double angle, double zoomx, double zoomy, int smooth) {
+  SDL_Surface* rz_src;
+  SDL_Surface* rz_dst;
   double zoominv;
   double sanglezoom, canglezoom, sanglezoominv, canglezoominv;
   int dstwidthhalf, dstwidth, dstheighthalf, dstheight;
@@ -1340,7 +1341,7 @@ The minimum size of the target surface is 1. The input factors can be positive o
 \param dstwidth Pointer to an integer to store the calculated width of the zoomed target surface.
 \param dstheight Pointer to an integer to store the calculated height of the zoomed target surface.
 */
-void zoomSurfaceSize (int width, int height, double zoomx, double zoomy, int *dstwidth, int *dstheight) {
+void zoomSurfaceSize (int width, int height, double zoomx, double zoomy, int* dstwidth, int* dstheight) {
   /*
   * Make zoom factors positive
   */
@@ -1391,9 +1392,9 @@ If zoom factors are negative, the image is flipped on the axes.
 
 \return The new, zoomed surface.
 */
-SDL_Surface *zoomSurface (SDL_Surface *src, double zoomx, double zoomy, int smooth) {
-  SDL_Surface *rz_src;
-  SDL_Surface *rz_dst;
+SDL_Surface* zoomSurface (SDL_Surface* src, double zoomx, double zoomy, int smooth) {
+  SDL_Surface* rz_src;
+  SDL_Surface* rz_dst;
   int dstwidth, dstheight;
   int is32bit;
   int i, src_converted;
@@ -1546,10 +1547,10 @@ The input surface is not modified. The output surface is newly allocated.
 \return The new, shrunken surface.
 */
 /*@null@*/
-SDL_Surface *shrinkSurface (SDL_Surface *src, int factorx, int factory) {
+SDL_Surface* shrinkSurface (SDL_Surface* src, int factorx, int factory) {
   int result;
-  SDL_Surface *rz_src;
-  SDL_Surface *rz_dst = NULL;
+  SDL_Surface* rz_src;
+  SDL_Surface* rz_dst = NULL;
   int dstwidth, dstheight;
   int is32bit;
   int i, src_converted;

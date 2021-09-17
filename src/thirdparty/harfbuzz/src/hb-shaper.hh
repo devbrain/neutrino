@@ -30,10 +30,10 @@
 #include "hb.hh"
 #include "hb-machinery.hh"
 
-typedef hb_bool_t hb_shape_func_t (hb_shape_plan_t *shape_plan,
-                                   hb_font_t *font,
-                                   hb_buffer_t *buffer,
-                                   const hb_feature_t *features,
+typedef hb_bool_t hb_shape_func_t (hb_shape_plan_t* shape_plan,
+                                   hb_font_t* font,
+                                   hb_buffer_t* buffer,
+                                   const hb_feature_t* features,
                                    unsigned int num_features);
 
 #define HB_SHAPER_IMPLEMENT(name) \
@@ -44,10 +44,10 @@ typedef hb_bool_t hb_shape_func_t (hb_shape_plan_t *shape_plan,
 
 struct hb_shaper_entry_t {
   char name[16];
-  hb_shape_func_t *func;
+  hb_shape_func_t* func;
 };
 
-HB_INTERNAL const hb_shaper_entry_t *
+HB_INTERNAL const hb_shaper_entry_t*
 _hb_shapers_get ();
 
 template <typename Data, unsigned int WheresData, typename T>
@@ -106,13 +106,14 @@ template <enum hb_shaper_order_t order, typename Object> struct hb_shaper_object
 
 template <typename Object>
 struct hb_shaper_object_dataset_t {
-  void init0 (Object *parent_data) {
+  void init0 (Object* parent_data) {
     this->parent_data = parent_data;
 #define HB_SHAPER_IMPLEMENT(shaper) shaper.init0 ();
 #include "hb-shaper-list.hh"
 
 #undef HB_SHAPER_IMPLEMENT
   }
+
   void fini () {
 #define HB_SHAPER_IMPLEMENT(shaper) shaper.fini ();
 #include "hb-shaper-list.hh"
@@ -120,7 +121,7 @@ struct hb_shaper_object_dataset_t {
 #undef HB_SHAPER_IMPLEMENT
   }
 
-  Object *parent_data; /* MUST be JUST before the lazy loaders. */
+  Object* parent_data; /* MUST be JUST before the lazy loaders. */
 #define HB_SHAPER_IMPLEMENT(shaper) \
     hb_shaper_lazy_loader_t<Object, HB_SHAPER_ORDER(shaper), \
                 typename hb_shaper_object_data_type_t<HB_SHAPER_ORDER(shaper), Object>::value \

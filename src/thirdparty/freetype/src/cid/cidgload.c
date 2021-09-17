@@ -45,11 +45,11 @@ cid_load_glyph (T1_Decoder decoder,
                 FT_UInt glyph_index) {
   CID_Face face = (CID_Face) decoder->builder.face;
   CID_FaceInfo cid = &face->cid;
-  FT_Byte *p;
+  FT_Byte* p;
   FT_ULong fd_select;
   FT_Stream stream = face->cid_stream;
   FT_Error error = FT_Err_Ok;
-  FT_Byte *charstring = NULL;
+  FT_Byte* charstring = NULL;
   FT_Memory memory = face->root.memory;
   FT_ULong glyph_length = 0;
   PSAux_Service psaux = (PSAux_Service) face->psaux;
@@ -57,7 +57,7 @@ cid_load_glyph (T1_Decoder decoder,
   FT_Bool force_scaling = FALSE;
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-  FT_Incremental_InterfaceRec *inc =
+  FT_Incremental_InterfaceRec* inc =
       face->root.internal->incremental_interface;
 #endif
 
@@ -75,7 +75,7 @@ cid_load_glyph (T1_Decoder decoder,
     if (error)
       goto Exit;
 
-    p = (FT_Byte *) glyph_data.pointer;
+    p = (FT_Byte*) glyph_data.pointer;
     fd_select = cid_get_offset (&p, (FT_Byte) cid->fd_bytes);
 
     if (glyph_data.length != 0) {
@@ -107,7 +107,7 @@ cid_load_glyph (T1_Decoder decoder,
         FT_FRAME_ENTER(2 * entry_len))
       goto Exit;
 
-    p = (FT_Byte *) stream->cursor;
+    p = (FT_Byte*) stream->cursor;
     fd_select = cid_get_offset (&p, (FT_Byte) cid->fd_bytes);
     off1 = cid_get_offset (&p, (FT_Byte) cid->gd_bytes);
     p += cid->fd_bytes;
@@ -414,7 +414,7 @@ cid_slot_load_glyph (FT_GlyphSlot cidglyph,      /* CID_GlyphSlot */
   }
   else {
     FT_BBox cbox;
-    FT_Glyph_Metrics *metrics = &cidglyph->metrics;
+    FT_Glyph_Metrics* metrics = &cidglyph->metrics;
 
 
     /* copy the _unscaled_ advance width */
@@ -457,8 +457,8 @@ cid_slot_load_glyph (FT_GlyphSlot cidglyph,      /* CID_GlyphSlot */
     if ((load_flags & FT_LOAD_NO_SCALE) == 0 || scaled) {
       /* scale the outline and the metrics */
       FT_Int n;
-      FT_Outline *cur = decoder.builder.base;
-      FT_Vector *vec = cur->points;
+      FT_Outline* cur = decoder.builder.base;
+      FT_Vector* vec = cur->points;
       FT_Fixed x_scale = glyph->x_scale;
       FT_Fixed y_scale = glyph->y_scale;
 

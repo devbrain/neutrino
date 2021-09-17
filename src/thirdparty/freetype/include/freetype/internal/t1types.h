@@ -73,10 +73,10 @@ typedef struct T1_EncodingRecRec_ {
   FT_Int code_first;
   FT_Int code_last;
 
-  FT_UShort *char_index;
-  const FT_String **char_name;
+  FT_UShort* char_index;
+  const FT_String** char_name;
 
-} T1_EncodingRec, *T1_Encoding;
+} T1_EncodingRec, * T1_Encoding;
 
 /* used to hold extra data of PS_FontInfoRec that
  * cannot be stored in the publicly defined structure.
@@ -92,24 +92,24 @@ typedef struct T1_FontRec_ {
   PS_FontInfoRec font_info;         /* font info dictionary   */
   PS_FontExtraRec font_extra;        /* font info extra fields */
   PS_PrivateRec private_dict;      /* private dictionary     */
-  FT_String *font_name;         /* top-level dictionary   */
+  FT_String* font_name;         /* top-level dictionary   */
 
   T1_EncodingType encoding_type;
   T1_EncodingRec encoding;
 
-  FT_Byte *subrs_block;
-  FT_Byte *charstrings_block;
-  FT_Byte *glyph_names_block;
+  FT_Byte* subrs_block;
+  FT_Byte* charstrings_block;
+  FT_Byte* glyph_names_block;
 
   FT_Int num_subrs;
-  FT_Byte **subrs;
-  FT_UInt *subrs_len;
+  FT_Byte** subrs;
+  FT_UInt* subrs_len;
   FT_Hash subrs_hash;
 
   FT_Int num_glyphs;
-  FT_String **glyph_names;       /* array of glyph names       */
-  FT_Byte **charstrings;       /* array of glyph charstrings */
-  FT_UInt *charstrings_len;
+  FT_String** glyph_names;       /* array of glyph names       */
+  FT_Byte** charstrings;       /* array of glyph charstrings */
+  FT_UInt* charstrings_len;
 
   FT_Byte paint_type;
   FT_Byte font_type;
@@ -120,13 +120,13 @@ typedef struct T1_FontRec_ {
 
   FT_Fixed stroke_width;
 
-} T1_FontRec, *T1_Font;
+} T1_FontRec, * T1_Font;
 
 typedef struct CID_SubrsRec_ {
   FT_Int num_subrs;
-  FT_Byte **code;
+  FT_Byte** code;
 
-} CID_SubrsRec, *CID_Subrs;
+} CID_SubrsRec, * CID_Subrs;
 
 
 /*************************************************************************/
@@ -148,7 +148,7 @@ typedef struct AFM_TrackKernRec_ {
   FT_Fixed max_ptsize;
   FT_Fixed max_kern;
 
-} AFM_TrackKernRec, *AFM_TrackKern;
+} AFM_TrackKernRec, * AFM_TrackKern;
 
 typedef struct AFM_KernPairRec_ {
   FT_UInt index1;
@@ -156,7 +156,7 @@ typedef struct AFM_KernPairRec_ {
   FT_Int x;
   FT_Int y;
 
-} AFM_KernPairRec, *AFM_KernPair;
+} AFM_KernPairRec, * AFM_KernPair;
 
 typedef struct AFM_FontInfoRec_ {
   FT_Bool IsCIDFont;
@@ -168,7 +168,7 @@ typedef struct AFM_FontInfoRec_ {
   AFM_KernPair KernPairs;    /* free if non-NULL */
   FT_UInt NumKernPair;
 
-} AFM_FontInfoRec, *AFM_FontInfo;
+} AFM_FontInfoRec, * AFM_FontInfo;
 
 
 /*************************************************************************/
@@ -184,15 +184,15 @@ typedef struct AFM_FontInfoRec_ {
 /*************************************************************************/
 
 
-typedef struct T1_FaceRec_ *T1_Face;
-typedef struct CID_FaceRec_ *CID_Face;
+typedef struct T1_FaceRec_* T1_Face;
+typedef struct CID_FaceRec_* CID_Face;
 
 typedef struct T1_FaceRec_ {
   FT_FaceRec root;
   T1_FontRec type1;
-  const void *psnames;
-  const void *psaux;
-  const void *afm_data;
+  const void* psnames;
+  const void* psaux;
+  const void* afm_data;
   FT_CharMapRec charmaprecs[2];
   FT_CharMap charmaps[2];
 
@@ -208,17 +208,17 @@ typedef struct T1_FaceRec_ {
   /* undocumented, optional: has the same meaning as len_buildchar */
   /* for Type 2 fonts; manipulated by othersubrs 19, 24, and 25    */
   FT_UInt len_buildchar;
-  FT_Long *buildchar;
+  FT_Long* buildchar;
 
   /* since version 2.1 - interface to PostScript hinter */
-  const void *pshinter;
+  const void* pshinter;
 
 } T1_FaceRec;
 
 typedef struct CID_FaceRec_ {
   FT_FaceRec root;
-  void *psnames;
-  void *psaux;
+  void* psnames;
+  void* psaux;
   CID_FaceInfoRec cid;
   PS_FontExtraRec font_extra;
 #if 0
@@ -227,10 +227,10 @@ typedef struct CID_FaceRec_ {
   CID_Subrs subrs;
 
   /* since version 2.1 - interface to PostScript hinter */
-  void *pshinter;
+  void* pshinter;
 
   /* since version 2.1.8, but was originally positioned after `afm_data' */
-  FT_Byte *binary_data; /* used if hex data has been converted */
+  FT_Byte* binary_data; /* used if hex data has been converted */
   FT_Stream cid_stream;
 
 } CID_FaceRec;

@@ -69,7 +69,7 @@ cid_slot_init (FT_GlyphSlot slot) {
       T1_Hints_Funcs funcs;
 
       funcs = pshinter->get_t1_funcs (module);
-      slot->internal->glyph_hints = (void *) funcs;
+      slot->internal->glyph_hints = (void*) funcs;
     }
   }
 
@@ -258,7 +258,7 @@ cid_face_init (FT_Stream stream,
                FT_Face cidface,        /* CID_Face */
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params) {
+               FT_Parameter* params) {
   CID_Face face = (CID_Face) cidface;
   FT_Error error;
   PSAux_Service psaux;
@@ -341,10 +341,10 @@ cid_face_init (FT_Stream stream,
     /* have a /FontName dictionary entry!                   */
     cidface->family_name = info->family_name;
     /* assume "Regular" style if we don't know better */
-    cidface->style_name = (char *) "Regular";
+    cidface->style_name = (char*) "Regular";
     if (cidface->family_name) {
-      char *full = info->full_name;
-      char *family = cidface->family_name;
+      char* full = info->full_name;
+      char* family = cidface->family_name;
 
       if (full) {
         while (*full) {
@@ -452,9 +452,9 @@ cid_driver_init (FT_Module module) {
   driver->darken_params[7] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y4;
 
   /* compute random seed from some memory addresses */
-  seed = (FT_UInt32) ((FT_Offset) (char *) &seed ^
-                      (FT_Offset) (char *) &module ^
-                      (FT_Offset) (char *) module->memory);
+  seed = (FT_UInt32) ((FT_Offset) (char*) &seed ^
+                      (FT_Offset) (char*) &module ^
+                      (FT_Offset) (char*) module->memory);
   seed = seed ^ (seed >> 10) ^ (seed >> 20);
 
   driver->random_seed = (FT_Int32) seed;

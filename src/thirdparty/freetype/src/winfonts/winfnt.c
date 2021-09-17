@@ -568,7 +568,7 @@ typedef struct FNT_CMapRec_ {
   FT_UInt32 first;
   FT_UInt32 count;
 
-} FNT_CMapRec, *FNT_CMap;
+} FNT_CMapRec, * FNT_CMap;
 
 static FT_Error
 fnt_cmap_init (FNT_CMap cmap,
@@ -599,7 +599,7 @@ fnt_cmap_char_index (FNT_CMap cmap,
 
 static FT_UInt32
 fnt_cmap_char_next (FNT_CMap cmap,
-                    FT_UInt32 *pchar_code) {
+                    FT_UInt32* pchar_code) {
   FT_UInt gindex = 0;
   FT_UInt32 result = 0;
   FT_UInt32 char_code = *pchar_code + 1;
@@ -656,7 +656,7 @@ FNT_Face_Init (FT_Stream stream,
                FT_Face fntface,        /* FNT_Face */
                FT_Int face_instance_index,
                FT_Int num_params,
-               FT_Parameter *params) {
+               FT_Parameter* params) {
   FNT_Face face = (FNT_Face) fntface;
   FT_Error error;
   FT_Memory memory = FT_FACE_MEMORY(face);
@@ -736,7 +736,7 @@ FNT_Face_Init (FT_Stream stream,
     root->num_fixed_sizes = 1;
 
     {
-      FT_Bitmap_Size *bsize = root->available_sizes;
+      FT_Bitmap_Size* bsize = root->available_sizes;
       FT_UShort x_res, y_res;
 
       bsize->width = (FT_Short) font->header.avg_width;
@@ -834,16 +834,16 @@ FNT_Face_Init (FT_Stream stream,
       goto Fail;
 
     root->family_name = font->family_name;
-    root->style_name = (char *) "Regular";
+    root->style_name = (char*) "Regular";
 
     if (root->style_flags & FT_STYLE_FLAG_BOLD) {
       if (root->style_flags & FT_STYLE_FLAG_ITALIC)
-        root->style_name = (char *) "Bold Italic";
+        root->style_name = (char*) "Bold Italic";
       else
-        root->style_name = (char *) "Bold";
+        root->style_name = (char*) "Bold";
     }
     else if (root->style_flags & FT_STYLE_FLAG_ITALIC)
-      root->style_name = (char *) "Italic";
+      root->style_name = (char*) "Italic";
   }
   goto Exit;
 
@@ -877,7 +877,7 @@ FNT_Size_Request (FT_Size size,
                   FT_Size_Request req) {
   FNT_Face face = (FNT_Face) size->face;
   FT_WinFNT_Header header = &face->font->header;
-  FT_Bitmap_Size *bsize = size->face->available_sizes;
+  FT_Bitmap_Size* bsize = size->face->available_sizes;
   FT_Error error = FT_ERR(Invalid_Pixel_Size);
   FT_Long height;
 
@@ -914,9 +914,9 @@ FNT_Load_Glyph (FT_GlyphSlot slot,
   FNT_Face face = (FNT_Face) FT_SIZE_FACE(size);
   FNT_Font font;
   FT_Error error = FT_Err_Ok;
-  FT_Byte *p;
+  FT_Byte* p;
   FT_UInt len;
-  FT_Bitmap *bitmap = &slot->bitmap;
+  FT_Bitmap* bitmap = &slot->bitmap;
   FT_ULong offset;
   FT_Bool new_format;
 
@@ -995,8 +995,8 @@ FNT_Load_Glyph (FT_GlyphSlot slot,
   {
     FT_Memory memory = FT_FACE_MEMORY(slot->face);
     FT_UInt pitch = (bitmap->width + 7) >> 3;
-    FT_Byte *column;
-    FT_Byte *write;
+    FT_Byte* column;
+    FT_Byte* write;
 
     bitmap->pitch = (int) pitch;
     if (!pitch ||
@@ -1011,10 +1011,10 @@ FNT_Load_Glyph (FT_GlyphSlot slot,
     if (FT_ALLOC_MULT(bitmap->buffer, bitmap->rows, pitch))
       goto Exit;
 
-    column = (FT_Byte *) bitmap->buffer;
+    column = (FT_Byte*) bitmap->buffer;
 
     for (; pitch > 0; pitch--, column++) {
-      FT_Byte *limit = p + bitmap->rows;
+      FT_Byte* limit = p + bitmap->rows;
 
       for (write = column; p < limit; p++, write += bitmap->pitch)
         *write = *p;
@@ -1029,7 +1029,7 @@ FNT_Load_Glyph (FT_GlyphSlot slot,
 
 static FT_Error
 winfnt_get_header (FT_Face face,
-                   FT_WinFNT_HeaderRec *aheader) {
+                   FT_WinFNT_HeaderRec* aheader) {
   FNT_Font font = ((FNT_Face) face)->font;
 
   *aheader = font->header;
@@ -1056,7 +1056,7 @@ static const FT_ServiceDescRec winfnt_services[] =
 
 static FT_Module_Interface
 winfnt_get_service (FT_Module module,
-                    const FT_String *service_id) {
+                    const FT_String* service_id) {
   FT_UNUSED(module);
 
   return ft_service_list_lookup (winfnt_services, service_id);

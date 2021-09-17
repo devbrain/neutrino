@@ -10,24 +10,25 @@
 #include "tiled/loader/tmx/json_reader.hh"
 
 namespace neutrino::tiled::tmx::test {
-  map load_map (const std::string &txt, path_resolver_t resolver) {
-    return load_map ((const unsigned char *) txt.c_str (), txt.size (), resolver);
+  map load_map (const std::string& txt, path_resolver_t resolver) {
+    return load_map ((const unsigned char*) txt.c_str (), txt.size (), resolver);
   }
 
-  map load_map (const unsigned char *data, std::size_t length, path_resolver_t resolver) {
-    auto doc_type = reader::guess_document_type ((char *) data, length);
+  map load_map (const unsigned char* data, std::size_t length, path_resolver_t resolver) {
+    auto doc_type = reader::guess_document_type ((char*) data, length);
     switch (doc_type) {
       case reader::XML_DOCUMENT:
-        return map::parse (xml_reader::load ((char *) data, length, "map"), std::move (resolver));
+        return map::parse (xml_reader::load ((char*) data, length, "map"), std::move (resolver));
       case reader::JSON_DOCUMENT:
-        return map::parse (json_reader::load ((char *) data, length, nullptr), std::move (resolver));
+        return map::parse (json_reader::load ((char*) data, length, nullptr), std::move (resolver));
       default:
         RAISE_EX("Unknown document type");
     }
 
   }
+
   // ---------------------------------------------------------------------------------
-  bool check_properties (const component &obj, const std::map<std::string, property_t> &props) {
+  bool check_properties (const component& obj, const std::map<std::string, property_t>& props) {
     for (const auto&[name, val] : props) {
       if (auto pprop = obj.get (name); pprop.has_value ()) {
         if (*pprop != val) {
@@ -40,8 +41,9 @@ namespace neutrino::tiled::tmx::test {
     }
     return true;
   }
+
   // ---------------------------------------------------------------------------------
-  bool test_tiles (const tile_layer &tl, const std::vector<int> &expected) {
+  bool test_tiles (const tile_layer& tl, const std::vector<int>& expected) {
     int k = 0;
     for (const auto c : tl.cells ()) {
       if (k >= expected.size ()) {
@@ -53,7 +55,8 @@ namespace neutrino::tiled::tmx::test {
     }
     return (k == expected.size ());
   }
-  bool eq_cells (const std::vector<cell> &a, const std::vector<cell> &b) {
+
+  bool eq_cells (const std::vector<cell>& a, const std::vector<cell>& b) {
     if (a.size () != b.size ()) {
       return false;
     }

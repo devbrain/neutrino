@@ -19,13 +19,13 @@ namespace neutrino::demoscene {
       scene (int w, int h);
       ~scene () override;
     protected:
-      virtual void init (vga &screen) = 0;
-      virtual void effect (vga &screen) = 0;
+      virtual void init (vga& screen) = 0;
+      virtual void effect (vga& screen) = 0;
     private:
       void after_window_opened () override;
     private:
       std::unique_ptr<vga> m_vga;
-      main_scene *m_main_scene;
+      main_scene* m_main_scene;
   };
 }
 

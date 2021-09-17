@@ -204,24 +204,28 @@ exec_prefix_x :=
 $(subst
 $(space),
 \\
+
 $(space), $ (exec_prefix)
 )
 includedir_x  :=
 $(subst
 $(space),
 \\
+
 $(space), $ (includedir)
 )
 libdir_x      :=
 $(subst
 $(space),
 \\
+
 $(space), $ (libdir)
 )
 prefix_x      :=
 $(subst
 $(space),
 \\
+
 $(space), $ (prefix)
 )
 

@@ -23,7 +23,7 @@
 
 /*---------------------------------------------------*/
 static
-void makeMaps_d (DState *s) {
+void makeMaps_d (DState* s) {
   Int32 i;
   s->nInUse = 0;
   for (i = 0; i < 256; i++)
@@ -100,11 +100,11 @@ void makeMaps_d (DState *s) {
 }
 
 /*---------------------------------------------------*/
-Int32 BZ2_decompress (DState *s) {
+Int32 BZ2_decompress (DState* s) {
   UChar uc;
   Int32 retVal;
   Int32 minLen, maxLen;
-  bz_stream *strm = s->strm;
+  bz_stream* strm = s->strm;
 
   /* stuff that needs to be saved/restored */
   Int32 i;
@@ -128,9 +128,9 @@ Int32 BZ2_decompress (DState *s) {
   Int32 zj;
   Int32 gSel;
   Int32 gMinlen;
-  Int32 *gLimit;
-  Int32 *gBase;
-  Int32 *gPerm;
+  Int32* gLimit;
+  Int32* gBase;
+  Int32* gPerm;
 
   if (s->state == BZ_X_MAGIC_1) {
     /*initialise the save area*/

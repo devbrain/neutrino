@@ -70,7 +70,7 @@ typedef struct PCF_CMapRec_ {
   FT_CMapRec root;
   PCF_Enc enc;
 
-} PCF_CMapRec, *PCF_CMap;
+} PCF_CMapRec, * PCF_CMap;
 
 FT_CALLBACK_DEF(FT_Error)
 pcf_cmap_init (FT_CMap pcfcmap,   /* PCF_CMap */
@@ -119,7 +119,7 @@ pcf_cmap_char_index (FT_CMap pcfcmap,  /* PCF_CMap */
 
 FT_CALLBACK_DEF(FT_UInt)
 pcf_cmap_char_next (FT_CMap pcfcmap,   /* PCF_CMap */
-                    FT_UInt32 *acharcode) {
+                    FT_UInt32* acharcode) {
   PCF_CMap cmap = (PCF_CMap) pcfcmap;
   PCF_Enc enc = cmap->enc;
   FT_UInt32 charcode = *acharcode;
@@ -219,7 +219,7 @@ PCF_Face_Init (FT_Stream stream,
                FT_Face pcfface,        /* PCF_Face */
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params) {
+               FT_Parameter* params) {
   PCF_Face face = (PCF_Face) pcfface;
   FT_Error error;
 
@@ -319,12 +319,12 @@ PCF_Face_Init (FT_Stream stream,
 
   /* set up charmap */
   {
-    FT_String *charset_registry = face->charset_registry;
-    FT_String *charset_encoding = face->charset_encoding;
+    FT_String* charset_registry = face->charset_registry;
+    FT_String* charset_encoding = face->charset_encoding;
     FT_Bool unicode_charmap = 0;
 
     if (charset_registry && charset_encoding) {
-      char *s = charset_registry;
+      char* s = charset_registry;
 
 
       /* Uh, oh, compare first letters manually to avoid dependency
@@ -391,7 +391,7 @@ FT_CALLBACK_DEF(FT_Error)
 PCF_Size_Request (FT_Size size,
                   FT_Size_Request req) {
   PCF_Face face = (PCF_Face) size->face;
-  FT_Bitmap_Size *bsize = size->face->available_sizes;
+  FT_Bitmap_Size* bsize = size->face->available_sizes;
   FT_Error error = FT_ERR(Invalid_Pixel_Size);
   FT_Long height;
 
@@ -429,7 +429,7 @@ PCF_Glyph_Load (FT_GlyphSlot slot,
   PCF_Face face = (PCF_Face) FT_SIZE_FACE(size);
   FT_Stream stream;
   FT_Error error = FT_Err_Ok;
-  FT_Bitmap *bitmap = &slot->bitmap;
+  FT_Bitmap* bitmap = &slot->bitmap;
   PCF_Metric metric;
   FT_ULong bytes;
 
@@ -537,8 +537,8 @@ PCF_Glyph_Load (FT_GlyphSlot slot,
 
 static FT_Error
 pcf_get_bdf_property (PCF_Face face,
-                      const char *prop_name,
-                      BDF_PropertyRec *aproperty) {
+                      const char* prop_name,
+                      BDF_PropertyRec* aproperty) {
   PCF_Property prop;
 
   prop = pcf_find_property (face, prop_name);
@@ -571,8 +571,8 @@ pcf_get_bdf_property (PCF_Face face,
 
 static FT_Error
 pcf_get_charset_id (PCF_Face face,
-                    const char **acharset_encoding,
-                    const char **acharset_registry) {
+                    const char** acharset_encoding,
+                    const char** acharset_registry) {
   *acharset_encoding = face->charset_encoding;
   *acharset_registry = face->charset_registry;
 
@@ -591,8 +591,8 @@ static const FT_Service_BDFRec pcf_service_bdf =
  */
 static FT_Error
 pcf_property_set (FT_Module module,         /* PCF_Driver */
-                  const char *property_name,
-                  const void *value,
+                  const char* property_name,
+                  const void* value,
                   FT_Bool value_is_string) {
 #ifdef PCF_CONFIG_OPTION_LONG_FAMILY_NAMES
 
@@ -650,8 +650,8 @@ pcf_property_set (FT_Module module,         /* PCF_Driver */
 
 static FT_Error
 pcf_property_get (FT_Module module,         /* PCF_Driver */
-                  const char *property_name,
-                  const void *value) {
+                  const char* property_name,
+                  const void* value) {
 #ifdef PCF_CONFIG_OPTION_LONG_FAMILY_NAMES
 
   FT_Error    error  = FT_Err_Ok;
@@ -707,7 +707,7 @@ static const FT_ServiceDescRec pcf_services[] =
 
 FT_CALLBACK_DEF(FT_Module_Interface)
 pcf_driver_requester (FT_Module module,
-                      const char *name) {
+                      const char* name) {
   FT_UNUSED(module);
 
   return ft_service_list_lookup (pcf_services, name);

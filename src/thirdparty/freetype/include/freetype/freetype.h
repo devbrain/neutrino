@@ -406,7 +406,7 @@ typedef struct FT_Bitmap_Size_ {
  *   destroyed with @FT_Done_FreeType.  If you need reference-counting
  *   (cf. @FT_Reference_Library), use @FT_New_Library and @FT_Done_Library.
  */
-typedef struct FT_LibraryRec_ *FT_Library;
+typedef struct FT_LibraryRec_* FT_Library;
 
 
 /**************************************************************************
@@ -426,7 +426,7 @@ typedef struct FT_LibraryRec_ *FT_Library;
  *   driver, a renderer, or anything else that provides services to the
  *   former.
  */
-typedef struct FT_ModuleRec_ *FT_Module;
+typedef struct FT_ModuleRec_* FT_Module;
 
 /**************************************************************************
  *
@@ -437,7 +437,7 @@ typedef struct FT_ModuleRec_ *FT_Module;
  *   A handle to a given FreeType font driver object.  A font driver is a
  *   module capable of creating faces from font files.
  */
-typedef struct FT_DriverRec_ *FT_Driver;
+typedef struct FT_DriverRec_* FT_Driver;
 
 /**************************************************************************
  *
@@ -449,7 +449,7 @@ typedef struct FT_DriverRec_ *FT_Driver;
  *   charge of converting a glyph's outline image to a bitmap.  It supports
  *   a single glyph image format, and one or more target surface depths.
  */
-typedef struct FT_RendererRec_ *FT_Renderer;
+typedef struct FT_RendererRec_* FT_Renderer;
 
 
 /**************************************************************************
@@ -488,7 +488,7 @@ typedef struct FT_RendererRec_ *FT_Renderer;
  *   See @FT_FaceRec for the publicly accessible fields of a given face
  *   object.
  */
-typedef struct FT_FaceRec_ *FT_Face;
+typedef struct FT_FaceRec_* FT_Face;
 
 /**************************************************************************
  *
@@ -517,7 +517,7 @@ typedef struct FT_FaceRec_ *FT_Face;
  *   See @FT_SizeRec for the publicly accessible fields of a given size
  *   object.
  */
-typedef struct FT_SizeRec_ *FT_Size;
+typedef struct FT_SizeRec_* FT_Size;
 
 /**************************************************************************
  *
@@ -535,7 +535,7 @@ typedef struct FT_SizeRec_ *FT_Size;
  * @also:
  *   See @FT_GlyphSlotRec for the publicly accessible glyph fields.
  */
-typedef struct FT_GlyphSlotRec_ *FT_GlyphSlot;
+typedef struct FT_GlyphSlotRec_* FT_GlyphSlot;
 
 /**************************************************************************
  *
@@ -568,7 +568,7 @@ typedef struct FT_GlyphSlotRec_ *FT_GlyphSlot;
  *   See @FT_CharMapRec for the publicly accessible fields of a given
  *   character map.
  */
-typedef struct FT_CharMapRec_ *FT_CharMap;
+typedef struct FT_CharMapRec_* FT_CharMap;
 
 
 /**************************************************************************
@@ -846,7 +846,7 @@ typedef struct FT_CharMapRec_ {
  *   This structure might change between releases of FreeType~2 and is not
  *   generally available to client applications.
  */
-typedef struct FT_Face_InternalRec_ *FT_Face_Internal;
+typedef struct FT_Face_InternalRec_* FT_Face_Internal;
 
 /**************************************************************************
  *
@@ -1031,14 +1031,14 @@ typedef struct FT_FaceRec_ {
 
   FT_Long num_glyphs;
 
-  FT_String *family_name;
-  FT_String *style_name;
+  FT_String* family_name;
+  FT_String* style_name;
 
   FT_Int num_fixed_sizes;
-  FT_Bitmap_Size *available_sizes;
+  FT_Bitmap_Size* available_sizes;
 
   FT_Int num_charmaps;
-  FT_CharMap *charmaps;
+  FT_CharMap* charmaps;
 
   FT_Generic generic;
 
@@ -1071,7 +1071,7 @@ typedef struct FT_FaceRec_ {
   FT_ListRec sizes_list;
 
   FT_Generic autohint;   /* face-specific auto-hinter data */
-  void *extensions; /* unused                         */
+  void* extensions; /* unused                         */
 
   FT_Face_Internal internal;
 
@@ -1480,7 +1480,7 @@ typedef struct FT_FaceRec_ {
  *   An opaque handle to an `FT_Size_InternalRec` structure, used to model
  *   private data of a given @FT_Size object.
  */
-typedef struct FT_Size_InternalRec_ *FT_Size_Internal;
+typedef struct FT_Size_InternalRec_* FT_Size_Internal;
 
 /**************************************************************************
  *
@@ -1645,7 +1645,7 @@ typedef struct FT_SizeRec_ {
  *   You can however retrieve subglyph information with
  *   @FT_Get_SubGlyph_Info.
  */
-typedef struct FT_SubGlyphRec_ *FT_SubGlyph;
+typedef struct FT_SubGlyphRec_* FT_SubGlyph;
 
 /**************************************************************************
  *
@@ -1656,7 +1656,7 @@ typedef struct FT_SubGlyphRec_ *FT_SubGlyph;
  *   An opaque handle to an `FT_Slot_InternalRec` structure, used to model
  *   private data of a given @FT_GlyphSlot object.
  */
-typedef struct FT_Slot_InternalRec_ *FT_Slot_Internal;
+typedef struct FT_Slot_InternalRec_* FT_Slot_Internal;
 
 /**************************************************************************
  *
@@ -1879,13 +1879,13 @@ typedef struct FT_GlyphSlotRec_ {
   FT_UInt num_subglyphs;
   FT_SubGlyph subglyphs;
 
-  void *control_data;
+  void* control_data;
   long control_len;
 
   FT_Pos lsb_delta;
   FT_Pos rsb_delta;
 
-  void *other;
+  void* other;
 
   FT_Slot_Internal internal;
 
@@ -1935,7 +1935,7 @@ typedef struct FT_GlyphSlotRec_ {
  *   more.
  */
 FT_EXPORT(FT_Error)
-FT_Init_FreeType (FT_Library *alibrary);
+FT_Init_FreeType (FT_Library* alibrary);
 
 
 /**************************************************************************
@@ -2094,13 +2094,13 @@ typedef struct FT_Parameter_ {
  */
 typedef struct FT_Open_Args_ {
   FT_UInt flags;
-  const FT_Byte *memory_base;
+  const FT_Byte* memory_base;
   FT_Long memory_size;
-  FT_String *pathname;
+  FT_String* pathname;
   FT_Stream stream;
   FT_Module driver;
   FT_Int num_params;
-  FT_Parameter *params;
+  FT_Parameter* params;
 
 } FT_Open_Args;
 
@@ -2138,9 +2138,9 @@ typedef struct FT_Open_Args_ {
  */
 FT_EXPORT(FT_Error)
 FT_New_Face (FT_Library library,
-             const char *filepathname,
+             const char* filepathname,
              FT_Long face_index,
-             FT_Face *aface);
+             FT_Face* aface);
 
 
 /**************************************************************************
@@ -2178,10 +2178,10 @@ FT_New_Face (FT_Library library,
  */
 FT_EXPORT(FT_Error)
 FT_New_Memory_Face (FT_Library library,
-                    const FT_Byte *file_base,
+                    const FT_Byte* file_base,
                     FT_Long file_size,
                     FT_Long face_index,
-                    FT_Face *aface);
+                    FT_Face* aface);
 
 
 /**************************************************************************
@@ -2323,9 +2323,9 @@ FT_New_Memory_Face (FT_Library library,
  */
 FT_EXPORT(FT_Error)
 FT_Open_Face (FT_Library library,
-              const FT_Open_Args *args,
+              const FT_Open_Args* args,
               FT_Long face_index,
-              FT_Face *aface);
+              FT_Face* aface);
 
 
 /**************************************************************************
@@ -2349,7 +2349,7 @@ FT_Open_Face (FT_Library library,
  */
 FT_EXPORT(FT_Error)
 FT_Attach_File (FT_Face face,
-                const char *filepathname);
+                const char* filepathname);
 
 
 /**************************************************************************
@@ -2385,7 +2385,7 @@ FT_Attach_File (FT_Face face,
  */
 FT_EXPORT(FT_Error)
 FT_Attach_Stream (FT_Face face,
-                  FT_Open_Args *parameters);
+                  FT_Open_Args* parameters);
 
 
 /**************************************************************************
@@ -2596,7 +2596,7 @@ typedef struct FT_Size_RequestRec_ {
  * @description:
  *   A handle to a size request structure.
  */
-typedef struct FT_Size_RequestRec_ *FT_Size_Request;
+typedef struct FT_Size_RequestRec_* FT_Size_Request;
 
 
 /**************************************************************************
@@ -3163,8 +3163,8 @@ FT_Load_Char (FT_Face face,
  */
 FT_EXPORT(void)
 FT_Set_Transform (FT_Face face,
-                  FT_Matrix *matrix,
-                  FT_Vector *delta);
+                  FT_Matrix* matrix,
+                  FT_Vector* delta);
 
 /**************************************************************************
  *
@@ -3439,7 +3439,7 @@ FT_Get_Kerning (FT_Face face,
                 FT_UInt left_glyph,
                 FT_UInt right_glyph,
                 FT_UInt kern_mode,
-                FT_Vector *akerning);
+                FT_Vector* akerning);
 
 
 /**************************************************************************
@@ -3482,7 +3482,7 @@ FT_EXPORT(FT_Error)
 FT_Get_Track_Kerning (FT_Face face,
                       FT_Fixed point_size,
                       FT_Int degree,
-                      FT_Fixed *akerning);
+                      FT_Fixed* akerning);
 
 
 /**************************************************************************
@@ -3743,7 +3743,7 @@ FT_Get_Char_Index (FT_Face face,
  */
 FT_EXPORT(FT_ULong)
 FT_Get_First_Char (FT_Face face,
-                   FT_UInt *agindex);
+                   FT_UInt* agindex);
 
 
 /**************************************************************************
@@ -3781,7 +3781,7 @@ FT_Get_First_Char (FT_Face face,
 FT_EXPORT(FT_ULong)
 FT_Get_Next_Char (FT_Face face,
                   FT_ULong char_code,
-                  FT_UInt *agindex);
+                  FT_UInt* agindex);
 
 
 /**************************************************************************
@@ -3879,7 +3879,7 @@ FT_Get_Next_Char (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Face_Properties (FT_Face face,
                     FT_UInt num_properties,
-                    FT_Parameter *properties);
+                    FT_Parameter* properties);
 
 
 /**************************************************************************
@@ -3902,7 +3902,7 @@ FT_Face_Properties (FT_Face face,
  */
 FT_EXPORT(FT_UInt)
 FT_Get_Name_Index (FT_Face face,
-                   const FT_String *glyph_name);
+                   const FT_String* glyph_name);
 
 
 /**************************************************************************
@@ -3984,11 +3984,11 @@ FT_Get_Name_Index (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Get_SubGlyph_Info (FT_GlyphSlot glyph,
                       FT_UInt sub_index,
-                      FT_Int *p_index,
-                      FT_UInt *p_flags,
-                      FT_Int *p_arg1,
-                      FT_Int *p_arg2,
-                      FT_Matrix *p_transform);
+                      FT_Int* p_index,
+                      FT_UInt* p_flags,
+                      FT_Int* p_arg1,
+                      FT_Int* p_arg2,
+                      FT_Matrix* p_transform);
 
 
 /**************************************************************************
@@ -4031,7 +4031,7 @@ FT_Get_SubGlyph_Info (FT_GlyphSlot glyph,
 typedef struct FT_LayerIterator_ {
   FT_UInt num_layers;
   FT_UInt layer;
-  FT_Byte *p;
+  FT_Byte* p;
 
 } FT_LayerIterator;
 
@@ -4147,9 +4147,9 @@ typedef struct FT_LayerIterator_ {
 FT_EXPORT(FT_Bool)
 FT_Get_Color_Glyph_Layer (FT_Face face,
                           FT_UInt base_glyph,
-                          FT_UInt *aglyph_index,
-                          FT_UInt *acolor_index,
-                          FT_LayerIterator *iterator);
+                          FT_UInt* aglyph_index,
+                          FT_UInt* acolor_index,
+                          FT_LayerIterator* iterator);
 
 
 /**************************************************************************
@@ -4685,8 +4685,8 @@ FT_FloorFix (FT_Fixed a);
  *   The result is undefined if either `vector` or `matrix` is invalid.
  */
 FT_EXPORT(void)
-FT_Vector_Transform (FT_Vector *vector,
-                     const FT_Matrix *matrix);
+FT_Vector_Transform (FT_Vector* vector,
+                     const FT_Matrix* matrix);
 
 
 /**************************************************************************
@@ -4779,9 +4779,9 @@ FT_Vector_Transform (FT_Vector *vector,
  */
 FT_EXPORT(void)
 FT_Library_Version (FT_Library library,
-                    FT_Int *amajor,
-                    FT_Int *aminor,
-                    FT_Int *apatch);
+                    FT_Int* amajor,
+                    FT_Int* aminor,
+                    FT_Int* apatch);
 
 
 /**************************************************************************

@@ -76,11 +76,11 @@ HB_BEGIN_DECLS
      HB_VERSION_MAJOR*10000+HB_VERSION_MINOR*100+HB_VERSION_MICRO)
 
 HB_EXTERN void
-hb_version (unsigned int *major,
-            unsigned int *minor,
-            unsigned int *micro);
+hb_version (unsigned int* major,
+            unsigned int* minor,
+            unsigned int* micro);
 
-HB_EXTERN const char *
+HB_EXTERN const char*
 hb_version_string (void);
 
 HB_EXTERN hb_bool_t

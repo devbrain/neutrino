@@ -80,10 +80,10 @@
  *
  */
 
-static void *
+static void*
 get_sfnt_table (TT_Face face,
                 FT_Sfnt_Tag tag) {
-  void *table;
+  void* table;
 
   switch (tag) {
     case FT_SFNT_HEAD:
@@ -124,9 +124,9 @@ get_sfnt_table (TT_Face face,
 static FT_Error
 sfnt_table_info (TT_Face face,
                  FT_UInt idx,
-                 FT_ULong *tag,
-                 FT_ULong *offset,
-                 FT_ULong *length) {
+                 FT_ULong* tag,
+                 FT_ULong* offset,
+                 FT_ULong* length) {
   if (!offset || !length)
     return FT_THROW(Invalid_Argument);
 
@@ -164,7 +164,7 @@ sfnt_get_glyph_name (FT_Face face,
                      FT_UInt glyph_index,
                      FT_Pointer buffer,
                      FT_UInt buffer_max) {
-  FT_String *gname;
+  FT_String* gname;
   FT_Error error;
 
   error = tt_face_get_ps_name ((TT_Face) face, glyph_index, &gname);
@@ -176,7 +176,7 @@ sfnt_get_glyph_name (FT_Face face,
 
 static FT_UInt
 sfnt_get_name_index (FT_Face face,
-                     const FT_String *glyph_name) {
+                     const FT_String* glyph_name) {
   TT_Face ttface = (TT_Face) face;
 
   FT_UInt i, max_gid = FT_UINT_MAX;
@@ -190,7 +190,7 @@ sfnt_get_name_index (FT_Face face,
         FT_UINT_MAX, face->num_glyphs));
 
   for (i = 0; i < max_gid; i++) {
-    FT_String *gname;
+    FT_String* gname;
     FT_Error error = tt_face_get_ps_name (ttface, i, &gname);
 
     if (error)
@@ -274,11 +274,11 @@ fmix32 (FT_UInt32 h) {
 }
 
 static void
-murmur_hash_3_128 (const void *key,
+murmur_hash_3_128 (const void* key,
                    const unsigned int len,
                    FT_UInt32 seed,
-                   void *out) {
-  const FT_Byte *data = (const FT_Byte *) key;
+                   void* out) {
+  const FT_Byte* data = (const FT_Byte*) key;
   const int nblocks = (int) len / 16;
 
   FT_UInt32 h1 = seed;
@@ -291,7 +291,7 @@ murmur_hash_3_128 (const void *key,
   const FT_UInt32 c3 = 0x38b34ae5;
   const FT_UInt32 c4 = 0xa1e38b93;
 
-  const FT_UInt32 *blocks = (const FT_UInt32 *) (data + nblocks * 16);
+  const FT_UInt32* blocks = (const FT_UInt32*) (data + nblocks * 16);
 
   int i;
 
@@ -339,7 +339,7 @@ murmur_hash_3_128 (const void *key,
   }
 
   {
-    const FT_Byte *tail = (const FT_Byte *) (data + nblocks * 16);
+    const FT_Byte* tail = (const FT_Byte*) (data + nblocks * 16);
 
     FT_UInt32 k1 = 0;
     FT_UInt32 k2 = 0;
@@ -439,15 +439,15 @@ murmur_hash_3_128 (const void *key,
   h3 += h1;
   h4 += h1;
 
-  ((FT_UInt32 *) out)[0] = h1;
-  ((FT_UInt32 *) out)[1] = h2;
-  ((FT_UInt32 *) out)[2] = h3;
-  ((FT_UInt32 *) out)[3] = h4;
+  ((FT_UInt32*) out)[0] = h1;
+  ((FT_UInt32*) out)[1] = h2;
+  ((FT_UInt32*) out)[2] = h3;
+  ((FT_UInt32*) out)[3] = h4;
 }
 
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
 
-typedef int (*char_type_func) (int c);
+typedef int (* char_type_func) (int c);
 
 
 /* Handling of PID/EID 3/0 and 3/1 is the same. */
@@ -457,7 +457,7 @@ typedef int (*char_type_func) (int c);
 #define IS_APPLE(n)  ( (n)->platformID == 1 && \
                          (n)->encodingID == 0 )
 
-static char *
+static char*
 get_win_string (FT_Memory memory,
                 FT_Stream stream,
                 TT_Name entry,
@@ -465,9 +465,9 @@ get_win_string (FT_Memory memory,
                 FT_Bool report_invalid_characters) {
   FT_Error error = FT_Err_Ok;
 
-  char *result = NULL;
-  FT_String *r;
-  FT_Char *p;
+  char* result = NULL;
+  FT_String* r;
+  FT_Char* p;
   FT_UInt len;
 
   FT_UNUSED(error);
@@ -479,8 +479,8 @@ get_win_string (FT_Memory memory,
       FT_FRAME_ENTER(entry->stringLength))
     goto get_win_string_error;
 
-  r = (FT_String *) result;
-  p = (FT_Char *) stream->cursor;
+  r = (FT_String*) result;
+  p = (FT_Char*) stream->cursor;
 
   for (len = entry->stringLength / 2; len > 0; len--, p += 2) {
     if (p[0] == 0 && char_type (p[1]))
@@ -511,7 +511,7 @@ get_win_string (FT_Memory memory,
   return NULL;
 }
 
-static char *
+static char*
 get_apple_string (FT_Memory memory,
                   FT_Stream stream,
                   TT_Name entry,
@@ -519,9 +519,9 @@ get_apple_string (FT_Memory memory,
                   FT_Bool report_invalid_characters) {
   FT_Error error = FT_Err_Ok;
 
-  char *result = NULL;
-  FT_String *r;
-  FT_Char *p;
+  char* result = NULL;
+  FT_String* r;
+  FT_Char* p;
   FT_UInt len;
 
   FT_UNUSED(error);
@@ -533,8 +533,8 @@ get_apple_string (FT_Memory memory,
       FT_FRAME_ENTER(entry->stringLength))
     goto get_apple_string_error;
 
-  r = (FT_String *) result;
-  p = (FT_Char *) stream->cursor;
+  r = (FT_String*) result;
+  p = (FT_Char*) stream->cursor;
 
   for (len = entry->stringLength; len > 0; len--, p++) {
     if (char_type (*p))
@@ -568,8 +568,8 @@ get_apple_string (FT_Memory memory,
 static FT_Bool
 sfnt_get_name_id (TT_Face face,
                   FT_UShort id,
-                  FT_Int *win,
-                  FT_Int *apple) {
+                  FT_Int* win,
+                  FT_Int* apple) {
   FT_Int n;
 
   *win = -1;
@@ -618,11 +618,11 @@ sfnt_get_name_id (TT_Face face,
  * to the position after the representation's last byte.
  */
 
-static char *
+static char*
 fixed2float (FT_Int fixed,
-             char *buf) {
-  char *p;
-  char *q;
+             char* buf) {
+  char* p;
+  char* q;
   char tmp[5];
 
   FT_Int int_part;
@@ -727,7 +727,7 @@ static const char hexdigits[16] =
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
 
-static const char *
+static const char*
 sfnt_get_var_ps_name (TT_Face face) {
   FT_Error error;
   FT_Memory memory = face->root.memory;
@@ -735,14 +735,14 @@ sfnt_get_var_ps_name (TT_Face face) {
   FT_Service_MultiMasters mm = (FT_Service_MultiMasters) face->mm;
 
   FT_UInt num_coords;
-  FT_Fixed *coords;
-  FT_MM_Var *mm_var;
+  FT_Fixed* coords;
+  FT_MM_Var* mm_var;
 
   FT_Int found, win, apple;
   FT_UInt i, j;
 
-  char *result = NULL;
-  char *p;
+  char* result = NULL;
+  char* p;
 
   if (!face->var_postscript_prefix) {
     FT_UInt len;
@@ -830,7 +830,7 @@ sfnt_get_var_ps_name (TT_Face face) {
     FT_Long instance = ((face->root.face_index & 0x7FFF0000L) >> 16) - 1;
     FT_UInt psid = mm_var->namedstyle[instance].psid;
 
-    char *ps_name = NULL;
+    char* ps_name = NULL;
 
 
     /* try first to load the name string with index `postScriptNameID' */
@@ -848,8 +848,8 @@ sfnt_get_var_ps_name (TT_Face face) {
       /* otherwise construct a name using `subfamilyNameID' */
       FT_UInt strid = mm_var->namedstyle[instance].strid;
 
-      char *subfamily_name;
-      char *s;
+      char* subfamily_name;
+      char* s;
 
       (void) sfnt->get_name (face, (FT_UShort) strid, &subfamily_name);
 
@@ -884,7 +884,7 @@ sfnt_get_var_ps_name (TT_Face face) {
     }
   }
   else {
-    FT_Var_Axis *axis;
+    FT_Var_Axis* axis;
 
     construct_instance_name:
     axis = mm_var->axis;
@@ -934,7 +934,7 @@ sfnt_get_var_ps_name (TT_Face face) {
     FT_UInt32 seed = 123456789;
 
     FT_UInt32 hash[4];
-    FT_UInt32 *h;
+    FT_UInt32* h;
 
     murmur_hash_3_128 (result, p - result, seed, hash);
 
@@ -965,10 +965,10 @@ sfnt_get_var_ps_name (TT_Face face) {
 
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
 
-static const char *
+static const char*
 sfnt_get_ps_name (TT_Face face) {
   FT_Int found, win, apple;
-  const char *result = NULL;
+  const char* result = NULL;
 
   if (face->postscript_name)
     return face->postscript_name;
@@ -1027,8 +1027,8 @@ FT_DEFINE_SERVICE_TTCMAPSREC(
 
 static FT_Error
 sfnt_get_charset_id (TT_Face face,
-                     const char **acharset_encoding,
-                     const char **acharset_registry) {
+                     const char** acharset_encoding,
+                     const char** acharset_registry) {
   BDF_PropertyRec encoding, registry;
   FT_Error error;
 
@@ -1106,7 +1106,7 @@ FT_DEFINE_SERVICEDESCREC3(
 
 FT_CALLBACK_DEF(FT_Module_Interface)
 sfnt_get_interface (FT_Module module,
-                    const char *module_interface) {
+                    const char* module_interface) {
   FT_UNUSED(module);
 
   return ft_service_list_lookup (sfnt_services, module_interface);
@@ -1217,7 +1217,7 @@ FT_DEFINE_MODULE(
     0x10000L,   /* driver version 1.0                     */
     0x20000L,   /* driver requires FreeType 2.0 or higher */
 
-    (const void *) &sfnt_interface,  /* module specific interface */
+    (const void*) &sfnt_interface,  /* module specific interface */
 
     (FT_Module_Constructor) NULL,               /* module_init   */
     (FT_Module_Destructor) NULL,               /* module_done   */

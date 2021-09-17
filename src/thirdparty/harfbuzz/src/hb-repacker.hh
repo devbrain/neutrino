@@ -87,7 +87,7 @@ struct graph_t {
 
     struct overflow_record_t {
       unsigned parent;
-      const hb_serialize_context_t::object_t::link_t *link;
+      const hb_serialize_context_t::object_t::link_t* link;
     };
 
     struct clone_buffer_t {
@@ -95,10 +95,10 @@ struct graph_t {
           : head (nullptr), tail (nullptr) {
       }
 
-      bool copy (const hb_serialize_context_t::object_t &object) {
+      bool copy (const hb_serialize_context_t::object_t& object) {
         fini ();
         unsigned size = object.tail - object.head;
-        head = (char *) malloc (size);
+        head = (char*) malloc (size);
         if (!head)
           return false;
 
@@ -107,8 +107,8 @@ struct graph_t {
         return true;
       }
 
-      char *head;
-      char *tail;
+      char* head;
+      char* tail;
 
       void fini () {
         if (!head)
@@ -125,7 +125,7 @@ struct graph_t {
      * the 'packed' object stack used internally in the
      * serializer
      */
-    graph_t (const hb_vector_t<hb_serialize_context_t::object_t *> &objects)
+    graph_t (const hb_vector_t<hb_serialize_context_t::object_t*>& objects)
         : edge_count_invalid (true),
           distance_invalid (true),
           positions_invalid (true),
@@ -141,7 +141,7 @@ struct graph_t {
           continue;
         }
 
-        vertex_t *v = vertices_.push ();
+        vertex_t* v = vertices_.push ();
         if (check_success (!vertices_.in_error ()))
           v->obj = *objects[i];
         if (!removed_nil)
@@ -161,7 +161,7 @@ struct graph_t {
       return !successful || vertices_.in_error () || clone_buffers_.in_error ();
     }
 
-    const vertex_t &root () const {
+    const vertex_t& root () const {
       return vertices_[root_idx ()];
     }
 
@@ -172,26 +172,26 @@ struct graph_t {
       return vertices_.length - 1;
     }
 
-    const hb_serialize_context_t::object_t &object (unsigned i) const {
+    const hb_serialize_context_t::object_t& object (unsigned i) const {
       return vertices_[i].obj;
     }
 
     /*
      * serialize graph into the provided serialization buffer.
      */
-    void serialize (hb_serialize_context_t *c) const {
+    void serialize (hb_serialize_context_t* c) const {
       c->start_serialize<void> ();
       for (unsigned i = 0; i < vertices_.length; i++) {
         c->push ();
 
         size_t size = vertices_[i].obj.tail - vertices_[i].obj.head;
-        char *start = c->allocate_size<char> (size);
+        char* start = c->allocate_size<char> (size);
         if (!start)
           return;
 
         memcpy (start, vertices_[i].obj.head, size);
 
-        for (const auto &link : vertices_[i].obj.links)
+        for (const auto& link : vertices_[i].obj.links)
           serialize_link (link, start, c);
 
         // All duplications are already encoded in the graph, so don't
@@ -231,11 +231,11 @@ struct graph_t {
         unsigned next_id = queue[0];
         queue.remove (0);
 
-        vertex_t &next = vertices_[next_id];
+        vertex_t& next = vertices_[next_id];
         sorted_graph.push (next);
         id_map[next_id] = new_id--;
 
-        for (const auto &link : next.obj.links) {
+        for (const auto& link : next.obj.links) {
           removed_edges[link.objidx]++;
           if (!(vertices_[link.objidx].incoming_edges - removed_edges[link.objidx]))
             queue.push (link.objidx);
@@ -287,11 +287,11 @@ struct graph_t {
       while (!queue.in_error () && !queue.is_empty ()) {
         unsigned next_id = queue.pop_minimum ().second;
 
-        vertex_t &next = vertices_[next_id];
+        vertex_t& next = vertices_[next_id];
         sorted_graph.push (next);
         id_map[next_id] = new_id--;
 
-        for (const auto &link : next.obj.links) {
+        for (const auto& link : next.obj.links) {
           removed_edges[link.objidx]++;
           if (!(vertices_[link.objidx].incoming_edges - removed_edges[link.objidx]))
             // Add the order that the links were encountered to the priority.
@@ -329,9 +329,9 @@ struct graph_t {
 
       positions_invalid = true;
 
-      auto *clone = vertices_.push ();
-      auto &child = vertices_[child_idx];
-      clone_buffer_t *buffer = clone_buffers_.push ();
+      auto* clone = vertices_.push ();
+      auto& child = vertices_[child_idx];
+      clone_buffer_t* buffer = clone_buffers_.push ();
       if (vertices_.in_error ()
           || clone_buffers_.in_error ()
           || !check_success (buffer->copy (child.obj))) {
@@ -342,15 +342,15 @@ struct graph_t {
       clone->obj.tail = buffer->tail;
       clone->distance = child.distance;
 
-      for (const auto &l : child.obj.links)
+      for (const auto& l : child.obj.links)
         clone->obj.links.push (l);
 
       check_success (!clone->obj.links.in_error ());
 
-      auto &parent = vertices_[parent_idx];
+      auto& parent = vertices_[parent_idx];
       unsigned clone_idx = vertices_.length - 2;
       for (unsigned i = 0; i < parent.obj.links.length; i++) {
-        auto &l = parent.obj.links[i];
+        auto& l = parent.obj.links[i];
         if (l.objidx == child_idx) {
           l.objidx = clone_idx;
           clone->incoming_edges++;
@@ -375,7 +375,7 @@ struct graph_t {
       // This operation doesn't change ordering until a sort is run, so no need
       // to invalidate positions. It does not change graph structure so no need
       // to update distances or edge counts.
-      auto &parent = vertices_[parent_idx].obj;
+      auto& parent = vertices_[parent_idx].obj;
       for (unsigned i = 0; i < parent.links.length; i++)
         vertices_[parent.links[i].objidx].raise_priority ();
     }
@@ -383,13 +383,13 @@ struct graph_t {
     /*
      * Will any offsets overflow on graph when it's serialized?
      */
-    bool will_overflow (hb_vector_t<overflow_record_t> *overflows = nullptr) {
+    bool will_overflow (hb_vector_t<overflow_record_t>* overflows = nullptr) {
       if (overflows)
         overflows->resize (0);
       update_positions ();
 
       for (int parent_idx = vertices_.length - 1; parent_idx >= 0; parent_idx--) {
-        for (const auto &link : vertices_[parent_idx].obj.links) {
+        for (const auto& link : vertices_[parent_idx].obj.links) {
           int64_t offset = compute_offset (parent_idx, link);
           if (is_valid_offset (offset, link))
             continue;
@@ -409,13 +409,13 @@ struct graph_t {
       return overflows->length;
     }
 
-    void print_overflows (const hb_vector_t<overflow_record_t> &overflows) {
+    void print_overflows (const hb_vector_t<overflow_record_t>& overflows) {
       if (!DEBUG_ENABLED(SUBSET_REPACK))
         return;
 
       update_incoming_edge_count ();
-      for (const auto &o : overflows) {
-        const auto &child = vertices_[o.link->objidx];
+      for (const auto& o : overflows) {
+        const auto& child = vertices_[o.link->objidx];
         DEBUG_MSG (SUBSET_REPACK, nullptr, "  overflow from %d => %d (%d incoming , %d outgoing)",
                    o.parent,
                    o.link->objidx,
@@ -444,8 +444,8 @@ struct graph_t {
       for (unsigned i = 0; i < vertices_.length; i++)
         vertices_[i].incoming_edges = 0;
 
-      for (const vertex_t &v : vertices_) {
-        for (auto &l : v.obj.links) {
+      for (const vertex_t& v : vertices_) {
+        for (auto& l : v.obj.links) {
           vertices_[l.objidx].incoming_edges++;
         }
       }
@@ -462,7 +462,7 @@ struct graph_t {
 
       unsigned current_pos = 0;
       for (int i = root_idx (); i >= 0; i--) {
-        auto &v = vertices_[i];
+        auto& v = vertices_[i];
         v.start = current_pos;
         current_pos += v.obj.tail - v.obj.head;
         v.end = current_pos;
@@ -505,15 +505,15 @@ struct graph_t {
         unsigned next_idx = queue.pop_minimum ().second;
         if (visited.has (next_idx))
           continue;
-        const auto &next = vertices_[next_idx];
+        const auto& next = vertices_[next_idx];
         int64_t next_distance = vertices_[next_idx].distance;
         visited.add (next_idx);
 
-        for (const auto &link : next.obj.links) {
+        for (const auto& link : next.obj.links) {
           if (visited.has (link.objidx))
             continue;
 
-          const auto &child = vertices_[link.objidx].obj;
+          const auto& child = vertices_[link.objidx].obj;
           int64_t child_weight = child.tail - child.head +
                                  ((int64_t) 1 << (link.width * 8));
           int64_t child_distance = next_distance + child_weight;
@@ -536,9 +536,9 @@ struct graph_t {
 
     int64_t compute_offset (
         unsigned parent_idx,
-        const hb_serialize_context_t::object_t::link_t &link) const {
-      const auto &parent = vertices_[parent_idx];
-      const auto &child = vertices_[link.objidx];
+        const hb_serialize_context_t::object_t::link_t& link) const {
+      const auto& parent = vertices_[parent_idx];
+      const auto& child = vertices_[link.objidx];
       int64_t offset = 0;
       switch ((hb_serialize_context_t::whence_t) link.whence) {
         case hb_serialize_context_t::whence_t::Head:
@@ -558,7 +558,7 @@ struct graph_t {
     }
 
     bool is_valid_offset (int64_t offset,
-                          const hb_serialize_context_t::object_t::link_t &link) const {
+                          const hb_serialize_context_t::object_t::link_t& link) const {
       if (link.is_signed) {
         if (link.width == 4)
           return offset >= -((int64_t) 1 << 31) && offset < ((int64_t) 1 << 31);
@@ -578,21 +578,21 @@ struct graph_t {
     /*
      * Updates all objidx's in all links using the provided mapping.
      */
-    void remap_obj_indices (const hb_vector_t<unsigned> &id_map,
-                            hb_vector_t<vertex_t> *sorted_graph) const {
+    void remap_obj_indices (const hb_vector_t<unsigned>& id_map,
+                            hb_vector_t<vertex_t>* sorted_graph) const {
       for (unsigned i = 0; i < sorted_graph->length; i++) {
         for (unsigned j = 0; j < (*sorted_graph)[i].obj.links.length; j++) {
-          auto &link = (*sorted_graph)[i].obj.links[j];
+          auto& link = (*sorted_graph)[i].obj.links[j];
           link.objidx = id_map[link.objidx];
         }
       }
     }
 
     template <typename O> void
-    serialize_link_of_type (const hb_serialize_context_t::object_t::link_t &link,
-                            char *head,
-                            hb_serialize_context_t *c) const {
-      OT::Offset<O> *offset = reinterpret_cast<OT::Offset<O> *> (head + link.position);
+    serialize_link_of_type (const hb_serialize_context_t::object_t::link_t& link,
+                            char* head,
+                            hb_serialize_context_t* c) const {
+      OT::Offset<O>* offset = reinterpret_cast<OT::Offset<O>*> (head + link.position);
       *offset = 0;
       c->add_link (*offset,
           // serializer has an extra nil object at the start of the
@@ -602,9 +602,9 @@ struct graph_t {
                    link.bias);
     }
 
-    void serialize_link (const hb_serialize_context_t::object_t::link_t &link,
-                         char *head,
-                         hb_serialize_context_t *c) const {
+    void serialize_link (const hb_serialize_context_t::object_t::link_t& link,
+                         char* head,
+                         hb_serialize_context_t* c) const {
       switch (link.width) {
         case 4:
           if (link.is_signed) {
@@ -653,8 +653,8 @@ struct graph_t {
  * duplicated.
  */
 inline void
-hb_resolve_overflows (const hb_vector_t<hb_serialize_context_t::object_t *> &packed,
-                      hb_serialize_context_t *c) {
+hb_resolve_overflows (const hb_vector_t<hb_serialize_context_t::object_t*>& packed,
+                      hb_serialize_context_t* c) {
   // Kahn sort is ~twice as fast as shortest distance sort and works for many fonts
   // so try it first to save time.
   graph_t sorted_graph (packed);
@@ -679,8 +679,8 @@ hb_resolve_overflows (const hb_vector_t<hb_serialize_context_t::object_t *> &pac
     hb_set_t priority_bumped_parents;
     // Try resolving the furthest overflows first.
     for (int i = overflows.length - 1; i >= 0; i--) {
-      const graph_t::overflow_record_t &r = overflows[i];
-      const auto &child = sorted_graph.vertices_[r.link->objidx];
+      const graph_t::overflow_record_t& r = overflows[i];
+      const auto& child = sorted_graph.vertices_[r.link->objidx];
       if (child.is_shared ()) {
         // The child object is shared, we may be able to eliminate the overflow
         // by duplicating it.

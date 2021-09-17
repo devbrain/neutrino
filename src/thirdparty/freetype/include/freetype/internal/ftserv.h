@@ -149,12 +149,12 @@ FT_BEGIN_HEADER
  * library.  This is useful to build simple static service lists.
  */
 typedef struct FT_ServiceDescRec_ {
-  const char *serv_id;     /* service name         */
-  const void *serv_data;   /* service pointer/data */
+  const char* serv_id;     /* service name         */
+  const void* serv_data;   /* service pointer/data */
 
 } FT_ServiceDescRec;
 
-typedef const FT_ServiceDescRec *FT_ServiceDesc;
+typedef const FT_ServiceDescRec* FT_ServiceDesc;
 
 
 /**************************************************************************
@@ -359,7 +359,7 @@ typedef const FT_ServiceDescRec *FT_ServiceDesc;
  */
 FT_BASE(FT_Pointer)
 ft_service_list_lookup (FT_ServiceDesc service_descriptors,
-                        const char *service_id);
+                        const char* service_id);
 
 
 /*************************************************************************/
@@ -391,7 +391,7 @@ typedef struct FT_ServiceCacheRec_ {
   FT_Pointer service_PFR_METRICS;
   FT_Pointer service_WINFNT;
 
-} FT_ServiceCacheRec, *FT_ServiceCache;
+} FT_ServiceCacheRec, * FT_ServiceCache;
 
 
 /*

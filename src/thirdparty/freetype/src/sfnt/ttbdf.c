@@ -71,12 +71,12 @@ tt_face_load_bdf_props (TT_Face face,
   bdf->table_end = bdf->table + length;
 
   {
-    FT_Byte *p = bdf->table;
+    FT_Byte* p = bdf->table;
     FT_UInt version = FT_NEXT_USHORT(p);
     FT_UInt num_strikes = FT_NEXT_USHORT(p);
     FT_ULong strings = FT_NEXT_ULONG (p);
     FT_UInt count;
-    FT_Byte *strike;
+    FT_Byte* strike;
 
     if (version != 0x0001 ||
         strings < 8 ||
@@ -123,14 +123,14 @@ tt_face_load_bdf_props (TT_Face face,
 
 FT_LOCAL_DEF(FT_Error)
 tt_face_find_bdf_prop (TT_Face face,
-                       const char *property_name,
-                       BDF_PropertyRec *aprop) {
+                       const char* property_name,
+                       BDF_PropertyRec* aprop) {
   TT_BDF bdf = &face->bdf;
   FT_Size size = FT_FACE(face)->size;
   FT_Error error = FT_Err_Ok;
-  FT_Byte *p;
+  FT_Byte* p;
   FT_UInt count;
-  FT_Byte *strike;
+  FT_Byte* strike;
   FT_Offset property_len;
 
   aprop->type = BDF_PROPERTY_TYPE_NONE;
@@ -180,7 +180,7 @@ tt_face_find_bdf_prop (TT_Face face,
       if (name_offset < bdf->strings_size &&
           property_len < bdf->strings_size - name_offset &&
           ft_strncmp (property_name,
-                      (const char *) bdf->strings + name_offset,
+                      (const char*) bdf->strings + name_offset,
                       bdf->strings_size - name_offset) == 0) {
         switch (type & 0x0F) {
           case 0x00:  /* string */
@@ -189,7 +189,7 @@ tt_face_find_bdf_prop (TT_Face face,
             if (value < bdf->strings_size &&
                 ft_memchr (bdf->strings + value, 0, bdf->strings_size)) {
               aprop->type = BDF_PROPERTY_TYPE_ATOM;
-              aprop->u.atom = (const char *) bdf->strings + value;
+              aprop->u.atom = (const char*) bdf->strings + value;
               error = FT_Err_Ok;
               goto Exit;
             }

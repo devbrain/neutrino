@@ -6,7 +6,7 @@
 #include <neutrino/tiled/world/world.hh>
 
 namespace neutrino::tiled {
-  camera::camera (const world &w)
+  camera::camera (const world& w)
       : m_cameras (w.m_layers.size ()) {
     for (std::size_t layer_id = 0; layer_id < w.m_layers.size (); layer_id++) {
       auto dims = w.dims_in_pixels (layer_id_t (layer_id));
@@ -21,17 +21,19 @@ namespace neutrino::tiled {
   void camera::move_x (std::size_t layer_id, int dx) {
     m_cameras[layer_id].point[0] += dx;
   }
+
   void camera::move_y (std::size_t layer_id, int dy) {
     m_cameras[layer_id].point[1] += dy;
   }
 
   void camera::move_x (int dx) {
-    for (auto &r : m_cameras) {
+    for (auto& r : m_cameras) {
       r.point[0] += dx;
     }
   }
+
   void camera::move_y (int dy) {
-    for (auto &r : m_cameras) {
+    for (auto& r : m_cameras) {
       r.point[1] += dy;
     }
   }

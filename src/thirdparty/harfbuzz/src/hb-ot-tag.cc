@@ -136,16 +136,18 @@ hb_ot_new_tag_to_script (hb_tag_t tag) {
 }
 
 #ifndef HB_DISABLE_DEPRECATED
+
 void
 hb_ot_tags_from_script (hb_script_t script,
-                        hb_tag_t *script_tag_1,
-                        hb_tag_t *script_tag_2) {
+                        hb_tag_t* script_tag_1,
+                        hb_tag_t* script_tag_2) {
   unsigned int count = 2;
   hb_tag_t tags[2];
   hb_ot_tags_from_script_and_language (script, HB_LANGUAGE_INVALID, &count, tags, nullptr, nullptr);
   *script_tag_1 = count > 0 ? tags[0] : HB_OT_TAG_DEFAULT_SCRIPT;
   *script_tag_2 = count > 1 ? tags[1] : HB_OT_TAG_DEFAULT_SCRIPT;
 }
+
 #endif
 
 /*
@@ -158,8 +160,8 @@ hb_ot_tags_from_script (hb_script_t script,
 
 static void
 hb_ot_all_tags_from_script (hb_script_t script,
-                            unsigned int *count /* IN/OUT */,
-                            hb_tag_t *tags /* OUT */) {
+                            unsigned int* count /* IN/OUT */,
+                            hb_tag_t* tags /* OUT */) {
   unsigned int i = 0;
 
   hb_tag_t new_tag = hb_ot_new_tag_from_script (script);
@@ -201,11 +203,11 @@ hb_ot_tag_to_script (hb_tag_t tag) {
 /* hb_language_t */
 
 static bool
-subtag_matches (const char *lang_str,
-                const char *limit,
-                const char *subtag) {
+subtag_matches (const char* lang_str,
+                const char* limit,
+                const char* subtag) {
   do {
-    const char *s = strstr (lang_str, subtag);
+    const char* s = strstr (lang_str, subtag);
     if (!s || s >= limit)
       return false;
     if (!ISALNUM (s[strlen (subtag)]))
@@ -216,7 +218,7 @@ subtag_matches (const char *lang_str,
 }
 
 static hb_bool_t
-lang_matches (const char *lang_str, const char *spec) {
+lang_matches (const char* lang_str, const char* spec) {
   unsigned int len = strlen (spec);
 
   return strncmp (lang_str, spec, len) == 0 &&
@@ -227,10 +229,10 @@ struct LangTag {
   char language[4];
   hb_tag_t tag;
 
-  int cmp (const char *a) const {
-    const char *b = this->language;
+  int cmp (const char* a) const {
+    const char* b = this->language;
     unsigned int da, db;
-    const char *p;
+    const char* p;
 
     p = strchr (a, '-');
     da = p ? (unsigned int) (p - a) : strlen (a);
@@ -240,7 +242,8 @@ struct LangTag {
 
     return strncmp (a, b, hb_max (da, db));
   }
-  int cmp (const LangTag *that) const {
+
+  int cmp (const LangTag* that) const {
     return cmp (that->language);
   }
 };
@@ -258,6 +261,7 @@ struct LangTag {
 /*{"zh?",	{HB_TAG('Z','H','P',' ')}},*/    /* Chinese Phonetic */
 
 #ifndef HB_DISABLE_DEPRECATED
+
 hb_tag_t
 hb_ot_tag_from_language (hb_language_t language) {
   unsigned int count = 1;
@@ -265,14 +269,15 @@ hb_ot_tag_from_language (hb_language_t language) {
   hb_ot_tags_from_script_and_language (HB_SCRIPT_UNKNOWN, language, nullptr, nullptr, &count, tags);
   return count > 0 ? tags[0] : HB_OT_TAG_DEFAULT_LANGUAGE;
 }
+
 #endif
 
 static void
-hb_ot_tags_from_language (const char *lang_str,
-                          const char *limit,
-                          unsigned int *count,
-                          hb_tag_t *tags) {
-  const char *s;
+hb_ot_tags_from_language (const char* lang_str,
+                          const char* limit,
+                          unsigned int* count,
+                          hb_tag_t* tags) {
+  const char* s;
   unsigned int tag_idx;
 
   /* Check for matches of multiple subtags. */
@@ -283,7 +288,7 @@ hb_ot_tags_from_language (const char *lang_str,
   s = strchr (lang_str, '-');
   {
     if (s && limit - lang_str >= 6) {
-      const char *extlang_end = strchr (s + 1, '-');
+      const char* extlang_end = strchr (s + 1, '-');
       /* If there is an extended language tag, use it. */
       if (3 == (extlang_end ? extlang_end - s - 1 : strlen (s + 1)) &&
           ISALPHA (s[1]))
@@ -319,11 +324,11 @@ hb_ot_tags_from_language (const char *lang_str,
 }
 
 static bool
-parse_private_use_subtag (const char *private_use_subtag,
-                          unsigned int *count,
-                          hb_tag_t *tags,
-                          const char *prefix,
-                          unsigned char (*normalize) (unsigned char)) {
+parse_private_use_subtag (const char* private_use_subtag,
+                          unsigned int* count,
+                          hb_tag_t* tags,
+                          const char* prefix,
+                          unsigned char (* normalize) (unsigned char)) {
 #ifdef HB_NO_LANGUAGE_PRIVATE_SUBTAG
   return false;
 #endif
@@ -331,7 +336,7 @@ parse_private_use_subtag (const char *private_use_subtag,
   if (!(private_use_subtag && count && tags && *count))
     return false;
 
-  const char *s = strstr (private_use_subtag, prefix);
+  const char* s = strstr (private_use_subtag, prefix);
   if (!s)
     return false;
 
@@ -387,10 +392,10 @@ parse_private_use_subtag (const char *private_use_subtag,
 void
 hb_ot_tags_from_script_and_language (hb_script_t script,
                                      hb_language_t language,
-                                     unsigned int *script_count /* IN/OUT */,
-                                     hb_tag_t *script_tags /* OUT */,
-                                     unsigned int *language_count /* IN/OUT */,
-                                     hb_tag_t *language_tags /* OUT */) {
+                                     unsigned int* script_count /* IN/OUT */,
+                                     hb_tag_t* script_tags /* OUT */,
+                                     unsigned int* language_count /* IN/OUT */,
+                                     hb_tag_t* language_tags /* OUT */) {
   bool needs_script = true;
 
   if (language == HB_LANGUAGE_INVALID) {
@@ -398,7 +403,7 @@ hb_ot_tags_from_script_and_language (hb_script_t script,
       *language_count = 0;
   }
   else {
-    const char *lang_str, *s, *limit, *private_use_subtag;
+    const char* lang_str, * s, * limit, * private_use_subtag;
     bool needs_language;
 
     lang_str = hb_language_to_string (language);
@@ -472,7 +477,7 @@ hb_ot_tag_to_language (hb_tag_t tag) {
    */
   {
     char buf[20];
-    char *str = buf;
+    char* str = buf;
     if (ISALPHA (tag >> 24)
         && ISALPHA ((tag >> 16) & 0xFF)
         && ISALPHA ((tag >> 8) & 0xFF)
@@ -504,8 +509,8 @@ hb_ot_tag_to_language (hb_tag_t tag) {
 void
 hb_ot_tags_to_script_and_language (hb_tag_t script_tag,
                                    hb_tag_t language_tag,
-                                   hb_script_t *script /* OUT */,
-                                   hb_language_t *language /* OUT */) {
+                                   hb_script_t* script /* OUT */,
+                                   hb_language_t* language /* OUT */) {
   hb_script_t script_out = hb_ot_tag_to_script (script_tag);
   if (script)
     *script = script_out;
@@ -519,10 +524,10 @@ hb_ot_tags_to_script_and_language (hb_tag_t script_tag,
                                          nullptr, nullptr);
     *language = hb_ot_tag_to_language (language_tag);
     if (script_count == 0 || primary_script_tag[0] != script_tag) {
-      unsigned char *buf;
-      const char *lang_str = hb_language_to_string (*language);
+      unsigned char* buf;
+      const char* lang_str = hb_language_to_string (*language);
       size_t len = strlen (lang_str);
-      buf = (unsigned char *) malloc (len + 16);
+      buf = (unsigned char*) malloc (len + 16);
       if (unlikely (!buf)) {
         *language = nullptr;
       }
@@ -541,7 +546,7 @@ hb_ot_tags_to_script_and_language (hb_tag_t script_tag,
         buf[len++] = '-';
         for (shift = 28; shift >= 0; shift -= 4)
           buf[len++] = TOHEX (script_tag >> shift);
-        *language = hb_language_from_string ((char *) buf, len);
+        *language = hb_language_from_string ((char*) buf, len);
         free (buf);
       }
     }

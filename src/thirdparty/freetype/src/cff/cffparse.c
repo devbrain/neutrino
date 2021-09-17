@@ -40,7 +40,7 @@
 FT_LOCAL_DEF(FT_Error)
 cff_parser_init (CFF_Parser parser,
                  FT_UInt code,
-                 void *object,
+                 void* object,
                  FT_Library library,
                  FT_UInt stackSize,
                  FT_UShort num_designs,
@@ -108,8 +108,8 @@ cff_parser_done (CFF_Parser parser) {
 
 static FT_Error
 cff_parser_within_limits (CFF_Parser parser,
-                          FT_Byte *first,
-                          FT_Byte *last) {
+                          FT_Byte* first,
+                          FT_Byte* last) {
 #ifndef CFF_CONFIG_OPTION_OLD_ENGINE
 
   /* Fast path for regular FreeType builds with the "new" engine; */
@@ -150,8 +150,8 @@ cff_parser_within_limits (CFF_Parser parser,
 /* read an integer */
 static FT_Long
 cff_parse_integer (CFF_Parser parser,
-                   FT_Byte *start) {
-  FT_Byte *p = start;
+                   FT_Byte* start) {
+  FT_Byte* p = start;
   FT_Int v = *p++;
   FT_Long val = 0;
 
@@ -228,10 +228,10 @@ static const FT_Long power_ten_limits[] =
 /* read a real */
 static FT_Fixed
 cff_parse_real (CFF_Parser parser,
-                FT_Byte *start,
+                FT_Byte* start,
                 FT_Long power_ten,
-                FT_Long *scaling) {
-  FT_Byte *p = start;
+                FT_Long* scaling) {
+  FT_Byte* p = start;
   FT_Int nib;
   FT_UInt phase;
 
@@ -474,7 +474,7 @@ cff_parse_real (CFF_Parser parser,
 /* read a number, either integer or real */
 FT_LOCAL_DEF(FT_Long)
 cff_parse_num (CFF_Parser parser,
-               FT_Byte **d) {
+               FT_Byte** d) {
   if (**d == 30) {
     /* binary-coded decimal is truncated to integer */
     return cff_parse_real (parser, *d, 0, NULL) >> 16;
@@ -508,7 +508,7 @@ cff_parse_num (CFF_Parser parser,
 /* read a floating point number, either integer or real */
 static FT_Fixed
 do_fixed (CFF_Parser parser,
-          FT_Byte **d,
+          FT_Byte** d,
           FT_Long scaling) {
   if (**d == 30)
     return cff_parse_real (parser, *d, scaling, NULL);
@@ -544,7 +544,7 @@ do_fixed (CFF_Parser parser,
 /* read a floating point number, either integer or real */
 static FT_Fixed
 cff_parse_fixed (CFF_Parser parser,
-                 FT_Byte **d) {
+                 FT_Byte** d) {
   return do_fixed (parser, d, 0);
 }
 
@@ -553,7 +553,7 @@ cff_parse_fixed (CFF_Parser parser,
 /* but return `10^scaling' times the number read in      */
 static FT_Fixed
 cff_parse_fixed_scaled (CFF_Parser parser,
-                        FT_Byte **d,
+                        FT_Byte** d,
                         FT_Long scaling) {
   return do_fixed (parser, d, scaling);
 }
@@ -564,8 +564,8 @@ cff_parse_fixed_scaled (CFF_Parser parser,
 /* the scaling factor (as a power of 10)                     */
 static FT_Fixed
 cff_parse_fixed_dynamic (CFF_Parser parser,
-                         FT_Byte **d,
-                         FT_Long *scaling) {
+                         FT_Byte** d,
+                         FT_Long* scaling) {
   FT_ASSERT(scaling);
 
   if (**d == 30)
@@ -600,10 +600,10 @@ cff_parse_fixed_dynamic (CFF_Parser parser,
 static FT_Error
 cff_parse_font_matrix (CFF_Parser parser) {
   CFF_FontRecDict dict = (CFF_FontRecDict) parser->object;
-  FT_Matrix *matrix = &dict->font_matrix;
-  FT_Vector *offset = &dict->font_offset;
-  FT_ULong *upm = &dict->units_per_em;
-  FT_Byte **data = parser->stack;
+  FT_Matrix* matrix = &dict->font_matrix;
+  FT_Vector* offset = &dict->font_offset;
+  FT_ULong* upm = &dict->units_per_em;
+  FT_Byte** data = parser->stack;
 
   if (parser->top >= parser->stack + 6) {
     FT_Fixed values[6];
@@ -713,8 +713,8 @@ cff_parse_font_matrix (CFF_Parser parser) {
 static FT_Error
 cff_parse_font_bbox (CFF_Parser parser) {
   CFF_FontRecDict dict = (CFF_FontRecDict) parser->object;
-  FT_BBox *bbox = &dict->font_bbox;
-  FT_Byte **data = parser->stack;
+  FT_BBox* bbox = &dict->font_bbox;
+  FT_Byte** data = parser->stack;
   FT_Error error;
 
   error = FT_ERR(Stack_Underflow);
@@ -739,7 +739,7 @@ cff_parse_font_bbox (CFF_Parser parser) {
 static FT_Error
 cff_parse_private_dict (CFF_Parser parser) {
   CFF_FontRecDict dict = (CFF_FontRecDict) parser->object;
-  FT_Byte **data = parser->stack;
+  FT_Byte** data = parser->stack;
   FT_Error error;
 
   error = FT_ERR(Stack_Underflow);
@@ -820,7 +820,7 @@ cff_parse_multiple_master (CFF_Parser parser) {
 static FT_Error
 cff_parse_cid_ros (CFF_Parser parser) {
   CFF_FontRecDict dict = (CFF_FontRecDict) parser->object;
-  FT_Byte **data = parser->stack;
+  FT_Byte** data = parser->stack;
   FT_Error error;
 
   error = FT_ERR(Stack_Underflow);
@@ -849,7 +849,7 @@ static FT_Error
 cff_parse_vsindex (CFF_Parser parser) {
   /* vsindex operator can only be used in a Private DICT */
   CFF_Private priv = (CFF_Private) parser->object;
-  FT_Byte **data = parser->stack;
+  FT_Byte** data = parser->stack;
   CFF_Blend blend;
   FT_Error error;
 
@@ -929,7 +929,7 @@ static FT_Error
 cff_parse_maxstack (CFF_Parser parser) {
   /* maxstack operator can only be used in a Top DICT */
   CFF_FontRecDict dict = (CFF_FontRecDict) parser->object;
-  FT_Byte **data = parser->stack;
+  FT_Byte** data = parser->stack;
   FT_Error error = FT_Err_Ok;
 
   if (!dict) {
@@ -1070,9 +1070,9 @@ static const CFF_Field_Handler  cff_field_handlers[] =
 
 FT_LOCAL_DEF(FT_Error)
 cff_parser_run (CFF_Parser parser,
-                FT_Byte *start,
-                FT_Byte *limit) {
-  FT_Byte *p = start;
+                FT_Byte* start,
+                FT_Byte* limit) {
+  FT_Byte* p = start;
   FT_Error error = FT_Err_Ok;
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
@@ -1293,7 +1293,7 @@ cff_parser_run (CFF_Parser parser,
 
       FT_UInt code;
       FT_UInt num_args;
-      const CFF_Field_Handler *field;
+      const CFF_Field_Handler* field;
 
       if ((FT_UInt) (parser->top - parser->stack) >= parser->stackSize)
         goto Stack_Overflow;
@@ -1316,7 +1316,7 @@ cff_parser_run (CFF_Parser parser,
         if (field->code == (FT_Int) code) {
           /* we found our field's handler; read it */
           FT_Long val;
-          FT_Byte *q = (FT_Byte *) parser->object + field->offset;
+          FT_Byte* q = (FT_Byte*) parser->object + field->offset;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
           FT_TRACE4(( "  %s", field->id ));
@@ -1344,19 +1344,19 @@ cff_parser_run (CFF_Parser parser,
             Store_Number:
               switch (field->size) {
                 case (8 / FT_CHAR_BIT):
-                  *(FT_Byte *) q = (FT_Byte) val;
+                  *(FT_Byte*) q = (FT_Byte) val;
                   break;
 
                 case (16 / FT_CHAR_BIT):
-                  *(FT_Short *) q = (FT_Short) val;
+                  *(FT_Short*) q = (FT_Short) val;
                   break;
 
                 case (32 / FT_CHAR_BIT):
-                  *(FT_Int32 *) q = (FT_Int) val;
+                  *(FT_Int32*) q = (FT_Int) val;
                   break;
 
                 default:  /* for 64-bit systems */
-                  *(FT_Long *) q = val;
+                  *(FT_Long*) q = val;
               }
 
 #ifdef FT_DEBUG_LEVEL_TRACE
@@ -1389,10 +1389,10 @@ cff_parser_run (CFF_Parser parser,
               break;
 
             case cff_kind_delta: {
-              FT_Byte *qcount = (FT_Byte *) parser->object +
+              FT_Byte* qcount = (FT_Byte*) parser->object +
                                 field->count_offset;
 
-              FT_Byte **data = parser->stack;
+              FT_Byte** data = parser->stack;
 
               if (num_args > field->array_max)
                 num_args = field->array_max;
@@ -1407,19 +1407,19 @@ cff_parser_run (CFF_Parser parser,
                 val = ADD_LONG(val, cff_parse_num (parser, data++));
                 switch (field->size) {
                   case (8 / FT_CHAR_BIT):
-                    *(FT_Byte *) q = (FT_Byte) val;
+                    *(FT_Byte*) q = (FT_Byte) val;
                     break;
 
                   case (16 / FT_CHAR_BIT):
-                    *(FT_Short *) q = (FT_Short) val;
+                    *(FT_Short*) q = (FT_Short) val;
                     break;
 
                   case (32 / FT_CHAR_BIT):
-                    *(FT_Int32 *) q = (FT_Int) val;
+                    *(FT_Int32*) q = (FT_Int) val;
                     break;
 
                   default:  /* for 64-bit systems */
-                    *(FT_Long *) q = val;
+                    *(FT_Long*) q = val;
                 }
 
                 FT_TRACE4((" %ld", val));

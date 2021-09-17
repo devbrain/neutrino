@@ -78,14 +78,14 @@ typedef struct AF_WidthRec_ {
   FT_Pos cur;  /* current/scaled position/width in device subpixels */
   FT_Pos fit;  /* current/fitted position/width in device subpixels */
 
-} AF_WidthRec, *AF_Width;
+} AF_WidthRec, * AF_Width;
 
 FT_LOCAL(void)
 af_sort_pos (FT_UInt count,
-             FT_Pos *table);
+             FT_Pos* table);
 
 FT_LOCAL(void)
-af_sort_and_quantize_widths (FT_UInt *count,
+af_sort_and_quantize_widths (FT_UInt* count,
                              AF_Width widths,
                              FT_Pos threshold);
 
@@ -147,7 +147,7 @@ af_angle_diff( AF_Angle  angle1,
  * opaque handle to glyph-specific hints -- see `afhints.h' for more
  * details
  */
-typedef struct AF_GlyphHintsRec_ *AF_GlyphHints;
+typedef struct AF_GlyphHintsRec_* AF_GlyphHints;
 
 
 /*************************************************************************/
@@ -177,7 +177,7 @@ typedef struct AF_ScalerRec_ {
   FT_Render_Mode render_mode; /* monochrome, anti-aliased, LCD, etc.     */
   FT_UInt32 flags;       /* additional control flags, see above     */
 
-} AF_ScalerRec, *AF_Scaler;
+} AF_ScalerRec, * AF_Scaler;
 
 #define AF_SCALER_EQUAL_SCALES(a, b)      \
           ( (a)->x_scale == (b)->x_scale && \
@@ -185,37 +185,37 @@ typedef struct AF_ScalerRec_ {
             (a)->x_delta == (b)->x_delta && \
             (a)->y_delta == (b)->y_delta )
 
-typedef struct AF_StyleMetricsRec_ *AF_StyleMetrics;
+typedef struct AF_StyleMetricsRec_* AF_StyleMetrics;
 
 /*
  * This function parses an FT_Face to compute global metrics for
  * a specific style.
  */
 typedef FT_Error
-(*AF_WritingSystem_InitMetricsFunc) (AF_StyleMetrics metrics,
-                                     FT_Face face);
+(* AF_WritingSystem_InitMetricsFunc) (AF_StyleMetrics metrics,
+                                      FT_Face face);
 
 typedef void
-(*AF_WritingSystem_ScaleMetricsFunc) (AF_StyleMetrics metrics,
-                                      AF_Scaler scaler);
+(* AF_WritingSystem_ScaleMetricsFunc) (AF_StyleMetrics metrics,
+                                       AF_Scaler scaler);
 
 typedef void
-(*AF_WritingSystem_DoneMetricsFunc) (AF_StyleMetrics metrics);
+(* AF_WritingSystem_DoneMetricsFunc) (AF_StyleMetrics metrics);
 
 typedef void
-(*AF_WritingSystem_GetStdWidthsFunc) (AF_StyleMetrics metrics,
-                                      FT_Pos *stdHW,
-                                      FT_Pos *stdVW);
+(* AF_WritingSystem_GetStdWidthsFunc) (AF_StyleMetrics metrics,
+                                       FT_Pos* stdHW,
+                                       FT_Pos* stdVW);
 
 typedef FT_Error
-(*AF_WritingSystem_InitHintsFunc) (AF_GlyphHints hints,
-                                   AF_StyleMetrics metrics);
-
-typedef FT_Error
-(*AF_WritingSystem_ApplyHintsFunc) (FT_UInt glyph_index,
-                                    AF_GlyphHints hints,
-                                    FT_Outline *outline,
+(* AF_WritingSystem_InitHintsFunc) (AF_GlyphHints hints,
                                     AF_StyleMetrics metrics);
+
+typedef FT_Error
+(* AF_WritingSystem_ApplyHintsFunc) (FT_UInt glyph_index,
+                                     AF_GlyphHints hints,
+                                     FT_Outline* outline,
+                                     AF_StyleMetrics metrics);
 
 
 /*************************************************************************/
@@ -275,7 +275,7 @@ typedef struct AF_WritingSystemClassRec_ {
 
 } AF_WritingSystemClassRec;
 
-typedef const AF_WritingSystemClassRec *AF_WritingSystemClass;
+typedef const AF_WritingSystemClassRec* AF_WritingSystemClass;
 
 
 /*************************************************************************/
@@ -316,7 +316,7 @@ typedef struct AF_Script_UniRangeRec_ {
 
 #define AF_UNIRANGE_REC(a, b) { (FT_UInt32)(a), (FT_UInt32)(b) }
 
-typedef const AF_Script_UniRangeRec *AF_Script_UniRange;
+typedef const AF_Script_UniRangeRec* AF_Script_UniRange;
 
 typedef struct AF_ScriptClassRec_ {
   AF_Script script;
@@ -327,11 +327,11 @@ typedef struct AF_ScriptClassRec_ {
 
   FT_Bool top_to_bottom_hinting;
 
-  const char *standard_charstring;      /* for default width and height */
+  const char* standard_charstring;      /* for default width and height */
 
 } AF_ScriptClassRec;
 
-typedef const AF_ScriptClassRec *AF_ScriptClass;
+typedef const AF_ScriptClassRec* AF_ScriptClass;
 
 
 /*************************************************************************/
@@ -430,7 +430,7 @@ typedef struct AF_StyleClassRec_ {
 
 } AF_StyleClassRec;
 
-typedef const AF_StyleClassRec *AF_StyleClass;
+typedef const AF_StyleClassRec* AF_StyleClass;
 
 
 /*************************************************************************/
@@ -441,7 +441,7 @@ typedef const AF_StyleClassRec *AF_StyleClass;
 /*************************************************************************/
 /*************************************************************************/
 
-typedef struct AF_FaceGlobalsRec_ *AF_FaceGlobals;
+typedef struct AF_FaceGlobalsRec_* AF_FaceGlobals;
 
 /* This is the main structure that combines everything.  Autofit modules */
 /* specific to writing systems derive their structures from it, for      */

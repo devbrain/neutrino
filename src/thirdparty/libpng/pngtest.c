@@ -193,6 +193,7 @@ read_row_callback (png_structp png_ptr, png_uint_32 row_number, int pass) {
 }
 
 #ifdef PNG_WRITE_SUPPORTED
+
 static void PNGCBAPI
 write_row_callback (png_structp png_ptr, png_uint_32 row_number, int pass) {
   if (png_ptr == NULL || row_number > PNG_UINT_31_MAX || pass > 7)
@@ -200,9 +201,11 @@ write_row_callback (png_structp png_ptr, png_uint_32 row_number, int pass) {
 
   fprintf (stdout, "w");
 }
+
 #endif
 
 #ifdef PNG_READ_USER_TRANSFORM_SUPPORTED
+
 /* Example of using a user transform callback (doesn't do anything at present).
  */
 static void PNGCBAPI
@@ -211,6 +214,7 @@ read_user_callback (png_structp png_ptr, png_row_infop row_info, png_bytep data)
   PNG_UNUSED(row_info)
   PNG_UNUSED(data)
 }
+
 #endif
 
 #ifdef PNG_WRITE_USER_TRANSFORM_SUPPORTED
@@ -312,6 +316,7 @@ count_zero_samples (png_structp png_ptr, png_row_infop row_info, png_bytep data)
     }
   }
 }
+
 #endif /* WRITE_USER_TRANSFORM */
 
 #ifndef PNG_STDIO_SUPPORTED
@@ -429,14 +434,14 @@ pngtest_write_data(png_structp png_ptr, png_bytep data, size_t length)
  * not used, but it is passed in case it may be useful.
  */
 typedef struct {
-  const char *file_name;
+  const char* file_name;
 } pngtest_error_parameters;
 
 static void PNGCBAPI
 pngtest_warning (png_structp png_ptr, png_const_charp message) {
-  const char *name = "UNKNOWN (ERROR!)";
-  pngtest_error_parameters *test =
-      (pngtest_error_parameters *) png_get_error_ptr (png_ptr);
+  const char* name = "UNKNOWN (ERROR!)";
+  pngtest_error_parameters* test =
+      (pngtest_error_parameters*) png_get_error_ptr (png_ptr);
 
   ++warning_count;
 
@@ -636,7 +641,7 @@ init_callback_info (png_const_infop info_ptr) {
 }
 
 static int
-set_location (png_structp png_ptr, struct user_chunk_data *data, int what) {
+set_location (png_structp png_ptr, struct user_chunk_data* data, int what) {
   int location;
 
   if ((data->location[0] & what) != 0 || (data->location[1] & what) != 0)
@@ -664,9 +669,9 @@ set_location (png_structp png_ptr, struct user_chunk_data *data, int what) {
 }
 
 static int PNGCBAPI
-read_user_chunk_callback (png_struct *png_ptr, png_unknown_chunkp chunk) {
-  struct user_chunk_data *my_user_chunk_data =
-      (struct user_chunk_data *) png_get_user_chunk_ptr (png_ptr);
+read_user_chunk_callback (png_struct* png_ptr, png_unknown_chunkp chunk) {
+  struct user_chunk_data* my_user_chunk_data =
+      (struct user_chunk_data*) png_get_user_chunk_ptr (png_ptr);
 
   if (my_user_chunk_data == NULL)
     png_error (png_ptr, "lost user chunk pointer");
@@ -723,6 +728,7 @@ read_user_chunk_callback (png_struct *png_ptr, png_unknown_chunkp chunk) {
 }
 
 #ifdef PNG_WRITE_SUPPORTED
+
 static void
 write_sTER_chunk (png_structp write_ptr) {
   png_byte sTER[5] = {115, 84, 69, 82, '\0'};
@@ -769,6 +775,7 @@ write_chunks (png_structp write_ptr, int location) {
       write_vpAg_chunk (write_ptr);
   }
 }
+
 #endif /* WRITE */
 #else /* !READ_USER_CHUNKS */
 #  define write_chunks(pp,loc) ((void)0)
@@ -780,6 +787,7 @@ write_chunks (png_structp write_ptr, int location) {
  * will simply not be reported back to pngtest.
  */
 #ifdef PNG_TEXT_SUPPORTED
+
 static void
 pngtest_check_text_support (png_structp png_ptr, png_textp text_ptr,
                             int num_text) {
@@ -811,12 +819,13 @@ pngtest_check_text_support (png_structp png_ptr, png_textp text_ptr,
     }
   }
 }
+
 #endif
 /* END of code to check that libpng has the required text support */
 
 /* Test one file */
 static int
-test_one_file (const char *inname, const char *outname) {
+test_one_file (const char* inname, const char* outname) {
   static png_FILE_p fpin;
   static png_FILE_p fpout;  /* "static" prevents setjmp corruption */
   pngtest_error_parameters error_parameters;
@@ -1734,12 +1743,12 @@ test_one_file (const char *inname, const char *outname) {
 static const char *inname = "pngtest/png";
 static const char *outname = "pngout/png";
 #else
-static const char *inname = "pngtest.png";
-static const char *outname = "pngout.png";
+static const char* inname = "pngtest.png";
+static const char* outname = "pngout.png";
 #endif
 
 int
-main (int argc, char *argv[]) {
+main (int argc, char* argv[]) {
   int multiple = 0;
   int ierror = 0;
 
@@ -2039,6 +2048,7 @@ main (int argc, char *argv[]) {
 
   return (int) (ierror != 0);
 }
+
 #else
 int
 main(void)

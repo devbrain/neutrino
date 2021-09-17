@@ -10,10 +10,11 @@
 namespace neutrino::hal::detail {
   struct renderer_impl {
     template <typename ... Args>
-    renderer_impl (Args &&... args)
+    renderer_impl (Args&& ... args)
         : renderer (std::forward<Args> (args)...) {
 
     }
+
     sdl::renderer renderer;
   };
 }

@@ -54,7 +54,7 @@
 #include "hb-repacker.hh"
 
 static unsigned
-_plan_estimate_subset_table_size (hb_subset_plan_t *plan, unsigned table_len) {
+_plan_estimate_subset_table_size (hb_subset_plan_t* plan, unsigned table_len) {
   unsigned src_glyphs = plan->source->get_num_glyphs ();
   unsigned dst_glyphs = plan->glyphset ()->get_population ();
 
@@ -67,8 +67,8 @@ _plan_estimate_subset_table_size (hb_subset_plan_t *plan, unsigned table_len) {
 /*
  * Repack the serialization buffer if any offset overflows exist.
  */
-static hb_blob_t *
-_repack (hb_tag_t tag, const hb_serialize_context_t &c) {
+static hb_blob_t*
+_repack (hb_tag_t tag, const hb_serialize_context_t& c) {
   if (tag != HB_OT_TAG_GPOS
       && tag != HB_OT_TAG_GSUB) {
     // Check for overflow in a non-handled table.
@@ -83,7 +83,7 @@ _repack (hb_tag_t tag, const hb_serialize_context_t &c) {
   if (unlikely (!buf.alloc (buf_size)))
     return nullptr;
 
-  hb_serialize_context_t repacked ((void *) buf, buf_size);
+  hb_serialize_context_t repacked ((void*) buf, buf_size);
   hb_resolve_overflows (c.object_graph (), &repacked);
 
   if (unlikely (repacked.in_error ()))
@@ -97,10 +97,10 @@ _repack (hb_tag_t tag, const hb_serialize_context_t &c) {
 template <typename TableType>
 static
 bool
-_try_subset (const TableType *table,
-             hb_vector_t<char> *buf,
+_try_subset (const TableType* table,
+             hb_vector_t<char>* buf,
              unsigned buf_size,
-             hb_subset_context_t *c /* OUT */) {
+             hb_subset_context_t* c /* OUT */) {
   c->serializer->start_serialize<TableType> ();
   if (c->serializer->in_error ())
     return false;
@@ -127,9 +127,9 @@ _try_subset (const TableType *table,
 
 template <typename TableType>
 static bool
-_subset (hb_subset_plan_t *plan) {
-  hb_blob_t *source_blob = hb_sanitize_context_t ().reference_table<TableType> (plan->source);
-  const TableType *table = source_blob->as<TableType> ();
+_subset (hb_subset_plan_t* plan) {
+  hb_blob_t* source_blob = hb_sanitize_context_t ().reference_table<TableType> (plan->source);
+  const TableType* table = source_blob->as<TableType> ();
 
   hb_tag_t tag = TableType::tableTag;
   if (!source_blob->data) {
@@ -170,7 +170,7 @@ _subset (hb_subset_plan_t *plan) {
   }
 
   bool result = false;
-  hb_blob_t *dest_blob = _repack (tag, serializer);
+  hb_blob_t* dest_blob = _repack (tag, serializer);
   if (dest_blob) {
     DEBUG_MSG (SUBSET, nullptr,
                "OT::%c%c%c%c final subset table size: %u bytes.",
@@ -185,7 +185,7 @@ _subset (hb_subset_plan_t *plan) {
 }
 
 static bool
-_is_table_present (hb_face_t *source, hb_tag_t tag) {
+_is_table_present (hb_face_t* source, hb_tag_t tag) {
   hb_tag_t table_tags[32];
   unsigned offset = 0, num_tables = ARRAY_LENGTH (table_tags);
   while ((hb_face_get_table_tags (source, offset, &num_tables, table_tags), num_tables)) {
@@ -198,7 +198,7 @@ _is_table_present (hb_face_t *source, hb_tag_t tag) {
 }
 
 static bool
-_should_drop_table (hb_subset_plan_t *plan, hb_tag_t tag) {
+_should_drop_table (hb_subset_plan_t* plan, hb_tag_t tag) {
   if (plan->drop_tables->has (tag))
     return true;
 
@@ -229,7 +229,7 @@ _should_drop_table (hb_subset_plan_t *plan, hb_tag_t tag) {
 }
 
 static bool
-_subset_table (hb_subset_plan_t *plan, hb_tag_t tag) {
+_subset_table (hb_subset_plan_t* plan, hb_tag_t tag) {
   DEBUG_MSG (SUBSET, nullptr, "subset %c%c%c%c", HB_UNTAG (tag));
   switch (tag) {
     case HB_OT_TAG_glyf:
@@ -296,7 +296,7 @@ _subset_table (hb_subset_plan_t *plan, hb_tag_t tag) {
 #endif
 
     default:
-      hb_blob_t *source_table = hb_face_reference_table (plan->source, tag);
+      hb_blob_t* source_table = hb_face_reference_table (plan->source, tag);
       bool result = plan->add_table (tag, source_table);
       hb_blob_destroy (source_table);
       return result;
@@ -310,12 +310,12 @@ _subset_table (hb_subset_plan_t *plan, hb_tag_t tag) {
  *
  * Subsets a font according to provided input.
  **/
-hb_face_t *
-hb_subset (hb_face_t *source, hb_subset_input_t *input) {
+hb_face_t*
+hb_subset (hb_face_t* source, hb_subset_input_t* input) {
   if (unlikely (!input || !source))
     return hb_face_get_empty ();
 
-  hb_subset_plan_t *plan = hb_subset_plan_create (source, input);
+  hb_subset_plan_t* plan = hb_subset_plan_create (source, input);
   if (unlikely (plan->in_error ())) {
     hb_subset_plan_destroy (plan);
     return hb_face_get_empty ();
@@ -339,7 +339,7 @@ hb_subset (hb_face_t *source, hb_subset_input_t *input) {
   }
   end:
 
-  hb_face_t *result = success ? hb_face_reference (plan->dest) : hb_face_get_empty ();
+  hb_face_t* result = success ? hb_face_reference (plan->dest) : hb_face_get_empty ();
 
   hb_subset_plan_destroy (plan);
   return result;

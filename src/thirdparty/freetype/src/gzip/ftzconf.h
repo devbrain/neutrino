@@ -232,8 +232,8 @@ typedef uInt  FAR uIntf;
 typedef uLong FAR uLongf;
 
 #ifdef STDC
-typedef void FAR *voidpf;
-typedef void *voidp;
+typedef void FAR* voidpf;
+typedef void* voidp;
 #else
 typedef Byte FAR *voidpf;
 typedef Byte     *voidp;

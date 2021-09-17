@@ -68,7 +68,7 @@
 /* create a new glyph loader */
 FT_BASE_DEF(FT_Error)
 FT_GlyphLoader_New (FT_Memory memory,
-                    FT_GlyphLoader *aloader) {
+                    FT_GlyphLoader* aloader) {
   FT_GlyphLoader loader = NULL;
   FT_Error error;
 
@@ -130,8 +130,8 @@ FT_GlyphLoader_Done (FT_GlyphLoader loader) {
 /* re-adjust the `current' outline fields */
 static void
 FT_GlyphLoader_Adjust_Points (FT_GlyphLoader loader) {
-  FT_Outline *base = &loader->base.outline;
-  FT_Outline *current = &loader->current.outline;
+  FT_Outline* base = &loader->base.outline;
+  FT_Outline* current = &loader->current.outline;
 
   current->points = FT_OFFSET(base->points, base->n_points);
   current->tags = FT_OFFSET(base->tags, base->n_points);
@@ -186,8 +186,8 @@ FT_GlyphLoader_CheckPoints (FT_GlyphLoader loader,
                             FT_UInt n_contours) {
   FT_Memory memory = loader->memory;
   FT_Error error = FT_Err_Ok;
-  FT_Outline *base = &loader->base.outline;
-  FT_Outline *current = &loader->current.outline;
+  FT_Outline* base = &loader->base.outline;
+  FT_Outline* current = &loader->current.outline;
   FT_Bool adjust = 0;
 
   FT_UInt new_max, old_max;

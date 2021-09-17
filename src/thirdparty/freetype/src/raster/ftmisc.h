@@ -54,21 +54,21 @@ typedef int FT_Error;
 
 /* from include/freetype/ftsystem.h */
 
-typedef struct FT_MemoryRec_ *FT_Memory;
+typedef struct FT_MemoryRec_* FT_Memory;
 
-typedef void *(*FT_Alloc_Func) (FT_Memory memory,
-                                long size);
+typedef void* (* FT_Alloc_Func) (FT_Memory memory,
+                                 long size);
 
-typedef void (*FT_Free_Func) (FT_Memory memory,
-                              void *block);
+typedef void (* FT_Free_Func) (FT_Memory memory,
+                               void* block);
 
-typedef void *(*FT_Realloc_Func) (FT_Memory memory,
-                                  long cur_size,
-                                  long new_size,
-                                  void *block);
+typedef void* (* FT_Realloc_Func) (FT_Memory memory,
+                                   long cur_size,
+                                   long new_size,
+                                   void* block);
 
 typedef struct FT_MemoryRec_ {
-  void *user;
+  void* user;
 
   FT_Alloc_Func alloc;
   FT_Free_Func free;

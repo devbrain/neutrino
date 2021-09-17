@@ -37,7 +37,7 @@
 FT_LOCAL_DEF(FT_Error)
 af_axis_hints_new_segment (AF_AxisHints axis,
                            FT_Memory memory,
-                           AF_Segment *asegment) {
+                           AF_Segment* asegment) {
   FT_Error error = FT_Err_Ok;
   AF_Segment segment = NULL;
 
@@ -92,7 +92,7 @@ af_axis_hints_new_edge (AF_AxisHints axis,
                         AF_Direction dir,
                         FT_Bool top_to_bottom_hinting,
                         FT_Memory memory,
-                        AF_Edge *anedge) {
+                        AF_Edge* anedge) {
   FT_Error error = FT_Err_Ok;
   AF_Edge edge = NULL;
   AF_Edge edges;
@@ -726,7 +726,7 @@ af_glyph_hints_rescale (AF_GlyphHints hints,
 
 FT_LOCAL_DEF(FT_Error)
 af_glyph_hints_reload (AF_GlyphHints hints,
-                       FT_Outline *outline) {
+                       FT_Outline* outline) {
   FT_Error error = FT_Err_Ok;
   AF_Point points;
   FT_UInt old_max, new_max;
@@ -830,8 +830,8 @@ af_glyph_hints_reload (AF_GlyphHints hints,
 
     /* compute coordinates & Bezier flags, next and prev */
     {
-      FT_Vector *vec = outline->points;
-      char *tag = outline->tags;
+      FT_Vector* vec = outline->points;
+      char* tag = outline->tags;
       FT_Short endpoint = outline->contours[0];
       AF_Point end = points + endpoint;
       AF_Point prev = end;
@@ -892,9 +892,9 @@ af_glyph_hints_reload (AF_GlyphHints hints,
 
     /* set up the contours array */
     {
-      AF_Point *contour = hints->contours;
-      AF_Point *contour_limit = contour + hints->num_contours;
-      short *end = outline->contours;
+      AF_Point* contour = hints->contours;
+      AF_Point* contour_limit = contour + hints->num_contours;
+      short* end = outline->contours;
       short idx = 0;
 
       for (; contour < contour_limit; contour++, end++) {
@@ -918,8 +918,8 @@ af_glyph_hints_reload (AF_GlyphHints hints,
 
       FT_Int near_limit2 = 2 * near_limit - 1;
 
-      AF_Point *contour;
-      AF_Point *contour_limit = hints->contours + hints->num_contours;
+      AF_Point* contour;
+      AF_Point* contour_limit = hints->contours + hints->num_contours;
 
       for (contour = hints->contours; contour < contour_limit; contour++) {
         AF_Point first = *contour;
@@ -1114,11 +1114,11 @@ af_glyph_hints_reload (AF_GlyphHints hints,
 
 FT_LOCAL_DEF(void)
 af_glyph_hints_save (AF_GlyphHints hints,
-                     FT_Outline *outline) {
+                     FT_Outline* outline) {
   AF_Point point = hints->points;
   AF_Point limit = point + hints->num_points;
-  FT_Vector *vec = outline->points;
-  char *tag = outline->tags;
+  FT_Vector* vec = outline->points;
+  char* tag = outline->tags;
 
   for (; point < limit; point++, vec++, tag++) {
     vec->x = point->x;
@@ -1462,8 +1462,8 @@ af_glyph_hints_align_weak_points (AF_GlyphHints hints,
                                   AF_Dimension dim) {
   AF_Point points = hints->points;
   AF_Point point_limit = points + hints->num_points;
-  AF_Point *contour = hints->contours;
-  AF_Point *contour_limit = contour + hints->num_contours;
+  AF_Point* contour = hints->contours;
+  AF_Point* contour_limit = contour + hints->num_contours;
   FT_UInt touch_flag;
   AF_Point point;
   AF_Point end_point;

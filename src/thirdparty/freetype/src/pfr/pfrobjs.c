@@ -67,7 +67,7 @@ pfr_face_init (FT_Stream stream,
                FT_Face pfrface,
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params) {
+               FT_Parameter* params) {
   PFR_Face face = (PFR_Face) pfrface;
   FT_Error error;
 
@@ -196,7 +196,7 @@ pfr_face_init (FT_Stream stream,
 
     if (phy_font->num_strikes > 0) {
       FT_UInt n, count = phy_font->num_strikes;
-      FT_Bitmap_Size *size;
+      FT_Bitmap_Size* size;
       PFR_Strike strike;
       FT_Memory memory = pfrface->stream->memory;
 
@@ -295,7 +295,7 @@ pfr_slot_load (FT_GlyphSlot pfrslot,         /* PFR_Slot */
   FT_Error error;
   PFR_Face face = (PFR_Face) pfrslot->face;
   PFR_Char gchar;
-  FT_Outline *outline = &pfrslot->outline;
+  FT_Outline* outline = &pfrslot->outline;
   FT_ULong gps_offset;
 
   FT_TRACE1(("pfr_slot_load: glyph index %d\n", gindex));
@@ -336,7 +336,7 @@ pfr_slot_load (FT_GlyphSlot pfrslot,         /* PFR_Slot */
 
   if (!error) {
     FT_BBox cbox;
-    FT_Glyph_Metrics *metrics = &pfrslot->metrics;
+    FT_Glyph_Metrics* metrics = &pfrslot->metrics;
     FT_Pos advance;
     FT_UInt em_metrics, em_outline;
     FT_Bool scaling;
@@ -400,7 +400,7 @@ pfr_slot_load (FT_GlyphSlot pfrslot,         /* PFR_Slot */
       FT_Int n;
       FT_Fixed x_scale = pfrsize->metrics.x_scale;
       FT_Fixed y_scale = pfrsize->metrics.y_scale;
-      FT_Vector *vec = outline->points;
+      FT_Vector* vec = outline->points;
 
 
       /* scale outline points */
@@ -440,7 +440,7 @@ FT_LOCAL_DEF(FT_Error)
 pfr_face_get_kerning (FT_Face pfrface,        /* PFR_Face */
                       FT_UInt glyph1,
                       FT_UInt glyph2,
-                      FT_Vector *kerning) {
+                      FT_Vector* kerning) {
   PFR_Face face = (PFR_Face) pfrface;
   FT_Error error = FT_Err_Ok;
   PFR_PhyFont phy_font = &face->phy_font;
@@ -486,10 +486,10 @@ pfr_face_get_kerning (FT_Face pfrface,        /* PFR_Face */
       FT_UInt power = 1 << FT_MSB (count);
       FT_UInt probe = power * size;
       FT_UInt extra = count - power;
-      FT_Byte *base = stream->cursor;
+      FT_Byte* base = stream->cursor;
       FT_Bool twobytes = FT_BOOL(item->flags & PFR_KERN_2BYTE_CHAR);
       FT_Bool twobyte_adj = FT_BOOL(item->flags & PFR_KERN_2BYTE_ADJ);
-      FT_Byte *p;
+      FT_Byte* p;
       FT_UInt32 cpair;
 
       if (extra > 0) {

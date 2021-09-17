@@ -21,7 +21,7 @@ typedef struct {
   Sint16 Hpage;      /* height of the screen in pixels */
 } BMHD;
 
-int IMG_isLBM (SDL_RWops *src) {
+int IMG_isLBM (SDL_RWops* src) {
   Sint64 start;
   int is_LBM;
   Uint8 magic[4 + 4 + 4];
@@ -41,16 +41,16 @@ int IMG_isLBM (SDL_RWops *src) {
   return (is_LBM);
 }
 
-SDL_Surface *IMG_LoadLBM_RW (SDL_RWops *src) {
+SDL_Surface* IMG_LoadLBM_RW (SDL_RWops* src) {
   Sint64 start;
-  SDL_Surface *Image;
-  Uint8 id[4], pbm, colormap[MAXCOLORS * 3], *MiniBuf, *ptr, count, color, msk;
+  SDL_Surface* Image;
+  Uint8 id[4], pbm, colormap[MAXCOLORS * 3], * MiniBuf, * ptr, count, color, msk;
   Uint32 size, bytesloaded, nbcolors;
   Uint32 i, j, bytesperline, nbplanes, stencil, plane, h;
   Uint32 remainingbytes;
   Uint32 width;
   BMHD bmhd;
-  char *error;
+  char* error;
   Uint8 flagHAM, flagEHB;
 
   Image = NULL;
@@ -196,7 +196,7 @@ SDL_Surface *IMG_LoadLBM_RW (SDL_RWops *src) {
   /* Allocate memory for a temporary buffer ( used for
      decompression/deinterleaving ) */
 
-  MiniBuf = (Uint8 *) SDL_malloc (bytesperline * (nbplanes + stencil));
+  MiniBuf = (Uint8*) SDL_malloc (bytesperline * (nbplanes + stencil));
   if (MiniBuf == NULL) {
     error = "not enough memory for temporary buffer";
     goto done;
@@ -306,7 +306,7 @@ SDL_Surface *IMG_LoadLBM_RW (SDL_RWops *src) {
 
     /* One line has been read, store it ! */
 
-    ptr = (Uint8 *) Image->pixels;
+    ptr = (Uint8*) Image->pixels;
     if (nbplanes == 24 || flagHAM == 1)
       ptr += h * width * 3;
     else

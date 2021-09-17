@@ -35,7 +35,7 @@ namespace OT {
 
   template <typename Driver>
   struct hb_kern_machine_t {
-    hb_kern_machine_t (const Driver &driver_,
+    hb_kern_machine_t (const Driver& driver_,
                        bool crossStream_ = false)
         :
         driver (driver_),
@@ -43,19 +43,19 @@ namespace OT {
     }
 
     HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
-    void kern (hb_font_t *font,
-               hb_buffer_t *buffer,
+    void kern (hb_font_t* font,
+               hb_buffer_t* buffer,
                hb_mask_t kern_mask,
                bool scale = true) const {
       OT::hb_ot_apply_context_t c (1, font, buffer);
       c.set_lookup_mask (kern_mask);
       c.set_lookup_props (OT::LookupFlag::IgnoreMarks);
-      auto &skippy_iter = c.iter_input;
+      auto& skippy_iter = c.iter_input;
 
       bool horizontal = HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction);
       unsigned int count = buffer->len;
-      hb_glyph_info_t *info = buffer->info;
-      hb_glyph_position_t *pos = buffer->pos;
+      hb_glyph_info_t* info = buffer->info;
+      hb_glyph_position_t* pos = buffer->pos;
       for (unsigned int idx = 0; idx < count;) {
         if (!(info[idx].mask & kern_mask)) {
           idx++;
@@ -115,7 +115,7 @@ namespace OT {
       }
     }
 
-    const Driver &driver;
+    const Driver& driver;
     bool crossStream;
   };
 

@@ -29,8 +29,7 @@
 /* Unit tests for hb_font_[gs]et_var_coords_ */
 
 static void
-test_get_var_coords (void)
-{
+test_get_var_coords (void) {
 #ifdef HB_EXPERIMENTAL_API
 #ifndef G_APPROX_VALUE
 #define G_APPROX_VALUE(a, b, epsilon) \
@@ -38,7 +37,7 @@ test_get_var_coords (void)
 #endif
 
 #define EPSILON 0.05f
-	
+
   hb_face_t *face = hb_test_open_font_file ("fonts/TestCFF2VF.otf");
   hb_font_t *font = hb_font_create (face);
 
@@ -70,32 +69,30 @@ test_get_var_coords (void)
 }
 
 static void
-test_get_var_get_axis_infos (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/Estedad-VF.ttf");
+test_get_var_get_axis_infos (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/Estedad-VF.ttf");
 
-  g_assert_cmpint (hb_ot_var_get_axis_count (face), ==, 2);
+  g_assert_cmpint (hb_ot_var_get_axis_count (face), == , 2);
 
   hb_ot_var_axis_info_t info;
   unsigned c = 1;
 
-  g_assert_cmpint (hb_ot_var_get_axis_infos (face, 0, &c, &info), ==, 2);
-  g_assert (info.tag == HB_TAG ('w','g','h','t'));
-  g_assert_cmpint (c, ==, 1);
+  g_assert_cmpint (hb_ot_var_get_axis_infos (face, 0, &c, &info), == , 2);
+  g_assert (info.tag == HB_TAG ('w', 'g', 'h', 't'));
+  g_assert_cmpint (c, == , 1);
 
   hb_ot_var_get_axis_infos (face, 1, &c, &info);
-  g_assert (info.tag == HB_TAG ('w','d','t','h'));
-  g_assert_cmpint (c, ==, 1);
+  g_assert (info.tag == HB_TAG ('w', 'd', 't', 'h'));
+  g_assert_cmpint (c, == , 1);
 
   hb_ot_var_get_axis_infos (face, 2, &c, &info);
-  g_assert_cmpint (c, ==, 0);
+  g_assert_cmpint (c, == , 0);
 
   hb_face_destroy (face);
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
   hb_test_add (test_get_var_coords);
   hb_test_add (test_get_var_get_axis_infos);

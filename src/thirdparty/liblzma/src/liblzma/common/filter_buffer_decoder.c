@@ -14,9 +14,9 @@
 
 extern LZMA_API(lzma_ret)
 lzma_raw_buffer_decode (
-    const lzma_filter *filters, const lzma_allocator *allocator,
-    const uint8_t *in, size_t *in_pos, size_t in_size,
-    uint8_t *out, size_t *out_pos, size_t out_size) {
+    const lzma_filter* filters, const lzma_allocator* allocator,
+    const uint8_t* in, size_t* in_pos, size_t in_size,
+    uint8_t* out, size_t* out_pos, size_t out_size) {
   // Validate what isn't validated later in filter_common.c.
   if (in == NULL || in_pos == NULL || *in_pos > in_size || out == NULL
       || out_pos == NULL || *out_pos > out_size)

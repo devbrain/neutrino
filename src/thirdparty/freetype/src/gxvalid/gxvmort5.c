@@ -53,12 +53,12 @@ typedef struct GXV_mort_subtable_type5_StateOptRec_ {
 
 #define GXV_MORT_SUBTABLE_TYPE5_HEADER_SIZE  GXV_STATETABLE_HEADER_SIZE
 
-  FT_UShort *classTable_length_p;
-  FT_UShort *stateArray_length_p;
-  FT_UShort *entryTable_length_p;
+  FT_UShort* classTable_length_p;
+  FT_UShort* stateArray_length_p;
+  FT_UShort* entryTable_length_p;
 
 } GXV_mort_subtable_type5_StateOptRec,
-    *GXV_mort_subtable_type5_StateOptRecData;
+    * GXV_mort_subtable_type5_StateOptRecData;
 
 FT_LOCAL_DEF (void)
 gxv_mort_subtable_type5_subtable_setup( FT_UShort
@@ -69,7 +69,7 @@ stateArray,
 FT_UShort entryTable,
     FT_UShort
 *     classTable_length_p,
-FT_UShort *stateArray_length_p,
+FT_UShort* stateArray_length_p,
     FT_UShort
 *     entryTable_length_p,
 GXV_Validator gxvalid

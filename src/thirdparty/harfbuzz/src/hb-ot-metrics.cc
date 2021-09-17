@@ -55,10 +55,10 @@ _fix_ascender_descender (float value, hb_ot_metrics_tag_t metrics_tag) {
 /* The common part of _get_position logic needed on hb-ot-font and here
    to be able to have slim builds without the not always needed parts */
 bool
-_hb_ot_metrics_get_position_common (hb_font_t *font,
+_hb_ot_metrics_get_position_common (hb_font_t* font,
                                     hb_ot_metrics_tag_t metrics_tag,
-                                    hb_position_t *position     /* OUT.  May be NULL. */) {
-  hb_face_t *face = font->face;
+                                    hb_position_t* position     /* OUT.  May be NULL. */) {
+  hb_face_t* face = font->face;
   switch ((unsigned) metrics_tag) {
 #ifndef HB_NO_VAR
 #define GET_VAR face->table.MVAR->get_var (metrics_tag, font->coords, font->num_coords)
@@ -130,10 +130,10 @@ _get_gasp (hb_face_t *face, float *result, hb_ot_metrics_tag_t metrics_tag)
  * Since: 2.6.0
  **/
 hb_bool_t
-hb_ot_metrics_get_position (hb_font_t *font,
+hb_ot_metrics_get_position (hb_font_t* font,
                             hb_ot_metrics_tag_t metrics_tag,
-                            hb_position_t *position     /* OUT.  May be NULL. */) {
-  hb_face_t *face = font->face;
+                            hb_position_t* position     /* OUT.  May be NULL. */) {
+  hb_face_t* face = font->face;
   switch ((unsigned) metrics_tag) {
     case HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER:
     case HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER:
@@ -220,6 +220,7 @@ hb_ot_metrics_get_position (hb_font_t *font,
 }
 
 #ifndef HB_NO_VAR
+
 /**
  * hb_ot_metrics_get_variation:
  * @font: an #hb_font_t object.
@@ -233,7 +234,7 @@ hb_ot_metrics_get_position (hb_font_t *font,
  * Since: 2.6.0
  **/
 float
-hb_ot_metrics_get_variation (hb_font_t *font, hb_ot_metrics_tag_t metrics_tag) {
+hb_ot_metrics_get_variation (hb_font_t* font, hb_ot_metrics_tag_t metrics_tag) {
   return font->face->table.MVAR->get_var (metrics_tag, font->coords, font->num_coords);
 }
 
@@ -250,7 +251,7 @@ hb_ot_metrics_get_variation (hb_font_t *font, hb_ot_metrics_tag_t metrics_tag) {
  * Since: 2.6.0
  **/
 hb_position_t
-hb_ot_metrics_get_x_variation (hb_font_t *font, hb_ot_metrics_tag_t metrics_tag) {
+hb_ot_metrics_get_x_variation (hb_font_t* font, hb_ot_metrics_tag_t metrics_tag) {
   return font->em_scalef_x (hb_ot_metrics_get_variation (font, metrics_tag));
 }
 
@@ -267,9 +268,10 @@ hb_ot_metrics_get_x_variation (hb_font_t *font, hb_ot_metrics_tag_t metrics_tag)
  * Since: 2.6.0
  **/
 hb_position_t
-hb_ot_metrics_get_y_variation (hb_font_t *font, hb_ot_metrics_tag_t metrics_tag) {
+hb_ot_metrics_get_y_variation (hb_font_t* font, hb_ot_metrics_tag_t metrics_tag) {
   return font->em_scalef_y (hb_ot_metrics_get_variation (font, metrics_tag));
 }
+
 #endif
 
 #endif

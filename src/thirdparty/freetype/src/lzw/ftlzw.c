@@ -69,10 +69,10 @@ typedef struct FT_LZWFileRec_ {
 
   FT_Byte buffer[FT_LZW_BUFFER_SIZE]; /* output buffer      */
   FT_ULong pos;                        /* position in output */
-  FT_Byte *cursor;
-  FT_Byte *limit;
+  FT_Byte* cursor;
+  FT_Byte* limit;
 
-} FT_LZWFileRec, *FT_LZWFile;
+} FT_LZWFileRec, * FT_LZWFile;
 
 /* check and skip .Z header */
 static FT_Error
@@ -209,7 +209,7 @@ ft_lzw_file_skip_output (FT_LZWFile zip,
 static FT_ULong
 ft_lzw_file_io (FT_LZWFile zip,
                 FT_ULong pos,
-                FT_Byte *buffer,
+                FT_Byte* buffer,
                 FT_ULong count) {
   FT_ULong result = 0;
   FT_Error error;
@@ -293,7 +293,7 @@ ft_lzw_stream_close (FT_Stream stream) {
 static unsigned long
 ft_lzw_stream_io (FT_Stream stream,
                   unsigned long offset,
-                  unsigned char *buffer,
+                  unsigned char* buffer,
                   unsigned long count) {
   FT_LZWFile zip = (FT_LZWFile) stream->descriptor.pointer;
 

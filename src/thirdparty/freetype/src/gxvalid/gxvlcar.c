@@ -50,7 +50,7 @@
 typedef struct GXV_lcar_DataRec_ {
   FT_UShort format;
 
-} GXV_lcar_DataRec, *GXV_lcar_Data;
+} GXV_lcar_DataRec, * GXV_lcar_Data;
 
 #define GXV_LCAR_DATA(FIELD)  GXV_TABLE_DATA( lcar, FIELD )
 

@@ -92,7 +92,7 @@ munmap( char*  addr,
 /* <Return>                                                              */
 /*    The address of newly allocated block.                              */
 /*                                                                       */
-FT_CALLBACK_DEF (void *)
+FT_CALLBACK_DEF (void*)
 ft_alloc( FT_Memory
 memory,
 long size
@@ -125,12 +125,12 @@ malloc( size );
 /* <Return>                                                              */
 /*    The address of the reallocated memory block.                       */
 /*                                                                       */
-FT_CALLBACK_DEF (void *)
+FT_CALLBACK_DEF (void*)
 ft_realloc( FT_Memory
 memory,
 long cur_size,
 long new_size,
-void *block
+void* block
 )
 {
 FT_UNUSED( memory );
@@ -158,7 +158,7 @@ realloc( block, new_size
 FT_CALLBACK_DEF (void)
 ft_free( FT_Memory
 memory,
-void *block
+void* block
 )
 {
 FT_UNUSED( memory );
@@ -218,7 +218,7 @@ base = 0;
 FT_BASE_DEF( FT_Error )
 FT_Stream_Open( FT_Stream
 stream,
-const char *filepathname
+const char* filepathname
 )
 {
 int file;
@@ -261,12 +261,12 @@ Fail_Map;
 stream->
 pos = 0;
 stream->
-base = (unsigned char *) mmap (NULL,
-                               stream->size,
-                               PROT_READ,
-                               MAP_FILE | MAP_PRIVATE,
-                               file,
-                               0);
+base = (unsigned char*) mmap (NULL,
+                              stream->size,
+                              PROT_READ,
+                              MAP_FILE | MAP_PRIVATE,
+                              file,
+                              0);
 
 if ((long)stream->base == -1 )
 {
@@ -281,7 +281,7 @@ close( file );
 stream->descriptor.
 pointer = stream->base;
 stream->pathname.
-pointer = (char *) filepathname;
+pointer = (char*) filepathname;
 
 stream->
 close = ft_close_stream;
@@ -322,6 +322,7 @@ ft_mem_debug_done( FT_Memory  memory );
 /* documentation is in ftobjs.h */
 
 FT_BASE_DEF( FT_Memory )
+
 FT_New_Memory (void) {
   FT_Memory memory;
 

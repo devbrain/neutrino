@@ -42,7 +42,7 @@ void hb_aat_map_builder_t::add_feature (hb_tag_t tag, unsigned value) {
   if (tag == HB_TAG ('a', 'a', 'l', 't')) {
     if (!face->table.feat->exposes_feature (HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES))
       return;
-    feature_info_t *info = features.push ();
+    feature_info_t* info = features.push ();
     info->type = HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES;
     info->setting = (hb_aat_layout_feature_selector_t) value;
     info->seq = features.length;
@@ -50,11 +50,11 @@ void hb_aat_map_builder_t::add_feature (hb_tag_t tag, unsigned value) {
     return;
   }
 
-  const hb_aat_feature_mapping_t *mapping = hb_aat_layout_find_feature_mapping (tag);
+  const hb_aat_feature_mapping_t* mapping = hb_aat_layout_find_feature_mapping (tag);
   if (!mapping)
     return;
 
-  const AAT::FeatureName *feature = &face->table.feat->get_feature (mapping->aatFeatureType);
+  const AAT::FeatureName* feature = &face->table.feat->get_feature (mapping->aatFeatureType);
   if (!feature->has_data ()) {
     /* Special case: Chain::compile_flags will fall back to the deprecated version of
      * small-caps if necessary, so we need to check for that possibility.
@@ -69,7 +69,7 @@ void hb_aat_map_builder_t::add_feature (hb_tag_t tag, unsigned value) {
       return;
   }
 
-  feature_info_t *info = features.push ();
+  feature_info_t* info = features.push ();
   info->type = mapping->aatFeatureType;
   info->setting = value ? mapping->selectorToEnable : mapping->selectorToDisable;
   info->seq = features.length;
@@ -77,7 +77,7 @@ void hb_aat_map_builder_t::add_feature (hb_tag_t tag, unsigned value) {
 }
 
 void
-hb_aat_map_builder_t::compile (hb_aat_map_t &m) {
+hb_aat_map_builder_t::compile (hb_aat_map_t& m) {
   /* Sort features and merge duplicates */
   if (features.length) {
     features.qsort ();

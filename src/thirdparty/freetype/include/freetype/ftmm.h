@@ -72,7 +72,7 @@ FT_BEGIN_HEADER
  *     The axis's maximum design coordinate.
  */
 typedef struct FT_MM_Axis_ {
-  FT_String *name;
+  FT_String* name;
   FT_Long minimum;
   FT_Long maximum;
 
@@ -148,7 +148,7 @@ typedef struct FT_Multi_Master_ {
  *   values are integers.
  */
 typedef struct FT_Var_Axis_ {
-  FT_String *name;
+  FT_String* name;
 
   FT_Fixed minimum;
   FT_Fixed def;
@@ -183,7 +183,7 @@ typedef struct FT_Var_Axis_ {
  *     instance.  Value 0xFFFF indicates a missing entry.
  */
 typedef struct FT_Var_Named_Style_ {
-  FT_Fixed *coords;
+  FT_Fixed* coords;
   FT_UInt strid;
   FT_UInt psid;   /* since 2.7.1 */
 
@@ -234,8 +234,8 @@ typedef struct FT_MM_Var_ {
   FT_UInt num_axis;
   FT_UInt num_designs;
   FT_UInt num_namedstyles;
-  FT_Var_Axis *axis;
-  FT_Var_Named_Style *namedstyle;
+  FT_Var_Axis* axis;
+  FT_Var_Named_Style* namedstyle;
 
 } FT_MM_Var;
 
@@ -264,7 +264,7 @@ typedef struct FT_MM_Var_ {
  */
 FT_EXPORT(FT_Error)
 FT_Get_Multi_Master (FT_Face face,
-                     FT_Multi_Master *amaster);
+                     FT_Multi_Master* amaster);
 
 
 /**************************************************************************
@@ -291,7 +291,7 @@ FT_Get_Multi_Master (FT_Face face,
  */
 FT_EXPORT(FT_Error)
 FT_Get_MM_Var (FT_Face face,
-               FT_MM_Var **amaster);
+               FT_MM_Var** amaster);
 
 
 /**************************************************************************
@@ -312,7 +312,7 @@ FT_Get_MM_Var (FT_Face face,
  */
 FT_EXPORT(FT_Error)
 FT_Done_MM_Var (FT_Library library,
-                FT_MM_Var *amaster);
+                FT_MM_Var* amaster);
 
 
 /**************************************************************************
@@ -355,7 +355,7 @@ FT_Done_MM_Var (FT_Library library,
 FT_EXPORT(FT_Error)
 FT_Set_MM_Design_Coordinates (FT_Face face,
                               FT_UInt num_coords,
-                              FT_Long *coords);
+                              FT_Long* coords);
 
 
 /**************************************************************************
@@ -398,7 +398,7 @@ FT_Set_MM_Design_Coordinates (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Set_Var_Design_Coordinates (FT_Face face,
                                FT_UInt num_coords,
-                               FT_Fixed *coords);
+                               FT_Fixed* coords);
 
 
 /**************************************************************************
@@ -433,7 +433,7 @@ FT_Set_Var_Design_Coordinates (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Get_Var_Design_Coordinates (FT_Face face,
                                FT_UInt num_coords,
-                               FT_Fixed *coords);
+                               FT_Fixed* coords);
 
 
 /**************************************************************************
@@ -479,7 +479,7 @@ FT_Get_Var_Design_Coordinates (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Set_MM_Blend_Coordinates (FT_Face face,
                              FT_UInt num_coords,
-                             FT_Fixed *coords);
+                             FT_Fixed* coords);
 
 
 /**************************************************************************
@@ -516,7 +516,7 @@ FT_Set_MM_Blend_Coordinates (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Get_MM_Blend_Coordinates (FT_Face face,
                              FT_UInt num_coords,
-                             FT_Fixed *coords);
+                             FT_Fixed* coords);
 
 
 /**************************************************************************
@@ -530,7 +530,7 @@ FT_Get_MM_Blend_Coordinates (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Set_Var_Blend_Coordinates (FT_Face face,
                               FT_UInt num_coords,
-                              FT_Fixed *coords);
+                              FT_Fixed* coords);
 
 
 /**************************************************************************
@@ -547,7 +547,7 @@ FT_Set_Var_Blend_Coordinates (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Get_Var_Blend_Coordinates (FT_Face face,
                               FT_UInt num_coords,
-                              FT_Fixed *coords);
+                              FT_Fixed* coords);
 
 
 /**************************************************************************
@@ -595,7 +595,7 @@ FT_Get_Var_Blend_Coordinates (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Set_MM_WeightVector (FT_Face face,
                         FT_UInt len,
-                        FT_Fixed *weightvector);
+                        FT_Fixed* weightvector);
 
 
 /**************************************************************************
@@ -638,8 +638,8 @@ FT_Set_MM_WeightVector (FT_Face face,
  */
 FT_EXPORT(FT_Error)
 FT_Get_MM_WeightVector (FT_Face face,
-                        FT_UInt *len,
-                        FT_Fixed *weightvector);
+                        FT_UInt* len,
+                        FT_Fixed* weightvector);
 
 
 /**************************************************************************
@@ -689,9 +689,9 @@ FT_Get_MM_WeightVector (FT_Face face,
  *   2.8.1
  */
 FT_EXPORT(FT_Error)
-FT_Get_Var_Axis_Flags (FT_MM_Var *master,
+FT_Get_Var_Axis_Flags (FT_MM_Var* master,
                        FT_UInt axis_index,
-                       FT_UInt *flags);
+                       FT_UInt* flags);
 
 
 /**************************************************************************

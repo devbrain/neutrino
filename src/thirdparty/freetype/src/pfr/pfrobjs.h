@@ -23,11 +23,11 @@
 
 FT_BEGIN_HEADER
 
-typedef struct PFR_FaceRec_ *PFR_Face;
+typedef struct PFR_FaceRec_* PFR_Face;
 
-typedef struct PFR_SizeRec_ *PFR_Size;
+typedef struct PFR_SizeRec_* PFR_Size;
 
-typedef struct PFR_SlotRec_ *PFR_Slot;
+typedef struct PFR_SlotRec_* PFR_Slot;
 
 typedef struct PFR_FaceRec_ {
   FT_FaceRec root;
@@ -53,7 +53,7 @@ pfr_face_init (FT_Stream stream,
                FT_Face face,           /* PFR_Face */
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params);
+               FT_Parameter* params);
 
 FT_LOCAL(void)
 pfr_face_done (FT_Face face);               /* PFR_Face */
@@ -63,7 +63,7 @@ FT_LOCAL(FT_Error)
 pfr_face_get_kerning (FT_Face face,       /* PFR_Face */
                       FT_UInt glyph1,
                       FT_UInt glyph2,
-                      FT_Vector *kerning);
+                      FT_Vector* kerning);
 
 FT_LOCAL(FT_Error)
 pfr_slot_init (FT_GlyphSlot slot);          /* PFR_Slot */

@@ -42,7 +42,7 @@ FT_Get_Sfnt_Name_Count (FT_Face face) {
 FT_EXPORT_DEF(FT_Error)
 FT_Get_Sfnt_Name (FT_Face face,
                   FT_UInt idx,
-                  FT_SfntName *aname) {
+                  FT_SfntName* aname) {
   FT_Error error = FT_ERR(Invalid_Argument);
 
   if (aname && face && FT_IS_SFNT(face)) {
@@ -69,7 +69,7 @@ FT_Get_Sfnt_Name (FT_Face face,
       aname->encoding_id = entry->encodingID;
       aname->language_id = entry->languageID;
       aname->name_id = entry->nameID;
-      aname->string = (FT_Byte *) entry->string;
+      aname->string = (FT_Byte*) entry->string;
       aname->string_len = entry->stringLength;
 
       error = FT_Err_Ok;
@@ -85,7 +85,7 @@ FT_Get_Sfnt_Name (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Get_Sfnt_LangTag (FT_Face face,
                      FT_UInt langID,
-                     FT_SfntLangTag *alangTag) {
+                     FT_SfntLangTag* alangTag) {
   FT_Error error = FT_ERR(Invalid_Argument);
 
   if (alangTag && face && FT_IS_SFNT(face)) {
@@ -113,7 +113,7 @@ FT_Get_Sfnt_LangTag (FT_Face face,
         }
       }
 
-      alangTag->string = (FT_Byte *) entry->string;
+      alangTag->string = (FT_Byte*) entry->string;
       alangTag->string_len = entry->stringLength;
 
       error = FT_Err_Ok;

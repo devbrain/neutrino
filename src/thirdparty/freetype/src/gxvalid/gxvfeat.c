@@ -53,7 +53,7 @@ typedef struct GXV_feat_DataRec_ {
   FT_UShort feature;
   FT_UShort setting;
 
-} GXV_feat_DataRec, *GXV_feat_Data;
+} GXV_feat_DataRec, * GXV_feat_Data;
 
 #define GXV_FEAT_DATA(field)  GXV_TABLE_DATA( feat, field )
 

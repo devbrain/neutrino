@@ -93,7 +93,7 @@ static neutrino::hal::pixel_format::format from_format (uint32_t t) {
   }
 }
 
-static const char *to_string (neutrino::hal::pixel_format::format f) {
+static const char* to_string (neutrino::hal::pixel_format::format f) {
   switch (f) {
     case neutrino::hal::pixel_format::INDEX1LSB:
       return "INDEX1LSB";
@@ -306,7 +306,7 @@ static neutrino::hal::pixel_format::type map_type (unsigned int t) {
   }
 }
 
-static const char *to_string (neutrino::hal::pixel_format::type f) {
+static const char* to_string (neutrino::hal::pixel_format::type f) {
   switch (f) {
     case neutrino::hal::pixel_format::type::UNKNOWN:
       return "UNKNOWN";
@@ -350,7 +350,7 @@ static neutrino::hal::pixel_format::order map_order (unsigned int t) {
   }
 }
 
-static const char *to_string (neutrino::hal::pixel_format::order o) {
+static const char* to_string (neutrino::hal::pixel_format::order o) {
   switch (o) {
     case neutrino::hal::pixel_format::order::NONE:
       return "NONE";
@@ -363,7 +363,7 @@ static const char *to_string (neutrino::hal::pixel_format::order o) {
   }
 }
 
-static const char *to_string (neutrino::hal::pixel_format::component_order o) {
+static const char* to_string (neutrino::hal::pixel_format::component_order o) {
   switch (o) {
     case neutrino::hal::pixel_format::component_order::NONE:
       return "NONE";
@@ -434,7 +434,7 @@ static neutrino::hal::pixel_format::array_order map_array_order (unsigned int o)
   }
 }
 
-static const char *to_string (neutrino::hal::pixel_format::array_order o) {
+static const char* to_string (neutrino::hal::pixel_format::array_order o) {
   switch (o) {
     case neutrino::hal::pixel_format::array_order::NONE:
       return "NONE";
@@ -455,7 +455,7 @@ static const char *to_string (neutrino::hal::pixel_format::array_order o) {
   }
 }
 
-static const char *to_string (neutrino::hal::pixel_format::layout o) {
+static const char* to_string (neutrino::hal::pixel_format::layout o) {
   switch (o) {
     case neutrino::hal::pixel_format::layout::NONE:
       return "NONE";
@@ -515,8 +515,9 @@ namespace neutrino::hal {
   pixel_format pixel_format::make_rgba_32bit () {
     return pixel_format (pixel_format::RGBA32);
   }
+
   // ----------------------------------------------------------------------------------------------
-  pixel_format::pixel_format (const description &d)
+  pixel_format::pixel_format (const description& d)
       : m_value (SDL_MasksToPixelFormatEnum (static_cast<int>(d.bpp), d.rmask, d.gmask, d.bmask, d.amask)) {
     if (m_value == SDL_PIXELFORMAT_UNKNOWN) {
       RAISE_EX("Can not create pixel format from the provided parameters");
@@ -546,6 +547,7 @@ namespace neutrino::hal {
   pixel_format::operator std::uint32_t () const noexcept {
     return value ();
   }
+
   // --------------------------------------------------------------------------------
   uint32_t pixel_format::value () const noexcept {
     return m_value;
@@ -626,28 +628,32 @@ namespace neutrino::hal {
     RAISE_EX("No pixel format conversion is possible");
   }
 
-  std::ostream &operator<< (std::ostream &os, pixel_format::format f) {
+  std::ostream& operator << (std::ostream& os, pixel_format::format f) {
     os << to_string (f);
     return os;
   }
 
-  std::ostream &operator<< (std::ostream &os, pixel_format::layout f) {
+  std::ostream& operator << (std::ostream& os, pixel_format::layout f) {
     os << to_string (f);
     return os;
   }
-  std::ostream &operator<< (std::ostream &os, pixel_format::array_order f) {
+
+  std::ostream& operator << (std::ostream& os, pixel_format::array_order f) {
     os << to_string (f);
     return os;
   }
-  std::ostream &operator<< (std::ostream &os, pixel_format::component_order f) {
+
+  std::ostream& operator << (std::ostream& os, pixel_format::component_order f) {
     os << to_string (f);
     return os;
   }
-  std::ostream &operator<< (std::ostream &os, pixel_format::order f) {
+
+  std::ostream& operator << (std::ostream& os, pixel_format::order f) {
     os << to_string (f);
     return os;
   }
-  std::ostream &operator<< (std::ostream &os, pixel_format::type f) {
+
+  std::ostream& operator << (std::ostream& os, pixel_format::type f) {
     os << to_string (f);
     return os;
   }

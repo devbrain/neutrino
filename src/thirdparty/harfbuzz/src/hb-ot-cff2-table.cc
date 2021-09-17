@@ -46,14 +46,16 @@ struct cff2_extents_param_t {
   void start_path () {
     path_open = true;
   }
+
   void end_path () {
     path_open = false;
   }
+
   bool is_path_open () const {
     return path_open;
   }
 
-  void update_bounds (const point_t &pt) {
+  void update_bounds (const point_t& pt) {
     if (pt.x < min_x)
       min_x = pt.x;
     if (pt.x > max_x)
@@ -72,12 +74,12 @@ struct cff2_extents_param_t {
 };
 
 struct cff2_path_procs_extents_t : path_procs_t<cff2_path_procs_extents_t, cff2_cs_interp_env_t, cff2_extents_param_t> {
-  static void moveto (cff2_cs_interp_env_t &env, cff2_extents_param_t &param, const point_t &pt) {
+  static void moveto (cff2_cs_interp_env_t& env, cff2_extents_param_t& param, const point_t& pt) {
     param.end_path ();
     env.moveto (pt);
   }
 
-  static void line (cff2_cs_interp_env_t &env, cff2_extents_param_t &param, const point_t &pt1) {
+  static void line (cff2_cs_interp_env_t& env, cff2_extents_param_t& param, const point_t& pt1) {
     if (!param.is_path_open ()) {
       param.start_path ();
       param.update_bounds (env.get_pt ());
@@ -87,7 +89,8 @@ struct cff2_path_procs_extents_t : path_procs_t<cff2_path_procs_extents_t, cff2_
   }
 
   static void
-  curve (cff2_cs_interp_env_t &env, cff2_extents_param_t &param, const point_t &pt1, const point_t &pt2, const point_t &pt3) {
+  curve (cff2_cs_interp_env_t& env, cff2_extents_param_t& param, const point_t& pt1, const point_t& pt2,
+         const point_t& pt3) {
     if (!param.is_path_open ()) {
       param.start_path ();
       param.update_bounds (env.get_pt ());
@@ -105,9 +108,9 @@ struct cff2_cs_opset_extents_t : cff2_cs_opset_t<cff2_cs_opset_extents_t,
                                                  cff2_path_procs_extents_t> {
 };
 
-bool OT::cff2::accelerator_t::get_extents (hb_font_t *font,
+bool OT::cff2::accelerator_t::get_extents (hb_font_t* font,
                                            hb_codepoint_t glyph,
-                                           hb_glyph_extents_t *extents) const {
+                                           hb_glyph_extents_t* extents) const {
 #ifdef HB_NO_OT_FONT_CFF
   /* XXX Remove check when this code moves to .hh file. */
   return true;

@@ -13,15 +13,15 @@
 
 namespace neutrino::hal {
   namespace {
-    application *s_instance = nullptr;
-    message_broker *s_message_broker = nullptr;
+    application* s_instance = nullptr;
+    message_broker* s_message_broker = nullptr;
   }
 
-  application *get_application () {
+  application* get_application () {
     return s_instance;
   }
 
-  message_broker *get_message_broker () {
+  message_broker* get_message_broker () {
     return s_message_broker;
   }
 
@@ -44,20 +44,25 @@ namespace neutrino::hal {
     setup_observers ();
     s_instance = this;
   }
+
   // -------------------------------------------------------------------------------
   application::~application () = default;
+
   // -------------------------------------------------------------------------------
   void application::quit () {
     on_quit ();
   }
+
   // -------------------------------------------------------------------------------
-  events_broker &application::broker () {
+  events_broker& application::broker () {
     return m_pimpl->m_message_broker;
   }
+
   // -------------------------------------------------------------------------------
   void application::setup () {
 
   }
+
   // -------------------------------------------------------------------------------
   void application::run (int desired_fps) {
     this->setup ();
@@ -116,51 +121,62 @@ namespace neutrino::hal {
       }
     }
   }
+
   // -------------------------------------------------------------------------------
   void application::on_terminating () {
 
   }
+
   // -------------------------------------------------------------------------------
   void application::on_low_memory () {
 
   }
+
   // -------------------------------------------------------------------------------
   void application::on_will_enter_background () {
 
   }
+
   // -------------------------------------------------------------------------------
   void application::on_in_background () {
 
   }
+
   // -------------------------------------------------------------------------------
   void application::on_in_foreground () {
 
   }
+
   // -------------------------------------------------------------------------------
   void application::clear () {
     windows_manager::instance ().clear ();
   }
+
   // -------------------------------------------------------------------------------
   void application::render () {
     windows_manager::instance ().present ();
   }
+
   // -------------------------------------------------------------------------------
   void application::on_quit () {
     m_pimpl->m_quit_flag = true;
   }
+
   // -------------------------------------------------------------------------------
   bool application::still_running () {
     return !m_pimpl->m_quit_flag && windows_manager::instance ().has_windows ();
   }
+
   // -------------------------------------------------------------------------------
   void application::setup_observers () {
     m_pimpl->m_input_publisher.attach (&windows_manager::instance ());
     m_pimpl->m_input_publisher.attach (&m_pimpl->m_message_broker);
-    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::terminating &) { on_terminating (); });
-    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::low_memory &) { on_low_memory (); });
-    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::will_enter_background &) { on_will_enter_background (); });
-    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::in_background &) { on_in_background (); });
-    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::in_foreground &) { on_in_foreground (); });
-    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::quit &) { on_quit (); });
+    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::terminating&) { on_terminating (); });
+    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::low_memory&) { on_low_memory (); });
+    m_pimpl->m_input_publisher.attach ([this] (
+        const sdl::events::will_enter_background&) { on_will_enter_background (); });
+    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::in_background&) { on_in_background (); });
+    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::in_foreground&) { on_in_foreground (); });
+    m_pimpl->m_input_publisher.attach ([this] (const sdl::events::quit&) { on_quit (); });
   }
 }

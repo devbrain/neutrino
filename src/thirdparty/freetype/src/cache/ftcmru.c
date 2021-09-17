@@ -25,7 +25,7 @@
 #include "ftcerror.h"
 
 FT_LOCAL_DEF(void)
-FTC_MruNode_Prepend (FTC_MruNode *plist,
+FTC_MruNode_Prepend (FTC_MruNode* plist,
                      FTC_MruNode node) {
   FTC_MruNode first = *plist;
 
@@ -63,7 +63,7 @@ FTC_MruNode_Prepend (FTC_MruNode *plist,
 }
 
 FT_LOCAL_DEF(void)
-FTC_MruNode_Up (FTC_MruNode *plist,
+FTC_MruNode_Up (FTC_MruNode* plist,
                 FTC_MruNode node) {
   FTC_MruNode first = *plist;
 
@@ -107,7 +107,7 @@ FTC_MruNode_Up (FTC_MruNode *plist,
 }
 
 FT_LOCAL_DEF(void)
-FTC_MruNode_Remove (FTC_MruNode *plist,
+FTC_MruNode_Remove (FTC_MruNode* plist,
                     FTC_MruNode node) {
   FTC_MruNode first = *plist;
   FTC_MruNode prev, next;
@@ -213,7 +213,7 @@ FTC_MruList_Find( FTC_MruList  list,
 FT_LOCAL_DEF(FT_Error)
 FTC_MruList_New (FTC_MruList list,
                  FT_Pointer key,
-                 FTC_MruNode *anode) {
+                 FTC_MruNode* anode) {
   FT_Error error;
   FTC_MruNode node = NULL;
   FT_Memory memory = list->memory;

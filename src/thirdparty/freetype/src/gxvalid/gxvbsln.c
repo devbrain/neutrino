@@ -54,7 +54,7 @@ typedef struct GXV_bsln_DataRec_ {
   FT_Bytes ctlPoints_p;
   FT_UShort defaultBaseline;
 
-} GXV_bsln_DataRec, *GXV_bsln_Data;
+} GXV_bsln_DataRec, * GXV_bsln_Data;
 
 #define GXV_BSLN_DATA(field)  GXV_TABLE_DATA( bsln, field )
 

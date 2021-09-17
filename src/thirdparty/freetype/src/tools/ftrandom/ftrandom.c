@@ -54,17 +54,17 @@
 static int check_outlines = false;
 static int nohints = false;
 static int rasterize = false;
-static char *results_dir = "results";
+static char* results_dir = "results";
 
 #define GOOD_FONTS_DIR  "/usr/local/share/fonts"
 
-static char *default_dir_list[] =
+static char* default_dir_list[] =
     {
         GOOD_FONTS_DIR,
         NULL
     };
 
-static char *default_ext_list[] =
+static char* default_ext_list[] =
     {
         "ttf",
         "otf",
@@ -87,19 +87,19 @@ static double error_fraction = 0.0;
 static FT_F26Dot6 font_size = 12 * 64;
 
 static struct fontlist {
-  char *name;
+  char* name;
   long len;
   unsigned int isbinary: 1;
   unsigned int isascii: 1;
   unsigned int ishex: 1;
 
-} *fontlist;
+} * fontlist;
 
 static unsigned int fcnt;
 
 static int
-FT_MoveTo (const FT_Vector *to,
-           void *user) {
+FT_MoveTo (const FT_Vector* to,
+           void* user) {
   FT_UNUSED (to);
   FT_UNUSED (user);
 
@@ -107,8 +107,8 @@ FT_MoveTo (const FT_Vector *to,
 }
 
 static int
-FT_LineTo (const FT_Vector *to,
-           void *user) {
+FT_LineTo (const FT_Vector* to,
+           void* user) {
   FT_UNUSED (to);
   FT_UNUSED (user);
 
@@ -116,9 +116,9 @@ FT_LineTo (const FT_Vector *to,
 }
 
 static int
-FT_ConicTo (const FT_Vector *_cp,
-            const FT_Vector *to,
-            void *user) {
+FT_ConicTo (const FT_Vector* _cp,
+            const FT_Vector* to,
+            void* user) {
   FT_UNUSED (_cp);
   FT_UNUSED (to);
   FT_UNUSED (user);
@@ -127,10 +127,10 @@ FT_ConicTo (const FT_Vector *_cp,
 }
 
 static int
-FT_CubicTo (const FT_Vector *cp1,
-            const FT_Vector *cp2,
-            const FT_Vector *to,
-            void *user) {
+FT_CubicTo (const FT_Vector* cp1,
+            const FT_Vector* cp2,
+            const FT_Vector* to,
+            void* user) {
   FT_UNUSED (cp1);
   FT_UNUSED (cp2);
   FT_UNUSED (to);
@@ -179,7 +179,7 @@ TestFace (FT_Face face) {
 }
 
 static void
-ExecuteTest (char *testfont) {
+ExecuteTest (char* testfont) {
   FT_Library context;
   FT_Face face;
 
@@ -213,10 +213,10 @@ ExecuteTest (char *testfont) {
 }
 
 static int
-extmatch (char *filename,
-          char **extensions) {
+extmatch (char* filename,
+          char** extensions) {
   int i;
-  char *pt;
+  char* pt;
 
   if (!extensions)
     return true;
@@ -236,8 +236,8 @@ extmatch (char *filename,
 }
 
 static void
-figurefiletype (struct fontlist *item) {
-  FILE *foo;
+figurefiletype (struct fontlist* item) {
+  FILE* foo;
 
   item->isbinary = item->isascii = item->ishex = false;
 
@@ -302,8 +302,8 @@ figurefiletype (struct fontlist *item) {
 }
 
 static void
-FindFonts (char **fontdirs,
-           char **extensions) {
+FindFonts (char** fontdirs,
+           char** extensions) {
   int i;
   unsigned int max;
   char buffer[1025];
@@ -313,8 +313,8 @@ FindFonts (char **fontdirs,
   fcnt = 0;
 
   for (i = 0; fontdirs[i] != NULL; i++) {
-    DIR *examples;
-    struct dirent *ent;
+    DIR* examples;
+    struct dirent* ent;
 
     examples = opendir (fontdirs[i]);
     if (!examples) {
@@ -359,7 +359,7 @@ FindFonts (char **fontdirs,
 }
 
 static unsigned int
-getErrorCnt (struct fontlist *item) {
+getErrorCnt (struct fontlist* item) {
   if (error_count == 0 && error_fraction == 0.0)
     return 0;
 
@@ -376,10 +376,10 @@ getRandom (int low,
 }
 
 static int
-copyfont (struct fontlist *item,
-          char *newfont) {
+copyfont (struct fontlist* item,
+          char* newfont) {
   static char buffer[8096];
-  FILE *good, *newf;
+  FILE* good, * newf;
   size_t len;
   unsigned int i, err_cnt;
 
@@ -477,10 +477,10 @@ do_test (void) {
 }
 
 static void
-usage (FILE *out,
-       char *name) {
-  char **d = default_dir_list;
-  char **e = default_ext_list;
+usage (FILE* out,
+       char* name) {
+  char** d = default_dir_list;
+  char** e = default_ext_list;
 
   fprintf (out, "%s [options] -- Generate random erroneous fonts\n"
                 "  and attempt to parse them with FreeType.\n\n", name);
@@ -518,19 +518,19 @@ usage (FILE *out,
 
 int
 main (int argc,
-      char **argv) {
-  char **dirs, **exts;
+      char** argv) {
+  char** dirs, ** exts;
   int dcnt = 0, ecnt = 0, rset = false, allexts = false;
   int i;
   time_t now;
-  char *testfile = NULL;
+  char* testfile = NULL;
 
-  dirs = calloc ((size_t) (argc + 1), sizeof (char **));
-  exts = calloc ((size_t) (argc + 1), sizeof (char **));
+  dirs = calloc ((size_t) (argc + 1), sizeof (char**));
+  exts = calloc ((size_t) (argc + 1), sizeof (char**));
 
   for (i = 1; i < argc; i++) {
-    char *pt = argv[i];
-    char *end;
+    char* pt = argv[i];
+    char* end;
 
     if (pt[0] == '-' && pt[1] == '-')
       pt++;
@@ -615,8 +615,7 @@ main (int argc,
   FindFonts (dirs, exts);
   mkdir (results_dir, 0755);
 
-  forever
-    do_test ();
+  forever do_test ();
 
   return 0;
 }

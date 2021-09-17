@@ -23,7 +23,7 @@
 
 static int
 png_have_neon (png_structp png_ptr) {
-  FILE *f = fopen ("/proc/cpuinfo", "rb");
+  FILE* f = fopen ("/proc/cpuinfo", "rb");
 
   if (f != NULL) {
     /* This is a simple state machine which reads the input byte-by-byte until

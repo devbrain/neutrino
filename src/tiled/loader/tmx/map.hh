@@ -62,20 +62,20 @@ namespace neutrino::tiled::tmx {
 
   class map : public component {
     public:
-      static map parse (const reader &node, path_resolver_t resolver);
+      static map parse (const reader& node, path_resolver_t resolver);
 
       /**
        * @brief Map constructor.
        */
       map (std::string version, orientation_t orientation, unsigned width, unsigned height,
-           unsigned tilewidth, unsigned tileheight, const colori &bgcolor, render_order_t renderOrder,
+           unsigned tilewidth, unsigned tileheight, const colori& bgcolor, render_order_t renderOrder,
            unsigned hexSideLength, stagger_axis_t axis, stagger_index_t index, bool infinite)
           : m_version (std::move (version)), m_orientation (orientation), m_width (width), m_height (height),
             m_tilewidth (tilewidth), m_tileheight (tileheight), m_bgcolor (bgcolor), m_renderOrder (renderOrder),
             m_hexSideLength (hexSideLength), m_axis (axis), m_index (index), m_infinite (infinite) {
       }
 
-      [[nodiscard]] const std::string &version () const noexcept {
+      [[nodiscard]] const std::string& version () const noexcept {
         return m_version;
       }
 
@@ -127,11 +127,13 @@ namespace neutrino::tiled::tmx {
         m_tilesets.emplace_back (std::move (tileset));
       }
 
-      [[nodiscard]] const std::vector<tile_set> &tile_sets () const noexcept {
+      [[nodiscard]] const std::vector<tile_set>& tile_sets () const noexcept {
         return m_tilesets;
       }
 
-      [[nodiscard]] const tile_set *tile_set_from_gid (unsigned gid) const noexcept;
+      [[nodiscard]] std::vector<tile_set>& tile_sets () noexcept {
+        return m_tilesets;
+      }
 
       void add (tile_layer alayer) {
         m_layers.emplace_back (std::move (alayer));
@@ -145,15 +147,16 @@ namespace neutrino::tiled::tmx {
         m_object_layers.emplace_back (std::move (alayer));
       }
 
-      [[nodiscard]] const std::vector<object_layer> &objects () const noexcept {
+      [[nodiscard]] const std::vector<object_layer>& objects () const noexcept {
         return m_object_layers;
       }
 
-      [[nodiscard]] const std::vector<layer_t> &layers () const noexcept {
+      [[nodiscard]] const std::vector<layer_t>& layers () const noexcept {
         return m_layers;
       }
+
     private:
-      static void parse_group (const reader &elt, map &result, const group *parent, path_resolver_t resolver);
+      static void parse_group (const reader& elt, map& result, const group* parent, path_resolver_t resolver);
     private:
       const std::string m_version;
 

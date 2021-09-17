@@ -9,7 +9,7 @@
 #include <neutrino/utils/switch_by_string.hh>
 
 namespace neutrino::tiled::tmx {
-  bool component::contains (const std::string &name) const noexcept {
+  bool component::contains (const std::string& name) const noexcept {
     return m_prop.find (name) != m_prop.end ();
   }
 
@@ -17,7 +17,7 @@ namespace neutrino::tiled::tmx {
     return m_prop.empty ();
   }
 
-  std::optional<property_t> component::get (const std::string &name) const noexcept {
+  std::optional<property_t> component::get (const std::string& name) const noexcept {
     auto i = m_prop.find (name);
     if (i == m_prop.end ()) {
       return std::nullopt;
@@ -25,7 +25,7 @@ namespace neutrino::tiled::tmx {
     return i->second;
   }
 
-  static void add_propery (component &obj, const std::string &name, const std::string &type, const std::string &value) {
+  static void add_propery (component& obj, const std::string& name, const std::string& type, const std::string& value) {
     try {
       switch (switcher (type.c_str ())) {
         case "bool"_case:
@@ -54,19 +54,19 @@ namespace neutrino::tiled::tmx {
           break;
       }
     }
-    catch (exception &e) {
+    catch (exception& e) {
       RAISE_EX_WITH_CAUSE(std::move (e), "Failed to parse property [", name, "] of type [", type, "]");
     }
   }
 
-  void component::parse (component &obj, const reader &elt, const component *parent) {
+  void component::parse (component& obj, const reader& elt, const component* parent) {
     if (parent) {
       for (const auto&[name, val] : parent->m_prop) {
         obj.add (name, val);
       }
     }
-    if (const auto *json_rdr = dynamic_cast<const json_reader *>(&elt); json_rdr) {
-      elt.parse_many_elements ("properties", [&obj] (const reader &e) {
+    if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
+      elt.parse_many_elements ("properties", [&obj] (const reader& e) {
         std::string name = e.get_string_attribute ("name");
         ENFORCE(!name.empty ());
         std::string value = e.get_string_attribute ("value", "");
@@ -80,13 +80,13 @@ namespace neutrino::tiled::tmx {
       });
     }
     else {
-      elt.parse_one_element ("properties", [&obj] (const reader &e) {
-        e.parse_many_elements ("property", [&obj] (const reader &inner) {
+      elt.parse_one_element ("properties", [&obj] (const reader& e) {
+        e.parse_many_elements ("property", [&obj] (const reader& inner) {
           std::string name = inner.get_string_attribute ("name");
           ENFORCE(!name.empty ());
           std::string value = inner.get_string_attribute ("value", "");
 
-          if (const auto *xml_rdr = dynamic_cast<const xml_reader *>(&inner); xml_rdr && value.empty ()) {
+          if (const auto* xml_rdr = dynamic_cast<const xml_reader*>(&inner); xml_rdr && value.empty ()) {
             value = xml_rdr->get_text ();
           }
 

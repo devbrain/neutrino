@@ -24,7 +24,7 @@ namespace neutrino::utils {
     class observer {
       public:
         virtual ~observer () = default;
-        virtual void on_event (const EventType &event) = 0;
+        virtual void on_event (const EventType& event) = 0;
     };
 
     // ======================================================================================
@@ -39,10 +39,10 @@ namespace neutrino::utils {
         virtual void on_subscribed ();
         virtual void on_unsubscribed ();
       private:
-        void _on_attached (monitors_holder *mh);
-        void _on_detached (monitors_holder *mh);
+        void _on_attached (monitors_holder* mh);
+        void _on_detached (monitors_holder* mh);
       private:
-        std::set<monitors_holder *> m_holders;
+        std::set<monitors_holder*> m_holders;
     };
 
     // ======================================================================================
@@ -50,22 +50,23 @@ namespace neutrino::utils {
     class functional_observer;
 
     template <typename EventType>
-    class functional_observer<std::function<void (const EventType &)>>
+    class functional_observer<std::function<void (const EventType&)>>
         : public observer_monitor, public observer<EventType> {
       public:
-        explicit functional_observer (std::function<void (const EventType &)> &&f)
+        explicit functional_observer (std::function<void (const EventType&)>&& f)
             : m_runner (std::move (f)) {
         }
 
-        void on_event (const EventType &event) override {
+        void on_event (const EventType& event) override {
           m_runner (event);
         }
 
         void on_unsubscribed () override {
           delete this;
         }
+
       private:
-        std::function<void (const EventType &)> m_runner;
+        std::function<void (const EventType&)> m_runner;
     };
 
     template <typename F, typename ... Events>
@@ -78,12 +79,12 @@ namespace neutrino::utils {
 
         virtual ~monitors_holder ();
       protected:
-        void insert (observer_monitor *obs);
-        void remove (observer_monitor *obs);
+        void insert (observer_monitor* obs);
+        void remove (observer_monitor* obs);
 
-        void destruct (observer_monitor *obs);
+        void destruct (observer_monitor* obs);
       private:
-        std::set<observer_monitor *> m_monitors;
+        std::set<observer_monitor*> m_monitors;
     };
 
     // ======================================================================================
@@ -91,12 +92,12 @@ namespace neutrino::utils {
     class basic_publisher : public monitors_holder {
       public:
         basic_publisher ()
-            : m_holder{std::vector<observer<Events> *>{}...} {
+            : m_holder{std::vector<observer<Events>*>{}...} {
         }
 
         template <typename Functor>
         std::enable_if_t<is_callable_supported_v<Functor, Events...>, void>
-        attach (Functor &&func) {
+        attach (Functor&& func) {
           auto f = mp::to_stdfunction (func);
           using func_t = decltype (f);
 #if !defined(_MSC_VER)
@@ -107,8 +108,8 @@ namespace neutrino::utils {
         }
 
         template <typename Event>
-        std::enable_if_t<is_callable_supported_v<void (*) (const Event &), Events...>, void>
-        attach (void (*func) (const Event &)) {
+        std::enable_if_t<is_callable_supported_v<void (*) (const Event&), Events...>, void>
+        attach (void (* func) (const Event&)) {
           auto f = mp::to_stdfunction (func);
           using func_t = decltype (f);
 #if !defined(_MSC_VER)
@@ -119,12 +120,12 @@ namespace neutrino::utils {
         }
 
         template <typename Observer>
-        void attach (Observer *obs) {
+        void attach (Observer* obs) {
           bool attached = false;
           mp::constexpr_for<0, supported_events_t::size (), 1> ([this, obs, &attached] (auto i) {
             using type_to_test_t = mp::type_list_at_t<i.value, supported_events_t>;
-            if (auto observer_to_test = dynamic_cast<observer<type_to_test_t> *>(obs)) {
-              auto &container = std::get<i.value> (m_holder);
+            if (auto observer_to_test = dynamic_cast<observer<type_to_test_t>*>(obs)) {
+              auto& container = std::get<i.value> (m_holder);
               auto itr = std::find (container.begin (), container.end (), observer_to_test);
               if (itr == container.end ()) {
                 container.push_back (observer_to_test);
@@ -133,19 +134,19 @@ namespace neutrino::utils {
             }
           });
           if (attached) {
-            if (auto *monitor = dynamic_cast<observer_monitor *>(obs)) {
+            if (auto* monitor = dynamic_cast<observer_monitor*>(obs)) {
               this->insert (monitor);
             }
           }
         }
 
         template <class Observer>
-        void detach (Observer *obs) {
+        void detach (Observer* obs) {
           bool detached = false;
           mp::constexpr_for<0, supported_events_t::size (), 1> ([this, obs, &detached] (auto i) {
             using type_to_test_t = mp::type_list_at_t<i.value, supported_events_t>;
-            if (auto observer_to_test = dynamic_cast<observer<type_to_test_t> *>(obs)) {
-              auto &container = std::get<i.value> (m_holder);
+            if (auto observer_to_test = dynamic_cast<observer<type_to_test_t>*>(obs)) {
+              auto& container = std::get<i.value> (m_holder);
               auto itr = std::find (container.begin (), container.end (), observer_to_test);
               if (itr != container.end ()) {
                 container.erase (observer_to_test);
@@ -154,24 +155,24 @@ namespace neutrino::utils {
             }
           });
           if (detached) {
-            if (auto *monitor = dynamic_cast<observer_monitor *>(obs)) {
+            if (auto* monitor = dynamic_cast<observer_monitor*>(obs)) {
               this->remove (monitor);
             }
           }
         }
 
         template <typename Event>
-        void notify (const Event &ev) {
+        void notify (const Event& ev) {
           constexpr auto idx = mp::type_list_find_first_v<Event, supported_events_t>;
           static_assert (idx != supported_events_t::npos, "This event is unsupported");
-          auto &container = std::get<idx> (m_holder);
-          for (auto *obs : container) {
+          auto& container = std::get<idx> (m_holder);
+          for (auto* obs : container) {
             obs->on_event (ev);
           }
         }
 
         template <typename ... Event>
-        void notify (const std::variant<Event...> &ev_variant) {
+        void notify (const std::variant<Event...>& ev_variant) {
           using supplied_t = mp::type_list<Event...>;
           mp::constexpr_for<0, supplied_t::size (), 1> ([this, &ev_variant] (auto i) {
             using type_t = mp::type_list_at_t<i.value, supplied_t>;
@@ -189,7 +190,7 @@ namespace neutrino::utils {
 
       private:
         using supported_events_t = mp::type_list<Events...>;
-        using holder_t = std::tuple<std::vector<observer<Events> *>...>;
+        using holder_t = std::tuple<std::vector<observer<Events>*>...>;
         holder_t m_holder;
     };
 

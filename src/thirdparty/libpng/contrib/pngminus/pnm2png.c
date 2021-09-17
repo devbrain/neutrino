@@ -29,22 +29,22 @@
 
 /* function prototypes */
 
-int main (int argc, char *argv[]);
+int main (int argc, char* argv[]);
 void usage ();
-BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
+BOOL pnm2png (FILE* pnm_file, FILE* png_file, FILE* alpha_file,
               BOOL interlace, BOOL alpha);
-void get_token (FILE *pnm_file, char *token_buf, size_t token_buf_size);
-png_uint_32 get_data (FILE *pnm_file, int depth);
-png_uint_32 get_value (FILE *pnm_file, int depth);
+void get_token (FILE* pnm_file, char* token_buf, size_t token_buf_size);
+png_uint_32 get_data (FILE* pnm_file, int depth);
+png_uint_32 get_value (FILE* pnm_file, int depth);
 
 /*
  *  main
  */
 
-int main (int argc, char *argv[]) {
-  FILE *fp_rd = stdin;
-  FILE *fp_al = NULL;
-  FILE *fp_wr = stdout;
+int main (int argc, char* argv[]) {
+  FILE* fp_rd = stdin;
+  FILE* fp_al = NULL;
+  FILE* fp_wr = stdout;
   BOOL interlace = FALSE;
   BOOL alpha = FALSE;
   int argi;
@@ -148,13 +148,13 @@ void usage () {
  *  pnm2png
  */
 
-BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
+BOOL pnm2png (FILE* pnm_file, FILE* png_file, FILE* alpha_file,
               BOOL interlace, BOOL alpha) {
-  png_struct *png_ptr = NULL;
-  png_info *info_ptr = NULL;
-  png_byte *png_pixels = NULL;
-  png_byte **row_pointers = NULL;
-  png_byte *pix_ptr = NULL;
+  png_struct* png_ptr = NULL;
+  png_info* info_ptr = NULL;
+  png_byte* png_pixels = NULL;
+  png_byte** row_pointers = NULL;
+  png_byte* pix_ptr = NULL;
   volatile png_uint_32 row_bytes;
 
   char type_token[16];
@@ -340,7 +340,7 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
     /* too big */
     return FALSE;
   }
-  if ((png_pixels = (png_byte *)
+  if ((png_pixels = (png_byte*)
       malloc ((size_t) row_bytes * (size_t) height)) == NULL) {
     /* out of memory */
     return FALSE;
@@ -442,7 +442,7 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
 
   /* if needed we will allocate memory for an new array of row-pointers */
   if (row_pointers == NULL) {
-    if ((row_pointers = (png_byte **)
+    if ((row_pointers = (png_byte**)
         malloc (height * sizeof (png_byte * ))) == NULL) {
       png_destroy_write_struct (&png_ptr, &info_ptr);
       free (png_pixels);
@@ -475,7 +475,7 @@ BOOL pnm2png (FILE *pnm_file, FILE *png_file, FILE *alpha_file,
  * get_token - gets the first string after whitespace
  */
 
-void get_token (FILE *pnm_file, char *token_buf, size_t token_buf_size) {
+void get_token (FILE* pnm_file, char* token_buf, size_t token_buf_size) {
   size_t i = 0;
   int ret;
 
@@ -517,7 +517,7 @@ void get_token (FILE *pnm_file, char *token_buf, size_t token_buf_size) {
  *             using the bit-depth to fill up a byte (0Ah -> AAh)
  */
 
-png_uint_32 get_data (FILE *pnm_file, int depth) {
+png_uint_32 get_data (FILE* pnm_file, int depth) {
   static int bits_left = 0;
   static int old_value = 0;
   static int mask = 0;
@@ -548,7 +548,7 @@ png_uint_32 get_data (FILE *pnm_file, int depth) {
  *              using the bit-depth to fill up a byte (0Ah -> AAh)
  */
 
-png_uint_32 get_value (FILE *pnm_file, int depth) {
+png_uint_32 get_value (FILE* pnm_file, int depth) {
   static png_uint_32 mask = 0;
   char token[16];
   unsigned long ul_ret_value;

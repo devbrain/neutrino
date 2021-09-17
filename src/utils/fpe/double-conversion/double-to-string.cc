@@ -39,7 +39,7 @@
 
 namespace double_conversion {
 
-  const DoubleToStringConverter &DoubleToStringConverter::EcmaScriptConverter () {
+  const DoubleToStringConverter& DoubleToStringConverter::EcmaScriptConverter () {
     int flags = UNIQUE_ZERO | EMIT_POSITIVE_EXPONENT_SIGN;
     static DoubleToStringConverter converter (flags,
                                               "Infinity",
@@ -52,7 +52,7 @@ namespace double_conversion {
 
   bool DoubleToStringConverter::HandleSpecialValues (
       double value,
-      StringBuilder *result_builder) const {
+      StringBuilder* result_builder) const {
     Double double_inspect (value);
     if (double_inspect.IsInfinite ()) {
       if (infinity_symbol_ == NULL)
@@ -73,10 +73,10 @@ namespace double_conversion {
   }
 
   void DoubleToStringConverter::CreateExponentialRepresentation (
-      const char *decimal_digits,
+      const char* decimal_digits,
       int length,
       int exponent,
-      StringBuilder *result_builder) const {
+      StringBuilder* result_builder) const {
     DOUBLE_CONVERSION_ASSERT(length != 0);
     result_builder->AddCharacter (decimal_digits[0]);
     if (length != 1) {
@@ -118,11 +118,11 @@ namespace double_conversion {
   }
 
   void DoubleToStringConverter::CreateDecimalRepresentation (
-      const char *decimal_digits,
+      const char* decimal_digits,
       int length,
       int decimal_point,
       int digits_after_point,
-      StringBuilder *result_builder) const {
+      StringBuilder* result_builder) const {
     // Create a representation that is padded with zeros if needed.
     if (decimal_point <= 0) {
       // "0.00000decimal_rep" or "0.000decimal_rep00".
@@ -168,7 +168,7 @@ namespace double_conversion {
 
   bool DoubleToStringConverter::ToShortestIeeeNumber (
       double value,
-      StringBuilder *result_builder,
+      StringBuilder* result_builder,
       DoubleToStringConverter::DtoaMode mode) const {
     DOUBLE_CONVERSION_ASSERT(mode == SHORTEST || mode == SHORTEST_SINGLE);
     if (Double (value).IsSpecial ()) {
@@ -206,7 +206,7 @@ namespace double_conversion {
 
   bool DoubleToStringConverter::ToFixed (double value,
                                          int requested_digits,
-                                         StringBuilder *result_builder) const {
+                                         StringBuilder* result_builder) const {
     DOUBLE_CONVERSION_ASSERT(kMaxFixedDigitsBeforePoint == 60);
     const double kFirstNonFixed = 1e60;
 
@@ -244,7 +244,7 @@ namespace double_conversion {
   bool DoubleToStringConverter::ToExponential (
       double value,
       int requested_digits,
-      StringBuilder *result_builder) const {
+      StringBuilder* result_builder) const {
     if (Double (value).IsSpecial ()) {
       return HandleSpecialValues (value, result_builder);
     }
@@ -300,7 +300,7 @@ namespace double_conversion {
 
   bool DoubleToStringConverter::ToPrecision (double value,
                                              int precision,
-                                             StringBuilder *result_builder) const {
+                                             StringBuilder* result_builder) const {
     if (Double (value).IsSpecial ()) {
       return HandleSpecialValues (value, result_builder);
     }
@@ -386,11 +386,11 @@ namespace double_conversion {
   void DoubleToStringConverter::DoubleToAscii (double v,
                                                DtoaMode mode,
                                                int requested_digits,
-                                               char *buffer,
+                                               char* buffer,
                                                int buffer_length,
-                                               bool *sign,
-                                               int *length,
-                                               int *point) {
+                                               bool* sign,
+                                               int* length,
+                                               int* point) {
     Vector<char> vector (buffer, buffer_length);
     DOUBLE_CONVERSION_ASSERT(!Double (v).IsSpecial ());
     DOUBLE_CONVERSION_ASSERT(mode == SHORTEST || mode == SHORTEST_SINGLE || requested_digits >= 0);

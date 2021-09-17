@@ -38,9 +38,11 @@ template <typename K, typename V,
     V vINVALID = hb_is_pointer (V) ? 0 : hb_is_signed (V) ? hb_int_min (V) : (V) -1>
 struct hb_hashmap_t {
     HB_DELETE_COPY_ASSIGN (hb_hashmap_t);
+
     hb_hashmap_t () {
       init ();
     }
+
     ~hb_hashmap_t () {
       fini ();
     }
@@ -59,21 +61,26 @@ struct hb_hashmap_t {
         hash = 0;
       }
 
-      bool operator== (const K &o) {
+      bool operator == (const K& o) {
         return hb_deref (key) == hb_deref (o);
       }
-      bool operator== (const item_t &o) {
+
+      bool operator == (const item_t& o) {
         return *this == o.key;
       }
+
       bool is_unused () const {
         return key == kINVALID;
       }
+
       bool is_tombstone () const {
         return key != kINVALID && value == vINVALID;
       }
+
       bool is_real () const {
         return key != kINVALID && value != vINVALID;
       }
+
       hb_pair_t<K, V> get_pair () const {
         return hb_pair_t<K, V> (key, value);
       }
@@ -85,7 +92,7 @@ struct hb_hashmap_t {
     unsigned int occupancy; /* Including tombstones. */
     unsigned int mask;
     unsigned int prime;
-    item_t *items;
+    item_t* items;
 
     void init_shallow () {
       successful = true;
@@ -94,15 +101,18 @@ struct hb_hashmap_t {
       prime = 0;
       items = nullptr;
     }
+
     void init () {
       hb_object_init (this);
       init_shallow ();
     }
+
     void fini_shallow () {
       free (items);
       items = nullptr;
       population = occupancy = 0;
     }
+
     void fini () {
       hb_object_fini (this);
       fini_shallow ();
@@ -123,16 +133,16 @@ struct hb_hashmap_t {
 
       unsigned int power = hb_bit_storage (population * 2 + 8);
       unsigned int new_size = 1u << power;
-      item_t *new_items = (item_t *) malloc ((size_t) new_size * sizeof (item_t));
+      item_t* new_items = (item_t*) malloc ((size_t) new_size * sizeof (item_t));
       if (unlikely (!new_items)) {
         successful = false;
         return false;
       }
-      for (auto &_ : hb_iter (new_items, new_size))
+      for (auto& _ : hb_iter (new_items, new_size))
         _.clear ();
 
       unsigned int old_size = mask + 1;
-      item_t *old_items = items;
+      item_t* old_items = items;
 
       /* Switch to new, empty, array. */
       population = occupancy = 0;
@@ -171,23 +181,26 @@ struct hb_hashmap_t {
     /* Has interface. */
     static constexpr V SENTINEL = vINVALID;
     typedef V value_t;
-    value_t operator[] (K k) const {
+
+    value_t operator [] (K k) const {
       return get (k);
     }
-    bool has (K k, V *vp = nullptr) const {
+
+    bool has (K k, V* vp = nullptr) const {
       V v = (*this)[k];
       if (vp)
         *vp = v;
       return v != SENTINEL;
     }
+
     /* Projection. */
-    V operator() (K k) const {
+    V operator () (K k) const {
       return get (k);
     }
 
     void clear () {
       if (items)
-        for (auto &_ : hb_iter (items, mask + 1))
+        for (auto& _ : hb_iter (items, mask + 1))
           _.clear ();
 
       population = occupancy = 0;
@@ -196,6 +209,7 @@ struct hb_hashmap_t {
     bool is_empty () const {
       return population == 0;
     }
+
     explicit operator bool () const {
       return !is_empty ();
     }
@@ -213,6 +227,7 @@ struct hb_hashmap_t {
         | hb_filter (&item_t::is_real)
         | hb_map (&item_t::get_pair)
     )
+
     auto keys () const HB_AUTO_RETURN
     (
         +hb_array (items, mask ? mask + 1 : 0)
@@ -220,6 +235,7 @@ struct hb_hashmap_t {
         | hb_map (&item_t::key)
         | hb_map (hb_ridentity)
     )
+
     auto values () const HB_AUTO_RETURN
     (
         +hb_array (items, mask ? mask + 1 : 0)
@@ -229,7 +245,7 @@ struct hb_hashmap_t {
     )
 
     /* Sink interface. */
-    hb_hashmap_t &operator<< (const hb_pair_t<K, V> &v) {
+    hb_hashmap_t& operator << (const hb_pair_t<K, V>& v) {
       set (v.first, v.second);
       return *this;
     }

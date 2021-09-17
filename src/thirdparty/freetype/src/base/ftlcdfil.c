@@ -369,10 +369,10 @@
 
 /* add padding to accommodate outline shifts */
 FT_BASE_DEF (void)
-ft_lcd_padding (FT_BBox *cbox,
+ft_lcd_padding (FT_BBox* cbox,
                 FT_GlyphSlot slot,
                 FT_Render_Mode mode) {
-  FT_Vector *sub = slot->library->lcd_geometry;
+  FT_Vector* sub = slot->library->lcd_geometry;
 
   if (mode == FT_RENDER_MODE_LCD) {
     cbox->xMin -= FT_MAX(FT_MAX (sub[0].x, sub[1].x), sub[2].x);
@@ -390,7 +390,7 @@ ft_lcd_padding (FT_BBox *cbox,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Library_SetLcdFilterWeights (FT_Library library,
-                                unsigned char *weights) {
+                                unsigned char* weights) {
   FT_UNUSED(library);
   FT_UNUSED(weights);
 

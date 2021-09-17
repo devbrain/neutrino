@@ -3833,26 +3833,31 @@ _hb_ucd_gc (unsigned u) {
   return u < 1114110u ? _hb_ucd_u8[2176 + (((_hb_ucd_u16[((_hb_ucd_u8[u >> 4 >> 5]) << 5) + ((u >> 4) & 31u)]) << 4)
                                            + ((u) & 15u))] : 2;
 }
+
 static inline uint_fast8_t
 _hb_ucd_ccc (unsigned u) {
   return u < 125259u ? _hb_ucd_u8[15060 + (((_hb_ucd_u8[13636 + (((_hb_ucd_u8[12656 + (u >> 3 >> 4)]) << 4)
                                                                  + ((u >> 3) & 15u))]) << 3) + ((u) & 7u))] : 0;
 }
+
 static inline unsigned
-_hb_ucd_b4 (const uint8_t *a, unsigned i) {
+_hb_ucd_b4 (const uint8_t* a, unsigned i) {
   return (a[i >> 1] >> ((i & 1u) << 2)) & 15u;
 }
+
 static inline int_fast16_t
 _hb_ucd_bmg (unsigned u) {
   return u < 65380u ? _hb_ucd_i16[
       ((_hb_ucd_u8[16372 + (((_hb_ucd_b4 (16244 + _hb_ucd_u8, u >> 2 >> 6)) << 6) + ((u >> 2) & 63u))]) << 2)
       + ((u) & 3u)] : 0;
 }
+
 static inline uint_fast8_t
 _hb_ucd_sc (unsigned u) {
   return u < 918000u ? _hb_ucd_u8[19126 + (((_hb_ucd_u16[3040 + (((_hb_ucd_u8[17332 + (u >> 4 >> 5)]) << 5)
                                                                  + ((u >> 4) & 31u))]) << 4) + ((u) & 15u))] : 2;
 }
+
 static inline uint_fast16_t
 _hb_ucd_dm (unsigned u) {
   return u < 195102u ? _hb_ucd_u16[6144 + (((_hb_ucd_u8[29430 + (u >> 6)]) << 6) + ((u) & 63u))] : 0;

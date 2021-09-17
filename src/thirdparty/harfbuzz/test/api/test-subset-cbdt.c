@@ -30,12 +30,11 @@
 /* Unit tests for CBDT/CBLC subsetting */
 
 static void
-test_subset_cbdt_noop (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.ttf");
+test_subset_cbdt_noop (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_subset;
   hb_set_add (codepoints, 0x38);
   hb_set_add (codepoints, 0x39);
   hb_set_add (codepoints, 0xAE);
@@ -44,27 +43,26 @@ test_subset_cbdt_noop (void)
   face_subset = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face, face_subset, HB_TAG ('C','B','L','C'));
-  hb_subset_test_check (face, face_subset, HB_TAG ('C','B','D','T'));
+  hb_subset_test_check (face, face_subset, HB_TAG ('C', 'B', 'L', 'C'));
+  hb_subset_test_check (face, face_subset, HB_TAG ('C', 'B', 'D', 'T'));
 
   hb_face_destroy (face_subset);
   hb_face_destroy (face);
 }
 
 static void
-test_subset_cbdt_keep_one (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.ttf");
-  hb_face_t *face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.default.39.ttf");
+test_subset_cbdt_keep_one (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.ttf");
+  hb_face_t * face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.default.39.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_subset;
   hb_set_add (codepoints, 0x39);
   face_subset = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C','B','L','C'));
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C','B','D','T'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C', 'B', 'L', 'C'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C', 'B', 'D', 'T'));
 
   hb_face_destroy (face_subset);
   hb_face_destroy (face_expected);
@@ -72,19 +70,18 @@ test_subset_cbdt_keep_one (void)
 }
 
 static void
-test_subset_cbdt_keep_one_last_subtable (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.ttf");
-  hb_face_t *face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.default.2049.ttf");
+test_subset_cbdt_keep_one_last_subtable (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.ttf");
+  hb_face_t * face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.default.2049.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_subset;
   hb_set_add (codepoints, 0x2049);
   face_subset = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C','B','L','C'));
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C','B','D','T'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C', 'B', 'L', 'C'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C', 'B', 'D', 'T'));
 
   hb_face_destroy (face_subset);
   hb_face_destroy (face_expected);
@@ -92,21 +89,21 @@ test_subset_cbdt_keep_one_last_subtable (void)
 }
 
 static void
-test_subset_cbdt_keep_multiple_subtables (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.multiple_size_tables.ttf");
-  hb_face_t *face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.multiple_size_tables.default.38,AE,2049.ttf");
+test_subset_cbdt_keep_multiple_subtables (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.multiple_size_tables.ttf");
+  hb_face_t
+  * face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.multiple_size_tables.default.38,AE,2049.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_subset;
   hb_set_add (codepoints, 0x38);
   hb_set_add (codepoints, 0xAE);
   hb_set_add (codepoints, 0x2049);
   face_subset = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C','B','L','C'));
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C','B','D','T'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C', 'B', 'L', 'C'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C', 'B', 'D', 'T'));
 
   hb_face_destroy (face_subset);
   hb_face_destroy (face_expected);
@@ -114,21 +111,21 @@ test_subset_cbdt_keep_multiple_subtables (void)
 }
 
 static void
-test_subset_cbdt_index_format_3 (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.index_format3.ttf");
-  hb_face_t *face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.index_format3.default.38,AE,2049.ttf");
+test_subset_cbdt_index_format_3 (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.index_format3.ttf");
+  hb_face_t
+  * face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.subset.index_format3.default.38,AE,2049.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_subset;
   hb_set_add (codepoints, 0x38);
   hb_set_add (codepoints, 0xAE);
   hb_set_add (codepoints, 0x2049);
   face_subset = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C','B','L','C'));
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C','B','D','T'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C', 'B', 'L', 'C'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('C', 'B', 'D', 'T'));
 
   hb_face_destroy (face_subset);
   hb_face_destroy (face_expected);
@@ -140,8 +137,7 @@ test_subset_cbdt_index_format_3 (void)
 // TODO: add a test that keeps no codepoints.
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_subset_cbdt_noop);
@@ -154,5 +150,5 @@ main (int argc, char **argv)
   // is resolved.
   hb_test_add (test_subset_cbdt_index_format_3);
 
-  return hb_test_run();
+  return hb_test_run ();
 }

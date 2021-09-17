@@ -139,8 +139,8 @@ namespace double_conversion {
     void GetCachedPowerForBinaryExponentRange (
         int min_exponent,
         int max_exponent,
-        DiyFp *power,
-        int *decimal_exponent) {
+        DiyFp* power,
+        int* decimal_exponent) {
       int kQ = DiyFp::kSignificandSize;
       double k = ceil ((min_exponent + kQ - 1) * kD_1_LOG2_10);
       int foo = kCachedPowersOffset;
@@ -156,8 +156,8 @@ namespace double_conversion {
     }
 
     void GetCachedPowerForDecimalExponent (int requested_exponent,
-                                           DiyFp *power,
-                                           int *found_exponent) {
+                                           DiyFp* power,
+                                           int* found_exponent) {
       DOUBLE_CONVERSION_ASSERT(kMinDecimalExponent <= requested_exponent);
       DOUBLE_CONVERSION_ASSERT(requested_exponent < kMaxDecimalExponent + kDecimalExponentDistance);
       int index =

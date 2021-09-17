@@ -101,7 +101,7 @@ typedef enum { /*< flags >*/
 } hb_glyph_flags_t;
 
 HB_EXTERN hb_glyph_flags_t
-hb_glyph_info_get_glyph_flags (const hb_glyph_info_t *info);
+hb_glyph_info_get_glyph_flags (const hb_glyph_info_t* info);
 
 #define hb_glyph_info_get_glyph_flags(info) \
     ((hb_glyph_flags_t) ((unsigned int) (info)->mask & HB_GLYPH_FLAG_DEFINED))
@@ -147,8 +147,8 @@ typedef struct hb_segment_properties_t {
   hb_script_t script;
   hb_language_t language;
   /*< private >*/
-  void *reserved1;
-  void *reserved2;
+  void* reserved1;
+  void* reserved2;
 } hb_segment_properties_t;
 
 /**
@@ -163,11 +163,11 @@ typedef struct hb_segment_properties_t {
                        (void *) 0}
 
 HB_EXTERN hb_bool_t
-hb_segment_properties_equal (const hb_segment_properties_t *a,
-                             const hb_segment_properties_t *b);
+hb_segment_properties_equal (const hb_segment_properties_t* a,
+                             const hb_segment_properties_t* b);
 
 HB_EXTERN unsigned int
-hb_segment_properties_hash (const hb_segment_properties_t *p);
+hb_segment_properties_hash (const hb_segment_properties_t* p);
 
 /**
  * hb_buffer_t:
@@ -178,28 +178,28 @@ hb_segment_properties_hash (const hb_segment_properties_t *p);
 
 typedef struct hb_buffer_t hb_buffer_t;
 
-HB_EXTERN hb_buffer_t *
+HB_EXTERN hb_buffer_t*
 hb_buffer_create (void);
 
-HB_EXTERN hb_buffer_t *
+HB_EXTERN hb_buffer_t*
 hb_buffer_get_empty (void);
 
-HB_EXTERN hb_buffer_t *
-hb_buffer_reference (hb_buffer_t *buffer);
+HB_EXTERN hb_buffer_t*
+hb_buffer_reference (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_destroy (hb_buffer_t *buffer);
+hb_buffer_destroy (hb_buffer_t* buffer);
 
 HB_EXTERN hb_bool_t
-hb_buffer_set_user_data (hb_buffer_t *buffer,
-                         hb_user_data_key_t *key,
-                         void *data,
+hb_buffer_set_user_data (hb_buffer_t* buffer,
+                         hb_user_data_key_t* key,
+                         void* data,
                          hb_destroy_func_t destroy,
                          hb_bool_t replace);
 
-HB_EXTERN void *
-hb_buffer_get_user_data (hb_buffer_t *buffer,
-                         hb_user_data_key_t *key);
+HB_EXTERN void*
+hb_buffer_get_user_data (hb_buffer_t* buffer,
+                         hb_user_data_key_t* key);
 
 /**
  * hb_buffer_content_type_t:
@@ -216,50 +216,50 @@ typedef enum {
 } hb_buffer_content_type_t;
 
 HB_EXTERN void
-hb_buffer_set_content_type (hb_buffer_t *buffer,
+hb_buffer_set_content_type (hb_buffer_t* buffer,
                             hb_buffer_content_type_t content_type);
 
 HB_EXTERN hb_buffer_content_type_t
-hb_buffer_get_content_type (hb_buffer_t *buffer);
+hb_buffer_get_content_type (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_set_unicode_funcs (hb_buffer_t *buffer,
-                             hb_unicode_funcs_t *unicode_funcs);
+hb_buffer_set_unicode_funcs (hb_buffer_t* buffer,
+                             hb_unicode_funcs_t* unicode_funcs);
 
-HB_EXTERN hb_unicode_funcs_t *
-hb_buffer_get_unicode_funcs (hb_buffer_t *buffer);
+HB_EXTERN hb_unicode_funcs_t*
+hb_buffer_get_unicode_funcs (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_set_direction (hb_buffer_t *buffer,
+hb_buffer_set_direction (hb_buffer_t* buffer,
                          hb_direction_t direction);
 
 HB_EXTERN hb_direction_t
-hb_buffer_get_direction (hb_buffer_t *buffer);
+hb_buffer_get_direction (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_set_script (hb_buffer_t *buffer,
+hb_buffer_set_script (hb_buffer_t* buffer,
                       hb_script_t script);
 
 HB_EXTERN hb_script_t
-hb_buffer_get_script (hb_buffer_t *buffer);
+hb_buffer_get_script (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_set_language (hb_buffer_t *buffer,
+hb_buffer_set_language (hb_buffer_t* buffer,
                         hb_language_t language);
 
 HB_EXTERN hb_language_t
-hb_buffer_get_language (hb_buffer_t *buffer);
+hb_buffer_get_language (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_set_segment_properties (hb_buffer_t *buffer,
-                                  const hb_segment_properties_t *props);
+hb_buffer_set_segment_properties (hb_buffer_t* buffer,
+                                  const hb_segment_properties_t* props);
 
 HB_EXTERN void
-hb_buffer_get_segment_properties (hb_buffer_t *buffer,
-                                  hb_segment_properties_t *props);
+hb_buffer_get_segment_properties (hb_buffer_t* buffer,
+                                  hb_segment_properties_t* props);
 
 HB_EXTERN void
-hb_buffer_guess_segment_properties (hb_buffer_t *buffer);
+hb_buffer_guess_segment_properties (hb_buffer_t* buffer);
 
 /**
  * hb_buffer_flags_t:
@@ -304,11 +304,11 @@ typedef enum { /*< flags >*/
 } hb_buffer_flags_t;
 
 HB_EXTERN void
-hb_buffer_set_flags (hb_buffer_t *buffer,
+hb_buffer_set_flags (hb_buffer_t* buffer,
                      hb_buffer_flags_t flags);
 
 HB_EXTERN hb_buffer_flags_t
-hb_buffer_get_flags (hb_buffer_t *buffer);
+hb_buffer_get_flags (hb_buffer_t* buffer);
 
 /**
  * hb_buffer_cluster_level_t:
@@ -346,11 +346,11 @@ typedef enum {
 } hb_buffer_cluster_level_t;
 
 HB_EXTERN void
-hb_buffer_set_cluster_level (hb_buffer_t *buffer,
+hb_buffer_set_cluster_level (hb_buffer_t* buffer,
                              hb_buffer_cluster_level_t cluster_level);
 
 HB_EXTERN hb_buffer_cluster_level_t
-hb_buffer_get_cluster_level (hb_buffer_t *buffer);
+hb_buffer_get_cluster_level (hb_buffer_t* buffer);
 
 /**
  * HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT:
@@ -363,113 +363,113 @@ hb_buffer_get_cluster_level (hb_buffer_t *buffer);
 #define HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT 0xFFFDu
 
 HB_EXTERN void
-hb_buffer_set_replacement_codepoint (hb_buffer_t *buffer,
+hb_buffer_set_replacement_codepoint (hb_buffer_t* buffer,
                                      hb_codepoint_t replacement);
 
 HB_EXTERN hb_codepoint_t
-hb_buffer_get_replacement_codepoint (hb_buffer_t *buffer);
+hb_buffer_get_replacement_codepoint (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_set_invisible_glyph (hb_buffer_t *buffer,
+hb_buffer_set_invisible_glyph (hb_buffer_t* buffer,
                                hb_codepoint_t invisible);
 
 HB_EXTERN hb_codepoint_t
-hb_buffer_get_invisible_glyph (hb_buffer_t *buffer);
+hb_buffer_get_invisible_glyph (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_reset (hb_buffer_t *buffer);
+hb_buffer_reset (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_clear_contents (hb_buffer_t *buffer);
+hb_buffer_clear_contents (hb_buffer_t* buffer);
 
 HB_EXTERN hb_bool_t
-hb_buffer_pre_allocate (hb_buffer_t *buffer,
+hb_buffer_pre_allocate (hb_buffer_t* buffer,
                         unsigned int size);
 
 HB_EXTERN hb_bool_t
-hb_buffer_allocation_successful (hb_buffer_t *buffer);
+hb_buffer_allocation_successful (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_reverse (hb_buffer_t *buffer);
+hb_buffer_reverse (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_reverse_range (hb_buffer_t *buffer,
+hb_buffer_reverse_range (hb_buffer_t* buffer,
                          unsigned int start, unsigned int end);
 
 HB_EXTERN void
-hb_buffer_reverse_clusters (hb_buffer_t *buffer);
+hb_buffer_reverse_clusters (hb_buffer_t* buffer);
 
 
 /* Filling the buffer in */
 
 HB_EXTERN void
-hb_buffer_add (hb_buffer_t *buffer,
+hb_buffer_add (hb_buffer_t* buffer,
                hb_codepoint_t codepoint,
                unsigned int cluster);
 
 HB_EXTERN void
-hb_buffer_add_utf8 (hb_buffer_t *buffer,
-                    const char *text,
+hb_buffer_add_utf8 (hb_buffer_t* buffer,
+                    const char* text,
                     int text_length,
                     unsigned int item_offset,
                     int item_length);
 
 HB_EXTERN void
-hb_buffer_add_utf16 (hb_buffer_t *buffer,
-                     const uint16_t *text,
+hb_buffer_add_utf16 (hb_buffer_t* buffer,
+                     const uint16_t* text,
                      int text_length,
                      unsigned int item_offset,
                      int item_length);
 
 HB_EXTERN void
-hb_buffer_add_utf32 (hb_buffer_t *buffer,
-                     const uint32_t *text,
+hb_buffer_add_utf32 (hb_buffer_t* buffer,
+                     const uint32_t* text,
                      int text_length,
                      unsigned int item_offset,
                      int item_length);
 
 HB_EXTERN void
-hb_buffer_add_latin1 (hb_buffer_t *buffer,
-                      const uint8_t *text,
+hb_buffer_add_latin1 (hb_buffer_t* buffer,
+                      const uint8_t* text,
                       int text_length,
                       unsigned int item_offset,
                       int item_length);
 
 HB_EXTERN void
-hb_buffer_add_codepoints (hb_buffer_t *buffer,
-                          const hb_codepoint_t *text,
+hb_buffer_add_codepoints (hb_buffer_t* buffer,
+                          const hb_codepoint_t* text,
                           int text_length,
                           unsigned int item_offset,
                           int item_length);
 
 HB_EXTERN void
-hb_buffer_append (hb_buffer_t *buffer,
-                  hb_buffer_t *source,
+hb_buffer_append (hb_buffer_t* buffer,
+                  hb_buffer_t* source,
                   unsigned int start,
                   unsigned int end);
 
 HB_EXTERN hb_bool_t
-hb_buffer_set_length (hb_buffer_t *buffer,
+hb_buffer_set_length (hb_buffer_t* buffer,
                       unsigned int length);
 
 HB_EXTERN unsigned int
-hb_buffer_get_length (hb_buffer_t *buffer);
+hb_buffer_get_length (hb_buffer_t* buffer);
 
 /* Getting glyphs out of the buffer */
 
-HB_EXTERN hb_glyph_info_t *
-hb_buffer_get_glyph_infos (hb_buffer_t *buffer,
-                           unsigned int *length);
+HB_EXTERN hb_glyph_info_t*
+hb_buffer_get_glyph_infos (hb_buffer_t* buffer,
+                           unsigned int* length);
 
-HB_EXTERN hb_glyph_position_t *
-hb_buffer_get_glyph_positions (hb_buffer_t *buffer,
-                               unsigned int *length);
+HB_EXTERN hb_glyph_position_t*
+hb_buffer_get_glyph_positions (hb_buffer_t* buffer,
+                               unsigned int* length);
 
 HB_EXTERN hb_bool_t
-hb_buffer_has_positions (hb_buffer_t *buffer);
+hb_buffer_has_positions (hb_buffer_t* buffer);
 
 HB_EXTERN void
-hb_buffer_normalize_glyphs (hb_buffer_t *buffer);
+hb_buffer_normalize_glyphs (hb_buffer_t* buffer);
 
 
 /*
@@ -519,59 +519,59 @@ typedef enum {
 } hb_buffer_serialize_format_t;
 
 HB_EXTERN hb_buffer_serialize_format_t
-hb_buffer_serialize_format_from_string (const char *str, int len);
+hb_buffer_serialize_format_from_string (const char* str, int len);
 
-HB_EXTERN const char *
+HB_EXTERN const char*
 hb_buffer_serialize_format_to_string (hb_buffer_serialize_format_t format);
 
-HB_EXTERN const char **
+HB_EXTERN const char**
 hb_buffer_serialize_list_formats (void);
 
 HB_EXTERN unsigned int
-hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
+hb_buffer_serialize_glyphs (hb_buffer_t* buffer,
                             unsigned int start,
                             unsigned int end,
-                            char *buf,
+                            char* buf,
                             unsigned int buf_size,
-                            unsigned int *buf_consumed,
-                            hb_font_t *font,
+                            unsigned int* buf_consumed,
+                            hb_font_t* font,
                             hb_buffer_serialize_format_t format,
                             hb_buffer_serialize_flags_t flags);
 
 HB_EXTERN unsigned int
-hb_buffer_serialize_unicode (hb_buffer_t *buffer,
+hb_buffer_serialize_unicode (hb_buffer_t* buffer,
                              unsigned int start,
                              unsigned int end,
-                             char *buf,
+                             char* buf,
                              unsigned int buf_size,
-                             unsigned int *buf_consumed,
+                             unsigned int* buf_consumed,
                              hb_buffer_serialize_format_t format,
                              hb_buffer_serialize_flags_t flags);
 
 HB_EXTERN unsigned int
-hb_buffer_serialize (hb_buffer_t *buffer,
+hb_buffer_serialize (hb_buffer_t* buffer,
                      unsigned int start,
                      unsigned int end,
-                     char *buf,
+                     char* buf,
                      unsigned int buf_size,
-                     unsigned int *buf_consumed,
-                     hb_font_t *font,
+                     unsigned int* buf_consumed,
+                     hb_font_t* font,
                      hb_buffer_serialize_format_t format,
                      hb_buffer_serialize_flags_t flags);
 
 HB_EXTERN hb_bool_t
-hb_buffer_deserialize_glyphs (hb_buffer_t *buffer,
-                              const char *buf,
+hb_buffer_deserialize_glyphs (hb_buffer_t* buffer,
+                              const char* buf,
                               int buf_len,
-                              const char **end_ptr,
-                              hb_font_t *font,
+                              const char** end_ptr,
+                              hb_font_t* font,
                               hb_buffer_serialize_format_t format);
 
 HB_EXTERN hb_bool_t
-hb_buffer_deserialize_unicode (hb_buffer_t *buffer,
-                               const char *buf,
+hb_buffer_deserialize_unicode (hb_buffer_t* buffer,
+                               const char* buf,
                                int buf_len,
-                               const char **end_ptr,
+                               const char** end_ptr,
                                hb_buffer_serialize_format_t format);
 
 
@@ -638,8 +638,8 @@ typedef enum { /*< flags >*/
 
 /* Compare the contents of two buffers, report types of differences. */
 HB_EXTERN hb_buffer_diff_flags_t
-hb_buffer_diff (hb_buffer_t *buffer,
-                hb_buffer_t *reference,
+hb_buffer_diff (hb_buffer_t* buffer,
+                hb_buffer_t* reference,
                 hb_codepoint_t dottedcircle_glyph,
                 unsigned int position_fuzz);
 
@@ -665,15 +665,15 @@ hb_buffer_diff (hb_buffer_t *buffer,
  *
  * Since: 1.1.3
  */
-typedef hb_bool_t    (*hb_buffer_message_func_t) (hb_buffer_t *buffer,
-                                                  hb_font_t *font,
-                                                  const char *message,
-                                                  void *user_data);
+typedef hb_bool_t    (* hb_buffer_message_func_t) (hb_buffer_t* buffer,
+                                                   hb_font_t* font,
+                                                   const char* message,
+                                                   void* user_data);
 
 HB_EXTERN void
-hb_buffer_set_message_func (hb_buffer_t *buffer,
+hb_buffer_set_message_func (hb_buffer_t* buffer,
                             hb_buffer_message_func_t func,
-                            void *user_data, hb_destroy_func_t destroy);
+                            void* user_data, hb_destroy_func_t destroy);
 
 HB_END_DECLS
 

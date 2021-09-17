@@ -180,7 +180,7 @@ t42_parser_init (T42_Parser parser,
 
   /* if it is a memory-based resource, set up pointers */
   if (!stream->read) {
-    parser->base_dict = (FT_Byte *) stream->base + stream->pos;
+    parser->base_dict = (FT_Byte*) stream->base + stream->pos;
     parser->base_len = size;
     parser->in_memory = 1;
 
@@ -232,8 +232,8 @@ static void
 t42_parse_font_matrix (T42_Face face,
                        T42_Loader loader) {
   T42_Parser parser = &loader->parser;
-  FT_Matrix *matrix = &face->type1.font_matrix;
-  FT_Vector *offset = &face->type1.font_offset;
+  FT_Matrix* matrix = &face->type1.font_matrix;
+  FT_Vector* offset = &face->type1.font_offset;
   FT_Fixed temp[6];
   FT_Fixed temp_scale;
   FT_Int result;
@@ -283,8 +283,8 @@ static void
 t42_parse_encoding (T42_Face face,
                     T42_Loader loader) {
   T42_Parser parser = &loader->parser;
-  FT_Byte *cur;
-  FT_Byte *limit = parser->root.limit;
+  FT_Byte* cur;
+  FT_Byte* limit = parser->root.limit;
 
   PSAux_Service psaux = (PSAux_Service) face->psaux;
 
@@ -462,15 +462,15 @@ t42_parse_encoding (T42_Face face,
     /* `ExpertEncoding', or `ISOLatin1Encoding'             */
   else {
     if (cur + 17 < limit &&
-        ft_strncmp ((const char *) cur, "StandardEncoding", 16) == 0)
+        ft_strncmp ((const char*) cur, "StandardEncoding", 16) == 0)
       face->type1.encoding_type = T1_ENCODING_TYPE_STANDARD;
 
     else if (cur + 15 < limit &&
-             ft_strncmp ((const char *) cur, "ExpertEncoding", 14) == 0)
+             ft_strncmp ((const char*) cur, "ExpertEncoding", 14) == 0)
       face->type1.encoding_type = T1_ENCODING_TYPE_EXPERT;
 
     else if (cur + 18 < limit &&
-             ft_strncmp ((const char *) cur, "ISOLatin1Encoding", 17) == 0)
+             ft_strncmp ((const char*) cur, "ISOLatin1Encoding", 17) == 0)
       face->type1.encoding_type = T1_ENCODING_TYPE_ISOLATIN1;
 
     else
@@ -490,14 +490,14 @@ t42_parse_sfnts (T42_Face face,
                  T42_Loader loader) {
   T42_Parser parser = &loader->parser;
   FT_Memory memory = parser->root.memory;
-  FT_Byte *cur;
-  FT_Byte *limit = parser->root.limit;
+  FT_Byte* cur;
+  FT_Byte* limit = parser->root.limit;
   FT_Error error;
   FT_Int num_tables = 0;
   FT_Long count;
 
   FT_ULong n, string_size, old_string_size, real_size;
-  FT_Byte *string_buf = NULL;
+  FT_Byte* string_buf = NULL;
   FT_Bool allocated = 0;
 
   T42_Load_Status status;
@@ -662,7 +662,7 @@ t42_parse_sfnts (T42_Face face,
             FT_ULong len;
 
             for (i = 0; i < num_tables; i++) {
-              FT_Byte *p = face->ttf_data + 12 + 16 * i + 12;
+              FT_Byte* p = face->ttf_data + 12 + 16 * i + 12;
 
               len = FT_PEEK_ULONG(p);
               if (len > size ||
@@ -722,8 +722,8 @@ t42_parse_charstrings (T42_Face face,
 
   PSAux_Service psaux = (PSAux_Service) face->psaux;
 
-  FT_Byte *cur;
-  FT_Byte *limit = parser->root.limit;
+  FT_Byte* cur;
+  FT_Byte* limit = parser->root.limit;
   FT_Int n;
   FT_Int notdef_index = 0;
   FT_Byte notdef_found = 0;
@@ -883,7 +883,7 @@ t42_parse_charstrings (T42_Face face,
       /* record index of /.notdef */
       if (*cur == '.' &&
           ft_strcmp (".notdef",
-                     (const char *) (name_table->elements[n])) == 0) {
+                     (const char*) (name_table->elements[n])) == 0) {
         notdef_index = n;
         notdef_found = 1;
       }
@@ -925,7 +925,7 @@ t42_parse_charstrings (T42_Face face,
   }
 
   /* if /.notdef does not occupy index 0, do our magic. */
-  if (ft_strcmp (".notdef", (const char *) name_table->elements[0])) {
+  if (ft_strcmp (".notdef", (const char*) name_table->elements[0])) {
     /* Swap glyph in index 0 with /.notdef glyph.  First, add index 0  */
     /* name and code entries to swap_table.  Then place notdef_index   */
     /* name and code entries into swap_table.  Then swap name and code */
@@ -997,8 +997,8 @@ t42_load_keyword (T42_Face face,
                   T42_Loader loader,
                   T1_Field field) {
   FT_Error error;
-  void *dummy_object;
-  void **objects;
+  void* dummy_object;
+  void** objects;
   FT_UInt max_objects = 0;
 
 
@@ -1046,10 +1046,10 @@ t42_load_keyword (T42_Face face,
 FT_LOCAL_DEF(FT_Error)
 t42_parse_dict (T42_Face face,
                 T42_Loader loader,
-                FT_Byte *base,
+                FT_Byte* base,
                 FT_Long size) {
   T42_Parser parser = &loader->parser;
-  FT_Byte *limit;
+  FT_Byte* limit;
   FT_Int n_keywords = (FT_Int) (sizeof (t42_keywords) /
                                 sizeof (t42_keywords[0]));
 
@@ -1062,14 +1062,14 @@ t42_parse_dict (T42_Face face,
   T1_Skip_Spaces(parser);
 
   while (parser->root.cursor < limit) {
-    FT_Byte *cur;
+    FT_Byte* cur;
 
     cur = parser->root.cursor;
 
     /* look for `FontDirectory' which causes problems for some fonts */
     if (*cur == 'F' && cur + 25 < limit &&
-        ft_strncmp ((char *) cur, "FontDirectory", 13) == 0) {
-      FT_Byte *cur2;
+        ft_strncmp ((char*) cur, "FontDirectory", 13) == 0) {
+      FT_Byte* cur2;
 
 
       /* skip the `FontDirectory' keyword */
@@ -1080,7 +1080,7 @@ t42_parse_dict (T42_Face face,
       /* look up the `known' keyword */
       while (cur < limit) {
         if (*cur == 'k' && cur + 5 < limit &&
-            ft_strncmp ((char *) cur, "known", 5) == 0)
+            ft_strncmp ((char*) cur, "known", 5) == 0)
           break;
 
         T1_Skip_PS_Token(parser);
@@ -1127,13 +1127,13 @@ t42_parse_dict (T42_Face face,
         /* loop through all known keywords */
         for (i = 0; i < n_keywords; i++) {
           T1_Field keyword = (T1_Field) &t42_keywords[i];
-          FT_Byte *name = (FT_Byte *) keyword->ident;
+          FT_Byte* name = (FT_Byte*) keyword->ident;
 
           if (!name)
             continue;
 
           if (cur[0] == name[0] &&
-              len == ft_strlen ((const char *) name) &&
+              len == ft_strlen ((const char*) name) &&
               ft_memcmp (cur, name, len) == 0) {
             /* we found it -- run the parsing callback! */
             parser->root.error = t42_load_keyword (face,

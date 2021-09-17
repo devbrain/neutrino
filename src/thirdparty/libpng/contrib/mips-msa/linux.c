@@ -27,9 +27,9 @@
 
 static int
 png_have_msa (png_structp png_ptr) {
-  FILE *f = fopen ("/proc/cpuinfo", "rb");
+  FILE* f = fopen ("/proc/cpuinfo", "rb");
 
-  char *string = "msa";
+  char* string = "msa";
   char word[10];
 
   if (f != NULL) {

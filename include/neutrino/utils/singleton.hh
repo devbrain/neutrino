@@ -10,13 +10,15 @@ namespace neutrino::utils {
   template <class T>
   class singleton {
     public:
-      static T &instance () {
+      static T& instance () {
         static holder initializer;
         return *initializer.object;
       }
+
     private:
       struct holder {
-        T *object;
+        T* object;
+
         holder () {
           object = new T;
           delete_at_exit (object);

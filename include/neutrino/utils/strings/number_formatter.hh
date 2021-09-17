@@ -162,7 +162,7 @@ namespace neutrino::utils {
       /// right justified in a field of the specified width,
       /// with the number of fractional digits given in precision.
 
-      static std::string format (const void *ptr);
+      static std::string format (const void* ptr);
       /// Formats a pointer in an eight (32-bit architectures) or
       /// sixteen (64-bit architectures) characters wide
       /// field in hexadecimal notation.
@@ -171,46 +171,46 @@ namespace neutrino::utils {
       /// Formats a bool value in decimal/text notation,
       /// according to format parameter.
 
-      static void append (std::string &str, int value);
+      static void append (std::string& str, int value);
       /// Formats an integer value in decimal notation.
 
-      static void append (std::string &str, int value, int width);
+      static void append (std::string& str, int value, int width);
       /// Formats an integer value in decimal notation,
       /// right justified in a field having at least
       /// the specified width.
 
-      static void append0 (std::string &str, int value, int width);
+      static void append0 (std::string& str, int value, int width);
       /// Formats an integer value in decimal notation,
       /// right justified and zero-padded in a field
       /// having at least the specified width.
 
-      static void appendHex (std::string &str, int value);
+      static void appendHex (std::string& str, int value);
       /// Formats an int value in hexadecimal notation.
       /// The value is treated as unsigned.
 
-      static void appendHex (std::string &str, int value, int width);
+      static void appendHex (std::string& str, int value, int width);
       /// Formats a int value in hexadecimal notation,
       /// right justified and zero-padded in
       /// a field having at least the specified width.
       /// The value is treated as unsigned.
 
-      static void append (std::string &str, unsigned value);
+      static void append (std::string& str, unsigned value);
       /// Formats an unsigned int value in decimal notation.
 
-      static void append (std::string &str, unsigned value, int width);
+      static void append (std::string& str, unsigned value, int width);
       /// Formats an unsigned long int in decimal notation,
       /// right justified in a field having at least the
       /// specified width.
 
-      static void append0 (std::string &str, unsigned int value, int width);
+      static void append0 (std::string& str, unsigned int value, int width);
       /// Formats an unsigned int value in decimal notation,
       /// right justified and zero-padded in a field having at
       /// least the specified width.
 
-      static void appendHex (std::string &str, unsigned value);
+      static void appendHex (std::string& str, unsigned value);
       /// Formats an unsigned int value in hexadecimal notation.
 
-      static void appendHex (std::string &str, unsigned value, int width);
+      static void appendHex (std::string& str, unsigned value, int width);
       /// Formats a int value in hexadecimal notation,
       /// right justified and zero-padded in
       /// a field having at least the specified width.
@@ -218,44 +218,44 @@ namespace neutrino::utils {
 
 
 
-      static void append (std::string &str, int64_t value);
+      static void append (std::string& str, int64_t value);
       /// Formats a 64-bit integer value in decimal notation.
 
-      static void append (std::string &str, int64_t value, int width);
+      static void append (std::string& str, int64_t value, int width);
       /// Formats a 64-bit integer value in decimal notation,
       /// right justified in a field having at least the specified width.
 
-      static void append0 (std::string &str, int64_t value, int width);
+      static void append0 (std::string& str, int64_t value, int width);
       /// Formats a 64-bit integer value in decimal notation,
       /// right justified and zero-padded in a field having at least
       /// the specified width.
 
-      static void append_hex (std::string &str, int64_t value);
+      static void append_hex (std::string& str, int64_t value);
       /// Formats a 64-bit integer value in hexadecimal notation.
       /// The value is treated as unsigned.
 
-      static void append_hex (std::string &str, int64_t value, int width);
+      static void append_hex (std::string& str, int64_t value, int width);
       /// Formats a 64-bit integer value in hexadecimal notation,
       /// right justified and zero-padded in a field having at least
       /// the specified width.
       /// The value is treated as unsigned.
 
-      static void append (std::string &str, uint64_t value);
+      static void append (std::string& str, uint64_t value);
       /// Formats an unsigned 64-bit integer value in decimal notation.
 
-      static void append (std::string &str, uint64_t value, int width);
+      static void append (std::string& str, uint64_t value, int width);
       /// Formats an unsigned 64-bit integer value in decimal notation,
       /// right justified in a field having at least the specified width.
 
-      static void append0 (std::string &str, uint64_t value, int width);
+      static void append0 (std::string& str, uint64_t value, int width);
       /// Formats an unsigned 64-bit integer value in decimal notation,
       /// right justified and zero-padded in a field having at least the
       /// specified width.
 
-      static void append_hex (std::string &str, uint64_t value);
+      static void append_hex (std::string& str, uint64_t value);
       /// Formats a 64-bit integer value in hexadecimal notation.
 
-      static void append_hex (std::string &str, uint64_t value, int width);
+      static void append_hex (std::string& str, uint64_t value, int width);
       /// Formats a 64-bit integer value in hexadecimal notation,
       /// right justified and zero-padded in a field having at least
       /// the specified width.
@@ -263,33 +263,33 @@ namespace neutrino::utils {
 
 
 
-      static void append (std::string &str, float value);
+      static void append (std::string& str, float value);
       /// Formats a float value in decimal floating-point notation,
       /// according to std::printf's %g format with a precision of 8 fractional digits.
 
-      static void append (std::string &str, float value, int precision);
+      static void append (std::string& str, float value, int precision);
       /// Formats a double value in decimal floating-point notation,
       /// according to std::printf's %f format with the given precision.
 
-      static void append (std::string &str, float value, int width, int precision);
+      static void append (std::string& str, float value, int width, int precision);
       /// Formats a double value in decimal floating-point notation,
       /// right justified in a field of the specified width,
       /// with the number of fractional digits given in precision.
 
-      static void append (std::string &str, double value);
+      static void append (std::string& str, double value);
       /// Formats a double value in decimal floating-point notation,
       /// according to std::printf's %g format with a precision of 16 fractional digits.
 
-      static void append (std::string &str, double value, int precision);
+      static void append (std::string& str, double value, int precision);
       /// Formats a double value in decimal floating-point notation,
       /// according to std::printf's %f format with the given precision.
 
-      static void append (std::string &str, double value, int width, int precision);
+      static void append (std::string& str, double value, int width, int precision);
       /// Formats a double value in decimal floating-point notation,
       /// right justified in a field of the specified width,
       /// with the number of fractional digits given in precision.
 
-      static void append (std::string &str, const void *ptr);
+      static void append (std::string& str, const void* ptr);
       /// Formats a pointer in an eight (32-bit architectures) or
       /// sixteen (64-bit architectures) characters wide
       /// field in hexadecimal notation.
@@ -456,7 +456,7 @@ namespace neutrino::utils {
     return result;
   }
 
-  inline std::string number_formatter::format (const void *ptr) {
+  inline std::string number_formatter::format (const void* ptr) {
     std::string result;
     append (result, ptr);
     return result;

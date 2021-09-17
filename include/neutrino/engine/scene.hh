@@ -22,8 +22,8 @@ namespace neutrino::engine {
       virtual void update (std::chrono::milliseconds ms) = 0;
       virtual void on_input_focus_changed (bool keyboard_focus, bool mouse_focus) = 0;
       virtual void on_visibility_change (bool is_visible) = 0;
-      virtual void on_keyboard_input (const events::keyboard &ev) = 0;
-      virtual void on_pointer_input (const events::pointer &ev) = 0;
+      virtual void on_keyboard_input (const events::keyboard& ev) = 0;
+      virtual void on_pointer_input (const events::pointer& ev) = 0;
     private:
       int m_id;
   };

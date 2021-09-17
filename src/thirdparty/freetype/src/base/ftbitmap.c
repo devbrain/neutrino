@@ -40,7 +40,7 @@ const FT_Bitmap null_bitmap = {0, 0, 0, NULL, 0, 0, 0, NULL};
 /* documentation is in ftbitmap.h */
 
 FT_EXPORT_DEF(void)
-FT_Bitmap_Init (FT_Bitmap *abitmap) {
+FT_Bitmap_Init (FT_Bitmap* abitmap) {
   if (abitmap)
     *abitmap = null_bitmap;
 }
@@ -49,7 +49,7 @@ FT_Bitmap_Init (FT_Bitmap *abitmap) {
 /* deprecated function name; retained for ABI compatibility */
 
 FT_EXPORT_DEF(void)
-FT_Bitmap_New (FT_Bitmap *abitmap) {
+FT_Bitmap_New (FT_Bitmap* abitmap) {
   if (abitmap)
     *abitmap = null_bitmap;
 }
@@ -59,8 +59,8 @@ FT_Bitmap_New (FT_Bitmap *abitmap) {
 
 FT_EXPORT_DEF(FT_Error)
 FT_Bitmap_Copy (FT_Library library,
-                const FT_Bitmap *source,
-                FT_Bitmap *target) {
+                const FT_Bitmap* source,
+                FT_Bitmap* target) {
   FT_Memory memory;
   FT_Error error = FT_Err_Ok;
 
@@ -111,7 +111,7 @@ FT_Bitmap_Copy (FT_Library library,
     (void) FT_QALLOC(target->buffer, size);
 
   if (!error) {
-    unsigned char *p;
+    unsigned char* p;
 
     p = target->buffer;
     *target = *source;
@@ -122,8 +122,8 @@ FT_Bitmap_Copy (FT_Library library,
     else {
       /* take care of bitmap flow */
       FT_UInt i;
-      FT_Byte *s = source->buffer;
-      FT_Byte *t = target->buffer;
+      FT_Byte* s = source->buffer;
+      FT_Byte* t = target->buffer;
 
       t += (FT_ULong) pitch * (target->rows - 1);
 
@@ -145,7 +145,7 @@ FT_Bitmap_Copy (FT_Library library,
 
 static FT_Error
 ft_bitmap_assure_buffer (FT_Memory memory,
-                         FT_Bitmap *bitmap,
+                         FT_Bitmap* bitmap,
                          FT_UInt xpixels,
                          FT_UInt ypixels) {
   FT_Error error;
@@ -153,7 +153,7 @@ ft_bitmap_assure_buffer (FT_Memory memory,
   unsigned int new_pitch;
   FT_UInt bpp;
   FT_UInt width, height;
-  unsigned char *buffer = NULL;
+  unsigned char* buffer = NULL;
 
   width = bitmap->width;
   height = bitmap->rows;
@@ -189,14 +189,14 @@ ft_bitmap_assure_buffer (FT_Memory memory,
     FT_UInt bit_last = (width + xpixels) * bpp;
 
     if (bit_last < bit_width) {
-      FT_Byte *line = bitmap->buffer + (bit_last >> 3);
-      FT_Byte *end = bitmap->buffer + pitch;
+      FT_Byte* line = bitmap->buffer + (bit_last >> 3);
+      FT_Byte* end = bitmap->buffer + pitch;
       FT_UInt shift = bit_last & 7;
       FT_UInt mask = 0xFF00U >> shift;
       FT_UInt count = height;
 
       for (; count > 0; count--, line += pitch, end += pitch) {
-        FT_Byte *write = line;
+        FT_Byte* write = line;
 
         if (shift > 0) {
           write[0] = (FT_Byte) (write[0] & mask);
@@ -219,10 +219,10 @@ ft_bitmap_assure_buffer (FT_Memory memory,
   if (bitmap->pitch > 0) {
     FT_UInt len = (width * bpp + 7) >> 3;
 
-    unsigned char *in = bitmap->buffer;
-    unsigned char *out = buffer;
+    unsigned char* in = bitmap->buffer;
+    unsigned char* out = buffer;
 
-    unsigned char *limit = bitmap->buffer + pitch * bitmap->rows;
+    unsigned char* limit = bitmap->buffer + pitch * bitmap->rows;
     unsigned int delta = new_pitch - len;
 
     FT_MEM_ZERO(out, new_pitch * ypixels);
@@ -242,10 +242,10 @@ ft_bitmap_assure_buffer (FT_Memory memory,
   else {
     FT_UInt len = (width * bpp + 7) >> 3;
 
-    unsigned char *in = bitmap->buffer;
-    unsigned char *out = buffer;
+    unsigned char* in = bitmap->buffer;
+    unsigned char* out = buffer;
 
-    unsigned char *limit = bitmap->buffer + pitch * bitmap->rows;
+    unsigned char* limit = bitmap->buffer + pitch * bitmap->rows;
     unsigned int delta = new_pitch - len;
 
     while (in < limit) {
@@ -277,11 +277,11 @@ ft_bitmap_assure_buffer (FT_Memory memory,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Bitmap_Embolden (FT_Library library,
-                    FT_Bitmap *bitmap,
+                    FT_Bitmap* bitmap,
                     FT_Pos xStrength,
                     FT_Pos yStrength) {
   FT_Error error;
-  unsigned char *p;
+  unsigned char* p;
   FT_Int i, x, pitch;
   FT_UInt y;
   FT_Int xstr, ystr;
@@ -402,7 +402,7 @@ FT_Bitmap_Embolden (FT_Library library,
      * Make the above `ystr' rows or'ed with it.
      */
     for (x = 1; x <= ystr; x++) {
-      unsigned char *q;
+      unsigned char* q;
 
       q = p - bitmap->pitch * x;
       for (i = 0; i < pitch; i++)
@@ -419,7 +419,7 @@ FT_Bitmap_Embolden (FT_Library library,
 }
 
 static FT_Byte
-ft_gray_for_premultiplied_srgb_bgra (const FT_Byte *bgra) {
+ft_gray_for_premultiplied_srgb_bgra (const FT_Byte* bgra) {
   FT_UInt a = bgra[3];
   FT_UInt l;
 
@@ -467,14 +467,14 @@ ft_gray_for_premultiplied_srgb_bgra (const FT_Byte *bgra) {
 
 FT_EXPORT_DEF(FT_Error)
 FT_Bitmap_Convert (FT_Library library,
-                   const FT_Bitmap *source,
-                   FT_Bitmap *target,
+                   const FT_Bitmap* source,
+                   FT_Bitmap* target,
                    FT_Int alignment) {
   FT_Error error = FT_Err_Ok;
   FT_Memory memory;
 
-  FT_Byte *s;
-  FT_Byte *t;
+  FT_Byte* s;
+  FT_Byte* t;
 
   if (!library)
     return FT_THROW(Invalid_Library_Handle);
@@ -546,8 +546,8 @@ FT_Bitmap_Convert (FT_Library library,
       target->num_grays = 2;
 
       for (i = source->rows; i > 0; i--) {
-        FT_Byte *ss = s;
-        FT_Byte *tt = t;
+        FT_Byte* ss = s;
+        FT_Byte* tt = t;
         FT_UInt j;
 
 
@@ -610,8 +610,8 @@ FT_Bitmap_Convert (FT_Library library,
       target->num_grays = 4;
 
       for (i = source->rows; i > 0; i--) {
-        FT_Byte *ss = s;
-        FT_Byte *tt = t;
+        FT_Byte* ss = s;
+        FT_Byte* tt = t;
         FT_UInt j;
 
 
@@ -651,8 +651,8 @@ FT_Bitmap_Convert (FT_Library library,
       target->num_grays = 16;
 
       for (i = source->rows; i > 0; i--) {
-        FT_Byte *ss = s;
-        FT_Byte *tt = t;
+        FT_Byte* ss = s;
+        FT_Byte* tt = t;
         FT_UInt j;
 
 
@@ -682,8 +682,8 @@ FT_Bitmap_Convert (FT_Library library,
       target->num_grays = 256;
 
       for (i = source->rows; i > 0; i--) {
-        FT_Byte *ss = s;
-        FT_Byte *tt = t;
+        FT_Byte* ss = s;
+        FT_Byte* tt = t;
         FT_UInt j;
 
         for (j = source->width; j > 0; j--) {
@@ -710,16 +710,16 @@ FT_Bitmap_Convert (FT_Library library,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Bitmap_Blend (FT_Library library,
-                 const FT_Bitmap *source_,
+                 const FT_Bitmap* source_,
                  const FT_Vector source_offset_,
-                 FT_Bitmap *target,
-                 FT_Vector *atarget_offset,
+                 FT_Bitmap* target,
+                 FT_Vector* atarget_offset,
                  FT_Color color) {
   FT_Error error = FT_Err_Ok;
   FT_Memory memory;
 
   FT_Bitmap source_bitmap;
-  const FT_Bitmap *source;
+  const FT_Bitmap* source;
 
   FT_Vector source_offset;
   FT_Vector target_offset;
@@ -874,7 +874,7 @@ FT_Bitmap_Blend (FT_Library library,
     /* adjust old bitmap to enlarged size */
     int pitch, new_pitch;
 
-    unsigned char *buffer = NULL;
+    unsigned char* buffer = NULL;
 
     pitch = target->pitch;
 
@@ -904,13 +904,13 @@ FT_Bitmap_Blend (FT_Library library,
       /* XXX */
     }
     else {
-      unsigned char *p =
+      unsigned char* p =
           target->buffer;
-      unsigned char *q =
+      unsigned char* q =
           buffer +
           (final_rows - y - target->rows) * new_pitch +
           x * 4;
-      unsigned char *limit_p =
+      unsigned char* limit_p =
           p + pitch * (int) target->rows;
 
       while (p < limit_p) {
@@ -958,19 +958,19 @@ FT_Bitmap_Blend (FT_Library library,
     /* XXX */
   }
   else {
-    unsigned char *p =
+    unsigned char* p =
         source->buffer;
-    unsigned char *q =
+    unsigned char* q =
         target->buffer +
         (target->rows - y - source->rows) * target->pitch +
         x * 4;
-    unsigned char *limit_p =
+    unsigned char* limit_p =
         p + source->pitch * (int) source->rows;
 
     while (p < limit_p) {
-      unsigned char *r = p;
-      unsigned char *s = q;
-      unsigned char *limit_r = r + source->width;
+      unsigned char* r = p;
+      unsigned char* s = q;
+      unsigned char* limit_r = r + source->width;
 
       while (r < limit_r) {
         int aa = *r++;
@@ -1038,7 +1038,7 @@ FT_GlyphSlot_Own_Bitmap (FT_GlyphSlot slot) {
 
 FT_EXPORT_DEF(FT_Error)
 FT_Bitmap_Done (FT_Library library,
-                FT_Bitmap *bitmap) {
+                FT_Bitmap* bitmap) {
   FT_Memory memory;
 
   if (!library)

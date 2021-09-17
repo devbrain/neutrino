@@ -46,25 +46,25 @@ namespace neutrino::utils::io {
 
       /// Creates a DeflatingStreamBuf for compressing data read
       /// from the given input stream.
-      deflating_stream_buf (std::istream &istr, type_t type, zlib_compression_t level);
+      deflating_stream_buf (std::istream& istr, type_t type, zlib_compression_t level);
 
       /// Creates a DeflatingStreamBuf for compressing data read
       /// from the given input stream.
       ///
       /// Please refer to the zlib documentation of deflateInit2() for a description
       /// of the windowBits parameter.
-      deflating_stream_buf (std::istream &istr, int windowBits, zlib_compression_t level);
+      deflating_stream_buf (std::istream& istr, int windowBits, zlib_compression_t level);
 
       /// Creates a DeflatingStreamBuf for compressing data passed
       /// through and forwarding it to the given output stream.
-      deflating_stream_buf (std::ostream &ostr, type_t type, zlib_compression_t level);
+      deflating_stream_buf (std::ostream& ostr, type_t type, zlib_compression_t level);
 
       /// Creates a DeflatingStreamBuf for compressing data passed
       /// through and forwarding it to the given output stream.
       ///
       /// Please refer to the zlib documentation of deflateInit2() for a description
       /// of the windowBits parameter.
-      deflating_stream_buf (std::ostream &ostr, int windowBits, zlib_compression_t level);
+      deflating_stream_buf (std::ostream& ostr, int windowBits, zlib_compression_t level);
 
       ~deflating_stream_buf () override;
 
@@ -75,8 +75,8 @@ namespace neutrino::utils::io {
       int close ();
 
     protected:
-      int read_from_device (char *buffer, std::streamsize length) override;
-      int write_to_device (const char *buffer, std::streamsize length) override;
+      int read_from_device (char* buffer, std::streamsize length) override;
+      int write_to_device (const char* buffer, std::streamsize length) override;
       int sync () override;
     private:
       struct impl;
@@ -92,7 +92,7 @@ namespace neutrino::utils::io {
     public:
       /// Creates a DeflatingIOS for compressing data passed
       /// through and forwarding it to the given output stream.
-      explicit deflating_ios (std::ostream &ostr,
+      explicit deflating_ios (std::ostream& ostr,
                               deflating_stream_buf::type_t type = deflating_stream_buf::STREAM_ZLIB,
                               zlib_compression_t level = ZLIB_DEFAULT_COMPRESSION);
 
@@ -101,11 +101,11 @@ namespace neutrino::utils::io {
       ///
       /// Please refer to the zlib documentation of deflateInit2() for a description
       /// of the windowBits parameter.
-      deflating_ios (std::ostream &ostr, int windowBits, zlib_compression_t level);
+      deflating_ios (std::ostream& ostr, int windowBits, zlib_compression_t level);
 
       /// Creates a DeflatingIOS for compressing data read
       /// from the given input stream.
-      explicit deflating_ios (std::istream &istr,
+      explicit deflating_ios (std::istream& istr,
                               deflating_stream_buf::type_t type = deflating_stream_buf::STREAM_ZLIB,
                               zlib_compression_t level = ZLIB_DEFAULT_COMPRESSION);
 
@@ -114,11 +114,11 @@ namespace neutrino::utils::io {
       ///
       /// Please refer to the zlib documentation of deflateInit2() for a description
       /// of the windowBits parameter.
-      deflating_ios (std::istream &istr, int windowBits, zlib_compression_t level);
+      deflating_ios (std::istream& istr, int windowBits, zlib_compression_t level);
 
       ~deflating_ios () override;
 
-      deflating_stream_buf *rdbuf ();
+      deflating_stream_buf* rdbuf ();
     protected:
       deflating_stream_buf m_buf;
   };
@@ -138,7 +138,7 @@ namespace neutrino::utils::io {
       /// Creates a DeflatingOutputStream for compressing data passed
       /// through and forwarding it to the given output stream.
 
-      explicit deflating_output_stream (std::ostream &ostr,
+      explicit deflating_output_stream (std::ostream& ostr,
                                         deflating_stream_buf::type_t type = deflating_stream_buf::STREAM_ZLIB,
                                         zlib_compression_t level = ZLIB_DEFAULT_COMPRESSION);
 
@@ -148,7 +148,7 @@ namespace neutrino::utils::io {
       /// Please refer to the zlib documentation of deflateInit2() for a description
       /// of the windowBits parameter.
 
-      deflating_output_stream (std::ostream &ostr, int windowBits, zlib_compression_t level);
+      deflating_output_stream (std::ostream& ostr, int windowBits, zlib_compression_t level);
 
       ~deflating_output_stream () override;
 
@@ -169,7 +169,7 @@ namespace neutrino::utils::io {
     public:
       /// Creates a DeflatingIOS for compressing data read
       /// from the given input stream.
-      explicit deflating_input_stream (std::istream &istr,
+      explicit deflating_input_stream (std::istream& istr,
                                        deflating_stream_buf::type_t type = deflating_stream_buf::STREAM_ZLIB,
                                        zlib_compression_t level = ZLIB_DEFAULT_COMPRESSION);
 
@@ -178,7 +178,7 @@ namespace neutrino::utils::io {
       ///
       /// Please refer to the zlib documentation of deflateInit2() for a description
       /// of the windowBits parameter.
-      deflating_input_stream (std::istream &istr, int windowBits, zlib_compression_t level);
+      deflating_input_stream (std::istream& istr, int windowBits, zlib_compression_t level);
 
       ~deflating_input_stream () override;
   };

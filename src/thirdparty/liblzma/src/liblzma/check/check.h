@@ -110,26 +110,26 @@ extern const uint64_t lzma_crc64_table[4][256];
 /// \return     LZMA_OK on success. LZMA_UNSUPPORTED_CHECK if the type is not
 ///             supported by the current version or build of liblzma.
 ///             LZMA_PROG_ERROR if type > LZMA_CHECK_ID_MAX.
-extern void lzma_check_init (lzma_check_state *check, lzma_check type);
+extern void lzma_check_init (lzma_check_state* check, lzma_check type);
 
 /// Update the check state
-extern void lzma_check_update (lzma_check_state *check, lzma_check type,
-                               const uint8_t *buf, size_t size);
+extern void lzma_check_update (lzma_check_state* check, lzma_check type,
+                               const uint8_t* buf, size_t size);
 
 /// Finish the check calculation and store the result to check->buffer.u8.
-extern void lzma_check_finish (lzma_check_state *check, lzma_check type);
+extern void lzma_check_finish (lzma_check_state* check, lzma_check type);
 
 #ifndef LZMA_SHA256FUNC
 
 /// Prepare SHA-256 state for new input.
-extern void lzma_sha256_init (lzma_check_state *check);
+extern void lzma_sha256_init (lzma_check_state* check);
 
 /// Update the SHA-256 hash state
 extern void lzma_sha256_update (
-    const uint8_t *buf, size_t size, lzma_check_state *check);
+    const uint8_t* buf, size_t size, lzma_check_state* check);
 
 /// Finish the SHA-256 calculation and store the result to check->buffer.u8.
-extern void lzma_sha256_finish (lzma_check_state *check);
+extern void lzma_sha256_finish (lzma_check_state* check);
 
 #else
 

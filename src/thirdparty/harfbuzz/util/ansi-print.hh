@@ -30,10 +30,9 @@
 #include "hb.hh"
 
 void
-ansi_print_image_rgb24 (const uint32_t *data,
-			unsigned int width,
-			unsigned int height,
-			unsigned int stride);
-
+ansi_print_image_rgb24 (const uint32_t* data,
+                        unsigned int width,
+                        unsigned int height,
+                        unsigned int stride);
 
 #endif

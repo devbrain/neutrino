@@ -87,7 +87,7 @@ af_loader_embolden_glyph_in_slot (AF_Loader loader,
   AF_FaceGlobals globals = loader->globals;
   AF_WritingSystemClass writing_system_class;
 
-  FT_Size_Metrics *size_metrics = &face->size->internal->autohint_metrics;
+  FT_Size_Metrics* size_metrics = &face->size->internal->autohint_metrics;
 
   FT_Pos stdVW = 0;
   FT_Pos stdHW = 0;

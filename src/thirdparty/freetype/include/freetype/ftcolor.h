@@ -168,11 +168,11 @@ typedef struct FT_Color_ {
  */
 typedef struct FT_Palette_Data_ {
   FT_UShort num_palettes;
-  const FT_UShort *palette_name_ids;
-  const FT_UShort *palette_flags;
+  const FT_UShort* palette_name_ids;
+  const FT_UShort* palette_flags;
 
   FT_UShort num_palette_entries;
-  const FT_UShort *palette_entry_name_ids;
+  const FT_UShort* palette_entry_name_ids;
 
 } FT_Palette_Data;
 
@@ -207,7 +207,7 @@ typedef struct FT_Palette_Data_ {
  */
 FT_EXPORT(FT_Error)
 FT_Palette_Data_Get (FT_Face face,
-                     FT_Palette_Data *apalette);
+                     FT_Palette_Data* apalette);
 
 
 /**************************************************************************
@@ -261,7 +261,7 @@ FT_Palette_Data_Get (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Palette_Select (FT_Face face,
                    FT_UShort palette_index,
-                   FT_Color **apalette);
+                   FT_Color** apalette);
 
 
 /**************************************************************************

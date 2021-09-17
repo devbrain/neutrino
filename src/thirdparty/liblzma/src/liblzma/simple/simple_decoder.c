@@ -13,15 +13,15 @@
 #include "simple_decoder.h"
 
 extern lzma_ret
-lzma_simple_props_decode (void **options, const lzma_allocator *allocator,
-                          const uint8_t *props, size_t props_size) {
+lzma_simple_props_decode (void** options, const lzma_allocator* allocator,
+                          const uint8_t* props, size_t props_size) {
   if (props_size == 0)
     return LZMA_OK;
 
   if (props_size != 4)
     return LZMA_OPTIONS_ERROR;
 
-  lzma_options_bcj *opt = lzma_alloc (
+  lzma_options_bcj* opt = lzma_alloc (
       sizeof (lzma_options_bcj), allocator);
   if (opt == NULL)
     return LZMA_MEM_ERROR;

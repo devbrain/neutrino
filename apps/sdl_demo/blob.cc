@@ -43,12 +43,12 @@ struct blob_window : public demoscene::scene {
       }
     }
 
-    void effect (demoscene::vga &vga) override {
+    void effect (demoscene::vga& vga) override {
       uint32_t start;
       int i, j;
       uint8_t k;
       vga.cls ();
-      uint8_t *image = vga.surface ().data ();
+      uint8_t* image = vga.surface ().data ();
 
       for (i = 0; i < NUMBER_OF_BLOBS; i++) {
         blobs[i][0] += -2 + (int) (5.0 * (rand () / (RAND_MAX + 1.0)));
@@ -76,8 +76,8 @@ struct blob_window : public demoscene::scene {
 
     }
 
-    void init (demoscene::vga &vga) override {
-      auto &colors = vga.palette ();
+    void init (demoscene::vga& vga) override {
+      auto& colors = vga.palette ();
       for (int i = 0; i < 256; ++i) {
         colors[i].r = i;
         colors[i].g = i;
@@ -88,7 +88,7 @@ struct blob_window : public demoscene::scene {
   private:
     using vec2 = glm::ivec2;
 
-    static void init_blob (vec2 *blob) {
+    static void init_blob (vec2* blob) {
       (*blob)[0] = (SCREEN_WIDTH >> 1) - BLOB_RADIUS;
       (*blob)[1] = (SCREEN_HEIGHT >> 1) - BLOB_RADIUS;
     }
@@ -97,7 +97,7 @@ struct blob_window : public demoscene::scene {
     vec2 blobs[NUMBER_OF_BLOBS];
 };
 
-int main ([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
+int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   engine::application app (nullptr);
   blob_window w;
   w.show ();

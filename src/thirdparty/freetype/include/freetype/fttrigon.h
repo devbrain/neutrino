@@ -240,7 +240,7 @@ FT_Angle_Diff (FT_Angle angle1,
  *
  */
 FT_EXPORT(void)
-FT_Vector_Unit (FT_Vector *vec,
+FT_Vector_Unit (FT_Vector* vec,
                 FT_Angle angle);
 
 
@@ -262,7 +262,7 @@ FT_Vector_Unit (FT_Vector *vec,
  *
  */
 FT_EXPORT(void)
-FT_Vector_Rotate (FT_Vector *vec,
+FT_Vector_Rotate (FT_Vector* vec,
                   FT_Angle angle);
 
 
@@ -284,7 +284,7 @@ FT_Vector_Rotate (FT_Vector *vec,
  *
  */
 FT_EXPORT(FT_Fixed)
-FT_Vector_Length (FT_Vector *vec);
+FT_Vector_Length (FT_Vector* vec);
 
 
 /**************************************************************************
@@ -308,9 +308,9 @@ FT_Vector_Length (FT_Vector *vec);
  *
  */
 FT_EXPORT(void)
-FT_Vector_Polarize (FT_Vector *vec,
-                    FT_Fixed *length,
-                    FT_Angle *angle);
+FT_Vector_Polarize (FT_Vector* vec,
+                    FT_Fixed* length,
+                    FT_Angle* angle);
 
 
 /**************************************************************************
@@ -334,7 +334,7 @@ FT_Vector_Polarize (FT_Vector *vec,
  *
  */
 FT_EXPORT(void)
-FT_Vector_From_Polar (FT_Vector *vec,
+FT_Vector_From_Polar (FT_Vector* vec,
                       FT_Fixed length,
                       FT_Angle angle);
 

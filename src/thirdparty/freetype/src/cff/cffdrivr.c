@@ -113,7 +113,7 @@ FT_CALLBACK_DEF(FT_Error)
 cff_get_kerning (FT_Face ttface,          /* TT_Face */
                  FT_UInt left_glyph,
                  FT_UInt right_glyph,
-                 FT_Vector *kerning) {
+                 FT_Vector* kerning) {
   TT_Face face = (TT_Face) ttface;
   SFNT_Service sfnt = (SFNT_Service) face->sfnt;
 
@@ -199,7 +199,7 @@ cff_get_advances (FT_Face face,
                   FT_UInt start,
                   FT_UInt count,
                   FT_Int32 flags,
-                  FT_Fixed *advances) {
+                  FT_Fixed* advances) {
   FT_UInt nn;
   FT_Error error = FT_Err_Ok;
   FT_GlyphSlot slot = face->glyph;
@@ -302,7 +302,7 @@ cff_get_glyph_name (CFF_Face face,
                     FT_Pointer buffer,
                     FT_UInt buffer_max) {
   CFF_Font font = (CFF_Font) face->extra.data;
-  FT_String *gname;
+  FT_String* gname;
   FT_UShort sid;
   FT_Error error;
 
@@ -359,15 +359,15 @@ cff_get_glyph_name (CFF_Face face,
 
 static FT_UInt
 cff_get_name_index (CFF_Face face,
-                    const FT_String *glyph_name) {
+                    const FT_String* glyph_name) {
   CFF_Font cff;
   CFF_Charset charset;
   FT_Service_PsCMaps psnames;
-  FT_String *name;
+  FT_String* name;
   FT_UShort sid;
   FT_UInt i;
 
-  cff = (CFF_FontRec *) face->extra.data;
+  cff = (CFF_FontRec*) face->extra.data;
   charset = &cff->charset;
 
   /* CFF2 table does not have glyph names; */
@@ -402,7 +402,7 @@ cff_get_name_index (CFF_Face face,
     if (sid > 390)
       name = cff_index_get_string (cff, sid - 391);
     else
-      name = (FT_String *) psnames->adobe_std_strings (sid);
+      name = (FT_String*) psnames->adobe_std_strings (sid);
 
     if (!name)
       continue;
@@ -433,13 +433,13 @@ cff_ps_has_glyph_names (FT_Face face) {
 
 static FT_Error
 cff_ps_get_font_info (CFF_Face face,
-                      PS_FontInfoRec *afont_info) {
+                      PS_FontInfoRec* afont_info) {
   CFF_Font cff = (CFF_Font) face->extra.data;
   FT_Error error = FT_Err_Ok;
 
   if (cff && !cff->font_info) {
     CFF_FontRecDict dict = &cff->top_font.font_dict;
-    PS_FontInfoRec *font_info = NULL;
+    PS_FontInfoRec* font_info = NULL;
     FT_Memory memory = face->root.memory;
 
     if (FT_ALLOC(font_info, sizeof (*font_info)))
@@ -472,15 +472,15 @@ cff_ps_get_font_info (CFF_Face face,
 
 static FT_Error
 cff_ps_get_font_extra (CFF_Face face,
-                       PS_FontExtraRec *afont_extra) {
+                       PS_FontExtraRec* afont_extra) {
   CFF_Font cff = (CFF_Font) face->extra.data;
   FT_Error error = FT_Err_Ok;
 
   if (cff && cff->font_extra == NULL) {
     CFF_FontRecDict dict = &cff->top_font.font_dict;
-    PS_FontExtraRec *font_extra = NULL;
+    PS_FontExtraRec* font_extra = NULL;
     FT_Memory memory = face->root.memory;
-    FT_String *embedded_postscript;
+    FT_String* embedded_postscript;
 
     if (FT_ALLOC(font_extra, sizeof (*font_extra)))
       goto Fail;
@@ -491,8 +491,8 @@ cff_ps_get_font_extra (CFF_Face face,
         cff,
         dict->embedded_postscript);
     if (embedded_postscript) {
-      FT_String *start_fstype;
-      FT_String *start_def;
+      FT_String* start_fstype;
+      FT_String* start_def;
 
 
       /* Identify the XYZ integer in `/FSType XYZ def' substring. */
@@ -501,7 +501,7 @@ cff_ps_get_font_extra (CFF_Face face,
           (start_def = ft_strstr (start_fstype +
                                   sizeof ("/FSType") - 1,
                                   "def")) != NULL) {
-        FT_String *s;
+        FT_String* s;
 
         for (s = start_fstype + sizeof ("/FSType") - 1;
              s != start_def;
@@ -553,7 +553,7 @@ FT_DEFINE_SERVICE_PSINFOREC(
  *
  */
 
-static const char *
+static const char*
 cff_get_ps_name (CFF_Face face) {
   CFF_Font cff = (CFF_Font) face->extra.data;
   SFNT_Service sfnt = (SFNT_Service) face->sfnt;
@@ -575,7 +575,7 @@ cff_get_ps_name (CFF_Face face) {
       return service->get_ps_font_name (FT_FACE(face));
   }
 
-  return (const char *) cff->font_name;
+  return (const char*) cff->font_name;
 }
 
 FT_DEFINE_SERVICE_PSFONTNAMEREC(
@@ -596,7 +596,7 @@ FT_DEFINE_SERVICE_PSFONTNAMEREC(
  */
 static FT_Error
 cff_get_cmap_info (FT_CharMap charmap,
-                   TT_CMapInfo *cmap_info) {
+                   TT_CMapInfo* cmap_info) {
   FT_CMap cmap = FT_CMAP(charmap);
   FT_Error error = FT_Err_Ok;
 
@@ -632,9 +632,9 @@ FT_DEFINE_SERVICE_TTCMAPSREC(
  */
 static FT_Error
 cff_get_ros (CFF_Face face,
-             const char **registry,
-             const char **ordering,
-             FT_Int *supplement) {
+             const char** registry,
+             const char** ordering,
+             FT_Int* supplement) {
   FT_Error error = FT_Err_Ok;
   CFF_Font cff = (CFF_Font) face->extra.data;
 
@@ -680,7 +680,7 @@ cff_get_ros (CFF_Face face,
 
 static FT_Error
 cff_get_is_cid (CFF_Face face,
-                FT_Bool *is_cid) {
+                FT_Bool* is_cid) {
   FT_Error error = FT_Err_Ok;
   CFF_Font cff = (CFF_Font) face->extra.data;
 
@@ -699,7 +699,7 @@ cff_get_is_cid (CFF_Face face,
 static FT_Error
 cff_get_cid_from_glyph_index (CFF_Face face,
                               FT_UInt glyph_index,
-                              FT_UInt *cid) {
+                              FT_UInt* cid) {
   FT_Error error = FT_Err_Ok;
   CFF_Font cff;
 
@@ -763,7 +763,7 @@ FT_DEFINE_SERVICE_PROPERTIESREC(
 static FT_Error
 cff_set_mm_blend (CFF_Face face,
                   FT_UInt num_coords,
-                  FT_Fixed *coords) {
+                  FT_Fixed* coords) {
   FT_Service_MultiMasters mm = (FT_Service_MultiMasters) face->mm;
 
   return mm->set_mm_blend (FT_FACE(face), num_coords, coords);
@@ -772,7 +772,7 @@ cff_set_mm_blend (CFF_Face face,
 static FT_Error
 cff_get_mm_blend (CFF_Face face,
                   FT_UInt num_coords,
-                  FT_Fixed *coords) {
+                  FT_Fixed* coords) {
   FT_Service_MultiMasters mm = (FT_Service_MultiMasters) face->mm;
 
   return mm->get_mm_blend (FT_FACE(face), num_coords, coords);
@@ -781,7 +781,7 @@ cff_get_mm_blend (CFF_Face face,
 static FT_Error
 cff_set_mm_weightvector (CFF_Face face,
                          FT_UInt len,
-                         FT_Fixed *weightvector) {
+                         FT_Fixed* weightvector) {
   FT_Service_MultiMasters mm = (FT_Service_MultiMasters) face->mm;
 
   return mm->set_mm_weightvector (FT_FACE(face), len, weightvector);
@@ -789,8 +789,8 @@ cff_set_mm_weightvector (CFF_Face face,
 
 static FT_Error
 cff_get_mm_weightvector (CFF_Face face,
-                         FT_UInt *len,
-                         FT_Fixed *weightvector) {
+                         FT_UInt* len,
+                         FT_Fixed* weightvector) {
   FT_Service_MultiMasters mm = (FT_Service_MultiMasters) face->mm;
 
   return mm->get_mm_weightvector (FT_FACE(face), len, weightvector);
@@ -798,7 +798,7 @@ cff_get_mm_weightvector (CFF_Face face,
 
 static FT_Error
 cff_get_mm_var (CFF_Face face,
-                FT_MM_Var **master) {
+                FT_MM_Var** master) {
   FT_Service_MultiMasters mm = (FT_Service_MultiMasters) face->mm;
 
   return mm->get_mm_var (FT_FACE(face), master);
@@ -807,7 +807,7 @@ cff_get_mm_var (CFF_Face face,
 static FT_Error
 cff_set_var_design (CFF_Face face,
                     FT_UInt num_coords,
-                    FT_Fixed *coords) {
+                    FT_Fixed* coords) {
   FT_Service_MultiMasters mm = (FT_Service_MultiMasters) face->mm;
 
   return mm->set_var_design (FT_FACE(face), num_coords, coords);
@@ -816,7 +816,7 @@ cff_set_var_design (CFF_Face face,
 static FT_Error
 cff_get_var_design (CFF_Face face,
                     FT_UInt num_coords,
-                    FT_Fixed *coords) {
+                    FT_Fixed* coords) {
   FT_Service_MultiMasters mm = (FT_Service_MultiMasters) face->mm;
 
   return mm->get_var_design (FT_FACE(face), num_coords, coords);
@@ -856,7 +856,7 @@ FT_DEFINE_SERVICE_MULTIMASTERSREC(
 static FT_Error
 cff_hadvance_adjust (CFF_Face face,
                      FT_UInt gindex,
-                     FT_Int *avalue) {
+                     FT_Int* avalue) {
   FT_Service_MetricsVariations var = (FT_Service_MetricsVariations) face->var;
 
   return var->hadvance_adjust (FT_FACE(face), gindex, avalue);
@@ -973,7 +973,7 @@ FT_DEFINE_SERVICEDESCREC7(
 
 FT_CALLBACK_DEF(FT_Module_Interface)
 cff_get_interface (FT_Module driver,       /* CFF_Driver */
-                   const char *module_interface) {
+                   const char* module_interface) {
   FT_Library library;
   FT_Module sfnt;
   FT_Module_Interface result;

@@ -12,10 +12,11 @@ namespace neutrino::hal::detail {
     surface_impl () = default;
 
     template <typename ... Args>
-    explicit surface_impl (Args &&... args)
+    explicit surface_impl (Args&& ... args)
         : surface (std::forward<Args> (args)...) {
 
     }
+
     sdl::surface surface;
   };
 }

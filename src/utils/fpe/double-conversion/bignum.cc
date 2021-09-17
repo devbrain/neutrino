@@ -33,12 +33,12 @@
 
 namespace double_conversion {
 
-  Bignum::Chunk &Bignum::RawBigit (const int index) {
+  Bignum::Chunk& Bignum::RawBigit (const int index) {
     DOUBLE_CONVERSION_ASSERT(static_cast<unsigned>(index) < kBigitCapacity);
     return bigits_buffer_[index];
   }
 
-  const Bignum::Chunk &Bignum::RawBigit (const int index) const {
+  const Bignum::Chunk& Bignum::RawBigit (const int index) const {
     DOUBLE_CONVERSION_ASSERT(static_cast<unsigned>(index) < kBigitCapacity);
     return bigits_buffer_[index];
   }
@@ -68,7 +68,7 @@ namespace double_conversion {
     }
   }
 
-  void Bignum::AssignBignum (const Bignum &other) {
+  void Bignum::AssignBignum (const Bignum& other) {
     exponent_ = other.exponent_;
     for (int i = 0; i < other.used_bigits_; ++i) {
       RawBigit (i) = other.RawBigit (i);
@@ -152,7 +152,7 @@ namespace double_conversion {
     AddBignum (other);
   }
 
-  void Bignum::AddBignum (const Bignum &other) {
+  void Bignum::AddBignum (const Bignum& other) {
     DOUBLE_CONVERSION_ASSERT(IsClamped ());
     DOUBLE_CONVERSION_ASSERT(other.IsClamped ());
 
@@ -197,7 +197,7 @@ namespace double_conversion {
     DOUBLE_CONVERSION_ASSERT(IsClamped ());
   }
 
-  void Bignum::SubtractBignum (const Bignum &other) {
+  void Bignum::SubtractBignum (const Bignum& other) {
     DOUBLE_CONVERSION_ASSERT(IsClamped ());
     DOUBLE_CONVERSION_ASSERT(other.IsClamped ());
     // We require this to be bigger than other.
@@ -482,7 +482,7 @@ namespace double_conversion {
   }
 
 // Precondition: this/other < 16bit.
-  uint16_t Bignum::DivideModuloIntBignum (const Bignum &other) {
+  uint16_t Bignum::DivideModuloIntBignum (const Bignum& other) {
     DOUBLE_CONVERSION_ASSERT(IsClamped ());
     DOUBLE_CONVERSION_ASSERT(other.IsClamped ());
     DOUBLE_CONVERSION_ASSERT(other.used_bigits_ > 0);
@@ -566,7 +566,7 @@ namespace double_conversion {
     return static_cast<char>(value - 10 + 'A');
   }
 
-  bool Bignum::ToHexString (char *buffer, const int buffer_size) const {
+  bool Bignum::ToHexString (char* buffer, const int buffer_size) const {
     DOUBLE_CONVERSION_ASSERT(IsClamped ());
     // Each bigit must be printable as separate hex-character.
     DOUBLE_CONVERSION_ASSERT(kBigitSize % 4 == 0);
@@ -619,7 +619,7 @@ namespace double_conversion {
     return RawBigit (index - exponent_);
   }
 
-  int Bignum::Compare (const Bignum &a, const Bignum &b) {
+  int Bignum::Compare (const Bignum& a, const Bignum& b) {
     DOUBLE_CONVERSION_ASSERT(a.IsClamped ());
     DOUBLE_CONVERSION_ASSERT(b.IsClamped ());
     const int bigit_length_a = a.BigitLength ();
@@ -644,7 +644,7 @@ namespace double_conversion {
     return 0;
   }
 
-  int Bignum::PlusCompare (const Bignum &a, const Bignum &b, const Bignum &c) {
+  int Bignum::PlusCompare (const Bignum& a, const Bignum& b, const Bignum& c) {
     DOUBLE_CONVERSION_ASSERT(a.IsClamped ());
     DOUBLE_CONVERSION_ASSERT(b.IsClamped ());
     DOUBLE_CONVERSION_ASSERT(c.IsClamped ());
@@ -699,7 +699,7 @@ namespace double_conversion {
     }
   }
 
-  void Bignum::Align (const Bignum &other) {
+  void Bignum::Align (const Bignum& other) {
     if (exponent_ > other.exponent_) {
       // If "X" represents a "hidden" bigit (by the exponent) then we are in the
       // following case (a == this, b == other):
@@ -738,7 +738,7 @@ namespace double_conversion {
     }
   }
 
-  void Bignum::SubtractTimes (const Bignum &other, const int factor) {
+  void Bignum::SubtractTimes (const Bignum& other, const int factor) {
     DOUBLE_CONVERSION_ASSERT(exponent_ <= other.exponent_);
     if (factor < 3) {
       for (int i = 0; i < factor; ++i) {

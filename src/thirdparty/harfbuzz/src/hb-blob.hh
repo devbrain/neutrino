@@ -55,19 +55,20 @@ struct hb_blob_t {
     hb_bytes_t as_bytes () const {
       return hb_bytes_t (data, length);
     }
+
     template <typename Type>
-    const Type *as () const {
+    const Type* as () const {
       return as_bytes ().as<Type> ();
     }
 
   public:
     hb_object_header_t header;
 
-    const char *data;
+    const char* data;
     unsigned int length;
     hb_memory_mode_t mode;
 
-    void *user_data;
+    void* user_data;
     hb_destroy_func_t destroy;
 };
 
@@ -79,33 +80,42 @@ template <typename P>
 struct hb_blob_ptr_t {
     typedef hb_remove_pointer<P> T;
 
-    hb_blob_ptr_t (hb_blob_t *b_ = nullptr)
+    hb_blob_ptr_t (hb_blob_t* b_ = nullptr)
         : b (b_) {
     }
-    hb_blob_t *operator= (hb_blob_t *b_) {
+
+    hb_blob_t* operator = (hb_blob_t* b_) {
       return b = b_;
     }
-    const T *operator-> () const {
+
+    const T* operator -> () const {
       return get ();
     }
-    const T &operator* () const {
+
+    const T& operator * () const {
       return *get ();
     }
-    template <typename C> operator const C * () const {
+
+    template <typename C> operator const C* () const {
       return get ();
     }
-    operator const char * () const {
-      return (const char *) get ();
+
+    operator const char* () const {
+      return (const char*) get ();
     }
-    const T *get () const {
+
+    const T* get () const {
       return b->as<T> ();
     }
-    hb_blob_t *get_blob () const {
+
+    hb_blob_t* get_blob () const {
       return b.get_raw ();
     }
+
     unsigned int get_length () const {
       return b.get ()->length;
     }
+
     void destroy () {
       hb_blob_destroy (b.get ());
       b = nullptr;

@@ -128,7 +128,7 @@ FT_CALLBACK_DEF(void*)
 ft_realloc (FT_Memory memory,
             long cur_size,
             long new_size,
-            void *block) {
+            void* block) {
   FT_UNUSED(memory);
   FT_UNUSED(cur_size);
 
@@ -151,7 +151,7 @@ ft_realloc (FT_Memory memory,
 /*                                                                       */
 FT_CALLBACK_DEF(void)
 ft_free (FT_Memory memory,
-         void *block) {
+         void* block) {
   FT_UNUSED(memory);
 
   free (block);
@@ -225,7 +225,7 @@ ft_close_stream_by_free (FT_Stream stream) {
 
 FT_BASE_DEF(FT_Error)
 FT_Stream_Open (FT_Stream stream,
-                const char *filepathname) {
+                const char* filepathname) {
   int file;
   struct stat stat_buf;
 
@@ -280,12 +280,12 @@ FT_Stream_Open (FT_Stream stream,
   /* This cast potentially truncates a 64bit to 32bit! */
   stream->size = (unsigned long) stat_buf.st_size;
   stream->pos = 0;
-  stream->base = (unsigned char *) mmap (NULL,
-                                         stream->size,
-                                         PROT_READ,
-                                         MAP_FILE | MAP_PRIVATE,
-                                         file,
-                                         0);
+  stream->base = (unsigned char*) mmap (NULL,
+                                        stream->size,
+                                        PROT_READ,
+                                        MAP_FILE | MAP_PRIVATE,
+                                        file,
+                                        0);
 
   /* on some RTOS, mmap might return 0 */
   if ((long) stream->base != -1 && stream->base != NULL)
@@ -296,7 +296,7 @@ FT_Stream_Open (FT_Stream stream,
     FT_ERROR(("FT_Stream_Open:"));
     FT_ERROR((" could not `mmap' file `%s'\n", filepathname));
 
-    stream->base = (unsigned char *) ft_alloc (NULL, stream->size);
+    stream->base = (unsigned char*) ft_alloc (NULL, stream->size);
 
     if (!stream->base) {
       FT_ERROR(("FT_Stream_Open:"));
@@ -332,7 +332,7 @@ FT_Stream_Open (FT_Stream stream,
   close (file);
 
   stream->descriptor.pointer = stream->base;
-  stream->pathname.pointer = (char *) filepathname;
+  stream->pathname.pointer = (char*) filepathname;
 
   stream->read = 0;
 

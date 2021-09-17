@@ -10,7 +10,7 @@
 
 namespace neutrino::tiled {
   // path resolver accepts path in tmx file and returns content of the file pointed by path
-  using path_resolver_t = std::function<std::string (const std::string &path)>;
+  using path_resolver_t = std::function<std::string (const std::string& path)>;
 }
 
 #endif

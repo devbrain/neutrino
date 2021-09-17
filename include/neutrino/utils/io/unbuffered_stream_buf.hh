@@ -40,8 +40,8 @@ namespace neutrino::utils::io {
       ~basic_unbuffered_stream_buf () {
       }
 
-      basic_unbuffered_stream_buf (const basic_unbuffered_stream_buf &) = delete;
-      basic_unbuffered_stream_buf &operator= (const basic_unbuffered_stream_buf &) = delete;
+      basic_unbuffered_stream_buf (const basic_unbuffered_stream_buf&) = delete;
+      basic_unbuffered_stream_buf& operator = (const basic_unbuffered_stream_buf&) = delete;
 
       virtual int_type overflow (int_type c) {
         if (c != char_traits::eof ()) {
@@ -91,7 +91,7 @@ namespace neutrino::utils::io {
         }
       }
 
-      virtual std::streamsize xsgetn (char_type *p, std::streamsize count)
+      virtual std::streamsize xsgetn (char_type* p, std::streamsize count)
       /// Some platforms (for example, Compaq C++) have buggy implementations of
       /// xsgetn that handle null buffers incorrectly.
       /// Anyway, it does not hurt to provide an optimized implementation
