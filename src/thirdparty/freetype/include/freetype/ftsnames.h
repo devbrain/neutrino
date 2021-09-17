@@ -109,7 +109,7 @@ typedef struct FT_SfntName_ {
   FT_UShort language_id;
   FT_UShort name_id;
 
-  FT_Byte *string;      /* this string is *not* null-terminated! */
+  FT_Byte* string;      /* this string is *not* null-terminated! */
   FT_UInt string_len;  /* in bytes                              */
 
 } FT_SfntName;
@@ -178,7 +178,7 @@ FT_Get_Sfnt_Name_Count (FT_Face face);
 FT_EXPORT(FT_Error)
 FT_Get_Sfnt_Name (FT_Face face,
                   FT_UInt idx,
-                  FT_SfntName *aname);
+                  FT_SfntName* aname);
 
 /**************************************************************************
  *
@@ -204,7 +204,7 @@ FT_Get_Sfnt_Name (FT_Face face,
  *   2.8
  */
 typedef struct FT_SfntLangTag_ {
-  FT_Byte *string;      /* this string is *not* null-terminated! */
+  FT_Byte* string;      /* this string is *not* null-terminated! */
   FT_UInt string_len;  /* in bytes                              */
 
 } FT_SfntLangTag;
@@ -254,7 +254,7 @@ typedef struct FT_SfntLangTag_ {
 FT_EXPORT(FT_Error)
 FT_Get_Sfnt_LangTag (FT_Face face,
                      FT_UInt langID,
-                     FT_SfntLangTag *alangTag);
+                     FT_SfntLangTag* alangTag);
 
 
 /* */

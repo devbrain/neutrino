@@ -43,7 +43,7 @@ uchar zbuf[M_BLOCK + 600 + (M_BLOCK / 100)];
 
 int nIn, nOut, nZ;
 
-static char *bzerrorstrings[] = {
+static char* bzerrorstrings[] = {
     "OK", "SEQUENCE_ERROR", "PARAM_ERROR", "MEM_ERROR", "DATA_ERROR", "DATA_ERROR_MAGIC", "IO_ERROR", "UNEXPECTED_EOF",
     "OUTBUFF_FULL", "???"   /* for future */
     , "???"   /* for future */
@@ -62,8 +62,8 @@ void flip_bit (int bit) {
   zbuf[byteno] ^= mask;
 }
 
-int main (int argc, char **argv) {
-  FILE *f;
+int main (int argc, char** argv) {
+  FILE* f;
   int r;
   int bit;
   int i;

@@ -38,19 +38,19 @@ open_face_PS_from_sfnt_stream (FT_Library library,
                                FT_Stream stream,
                                FT_Long face_index,
                                FT_Int num_params,
-                               FT_Parameter *params,
-                               FT_Face *aface);
+                               FT_Parameter* params,
+                               FT_Face* aface);
 
 
 /* Create a new FT_Face given a buffer and a driver name. */
 /* From ftmac.c.                                          */
 FT_LOCAL(FT_Error)
 open_face_from_buffer (FT_Library library,
-                       FT_Byte *base,
+                       FT_Byte* base,
                        FT_ULong size,
                        FT_Long face_index,
-                       const char *driver_name,
-                       FT_Face *aface);
+                       const char* driver_name,
+                       FT_Face* aface);
 
 #if  defined( FT_CONFIG_OPTION_GUESSING_EMBEDDED_RFORK ) && \
     !defined( FT_MACINTOSH )

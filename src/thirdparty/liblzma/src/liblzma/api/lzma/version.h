@@ -114,7 +114,7 @@ lzma_nothrow lzma_attr_const;
  * This function may be useful if you want to display which version of
  * liblzma your application is currently using.
  */
-extern LZMA_API(const char *)lzma_version_string (void)
+extern LZMA_API(const char *) lzma_version_string (void)
 lzma_nothrow lzma_attr_const;
 
 #endif

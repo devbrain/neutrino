@@ -48,7 +48,7 @@ namespace neutrino::sdl {
 
       template <typename ... Args,
           typename std::enable_if<(std::is_same_v<flags_t, Args> && ...), int>::type = 0>
-      window (const std::string &title, int w, int h, Args...args);
+      window (const std::string& title, int w, int h, Args...args);
 
       template <typename ... Args,
           typename std::enable_if<(std::is_same_v<flags_t, Args> && ...), int>::type = 0>
@@ -56,10 +56,10 @@ namespace neutrino::sdl {
 
       template <typename ... Args,
           typename std::enable_if<(std::is_same_v<flags_t, Args> && ...), int>::type = 0>
-      window (const std::string &title, int x, int y, int w, int h, Args...args);
+      window (const std::string& title, int x, int y, int w, int h, Args...args);
 
-      window (object <SDL_Window> &&other);
-      window &operator= (object <SDL_Window> &&other);
+      window (object <SDL_Window>&& other);
+      window& operator = (object <SDL_Window>&& other);
 
       [[nodiscard]] uint32_t id () const;
 
@@ -78,8 +78,8 @@ namespace neutrino::sdl {
 
       [[nodiscard]] int display_index () const;
 
-      void user_data (const char *name, void *data) noexcept;
-      [[nodiscard]] void *user_data (const char *name) const noexcept;
+      void user_data (const char* name, void* data) noexcept;
+      [[nodiscard]] void* user_data (const char* name) const noexcept;
 
       void minimize () noexcept;
       void maximize () noexcept;
@@ -88,7 +88,7 @@ namespace neutrino::sdl {
       void hide () noexcept;
 
       [[nodiscard]] std::string title () const;
-      void title (const std::string &v) noexcept;
+      void title (const std::string& v) noexcept;
 
       void update_surface ();
       void swap_opengl_window () noexcept;
@@ -111,10 +111,11 @@ namespace neutrino::sdl {
                                (static_cast<std::uint32_t>(args) | ... | 0u)
                            )) {
   }
+
   // --------------------------------------------------------------------------------------------
   template <typename ... Args,
       typename std::enable_if<(std::is_same_v<window::flags_t, Args> && ...), int>::type>
-  window::window (const std::string &title, int w, int h, Args...args)
+  window::window (const std::string& title, int w, int h, Args...args)
       :object<SDL_Window> (SAFE_SDL_CALL(
                                SDL_CreateWindow,
                                title.c_str (),
@@ -125,6 +126,7 @@ namespace neutrino::sdl {
                                (static_cast<std::uint32_t>(args) | ... | 0u)
                            )) {
   }
+
   // --------------------------------------------------------------------------------------------
   template <typename ... Args,
       typename std::enable_if<(std::is_same_v<window::flags_t, Args> && ...), int>::type>
@@ -139,10 +141,11 @@ namespace neutrino::sdl {
                                (static_cast<std::uint32_t>(args) | ... | 0u)
                            )) {
   }
+
   // --------------------------------------------------------------------------------------------
   template <typename ... Args,
       typename std::enable_if<(std::is_same_v<window::flags_t, Args> && ...), int>::type>
-  window::window (const std::string &title, int x, int y, int w, int h, Args...args)
+  window::window (const std::string& title, int x, int y, int w, int h, Args...args)
       :object<SDL_Window> (SAFE_SDL_CALL(
                                SDL_CreateWindow,
                                title.c_str (),
@@ -153,18 +156,21 @@ namespace neutrino::sdl {
                                (static_cast<std::uint32_t>(args) | ... | 0u)
                            ), true) {
   }
+
   // --------------------------------------------------------------------------------------------
   inline
-  window::window (object <SDL_Window> &&other)
+  window::window (object <SDL_Window>&& other)
       : object<SDL_Window> (std::move (other)) {
 
   }
+
   // --------------------------------------------------------------------------------------------
   inline
-  window &window::operator= (object <SDL_Window> &&other) {
-    object<SDL_Window>::operator= (std::move (other));
+  window& window::operator = (object <SDL_Window>&& other) {
+    object<SDL_Window>::operator = (std::move (other));
     return *this;
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   uint32_t window::id () const {
@@ -174,6 +180,7 @@ namespace neutrino::sdl {
     }
     return ret;
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   std::tuple<int, int> window::size () const noexcept {
@@ -181,11 +188,13 @@ namespace neutrino::sdl {
     SDL_GetWindowSize (const_handle (), &w, &h);
     return {w, h};
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::size (int w, int h) noexcept {
     SDL_SetWindowSize (handle (), w, h);
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   std::tuple<int, int, int, int> window::borders_size () const noexcept {
@@ -193,46 +202,55 @@ namespace neutrino::sdl {
     SDL_GetWindowBordersSize (const_handle (), &top, &left, &bottom, &right);
     return {top, left, bottom, right};
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   float window::brightness () const noexcept {
     return SDL_GetWindowBrightness (const_handle ());
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::brightness (float v) noexcept {
     SDL_SetWindowBrightness (handle (), v);
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   int window::display_index () const {
     return SAFE_SDL_CALL(SDL_GetWindowDisplayIndex, const_handle ());
   }
+
   // --------------------------------------------------------------------------------------------
   inline
-  void window::user_data (const char *name, void *data) noexcept {
+  void window::user_data (const char* name, void* data) noexcept {
     SDL_SetWindowData (handle (), name, data);
   }
+
   // --------------------------------------------------------------------------------------------
   inline
-  void *window::user_data (const char *name) const noexcept {
+  void* window::user_data (const char* name) const noexcept {
     return SDL_GetWindowData (const_handle (), name);
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::minimize () noexcept {
     SDL_MinimizeWindow (handle ());
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::maximize () noexcept {
     SDL_MaximizeWindow (handle ());
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::raise () noexcept {
     SDL_RaiseWindow (handle ());
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   std::tuple<int, int> window::position () const noexcept {
@@ -240,40 +258,47 @@ namespace neutrino::sdl {
     SDL_GetWindowPosition (const_handle (), &x, &y);
     return {x, y};
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::position (int x, int y) noexcept {
     SDL_SetWindowPosition (handle (), x, y);
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::show () noexcept {
     SDL_ShowWindow (handle ());
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::hide () noexcept {
     SDL_HideWindow (handle ());
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   std::string window::title () const {
-    const char *v = SDL_GetWindowTitle (const_handle ());
+    const char* v = SDL_GetWindowTitle (const_handle ());
     if (v) {
       return v;
     }
     return {};
   }
+
   // --------------------------------------------------------------------------------------------
   inline
-  void window::title (const std::string &v) noexcept {
+  void window::title (const std::string& v) noexcept {
     SDL_SetWindowTitle (handle (), v.c_str ());
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::update_surface () {
     SAFE_SDL_CALL(SDL_UpdateWindowSurface, handle ());
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   void window::swap_opengl_window () noexcept {

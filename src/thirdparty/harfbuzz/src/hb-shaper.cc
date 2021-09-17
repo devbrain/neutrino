@@ -44,12 +44,12 @@ static void free_static_shapers ();
 
 static struct hb_shapers_lazy_loader_t : hb_lazy_loader_t<const hb_shaper_entry_t,
                                                           hb_shapers_lazy_loader_t> {
-  static hb_shaper_entry_t *create () {
-    char *env = getenv ("HB_SHAPER_LIST");
+  static hb_shaper_entry_t* create () {
+    char* env = getenv ("HB_SHAPER_LIST");
     if (!env || !*env)
       return nullptr;
 
-    hb_shaper_entry_t *shapers = (hb_shaper_entry_t *) calloc (1, sizeof (all_shapers));
+    hb_shaper_entry_t* shapers = (hb_shaper_entry_t*) calloc (1, sizeof (all_shapers));
     if (unlikely (!shapers))
       return nullptr;
 
@@ -57,7 +57,7 @@ static struct hb_shapers_lazy_loader_t : hb_lazy_loader_t<const hb_shaper_entry_
 
     /* Reorder shaper list to prefer requested shapers. */
     unsigned int i = 0;
-    char *end, *p = env;
+    char* end, * p = env;
     for (;;) {
       end = strchr (p, ',');
       if (!end)
@@ -85,22 +85,26 @@ static struct hb_shapers_lazy_loader_t : hb_lazy_loader_t<const hb_shaper_entry_
 
     return shapers;
   }
-  static void destroy (const hb_shaper_entry_t *p) {
-    free ((void *) p);
+
+  static void destroy (const hb_shaper_entry_t* p) {
+    free ((void*) p);
   }
-  static const hb_shaper_entry_t *get_null () {
+
+  static const hb_shaper_entry_t* get_null () {
     return all_shapers;
   }
 } static_shapers;
 
 #if HB_USE_ATEXIT
+
 static
 void free_static_shapers () {
   static_shapers.free_instance ();
 }
+
 #endif
 
-const hb_shaper_entry_t *
+const hb_shaper_entry_t*
 _hb_shapers_get () {
   return static_shapers.get_unconst ();
 }

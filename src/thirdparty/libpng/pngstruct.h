@@ -60,9 +60,9 @@
 #ifdef PNG_WRITE_SUPPORTED
 /* The type of a compression buffer list used by the write code. */
 typedef struct png_compression_buffer {
-  struct png_compression_buffer *next;
+  struct png_compression_buffer* next;
   png_byte output[1]; /* actually zbuf_size */
-} png_compression_buffer, *png_compression_bufferp;
+} png_compression_buffer, * png_compression_bufferp;
 
 #define PNG_COMPRESSION_BUFFER_SIZE(pp)\
    (offsetof(png_compression_buffer, output) + (pp)->zbuffer_size)
@@ -120,9 +120,9 @@ typedef struct png_colorspace {
 
   /* Flags are always defined to simplify the code. */
   png_uint_16 flags;            /* As defined below */
-} png_colorspace, *PNG_RESTRICT png_colorspacerp;
+} png_colorspace, * PNG_RESTRICT png_colorspacerp;
 
-typedef const png_colorspace *PNG_RESTRICT png_const_colorspacerp;
+typedef const png_colorspace* PNG_RESTRICT png_const_colorspacerp;
 
 /* General flags for the 'flags' field */
 #define PNG_COLORSPACE_HAVE_GAMMA           0x0001
@@ -141,7 +141,7 @@ struct png_struct_def {
 #ifdef PNG_SETJMP_SUPPORTED
   jmp_buf jmp_buf_local;     /* New name in 1.6.0 for jmp_buf in png_struct */
   png_longjmp_ptr longjmp_fn;/* setjmp non-local goto function. */
-  jmp_buf *jmp_buf_ptr;      /* passed to longjmp_fn */
+  jmp_buf* jmp_buf_ptr;      /* passed to longjmp_fn */
   size_t jmp_buf_size;       /* size of the above, if allocated */
 #endif
   png_error_ptr error_fn;    /* function for printing errors and aborting */
@@ -473,8 +473,8 @@ struct png_struct_def {
   png_bytep big_prev_row;
 
 /* New member added in libpng-1.5.7 */
-  void (*read_filter[PNG_FILTER_VALUE_LAST - 1 ]) (png_row_infop row_info,
-                                                   png_bytep row, png_const_bytep prev_row);
+  void (* read_filter[PNG_FILTER_VALUE_LAST - 1 ]) (png_row_infop row_info,
+                                                    png_bytep row, png_const_bytep prev_row);
 
 #ifdef PNG_READ_SUPPORTED
 #if defined(PNG_COLORSPACE_SUPPORTED) || defined(PNG_GAMMA_SUPPORTED)

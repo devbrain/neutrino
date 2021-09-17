@@ -61,8 +61,8 @@
  */
 static FT_Error
 tt_property_set (FT_Module module,         /* TT_Driver */
-                 const char *property_name,
-                 const void *value,
+                 const char* property_name,
+                 const void* value,
                  FT_Bool value_is_string) {
   FT_Error error = FT_Err_Ok;
   TT_Driver driver = (TT_Driver) module;
@@ -76,14 +76,14 @@ tt_property_set (FT_Module module,         /* TT_Driver */
 
 #ifdef FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
     if (value_is_string) {
-      const char *s = (const char *) value;
+      const char* s = (const char*) value;
 
       interpreter_version = (FT_UInt) ft_strtol (s, NULL, 10);
     }
     else
 #endif
     {
-      FT_UInt *iv = (FT_UInt *) value;
+      FT_UInt* iv = (FT_UInt*) value;
 
       interpreter_version = *iv;
     }
@@ -110,15 +110,15 @@ tt_property_set (FT_Module module,         /* TT_Driver */
 
 static FT_Error
 tt_property_get (FT_Module module,         /* TT_Driver */
-                 const char *property_name,
-                 const void *value) {
+                 const char* property_name,
+                 const void* value) {
   FT_Error error = FT_Err_Ok;
   TT_Driver driver = (TT_Driver) module;
 
   FT_UInt interpreter_version = driver->interpreter_version;
 
   if (!ft_strcmp (property_name, "interpreter-version")) {
-    FT_UInt *val = (FT_UInt *) value;
+    FT_UInt* val = (FT_UInt*) value;
 
     *val = interpreter_version;
 
@@ -191,7 +191,7 @@ static FT_Error
 tt_get_kerning (FT_Face ttface,          /* TT_Face */
                 FT_UInt left_glyph,
                 FT_UInt right_glyph,
-                FT_Vector *kerning) {
+                FT_Vector* kerning) {
   TT_Face face = (TT_Face) ttface;
   SFNT_Service sfnt = (SFNT_Service) face->sfnt;
 
@@ -209,7 +209,7 @@ tt_get_advances (FT_Face ttface,
                  FT_UInt start,
                  FT_UInt count,
                  FT_Int32 flags,
-                 FT_Fixed *advances) {
+                 FT_Fixed* advances) {
   FT_UInt nn;
   TT_Face face = (TT_Face) ttface;
 
@@ -287,7 +287,7 @@ tt_size_select (FT_Size size,
   }
   else {
     SFNT_Service sfnt = (SFNT_Service) ttface->sfnt;
-    FT_Size_Metrics *size_metrics = &size->metrics;
+    FT_Size_Metrics* size_metrics = &size->metrics;
 
     error = sfnt->load_strike_metrics (ttface,
                                        strike_index,
@@ -533,7 +533,7 @@ FT_DEFINE_SERVICEDESCREC4(
 
 FT_CALLBACK_DEF(FT_Module_Interface)
 tt_get_interface (FT_Module driver,    /* TT_Driver */
-                  const char *tt_interface) {
+                  const char* tt_interface) {
   FT_Library library;
   FT_Module_Interface result;
   FT_Module sfntd;

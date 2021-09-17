@@ -65,11 +65,11 @@ void usage (void) {
   puts ("usage: minibz2 [-d] [-{1,2,..9}] [[srcfilename] destfilename]");
 }
 
-int main (int argc, char *argv[]) {
+int main (int argc, char* argv[]) {
   int decompress = 0;
   int level = 9;
-  char *fn_r = NULL;
-  char *fn_w = NULL;
+  char* fn_r = NULL;
+  char* fn_w = NULL;
 
 #ifdef _WIN32
   if(BZ2DLLLoadLibrary()<0){
@@ -81,7 +81,7 @@ int main (int argc, char *argv[]) {
 #endif
   while (++argv, --argc) {
     if (**argv == '-' || **argv == '/') {
-      char *p;
+      char* p;
 
       for (p = *argv + 1; *p; p++) {
         if (*p == 'd') {
@@ -122,8 +122,8 @@ int main (int argc, char *argv[]) {
     char mode[10];
 
     if (decompress) {
-      BZFILE *BZ2fp_r = NULL;
-      FILE *fp_w = NULL;
+      BZFILE* BZ2fp_r = NULL;
+      FILE* fp_w = NULL;
 
       if (fn_w) {
         if ((fp_w = fopen (fn_w, "wb")) == NULL) {
@@ -148,8 +148,8 @@ int main (int argc, char *argv[]) {
         fclose (fp_w);
     }
     else {
-      BZFILE *BZ2fp_w = NULL;
-      FILE *fp_r = NULL;
+      BZFILE* BZ2fp_w = NULL;
+      FILE* fp_r = NULL;
 
       if (fn_r) {
         if ((fp_r = fopen (fn_r, "rb")) == NULL) {

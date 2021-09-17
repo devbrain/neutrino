@@ -35,6 +35,7 @@ struct hb_bimap_t {
     hb_bimap_t () {
       init ();
     }
+
     ~hb_bimap_t () {
       fini ();
     }
@@ -72,14 +73,16 @@ struct hb_bimap_t {
     hb_codepoint_t get (hb_codepoint_t lhs) const {
       return forw_map.get (lhs);
     }
+
     hb_codepoint_t backward (hb_codepoint_t rhs) const {
       return back_map.get (rhs);
     }
 
-    hb_codepoint_t operator[] (hb_codepoint_t lhs) const {
+    hb_codepoint_t operator [] (hb_codepoint_t lhs) const {
       return get (lhs);
     }
-    bool has (hb_codepoint_t lhs, hb_codepoint_t *vp = nullptr) const {
+
+    bool has (hb_codepoint_t lhs, hb_codepoint_t* vp = nullptr) const {
       return forw_map.has (lhs, vp);
     }
 
@@ -137,7 +140,7 @@ struct hb_inc_bimap_t : hb_bimap_t {
       return next_value;
     }
 
-    void add_set (const hb_set_t *set) {
+    void add_set (const hb_set_t* set) {
       hb_codepoint_t i = HB_SET_VALUE_INVALID;
       while (hb_set_next (set, &i))
         add (i);
@@ -152,8 +155,8 @@ struct hb_inc_bimap_t : hb_bimap_t {
     }
 
   protected:
-    static int cmp_id (const void *a, const void *b) {
-      return (int) *(const hb_codepoint_t *) a - (int) *(const hb_codepoint_t *) b;
+    static int cmp_id (const void* a, const void* b) {
+      return (int) *(const hb_codepoint_t*) a - (int) *(const hb_codepoint_t*) b;
     }
 
   public:

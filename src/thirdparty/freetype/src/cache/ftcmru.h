@@ -57,7 +57,7 @@
 
 FT_BEGIN_HEADER
 
-typedef struct FTC_MruNodeRec_ *FTC_MruNode;
+typedef struct FTC_MruNodeRec_* FTC_MruNode;
 
 typedef struct FTC_MruNodeRec_ {
   FTC_MruNode next;
@@ -66,38 +66,38 @@ typedef struct FTC_MruNodeRec_ {
 } FTC_MruNodeRec;
 
 FT_LOCAL(void)
-FTC_MruNode_Prepend (FTC_MruNode *plist,
+FTC_MruNode_Prepend (FTC_MruNode* plist,
                      FTC_MruNode node);
 
 FT_LOCAL(void)
-FTC_MruNode_Up (FTC_MruNode *plist,
+FTC_MruNode_Up (FTC_MruNode* plist,
                 FTC_MruNode node);
 
 FT_LOCAL(void)
-FTC_MruNode_Remove (FTC_MruNode *plist,
+FTC_MruNode_Remove (FTC_MruNode* plist,
                     FTC_MruNode node);
 
-typedef struct FTC_MruListRec_ *FTC_MruList;
+typedef struct FTC_MruListRec_* FTC_MruList;
 
-typedef struct FTC_MruListClassRec_ const *FTC_MruListClass;
+typedef struct FTC_MruListClassRec_ const* FTC_MruListClass;
 
 typedef FT_Bool
-(*FTC_MruNode_CompareFunc) (FTC_MruNode node,
-                            FT_Pointer key);
+(* FTC_MruNode_CompareFunc) (FTC_MruNode node,
+                             FT_Pointer key);
 
 typedef FT_Error
-(*FTC_MruNode_InitFunc) (FTC_MruNode node,
-                         FT_Pointer key,
-                         FT_Pointer data);
-
-typedef FT_Error
-(*FTC_MruNode_ResetFunc) (FTC_MruNode node,
+(* FTC_MruNode_InitFunc) (FTC_MruNode node,
                           FT_Pointer key,
                           FT_Pointer data);
 
+typedef FT_Error
+(* FTC_MruNode_ResetFunc) (FTC_MruNode node,
+                           FT_Pointer key,
+                           FT_Pointer data);
+
 typedef void
-(*FTC_MruNode_DoneFunc) (FTC_MruNode node,
-                         FT_Pointer data);
+(* FTC_MruNode_DoneFunc) (FTC_MruNode node,
+                          FT_Pointer data);
 
 typedef struct FTC_MruListClassRec_ {
   FT_Offset node_size;
@@ -135,7 +135,7 @@ FTC_MruList_Done (FTC_MruList list);
 FT_LOCAL(FT_Error)
 FTC_MruList_New (FTC_MruList list,
                  FT_Pointer key,
-                 FTC_MruNode *anode);
+                 FTC_MruNode* anode);
 
 FT_LOCAL(void)
 FTC_MruList_Remove (FTC_MruList list,

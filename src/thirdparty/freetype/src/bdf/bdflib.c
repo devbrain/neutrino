@@ -227,16 +227,16 @@ static const unsigned long
 /* Function type for parsing lines of a BDF font. */
 
 typedef FT_Error
-(*_bdf_line_func_t) (char *line,
-                     unsigned long linelen,
-                     unsigned long lineno,
-                     void *call_data,
-                     void *client_data);
+(* _bdf_line_func_t) (char* line,
+                      unsigned long linelen,
+                      unsigned long lineno,
+                      void* call_data,
+                      void* client_data);
 
 /* List structure for splitting lines into fields. */
 
 typedef struct _bdf_list_t_ {
-  char **field;
+  char** field;
   unsigned long size;
   unsigned long used;
   FT_Memory memory;
@@ -258,11 +258,11 @@ typedef struct _bdf_parse_t_ {
 
   short rbearing;
 
-  char *glyph_name;
+  char* glyph_name;
   long glyph_enc;
 
-  bdf_font_t *font;
-  bdf_options_t *opts;
+  bdf_font_t* font;
+  bdf_options_t* opts;
 
   _bdf_list_t list;
 
@@ -277,14 +277,14 @@ typedef struct _bdf_parse_t_ {
           ( m[(FT_Byte)(cc) >> 3]  & ( 1 << ( (cc) & 7 ) ) )
 
 static void
-_bdf_list_init (_bdf_list_t *list,
+_bdf_list_init (_bdf_list_t* list,
                 FT_Memory memory) {
   FT_ZERO(list);
   list->memory = memory;
 }
 
 static void
-_bdf_list_done (_bdf_list_t *list) {
+_bdf_list_done (_bdf_list_t* list) {
   FT_Memory memory = list->memory;
 
   if (memory) {
@@ -294,7 +294,7 @@ _bdf_list_done (_bdf_list_t *list) {
 }
 
 static FT_Error
-_bdf_list_ensure (_bdf_list_t *list,
+_bdf_list_ensure (_bdf_list_t* list,
                   unsigned long num_items) /* same as _bdf_list_t.used */
 {
   FT_Error error = FT_Err_Ok;
@@ -302,7 +302,7 @@ _bdf_list_ensure (_bdf_list_t *list,
   if (num_items > list->size) {
     unsigned long oldsize = list->size; /* same as _bdf_list_t.size */
     unsigned long newsize = oldsize + (oldsize >> 1) + 5;
-    unsigned long bigsize = (unsigned long) (FT_INT_MAX / sizeof (char *));
+    unsigned long bigsize = (unsigned long) (FT_INT_MAX / sizeof (char*));
     FT_Memory memory = list->memory;
 
     if (oldsize == bigsize) {
@@ -323,7 +323,7 @@ _bdf_list_ensure (_bdf_list_t *list,
 }
 
 static void
-_bdf_list_shift (_bdf_list_t *list,
+_bdf_list_shift (_bdf_list_t* list,
                  unsigned long n) {
   unsigned long i, u;
 
@@ -345,12 +345,12 @@ _bdf_list_shift (_bdf_list_t *list,
 static const char empty[] = "";      /* XXX eliminate this */
 
 
-static char *
-_bdf_list_join (_bdf_list_t *list,
+static char*
+_bdf_list_join (_bdf_list_t* list,
                 int c,
-                unsigned long *alen) {
+                unsigned long* alen) {
   unsigned long i, j;
-  char *dp;
+  char* dp;
 
   *alen = 0;
 
@@ -359,7 +359,7 @@ _bdf_list_join (_bdf_list_t *list,
 
   dp = list->field[0];
   for (i = j = 0; i < list->used; i++) {
-    char *fp = list->field[i];
+    char* fp = list->field[i];
 
     while (*fp)
       dp[j++] = *fp++;
@@ -380,14 +380,14 @@ _bdf_list_join (_bdf_list_t *list,
 /* don't have to check the number of fields in most cases.    */
 
 static FT_Error
-_bdf_list_split (_bdf_list_t *list,
-                 const char *separators,
-                 char *line,
+_bdf_list_split (_bdf_list_t* list,
+                 const char* separators,
+                 char* line,
                  unsigned long linelen) {
   unsigned long final_empty;
   int mult;
-  const char *sp, *end;
-  char *ep;
+  const char* sp, * end;
+  char* ep;
   char seps[32];
   FT_Error error = FT_Err_Ok;
 
@@ -395,11 +395,11 @@ _bdf_list_split (_bdf_list_t *list,
   /* Initialize the list. */
   list->used = 0;
   if (list->size) {
-    list->field[0] = (char *) empty;
-    list->field[1] = (char *) empty;
-    list->field[2] = (char *) empty;
-    list->field[3] = (char *) empty;
-    list->field[4] = (char *) empty;
+    list->field[0] = (char*) empty;
+    list->field[1] = (char*) empty;
+    list->field[2] = (char*) empty;
+    list->field[3] = (char*) empty;
+    list->field[4] = (char*) empty;
   }
 
   /* If the line is empty, then simply return. */
@@ -441,7 +441,7 @@ _bdf_list_split (_bdf_list_t *list,
     }
 
     /* Assign the field appropriately. */
-    list->field[list->used++] = (ep > sp) ? (char *) sp : (char *) empty;
+    list->field[list->used++] = (ep > sp) ? (char*) sp : (char*) empty;
 
     sp = ep;
 
@@ -468,7 +468,7 @@ _bdf_list_split (_bdf_list_t *list,
   }
 
   if (final_empty)
-    list->field[list->used++] = (char *) empty;
+    list->field[list->used++] = (char*) empty;
 
   list->field[list->used] = 0;
 
@@ -481,13 +481,13 @@ _bdf_list_split (_bdf_list_t *list,
 static FT_Error
 _bdf_readstream (FT_Stream stream,
                  _bdf_line_func_t callback,
-                 void *client_data,
-                 unsigned long *lno) {
+                 void* client_data,
+                 unsigned long* lno) {
   _bdf_line_func_t cb;
   unsigned long lineno, buf_size;
   int refill, hold, to_skip;
   ptrdiff_t bytes, start, end, cursor, avail;
-  char *buf = NULL;
+  char* buf = NULL;
   FT_Memory memory = stream->memory;
   FT_Error error = FT_Err_Ok;
 
@@ -515,7 +515,7 @@ _bdf_readstream (FT_Stream stream,
   for (;;) {
     if (refill) {
       bytes = (ptrdiff_t) FT_Stream_TryRead (
-          stream, (FT_Byte *) buf + cursor,
+          stream, (FT_Byte*) buf + cursor,
           buf_size - (unsigned long) cursor);
       avail = cursor + bytes;
       cursor = 0;
@@ -580,11 +580,11 @@ _bdf_readstream (FT_Stream stream,
     /* XXX: Use encoding independent value for 0x1A */
     if (buf[start] != '#' && buf[start] != 0x1A && end > start) {
       error = (*cb) (buf + start, (unsigned long) (end - start), lineno,
-                     (void *) &cb, client_data);
+                     (void*) &cb, client_data);
       /* Redo if we have encountered CHARS without properties. */
       if (error == -1)
         error = (*cb) (buf + start, (unsigned long) (end - start), lineno,
-                       (void *) &cb, client_data);
+                       (void*) &cb, client_data);
       if (error)
         break;
     }
@@ -643,7 +643,7 @@ static const unsigned char hdigits[32] =
 
 /* Routine to convert a decimal ASCII string to an unsigned long integer. */
 static unsigned long
-_bdf_atoul (const char *s) {
+_bdf_atoul (const char* s) {
   unsigned long v;
 
   if (s == 0 || *s == 0)
@@ -663,7 +663,7 @@ _bdf_atoul (const char *s) {
 
 /* Routine to convert a decimal ASCII string to a signed long integer. */
 static long
-_bdf_atol (const char *s) {
+_bdf_atol (const char* s) {
   long v, neg;
 
   if (s == 0 || *s == 0)
@@ -690,7 +690,7 @@ _bdf_atol (const char *s) {
 
 /* Routine to convert a decimal ASCII string to an unsigned short integer. */
 static unsigned short
-_bdf_atous (const char *s) {
+_bdf_atous (const char* s) {
   unsigned short v;
 
   if (s == 0 || *s == 0)
@@ -710,7 +710,7 @@ _bdf_atous (const char *s) {
 
 /* Routine to convert a decimal ASCII string to a signed short integer. */
 static short
-_bdf_atos (const char *s) {
+_bdf_atos (const char* s) {
   short v, neg;
 
   if (s == 0 || *s == 0)
@@ -737,12 +737,12 @@ _bdf_atos (const char *s) {
 
 /* Routine to compare two glyphs by encoding so they can be sorted. */
 static int
-by_encoding (const void *a,
-             const void *b) {
-  bdf_glyph_t *c1, *c2;
+by_encoding (const void* a,
+             const void* b) {
+  bdf_glyph_t* c1, * c2;
 
-  c1 = (bdf_glyph_t *) a;
-  c2 = (bdf_glyph_t *) b;
+  c1 = (bdf_glyph_t*) a;
+  c2 = (bdf_glyph_t*) b;
 
   if (c1->encoding < c2->encoding)
     return -1;
@@ -754,11 +754,11 @@ by_encoding (const void *a,
 }
 
 static FT_Error
-bdf_create_property (const char *name,
+bdf_create_property (const char* name,
                      int format,
-                     bdf_font_t *font) {
+                     bdf_font_t* font) {
   size_t n;
-  bdf_property_t *p;
+  bdf_property_t* p;
   FT_Memory memory = font->memory;
   FT_Error error = FT_Err_Ok;
 
@@ -784,7 +784,7 @@ bdf_create_property (const char *name,
   if (FT_NEW_ARRAY(p->name, n))
     goto Exit;
 
-  FT_MEM_COPY((char *) p->name, name, n);
+  FT_MEM_COPY((char*) p->name, name, n);
 
   p->format = format;
   p->builtin = 0;
@@ -802,9 +802,9 @@ bdf_create_property (const char *name,
 }
 
 FT_LOCAL_DEF(bdf_property_t*)
-bdf_get_property (char *name,
-                  bdf_font_t *font) {
-  size_t *propid;
+bdf_get_property (char* name,
+                  bdf_font_t* font) {
+  size_t* propid;
 
   if (name == 0 || *name == 0)
     return 0;
@@ -815,7 +815,7 @@ bdf_get_property (char *name,
   if (*propid >= _num_bdf_properties)
     return font->user_props + (*propid - _num_bdf_properties);
 
-  return (bdf_property_t *) _bdf_properties + *propid;
+  return (bdf_property_t*) _bdf_properties + *propid;
 }
 
 
@@ -854,10 +854,10 @@ bdf_get_property (char *name,
 #define BDF_GLYPH_HEIGHT_CHECK_  0x80000000UL
 
 static FT_Error
-_bdf_add_comment (bdf_font_t *font,
-                  char *comment,
+_bdf_add_comment (bdf_font_t* font,
+                  char* comment,
                   unsigned long len) {
-  char *cp;
+  char* cp;
   FT_Memory memory = font->memory;
   FT_Error error = FT_Err_Ok;
 
@@ -881,8 +881,8 @@ _bdf_add_comment (bdf_font_t *font,
 /* Set the spacing from the font name if it exists, or set it to the */
 /* default specified in the options.                                 */
 static FT_Error
-_bdf_set_default_spacing (bdf_font_t *font,
-                          bdf_options_t *opts,
+_bdf_set_default_spacing (bdf_font_t* font,
+                          bdf_options_t* opts,
                           unsigned long lineno) {
   size_t len;
   char name[256];
@@ -946,14 +946,14 @@ _bdf_set_default_spacing (bdf_font_t *font,
 /* Determine whether the property is an atom or not.  If it is, then */
 /* clean it up so the double quotes are removed if they exist.       */
 static int
-_bdf_is_atom (char *line,
+_bdf_is_atom (char* line,
               unsigned long linelen,
-              char **name,
-              char **value,
-              bdf_font_t *font) {
+              char** name,
+              char** value,
+              bdf_font_t* font) {
   int hold;
-  char *sp, *ep;
-  bdf_property_t *p;
+  char* sp, * ep;
+  bdf_property_t* p;
 
   *name = sp = ep = line;
 
@@ -1006,12 +1006,12 @@ _bdf_is_atom (char *line,
 }
 
 static FT_Error
-_bdf_add_property (bdf_font_t *font,
-                   const char *name,
-                   char *value,
+_bdf_add_property (bdf_font_t* font,
+                   const char* name,
+                   char* value,
                    unsigned long lineno) {
-  size_t *propid;
-  bdf_property_t *prop, *fp;
+  size_t* propid;
+  bdf_property_t* prop, * fp;
   FT_Memory memory = font->memory;
   FT_Error error = FT_Err_Ok;
 
@@ -1081,7 +1081,7 @@ _bdf_add_property (bdf_font_t *font,
   if (*propid >= _num_bdf_properties)
     prop = font->user_props + (*propid - _num_bdf_properties);
   else
-    prop = (bdf_property_t *) _bdf_properties + *propid;
+    prop = (bdf_property_t*) _bdf_properties + *propid;
 
   fp = font->props + font->props_used;
 
@@ -1157,11 +1157,11 @@ static const unsigned char nibble_mask[8] =
     };
 
 static FT_Error
-_bdf_parse_end (char *line,
+_bdf_parse_end (char* line,
                 unsigned long linelen,
                 unsigned long lineno,
-                void *call_data,
-                void *client_data) {
+                void* call_data,
+                void* client_data) {
   /* a no-op; we ignore everything after `ENDFONT' */
 
   FT_UNUSED(line);
@@ -1175,20 +1175,20 @@ _bdf_parse_end (char *line,
 
 /* Actually parse the glyph info and bitmaps. */
 static FT_Error
-_bdf_parse_glyphs (char *line,
+_bdf_parse_glyphs (char* line,
                    unsigned long linelen,
                    unsigned long lineno,
-                   void *call_data,
-                   void *client_data) {
+                   void* call_data,
+                   void* client_data) {
   int c, mask_index;
-  char *s;
-  unsigned char *bp;
+  char* s;
+  unsigned char* bp;
   unsigned long i, slen, nibbles;
 
-  _bdf_line_func_t *next;
-  _bdf_parse_t *p;
-  bdf_glyph_t *glyph;
-  bdf_font_t *font;
+  _bdf_line_func_t* next;
+  _bdf_parse_t* p;
+  bdf_glyph_t* glyph;
+  bdf_font_t* font;
 
   FT_Memory memory;
   FT_Error error = FT_Err_Ok;
@@ -1196,8 +1196,8 @@ _bdf_parse_glyphs (char *line,
   FT_UNUSED(lineno);        /* only used in debug mode */
 
 
-  next = (_bdf_line_func_t *) call_data;
-  p = (_bdf_parse_t *) client_data;
+  next = (_bdf_line_func_t*) call_data;
+  p = (_bdf_parse_t*) client_data;
 
   font = p->font;
   memory = font->memory;
@@ -1264,7 +1264,7 @@ _bdf_parse_glyphs (char *line,
     }
 
     /* Sort the glyphs by encoding. */
-    ft_qsort ((char *) font->glyphs,
+    ft_qsort ((char*) font->glyphs,
               font->glyphs_used,
               sizeof (bdf_glyph_t),
               by_encoding);
@@ -1615,23 +1615,23 @@ _bdf_parse_glyphs (char *line,
 
 /* Load the font properties. */
 static FT_Error
-_bdf_parse_properties (char *line,
+_bdf_parse_properties (char* line,
                        unsigned long linelen,
                        unsigned long lineno,
-                       void *call_data,
-                       void *client_data) {
+                       void* call_data,
+                       void* client_data) {
   unsigned long vlen;
-  _bdf_line_func_t *next;
-  _bdf_parse_t *p;
-  char *name;
-  char *value;
+  _bdf_line_func_t* next;
+  _bdf_parse_t* p;
+  char* name;
+  char* value;
   char nbuf[128];
   FT_Error error = FT_Err_Ok;
 
   FT_UNUSED(lineno);
 
-  next = (_bdf_line_func_t *) call_data;
-  p = (_bdf_parse_t *) client_data;
+  next = (_bdf_line_func_t*) call_data;
+  p = (_bdf_parse_t*) client_data;
 
   /* Check for the end of the properties. */
   if (_bdf_strncmp(line, "ENDPROPERTIES", 13) == 0) {
@@ -1709,16 +1709,16 @@ _bdf_parse_properties (char *line,
 
 /* Load the font header. */
 static FT_Error
-_bdf_parse_start (char *line,
+_bdf_parse_start (char* line,
                   unsigned long linelen,
                   unsigned long lineno,
-                  void *call_data,
-                  void *client_data) {
+                  void* call_data,
+                  void* client_data) {
   unsigned long slen;
-  _bdf_line_func_t *next;
-  _bdf_parse_t *p;
-  bdf_font_t *font;
-  char *s;
+  _bdf_line_func_t* next;
+  _bdf_parse_t* p;
+  bdf_font_t* font;
+  char* s;
 
   FT_Memory memory = NULL;
   FT_Error error = FT_Err_Ok;
@@ -1726,8 +1726,8 @@ _bdf_parse_start (char *line,
   FT_UNUSED(lineno);            /* only used in debug mode */
 
 
-  next = (_bdf_line_func_t *) call_data;
-  p = (_bdf_parse_t *) client_data;
+  next = (_bdf_line_func_t*) call_data;
+  p = (_bdf_parse_t*) client_data;
 
   if (p->font)
     memory = p->font->memory;
@@ -1775,12 +1775,12 @@ _bdf_parse_start (char *line,
 
     { /* setup */
       size_t i;
-      bdf_property_t *prop;
+      bdf_property_t* prop;
 
       error = ft_hash_str_init (&(font->proptbl), memory);
       if (error)
         goto Exit;
-      for (i = 0, prop = (bdf_property_t *) _bdf_properties;
+      for (i = 0, prop = (bdf_property_t*) _bdf_properties;
            i < _num_bdf_properties; i++, prop++) {
         error = ft_hash_str_insert (prop->name, i,
                                     &(font->proptbl), memory);
@@ -1995,10 +1995,10 @@ _bdf_parse_start (char *line,
 FT_LOCAL_DEF(FT_Error)
 bdf_load_font (FT_Stream stream,
                FT_Memory extmemory,
-               bdf_options_t *opts,
-               bdf_font_t **font) {
+               bdf_options_t* opts,
+               bdf_font_t** font) {
   unsigned long lineno = 0; /* make compiler happy */
-  _bdf_parse_t *p = NULL;
+  _bdf_parse_t* p = NULL;
 
   FT_Memory memory = extmemory; /* needed for FT_NEW */
   FT_Error error = FT_Err_Ok;
@@ -2007,7 +2007,7 @@ bdf_load_font (FT_Stream stream,
     goto Exit;
 
   memory = NULL;
-  p->opts = (bdf_options_t *) ((opts != 0) ? opts : &_bdf_opts);
+  p->opts = (bdf_options_t*) ((opts != 0) ? opts : &_bdf_opts);
   p->minlb = 32767;
   p->size = stream->size;
   p->memory = extmemory;  /* only during font creation */
@@ -2015,7 +2015,7 @@ bdf_load_font (FT_Stream stream,
   _bdf_list_init (&p->list, extmemory);
 
   error = _bdf_readstream (stream, _bdf_parse_start,
-                           (void *) p, &lineno);
+                           (void*) p, &lineno);
   if (error)
     goto Fail;
 
@@ -2130,10 +2130,10 @@ bdf_load_font (FT_Stream stream,
 }
 
 FT_LOCAL_DEF(void)
-bdf_free_font (bdf_font_t *font) {
-  bdf_property_t *prop;
+bdf_free_font (bdf_font_t* font) {
+  bdf_property_t* prop;
   unsigned long i;
-  bdf_glyph_t *glyphs;
+  bdf_glyph_t* glyphs;
   FT_Memory memory;
 
   if (font == 0)
@@ -2193,9 +2193,9 @@ bdf_free_font (bdf_font_t *font) {
 }
 
 FT_LOCAL_DEF(bdf_property_t *)
-bdf_get_font_property (bdf_font_t *font,
-                       const char *name) {
-  size_t *propid;
+bdf_get_font_property (bdf_font_t* font,
+                       const char* name) {
+  size_t* propid;
 
   if (font == 0 || font->props_size == 0 || name == 0 || *name == 0)
     return 0;

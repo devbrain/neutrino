@@ -28,12 +28,12 @@ typedef struct T42_ParserRec_ {
   PS_ParserRec root;
   FT_Stream stream;
 
-  FT_Byte *base_dict;
+  FT_Byte* base_dict;
   FT_Long base_len;
 
   FT_Bool in_memory;
 
-} T42_ParserRec, *T42_Parser;
+} T42_ParserRec, * T42_Parser;
 
 typedef struct T42_Loader_ {
   T42_ParserRec parser;          /* parser used to read the stream */
@@ -47,7 +47,7 @@ typedef struct T42_Loader_ {
   PS_TableRec charstrings;
   PS_TableRec swap_table;      /* For moving .notdef glyph to index 0. */
 
-} T42_LoaderRec, *T42_Loader;
+} T42_LoaderRec, * T42_Loader;
 
 FT_LOCAL(FT_Error)
 t42_parser_init (T42_Parser parser,
@@ -61,7 +61,7 @@ t42_parser_done (T42_Parser parser);
 FT_LOCAL(FT_Error)
 t42_parse_dict (T42_Face face,
                 T42_Loader loader,
-                FT_Byte *base,
+                FT_Byte* base,
                 FT_Long size);
 
 FT_LOCAL(void)

@@ -27,17 +27,17 @@ TEST_CASE("Test encodings") {
   auto xml_map = test::load_map (test_xml_level, test_xml_level_length);
 
   REQUIRE(!csv_map.layers ().empty ());
-  const auto *csv_tl = std::get_if<tile_layer> (&csv_map.layers ()[0]);
+  const auto* csv_tl = std::get_if<tile_layer> (&csv_map.layers ()[0]);
   REQUIRE(csv_tl);
   REQUIRE(test::test_tiles (*csv_tl, tiles));
 
   REQUIRE(!xml_map.layers ().empty ());
-  const auto *xml_tl = std::get_if<tile_layer> (&xml_map.layers ()[0]);
+  const auto* xml_tl = std::get_if<tile_layer> (&xml_map.layers ()[0]);
   REQUIRE(xml_tl);
   REQUIRE(test::test_tiles (*xml_tl, tiles));
 
   REQUIRE(!b64_map.layers ().empty ());
-  const auto *b64_tl = std::get_if<tile_layer> (&b64_map.layers ()[0]);
+  const auto* b64_tl = std::get_if<tile_layer> (&b64_map.layers ()[0]);
   REQUIRE(b64_tl);
   REQUIRE(test::test_tiles (*b64_tl, tiles));
 }

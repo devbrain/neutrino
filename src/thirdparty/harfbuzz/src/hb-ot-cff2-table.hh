@@ -50,10 +50,10 @@ namespace CFF {
   typedef FDSelect3_4_Range<HBUINT32, HBUINT16> FDSelect4_Range;
 
   struct CFF2FDSelect {
-      bool serialize (hb_serialize_context_t *c, const CFF2FDSelect &src, unsigned int num_glyphs) {
+      bool serialize (hb_serialize_context_t* c, const CFF2FDSelect& src, unsigned int num_glyphs) {
         TRACE_SERIALIZE (this);
         unsigned int size = src.get_size (num_glyphs);
-        CFF2FDSelect *dest = c->allocate_size<CFF2FDSelect> (size);
+        CFF2FDSelect* dest = c->allocate_size<CFF2FDSelect> (size);
         if (unlikely (!dest))
           return_trace (false);
         memcpy (dest, &src, size);
@@ -89,7 +89,7 @@ namespace CFF {
         }
       }
 
-      bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount) const {
+      bool sanitize (hb_sanitize_context_t* c, unsigned int fdcount) const {
         TRACE_SANITIZE (this);
         if (unlikely (!c->check_struct (this)))
           return_trace (false);
@@ -117,15 +117,15 @@ namespace CFF {
   };
 
   struct CFF2VariationStore {
-    bool sanitize (hb_sanitize_context_t *c) const {
+    bool sanitize (hb_sanitize_context_t* c) const {
       TRACE_SANITIZE (this);
       return_trace (likely (c->check_struct (this)) && c->check_range (&varStore, size) && varStore.sanitize (c));
     }
 
-    bool serialize (hb_serialize_context_t *c, const CFF2VariationStore *varStore) {
+    bool serialize (hb_serialize_context_t* c, const CFF2VariationStore* varStore) {
       TRACE_SERIALIZE (this);
       unsigned int size_ = varStore->get_size ();
-      CFF2VariationStore *dest = c->allocate_size<CFF2VariationStore> (size_);
+      CFF2VariationStore* dest = c->allocate_size<CFF2VariationStore> (size_);
       if (unlikely (!dest))
         return_trace (false);
       memcpy (dest, varStore, size_);
@@ -148,6 +148,7 @@ namespace CFF {
       vstoreOffset = 0;
       FDSelectOffset = 0;
     }
+
     void fini () {
       top_dict_values_t<>::fini ();
     }
@@ -157,7 +158,7 @@ namespace CFF {
   };
 
   struct cff2_top_dict_opset_t : top_dict_opset_t<> {
-    static void process_op (op_code_t op, num_interp_env_t &env, cff2_top_dict_values_t &dictval) {
+    static void process_op (op_code_t op, num_interp_env_t& env, cff2_top_dict_values_t& dictval) {
       switch (op) {
         case OpCode_FontMatrix: {
           dict_val_t val;
@@ -197,6 +198,7 @@ namespace CFF {
       dict_values_t<op_str_t>::init ();
       privateDictInfo.init ();
     }
+
     void fini () {
       dict_values_t<op_str_t>::fini ();
     }
@@ -205,7 +207,7 @@ namespace CFF {
   };
 
   struct cff2_font_dict_opset_t : dict_opset_t {
-      static void process_op (op_code_t op, num_interp_env_t &env, cff2_font_dict_values_t &dictval) {
+      static void process_op (op_code_t op, num_interp_env_t& env, cff2_font_dict_values_t& dictval) {
         switch (op) {
           case OpCode_Private:
             dictval.privateDictInfo.offset = env.argStack.pop_uint ();
@@ -237,12 +239,13 @@ namespace CFF {
       localSubrs = &Null (CFF2Subrs);
       ivs = 0;
     }
+
     void fini () {
       dict_values_t<VAL>::fini ();
     }
 
     unsigned int subrsOffset;
-    const CFF2Subrs *localSubrs;
+    const CFF2Subrs* localSubrs;
     unsigned int ivs;
   };
 
@@ -250,7 +253,7 @@ namespace CFF {
   typedef cff2_private_dict_values_base_t<num_dict_val_t> cff2_private_dict_values_t;
 
   struct cff2_priv_dict_interp_env_t : num_interp_env_t {
-      void init (const byte_str_t &str) {
+      void init (const byte_str_t& str) {
         num_interp_env_t::init (str);
         ivs = 0;
         seen_vsindex = false;
@@ -266,6 +269,7 @@ namespace CFF {
       unsigned int get_ivs () const {
         return ivs;
       }
+
       void set_ivs (unsigned int ivs_) {
         ivs = ivs_;
       }
@@ -276,7 +280,7 @@ namespace CFF {
   };
 
   struct cff2_private_dict_opset_t : dict_opset_t {
-    static void process_op (op_code_t op, cff2_priv_dict_interp_env_t &env, cff2_private_dict_values_t &dictval) {
+    static void process_op (op_code_t op, cff2_priv_dict_interp_env_t& env, cff2_private_dict_values_t& dictval) {
       num_dict_val_t val;
       val.init ();
 
@@ -327,7 +331,7 @@ namespace CFF {
 
   struct cff2_private_dict_opset_subset_t : dict_opset_t {
       static void
-      process_op (op_code_t op, cff2_priv_dict_interp_env_t &env, cff2_private_dict_values_subset_t &dictval) {
+      process_op (op_code_t op, cff2_priv_dict_interp_env_t& env, cff2_private_dict_values_subset_t& dictval) {
         switch (op) {
           case OpCode_BlueValues:
           case OpCode_OtherBlues:
@@ -377,7 +381,7 @@ namespace CFF {
   struct CFF2FDArray : FDArray<HBUINT32> {
     /* FDArray::serialize does not compile without this partial specialization */
     template <typename ITER, typename OP_SERIALIZER>
-    bool serialize (hb_serialize_context_t *c, ITER it, OP_SERIALIZER &opszr) {
+    bool serialize (hb_serialize_context_t* c, ITER it, OP_SERIALIZER& opszr) {
       return FDArray<HBUINT32>::serialize<cff2_font_dict_values_t, table_info_t> (c, it, opszr);
     }
   };
@@ -391,7 +395,7 @@ namespace OT {
   struct cff2 {
       static constexpr hb_tag_t tableTag = HB_OT_TAG_cff2;
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this) &&
                       likely (version.major == 2));
@@ -399,7 +403,7 @@ namespace OT {
 
       template <typename PRIVOPSET, typename PRIVDICTVAL>
       struct accelerator_templ_t {
-          void init (hb_face_t *face) {
+          void init (hb_face_t* face) {
             topDict.init ();
             fontDicts.init ();
             privateDicts.init ();
@@ -410,7 +414,7 @@ namespace OT {
             sc.init (this->blob);
             sc.start_processing ();
 
-            const OT::cff2 *cff2 = this->blob->template as<OT::cff2> ();
+            const OT::cff2* cff2 = this->blob->template as<OT::cff2> ();
 
             if (cff2 == &Null (OT::cff2)) {
               fini ();
@@ -466,7 +470,7 @@ namespace OT {
                 fini ();
                 return;
               }
-              cff2_font_dict_values_t *font;
+              cff2_font_dict_values_t* font;
               cff2_font_dict_interpreter_t font_interp;
               font_interp.env.init (fontDictStr);
               font = fontDicts.push ();
@@ -516,16 +520,16 @@ namespace OT {
           }
 
         protected:
-          hb_blob_t *blob;
+          hb_blob_t* blob;
           hb_sanitize_context_t sc;
 
         public:
           cff2_top_dict_values_t topDict;
-          const CFF2Subrs *globalSubrs;
-          const CFF2VariationStore *varStore;
-          const CFF2CharStrings *charStrings;
-          const CFF2FDArray *fdArray;
-          const CFF2FDSelect *fdSelect;
+          const CFF2Subrs* globalSubrs;
+          const CFF2VariationStore* varStore;
+          const CFF2CharStrings* charStrings;
+          const CFF2FDArray* fdArray;
+          const CFF2FDSelect* fdSelect;
           unsigned int fdCount;
 
           hb_vector_t<cff2_font_dict_values_t> fontDicts;
@@ -535,9 +539,9 @@ namespace OT {
       };
 
       struct accelerator_t : accelerator_templ_t<cff2_private_dict_opset_t, cff2_private_dict_values_t> {
-        HB_INTERNAL bool get_extents (hb_font_t *font,
+        HB_INTERNAL bool get_extents (hb_font_t* font,
                                       hb_codepoint_t glyph,
-                                      hb_glyph_extents_t *extents) const;
+                                      hb_glyph_extents_t* extents) const;
 #ifdef HB_EXPERIMENTAL_API
         HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, draw_helper_t &draw_helper) const;
 #endif
@@ -546,7 +550,7 @@ namespace OT {
       typedef accelerator_templ_t<cff2_private_dict_opset_subset_t,
                                   cff2_private_dict_values_subset_t> accelerator_subset_t;
 
-      bool subset (hb_subset_context_t *c) const {
+      bool subset (hb_subset_context_t* c) const {
         return hb_subset_cff2 (c);
       }
 

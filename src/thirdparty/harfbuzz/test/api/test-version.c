@@ -30,16 +30,15 @@
 
 
 static void
-test_version (void)
-{
+test_version (void) {
   unsigned int major, minor, micro;
-  char *s;
+  char* s;
 
   hb_version (&major, &minor, &micro);
 
-  g_assert_cmpint (major, ==, HB_VERSION_MAJOR);
-  g_assert_cmpint (minor, ==, HB_VERSION_MINOR);
-  g_assert_cmpint (micro, ==, HB_VERSION_MICRO);
+  g_assert_cmpint (major, == , HB_VERSION_MAJOR);
+  g_assert_cmpint (minor, == , HB_VERSION_MINOR);
+  g_assert_cmpint (micro, == , HB_VERSION_MICRO);
 
   s = g_strdup_printf ("%u.%u.%u", major, minor, micro);
   g_assert (0 == strcmp (HB_VERSION_STRING, s));
@@ -48,34 +47,33 @@ test_version (void)
 
   g_assert (HB_VERSION_ATLEAST (major, minor, micro));
   if (major)
-    g_assert (HB_VERSION_ATLEAST (major-1, minor, micro));
+    g_assert (HB_VERSION_ATLEAST (major - 1, minor, micro));
   if (minor)
-    g_assert (HB_VERSION_ATLEAST (major, minor-1, micro));
+    g_assert (HB_VERSION_ATLEAST (major, minor - 1, micro));
   if (micro)
-    g_assert (HB_VERSION_ATLEAST (major, minor, micro-1));
-  g_assert (!HB_VERSION_ATLEAST (major+1, minor, micro));
-  g_assert (!HB_VERSION_ATLEAST (major, minor+1, micro));
-  g_assert (!HB_VERSION_ATLEAST (major, minor, micro+1));
-  g_assert (!HB_VERSION_ATLEAST (major, minor, micro+1));
+    g_assert (HB_VERSION_ATLEAST (major, minor, micro - 1));
+  g_assert (!HB_VERSION_ATLEAST (major + 1, minor, micro));
+  g_assert (!HB_VERSION_ATLEAST (major, minor + 1, micro));
+  g_assert (!HB_VERSION_ATLEAST (major, minor, micro + 1));
+  g_assert (!HB_VERSION_ATLEAST (major, minor, micro + 1));
 
   g_assert (hb_version_atleast (major, minor, micro));
   if (major)
-    g_assert (hb_version_atleast (major-1, minor, micro));
+    g_assert (hb_version_atleast (major - 1, minor, micro));
   if (minor)
-    g_assert (hb_version_atleast (major, minor-1, micro));
+    g_assert (hb_version_atleast (major, minor - 1, micro));
   if (micro)
-    g_assert (hb_version_atleast (major, minor, micro-1));
-  g_assert (!hb_version_atleast (major+1, minor, micro));
-  g_assert (!hb_version_atleast (major, minor+1, micro));
-  g_assert (!hb_version_atleast (major, minor, micro+1));
+    g_assert (hb_version_atleast (major, minor, micro - 1));
+  g_assert (!hb_version_atleast (major + 1, minor, micro));
+  g_assert (!hb_version_atleast (major, minor + 1, micro));
+  g_assert (!hb_version_atleast (major, minor, micro + 1));
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_version);
 
-  return hb_test_run();
+  return hb_test_run ();
 }

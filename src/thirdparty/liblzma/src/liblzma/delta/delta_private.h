@@ -30,7 +30,7 @@ typedef struct {
 } lzma_delta_coder;
 
 extern lzma_ret lzma_delta_coder_init (
-    lzma_next_coder *next, const lzma_allocator *allocator,
-    const lzma_filter_info *filters);
+    lzma_next_coder* next, const lzma_allocator* allocator,
+    const lzma_filter_info* filters);
 
 #endif

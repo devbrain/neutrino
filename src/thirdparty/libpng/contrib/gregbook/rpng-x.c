@@ -118,30 +118,30 @@ static int rpng_x_display_image (void);
 static void rpng_x_cleanup (void);
 static int rpng_x_msb (ulg u32val);
 
-static char titlebar[1024], *window_name = titlebar;
-static char *appname = LONGNAME;
-static char *icon_name = PROGNAME;
-static char *res_name = RESNAME;
-static char *res_class = RESCLASS;
-static char *filename;
-static FILE *infile;
+static char titlebar[1024], * window_name = titlebar;
+static char* appname = LONGNAME;
+static char* icon_name = PROGNAME;
+static char* res_name = RESNAME;
+static char* res_class = RESCLASS;
+static char* filename;
+static FILE* infile;
 
-static char *bgstr;
+static char* bgstr;
 static uch bg_red = 0, bg_green = 0, bg_blue = 0;
 
 static double display_exponent;
 
 static ulg image_width, image_height, image_rowbytes;
 static int image_channels;
-static uch *image_data;
+static uch* image_data;
 
 /* X-specific variables */
-static char *displayname;
-static XImage *ximage;
-static Display *display;
+static char* displayname;
+static XImage* ximage;
+static Display* display;
 static int depth;
-static Visual *visual;
-static XVisualInfo *visual_list;
+static Visual* visual;
+static XVisualInfo* visual_list;
 static int RShift, GShift, BShift;
 static ulg RMask, GMask, BMask;
 static Window window;
@@ -152,6 +152,7 @@ static int have_nondefault_visual = FALSE;
 static int have_colormap = FALSE;
 static int have_window = FALSE;
 static int have_gc = FALSE;
+
 /*
 ulg numcolors=0, pixels[256];
 ush reds[256], greens[256], blues[256];
@@ -160,11 +161,11 @@ ush reds[256], greens[256], blues[256];
 
 
 
-int main (int argc, char **argv) {
+int main (int argc, char** argv) {
 #ifdef sgi
   char tmpline[80];
 #endif
-  char *p;
+  char* p;
   int rc, alen, flen;
   int error = 0;
   int have_bg = FALSE;
@@ -174,8 +175,8 @@ int main (int argc, char **argv) {
   XEvent e;
   KeySym k;
 
-  displayname = (char *) NULL;
-  filename = (char *) NULL;
+  displayname = (char*) NULL;
+  filename = (char*) NULL;
 
 
   /* First set the default value for our display-system exponent, i.e.,
@@ -429,7 +430,7 @@ int main (int argc, char **argv) {
 }
 
 static int rpng_x_create_window (void) {
-  uch *xdata;
+  uch* xdata;
   int need_colormap = FALSE;
   int screen, pad;
   ulg bg_pixel = 0L;
@@ -438,12 +439,12 @@ static int rpng_x_create_window (void) {
   XEvent e;
   XGCValues gcvalues;
   XSetWindowAttributes attr;
-  XTextProperty windowName, *pWindowName = &windowName;
-  XTextProperty iconName, *pIconName = &iconName;
+  XTextProperty windowName, * pWindowName = &windowName;
+  XTextProperty iconName, * pIconName = &iconName;
   XVisualInfo visual_info;
-  XSizeHints *size_hints;
-  XWMHints *wm_hints;
-  XClassHint *class_hints;
+  XSizeHints* size_hints;
+  XWMHints* wm_hints;
+  XClassHint* class_hints;
 
   screen = DefaultScreen (display);
   depth = DisplayPlanes (display, screen);
@@ -646,15 +647,15 @@ static int rpng_x_create_window (void) {
   ---------------------------------------------------------------------------*/
 
   if (depth == 24 || depth == 32) {
-    xdata = (uch *) malloc (4 * image_width * image_height);
+    xdata = (uch*) malloc (4 * image_width * image_height);
     pad = 32;
   }
   else if (depth == 16) {
-    xdata = (uch *) malloc (2 * image_width * image_height);
+    xdata = (uch*) malloc (2 * image_width * image_height);
     pad = 16;
   }
   else /* depth == 8 */ {
-    xdata = (uch *) malloc (image_width * image_height);
+    xdata = (uch*) malloc (image_width * image_height);
     pad = 8;
   }
 
@@ -664,7 +665,7 @@ static int rpng_x_create_window (void) {
   }
 
   ximage = XCreateImage (display, visual, depth, ZPixmap, 0,
-                         (char *) xdata, image_width, image_height, pad, 0);
+                         (char*) xdata, image_width, image_height, pad, 0);
 
   if (!ximage) {
     fprintf (stderr, PROGNAME ":  XCreateImage() failed\n");
@@ -690,8 +691,8 @@ static int rpng_x_create_window (void) {
 
 
 static int rpng_x_display_image (void) {
-  uch *src;
-  char *dest;
+  uch* src;
+  char* dest;
   uch r, g, b, a;
   ulg i, row, lastrow = 0;
   ulg pixel;
@@ -875,7 +876,7 @@ static void rpng_x_cleanup (void) {
   if (ximage) {
     if (ximage->data) {
       free (ximage->data);           /* we allocated it, so we free it */
-      ximage->data = (char *) NULL;  /*  instead of XDestroyImage() */
+      ximage->data = (char*) NULL;  /*  instead of XDestroyImage() */
     }
     XDestroyImage (ximage);
     ximage = NULL;

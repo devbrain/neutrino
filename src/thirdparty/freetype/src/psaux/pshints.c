@@ -58,7 +58,7 @@ typedef struct CF2_HintMoveRec_ {
   size_t j;          /* index of upper hint map edge   */
   CF2_Fixed moveUp;     /* adjustment to optimum position */
 
-} CF2_HintMoveRec, *CF2_HintMove;
+} CF2_HintMoveRec, * CF2_HintMove;
 
 
 /* Compute angular momentum for winding order detection.  It is called */
@@ -91,11 +91,11 @@ cf2_hint_init (CF2_Hint hint,
                CF2_Fixed scale,
                FT_Bool bottom) {
   CF2_Fixed width;
-  const CF2_StemHintRec *stemHint;
+  const CF2_StemHintRec* stemHint;
 
   FT_ZERO(hint);
 
-  stemHint = (const CF2_StemHintRec *) cf2_arrstack_getPointer (
+  stemHint = (const CF2_StemHintRec*) cf2_arrstack_getPointer (
       stemHintArray,
       indexStemHint);
 
@@ -726,7 +726,7 @@ cf2_hintmap_build (CF2_HintMap hintmap,
                    CF2_HintMask hintMask,
                    CF2_Fixed hintOrigin,
                    FT_Bool initialMap) {
-  FT_Byte *maskPtr;
+  FT_Byte* maskPtr;
 
   CF2_Font font = hintmap->font;
   CF2_HintMaskRec tempHintMask;
@@ -980,7 +980,7 @@ cf2_glyphpath_init (CF2_GlyphPath glyphpath,
                     CF2_HintMask hintMask,
                     CF2_Fixed hintOriginY,
                     const CF2_Blues blues,
-                    const FT_Vector *fractionalTranslation) {
+                    const FT_Vector* fractionalTranslation) {
   FT_ZERO(glyphpath);
 
   glyphpath->font = font;
@@ -1052,7 +1052,7 @@ cf2_glyphpath_finalize (CF2_GlyphPath glyphpath) {
 static void
 cf2_glyphpath_hintPoint (CF2_GlyphPath glyphpath,
                          CF2_HintMap hintmap,
-                         FT_Vector *ppt,
+                         FT_Vector* ppt,
                          CF2_Fixed x,
                          CF2_Fixed y) {
   FT_Vector pt;   /* hinted point in upright DS */
@@ -1083,11 +1083,11 @@ cf2_glyphpath_hintPoint (CF2_GlyphPath glyphpath,
  */
 static FT_Bool
 cf2_glyphpath_computeIntersection (CF2_GlyphPath glyphpath,
-                                   const FT_Vector *u1,
-                                   const FT_Vector *u2,
-                                   const FT_Vector *v1,
-                                   const FT_Vector *v2,
-                                   FT_Vector *intersection) {
+                                   const FT_Vector* u1,
+                                   const FT_Vector* u2,
+                                   const FT_Vector* v1,
+                                   const FT_Vector* v2,
+                                   FT_Vector* intersection) {
   /*
    * Let `u' be a zero-based vector from the first segment, `v' from the
    * second segment.
@@ -1201,13 +1201,13 @@ cf2_glyphpath_computeIntersection (CF2_GlyphPath glyphpath,
 static void
 cf2_glyphpath_pushPrevElem (CF2_GlyphPath glyphpath,
                             CF2_HintMap hintmap,
-                            FT_Vector *nextP0,
+                            FT_Vector* nextP0,
                             FT_Vector nextP1,
                             FT_Bool close) {
   CF2_CallbackParamsRec params;
 
-  FT_Vector *prevP0;
-  FT_Vector *prevP1;
+  FT_Vector* prevP0;
+  FT_Vector* prevP1;
 
   FT_Vector intersection = {0, 0};
   FT_Bool useIntersection = FALSE;
@@ -1394,8 +1394,8 @@ cf2_glyphpath_computeOffset (CF2_GlyphPath glyphpath,
                              CF2_Fixed y1,
                              CF2_Fixed x2,
                              CF2_Fixed y2,
-                             CF2_Fixed *x,
-                             CF2_Fixed *y) {
+                             CF2_Fixed* x,
+                             CF2_Fixed* y) {
   CF2_Fixed dx = SUB_INT32(x2, x1);
   CF2_Fixed dy = SUB_INT32(y2, y1);
 

@@ -34,9 +34,9 @@
  *
  * Since: 1.8.0
  **/
-hb_subset_input_t *
+hb_subset_input_t*
 hb_subset_input_create_or_fail () {
-  hb_subset_input_t *input = hb_object_create<hb_subset_input_t> ();
+  hb_subset_input_t* input = hb_object_create<hb_subset_input_t> ();
 
   if (unlikely (!input))
     return nullptr;
@@ -186,8 +186,8 @@ hb_subset_input_create_or_fail () {
  *
  * Since: 1.8.0
  **/
-hb_subset_input_t *
-hb_subset_input_reference (hb_subset_input_t *subset_input) {
+hb_subset_input_t*
+hb_subset_input_reference (hb_subset_input_t* subset_input) {
   return hb_object_reference (subset_input);
 }
 
@@ -198,7 +198,7 @@ hb_subset_input_reference (hb_subset_input_t *subset_input) {
  * Since: 1.8.0
  **/
 void
-hb_subset_input_destroy (hb_subset_input_t *subset_input) {
+hb_subset_input_destroy (hb_subset_input_t* subset_input) {
   if (!hb_object_destroy (subset_input))
     return;
 
@@ -218,8 +218,8 @@ hb_subset_input_destroy (hb_subset_input_t *subset_input) {
  *
  * Since: 1.8.0
  **/
-HB_EXTERN hb_set_t *
-hb_subset_input_unicode_set (hb_subset_input_t *subset_input) {
+HB_EXTERN hb_set_t*
+hb_subset_input_unicode_set (hb_subset_input_t* subset_input) {
   return subset_input->unicodes;
 }
 
@@ -229,61 +229,61 @@ hb_subset_input_unicode_set (hb_subset_input_t *subset_input) {
  *
  * Since: 1.8.0
  **/
-HB_EXTERN hb_set_t *
-hb_subset_input_glyph_set (hb_subset_input_t *subset_input) {
+HB_EXTERN hb_set_t*
+hb_subset_input_glyph_set (hb_subset_input_t* subset_input) {
   return subset_input->glyphs;
 }
 
-HB_EXTERN hb_set_t *
-hb_subset_input_nameid_set (hb_subset_input_t *subset_input) {
+HB_EXTERN hb_set_t*
+hb_subset_input_nameid_set (hb_subset_input_t* subset_input) {
   return subset_input->name_ids;
 }
 
-HB_EXTERN hb_set_t *
-hb_subset_input_namelangid_set (hb_subset_input_t *subset_input) {
+HB_EXTERN hb_set_t*
+hb_subset_input_namelangid_set (hb_subset_input_t* subset_input) {
   return subset_input->name_languages;
 }
 
-HB_EXTERN hb_set_t *
-hb_subset_input_layout_features_set (hb_subset_input_t *subset_input) {
+HB_EXTERN hb_set_t*
+hb_subset_input_layout_features_set (hb_subset_input_t* subset_input) {
   return subset_input->layout_features;
 }
 
 HB_EXTERN void
-hb_subset_input_set_retain_all_features (hb_subset_input_t *subset_input,
+hb_subset_input_set_retain_all_features (hb_subset_input_t* subset_input,
                                          hb_bool_t value) {
   subset_input->retain_all_layout_features = value;
 }
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_retain_all_features (hb_subset_input_t *subset_input) {
+hb_subset_input_get_retain_all_features (hb_subset_input_t* subset_input) {
   return subset_input->retain_all_layout_features;
 }
 
-HB_EXTERN hb_set_t *
-hb_subset_input_drop_tables_set (hb_subset_input_t *subset_input) {
+HB_EXTERN hb_set_t*
+hb_subset_input_drop_tables_set (hb_subset_input_t* subset_input) {
   return subset_input->drop_tables;
 }
 
 HB_EXTERN void
-hb_subset_input_set_drop_hints (hb_subset_input_t *subset_input,
+hb_subset_input_set_drop_hints (hb_subset_input_t* subset_input,
                                 hb_bool_t drop_hints) {
   subset_input->drop_hints = drop_hints;
 }
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_drop_hints (hb_subset_input_t *subset_input) {
+hb_subset_input_get_drop_hints (hb_subset_input_t* subset_input) {
   return subset_input->drop_hints;
 }
 
 HB_EXTERN void
-hb_subset_input_set_desubroutinize (hb_subset_input_t *subset_input,
+hb_subset_input_set_desubroutinize (hb_subset_input_t* subset_input,
                                     hb_bool_t desubroutinize) {
   subset_input->desubroutinize = desubroutinize;
 }
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_desubroutinize (hb_subset_input_t *subset_input) {
+hb_subset_input_get_desubroutinize (hb_subset_input_t* subset_input) {
   return subset_input->desubroutinize;
 }
 
@@ -294,7 +294,7 @@ hb_subset_input_get_desubroutinize (hb_subset_input_t *subset_input) {
  * Since: 2.4.0
  **/
 HB_EXTERN void
-hb_subset_input_set_retain_gids (hb_subset_input_t *subset_input,
+hb_subset_input_set_retain_gids (hb_subset_input_t* subset_input,
                                  hb_bool_t retain_gids) {
   subset_input->retain_gids = retain_gids;
 }
@@ -305,51 +305,51 @@ hb_subset_input_set_retain_gids (hb_subset_input_t *subset_input,
  * Since: 2.4.0
  **/
 HB_EXTERN hb_bool_t
-hb_subset_input_get_retain_gids (hb_subset_input_t *subset_input) {
+hb_subset_input_get_retain_gids (hb_subset_input_t* subset_input) {
   return subset_input->retain_gids;
 }
 
 HB_EXTERN void
-hb_subset_input_set_name_legacy (hb_subset_input_t *subset_input,
+hb_subset_input_set_name_legacy (hb_subset_input_t* subset_input,
                                  hb_bool_t name_legacy) {
   subset_input->name_legacy = name_legacy;
 }
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_name_legacy (hb_subset_input_t *subset_input) {
+hb_subset_input_get_name_legacy (hb_subset_input_t* subset_input) {
   return subset_input->name_legacy;
 }
 
 HB_EXTERN void
-hb_subset_input_set_overlaps_flag (hb_subset_input_t *subset_input,
+hb_subset_input_set_overlaps_flag (hb_subset_input_t* subset_input,
                                    hb_bool_t overlaps_flag) {
   subset_input->overlaps_flag = overlaps_flag;
 }
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_overlaps_flag (hb_subset_input_t *subset_input) {
+hb_subset_input_get_overlaps_flag (hb_subset_input_t* subset_input) {
   return subset_input->overlaps_flag;
 }
 
 HB_EXTERN void
-hb_subset_input_set_notdef_outline (hb_subset_input_t *subset_input,
+hb_subset_input_set_notdef_outline (hb_subset_input_t* subset_input,
                                     hb_bool_t notdef_outline) {
   subset_input->notdef_outline = notdef_outline;
 }
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_notdef_outline (hb_subset_input_t *subset_input) {
+hb_subset_input_get_notdef_outline (hb_subset_input_t* subset_input) {
   return subset_input->notdef_outline;
 }
 
 HB_EXTERN void
-hb_subset_input_set_no_prune_unicode_ranges (hb_subset_input_t *subset_input,
+hb_subset_input_set_no_prune_unicode_ranges (hb_subset_input_t* subset_input,
                                              hb_bool_t no_prune_unicode_ranges) {
   subset_input->no_prune_unicode_ranges = no_prune_unicode_ranges;
 }
 
 HB_EXTERN hb_bool_t
-hb_subset_input_get_no_prune_unicode_ranges (hb_subset_input_t *subset_input) {
+hb_subset_input_get_no_prune_unicode_ranges (hb_subset_input_t* subset_input) {
   return subset_input->no_prune_unicode_ranges;
 }
 

@@ -21,7 +21,7 @@ typedef struct {
   /// Encoding options; we also write Unpadded Size, Compressed Size,
   /// and Uncompressed Size back to this structure when the encoding
   /// has been finished.
-  lzma_block *block;
+  lzma_block* block;
 
   enum {
     SEQ_CODE,
@@ -43,11 +43,11 @@ typedef struct {
 } lzma_block_coder;
 
 static lzma_ret
-block_encode (void *coder_ptr, const lzma_allocator *allocator,
-              const uint8_t *restrict in, size_t *restrict in_pos,
-              size_t in_size, uint8_t *restrict out,
-              size_t *restrict out_pos, size_t out_size, lzma_action action) {
-  lzma_block_coder *coder = coder_ptr;
+block_encode (void* coder_ptr, const lzma_allocator* allocator,
+              const uint8_t* restrict in, size_t* restrict in_pos,
+              size_t in_size, uint8_t* restrict out,
+              size_t* restrict out_pos, size_t out_size, lzma_action action) {
+  lzma_block_coder* coder = coder_ptr;
 
   // Check that our amount of input stays in proper limits.
   if (LZMA_VLI_MAX - coder->uncompressed_size < in_size - *in_pos)
@@ -132,18 +132,18 @@ block_encode (void *coder_ptr, const lzma_allocator *allocator,
 }
 
 static void
-block_encoder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_block_coder *coder = coder_ptr;
+block_encoder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_block_coder* coder = coder_ptr;
   lzma_next_end (&coder->next, allocator);
   lzma_free (coder, allocator);
   return;
 }
 
 static lzma_ret
-block_encoder_update (void *coder_ptr, const lzma_allocator *allocator,
-                      const lzma_filter *filters lzma_attribute((__unused__)),
-                      const lzma_filter *reversed_filters) {
-  lzma_block_coder *coder = coder_ptr;
+block_encoder_update (void* coder_ptr, const lzma_allocator* allocator,
+                      const lzma_filter* filters lzma_attribute((__unused__)),
+                      const lzma_filter* reversed_filters) {
+  lzma_block_coder* coder = coder_ptr;
 
   if (coder->sequence != SEQ_CODE)
     return LZMA_PROG_ERROR;
@@ -153,8 +153,8 @@ block_encoder_update (void *coder_ptr, const lzma_allocator *allocator,
 }
 
 extern lzma_ret
-lzma_block_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                         lzma_block *block) {
+lzma_block_encoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                         lzma_block* block) {
   lzma_next_coder_init(&lzma_block_encoder_init, next, allocator);
 
   if (block == NULL)
@@ -174,7 +174,7 @@ lzma_block_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
     return LZMA_UNSUPPORTED_CHECK;
 
   // Allocate and initialize *next->coder if needed.
-  lzma_block_coder *coder = next->coder;
+  lzma_block_coder* coder = next->coder;
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_block_coder), allocator);
     if (coder == NULL)
@@ -202,7 +202,7 @@ lzma_block_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern LZMA_API(lzma_ret)
-lzma_block_encoder (lzma_stream *strm, lzma_block *block) {
+lzma_block_encoder (lzma_stream* strm, lzma_block* block) {
   lzma_next_strm_init(lzma_block_encoder_init, strm, block);
 
   strm->internal->supported_actions[LZMA_RUN] = true;

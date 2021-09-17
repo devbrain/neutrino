@@ -27,4 +27,4 @@ typedef struct {
 
 /// Set *easy to the settings given by the preset. Returns true on error,
 /// false on success.
-extern bool lzma_easy_preset (lzma_options_easy *easy, uint32_t preset);
+extern bool lzma_easy_preset (lzma_options_easy* easy, uint32_t preset);

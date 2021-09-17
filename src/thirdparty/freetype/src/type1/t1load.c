@@ -178,7 +178,7 @@ t1_allocate_blend (T1_Face face,
 
 FT_LOCAL_DEF(FT_Error)
 T1_Get_Multi_Master (T1_Face face,
-                     FT_Multi_Master *master) {
+                     FT_Multi_Master* master) {
   PS_Blend blend = face->blend;
   FT_UInt n;
   FT_Error error;
@@ -190,7 +190,7 @@ T1_Get_Multi_Master (T1_Face face,
     master->num_designs = blend->num_designs;
 
     for (n = 0; n < blend->num_axis; n++) {
-      FT_MM_Axis *axis = master->axis + n;
+      FT_MM_Axis* axis = master->axis + n;
       PS_DesignMap map = blend->design_map + n;
 
       axis->name = blend->axis_names[n];
@@ -235,8 +235,8 @@ mm_axis_unmap (PS_DesignMap axismap,
    * normalized axis coordinates which gave rise to those weights.
    */
 static void
-mm_weights_unmap (FT_Fixed *weights,
-                  FT_Fixed *axiscoords,
+mm_weights_unmap (FT_Fixed* weights,
+                  FT_Fixed* axiscoords,
                   FT_UInt axis_count) {
   FT_ASSERT(axis_count <= T1_MAX_MM_AXIS);
 
@@ -274,15 +274,15 @@ mm_weights_unmap (FT_Fixed *weights,
    */
 FT_LOCAL_DEF(FT_Error)
 T1_Get_MM_Var (T1_Face face,
-               FT_MM_Var **master) {
+               FT_MM_Var** master) {
   FT_Memory memory = face->root.memory;
-  FT_MM_Var *mmvar = NULL;
+  FT_MM_Var* mmvar = NULL;
   FT_Multi_Master mmaster;
   FT_Error error;
   FT_UInt i;
   FT_Fixed axiscoords[T1_MAX_MM_AXIS];
   PS_Blend blend = face->blend;
-  FT_UShort *axis_flags;
+  FT_UShort* axis_flags;
 
   FT_Offset mmvar_size;
   FT_Offset axis_flags_size;
@@ -318,11 +318,11 @@ T1_Get_MM_Var (T1_Face face,
   /* while axis flags are meaningless here, we have to provide the array */
   /* to make `FT_Get_Var_Axis_Flags' work: the function expects that the */
   /* values directly follow the data of `FT_MM_Var'                      */
-  axis_flags = (FT_UShort *) ((char *) mmvar + mmvar_size);
+  axis_flags = (FT_UShort*) ((char*) mmvar + mmvar_size);
   for (i = 0; i < mmaster.num_axis; i++)
     axis_flags[i] = 0;
 
-  mmvar->axis = (FT_Var_Axis *) ((char *) axis_flags + axis_flags_size);
+  mmvar->axis = (FT_Var_Axis*) ((char*) axis_flags + axis_flags_size);
   mmvar->namedstyle = NULL;
 
   for (i = 0; i < mmaster.num_axis; i++) {
@@ -360,7 +360,7 @@ T1_Get_MM_Var (T1_Face face,
 static FT_Error
 t1_set_mm_blend (T1_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords) {
+                 FT_Fixed* coords) {
   PS_Blend blend = face->blend;
   FT_UInt n, m;
 
@@ -412,7 +412,7 @@ t1_set_mm_blend (T1_Face face,
 FT_LOCAL_DEF(FT_Error)
 T1_Set_MM_Blend (T1_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords) {
+                 FT_Fixed* coords) {
   FT_Error error;
 
   error = t1_set_mm_blend (face, num_coords, coords);
@@ -430,7 +430,7 @@ T1_Set_MM_Blend (T1_Face face,
 FT_LOCAL_DEF(FT_Error)
 T1_Get_MM_Blend (T1_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords) {
+                 FT_Fixed* coords) {
   PS_Blend blend = face->blend;
 
   FT_Fixed axiscoords[4];
@@ -461,7 +461,7 @@ T1_Get_MM_Blend (T1_Face face,
 FT_LOCAL_DEF(FT_Error)
 T1_Set_MM_WeightVector (T1_Face face,
                         FT_UInt len,
-                        FT_Fixed *weightvector) {
+                        FT_Fixed* weightvector) {
   PS_Blend blend = face->blend;
   FT_UInt i, n;
 
@@ -495,8 +495,8 @@ T1_Set_MM_WeightVector (T1_Face face,
 
 FT_LOCAL_DEF(FT_Error)
 T1_Get_MM_WeightVector (T1_Face face,
-                        FT_UInt *len,
-                        FT_Fixed *weightvector) {
+                        FT_UInt* len,
+                        FT_Fixed* weightvector) {
   PS_Blend blend = face->blend;
   FT_UInt i;
 
@@ -521,7 +521,7 @@ T1_Get_MM_WeightVector (T1_Face face,
 FT_LOCAL_DEF(FT_Error)
 T1_Set_MM_Design (T1_Face face,
                   FT_UInt num_coords,
-                  FT_Long *coords) {
+                  FT_Long* coords) {
   FT_Error error;
   PS_Blend blend = face->blend;
   FT_UInt n, p;
@@ -539,8 +539,8 @@ T1_Set_MM_Design (T1_Face face,
     FT_Long design;
     FT_Fixed the_blend;
     PS_DesignMap map = blend->design_map + n;
-    FT_Long *designs = map->design_points;
-    FT_Fixed *blends = map->blend_points;
+    FT_Long* designs = map->design_points;
+    FT_Fixed* blends = map->blend_points;
     FT_Int before = -1, after = -1;
 
 
@@ -616,7 +616,7 @@ T1_Reset_MM_Blend (T1_Face face,
 FT_LOCAL_DEF(FT_Error)
 T1_Set_Var_Design (T1_Face face,
                    FT_UInt num_coords,
-                   FT_Fixed *coords) {
+                   FT_Fixed* coords) {
   FT_Long lcoords[T1_MAX_MM_AXIS];
   FT_UInt i;
 
@@ -632,7 +632,7 @@ T1_Set_Var_Design (T1_Face face,
 FT_LOCAL_DEF(FT_Error)
 T1_Get_Var_Design (T1_Face face,
                    FT_UInt num_coords,
-                   FT_Fixed *coords) {
+                   FT_Fixed* coords) {
   PS_Blend blend = face->blend;
 
   FT_Fixed axiscoords[4];
@@ -745,7 +745,7 @@ parse_blend_axis_types (T1_Face face,
   /* each token is an immediate containing the name of the axis */
   for (n = 0; n < num_axis; n++) {
     T1_Token token = axis_tokens + n;
-    FT_Byte *name;
+    FT_Byte* name;
     FT_UInt len;
 
 
@@ -761,7 +761,7 @@ parse_blend_axis_types (T1_Face face,
 
     FT_TRACE4((" /%.*s", len, token->start));
 
-    name = (FT_Byte *) blend->axis_names[n];
+    name = (FT_Byte*) blend->axis_names[n];
     if (name) {
       FT_TRACE0(("parse_blend_axis_types:"
                  " overwriting axis name `%s' with `%.*s'\n",
@@ -772,7 +772,7 @@ parse_blend_axis_types (T1_Face face,
     if (FT_ALLOC(blend->axis_names[n], len + 1))
       goto Exit;
 
-    name = (FT_Byte *) blend->axis_names[n];
+    name = (FT_Byte*) blend->axis_names[n];
     FT_MEM_COPY(name, token->start, len);
     name[len] = '\0';
   }
@@ -811,8 +811,8 @@ parse_blend_design_positions (T1_Face face,
   }
 
   {
-    FT_Byte *old_cursor = parser->root.cursor;
-    FT_Byte *old_limit = parser->root.limit;
+    FT_Byte* old_cursor = parser->root.cursor;
+    FT_Byte* old_limit = parser->root.limit;
     FT_Int n;
 
     blend = face->blend;
@@ -886,8 +886,8 @@ parse_blend_design_map (T1_Face face,
   PS_Blend blend;
   T1_TokenRec axis_tokens[T1_MAX_MM_AXIS];
   FT_Int n, num_axis;
-  FT_Byte *old_cursor;
-  FT_Byte *old_limit;
+  FT_Byte* old_cursor;
+  FT_Byte* old_limit;
   FT_Memory memory = face->root.memory;
 
   T1_ToTokenArray(parser, axis_tokens,
@@ -986,8 +986,8 @@ parse_weight_vector (T1_Face face,
   PS_Blend blend = face->blend;
   T1_Token token;
   FT_Int n;
-  FT_Byte *old_cursor;
-  FT_Byte *old_limit;
+  FT_Byte* old_cursor;
+  FT_Byte* old_limit;
 
   T1_ToTokenArray(parser, design_tokens,
                   T1_MAX_MM_DESIGNS, &num_designs);
@@ -1086,8 +1086,8 @@ t1_load_keyword (T1_Face face,
                  T1_Loader loader,
                  const T1_Field field) {
   FT_Error error;
-  void *dummy_object;
-  void **objects;
+  void* dummy_object;
+  void** objects;
   FT_UInt max_objects;
   PS_Blend blend = face->blend;
 
@@ -1112,7 +1112,7 @@ t1_load_keyword (T1_Face face,
       max_objects = 0;
 
       if (blend) {
-        objects = (void **) blend->font_infos;
+        objects = (void**) blend->font_infos;
         max_objects = blend->num_designs;
       }
       break;
@@ -1129,7 +1129,7 @@ t1_load_keyword (T1_Face face,
       max_objects = 0;
 
       if (blend) {
-        objects = (void **) blend->privates;
+        objects = (void**) blend->privates;
         max_objects = blend->num_designs;
       }
       break;
@@ -1140,7 +1140,7 @@ t1_load_keyword (T1_Face face,
       max_objects = 0;
 
       if (blend) {
-        objects = (void **) blend->bboxes;
+        objects = (void**) blend->bboxes;
         max_objects = blend->num_designs;
       }
       break;
@@ -1210,11 +1210,11 @@ parse_private (T1_Face face,
 
 static int
 read_binary_data (T1_Parser parser,
-                  FT_ULong *size,
-                  FT_Byte **base,
+                  FT_ULong* size,
+                  FT_Byte** base,
                   FT_Bool incremental) {
-  FT_Byte *cur;
-  FT_Byte *limit = parser->root.limit;
+  FT_Byte* cur;
+  FT_Byte* limit = parser->root.limit;
 
 
   /* the binary data has one of the following formats */
@@ -1259,8 +1259,8 @@ static void
 t1_parse_font_matrix (T1_Face face,
                       T1_Loader loader) {
   T1_Parser parser = &loader->parser;
-  FT_Matrix *matrix = &face->type1.font_matrix;
-  FT_Vector *offset = &face->type1.font_offset;
+  FT_Matrix* matrix = &face->type1.font_matrix;
+  FT_Vector* offset = &face->type1.font_offset;
   FT_Face root = (FT_Face) &face->root;
   FT_Fixed temp[6];
   FT_Fixed temp_scale;
@@ -1323,8 +1323,8 @@ static void
 parse_encoding (T1_Face face,
                 T1_Loader loader) {
   T1_Parser parser = &loader->parser;
-  FT_Byte *cur;
-  FT_Byte *limit = parser->root.limit;
+  FT_Byte* cur;
+  FT_Byte* limit = parser->root.limit;
 
   PSAux_Service psaux = (PSAux_Service) face->psaux;
 
@@ -1512,19 +1512,19 @@ parse_encoding (T1_Face face,
     /* `ExpertEncoding', or `ISOLatin1Encoding'             */
   else {
     if (cur + 17 < limit &&
-        ft_strncmp ((const char *) cur, "StandardEncoding", 16) == 0) {
+        ft_strncmp ((const char*) cur, "StandardEncoding", 16) == 0) {
       face->type1.encoding_type = T1_ENCODING_TYPE_STANDARD;
       FT_TRACE4((" StandardEncoding\n"));
     }
 
     else if (cur + 15 < limit &&
-             ft_strncmp ((const char *) cur, "ExpertEncoding", 14) == 0) {
+             ft_strncmp ((const char*) cur, "ExpertEncoding", 14) == 0) {
       face->type1.encoding_type = T1_ENCODING_TYPE_EXPERT;
       FT_TRACE4((" ExpertEncoding\n"));
     }
 
     else if (cur + 18 < limit &&
-             ft_strncmp ((const char *) cur, "ISOLatin1Encoding", 17) == 0) {
+             ft_strncmp ((const char*) cur, "ISOLatin1Encoding", 17) == 0) {
       face->type1.encoding_type = T1_ENCODING_TYPE_ISOLATIN1;
       FT_TRACE4((" ISOLatin1Encoding\n"));
     }
@@ -1622,13 +1622,13 @@ parse_subrs (T1_Face face,
   for (count = 0;; count++) {
     FT_Long idx;
     FT_ULong size;
-    FT_Byte *base;
+    FT_Byte* base;
 
 
     /* If we are out of data, or if the next token isn't `dup', */
     /* we are done.                                             */
     if (parser->root.cursor + 4 >= parser->root.limit ||
-        ft_strncmp ((char *) parser->root.cursor, "dup", 3) != 0)
+        ft_strncmp ((char*) parser->root.cursor, "dup", 3) != 0)
       break;
 
     T1_Skip_PS_Token(parser);       /* `dup' */
@@ -1648,7 +1648,7 @@ parse_subrs (T1_Face face,
     T1_Skip_Spaces  (parser);
 
     if (parser->root.cursor + 4 < parser->root.limit &&
-        ft_strncmp ((char *) parser->root.cursor, "put", 3) == 0) {
+        ft_strncmp ((char*) parser->root.cursor, "put", 3) == 0) {
       T1_Skip_PS_Token(parser); /* skip `put' */
       T1_Skip_Spaces  (parser);
     }
@@ -1670,7 +1670,7 @@ parse_subrs (T1_Face face,
     /* thanks to Tom Kacvinsky for pointing this out           */
     /*                                                         */
     if (face->type1.private_dict.lenIV >= 0) {
-      FT_Byte *temp = NULL;
+      FT_Byte* temp = NULL;
 
 
       /* some fonts define empty subr records -- this is not totally */
@@ -1729,8 +1729,8 @@ parse_charstrings (T1_Face face,
 
   PSAux_Service psaux = (PSAux_Service) face->psaux;
 
-  FT_Byte *cur = parser->root.cursor;
-  FT_Byte *limit = parser->root.limit;
+  FT_Byte* cur = parser->root.cursor;
+  FT_Byte* limit = parser->root.limit;
   FT_Int n, num_glyphs;
   FT_Int notdef_index = 0;
   FT_Byte notdef_found = 0;
@@ -1784,7 +1784,7 @@ parse_charstrings (T1_Face face,
 
   for (;;) {
     FT_ULong size;
-    FT_Byte *base;
+    FT_Byte* base;
 
 
     /* the format is simple:        */
@@ -1859,14 +1859,14 @@ parse_charstrings (T1_Face face,
       /* record index of /.notdef */
       if (*cur == '.' &&
           ft_strcmp (".notdef",
-                     (const char *) (name_table->elements[n])) == 0) {
+                     (const char*) (name_table->elements[n])) == 0) {
         notdef_index = n;
         notdef_found = 1;
       }
 
       if (face->type1.private_dict.lenIV >= 0 &&
           n < num_glyphs + TABLE_EXTEND) {
-        FT_Byte *temp = NULL;
+        FT_Byte* temp = NULL;
 
         if (size <= (FT_ULong) face->type1.private_dict.lenIV) {
           error = FT_THROW(Invalid_File_Format);
@@ -1901,7 +1901,7 @@ parse_charstrings (T1_Face face,
 
   /* if /.notdef is found but does not occupy index 0, do our magic. */
   if (notdef_found &&
-      ft_strcmp (".notdef", (const char *) name_table->elements[0])) {
+      ft_strcmp (".notdef", (const char*) name_table->elements[0])) {
     /* Swap glyph in index 0 with /.notdef glyph.  First, add index 0  */
     /* name and code entries to swap_table.  Then place notdef_index   */
     /* name and code entries into swap_table.  Then swap name and code */
@@ -2067,10 +2067,10 @@ const T1_FieldRec t1_keywords[] =
 static FT_Error
 parse_dict (T1_Face face,
             T1_Loader loader,
-            FT_Byte *base,
+            FT_Byte* base,
             FT_ULong size) {
   T1_Parser parser = &loader->parser;
-  FT_Byte *limit, *start_binary = NULL;
+  FT_Byte* limit, * start_binary = NULL;
   FT_Bool have_integer = 0;
 
   parser->root.cursor = base;
@@ -2082,7 +2082,7 @@ parse_dict (T1_Face face,
   T1_Skip_Spaces(parser);
 
   while (parser->root.cursor < limit) {
-    FT_Byte *cur;
+    FT_Byte* cur;
 
     cur = parser->root.cursor;
 
@@ -2118,7 +2118,7 @@ parse_dict (T1_Face face,
     else if (*cur == 'R' && cur + 6 < limit && *(cur + 1) == 'D' &&
              have_integer) {
       FT_ULong s;
-      FT_Byte *b;
+      FT_Byte* b;
 
       parser->root.cursor = start_binary;
       if (!read_binary_data (parser, &s, &b, IS_INCREMENTAL))
@@ -2129,7 +2129,7 @@ parse_dict (T1_Face face,
     else if (*cur == '-' && cur + 6 < limit && *(cur + 1) == '|' &&
              have_integer) {
       FT_ULong s;
-      FT_Byte *b;
+      FT_Byte* b;
 
       parser->root.cursor = start_binary;
       if (!read_binary_data (parser, &s, &b, IS_INCREMENTAL))
@@ -2155,14 +2155,14 @@ parse_dict (T1_Face face,
         T1_Field keyword = (T1_Field) t1_keywords;
 
         for (;;) {
-          FT_Byte *name;
+          FT_Byte* name;
 
-          name = (FT_Byte *) keyword->ident;
+          name = (FT_Byte*) keyword->ident;
           if (!name)
             break;
 
           if (cur[0] == name[0] &&
-              len == ft_strlen ((const char *) name) &&
+              len == ft_strlen ((const char*) name) &&
               ft_memcmp (cur, name, len) == 0) {
             /* We found it -- run the parsing callback!     */
             /* We record every instance of every field      */
@@ -2205,7 +2205,7 @@ parse_dict (T1_Face face,
 
             if (!(loader->keywords_encountered &
                   T1_FONTDIR_AFTER_PRIVATE) ||
-                ft_strcmp ((const char *) name, "CharStrings") == 0) {
+                ft_strcmp ((const char*) name, "CharStrings") == 0) {
               parser->root.error = t1_load_keyword (face,
                                                     loader,
                                                     keyword);
@@ -2404,7 +2404,7 @@ T1_Open_Face (T1_Face face) {
   /* we copy the glyph names `block' and `elements' fields; */
   /* the `lengths' field must be released later             */
   type1->glyph_names_block = loader.glyph_names.block;
-  type1->glyph_names = (FT_String **) loader.glyph_names.elements;
+  type1->glyph_names = (FT_String**) loader.glyph_names.elements;
   loader.glyph_names.block = NULL;
   loader.glyph_names.elements = NULL;
 
@@ -2423,15 +2423,15 @@ T1_Open_Face (T1_Face face) {
 
     charcode = 0;
     for (; charcode < loader.encoding_table.max_elems; charcode++) {
-      const FT_String *char_name =
-          (const FT_String *) loader.encoding_table.elements[charcode];
+      const FT_String* char_name =
+          (const FT_String*) loader.encoding_table.elements[charcode];
 
       type1->encoding.char_index[charcode] = 0;
       type1->encoding.char_name[charcode] = ".notdef";
 
       if (char_name)
         for (idx = 0; idx < type1->num_glyphs; idx++) {
-          const FT_String *glyph_name = type1->glyph_names[idx];
+          const FT_String* glyph_name = type1->glyph_names[idx];
 
           if (ft_strcmp (char_name, glyph_name) == 0) {
             type1->encoding.char_index[charcode] = (FT_UShort) idx;

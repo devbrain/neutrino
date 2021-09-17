@@ -27,16 +27,16 @@ typedef struct {
 
   /// Calculates memory usage of the encoder. If the options are
   /// invalid, UINT64_MAX is returned.
-  uint64_t (*memusage) (const void *options);
+  uint64_t (* memusage) (const void* options);
 
   /// Decodes Filter Properties.
   ///
   /// \return     - LZMA_OK: Properties decoded successfully.
   ///             - LZMA_OPTIONS_ERROR: Unsupported properties
   ///             - LZMA_MEM_ERROR: Memory allocation failed.
-  lzma_ret (*props_decode) (
-      void **options, const lzma_allocator *allocator,
-      const uint8_t *props, size_t props_size);
+  lzma_ret (* props_decode) (
+      void** options, const lzma_allocator* allocator,
+      const uint8_t* props, size_t props_size);
 
 } lzma_filter_decoder;
 
@@ -115,7 +115,7 @@ static const lzma_filter_decoder decoders[] = {
 #endif
 };
 
-static const lzma_filter_decoder *
+static const lzma_filter_decoder*
 decoder_find (lzma_vli id) {
   for (size_t i = 0; i < ARRAY_SIZE(decoders); ++i)
     if (decoders[i].id == id)
@@ -130,14 +130,14 @@ lzma_filter_decoder_is_supported (lzma_vli id) {
 }
 
 extern lzma_ret
-lzma_raw_decoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                       const lzma_filter *options) {
+lzma_raw_decoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                       const lzma_filter* options) {
   return lzma_raw_coder_init (next, allocator,
                               options, (lzma_filter_find) (&decoder_find), false);
 }
 
 extern LZMA_API(lzma_ret)
-lzma_raw_decoder (lzma_stream *strm, const lzma_filter *options) {
+lzma_raw_decoder (lzma_stream* strm, const lzma_filter* options) {
   lzma_next_strm_init(lzma_raw_decoder_init, strm, options);
 
   strm->internal->supported_actions[LZMA_RUN] = true;
@@ -147,18 +147,18 @@ lzma_raw_decoder (lzma_stream *strm, const lzma_filter *options) {
 }
 
 extern LZMA_API(uint64_t)
-lzma_raw_decoder_memusage (const lzma_filter *filters) {
+lzma_raw_decoder_memusage (const lzma_filter* filters) {
   return lzma_raw_coder_memusage (
       (lzma_filter_find) (&decoder_find), filters);
 }
 
 extern LZMA_API(lzma_ret)
-lzma_properties_decode (lzma_filter *filter, const lzma_allocator *allocator,
-                        const uint8_t *props, size_t props_size) {
+lzma_properties_decode (lzma_filter* filter, const lzma_allocator* allocator,
+                        const uint8_t* props, size_t props_size) {
   // Make it always NULL so that the caller can always safely free() it.
   filter->options = NULL;
 
-  const lzma_filter_decoder *const fd = decoder_find (filter->id);
+  const lzma_filter_decoder* const fd = decoder_find (filter->id);
   if (fd == NULL)
     return LZMA_OPTIONS_ERROR;
 

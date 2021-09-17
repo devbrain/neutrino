@@ -44,10 +44,10 @@ namespace neutrino::hal {
       };
     public:
       renderer () = default;
-      renderer (const window &w, flags f);
+      renderer (const window& w, flags f);
 
-      explicit renderer (const window &w);
-      explicit renderer (const surface &s);
+      explicit renderer (const window& w);
+      explicit renderer (const surface& s);
 
       operator bool () const;
 
@@ -55,10 +55,10 @@ namespace neutrino::hal {
       void blend (blend_mode bm);
 
       [[nodiscard]] color active_color () const;
-      void active_color (const color &c);
+      void active_color (const color& c);
 
       [[nodiscard]] math::rect clip () const;
-      void clip (const math::rect &area);
+      void clip (const math::rect& area);
       void disable_clippping ();
       [[nodiscard]] bool clipping_enabled () const;
 
@@ -72,7 +72,7 @@ namespace neutrino::hal {
       void scaling (float x, float y);
 
       [[nodiscard]] math::rect viewport () const;
-      void viewport (const math::rect &area);
+      void viewport (const math::rect& area);
       void disable_viewport ();
 
       /**
@@ -83,74 +83,76 @@ namespace neutrino::hal {
        *  of bytes per pixel, but it might contain additional padding
        *  (for example, 24bit RGB Windows Bitmap data pads all rows to multiples of 4 bytes).
        */
-      void read_pixels (const pixel_format &fmt, void *dst, std::size_t pitch) const;
-      void read_pixels (const math::rect &area, const pixel_format &fmt, void *dst, std::size_t pitch) const;
+      void read_pixels (const pixel_format& fmt, void* dst, std::size_t pitch) const;
+      void read_pixels (const math::rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const;
 
       std::optional<texture> target () const;
-      void target (texture &t);
+      void target (texture& t);
       void restore_default_target ();
 
       std::pair<unsigned, unsigned> output_size () const;
 
       void clear ();
 
-      void copy (const texture &t, flip flip_ = flip::NONE);
-      void copy (const texture &t, const math::rect &srcrect, flip flip_ = flip::NONE);
-      void copy (const texture &t, const math::rect &srcrect, const math::rect &dstrect, flip flip_ = flip::NONE);
+      void copy (const texture& t, flip flip_ = flip::NONE);
+      void copy (const texture& t, const math::rect& srcrect, flip flip_ = flip::NONE);
+      void copy (const texture& t, const math::rect& srcrect, const math::rect& dstrect, flip flip_ = flip::NONE);
       void
-      copy (const texture &t, const math::rect &srcrect, const math::rect &dstrect, double angle, flip flip_ = flip::NONE);
+      copy (const texture& t, const math::rect& srcrect, const math::rect& dstrect, double angle,
+            flip flip_ = flip::NONE);
       void
-      copy (const texture &t, const math::rect &srcrect, const math::rect &dstrect, double angle, const math::point2d &pt, flip flip_);
+      copy (const texture& t, const math::rect& srcrect, const math::rect& dstrect, double angle,
+            const math::point2d& pt, flip flip_);
 
       void point (int x, int y);
-      void point (const math::point2d &p);
+      void point (const math::point2d& p);
 
       void line (int x1, int y1, int x2, int y2);
-      void line (const math::point2d &p1, const math::point2d &p2);
+      void line (const math::point2d& p1, const math::point2d& p2);
       // horizontal line
       void hline (int x1, int x2, int y);
       // vertical line
       void vline (int x, int y1, int y2);
 
-      void rectangle (const math::rect &rec);
-      void rectangle_filled (const math::rect &rec);
+      void rectangle (const math::rect& rec);
+      void rectangle_filled (const math::rect& rec);
 
-      void rounded_rectangle (const math::rect &r, int radius);
-      void rounded_rectangle_filled (const math::rect &r, int radius);
+      void rounded_rectangle (const math::rect& r, int radius);
+      void rounded_rectangle_filled (const math::rect& r, int radius);
 
       // Anti-alising line
       void aa_line (int x1, int y1, int x2, int y2);
-      void aa_line (const math::point2d &a, const math::point2d &b);
+      void aa_line (const math::point2d& a, const math::point2d& b);
 
       void thick_line (int x1, int y1, int x2, int y2, int width);
-      void thick_line (const math::point2d &a, const math::point2d &b, int width);
+      void thick_line (const math::point2d& a, const math::point2d& b, int width);
 
       void circle (int x, int y, int radius);
-      void circle (const math::point2d &p, int radius);
+      void circle (const math::point2d& p, int radius);
 
       void aa_circle (int x, int y, int radius);
-      void aa_circle (const math::point2d &p, int radius);
+      void aa_circle (const math::point2d& p, int radius);
 
       void circle_filled (int x, int y, int radius);
-      void circle_filled (const math::point2d &p, int radius);
+      void circle_filled (const math::point2d& p, int radius);
 
       void ellipse (int x, int y, int rx, int ry);
-      void ellipse (const math::point2d &p, int rx, int ry);
+      void ellipse (const math::point2d& p, int rx, int ry);
 
       void aa_ellipse (int x, int y, int rx, int ry);
-      void aa_ellipse (const math::point2d &p, int rx, int ry);
+      void aa_ellipse (const math::point2d& p, int rx, int ry);
 
       void ellipse_filled (int x, int y, int rx, int ry);
-      void ellipse_filled (const math::point2d &p, int rx, int ry);
+      void ellipse_filled (const math::point2d& p, int rx, int ry);
 
       void arc (int x, int y, int rad, float start_angle, float end_angle);
-      void arc (const math::point2d &p, int rad, float start_angle, float end_angle);
+      void arc (const math::point2d& p, int rad, float start_angle, float end_angle);
 
       void pie (int x, int y, int rad, float start_angle, float end_angle);
-      void pie (const math::point2d &p, int rad, float start_angle, float end_angle);
+      void pie (const math::point2d& p, int rad, float start_angle, float end_angle);
 
       void pie_filled (int x, int y, int rad, float start_angle, float end_angle);
-      void pie_filled (const math::point2d &p, int rad, float start_angle, float end_angle);
+      void pie_filled (const math::point2d& p, int rad, float start_angle, float end_angle);
 
       void present () noexcept;
     private:

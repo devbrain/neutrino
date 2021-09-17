@@ -45,16 +45,16 @@ typedef struct BDF_encoding_el_ {
 typedef struct BDF_FaceRec_ {
   FT_FaceRec root;
 
-  char *charset_encoding;
-  char *charset_registry;
+  char* charset_encoding;
+  char* charset_registry;
 
-  bdf_font_t *bdffont;
+  bdf_font_t* bdffont;
 
-  BDF_encoding_el *en_table;
+  BDF_encoding_el* en_table;
 
   FT_UInt default_glyph;
 
-} BDF_FaceRec, *BDF_Face;
+} BDF_FaceRec, * BDF_Face;
 
 FT_EXPORT_VAR(const FT_Driver_ClassRec) bdf_driver_class;
 

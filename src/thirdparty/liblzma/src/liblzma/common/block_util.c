@@ -14,7 +14,7 @@
 #include "index.h"
 
 extern LZMA_API(lzma_ret)
-lzma_block_compressed_size (lzma_block *block, lzma_vli unpadded_size) {
+lzma_block_compressed_size (lzma_block* block, lzma_vli unpadded_size) {
   // Validate everything but Uncompressed Size and filters.
   if (lzma_block_unpadded_size (block) == 0)
     return LZMA_PROG_ERROR;
@@ -40,7 +40,7 @@ lzma_block_compressed_size (lzma_block *block, lzma_vli unpadded_size) {
 }
 
 extern LZMA_API(lzma_vli)
-lzma_block_unpadded_size (const lzma_block *block) {
+lzma_block_unpadded_size (const lzma_block* block) {
   // Validate the values that we are interested in i.e. all but
   // Uncompressed Size and the filters.
   //
@@ -74,7 +74,7 @@ lzma_block_unpadded_size (const lzma_block *block) {
 }
 
 extern LZMA_API(lzma_vli)
-lzma_block_total_size (const lzma_block *block) {
+lzma_block_total_size (const lzma_block* block) {
   lzma_vli unpadded_size = lzma_block_unpadded_size (block);
 
   if (unpadded_size != LZMA_VLI_UNKNOWN)

@@ -100,7 +100,7 @@ af_style_names[];
 typedef struct AF_FaceGlobalsRec_ {
   FT_Face face;
   FT_Long glyph_count;    /* same as face->num_glyphs */
-  FT_UShort *glyph_styles;
+  FT_UShort* glyph_styles;
 
 #ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
   hb_font_t*       hb_font;
@@ -140,14 +140,14 @@ typedef struct AF_FaceGlobalsRec_ {
 
 FT_LOCAL(FT_Error)
 af_face_globals_new (FT_Face face,
-                     AF_FaceGlobals *aglobals,
+                     AF_FaceGlobals* aglobals,
                      AF_Module module);
 
 FT_LOCAL(FT_Error)
 af_face_globals_get_metrics (AF_FaceGlobals globals,
                              FT_UInt gindex,
                              FT_UInt options,
-                             AF_StyleMetrics *ametrics);
+                             AF_StyleMetrics* ametrics);
 
 FT_LOCAL(void)
 af_face_globals_free (AF_FaceGlobals globals);

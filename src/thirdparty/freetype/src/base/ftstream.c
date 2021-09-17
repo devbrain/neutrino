@@ -32,9 +32,9 @@
 
 FT_BASE_DEF(void)
 FT_Stream_OpenMemory (FT_Stream stream,
-                      const FT_Byte *base,
+                      const FT_Byte* base,
                       FT_ULong size) {
-  stream->base = (FT_Byte *) base;
+  stream->base = (FT_Byte*) base;
   stream->size = size;
   stream->pos = 0;
   stream->cursor = NULL;
@@ -93,7 +93,7 @@ FT_Stream_Pos (FT_Stream stream) {
 
 FT_BASE_DEF(FT_Error)
 FT_Stream_Read (FT_Stream stream,
-                FT_Byte *buffer,
+                FT_Byte* buffer,
                 FT_ULong count) {
   return FT_Stream_ReadAt (stream, stream->pos, buffer, count);
 }
@@ -101,7 +101,7 @@ FT_Stream_Read (FT_Stream stream,
 FT_BASE_DEF(FT_Error)
 FT_Stream_ReadAt (FT_Stream stream,
                   FT_ULong pos,
-                  FT_Byte *buffer,
+                  FT_Byte* buffer,
                   FT_ULong count) {
   FT_Error error = FT_Err_Ok;
   FT_ULong read_bytes;
@@ -139,7 +139,7 @@ FT_Stream_ReadAt (FT_Stream stream,
 
 FT_BASE_DEF(FT_ULong)
 FT_Stream_TryRead (FT_Stream stream,
-                   FT_Byte *buffer,
+                   FT_Byte* buffer,
                    FT_ULong count) {
   FT_ULong read_bytes = 0;
 
@@ -165,12 +165,12 @@ FT_Stream_TryRead (FT_Stream stream,
 FT_BASE_DEF(FT_Error)
 FT_Stream_ExtractFrame (FT_Stream stream,
                         FT_ULong count,
-                        FT_Byte **pbytes) {
+                        FT_Byte** pbytes) {
   FT_Error error;
 
   error = FT_Stream_EnterFrame (stream, count);
   if (!error) {
-    *pbytes = (FT_Byte *) stream->cursor;
+    *pbytes = (FT_Byte*) stream->cursor;
 
     /* equivalent to FT_Stream_ExitFrame(), with no memory block release */
     stream->cursor = NULL;
@@ -182,7 +182,7 @@ FT_Stream_ExtractFrame (FT_Stream stream,
 
 FT_BASE_DEF(void)
 FT_Stream_ReleaseFrame (FT_Stream stream,
-                        FT_Byte **pbytes) {
+                        FT_Byte** pbytes) {
   if (stream && stream->read) {
     FT_Memory memory = stream->memory;
 
@@ -316,7 +316,7 @@ FT_Stream_GetChar (FT_Stream stream) {
 
 FT_BASE_DEF(FT_UShort)
 FT_Stream_GetUShort (FT_Stream stream) {
-  FT_Byte *p;
+  FT_Byte* p;
   FT_UShort result;
 
   FT_ASSERT(stream && stream->cursor);
@@ -332,7 +332,7 @@ FT_Stream_GetUShort (FT_Stream stream) {
 
 FT_BASE_DEF(FT_UShort)
 FT_Stream_GetUShortLE (FT_Stream stream) {
-  FT_Byte *p;
+  FT_Byte* p;
   FT_UShort result;
 
   FT_ASSERT(stream && stream->cursor);
@@ -348,7 +348,7 @@ FT_Stream_GetUShortLE (FT_Stream stream) {
 
 FT_BASE_DEF(FT_ULong)
 FT_Stream_GetUOffset (FT_Stream stream) {
-  FT_Byte *p;
+  FT_Byte* p;
   FT_ULong result;
 
   FT_ASSERT(stream && stream->cursor);
@@ -363,7 +363,7 @@ FT_Stream_GetUOffset (FT_Stream stream) {
 
 FT_BASE_DEF(FT_ULong)
 FT_Stream_GetULong (FT_Stream stream) {
-  FT_Byte *p;
+  FT_Byte* p;
   FT_ULong result;
 
   FT_ASSERT(stream && stream->cursor);
@@ -378,7 +378,7 @@ FT_Stream_GetULong (FT_Stream stream) {
 
 FT_BASE_DEF(FT_ULong)
 FT_Stream_GetULongLE (FT_Stream stream) {
-  FT_Byte *p;
+  FT_Byte* p;
   FT_ULong result;
 
   FT_ASSERT(stream && stream->cursor);
@@ -393,7 +393,7 @@ FT_Stream_GetULongLE (FT_Stream stream) {
 
 FT_BASE_DEF(FT_Char)
 FT_Stream_ReadChar (FT_Stream stream,
-                    FT_Error *error) {
+                    FT_Error* error) {
   FT_Byte result = 0;
 
   FT_ASSERT(stream);
@@ -425,9 +425,9 @@ FT_Stream_ReadChar (FT_Stream stream,
 
 FT_BASE_DEF(FT_UShort)
 FT_Stream_ReadUShort (FT_Stream stream,
-                      FT_Error *error) {
+                      FT_Error* error) {
   FT_Byte reads[2];
-  FT_Byte *p = 0;
+  FT_Byte* p = 0;
   FT_UShort result = 0;
 
   FT_ASSERT(stream);
@@ -465,9 +465,9 @@ FT_Stream_ReadUShort (FT_Stream stream,
 
 FT_BASE_DEF(FT_UShort)
 FT_Stream_ReadUShortLE (FT_Stream stream,
-                        FT_Error *error) {
+                        FT_Error* error) {
   FT_Byte reads[2];
-  FT_Byte *p = 0;
+  FT_Byte* p = 0;
   FT_UShort result = 0;
 
   FT_ASSERT(stream);
@@ -505,9 +505,9 @@ FT_Stream_ReadUShortLE (FT_Stream stream,
 
 FT_BASE_DEF(FT_ULong)
 FT_Stream_ReadUOffset (FT_Stream stream,
-                       FT_Error *error) {
+                       FT_Error* error) {
   FT_Byte reads[3];
-  FT_Byte *p = 0;
+  FT_Byte* p = 0;
   FT_ULong result = 0;
 
   FT_ASSERT(stream);
@@ -545,9 +545,9 @@ FT_Stream_ReadUOffset (FT_Stream stream,
 
 FT_BASE_DEF(FT_ULong)
 FT_Stream_ReadULong (FT_Stream stream,
-                     FT_Error *error) {
+                     FT_Error* error) {
   FT_Byte reads[4];
-  FT_Byte *p = 0;
+  FT_Byte* p = 0;
   FT_ULong result = 0;
 
   FT_ASSERT(stream);
@@ -585,9 +585,9 @@ FT_Stream_ReadULong (FT_Stream stream,
 
 FT_BASE_DEF(FT_ULong)
 FT_Stream_ReadULongLE (FT_Stream stream,
-                       FT_Error *error) {
+                       FT_Error* error) {
   FT_Byte reads[4];
-  FT_Byte *p = 0;
+  FT_Byte* p = 0;
   FT_ULong result = 0;
 
   FT_ASSERT(stream);
@@ -625,11 +625,11 @@ FT_Stream_ReadULongLE (FT_Stream stream,
 
 FT_BASE_DEF(FT_Error)
 FT_Stream_ReadFields (FT_Stream stream,
-                      const FT_Frame_Field *fields,
-                      void *structure) {
+                      const FT_Frame_Field* fields,
+                      void* structure) {
   FT_Error error;
   FT_Bool frame_accessed = 0;
-  FT_Byte *cursor;
+  FT_Byte* cursor;
 
   if (!fields)
     return FT_THROW(Invalid_Argument);
@@ -643,7 +643,7 @@ FT_Stream_ReadFields (FT_Stream stream,
   do {
     FT_ULong value;
     FT_Int sign_shift;
-    FT_Byte *p;
+    FT_Byte* p;
 
     switch (fields->value) {
       case ft_frame_start:  /* access a new frame */
@@ -667,7 +667,7 @@ FT_Stream_ReadFields (FT_Stream stream,
         }
 
         if (fields->value == ft_frame_bytes) {
-          p = (FT_Byte *) structure + fields->offset;
+          p = (FT_Byte*) structure + fields->offset;
           FT_MEM_COPY(p, cursor, len);
         }
         cursor += len;
@@ -729,22 +729,22 @@ FT_Stream_ReadFields (FT_Stream stream,
 
     /* finally, store the value in the object */
 
-    p = (FT_Byte *) structure + fields->offset;
+    p = (FT_Byte*) structure + fields->offset;
     switch (fields->size) {
       case (8 / FT_CHAR_BIT):
-        *(FT_Byte *) p = (FT_Byte) value;
+        *(FT_Byte*) p = (FT_Byte) value;
         break;
 
       case (16 / FT_CHAR_BIT):
-        *(FT_UShort *) p = (FT_UShort) value;
+        *(FT_UShort*) p = (FT_UShort) value;
         break;
 
       case (32 / FT_CHAR_BIT):
-        *(FT_UInt32 *) p = (FT_UInt32) value;
+        *(FT_UInt32*) p = (FT_UInt32) value;
         break;
 
       default:  /* for 64-bit systems */
-        *(FT_ULong *) p = (FT_ULong) value;
+        *(FT_ULong*) p = (FT_ULong) value;
     }
 
     /* go to next field */

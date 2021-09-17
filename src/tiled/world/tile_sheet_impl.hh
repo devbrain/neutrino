@@ -11,7 +11,7 @@
 
 namespace neutrino::tiled::detail {
   struct tile_sheet_impl {
-    tile_sheet_impl (hal::surface tex, const std::vector<math::rect> *coords)
+    tile_sheet_impl (hal::surface tex, const std::vector<math::rect>* coords)
         : surface (std::move (tex)), is_image (coords != nullptr) {
       if (coords) {
         rects = *coords;
@@ -22,6 +22,7 @@ namespace neutrino::tiled::detail {
         rects.emplace_back (0, 0, w, h);
       }
     }
+
     hal::surface surface;
     std::vector<math::rect> rects;
     bool is_image;

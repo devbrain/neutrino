@@ -120,8 +120,8 @@ static const struct {
 };
 
 extern LZMA_API(lzma_ret)
-lzma_filters_copy (const lzma_filter *src, lzma_filter *dest,
-                   const lzma_allocator *allocator) {
+lzma_filters_copy (const lzma_filter* src, lzma_filter* dest,
+                   const lzma_allocator* allocator) {
   if (src == NULL || dest == NULL)
     return LZMA_PROG_ERROR;
 
@@ -188,7 +188,7 @@ lzma_filters_copy (const lzma_filter *src, lzma_filter *dest,
 }
 
 static lzma_ret
-validate_chain (const lzma_filter *filters, size_t *count) {
+validate_chain (const lzma_filter* filters, size_t* count) {
   // There must be at least one filter.
   if (filters == NULL || filters[0].id == LZMA_VLI_UNKNOWN)
     return LZMA_PROG_ERROR;
@@ -235,8 +235,8 @@ validate_chain (const lzma_filter *filters, size_t *count) {
 }
 
 extern lzma_ret
-lzma_raw_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                     const lzma_filter *options,
+lzma_raw_coder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                     const lzma_filter* options,
                      lzma_filter_find coder_find, bool is_encoder) {
   // Do some basic validation and get the number of filters.
   size_t count;
@@ -251,7 +251,7 @@ lzma_raw_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
       // of the uncompressed data.
       const size_t j = count - i - 1;
 
-      const lzma_filter_coder *const fc
+      const lzma_filter_coder* const fc
           = coder_find (options[i].id);
       if (fc == NULL || fc->init == NULL)
         return LZMA_OPTIONS_ERROR;
@@ -263,7 +263,7 @@ lzma_raw_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
   }
   else {
     for (size_t i = 0; i < count; ++i) {
-      const lzma_filter_coder *const fc
+      const lzma_filter_coder* const fc
           = coder_find (options[i].id);
       if (fc == NULL || fc->init == NULL)
         return LZMA_OPTIONS_ERROR;
@@ -288,7 +288,7 @@ lzma_raw_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
 
 extern uint64_t
 lzma_raw_coder_memusage (lzma_filter_find coder_find,
-                         const lzma_filter *filters) {
+                         const lzma_filter* filters) {
   // The chain has to have at least one filter.
   {
     size_t tmp;
@@ -300,7 +300,7 @@ lzma_raw_coder_memusage (lzma_filter_find coder_find,
   size_t i = 0;
 
   do {
-    const lzma_filter_coder *const fc
+    const lzma_filter_coder* const fc
         = coder_find (filters[i].id);
     if (fc == NULL)
       return UINT64_MAX; // Unsupported Filter ID

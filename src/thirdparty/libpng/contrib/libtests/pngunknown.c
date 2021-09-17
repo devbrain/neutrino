@@ -1295,6 +1295,7 @@ main(void)
 #endif /* READ_USER_CHUNKS || SAVE_UNKNOWN_CHUNKS */
 
 #else /* !(SET_UNKNOWN_CHUNKS && READ) */
+
 int
 main (void) {
   fprintf (stderr,
@@ -1302,4 +1303,5 @@ main (void) {
   /* So the test is skipped: */
   return SKIP;
 }
+
 #endif /* SET_UNKNOWN_CHUNKS && READ*/

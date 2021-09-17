@@ -29,24 +29,24 @@ namespace neutrino::sdl {
   class surface : public object<SDL_Surface> {
     public:
       surface ();
-      surface (object<SDL_Surface> &&other);
-      surface (surface &&other);
-      surface (const object<SDL_Window> &other);
-      surface &operator= (object<SDL_Surface> &&other);
-      surface &operator= (surface &&other) noexcept;
+      surface (object<SDL_Surface>&& other);
+      surface (surface&& other);
+      surface (const object<SDL_Window>& other);
+      surface& operator = (object<SDL_Surface>&& other);
+      surface& operator = (surface&& other) noexcept;
 
-      surface &operator= (const surface &other) = delete;
-      surface (const surface &other) = delete;
+      surface& operator = (const surface& other) = delete;
+      surface (const surface& other) = delete;
 
       surface (unsigned width, unsigned height, pixel_format format);
 
       [[nodiscard]] static surface make_8bit (unsigned width, unsigned height);
       [[nodiscard]] static surface make_rgba_32bit (unsigned width, unsigned height);
-      [[nodiscard]] static surface from_bmp (const std::string &path);
-      [[nodiscard]] static surface from_bmp (io &stream);
+      [[nodiscard]] static surface from_bmp (const std::string& path);
+      [[nodiscard]] static surface from_bmp (io& stream);
 
-      void save_bmp (const std::string &path) const;
-      void save_bmp (io &stream) const;
+      void save_bmp (const std::string& path) const;
+      void save_bmp (io& stream) const;
 
       void lock () noexcept;
       void unlock () noexcept;
@@ -58,10 +58,10 @@ namespace neutrino::sdl {
        * @param r
        * @return Returns true if the rectangle intersects the surface, otherwise false and blits will be completely clipped.
        */
-      bool clip (const rect &r);
+      bool clip (const rect& r);
 
       void color_key (uint32_t c);
-      void color_key (const color &c);
+      void color_key (const color& c);
       void disable_color_key ();
       [[nodiscard]] std::optional<uint32_t> color_key () const;
 
@@ -87,7 +87,7 @@ namespace neutrino::sdl {
        * @param drect destination area
        * @throws @see sdl::exception on failure
        */
-      void blit (const rect &srect, object<SDL_Surface> &dst, const rect &drect) const;
+      void blit (const rect& srect, object<SDL_Surface>& dst, const rect& drect) const;
 
       /**
        * @brief Blit this surface to @c dst surface
@@ -98,9 +98,9 @@ namespace neutrino::sdl {
        * @param dst destination surface
        * @throws @see sdl::exception on failure
        */
-      void blit_scaled (const rect &srect, object<SDL_Surface> &dst) const;
-      void blit_scaled (object<SDL_Surface> &dst) const;
-      void blit_scaled (const rect &srect, object<SDL_Surface> &dst, const rect &drect) const;
+      void blit_scaled (const rect& srect, object<SDL_Surface>& dst) const;
+      void blit_scaled (object<SDL_Surface>& dst) const;
+      void blit_scaled (const rect& srect, object<SDL_Surface>& dst, const rect& drect) const;
 
       /**
        * @brief Blit this surface to @c dst surface
@@ -113,7 +113,7 @@ namespace neutrino::sdl {
        * @param dpoint destination point
        * @throws @see sdl::exception on failure
        */
-      void blit (const rect &srect, object<SDL_Surface> &dst, const point &dpoint) const;
+      void blit (const rect& srect, object<SDL_Surface>& dst, const point& dpoint) const;
 
       /**
        * @brief Blit this surface to @c dst surface
@@ -125,7 +125,7 @@ namespace neutrino::sdl {
        * @param dst destination surface
        * @throws @see sdl::exception on failure
        */
-      void blit (const rect &srect, object<SDL_Surface> &dst) const;
+      void blit (const rect& srect, object<SDL_Surface>& dst) const;
       /**
        * @brief Blit this surface to @c dst surface
        *
@@ -135,32 +135,32 @@ namespace neutrino::sdl {
        * @param dst destination surface
        * @throws @see sdl::exception on failure
        */
-      void blit (object<SDL_Surface> &dst) const;
+      void blit (object<SDL_Surface>& dst) const;
 
       // returns pixels, pitch, w, h
-      [[nodiscard]] std::tuple<void *, std::size_t, unsigned, unsigned> pixels_data () const;
+      [[nodiscard]] std::tuple<void*, std::size_t, unsigned, unsigned> pixels_data () const;
 
-      void fill (const rect &r, uint32_t c);
-      void fill (const rect &r, const color &c);
+      void fill (const rect& r, uint32_t c);
+      void fill (const rect& r, const color& c);
       void fill (uint32_t c);
-      void fill (const color &c);
-      void fill (const utils::array_view1d<rect> &rects, uint32_t c);
-      void fill (const utils::array_view1d<rect> &rects, const color &c);
+      void fill (const color& c);
+      void fill (const utils::array_view1d<rect>& rects, uint32_t c);
+      void fill (const utils::array_view1d<rect>& rects, const color& c);
 
-      surface convert (const pixel_format &fmt) const;
+      surface convert (const pixel_format& fmt) const;
 
       [[nodiscard]] pixel_format get_pixel_format () const;
-      [[nodiscard]] uint32_t map_color (const color &c);
+      [[nodiscard]] uint32_t map_color (const color& c);
 
       // this method returns reference to the actual palette
       [[nodiscard]] palette get_palette () const;
-      void set_palette (const palette &pal);
+      void set_palette (const palette& pal);
   };
   namespace detail {
     template <bool LOCK_IF_NEEDED>
     class lock_surface {
       public:
-        explicit lock_surface (surface &s)
+        explicit lock_surface (surface& s)
             : srf (s),
               locked (true) {
           if constexpr (LOCK_IF_NEEDED) {
@@ -180,11 +180,13 @@ namespace neutrino::sdl {
         void release () {
           locked = false;
         }
+
         explicit operator bool () const {
           return locked;
         }
+
       private:
-        surface &srf;
+        surface& srf;
         bool locked;
     };
   }
@@ -198,36 +200,42 @@ namespace neutrino::sdl {
 
   inline
   surface::surface () = default;
+
   // ----------------------------------------------------------------------------------------------
   inline
-  surface::surface (object<SDL_Surface> &&other)
+  surface::surface (object<SDL_Surface>&& other)
       : object<SDL_Surface> (std::move (other)) {
 
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  surface::surface (surface &&other)
+  surface::surface (surface&& other)
       : object<SDL_Surface> (nullptr, false) {
     other.swap (*this);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  surface &surface::operator= (surface &&other) noexcept {
-    object<SDL_Surface>::operator= (std::move (other));
+  surface& surface::operator = (surface&& other) noexcept {
+    object<SDL_Surface>::operator = (std::move (other));
     return *this;
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  surface::surface (const object<SDL_Window> &other)
-      : object<SDL_Surface> (SAFE_SDL_CALL(SDL_GetWindowSurface, const_cast<SDL_Window *>(other.handle ())), false) {
+  surface::surface (const object<SDL_Window>& other)
+      : object<SDL_Surface> (SAFE_SDL_CALL(SDL_GetWindowSurface, const_cast<SDL_Window*>(other.handle ())), false) {
 
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  surface &surface::operator= (object<SDL_Surface> &&other) {
-    object<SDL_Surface>::operator= (std::move (other));
+  surface& surface::operator = (object<SDL_Surface>&& other) {
+    object<SDL_Surface>::operator = (std::move (other));
     return *this;
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   surface::surface (unsigned width, unsigned height, pixel_format format)
@@ -235,51 +243,61 @@ namespace neutrino::sdl {
                                            static_cast<int>(width), static_cast<int>(height), format.get_bits_per_pixels (), format.value ()), true) {
 
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   surface surface::make_8bit (unsigned width, unsigned height) {
     return surface (width, height, pixel_format::make_8bit ());
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   surface surface::make_rgba_32bit (unsigned width, unsigned height) {
     return surface (width, height, pixel_format::make_rgba_32bit ());
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  surface surface::from_bmp (const std::string &path) {
+  surface surface::from_bmp (const std::string& path) {
     return surface (object<SDL_Surface> (SAFE_SDL_CALL(SDL_LoadBMP_RW, SDL_RWFromFile (path.c_str (), "rb"), 1), true));
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  surface surface::from_bmp (io &stream) {
+  surface surface::from_bmp (io& stream) {
     return surface (object<SDL_Surface> (SAFE_SDL_CALL(SDL_LoadBMP_RW, stream.handle (), 0), true));
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::save_bmp (const std::string &path) const {
+  void surface::save_bmp (const std::string& path) const {
     SAFE_SDL_CALL(SDL_SaveBMP_RW, const_handle (), SDL_RWFromFile (path.c_str (), "wb"), 1);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::save_bmp (io &stream) const {
+  void surface::save_bmp (io& stream) const {
     SAFE_SDL_CALL(SDL_SaveBMP_RW, const_handle (), stream.handle (), 0);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::lock () noexcept {
     SDL_LockSurface (handle ());
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::unlock () noexcept {
     SDL_UnlockSurface (handle ());
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   bool surface::must_lock () const noexcept {
     return SDL_MUSTLOCK(handle ());
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   rect surface::clip () const {
@@ -287,26 +305,31 @@ namespace neutrino::sdl {
     SDL_GetClipRect (const_handle (), &r);
     return rect{r};
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  bool surface::clip (const rect &r) {
+  bool surface::clip (const rect& r) {
     return SDL_TRUE == SDL_SetClipRect (handle (), &r);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::color_key (uint32_t c) {
     SAFE_SDL_CALL(SDL_SetColorKey, handle (), SDL_TRUE, c);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::color_key (const color &c) {
+  void surface::color_key (const color& c) {
     SAFE_SDL_CALL(SDL_SetColorKey, handle (), SDL_TRUE, map_color (c));
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::disable_color_key () {
     SAFE_SDL_CALL(SDL_SetColorKey, handle (), SDL_FALSE, 0);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   std::optional<uint32_t> surface::color_key () const {
@@ -317,6 +340,7 @@ namespace neutrino::sdl {
     }
     return std::nullopt;
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   blend_mode surface::blend () const {
@@ -324,11 +348,13 @@ namespace neutrino::sdl {
     SAFE_SDL_CALL(SDL_GetSurfaceBlendMode, const_handle (), &x);
     return static_cast<blend_mode>(x);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::blend (blend_mode v) {
     SAFE_SDL_CALL(SDL_SetSurfaceBlendMode, handle (), static_cast<SDL_BlendMode>(v));
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   uint8_t surface::alpha_mod () const {
@@ -336,21 +362,25 @@ namespace neutrino::sdl {
     SAFE_SDL_CALL(SDL_GetSurfaceAlphaMod, const_handle (), &x);
     return x;
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::alpha_mod (uint8_t v) {
     SAFE_SDL_CALL(SDL_SetSurfaceAlphaMod, handle (), v);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::rle_acceleration (bool enabled) {
     SAFE_SDL_CALL(SDL_SetSurfaceRLE, handle (), enabled ? 1 : 0);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::color_mod (uint8_t r, uint8_t g, uint8_t b) {
     SAFE_SDL_CALL(SDL_SetSurfaceColorMod, handle (), r, g, b);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   std::optional<color> surface::color_mod () const {
@@ -360,77 +390,90 @@ namespace neutrino::sdl {
     }
     return std::nullopt;
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::blit (const rect &srect, object<SDL_Surface> &dst, const rect &drect) const {
+  void surface::blit (const rect& srect, object<SDL_Surface>& dst, const rect& drect) const {
     SAFE_SDL_CALL(SDL_BlitSurface,
-                  const_handle (), const_cast<rect *>(&srect),
-                  dst.handle (), const_cast<rect *>(&drect));
+                  const_handle (), const_cast<rect*>(&srect),
+                  dst.handle (), const_cast<rect*>(&drect));
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::blit_scaled (const rect &srect, object<SDL_Surface> &dst) const {
+  void surface::blit_scaled (const rect& srect, object<SDL_Surface>& dst) const {
     SAFE_SDL_CALL(SDL_BlitScaled, const_handle (), &srect, dst.handle (), nullptr);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::blit_scaled (object<SDL_Surface> &dst) const {
+  void surface::blit_scaled (object<SDL_Surface>& dst) const {
     SAFE_SDL_CALL(SDL_BlitScaled, const_handle (), nullptr, dst.handle (), nullptr);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::blit_scaled (const rect &srect, object<SDL_Surface> &dst, const rect &drect) const {
-    SAFE_SDL_CALL(SDL_BlitScaled, const_handle (), &srect, dst.handle (), const_cast<rect *>(&drect));
+  void surface::blit_scaled (const rect& srect, object<SDL_Surface>& dst, const rect& drect) const {
+    SAFE_SDL_CALL(SDL_BlitScaled, const_handle (), &srect, dst.handle (), const_cast<rect*>(&drect));
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::blit (const rect &srect, object<SDL_Surface> &dst, const point &dpoint) const {
+  void surface::blit (const rect& srect, object<SDL_Surface>& dst, const point& dpoint) const {
     rect dstrect{dpoint, srect.w, srect.h};
     blit (srect, dst, dstrect);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::blit (const rect &srect, object<SDL_Surface> &dst) const {
+  void surface::blit (const rect& srect, object<SDL_Surface>& dst) const {
     SAFE_SDL_CALL(SDL_BlitSurface,
                   const_handle (), &srect,
                   dst.handle (), nullptr);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::blit (object<SDL_Surface> &dst) const {
+  void surface::blit (object<SDL_Surface>& dst) const {
     SAFE_SDL_CALL(SDL_BlitSurface,
                   const_handle (), nullptr,
                   dst.handle (), nullptr);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  std::tuple<void *, std::size_t, unsigned, unsigned> surface::pixels_data () const {
-    const auto *s = handle ();
+  std::tuple<void*, std::size_t, unsigned, unsigned> surface::pixels_data () const {
+    const auto* s = handle ();
     return {s->pixels, s->pitch, s->w, s->h};
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::fill (const rect &r, uint32_t c) {
+  void surface::fill (const rect& r, uint32_t c) {
     SAFE_SDL_CALL(SDL_FillRect, handle (), &r, c);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::fill (const rect &r, const color &c) {
+  void surface::fill (const rect& r, const color& c) {
     SAFE_SDL_CALL(SDL_FillRect, handle (), &r, map_color (c));
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::fill (uint32_t c) {
     SAFE_SDL_CALL(SDL_FillRect, handle (), nullptr, c);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::fill (const color &c) {
+  void surface::fill (const color& c) {
     SAFE_SDL_CALL(SDL_FillRect, handle (), nullptr, map_color (c));
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::fill (const utils::array_view1d<rect> &rects, uint32_t c) {
+  void surface::fill (const utils::array_view1d<rect>& rects, uint32_t c) {
 #if defined(_MSC_VER)
 #pragma warning ( push )
 #pragma warning ( disable : 4267 )
@@ -440,9 +483,10 @@ namespace neutrino::sdl {
 #pragma warning ( pop )
 #endif
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  void surface::fill (const utils::array_view1d<rect> &rects, const color &c) {
+  void surface::fill (const utils::array_view1d<rect>& rects, const color& c) {
 #if defined(_MSC_VER)
 #pragma warning ( push )
 #pragma warning ( disable : 4267 )
@@ -453,33 +497,38 @@ namespace neutrino::sdl {
 #endif
 
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  surface surface::convert (const pixel_format &fmt) const {
-    SDL_Surface *s = SAFE_SDL_CALL(SDL_ConvertSurfaceFormat, const_handle (), fmt.value (), 0);
+  surface surface::convert (const pixel_format& fmt) const {
+    SDL_Surface* s = SAFE_SDL_CALL(SDL_ConvertSurfaceFormat, const_handle (), fmt.value (), 0);
     return surface{object<SDL_Surface> (s, true)};
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   pixel_format surface::get_pixel_format () const {
     return pixel_format (handle ()->format->format);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
-  uint32_t surface::map_color (const color &c) {
+  uint32_t surface::map_color (const color& c) {
     if (get_pixel_format ().is_alpha ()) {
       return SDL_MapRGBA (handle ()->format, c.r, c.g, c.b, c.a);
     }
     return SDL_MapRGB (handle ()->format, c.r, c.g, c.b);
   }
+
   // --------------------------------------------------------------------------------------------
   inline
   palette surface::get_palette () const {
     return palette (*this);
   }
+
   // --------------------------------------------------------------------------------------------
   inline
-  void surface::set_palette (const palette &pal) {
+  void surface::set_palette (const palette& pal) {
     SAFE_SDL_CALL(SDL_SetSurfacePalette, handle (), pal.const_handle ());
   }
 }

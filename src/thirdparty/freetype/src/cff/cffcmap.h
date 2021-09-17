@@ -33,11 +33,11 @@ FT_BEGIN_HEADER
 /*************************************************************************/
 
 /* standard (and expert) encoding cmaps */
-typedef struct CFF_CMapStdRec_ *CFF_CMapStd;
+typedef struct CFF_CMapStdRec_* CFF_CMapStd;
 
 typedef struct CFF_CMapStdRec_ {
   FT_CMapRec cmap;
-  FT_UShort *gids;   /* up to 256 elements */
+  FT_UShort* gids;   /* up to 256 elements */
 
 } CFF_CMapStdRec;
 

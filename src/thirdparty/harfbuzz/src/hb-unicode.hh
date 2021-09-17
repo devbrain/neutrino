@@ -62,15 +62,17 @@ extern HB_INTERNAL const uint8_t _hb_modified_combining_class[256];
 struct hb_unicode_funcs_t {
   hb_object_header_t header;
 
-  hb_unicode_funcs_t *parent;
+  hb_unicode_funcs_t* parent;
 
 #define HB_UNICODE_FUNC_IMPLEMENT(return_type, name) \
   return_type name (hb_codepoint_t unicode) { return func.name (this, unicode, user_data.name); }
+
   HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE
+
 #undef HB_UNICODE_FUNC_IMPLEMENT
 
   hb_bool_t compose (hb_codepoint_t a, hb_codepoint_t b,
-                     hb_codepoint_t *ab) {
+                     hb_codepoint_t* ab) {
     *ab = 0;
     if (unlikely (!a || !b))
       return false;
@@ -78,14 +80,14 @@ struct hb_unicode_funcs_t {
   }
 
   hb_bool_t decompose (hb_codepoint_t ab,
-                       hb_codepoint_t *a, hb_codepoint_t *b) {
+                       hb_codepoint_t* a, hb_codepoint_t* b) {
     *a = ab;
     *b = 0;
     return func.decompose (this, ab, a, b, user_data.decompose);
   }
 
   unsigned int decompose_compatibility (hb_codepoint_t u,
-                                        hb_codepoint_t *decomposed) {
+                                        hb_codepoint_t* decomposed) {
 #ifdef HB_DISABLE_DEPRECATED
     unsigned int ret  = 0;
 #else
@@ -224,6 +226,7 @@ struct hb_unicode_funcs_t {
     SPACE_PUNCTUATION,
     SPACE_NARROW,
   };
+
   static space_t
   space_fallback_type (hb_codepoint_t u) {
     switch (u) {
@@ -396,9 +399,9 @@ DECLARE_NULL_INSTANCE (hb_unicode_funcs_t);
 
 struct hb_unicode_range_t {
   static int
-  cmp (const void *_key, const void *_item) {
-    hb_codepoint_t cp = *((hb_codepoint_t *) _key);
-    const hb_unicode_range_t *range = (hb_unicode_range_t *) _item;
+  cmp (const void* _key, const void* _item) {
+    hb_codepoint_t cp = *((hb_codepoint_t*) _key);
+    const hb_unicode_range_t* range = (hb_unicode_range_t*) _item;
 
     if (cp < range->start)
       return -1;
@@ -419,6 +422,6 @@ struct hb_unicode_range_t {
 HB_INTERNAL bool
 _hb_unicode_is_emoji_Extended_Pictographic (hb_codepoint_t cp);
 
-extern "C" HB_INTERNAL hb_unicode_funcs_t *hb_ucd_get_unicode_funcs ();
+extern "C" HB_INTERNAL hb_unicode_funcs_t* hb_ucd_get_unicode_funcs ();
 
 #endif /* HB_UNICODE_HH */

@@ -8,7 +8,7 @@
 #include "main_scene.hh"
 
 namespace neutrino::demoscene {
-  main_scene::main_scene (demoscene::scene *owner)
+  main_scene::main_scene (demoscene::scene* owner)
       : engine::scene (0),
         m_owner (owner),
         m_show_fps (false),
@@ -16,13 +16,13 @@ namespace neutrino::demoscene {
     hal::get_application ()->attach (this);
   }
 
-  void main_scene::on_event (const engine::events::current_fps &e) {
+  void main_scene::on_event (const engine::events::current_fps& e) {
     m_current_fps = e.value;
     show_fps ();
   }
 
   void main_scene::on_enter () {
-    auto *gc = m_owner->m_vga.get ();
+    auto* gc = m_owner->m_vga.get ();
     m_owner->init (*gc);
   }
 
@@ -31,7 +31,7 @@ namespace neutrino::demoscene {
   }
 
   void main_scene::update ([[maybe_unused]] std::chrono::milliseconds ms) {
-    auto *gc = m_owner->m_vga.get ();
+    auto* gc = m_owner->m_vga.get ();
     m_owner->effect (*gc);
     gc->present ();
   }
@@ -44,7 +44,7 @@ namespace neutrino::demoscene {
 
   }
 
-  void main_scene::on_keyboard_input (const engine::events::keyboard &ev) {
+  void main_scene::on_keyboard_input (const engine::events::keyboard& ev) {
     if (ev.pressed) {
       if (ev.code == engine::events::scan_code_t::ESCAPE) {
         engine::scene_manager::instance ().notify (engine::events::quit{});
@@ -64,7 +64,7 @@ namespace neutrino::demoscene {
     }
   }
 
-  void main_scene::on_pointer_input ([[maybe_unused]] const engine::events::pointer &ev) {
+  void main_scene::on_pointer_input ([[maybe_unused]] const engine::events::pointer& ev) {
 
   }
 

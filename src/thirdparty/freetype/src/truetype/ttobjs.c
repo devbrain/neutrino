@@ -135,6 +135,7 @@ tt_glyphzone_new (FT_Memory memory,
 
   return error;
 }
+
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
 
@@ -142,7 +143,7 @@ tt_glyphzone_new (FT_Memory memory,
 /* This list shall be expanded as we find more of them.       */
 
 static FT_Bool
-tt_check_trickyness_family (const FT_String *name) {
+tt_check_trickyness_family (const FT_String* name) {
 
 #define TRICK_NAMES_MAX_CHARACTERS  19
 #define TRICK_NAMES_COUNT           26
@@ -576,7 +577,7 @@ tt_face_init (FT_Stream stream,
               FT_Face ttface,      /* TT_Face */
               FT_Int face_index,
               FT_Int num_params,
-              FT_Parameter *params) {
+              FT_Parameter* params) {
   FT_Error error;
   FT_Library library;
   SFNT_Service sfnt;
@@ -823,8 +824,8 @@ tt_size_run_fpgm (TT_Size size,
   exec->pedantic_hinting = pedantic;
 
   {
-    FT_Size_Metrics *size_metrics = &exec->metrics;
-    TT_Size_Metrics *tt_metrics = &exec->tt_metrics;
+    FT_Size_Metrics* size_metrics = &exec->metrics;
+    TT_Size_Metrics* tt_metrics = &exec->tt_metrics;
 
     size_metrics->x_ppem = 0;
     size_metrics->y_ppem = 0;
@@ -1021,7 +1022,7 @@ tt_size_init_bytecode (FT_Size ftsize,
   FT_Memory memory = face->root.memory;
 
   FT_UShort n_twilight;
-  TT_MaxProfile *maxp = &face->max_profile;
+  TT_MaxProfile* maxp = &face->max_profile;
 
 
   /* clean up bytecode related data */
@@ -1053,7 +1054,7 @@ tt_size_init_bytecode (FT_Size ftsize,
 
   /* Set default metrics */
   {
-    TT_Size_Metrics *tt_metrics = &size->ttmetrics;
+    TT_Size_Metrics* tt_metrics = &size->ttmetrics;
 
     tt_metrics->rotated = FALSE;
     tt_metrics->stretched = FALSE;
@@ -1244,7 +1245,7 @@ FT_LOCAL_DEF(FT_Error)
 tt_size_reset (TT_Size size,
                FT_Bool only_height) {
   TT_Face face;
-  FT_Size_Metrics *size_metrics;
+  FT_Size_Metrics* size_metrics;
 
   face = (TT_Face) size->root.face;
 

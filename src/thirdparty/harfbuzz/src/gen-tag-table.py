@@ -1133,7 +1133,8 @@ def verify_disambiguation_dict():
                 disambiguation[ot_tag] = primary_tags[0]
             else:
                 first_tag = \
-                sorted(t for t in bcp_47_tags if t not in bcp_47.grandfathered and ot_tag in ot.from_bcp_47.get(t))[0]
+                    sorted(t for t in bcp_47_tags if t not in bcp_47.grandfathered and ot_tag in ot.from_bcp_47.get(t))[
+                        0]
                 if primary_tags[0] != first_tag:
                     disambiguation[ot_tag] = primary_tags[0]
         elif len(primary_tags) == 0:
@@ -1163,7 +1164,7 @@ for ot_tag, bcp_47_tag in sorted(disambiguation.items()):
     write('  case %s:  /* %s */' % (hb_tag(ot_tag), ot.names[ot_tag]))
     print()
     write('    return hb_language_from_string (\"%s\", -1);  /* %s */' % (
-    bcp_47_tag, bcp_47.get_name(LanguageTag(bcp_47_tag))))
+        bcp_47_tag, bcp_47.get_name(LanguageTag(bcp_47_tag))))
     print()
 
 print('  default:')

@@ -127,7 +127,7 @@ FT_LOCAL_DEF(FT_Error)
 tt_face_goto_table (TT_Face face,
                     FT_ULong tag,
                     FT_Stream stream,
-                    FT_ULong *length) {
+                    FT_ULong* length) {
   TT_Table table;
   FT_Error error;
 
@@ -167,7 +167,7 @@ tt_face_goto_table (TT_Face face,
 static FT_Error
 check_table_dir (SFNT_Header sfnt,
                  FT_Stream stream,
-                 FT_UShort *valid) {
+                 FT_UShort* valid) {
   FT_Error error;
   FT_UShort nn, valid_entries = 0;
   FT_UInt has_head = 0, has_sing = 0, has_meta = 0;
@@ -526,8 +526,8 @@ FT_LOCAL_DEF(FT_Error)
 tt_face_load_any (TT_Face face,
                   FT_ULong tag,
                   FT_Long offset,
-                  FT_Byte *buffer,
-                  FT_ULong *length) {
+                  FT_Byte* buffer,
+                  FT_ULong* length) {
   FT_Error error;
   FT_Stream stream;
   TT_Table table;
@@ -589,7 +589,7 @@ tt_face_load_generic_header (TT_Face face,
                              FT_Stream stream,
                              FT_ULong tag) {
   FT_Error error;
-  TT_Header *header;
+  TT_Header* header;
 
   static const FT_Frame_Field header_fields[] =
       {
@@ -674,7 +674,7 @@ FT_LOCAL_DEF(FT_Error)
 tt_face_load_maxp (TT_Face face,
                    FT_Stream stream) {
   FT_Error error;
-  TT_MaxProfile *maxProfile = &face->max_profile;
+  TT_MaxProfile* maxProfile = &face->max_profile;
 
   static const FT_Frame_Field maxp_fields[] =
       {
@@ -1049,7 +1049,7 @@ FT_LOCAL_DEF(FT_Error)
 tt_face_load_os2 (TT_Face face,
                   FT_Stream stream) {
   FT_Error error;
-  TT_OS2 *os2;
+  TT_OS2* os2;
 
   static const FT_Frame_Field os2_fields[] =
       {
@@ -1207,7 +1207,7 @@ FT_LOCAL_DEF(FT_Error)
 tt_face_load_post (TT_Face face,
                    FT_Stream stream) {
   FT_Error error;
-  TT_Postscript *post = &face->postscript;
+  TT_Postscript* post = &face->postscript;
 
   static const FT_Frame_Field post_fields[] =
       {
@@ -1291,7 +1291,7 @@ tt_face_load_pclt (TT_Face face,
       };
 
   FT_Error error;
-  TT_PCLT *pclt = &face->pclt;
+  TT_PCLT* pclt = &face->pclt;
 
 
   /* optional table */

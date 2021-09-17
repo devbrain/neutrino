@@ -42,7 +42,7 @@ typedef struct AF_ModuleRec_ {
   FT_Bool no_stem_darkening;
   FT_Int darken_params[8];
 
-} AF_ModuleRec, *AF_Module;
+} AF_ModuleRec, * AF_Module;
 
 FT_DECLARE_MODULE(autofit_module_class)
 

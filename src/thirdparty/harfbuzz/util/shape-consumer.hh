@@ -30,72 +30,67 @@
 #include "hb.hh"
 #include "options.hh"
 
-
 template <typename output_t>
-struct shape_consumer_t
-{
-  shape_consumer_t (option_parser_t *parser)
-		  : failed (false),
-		    shaper (parser),
-		    output (parser),
-		    font (nullptr),
-		    buffer (nullptr) {}
-
-  void init (hb_buffer_t  *buffer_,
-	     const font_options_t *font_opts)
-  {
-    font = hb_font_reference (font_opts->get_font ());
-    failed = false;
-    buffer = hb_buffer_reference (buffer_);
-
-    output.init (buffer, font_opts);
-  }
-  void consume_line (const char   *text,
-		     unsigned int  text_len,
-		     const char   *text_before,
-		     const char   *text_after)
-  {
-    output.new_line ();
-
-    for (unsigned int n = shaper.num_iterations; n; n--)
-    {
-      const char *error = nullptr;
-
-      shaper.populate_buffer (buffer, text, text_len, text_before, text_after);
-      if (n == 1)
-	output.consume_text (buffer, text, text_len, shaper.utf8_clusters);
-      if (!shaper.shape (font, buffer, &error))
-      {
-	failed = true;
-	output.error (error);
-	if (hb_buffer_get_content_type (buffer) == HB_BUFFER_CONTENT_TYPE_GLYPHS)
-	  break;
-	else
-	  return;
-      }
+struct shape_consumer_t {
+    shape_consumer_t (option_parser_t* parser)
+        : failed (false),
+          shaper (parser),
+          output (parser),
+          font (nullptr),
+          buffer (nullptr) {
     }
 
-    output.consume_glyphs (buffer, text, text_len, shaper.utf8_clusters);
-  }
-  void finish (const font_options_t *font_opts)
-  {
-    output.finish (buffer, font_opts);
-    hb_font_destroy (font);
-    font = nullptr;
-    hb_buffer_destroy (buffer);
-    buffer = nullptr;
-  }
+    void init (hb_buffer_t* buffer_,
+               const font_options_t* font_opts) {
+      font = hb_font_reference (font_opts->get_font ());
+      failed = false;
+      buffer = hb_buffer_reference (buffer_);
+
+      output.init (buffer, font_opts);
+    }
+
+    void consume_line (const char* text,
+                       unsigned int text_len,
+                       const char* text_before,
+                       const char* text_after) {
+      output.new_line ();
+
+      for (unsigned int n = shaper.num_iterations; n; n--) {
+        const char* error = nullptr;
+
+        shaper.populate_buffer (buffer, text, text_len, text_before, text_after);
+        if (n == 1)
+          output.consume_text (buffer, text, text_len, shaper.utf8_clusters);
+        if (!shaper.shape (font, buffer, &error)) {
+          failed = true;
+          output.error (error);
+          if (hb_buffer_get_content_type (buffer) == HB_BUFFER_CONTENT_TYPE_GLYPHS)
+            break;
+          else
+            return;
+        }
+      }
+
+      output.consume_glyphs (buffer, text, text_len, shaper.utf8_clusters);
+    }
+
+    void finish (const font_options_t* font_opts) {
+      output.finish (buffer, font_opts);
+      hb_font_destroy (font);
+      font = nullptr;
+      hb_buffer_destroy (buffer);
+      buffer = nullptr;
+    }
 
   public:
-  bool failed;
+    bool failed;
 
   protected:
-  shape_options_t shaper;
-  output_t output;
+    shape_options_t shaper;
+    output_t output;
 
-  hb_font_t *font;
-  hb_buffer_t *buffer;
+    hb_font_t* font;
+    hb_buffer_t* buffer;
 };
-
 
 #endif

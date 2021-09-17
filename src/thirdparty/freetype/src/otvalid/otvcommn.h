@@ -34,15 +34,15 @@ FT_BEGIN_HEADER
 /*************************************************************************/
 /*************************************************************************/
 
-typedef struct OTV_ValidatorRec_ *OTV_Validator;
+typedef struct OTV_ValidatorRec_* OTV_Validator;
 
-typedef void  (*OTV_Validate_Func) (FT_Bytes table,
-                                    OTV_Validator otvalid);
+typedef void  (* OTV_Validate_Func) (FT_Bytes table,
+                                     OTV_Validator otvalid);
 
 typedef struct OTV_ValidatorRec_ {
   FT_Validator root;
   FT_UInt type_count;
-  OTV_Validate_Func *type_funcs;
+  OTV_Validate_Func* type_funcs;
 
   FT_UInt lookup_count;
   FT_UInt glyph_count;

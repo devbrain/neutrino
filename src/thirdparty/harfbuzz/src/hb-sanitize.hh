@@ -129,19 +129,23 @@ struct hb_sanitize_context_t :
         num_glyphs_set (false) {
     }
 
-    const char *get_name () {
+    const char* get_name () {
       return "SANITIZE";
     }
+
     template <typename T, typename F>
-    bool may_dispatch (const T *obj HB_UNUSED, const F *format) {
+    bool may_dispatch (const T* obj HB_UNUSED, const F* format) {
       return format->sanitize (this);
     }
+
     static return_t default_return_value () {
       return true;
     }
+
     static return_t no_dispatch_return_value () {
       return false;
     }
+
     bool stop_sublookup_iteration (const return_t r) const {
       return !r;
     }
@@ -153,17 +157,19 @@ struct hb_sanitize_context_t :
 
   private:
     template <typename T, typename ...Ts> auto
-    _dispatch (const T &obj, hb_priority<1>, Ts &&... ds) HB_AUTO_RETURN
+    _dispatch (const T& obj, hb_priority<1>, Ts&& ... ds) HB_AUTO_RETURN
     (obj.sanitize (this, hb_forward<Ts> (ds)...))
+
     template <typename T, typename ...Ts> auto
-    _dispatch (const T &obj, hb_priority<0>, Ts &&... ds) HB_AUTO_RETURN
+    _dispatch (const T& obj, hb_priority<0>, Ts&& ... ds) HB_AUTO_RETURN
     (obj.dispatch (this, hb_forward<Ts> (ds)...))
+
   public:
     template <typename T, typename ...Ts> auto
-    dispatch (const T &obj, Ts &&... ds) HB_AUTO_RETURN
+    dispatch (const T& obj, Ts&& ... ds) HB_AUTO_RETURN
     (_dispatch (obj, hb_prioritize, hb_forward<Ts> (ds)...))
 
-    void init (hb_blob_t *b) {
+    void init (hb_blob_t* b) {
       this->blob = hb_blob_reference (b);
       this->writable = false;
     }
@@ -172,6 +178,7 @@ struct hb_sanitize_context_t :
       num_glyphs = num_glyphs_;
       num_glyphs_set = true;
     }
+
     unsigned int get_num_glyphs () {
       return num_glyphs;
     }
@@ -181,13 +188,13 @@ struct hb_sanitize_context_t :
     }
 
     template <typename T>
-    void set_object (const T *obj) {
+    void set_object (const T* obj) {
       reset_object ();
 
       if (!obj)
         return;
 
-      const char *obj_start = (const char *) obj;
+      const char* obj_start = (const char*) obj;
       if (unlikely (obj_start < this->start || this->end <= obj_start))
         this->start = this->end = nullptr;
       else {
@@ -233,9 +240,9 @@ struct hb_sanitize_context_t :
       return edit_count;
     }
 
-    bool check_range (const void *base,
+    bool check_range (const void* base,
                       unsigned int len) const {
-      const char *p = (const char *) base;
+      const char* p = (const char*) base;
       bool ok = !len ||
                 (this->start <= p &&
                  p <= this->end &&
@@ -253,7 +260,7 @@ struct hb_sanitize_context_t :
     }
 
     template <typename T>
-    bool check_range (const T *base,
+    bool check_range (const T* base,
                       unsigned int a,
                       unsigned int b) const {
       return !hb_unsigned_mul_overflows (a, b) &&
@@ -261,7 +268,7 @@ struct hb_sanitize_context_t :
     }
 
     template <typename T>
-    bool check_range (const T *base,
+    bool check_range (const T* base,
                       unsigned int a,
                       unsigned int b,
                       unsigned int c) const {
@@ -270,27 +277,27 @@ struct hb_sanitize_context_t :
     }
 
     template <typename T>
-    bool check_array (const T *base, unsigned int len) const {
+    bool check_array (const T* base, unsigned int len) const {
       return this->check_range (base, len, hb_static_size (T));
     }
 
     template <typename T>
-    bool check_array (const T *base,
+    bool check_array (const T* base,
                       unsigned int a,
                       unsigned int b) const {
       return this->check_range (base, a, b, hb_static_size (T));
     }
 
     template <typename Type>
-    bool check_struct (const Type *obj) const {
+    bool check_struct (const Type* obj) const {
       return likely (this->check_range (obj, obj->min_size));
     }
 
-    bool may_edit (const void *base, unsigned int len) {
+    bool may_edit (const void* base, unsigned int len) {
       if (this->edit_count >= HB_SANITIZE_MAX_EDITS)
         return false;
 
-      const char *p = (const char *) base;
+      const char* p = (const char*) base;
       this->edit_count++;
 
       DEBUG_MSG_LEVEL (SANITIZE, p, this->debug_depth + 1, 0,
@@ -304,16 +311,16 @@ struct hb_sanitize_context_t :
     }
 
     template <typename Type, typename ValueType>
-    bool try_set (const Type *obj, const ValueType &v) {
+    bool try_set (const Type* obj, const ValueType& v) {
       if (this->may_edit (obj, hb_static_size (Type))) {
-        *const_cast<Type *> (obj) = v;
+        *const_cast<Type*> (obj) = v;
         return true;
       }
       return false;
     }
 
     template <typename Type>
-    hb_blob_t *sanitize_blob (hb_blob_t *blob) {
+    hb_blob_t* sanitize_blob (hb_blob_t* blob) {
       bool sane;
 
       init (blob);
@@ -328,7 +335,7 @@ struct hb_sanitize_context_t :
         return blob;
       }
 
-      Type *t = reinterpret_cast<Type *> (const_cast<char *> (start));
+      Type* t = reinterpret_cast<Type*> (const_cast<char*> (start));
 
       sane = t->sanitize (this);
       if (sane) {
@@ -372,34 +379,35 @@ struct hb_sanitize_context_t :
     }
 
     template <typename Type>
-    hb_blob_t *reference_table (const hb_face_t *face, hb_tag_t tableTag = Type::tableTag) {
+    hb_blob_t* reference_table (const hb_face_t* face, hb_tag_t tableTag = Type::tableTag) {
       if (!num_glyphs_set)
         set_num_glyphs (hb_face_get_glyph_count (face));
       return sanitize_blob<Type> (hb_face_reference_table (face, tableTag));
     }
 
-    const char *start, *end;
+    const char* start, * end;
     mutable int max_ops, max_subtables;
   private:
     bool writable;
     unsigned int edit_count;
-    hb_blob_t *blob;
+    hb_blob_t* blob;
     unsigned int num_glyphs;
     bool num_glyphs_set;
 };
 
 struct hb_sanitize_with_object_t {
     template <typename T>
-    hb_sanitize_with_object_t (hb_sanitize_context_t *c, const T &obj)
+    hb_sanitize_with_object_t (hb_sanitize_context_t* c, const T& obj)
         : c (c) {
       c->set_object (obj);
     }
+
     ~hb_sanitize_with_object_t () {
       c->reset_object ();
     }
 
   private:
-    hb_sanitize_context_t *c;
+    hb_sanitize_context_t* c;
 };
 
 #endif /* HB_SANITIZE_HH */

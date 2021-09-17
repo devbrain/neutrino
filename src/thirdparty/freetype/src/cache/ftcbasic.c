@@ -37,7 +37,7 @@ typedef struct FTC_BasicAttrRec_ {
   FTC_ScalerRec scaler;
   FT_UInt load_flags;
 
-} FTC_BasicAttrRec, *FTC_BasicAttrs;
+} FTC_BasicAttrRec, * FTC_BasicAttrs;
 
 #define FTC_BASIC_ATTR_COMPARE(a, b)                                 \
           FT_BOOL( FTC_SCALER_COMPARE( &(a)->scaler, &(b)->scaler ) && \
@@ -50,13 +50,13 @@ typedef struct FTC_BasicQueryRec_ {
   FTC_GQueryRec gquery;
   FTC_BasicAttrRec attrs;
 
-} FTC_BasicQueryRec, *FTC_BasicQuery;
+} FTC_BasicQueryRec, * FTC_BasicQuery;
 
 typedef struct FTC_BasicFamilyRec_ {
   FTC_FamilyRec family;
   FTC_BasicAttrRec attrs;
 
-} FTC_BasicFamilyRec, *FTC_BasicFamily;
+} FTC_BasicFamilyRec, * FTC_BasicFamily;
 
 FT_CALLBACK_DEF(FT_Bool)
 ftc_basic_family_compare (FTC_MruNode ftcfamily,
@@ -109,7 +109,7 @@ FT_CALLBACK_DEF(FT_Error)
 ftc_basic_family_load_bitmap (FTC_Family ftcfamily,
                               FT_UInt gindex,
                               FTC_Manager manager,
-                              FT_Face *aface) {
+                              FT_Face* aface) {
   FTC_BasicFamily family = (FTC_BasicFamily) ftcfamily;
   FT_Error error;
   FT_Size size;
@@ -133,7 +133,7 @@ FT_CALLBACK_DEF(FT_Error)
 ftc_basic_family_load_glyph (FTC_Family ftcfamily,
                              FT_UInt gindex,
                              FTC_Cache cache,
-                             FT_Glyph *aglyph) {
+                             FT_Glyph* aglyph) {
   FTC_BasicFamily family = (FTC_BasicFamily) ftcfamily;
   FT_Error error;
   FTC_Scaler scaler = &family->attrs.scaler;
@@ -176,7 +176,7 @@ FT_CALLBACK_DEF(FT_Bool)
 ftc_basic_gnode_compare_faceid (FTC_Node ftcgnode,
                                 FT_Pointer ftcface_id,
                                 FTC_Cache cache,
-                                FT_Bool *list_changed) {
+                                FT_Bool* list_changed) {
   FTC_GNode gnode = (FTC_GNode) ftcgnode;
   FTC_FaceID face_id = (FTC_FaceID) ftcface_id;
   FTC_BasicFamily family = (FTC_BasicFamily) gnode->family;
@@ -238,9 +238,9 @@ const FTC_GCacheClassRec ftc_basic_image_cache_class =
 
 FT_EXPORT_DEF(FT_Error)
 FTC_ImageCache_New (FTC_Manager manager,
-                    FTC_ImageCache *acache) {
+                    FTC_ImageCache* acache) {
   return FTC_GCache_New (manager, &ftc_basic_image_cache_class,
-                         (FTC_GCache *) acache);
+                         (FTC_GCache*) acache);
 }
 
 
@@ -250,8 +250,8 @@ FT_EXPORT_DEF(FT_Error)
 FTC_ImageCache_Lookup (FTC_ImageCache cache,
                        FTC_ImageType type,
                        FT_UInt gindex,
-                       FT_Glyph *aglyph,
-                       FTC_Node *anode) {
+                       FT_Glyph* aglyph,
+                       FTC_Node* anode) {
   FTC_BasicQueryRec query;
   FTC_Node node = 0; /* make compiler happy */
   FT_Error error;
@@ -327,8 +327,8 @@ FTC_ImageCache_LookupScaler (FTC_ImageCache cache,
                              FTC_Scaler scaler,
                              FT_ULong load_flags,
                              FT_UInt gindex,
-                             FT_Glyph *aglyph,
-                             FTC_Node *anode) {
+                             FT_Glyph* aglyph,
+                             FTC_Node* anode) {
   FTC_BasicQueryRec query;
   FTC_Node node = 0; /* make compiler happy */
   FT_Error error;
@@ -427,9 +427,9 @@ const FTC_GCacheClassRec ftc_basic_sbit_cache_class =
 
 FT_EXPORT_DEF(FT_Error)
 FTC_SBitCache_New (FTC_Manager manager,
-                   FTC_SBitCache *acache) {
+                   FTC_SBitCache* acache) {
   return FTC_GCache_New (manager, &ftc_basic_sbit_cache_class,
-                         (FTC_GCache *) acache);
+                         (FTC_GCache*) acache);
 }
 
 
@@ -439,8 +439,8 @@ FT_EXPORT_DEF(FT_Error)
 FTC_SBitCache_Lookup (FTC_SBitCache cache,
                       FTC_ImageType type,
                       FT_UInt gindex,
-                      FTC_SBit *ansbit,
-                      FTC_Node *anode) {
+                      FTC_SBit* ansbit,
+                      FTC_Node* anode) {
   FT_Error error;
   FTC_BasicQueryRec query;
   FTC_Node node = 0; /* make compiler happy */
@@ -519,8 +519,8 @@ FTC_SBitCache_LookupScaler (FTC_SBitCache cache,
                             FTC_Scaler scaler,
                             FT_ULong load_flags,
                             FT_UInt gindex,
-                            FTC_SBit *ansbit,
-                            FTC_Node *anode) {
+                            FTC_SBit* ansbit,
+                            FTC_Node* anode) {
   FT_Error error;
   FTC_BasicQueryRec query;
   FTC_Node node = 0; /* make compiler happy */

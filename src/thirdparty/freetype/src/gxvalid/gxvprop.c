@@ -53,7 +53,7 @@
 typedef struct GXV_prop_DataRec_ {
   FT_Fixed version;
 
-} GXV_prop_DataRec, *GXV_prop_Data;
+} GXV_prop_DataRec, * GXV_prop_Data;
 
 #define GXV_PROP_DATA(field)  GXV_TABLE_DATA( prop, field )
 

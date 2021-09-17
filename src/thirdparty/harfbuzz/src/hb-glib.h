@@ -41,7 +41,7 @@ hb_glib_script_to_script (GUnicodeScript script);
 HB_EXTERN GUnicodeScript
 hb_glib_script_from_script (hb_script_t script);
 
-HB_EXTERN hb_unicode_funcs_t *
+HB_EXTERN hb_unicode_funcs_t*
 hb_glib_get_unicode_funcs (void);
 
 #if GLIB_CHECK_VERSION (2, 31, 10)

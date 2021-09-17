@@ -26,7 +26,7 @@
 
 FT_EXPORT_DEF(FT_UShort)
 FT_Get_FSType_Flags (FT_Face face) {
-  TT_OS2 *os2;
+  TT_OS2* os2;
 
 
   /* first, try to get the fs_type directly from the font */
@@ -46,7 +46,7 @@ FT_Get_FSType_Flags (FT_Face face) {
 
   /* look at FSType before fsType for Type42 */
 
-  if ((os2 = (TT_OS2 *) FT_Get_Sfnt_Table (face, FT_SFNT_OS2)) != NULL &&
+  if ((os2 = (TT_OS2*) FT_Get_Sfnt_Table (face, FT_SFNT_OS2)) != NULL &&
       os2->version != 0xFFFFU)
     return os2->fsType;
 

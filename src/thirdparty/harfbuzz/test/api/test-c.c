@@ -56,7 +56,6 @@
 #endif
 
 int
-main (void)
-{
+main (void) {
   return !*hb_shape_list_shapers ();
 }

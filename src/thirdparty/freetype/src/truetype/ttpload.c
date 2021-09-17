@@ -180,10 +180,10 @@ tt_face_load_loca (TT_Face face,
 FT_LOCAL_DEF(FT_ULong)
 tt_face_get_location (TT_Face face,
                       FT_UInt gindex,
-                      FT_UInt *asize) {
+                      FT_UInt* asize) {
   FT_ULong pos1, pos2;
-  FT_Byte *p;
-  FT_Byte *p_limit;
+  FT_Byte* p;
+  FT_Byte* p_limit;
 
   pos1 = pos2 = 0;
 
@@ -321,8 +321,8 @@ tt_face_load_cvt (TT_Face face,
     goto Exit;
 
   {
-    FT_Int32 *cur = face->cvt;
-    FT_Int32 *limit = cur + face->cvt_size;
+    FT_Int32* cur = face->cvt;
+    FT_Int32* limit = cur + face->cvt_size;
 
     for (; cur < limit; cur++)
       *cur = FT_GET_SHORT() * 64;
@@ -495,8 +495,8 @@ tt_face_load_hdmx (TT_Face face,
   FT_Memory memory = stream->memory;
   FT_UInt nn, num_records;
   FT_ULong table_size, record_size;
-  FT_Byte *p;
-  FT_Byte *limit;
+  FT_Byte* p;
+  FT_Byte* limit;
 
 
   /* this table is optional */
@@ -584,9 +584,9 @@ tt_face_get_device_metrics (TT_Face face,
                             FT_UInt ppem,
                             FT_UInt gindex) {
   FT_UInt nn;
-  FT_Byte *result = NULL;
+  FT_Byte* result = NULL;
   FT_ULong record_size = face->hdmx_record_size;
-  FT_Byte *record = FT_OFFSET(face->hdmx_table, 8);
+  FT_Byte* record = FT_OFFSET(face->hdmx_table, 8);
 
   for (nn = 0; nn < face->hdmx_record_count; nn++)
     if (face->hdmx_record_sizes[nn] == ppem) {

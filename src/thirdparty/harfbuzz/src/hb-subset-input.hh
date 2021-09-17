@@ -36,12 +36,12 @@
 struct hb_subset_input_t {
   hb_object_header_t header;
 
-  hb_set_t *unicodes;
-  hb_set_t *glyphs;
-  hb_set_t *name_ids;
-  hb_set_t *name_languages;
-  hb_set_t *drop_tables;
-  hb_set_t *layout_features;
+  hb_set_t* unicodes;
+  hb_set_t* glyphs;
+  hb_set_t* name_ids;
+  hb_set_t* name_languages;
+  hb_set_t* drop_tables;
+  hb_set_t* layout_features;
 
   //use hb_bool_t to be consistent with G option parser
   hb_bool_t drop_hints;

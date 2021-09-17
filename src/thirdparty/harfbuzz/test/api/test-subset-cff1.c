@@ -30,38 +30,36 @@
 /* Unit tests for CFF subsetting */
 
 static void
-test_subset_cff1_noop (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file("fonts/SourceSansPro-Regular.abc.otf");
+test_subset_cff1_noop (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 'a');
   hb_set_add (codepoints, 'b');
   hb_set_add (codepoints, 'c');
   face_abc_subset = hb_subset_test_create_subset (face_abc, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_abc, face_abc_subset, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_abc, face_abc_subset, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
 }
 
 static void
-test_subset_cff1 (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
-  hb_face_t *face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.otf");
+test_subset_cff1 (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
+  hb_face_t * face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 'a');
   hb_set_add (codepoints, 'c');
   face_abc_subset = hb_subset_test_create_subset (face_abc, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
@@ -69,14 +67,13 @@ test_subset_cff1 (void)
 }
 
 static void
-test_subset_cff1_strip_hints (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
-  hb_face_t *face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.nohints.otf");
+test_subset_cff1_strip_hints (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
+  hb_face_t * face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.nohints.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_subset_input_t *input;
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_subset_input_t * input;
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 'a');
   hb_set_add (codepoints, 'c');
   input = hb_subset_test_create_input (codepoints);
@@ -92,14 +89,13 @@ test_subset_cff1_strip_hints (void)
 }
 
 static void
-test_subset_cff1_desubr (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
-  hb_face_t *face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.nosubrs.otf");
+test_subset_cff1_desubr (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
+  hb_face_t * face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.nosubrs.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_subset_input_t *input;
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_subset_input_t * input;
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 'a');
   hb_set_add (codepoints, 'c');
   input = hb_subset_test_create_input (codepoints);
@@ -107,7 +103,7 @@ test_subset_cff1_desubr (void)
   face_abc_subset = hb_subset_test_create_subset (face_abc, input);
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
@@ -115,14 +111,13 @@ test_subset_cff1_desubr (void)
 }
 
 static void
-test_subset_cff1_desubr_strip_hints (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
-  hb_face_t *face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.nosubrs.nohints.otf");
+test_subset_cff1_desubr_strip_hints (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
+  hb_face_t * face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.nosubrs.nohints.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_subset_input_t *input;
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_subset_input_t * input;
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 'a');
   hb_set_add (codepoints, 'c');
   input = hb_subset_test_create_input (codepoints);
@@ -139,19 +134,18 @@ test_subset_cff1_desubr_strip_hints (void)
 }
 
 static void
-test_subset_cff1_j (void)
-{
-  hb_face_t *face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
-  hb_face_t *face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.otf");
+test_subset_cff1_j (void) {
+  hb_face_t * face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
+  hb_face_t * face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_41_3041_4c2e_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_41_3041_4c2e_subset;
   hb_set_add (codepoints, 0x41);
   hb_set_add (codepoints, 0x4C2E);
   face_41_3041_4c2e_subset = hb_subset_test_create_subset (face_41_3041_4c2e, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_41_3041_4c2e_subset);
   hb_face_destroy (face_41_3041_4c2e);
@@ -159,14 +153,13 @@ test_subset_cff1_j (void)
 }
 
 static void
-test_subset_cff1_j_strip_hints (void)
-{
-  hb_face_t *face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
-  hb_face_t *face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.nohints.otf");
+test_subset_cff1_j_strip_hints (void) {
+  hb_face_t * face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
+  hb_face_t * face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.nohints.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_41_3041_4c2e_subset;
-  hb_subset_input_t *input;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_41_3041_4c2e_subset;
+  hb_subset_input_t * input;
   hb_set_add (codepoints, 0x41);
   hb_set_add (codepoints, 0x4C2E);
   input = hb_subset_test_create_input (codepoints);
@@ -174,7 +167,7 @@ test_subset_cff1_j_strip_hints (void)
   face_41_3041_4c2e_subset = hb_subset_test_create_subset (face_41_3041_4c2e, input);
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_41_3041_4c2e_subset);
   hb_face_destroy (face_41_3041_4c2e);
@@ -182,14 +175,13 @@ test_subset_cff1_j_strip_hints (void)
 }
 
 static void
-test_subset_cff1_j_desubr (void)
-{
-  hb_face_t *face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
-  hb_face_t *face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.nosubrs.otf");
+test_subset_cff1_j_desubr (void) {
+  hb_face_t * face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
+  hb_face_t * face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.nosubrs.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_41_3041_4c2e_subset;
-  hb_subset_input_t *input;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_41_3041_4c2e_subset;
+  hb_subset_input_t * input;
   hb_set_add (codepoints, 0x41);
   hb_set_add (codepoints, 0x4C2E);
   input = hb_subset_test_create_input (codepoints);
@@ -197,7 +189,7 @@ test_subset_cff1_j_desubr (void)
   face_41_3041_4c2e_subset = hb_subset_test_create_subset (face_41_3041_4c2e, input);
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_41_3041_4c2e_subset);
   hb_face_destroy (face_41_3041_4c2e);
@@ -205,14 +197,13 @@ test_subset_cff1_j_desubr (void)
 }
 
 static void
-test_subset_cff1_j_desubr_strip_hints (void)
-{
-  hb_face_t *face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
-  hb_face_t *face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.nosubrs.nohints.otf");
+test_subset_cff1_j_desubr_strip_hints (void) {
+  hb_face_t * face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
+  hb_face_t * face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.nosubrs.nohints.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_41_3041_4c2e_subset;
-  hb_subset_input_t *input;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_41_3041_4c2e_subset;
+  hb_subset_input_t * input;
   hb_set_add (codepoints, 0x41);
   hb_set_add (codepoints, 0x4C2E);
   input = hb_subset_test_create_input (codepoints);
@@ -221,7 +212,7 @@ test_subset_cff1_j_desubr_strip_hints (void)
   face_41_3041_4c2e_subset = hb_subset_test_create_subset (face_41_3041_4c2e, input);
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_41_3041_4c2e_subset);
   hb_face_destroy (face_41_3041_4c2e);
@@ -229,20 +220,19 @@ test_subset_cff1_j_desubr_strip_hints (void)
 }
 
 static void
-test_subset_cff1_expert (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/cff1_expert.otf");
-  hb_face_t *face_subset = hb_test_open_font_file ("fonts/cff1_expert.2D,F6E9,FB00.otf");
+test_subset_cff1_expert (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/cff1_expert.otf");
+  hb_face_t * face_subset = hb_test_open_font_file ("fonts/cff1_expert.2D,F6E9,FB00.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_test;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_test;
   hb_set_add (codepoints, 0x2D);
   hb_set_add (codepoints, 0xF6E9);
   hb_set_add (codepoints, 0xFB00);
   face_test = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_subset, face_test, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_subset, face_test, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_test);
   hb_face_destroy (face_subset);
@@ -250,18 +240,17 @@ test_subset_cff1_expert (void)
 }
 
 static void
-test_subset_cff1_seac (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/cff1_seac.otf");
-  hb_face_t *face_subset = hb_test_open_font_file ("fonts/cff1_seac.C0.otf");
-  hb_face_t *face_test;
+test_subset_cff1_seac (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/cff1_seac.otf");
+  hb_face_t * face_subset = hb_test_open_font_file ("fonts/cff1_seac.C0.otf");
+  hb_face_t * face_test;
 
-  hb_set_t *codepoints = hb_set_create ();
+  hb_set_t* codepoints = hb_set_create ();
   hb_set_add (codepoints, 0xC0);  /* Agrave */
   face_test = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_subset, face_test, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_subset, face_test, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_test);
   hb_face_destroy (face_subset);
@@ -269,21 +258,20 @@ test_subset_cff1_seac (void)
 }
 
 static void
-test_subset_cff1_dotsection (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/cff1_dotsect.otf");
-  hb_face_t *face_subset = hb_test_open_font_file ("fonts/cff1_dotsect.nohints.otf");
+test_subset_cff1_dotsection (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/cff1_dotsect.otf");
+  hb_face_t * face_subset = hb_test_open_font_file ("fonts/cff1_dotsect.nohints.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_subset_input_t *input;
-  hb_face_t *face_test;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_subset_input_t * input;
+  hb_face_t * face_test;
   hb_set_add (codepoints, 0x69);  /* i */
   input = hb_subset_test_create_input (codepoints);
   hb_subset_input_set_drop_hints (input, true);
   face_test = hb_subset_test_create_subset (face, input);
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_subset, face_test, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_subset, face_test, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_test);
   hb_face_destroy (face_subset);
@@ -291,14 +279,13 @@ test_subset_cff1_dotsection (void)
 }
 
 static void
-test_subset_cff1_retaingids (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
-  hb_face_t *face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.retaingids.otf");
+test_subset_cff1_retaingids (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/SourceSansPro-Regular.abc.otf");
+  hb_face_t * face_ac = hb_test_open_font_file ("fonts/SourceSansPro-Regular.ac.retaingids.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_subset_input_t *input;
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_subset_input_t * input;
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 'a');
   hb_set_add (codepoints, 'c');
   input = hb_subset_test_create_input (codepoints);
@@ -306,7 +293,7 @@ test_subset_cff1_retaingids (void)
   face_abc_subset = hb_subset_test_create_subset (face_abc, input);
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
@@ -314,14 +301,13 @@ test_subset_cff1_retaingids (void)
 }
 
 static void
-test_subset_cff1_j_retaingids (void)
-{
-  hb_face_t *face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
-  hb_face_t *face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.retaingids.otf");
+test_subset_cff1_j_retaingids (void) {
+  hb_face_t * face_41_3041_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,3041,4C2E.otf");
+  hb_face_t * face_41_4c2e = hb_test_open_font_file ("fonts/SourceHanSans-Regular.41,4C2E.retaingids.otf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_subset_input_t *input;
-  hb_face_t *face_41_3041_4c2e_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_subset_input_t * input;
+  hb_face_t * face_41_3041_4c2e_subset;
   hb_set_add (codepoints, 0x41);
   hb_set_add (codepoints, 0x4C2E);
   input = hb_subset_test_create_input (codepoints);
@@ -329,7 +315,7 @@ test_subset_cff1_j_retaingids (void)
   face_41_3041_4c2e_subset = hb_subset_test_create_subset (face_41_3041_4c2e, input);
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C','F','F',' '));
+  hb_subset_test_check (face_41_4c2e, face_41_3041_4c2e_subset, HB_TAG ('C', 'F', 'F', ' '));
 
   hb_face_destroy (face_41_3041_4c2e_subset);
   hb_face_destroy (face_41_3041_4c2e);
@@ -337,8 +323,7 @@ test_subset_cff1_j_retaingids (void)
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_subset_cff1_noop);

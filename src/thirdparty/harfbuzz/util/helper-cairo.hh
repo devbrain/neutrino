@@ -32,31 +32,29 @@
 
 #include <cairo.h>
 
-
-cairo_scaled_font_t *
-helper_cairo_create_scaled_font (const font_options_t *font_opts);
+cairo_scaled_font_t*
+helper_cairo_create_scaled_font (const font_options_t* font_opts);
 
 bool
-helper_cairo_scaled_font_has_color (cairo_scaled_font_t *scaled_font);
+helper_cairo_scaled_font_has_color (cairo_scaled_font_t* scaled_font);
 
-extern const char *helper_cairo_supported_formats[];
+extern const char* helper_cairo_supported_formats[];
 
-cairo_t *
+cairo_t*
 helper_cairo_create_context (double w, double h,
-			     view_options_t *view_opts,
-			     output_options_t *out_opts,
-			     cairo_content_t content);
+                             view_options_t* view_opts,
+                             output_options_t* out_opts,
+                             cairo_content_t content);
 
 void
-helper_cairo_destroy_context (cairo_t *cr);
-
+helper_cairo_destroy_context (cairo_t* cr);
 
 struct helper_cairo_line_t {
-  cairo_glyph_t *glyphs;
+  cairo_glyph_t* glyphs;
   unsigned int num_glyphs;
-  char *utf8;
+  char* utf8;
   unsigned int utf8_len;
-  cairo_text_cluster_t *clusters;
+  cairo_text_cluster_t* clusters;
   unsigned int num_clusters;
   cairo_text_cluster_flags_t cluster_flags;
 
@@ -69,18 +67,18 @@ struct helper_cairo_line_t {
       g_free (utf8);
   }
 
-  void get_advance (double *x_advance, double *y_advance) {
+  void get_advance (double* x_advance, double* y_advance) {
     *x_advance = glyphs[num_glyphs].x;
     *y_advance = glyphs[num_glyphs].y;
   }
 };
 
 void
-helper_cairo_line_from_buffer (helper_cairo_line_t *l,
-			       hb_buffer_t         *buffer,
-			       const char          *text,
-			       unsigned int         text_len,
-			       int                  scale_bits,
-			       hb_bool_t            utf8_clusters);
+helper_cairo_line_from_buffer (helper_cairo_line_t* l,
+                               hb_buffer_t* buffer,
+                               const char* text,
+                               unsigned int text_len,
+                               int scale_bits,
+                               hb_bool_t utf8_clusters);
 
 #endif

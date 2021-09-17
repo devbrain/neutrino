@@ -43,8 +43,8 @@ namespace neutrino::utils::io {
         resetBuffers ();
       }
 
-      buffered_bidi_stream_buf (const buffered_bidi_stream_buf &) = delete;
-      buffered_bidi_stream_buf &operator= (const buffered_bidi_stream_buf &) = delete;
+      buffered_bidi_stream_buf (const buffered_bidi_stream_buf&) = delete;
+      buffered_bidi_stream_buf& operator = (const buffered_bidi_stream_buf&) = delete;
 
       ~buffered_bidi_stream_buf () {
         delete[] _pReadBuffer;
@@ -111,11 +111,11 @@ namespace neutrino::utils::io {
       }
 
     private:
-      virtual int read_from_device (char_type * /*buffer*/, std::streamsize /*length*/) {
+      virtual int read_from_device (char_type* /*buffer*/, std::streamsize /*length*/) {
         return 0;
       }
 
-      virtual int write_to_device (const char_type * /*buffer*/, std::streamsize /*length*/) {
+      virtual int write_to_device (const char_type* /*buffer*/, std::streamsize /*length*/) {
         return 0;
       }
 
@@ -129,8 +129,8 @@ namespace neutrino::utils::io {
       }
 
       std::streamsize _bufsize;
-      char_type *_pReadBuffer;
-      char_type *_pWriteBuffer;
+      char_type* _pReadBuffer;
+      char_type* _pWriteBuffer;
       openmode _mode;
   };
 

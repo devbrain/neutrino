@@ -179,11 +179,11 @@ typedef struct {
   /* used for both reading and writing */
   int mode;               /* see gzip modes above */
   int fd;                 /* file descriptor */
-  char *path;             /* path or fd for error messages */
+  char* path;             /* path or fd for error messages */
   unsigned size;          /* buffer size, zero if not allocated yet */
   unsigned want;          /* requested buffer size, default is GZBUFSIZE */
-  unsigned char *in;      /* input buffer (double-sized when writing) */
-  unsigned char *out;     /* output buffer (double-sized when reading) */
+  unsigned char* in;      /* input buffer (double-sized when writing) */
+  unsigned char* out;     /* output buffer (double-sized when reading) */
   int direct;             /* 0 if processing gzip, 1 if transparent */
   /* just for reading */
   int how;                /* 0: get header, 1: copy, 2: decompress */
@@ -198,11 +198,11 @@ typedef struct {
   int seek;               /* true if seek request pending */
   /* error information */
   int err;                /* error code */
-  char *msg;              /* error message */
+  char* msg;              /* error message */
   /* zlib inflate or deflate stream */
   z_stream strm;          /* stream structure in-place (not a pointer) */
 } gz_state;
-typedef gz_state FAR *gz_statep;
+typedef gz_state FAR* gz_statep;
 
 /* shared functions */
 void ZLIB_INTERNAL gz_error OF((gz_statep, int, const char *));

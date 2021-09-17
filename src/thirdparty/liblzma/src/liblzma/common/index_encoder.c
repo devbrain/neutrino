@@ -26,7 +26,7 @@ typedef struct {
   } sequence;
 
   /// Index being encoded
-  const lzma_index *index;
+  const lzma_index* index;
 
   /// Iterator for the Index being encoded
   lzma_index_iter iter;
@@ -39,15 +39,15 @@ typedef struct {
 } lzma_index_coder;
 
 static lzma_ret
-index_encode (void *coder_ptr,
-              const lzma_allocator *allocator lzma_attribute((__unused__)),
-              const uint8_t *restrict in lzma_attribute((__unused__)),
-              size_t *restrict in_pos lzma_attribute((__unused__)),
+index_encode (void* coder_ptr,
+              const lzma_allocator* allocator lzma_attribute((__unused__)),
+              const uint8_t* restrict in lzma_attribute((__unused__)),
+              size_t* restrict in_pos lzma_attribute((__unused__)),
               size_t in_size lzma_attribute((__unused__)),
-              uint8_t *restrict out, size_t *restrict out_pos,
+              uint8_t* restrict out, size_t* restrict out_pos,
               size_t out_size,
               lzma_action action lzma_attribute((__unused__))) {
-  lzma_index_coder *coder = coder_ptr;
+  lzma_index_coder* coder = coder_ptr;
 
   // Position where to start calculating CRC32. The idea is that we
   // need to call lzma_crc32() only once per call to index_encode().
@@ -158,13 +158,13 @@ index_encode (void *coder_ptr,
 }
 
 static void
-index_encoder_end (void *coder, const lzma_allocator *allocator) {
+index_encoder_end (void* coder, const lzma_allocator* allocator) {
   lzma_free (coder, allocator);
   return;
 }
 
 static void
-index_encoder_reset (lzma_index_coder *coder, const lzma_index *i) {
+index_encoder_reset (lzma_index_coder* coder, const lzma_index* i) {
   lzma_index_iter_init (&coder->iter, i);
 
   coder->sequence = SEQ_INDICATOR;
@@ -176,8 +176,8 @@ index_encoder_reset (lzma_index_coder *coder, const lzma_index *i) {
 }
 
 extern lzma_ret
-lzma_index_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                         const lzma_index *i) {
+lzma_index_encoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                         const lzma_index* i) {
   lzma_next_coder_init(&lzma_index_encoder_init, next, allocator);
 
   if (i == NULL)
@@ -198,7 +198,7 @@ lzma_index_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern LZMA_API(lzma_ret)
-lzma_index_encoder (lzma_stream *strm, const lzma_index *i) {
+lzma_index_encoder (lzma_stream* strm, const lzma_index* i) {
   lzma_next_strm_init(lzma_index_encoder_init, strm, i);
 
   strm->internal->supported_actions[LZMA_RUN] = true;
@@ -208,8 +208,8 @@ lzma_index_encoder (lzma_stream *strm, const lzma_index *i) {
 }
 
 extern LZMA_API(lzma_ret)
-lzma_index_buffer_encode (const lzma_index *i,
-                          uint8_t *out, size_t *out_pos, size_t out_size) {
+lzma_index_buffer_encode (const lzma_index* i,
+                          uint8_t* out, size_t* out_pos, size_t out_size) {
   // Validate the arguments.
   if (i == NULL || out == NULL || out_pos == NULL || *out_pos > out_size)
     return LZMA_PROG_ERROR;

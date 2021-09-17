@@ -32,7 +32,7 @@
 static FT_Error
 ftc_scaler_lookup_size (FTC_Manager manager,
                         FTC_Scaler scaler,
-                        FT_Size *asize) {
+                        FT_Size* asize) {
   FT_Face face;
   FT_Size size = NULL;
   FT_Error error;
@@ -70,7 +70,7 @@ typedef struct FTC_SizeNodeRec_ {
   FT_Size size;
   FTC_ScalerRec scaler;
 
-} FTC_SizeNodeRec, *FTC_SizeNode;
+} FTC_SizeNodeRec, * FTC_SizeNode;
 
 #define FTC_SIZE_NODE(x) ( (FTC_SizeNode)( x ) )
 
@@ -154,7 +154,7 @@ ftc_size_node_compare_faceid (FTC_MruNode ftcnode,
 FT_EXPORT_DEF(FT_Error)
 FTC_Manager_LookupSize (FTC_Manager manager,
                         FTC_Scaler scaler,
-                        FT_Size *asize) {
+                        FT_Size* asize) {
   FT_Error error;
   FTC_MruNode mrunode;
 
@@ -195,7 +195,7 @@ typedef struct FTC_FaceNodeRec_ {
   FTC_FaceID face_id;
   FT_Face face;
 
-} FTC_FaceNodeRec, *FTC_FaceNode;
+} FTC_FaceNodeRec, * FTC_FaceNode;
 
 #define FTC_FACE_NODE(x) ( ( FTC_FaceNode )( x ) )
 
@@ -268,7 +268,7 @@ const FTC_MruListClassRec ftc_face_list_class =
 FT_EXPORT_DEF(FT_Error)
 FTC_Manager_LookupFace (FTC_Manager manager,
                         FTC_FaceID face_id,
-                        FT_Face *aface) {
+                        FT_Face* aface) {
   FT_Error error;
   FTC_MruNode mrunode;
 
@@ -315,7 +315,7 @@ FTC_Manager_New (FT_Library library,
                  FT_ULong max_bytes,
                  FTC_Face_Requester requester,
                  FT_Pointer req_data,
-                 FTC_Manager *amanager) {
+                 FTC_Manager* amanager) {
   FT_Error error;
   FT_Memory memory;
   FTC_Manager manager = 0;
@@ -524,7 +524,7 @@ FTC_Manager_Compress (FTC_Manager manager) {
 FT_LOCAL_DEF(FT_Error)
 FTC_Manager_RegisterCache (FTC_Manager manager,
                            FTC_CacheClass clazz,
-                           FTC_Cache *acache) {
+                           FTC_Cache* acache) {
   FT_Error error = FT_ERR(Invalid_Argument);
   FTC_Cache cache = NULL;
 

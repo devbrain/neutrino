@@ -58,8 +58,8 @@ typedef struct TT_CMapInfo_ {
 } TT_CMapInfo;
 
 typedef FT_Error
-(*TT_CMap_Info_GetFunc) (FT_CharMap charmap,
-                         TT_CMapInfo *cmap_info);
+(* TT_CMap_Info_GetFunc) (FT_CharMap charmap,
+                          TT_CMapInfo* cmap_info);
 
 FT_DEFINE_SERVICE(TTCMaps) {
   TT_CMap_Info_GetFunc get_cmap_info;

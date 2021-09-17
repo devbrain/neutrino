@@ -128,11 +128,11 @@ typedef struct FT_LzwStateRec_ {
   FT_UInt old_char;
   FT_UInt in_code;
 
-  FT_UShort *prefix;      /* always dynamically allocated / reallocated */
-  FT_Byte *suffix;      /* suffix = (FT_Byte*)(prefix + prefix_size)  */
+  FT_UShort* prefix;      /* always dynamically allocated / reallocated */
+  FT_Byte* suffix;      /* suffix = (FT_Byte*)(prefix + prefix_size)  */
   FT_UInt prefix_size; /* number of slots in `prefix' or `suffix'    */
 
-  FT_Byte *stack;       /* character stack */
+  FT_Byte* stack;       /* character stack */
   FT_UInt stack_top;
   FT_Offset stack_size;
   FT_Byte stack_0[FT_LZW_DEFAULT_STACK_SIZE]; /* minimize heap alloc */
@@ -140,7 +140,7 @@ typedef struct FT_LzwStateRec_ {
   FT_Stream source;      /* source stream */
   FT_Memory memory;
 
-} FT_LzwStateRec, *FT_LzwState;
+} FT_LzwStateRec, * FT_LzwState;
 
 FT_LOCAL(void)
 ft_lzwstate_init (FT_LzwState state,
@@ -154,7 +154,7 @@ ft_lzwstate_reset (FT_LzwState state);
 
 FT_LOCAL(FT_ULong)
 ft_lzwstate_io (FT_LzwState state,
-                FT_Byte *buffer,
+                FT_Byte* buffer,
                 FT_ULong out_size);
 
 /* */

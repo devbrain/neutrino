@@ -29,17 +29,17 @@ namespace neutrino::engine {
 
       public:
         scene_manager ();
-        int add (scene *sc);
+        int add (scene* sc);
         void activate (int scene_id);
       private:
         void update (std::chrono::milliseconds ms);
         void on_input_focus_changed (bool keyboard_focus, bool mouse_focus);
         void on_visibility_change (bool is_visible);
-        void on_keyboard_input (const events::keyboard &ev);
-        void on_pointer_input (const events::pointer &ev);
+        void on_keyboard_input (const events::keyboard& ev);
+        void on_pointer_input (const events::pointer& ev);
       private:
-        std::map<int, scene *> m_scenes;
-        scene *m_current_scene;
+        std::map<int, scene*> m_scenes;
+        scene* m_current_scene;
         bool m_first_time;
     };
   } // ns detail

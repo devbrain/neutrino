@@ -79,8 +79,8 @@ lzma_block_buffer_bound (size_t uncompressed_size) {
 }
 
 static lzma_ret
-block_encode_uncompressed (lzma_block *block, const uint8_t *in, size_t in_size,
-                           uint8_t *out, size_t *out_pos, size_t out_size) {
+block_encode_uncompressed (lzma_block* block, const uint8_t* in, size_t in_size,
+                           uint8_t* out, size_t* out_pos, size_t out_size) {
   // Use LZMA2 uncompressed chunks. We wouldn't need a dictionary at
   // all, but LZMA2 always requires a dictionary, so use the minimum
   // value to minimize memory usage of the decoder.
@@ -95,7 +95,7 @@ block_encode_uncompressed (lzma_block *block, const uint8_t *in, size_t in_size,
 
   // Set the above filter options to *block temporarily so that we can
   // encode the Block Header.
-  lzma_filter *filters_orig = block->filters;
+  lzma_filter* filters_orig = block->filters;
   block->filters = filters;
 
   if (lzma_block_header_size (block) != LZMA_OK) {
@@ -155,9 +155,9 @@ block_encode_uncompressed (lzma_block *block, const uint8_t *in, size_t in_size,
 }
 
 static lzma_ret
-block_encode_normal (lzma_block *block, const lzma_allocator *allocator,
-                     const uint8_t *in, size_t in_size,
-                     uint8_t *out, size_t *out_pos, size_t out_size) {
+block_encode_normal (lzma_block* block, const lzma_allocator* allocator,
+                     const uint8_t* in, size_t in_size,
+                     uint8_t* out, size_t* out_pos, size_t out_size) {
   // Find out the size of the Block Header.
   return_if_error(lzma_block_header_size (block));
 
@@ -211,9 +211,9 @@ block_encode_normal (lzma_block *block, const lzma_allocator *allocator,
 }
 
 static lzma_ret
-block_buffer_encode (lzma_block *block, const lzma_allocator *allocator,
-                     const uint8_t *in, size_t in_size,
-                     uint8_t *out, size_t *out_pos, size_t out_size,
+block_buffer_encode (lzma_block* block, const lzma_allocator* allocator,
+                     const uint8_t* in, size_t in_size,
+                     uint8_t* out, size_t* out_pos, size_t out_size,
                      bool try_to_compress) {
   // Validate the arguments.
   if (block == NULL || (in == NULL && in_size != 0) || out == NULL
@@ -304,17 +304,17 @@ block_buffer_encode (lzma_block *block, const lzma_allocator *allocator,
 }
 
 extern LZMA_API(lzma_ret)
-lzma_block_buffer_encode (lzma_block *block, const lzma_allocator *allocator,
-                          const uint8_t *in, size_t in_size,
-                          uint8_t *out, size_t *out_pos, size_t out_size) {
+lzma_block_buffer_encode (lzma_block* block, const lzma_allocator* allocator,
+                          const uint8_t* in, size_t in_size,
+                          uint8_t* out, size_t* out_pos, size_t out_size) {
   return block_buffer_encode (block, allocator,
                               in, in_size, out, out_pos, out_size, true);
 }
 
 extern LZMA_API(lzma_ret)
-lzma_block_uncomp_encode (lzma_block *block,
-                          const uint8_t *in, size_t in_size,
-                          uint8_t *out, size_t *out_pos, size_t out_size) {
+lzma_block_uncomp_encode (lzma_block* block,
+                          const uint8_t* in, size_t in_size,
+                          uint8_t* out, size_t* out_pos, size_t out_size) {
   // It won't allocate any memory from heap so no need
   // for lzma_allocator.
   return block_buffer_encode (block, NULL,

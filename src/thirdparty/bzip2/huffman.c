@@ -59,8 +59,8 @@
 }
 
 /*---------------------------------------------------*/
-void BZ2_hbMakeCodeLengths (UChar *len,
-                            Int32 *freq,
+void BZ2_hbMakeCodeLengths (UChar* len,
+                            Int32* freq,
                             Int32 alphaSize,
                             Int32 maxLen) {
   /*--
@@ -157,8 +157,8 @@ void BZ2_hbMakeCodeLengths (UChar *len,
 }
 
 /*---------------------------------------------------*/
-void BZ2_hbAssignCodes (Int32 *code,
-                        UChar *length,
+void BZ2_hbAssignCodes (Int32* code,
+                        UChar* length,
                         Int32 minLen,
                         Int32 maxLen,
                         Int32 alphaSize) {
@@ -176,10 +176,10 @@ void BZ2_hbAssignCodes (Int32 *code,
 }
 
 /*---------------------------------------------------*/
-void BZ2_hbCreateDecodeTables (Int32 *limit,
-                               Int32 *base,
-                               Int32 *perm,
-                               UChar *length,
+void BZ2_hbCreateDecodeTables (Int32* limit,
+                               Int32* base,
+                               Int32* perm,
+                               UChar* length,
                                Int32 minLen,
                                Int32 maxLen,
                                Int32 alphaSize) {

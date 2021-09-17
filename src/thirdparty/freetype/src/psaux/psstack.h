@@ -56,16 +56,16 @@ typedef struct CF2_StackNumber_ {
 
 typedef struct CF2_StackRec_ {
   FT_Memory memory;
-  FT_Error *error;
-  CF2_StackNumber *buffer;
-  CF2_StackNumber *top;
+  FT_Error* error;
+  CF2_StackNumber* buffer;
+  CF2_StackNumber* top;
   FT_UInt stackSize;
 
-} CF2_StackRec, *CF2_Stack;
+} CF2_StackRec, * CF2_Stack;
 
 FT_LOCAL(CF2_Stack)
 cf2_stack_init (FT_Memory memory,
-                FT_Error *error,
+                FT_Error* error,
                 FT_UInt stackSize);
 FT_LOCAL(void)
 cf2_stack_free (CF2_Stack stack);

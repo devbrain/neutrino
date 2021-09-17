@@ -230,9 +230,9 @@ typedef enum AF_Direction_ {
 #define AF_EDGE_DONE     ( 1U << 2 )
 #define AF_EDGE_NEUTRAL  ( 1U << 3 ) /* edge aligns to a neutral blue zone */
 
-typedef struct AF_PointRec_ *AF_Point;
-typedef struct AF_SegmentRec_ *AF_Segment;
-typedef struct AF_EdgeRec_ *AF_Edge;
+typedef struct AF_PointRec_* AF_Point;
+typedef struct AF_SegmentRec_* AF_Segment;
+typedef struct AF_EdgeRec_* AF_Edge;
 
 typedef struct AF_PointRec_ {
   FT_UShort flags;    /* point flags used by hinter   */
@@ -319,7 +319,7 @@ typedef struct AF_AxisHintsRec_ {
     AF_EdgeRec edges[AF_EDGES_EMBEDDED];
   } embedded;
 
-} AF_AxisHintsRec, *AF_AxisHints;
+} AF_AxisHintsRec, * AF_AxisHints;
 
 #define AF_POINTS_EMBEDDED     96   /* number of embedded points   */
 #define AF_CONTOURS_EMBEDDED    8   /* number of embedded contours */
@@ -339,7 +339,7 @@ typedef struct AF_GlyphHintsRec_ {
 
   FT_Int max_contours;  /* number of allocated contours */
   FT_Int num_contours;  /* number of used contours      */
-  AF_Point *contours;      /* contours array               */
+  AF_Point* contours;      /* contours array               */
 
   AF_AxisHintsRec axis[AF_DIMENSION_MAX];
 
@@ -400,7 +400,7 @@ af_direction_compute (FT_Pos dx,
 FT_LOCAL(FT_Error)
 af_axis_hints_new_segment (AF_AxisHints axis,
                            FT_Memory memory,
-                           AF_Segment *asegment);
+                           AF_Segment* asegment);
 
 FT_LOCAL(FT_Error)
 af_axis_hints_new_edge (AF_AxisHints axis,
@@ -408,7 +408,7 @@ af_axis_hints_new_edge (AF_AxisHints axis,
                         AF_Direction dir,
                         FT_Bool top_to_bottom_hinting,
                         FT_Memory memory,
-                        AF_Edge *edge);
+                        AF_Edge* edge);
 
 FT_LOCAL(void)
 af_glyph_hints_init (AF_GlyphHints hints,
@@ -420,11 +420,11 @@ af_glyph_hints_rescale (AF_GlyphHints hints,
 
 FT_LOCAL(FT_Error)
 af_glyph_hints_reload (AF_GlyphHints hints,
-                       FT_Outline *outline);
+                       FT_Outline* outline);
 
 FT_LOCAL(void)
 af_glyph_hints_save (AF_GlyphHints hints,
-                     FT_Outline *outline);
+                     FT_Outline* outline);
 
 FT_LOCAL(void)
 af_glyph_hints_align_edge_points (AF_GlyphHints hints,

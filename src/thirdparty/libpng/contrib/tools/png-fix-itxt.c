@@ -38,6 +38,7 @@
 #define GETBREAK inchar=getchar(); \
                  c=(inchar & 0xffU);\
                  if (inchar != c) break
+
 int
 main (void) {
   unsigned int i;

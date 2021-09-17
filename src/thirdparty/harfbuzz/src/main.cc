@@ -344,15 +344,15 @@ dump_glyphs (hb_blob_t *blob, const char *font_name)
 using namespace OT;
 
 static void
-print_layout_info_using_private_api (hb_blob_t *blob) {
-  const char *font_data = hb_blob_get_data (blob, nullptr);
-  hb_blob_t *font_blob = hb_sanitize_context_t ().sanitize_blob<OpenTypeFontFile> (blob);
-  const OpenTypeFontFile *sanitized = font_blob->as<OpenTypeFontFile> ();
+print_layout_info_using_private_api (hb_blob_t* blob) {
+  const char* font_data = hb_blob_get_data (blob, nullptr);
+  hb_blob_t* font_blob = hb_sanitize_context_t ().sanitize_blob<OpenTypeFontFile> (blob);
+  const OpenTypeFontFile* sanitized = font_blob->as<OpenTypeFontFile> ();
   if (!font_blob->data) {
     printf ("Sanitization of the file wasn't successful. Exit");
     exit (1);
   }
-  const OpenTypeFontFile &ot = *sanitized;
+  const OpenTypeFontFile& ot = *sanitized;
 
   switch (ot.get_tag ()) {
     case OpenTypeFontFile::TrueTypeTag:
@@ -381,15 +381,15 @@ print_layout_info_using_private_api (hb_blob_t *blob) {
   unsigned num_faces = hb_face_count (blob);
   printf ("%d font(s) found in file\n", num_faces);
   for (unsigned n_font = 0; n_font < num_faces; ++n_font) {
-    const OpenTypeFontFace &font = ot.get_face (n_font);
+    const OpenTypeFontFace& font = ot.get_face (n_font);
     printf ("Font %d of %d:\n", n_font, num_faces);
 
     unsigned num_tables = font.get_table_count ();
     printf ("  %d table(s) found in font\n", num_tables);
     for (unsigned n_table = 0; n_table < num_tables; ++n_table) {
-      const OpenTypeTable &table = font.get_table (n_table);
+      const OpenTypeTable& table = font.get_table (n_table);
       printf ("  Table %2d of %2d: %.4s (0x%08x+0x%08x)\n", n_table, num_tables,
-              (const char *) table.tag,
+              (const char*) table.tag,
               (unsigned) table.offset,
               (unsigned) table.length);
 
@@ -398,28 +398,28 @@ print_layout_info_using_private_api (hb_blob_t *blob) {
         case HB_OT_TAG_GSUB:
         case HB_OT_TAG_GPOS: {
 
-          const GSUBGPOS &g = *reinterpret_cast<const GSUBGPOS *> (font_data + table.offset);
+          const GSUBGPOS& g = *reinterpret_cast<const GSUBGPOS*> (font_data + table.offset);
 
           unsigned num_scripts = g.get_script_count ();
           printf ("    %d script(s) found in table\n", num_scripts);
           for (unsigned n_script = 0; n_script < num_scripts; ++n_script) {
-            const Script &script = g.get_script (n_script);
+            const Script& script = g.get_script (n_script);
             printf ("    Script %2d of %2d: %.4s\n", n_script, num_scripts,
-                    (const char *) g.get_script_tag (n_script));
+                    (const char*) g.get_script_tag (n_script));
 
             if (!script.has_default_lang_sys ())
               printf ("      No default language system\n");
             int num_langsys = script.get_lang_sys_count ();
             printf ("      %d language system(s) found in script\n", num_langsys);
             for (int n_langsys = script.has_default_lang_sys () ? -1 : 0; n_langsys < num_langsys; ++n_langsys) {
-              const LangSys &langsys = n_langsys == -1
+              const LangSys& langsys = n_langsys == -1
                                        ? script.get_default_lang_sys ()
                                        : script.get_lang_sys (n_langsys);
               if (n_langsys == -1)
                 printf ("      Default Language System\n");
               else
                 printf ("      Language System %2d of %2d: %.4s\n", n_langsys, num_langsys,
-                        (const char *) script.get_lang_sys_tag (n_langsys));
+                        (const char*) script.get_lang_sys_tag (n_langsys));
               if (!langsys.has_required_feature ())
                 printf ("        No required feature\n");
               else
@@ -438,7 +438,7 @@ print_layout_info_using_private_api (hb_blob_t *blob) {
           unsigned num_features = g.get_feature_count ();
           printf ("    %d feature(s) found in table\n", num_features);
           for (unsigned n_feature = 0; n_feature < num_features; ++n_feature) {
-            const Feature &feature = g.get_feature (n_feature);
+            const Feature& feature = g.get_feature (n_feature);
             unsigned num_lookups = feature.get_lookup_count ();
             printf ("    Feature %2d of %2d: %c%c%c%c\n", n_feature, num_features,
                     HB_UNTAG (g.get_feature_tag (n_feature)));
@@ -453,7 +453,7 @@ print_layout_info_using_private_api (hb_blob_t *blob) {
           unsigned num_lookups = g.get_lookup_count ();
           printf ("    %d lookup(s) found in table\n", num_lookups);
           for (unsigned n_lookup = 0; n_lookup < num_lookups; ++n_lookup) {
-            const Lookup &lookup = g.get_lookup (n_lookup);
+            const Lookup& lookup = g.get_lookup (n_lookup);
             printf ("    Lookup %2d of %2d: type %d, props 0x%04X\n", n_lookup, num_lookups,
                     lookup.get_type (), lookup.get_props ());
           }
@@ -463,7 +463,7 @@ print_layout_info_using_private_api (hb_blob_t *blob) {
 
         case GDEF::tableTag: {
 
-          const GDEF &gdef = *reinterpret_cast<const GDEF *> (font_data + table.offset);
+          const GDEF& gdef = *reinterpret_cast<const GDEF*> (font_data + table.offset);
 
           printf ("    Has %sglyph classes\n",
                   gdef.has_glyph_classes () ? "" : "no ");
@@ -485,13 +485,13 @@ print_layout_info_using_private_api (hb_blob_t *blob) {
 #endif
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   if (argc != 2) {
     fprintf (stderr, "usage: %s font-file.ttf\n", argv[0]);
     exit (1);
   }
 
-  hb_blob_t *blob = hb_blob_create_from_file_or_fail (argv[1]);
+  hb_blob_t* blob = hb_blob_create_from_file_or_fail (argv[1]);
   assert (blob);
   printf ("Opened font file %s: %d bytes long\n", argv[1], hb_blob_get_length (blob));
 #ifndef MAIN_CC_NO_PRIVATE_API

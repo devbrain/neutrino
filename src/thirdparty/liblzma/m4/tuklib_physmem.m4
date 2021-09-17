@@ -270,7 +270,7 @@ the amount
 of physical
 memory can
 be detected
-with sysconf (_SC_PAGESIZE) and
+with sysconf (_SC_PAGESIZE)and
 sysconf(_SC_PHYS_PAGES)
 .]);;
 sysctl)

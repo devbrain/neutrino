@@ -59,14 +59,14 @@ typedef struct GXV_just_DataRec_ {
   FT_UShort pc_offset_max;
   FT_UShort pc_offset_min;
 
-} GXV_just_DataRec, *GXV_just_Data;
+} GXV_just_DataRec, * GXV_just_Data;
 
 #define  GXV_JUST_DATA(a)  GXV_TABLE_DATA( just, a )
 
 /* GX just table does not define their subset of GID */
 static void
 gxv_just_check_max_gid (FT_UShort gid,
-                        const FT_String *msg_tag,
+                        const FT_String* msg_tag,
                         GXV_Validator gxvalid) {
   FT_UNUSED (msg_tag);
 

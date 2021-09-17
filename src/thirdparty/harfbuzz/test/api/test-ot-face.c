@@ -26,6 +26,7 @@
 
 #ifndef TEST_OT_FACE_NO_MAIN
 #include "hb-test.h"
+
 #endif
 #include <hb-aat.h>
 #include <hb-ot.h>
@@ -34,12 +35,11 @@
 
 /* Return some dummy result so that compiler won't just optimize things */
 static long long
-test_font (hb_font_t *font, hb_codepoint_t cp)
-{
+test_font (hb_font_t* font, hb_codepoint_t cp) {
   long long result = 0;
 
-  hb_face_t *face = hb_font_get_face (font);
-  hb_set_t *set;
+  hb_face_t * face = hb_font_get_face (font);
+  hb_set_t* set;
   hb_codepoint_t g = 0;
   hb_position_t x = 0, y = 0;
   char buf[5] = {0};
@@ -88,12 +88,12 @@ test_font (hb_font_t *font, hb_codepoint_t cp)
     result += count + feature + setting.disable + setting.disable + setting.name_id + setting.reserved + default_index;
   }
 
-  hb_set_t *lookup_indexes = hb_set_create ();
+  hb_set_t* lookup_indexes = hb_set_create ();
   hb_set_add (lookup_indexes, 0);
 
-  hb_map_t *lookup_mapping = hb_map_create ();
+  hb_map_t* lookup_mapping = hb_map_create ();
   hb_map_set (lookup_mapping, 0, 0);
-  hb_set_t *feature_indices = hb_set_create ();
+  hb_set_t* feature_indices = hb_set_create ();
   hb_set_destroy (lookup_indexes);
   hb_set_destroy (feature_indices);
   hb_map_destroy (lookup_mapping);
@@ -110,13 +110,13 @@ test_font (hb_font_t *font, hb_codepoint_t cp)
     unsigned temp = 0, temp2 = 0;
     hb_ot_name_id_t name = HB_OT_NAME_ID_FULL_NAME;
     hb_ot_layout_get_size_params (face, &temp, &temp, &name, &temp, &temp);
-    hb_tag_t cv01 = HB_TAG ('c','v','0','1');
+    hb_tag_t cv01 = HB_TAG ('c', 'v', '0', '1');
     unsigned feature_index = 0;
     hb_ot_layout_language_find_feature (face, HB_OT_TAG_GSUB, 0,
-					HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX,
-					cv01, &feature_index);
+                                        HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX,
+                                        cv01, &feature_index);
     hb_ot_layout_feature_get_name_ids (face, HB_OT_TAG_GSUB, feature_index,
-				       &name, &name, &name, &temp, &name);
+                                       &name, &name, &name, &temp, &name);
     temp = 1;
     hb_ot_layout_feature_get_characters (face, HB_OT_TAG_GSUB, feature_index, 0, &temp, &g);
     temp = 1;
@@ -171,32 +171,31 @@ test_font (hb_font_t *font, hb_codepoint_t cp)
   hb_set_destroy (set);
 
   return result + g + x + y + buf[0] + buf[1] + buf[2] + buf[3] + buf[4] + len +
-	 extents.height + extents.width + extents.x_bearing + extents.y_bearing;
+         extents.height + extents.width + extents.x_bearing + extents.y_bearing;
 }
 
 #ifndef TEST_OT_FACE_NO_MAIN
+
 static void
-test_ot_face_empty (void)
-{
+test_ot_face_empty (void) {
   test_font (hb_font_get_empty (), 0);
 }
 
 static void
-test_ot_var_axis_on_zero_named_instance (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/Zycon.ttf");
+test_ot_var_axis_on_zero_named_instance (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/Zycon.ttf");
   g_assert (hb_ot_var_get_axis_count (face));
   hb_face_destroy (face);
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_ot_face_empty);
   hb_test_add (test_ot_var_axis_on_zero_named_instance);
 
-  return hb_test_run();
+  return hb_test_run ();
 }
+
 #endif

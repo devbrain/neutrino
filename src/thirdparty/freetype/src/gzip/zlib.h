@@ -60,22 +60,22 @@ extern "C" {
   crash even in case of corrupted input.
 */
 
-typedef voidpf (*alloc_func) OF((voidpf opaque, uInt items, uInt size));
-typedef void   (*free_func) OF((voidpf opaque, voidpf address));
+typedef voidpf (* alloc_func) OF((voidpf opaque, uInt items, uInt size));
+typedef void   (* free_func) OF((voidpf opaque, voidpf address));
 
 struct internal_state;
 
 typedef struct z_stream_s {
-  Bytef *next_in;  /* next input byte */
+  Bytef* next_in;  /* next input byte */
   uInt avail_in;  /* number of bytes available at next_in */
   uLong total_in;  /* total nb of input bytes read so far */
 
-  Bytef *next_out; /* next output byte should be put there */
+  Bytef* next_out; /* next output byte should be put there */
   uInt avail_out; /* remaining free space at next_out */
   uLong total_out; /* total nb of bytes output so far */
 
-  char *msg;      /* last error message, NULL if no error */
-  struct internal_state FAR *state; /* not visible by applications */
+  char* msg;      /* last error message, NULL if no error */
+  struct internal_state FAR* state; /* not visible by applications */
 
   alloc_func zalloc;  /* used to allocate the internal state */
   free_func zfree;   /* used to free the internal state */
@@ -86,7 +86,7 @@ typedef struct z_stream_s {
   uLong reserved;   /* reserved for future use */
 } z_stream;
 
-typedef z_stream FAR *z_streamp;
+typedef z_stream FAR* z_streamp;
 
 /*
    The application must update next_in and avail_in when avail_in has
@@ -772,7 +772,7 @@ ZEXTERN(int) inflateReset OF((z_streamp strm));
    compression library.
 */
 
-ZEXTERN(uLong) adler32 OF((uLong adler, const Bytef *buf, uInt len));
+ZEXTERN(uLong) adler32 OF((uLong adler, const Bytef* buf, uInt len));
 
 /*
      Update a running Adler-32 checksum with the bytes buf[0..len-1] and
@@ -811,7 +811,7 @@ ZEXTERN(uLong) adler32 OF((uLong adler, const Bytef *buf, uInt len));
  * and the compiler's view of z_stream:
  */
 ZEXTERN(int) inflateInit2_ OF((z_streamp strm, int windowBits,
-                                  const char *version, int stream_size));
+                                  const char* version, int stream_size));
 #define deflateInit(strm, level) \
         deflateInit_((strm), (level),       ZLIB_VERSION, sizeof(z_stream))
 #define inflateInit(strm) \

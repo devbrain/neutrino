@@ -604,7 +604,9 @@ int main(int argc, char **argv)
    return ok == 0;
 }
 #else /* !sufficient support */
+
 int main (void) {
   return 77;
 }
+
 #endif /* !sufficient support */

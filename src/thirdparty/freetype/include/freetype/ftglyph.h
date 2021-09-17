@@ -82,7 +82,7 @@ typedef struct FT_Glyph_Class_ FT_Glyph_Class;
  *   them manually (through @FT_Done_Glyph) _before_ calling
  *   @FT_Done_FreeType.
  */
-typedef struct FT_GlyphRec_ *FT_Glyph;
+typedef struct FT_GlyphRec_* FT_Glyph;
 
 /**************************************************************************
  *
@@ -108,7 +108,7 @@ typedef struct FT_GlyphRec_ *FT_Glyph;
  */
 typedef struct FT_GlyphRec_ {
   FT_Library library;
-  const FT_Glyph_Class *clazz;
+  const FT_Glyph_Class* clazz;
   FT_Glyph_Format format;
   FT_Vector advance;
 
@@ -123,7 +123,7 @@ typedef struct FT_GlyphRec_ {
  *   A handle to an object used to model a bitmap glyph image.  This is a
  *   sub-class of @FT_Glyph, and a pointer to @FT_BitmapGlyphRec.
  */
-typedef struct FT_BitmapGlyphRec_ *FT_BitmapGlyph;
+typedef struct FT_BitmapGlyphRec_* FT_BitmapGlyph;
 
 /**************************************************************************
  *
@@ -175,7 +175,7 @@ typedef struct FT_BitmapGlyphRec_ {
  *   A handle to an object used to model an outline glyph image.  This is a
  *   sub-class of @FT_Glyph, and a pointer to @FT_OutlineGlyphRec.
  */
-typedef struct FT_OutlineGlyphRec_ *FT_OutlineGlyph;
+typedef struct FT_OutlineGlyphRec_* FT_OutlineGlyph;
 
 /**************************************************************************
  *
@@ -241,7 +241,7 @@ typedef struct FT_OutlineGlyphRec_ {
 FT_EXPORT(FT_Error)
 FT_New_Glyph (FT_Library library,
               FT_Glyph_Format format,
-              FT_Glyph *aglyph);
+              FT_Glyph* aglyph);
 
 
 /**************************************************************************
@@ -271,7 +271,7 @@ FT_New_Glyph (FT_Library library,
  */
 FT_EXPORT(FT_Error)
 FT_Get_Glyph (FT_GlyphSlot slot,
-              FT_Glyph *aglyph);
+              FT_Glyph* aglyph);
 
 
 /**************************************************************************
@@ -296,7 +296,7 @@ FT_Get_Glyph (FT_GlyphSlot slot,
  */
 FT_EXPORT(FT_Error)
 FT_Glyph_Copy (FT_Glyph source,
-               FT_Glyph *target);
+               FT_Glyph* target);
 
 
 /**************************************************************************
@@ -328,8 +328,8 @@ FT_Glyph_Copy (FT_Glyph source,
  */
 FT_EXPORT(FT_Error)
 FT_Glyph_Transform (FT_Glyph glyph,
-                    FT_Matrix *matrix,
-                    FT_Vector *delta);
+                    FT_Matrix* matrix,
+                    FT_Vector* delta);
 
 /**************************************************************************
  *
@@ -449,7 +449,7 @@ typedef enum FT_Glyph_BBox_Mode_ {
 FT_EXPORT(void)
 FT_Glyph_Get_CBox (FT_Glyph glyph,
                    FT_UInt bbox_mode,
-                   FT_BBox *acbox);
+                   FT_BBox* acbox);
 
 
 /**************************************************************************
@@ -557,9 +557,9 @@ FT_Glyph_Get_CBox (FT_Glyph glyph,
  *   ```
  */
 FT_EXPORT(FT_Error)
-FT_Glyph_To_Bitmap (FT_Glyph *the_glyph,
+FT_Glyph_To_Bitmap (FT_Glyph* the_glyph,
                     FT_Render_Mode render_mode,
-                    FT_Vector *origin,
+                    FT_Vector* origin,
                     FT_Bool destroy);
 
 
@@ -614,8 +614,8 @@ FT_Done_Glyph (FT_Glyph glyph);
  *   meaningless if the arguments are very large.
  */
 FT_EXPORT(void)
-FT_Matrix_Multiply (const FT_Matrix *a,
-                    FT_Matrix *b);
+FT_Matrix_Multiply (const FT_Matrix* a,
+                    FT_Matrix* b);
 
 
 /**************************************************************************
@@ -634,7 +634,7 @@ FT_Matrix_Multiply (const FT_Matrix *a,
  *   FreeType error code.  0~means success.
  */
 FT_EXPORT(FT_Error)
-FT_Matrix_Invert (FT_Matrix *matrix);
+FT_Matrix_Invert (FT_Matrix* matrix);
 
 /* */
 

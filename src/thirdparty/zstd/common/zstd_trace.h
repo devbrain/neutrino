@@ -89,15 +89,15 @@ typedef struct {
   /**
    * The fully resolved CCtx parameters (NULL on decompression).
    */
-  struct ZSTD_CCtx_params_s const *params;
+  struct ZSTD_CCtx_params_s const* params;
   /**
    * The ZSTD_CCtx pointer (NULL on decompression).
    */
-  struct ZSTD_CCtx_s const *cctx;
+  struct ZSTD_CCtx_s const* cctx;
   /**
    * The ZSTD_DCtx pointer (NULL on compression).
    */
-  struct ZSTD_DCtx_s const *dctx;
+  struct ZSTD_DCtx_s const* dctx;
 } ZSTD_Trace;
 
 /**
@@ -124,7 +124,7 @@ typedef unsigned long long ZSTD_TraceCtx;
  *          passed to ZSTD_trace_compress_end().
  */
 ZSTD_WEAK_ATTR ZSTD_TraceCtx ZSTD_trace_compress_begin (
-    struct ZSTD_CCtx_s const *cctx);
+    struct ZSTD_CCtx_s const* cctx);
 
 /**
  * Trace the end of a compression call.
@@ -133,7 +133,7 @@ ZSTD_WEAK_ATTR ZSTD_TraceCtx ZSTD_trace_compress_begin (
  */
 ZSTD_WEAK_ATTR void ZSTD_trace_compress_end (
     ZSTD_TraceCtx ctx,
-    ZSTD_Trace const *trace);
+    ZSTD_Trace const* trace);
 
 /**
  * Trace the beginning of a decompression call.
@@ -143,7 +143,7 @@ ZSTD_WEAK_ATTR void ZSTD_trace_compress_end (
  *          passed to ZSTD_trace_compress_end().
  */
 ZSTD_WEAK_ATTR ZSTD_TraceCtx ZSTD_trace_decompress_begin (
-    struct ZSTD_DCtx_s const *dctx);
+    struct ZSTD_DCtx_s const* dctx);
 
 /**
  * Trace the end of a decompression call.
@@ -152,7 +152,7 @@ ZSTD_WEAK_ATTR ZSTD_TraceCtx ZSTD_trace_decompress_begin (
  */
 ZSTD_WEAK_ATTR void ZSTD_trace_decompress_end (
     ZSTD_TraceCtx ctx,
-    ZSTD_Trace const *trace);
+    ZSTD_Trace const* trace);
 
 #endif /* ZSTD_TRACE */
 

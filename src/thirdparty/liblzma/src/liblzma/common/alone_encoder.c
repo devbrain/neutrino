@@ -28,12 +28,12 @@ typedef struct {
 } lzma_alone_coder;
 
 static lzma_ret
-alone_encode (void *coder_ptr, const lzma_allocator *allocator,
-              const uint8_t *restrict in, size_t *restrict in_pos,
-              size_t in_size, uint8_t *restrict out,
-              size_t *restrict out_pos, size_t out_size,
+alone_encode (void* coder_ptr, const lzma_allocator* allocator,
+              const uint8_t* restrict in, size_t* restrict in_pos,
+              size_t in_size, uint8_t* restrict out,
+              size_t* restrict out_pos, size_t out_size,
               lzma_action action) {
-  lzma_alone_coder *coder = coder_ptr;
+  lzma_alone_coder* coder = coder_ptr;
 
   while (*out_pos < out_size)
     switch (coder->sequence) {
@@ -61,8 +61,8 @@ alone_encode (void *coder_ptr, const lzma_allocator *allocator,
 }
 
 static void
-alone_encoder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_alone_coder *coder = coder_ptr;
+alone_encoder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_alone_coder* coder = coder_ptr;
   lzma_next_end (&coder->next, allocator);
   lzma_free (coder, allocator);
   return;
@@ -70,11 +70,11 @@ alone_encoder_end (void *coder_ptr, const lzma_allocator *allocator) {
 
 // At least for now, this is not used by any internal function.
 static lzma_ret
-alone_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                    const lzma_options_lzma *options) {
+alone_encoder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                    const lzma_options_lzma* options) {
   lzma_next_coder_init(&alone_encoder_init, next, allocator);
 
-  lzma_alone_coder *coder = next->coder;
+  lzma_alone_coder* coder = next->coder;
 
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_alone_coder), allocator);
@@ -122,7 +122,7 @@ alone_encoder_init (lzma_next_coder *next, const lzma_allocator *allocator,
   const lzma_filter_info filters[2] = {
       {
           .init = &lzma_lzma_encoder_init,
-          .options = (void *) (options),
+          .options = (void*) (options),
       }, {
           .init = NULL,
       }
@@ -142,7 +142,7 @@ lzma_alone_encoder_init(lzma_next_coder *next, const lzma_allocator *allocator,
 
 
 extern LZMA_API(lzma_ret)
-lzma_alone_encoder (lzma_stream *strm, const lzma_options_lzma *options) {
+lzma_alone_encoder (lzma_stream* strm, const lzma_options_lzma* options) {
   lzma_next_strm_init(alone_encoder_init, strm, options);
 
   strm->internal->supported_actions[LZMA_RUN] = true;

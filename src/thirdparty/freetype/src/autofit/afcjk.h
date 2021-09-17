@@ -64,7 +64,7 @@ typedef struct AF_CJKBlueRec_ {
   AF_WidthRec shoot; /* undershoot */
   FT_UInt flags;
 
-} AF_CJKBlueRec, *AF_CJKBlue;
+} AF_CJKBlueRec, * AF_CJKBlue;
 
 typedef struct AF_CJKAxisRec_ {
   FT_Fixed scale;
@@ -84,14 +84,14 @@ typedef struct AF_CJKAxisRec_ {
   FT_Fixed org_scale;
   FT_Pos org_delta;
 
-} AF_CJKAxisRec, *AF_CJKAxis;
+} AF_CJKAxisRec, * AF_CJKAxis;
 
 typedef struct AF_CJKMetricsRec_ {
   AF_StyleMetricsRec root;
   FT_UInt units_per_em;
   AF_CJKAxisRec axis[AF_DIMENSION_MAX];
 
-} AF_CJKMetricsRec, *AF_CJKMetrics;
+} AF_CJKMetricsRec, * AF_CJKMetrics;
 
 #ifdef AF_CONFIG_OPTION_CJK
 FT_LOCAL(FT_Error)
@@ -109,7 +109,7 @@ af_cjk_hints_init (AF_GlyphHints hints,
 FT_LOCAL(FT_Error)
 af_cjk_hints_apply (FT_UInt glyph_index,
                     AF_GlyphHints hints,
-                    FT_Outline *outline,
+                    FT_Outline* outline,
                     AF_CJKMetrics metrics);
 
 /* shared; called from afindic.c */

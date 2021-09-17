@@ -92,24 +92,24 @@ typedef struct lzma_next_coder_s lzma_next_coder;
 typedef struct lzma_filter_info_s lzma_filter_info;
 
 /// Type of a function used to initialize a filter encoder or decoder
-typedef lzma_ret (*lzma_init_function) (
-    lzma_next_coder *next, const lzma_allocator *allocator,
-    const lzma_filter_info *filters);
+typedef lzma_ret (* lzma_init_function) (
+    lzma_next_coder* next, const lzma_allocator* allocator,
+    const lzma_filter_info* filters);
 
 /// Type of a function to do some kind of coding work (filters, Stream,
 /// Block encoders/decoders etc.). Some special coders use don't use both
 /// input and output buffers, but for simplicity they still use this same
 /// function prototype.
-typedef lzma_ret (*lzma_code_function) (
-    void *coder, const lzma_allocator *allocator,
-    const uint8_t *restrict in, size_t *restrict in_pos,
-    size_t in_size, uint8_t *restrict out,
-    size_t *restrict out_pos, size_t out_size,
+typedef lzma_ret (* lzma_code_function) (
+    void* coder, const lzma_allocator* allocator,
+    const uint8_t* restrict in, size_t* restrict in_pos,
+    size_t in_size, uint8_t* restrict out,
+    size_t* restrict out_pos, size_t out_size,
     lzma_action action);
 
 /// Type of a function to free the memory allocated for the coder
-typedef void (*lzma_end_function) (
-    void *coder, const lzma_allocator *allocator);
+typedef void (* lzma_end_function) (
+    void* coder, const lzma_allocator* allocator);
 
 /// Raw coder validates and converts an array of lzma_filter structures to
 /// an array of lzma_filter_info structures. This array is used with
@@ -124,13 +124,13 @@ struct lzma_filter_info_s {
   lzma_init_function init;
 
   /// Pointer to filter's options structure
-  void *options;
+  void* options;
 };
 
 /// Hold data and function pointers of the next filter in the chain.
 struct lzma_next_coder_s {
   /// Pointer to coder-specific data
-  void *coder;
+  void* coder;
 
   /// Filter ID. This is LZMA_VLI_UNKNOWN when this structure doesn't
   /// point to a filter coder.
@@ -152,23 +152,23 @@ struct lzma_next_coder_s {
 
   /// Pointer to a function to get progress information. If this is NULL,
   /// lzma_stream.total_in and .total_out are used instead.
-  void (*get_progress) (void *coder,
-                        uint64_t *progress_in, uint64_t *progress_out);
+  void (* get_progress) (void* coder,
+                         uint64_t* progress_in, uint64_t* progress_out);
 
   /// Pointer to function to return the type of the integrity check.
   /// Most coders won't support this.
-  lzma_check (*get_check) (const void *coder);
+  lzma_check (* get_check) (const void* coder);
 
   /// Pointer to function to get and/or change the memory usage limit.
   /// If new_memlimit == 0, the limit is not changed.
-  lzma_ret (*memconfig) (void *coder, uint64_t *memusage,
-                         uint64_t *old_memlimit, uint64_t new_memlimit);
+  lzma_ret (* memconfig) (void* coder, uint64_t* memusage,
+                          uint64_t* old_memlimit, uint64_t new_memlimit);
 
   /// Update the filter-specific options or the whole filter chain
   /// in the encoder.
-  lzma_ret (*update) (void *coder, const lzma_allocator *allocator,
-                      const lzma_filter *filters,
-                      const lzma_filter *reversed_filters);
+  lzma_ret (* update) (void* coder, const lzma_allocator* allocator,
+                       const lzma_filter* filters,
+                       const lzma_filter* reversed_filters);
 };
 
 
@@ -220,46 +220,46 @@ struct lzma_internal_s {
 };
 
 /// Allocates memory
-extern void *lzma_alloc (size_t size, const lzma_allocator *allocator)
+extern void* lzma_alloc (size_t size, const lzma_allocator* allocator)
 lzma_attribute((__malloc__)) lzma_attr_alloc_size(1);
 
 /// Allocates memory and zeroes it (like calloc()). This can be faster
 /// than lzma_alloc() + memzero() while being backward compatible with
 /// custom allocators.
-extern void *lzma_attribute((__malloc__)) lzma_attr_alloc_size(1)
-lzma_alloc_zero (size_t size, const lzma_allocator *allocator);
+extern void* lzma_attribute((__malloc__)) lzma_attr_alloc_size(1)
+lzma_alloc_zero (size_t size, const lzma_allocator* allocator);
 
 /// Frees memory
-extern void lzma_free (void *ptr, const lzma_allocator *allocator);
+extern void lzma_free (void* ptr, const lzma_allocator* allocator);
 
 /// Allocates strm->internal if it is NULL, and initializes *strm and
 /// strm->internal. This function is only called via lzma_next_strm_init macro.
-extern lzma_ret lzma_strm_init (lzma_stream *strm);
+extern lzma_ret lzma_strm_init (lzma_stream* strm);
 
 /// Initializes the next filter in the chain, if any. This takes care of
 /// freeing the memory of previously initialized filter if it is different
 /// than the filter being initialized now. This way the actual filter
 /// initialization functions don't need to use lzma_next_coder_init macro.
-extern lzma_ret lzma_next_filter_init (lzma_next_coder *next,
-                                       const lzma_allocator *allocator,
-                                       const lzma_filter_info *filters);
+extern lzma_ret lzma_next_filter_init (lzma_next_coder* next,
+                                       const lzma_allocator* allocator,
+                                       const lzma_filter_info* filters);
 
 /// Update the next filter in the chain, if any. This checks that
 /// the application is not trying to change the Filter IDs.
 extern lzma_ret lzma_next_filter_update (
-    lzma_next_coder *next, const lzma_allocator *allocator,
-    const lzma_filter *reversed_filters);
+    lzma_next_coder* next, const lzma_allocator* allocator,
+    const lzma_filter* reversed_filters);
 
 /// Frees the memory allocated for next->coder either using next->end or,
 /// if next->end is NULL, using lzma_free.
-extern void lzma_next_end (lzma_next_coder *next,
-                           const lzma_allocator *allocator);
+extern void lzma_next_end (lzma_next_coder* next,
+                           const lzma_allocator* allocator);
 
 /// Copy as much data as possible from in[] to out[] and update *in_pos
 /// and *out_pos accordingly. Returns the number of bytes copied.
-extern size_t lzma_bufcpy (const uint8_t *restrict in, size_t *restrict in_pos,
-                           size_t in_size, uint8_t *restrict out,
-                           size_t *restrict out_pos, size_t out_size);
+extern size_t lzma_bufcpy (const uint8_t* restrict in, size_t* restrict in_pos,
+                           size_t in_size, uint8_t* restrict out,
+                           size_t* restrict out_pos, size_t out_size);
 
 
 /// \brief      Return if expression doesn't evaluate to LZMA_OK

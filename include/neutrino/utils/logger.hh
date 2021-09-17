@@ -11,9 +11,9 @@
 
 template <typename T0, typename ... Ts>
 inline
-std::ostream &operator<< (std::ostream &s,
-                          std::variant<T0, Ts...> const &v) {
-  std::visit ([&] (auto &&arg) { s << arg; }, v);
+std::ostream& operator << (std::ostream& s,
+                           std::variant<T0, Ts...> const& v) {
+  std::visit ([&] (auto&& arg) { s << arg; }, v);
   return s;
 }
 
@@ -29,7 +29,7 @@ namespace neutrino::logger {
 
   template <typename Arg, typename ... Args>
   inline
-  void trace (priority prio, const char *const func, const char *const file, int line, Arg &&arg, Args &&... args) {
+  void trace (priority prio, const char* const func, const char* const file, int line, Arg&& arg, Args&& ... args) {
     static auto logger_prio = SDL_LogGetPriority (SDL_LOG_CATEGORY_APPLICATION);
     if (static_cast<int>(prio) < logger_prio) {
       return;

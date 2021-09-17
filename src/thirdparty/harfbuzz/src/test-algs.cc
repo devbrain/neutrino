@@ -27,8 +27,8 @@
 #include "hb.hh"
 #include "hb-algs.hh"
 
-static char *
-test_func (int a, char **b) {
+static char*
+test_func (int a, char** b) {
   return b ? b[a] : nullptr;
 }
 
@@ -38,7 +38,7 @@ struct A {
 };
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   int i = 1;
   auto p = hb_pair (1, i);
 
@@ -66,13 +66,13 @@ main (int argc, char **argv) {
   hb_min (x, 3);
   hb_min (3, x);
   hb_min (x, 4 + 3);
-  int &z = hb_min (x, y);
+  int& z = hb_min (x, y);
   z = 3;
   assert (x == 3);
 
-  hb_pair_t<const int *, int> xp = hb_pair_t<int *, long> (nullptr, 0);
-  xp = hb_pair_t<int *, double> (nullptr, 1);
-  xp = hb_pair_t<const int *, int> (nullptr, 1);
+  hb_pair_t<const int*, int> xp = hb_pair_t<int*, long> (nullptr, 0);
+  xp = hb_pair_t<int*, double> (nullptr, 1);
+  xp = hb_pair_t<const int*, int> (nullptr, 1);
 
   assert (3 == hb_partial (hb_min, 3) (4));
   assert (3 == hb_partial<1> (hb_min, 4) (3));

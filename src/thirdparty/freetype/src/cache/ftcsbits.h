@@ -32,21 +32,21 @@ typedef struct FTC_SNodeRec_ {
   FT_UInt count;
   FTC_SBitRec sbits[FTC_SBIT_ITEMS_PER_NODE];
 
-} FTC_SNodeRec, *FTC_SNode;
+} FTC_SNodeRec, * FTC_SNode;
 
 #define FTC_SNODE(x)         ( (FTC_SNode)( x ) )
 #define FTC_SNODE_GINDEX(x)  FTC_GNODE( x )->gindex
 #define FTC_SNODE_FAMILY(x)  FTC_GNODE( x )->family
 
 typedef FT_UInt
-(*FTC_SFamily_GetCountFunc) (FTC_Family family,
-                             FTC_Manager manager);
+(* FTC_SFamily_GetCountFunc) (FTC_Family family,
+                              FTC_Manager manager);
 
 typedef FT_Error
-(*FTC_SFamily_LoadGlyphFunc) (FTC_Family family,
-                              FT_UInt gindex,
-                              FTC_Manager manager,
-                              FT_Face *aface);
+(* FTC_SFamily_LoadGlyphFunc) (FTC_Family family,
+                               FT_UInt gindex,
+                               FTC_Manager manager,
+                               FT_Face* aface);
 
 typedef struct FTC_SFamilyClassRec_ {
   FTC_MruListClassRec clazz;
@@ -55,7 +55,7 @@ typedef struct FTC_SFamilyClassRec_ {
 
 } FTC_SFamilyClassRec;
 
-typedef const FTC_SFamilyClassRec *FTC_SFamilyClass;
+typedef const FTC_SFamilyClassRec* FTC_SFamilyClass;
 
 #define FTC_SFAMILY_CLASS(x)  ((FTC_SFamilyClass)(x))
 
@@ -67,7 +67,7 @@ FTC_SNode_Free (FTC_SNode snode,
                 FTC_Cache cache);
 
 FT_LOCAL(FT_Error)
-FTC_SNode_New (FTC_SNode *psnode,
+FTC_SNode_New (FTC_SNode* psnode,
                FTC_GQuery gquery,
                FTC_Cache cache);
 
@@ -82,7 +82,7 @@ FT_LOCAL(FT_Bool)
 FTC_SNode_Compare (FTC_SNode snode,
                    FTC_GQuery gquery,
                    FTC_Cache cache,
-                   FT_Bool *list_changed);
+                   FT_Bool* list_changed);
 
 #endif
 

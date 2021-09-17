@@ -20,8 +20,9 @@ namespace neutrino::tiled::tmx {
   class image {
     public:
 
-      static std::unique_ptr<image> parse (const reader &elt);
-      static std::unique_ptr<image> parse (const json_reader &elt);
+      static std::unique_ptr<image> parse (const reader& elt);
+      static std::unique_ptr<image> parse (const json_reader& elt);
+
       /**
        * @brief Image constructor.
        */
@@ -51,7 +52,7 @@ namespace neutrino::tiled::tmx {
        *
        * @returns the path to the image file
        */
-      [[nodiscard]] const std::string &source () const noexcept {
+      [[nodiscard]] const std::string& source () const noexcept {
         return m_source;
       }
 
@@ -103,9 +104,14 @@ namespace neutrino::tiled::tmx {
         return std::nullopt;
       }
 
-      [[nodiscard]] const std::vector<char> &data () const noexcept {
+      [[nodiscard]] const std::vector<char>& data () const noexcept {
         return m_data;
       }
+
+      [[nodiscard]] std::vector<char>& data () noexcept {
+        return m_data;
+      }
+
     private:
       const std::string m_format;
       const std::string m_source;

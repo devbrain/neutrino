@@ -70,7 +70,7 @@ static png_infop info_ptr = NULL;
 
 png_uint_32 width, height;
 int bit_depth, color_type;
-uch *image_data = NULL;
+uch* image_data = NULL;
 
 void readpng_version_info (void) {
   fprintf (stderr, "   Compiled with libpng %s; using libpng %s.\n",
@@ -81,7 +81,7 @@ void readpng_version_info (void) {
 
 /* return value = 0 for success, 1 for bad sig, 2 for bad IHDR, 4 for no mem */
 
-int readpng_init (FILE *infile, ulg *pWidth, ulg *pHeight) {
+int readpng_init (FILE* infile, ulg* pWidth, ulg* pHeight) {
   uch sig[8];
 
 
@@ -144,7 +144,7 @@ int readpng_init (FILE *infile, ulg *pWidth, ulg *pHeight) {
 /* returns 0 if succeeds, 1 if fails due to no bKGD chunk, 2 if libpng error;
  * scales values to 8-bit if necessary */
 
-int readpng_get_bgcolor (uch *red, uch *green, uch *blue) {
+int readpng_get_bgcolor (uch* red, uch* green, uch* blue) {
   png_color_16p pBackground;
 
 
@@ -193,7 +193,7 @@ int readpng_get_bgcolor (uch *red, uch *green, uch *blue) {
 
 /* display_exponent == LUT_exponent * CRT_exponent */
 
-uch *readpng_get_image (double display_exponent, int *pChannels, ulg *pRowbytes) {
+uch* readpng_get_image (double display_exponent, int* pChannels, ulg* pRowbytes) {
   double gamma;
   png_uint_32 i, rowbytes;
   png_bytepp row_pointers = NULL;
@@ -257,7 +257,7 @@ uch *readpng_get_image (double display_exponent, int *pChannels, ulg *pRowbytes)
     return NULL;
   }
 
-  if ((image_data = (uch *) malloc (rowbytes * height)) == NULL) {
+  if ((image_data = (uch*) malloc (rowbytes * height)) == NULL) {
     png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
     return NULL;
   }

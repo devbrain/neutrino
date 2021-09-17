@@ -403,7 +403,7 @@ typedef int TCoord;   /* integer scanline/pixel coordinate */
 typedef int TArea;    /* cell areas, coordinate products   */
 
 
-typedef struct TCell_ *PCell;
+typedef struct TCell_* PCell;
 
 typedef struct TCell_ {
   TCoord x;     /* same with gray_TWorker.ex    */
@@ -414,7 +414,7 @@ typedef struct TCell_ {
 } TCell;
 
 typedef struct TPixmap_ {
-  unsigned char *origin;  /* pixmap origin at the bottom-left */
+  unsigned char* origin;  /* pixmap origin at the bottom-left */
   int pitch;   /* pitch to go down one row */
 
 } TPixmap;
@@ -448,7 +448,7 @@ typedef struct gray_TWorker_ {
   TCoord cover;
   int invalid;
 
-  PCell *ycells;
+  PCell* ycells;
   PCell cells;
   FT_PtrDist max_cells;
   FT_PtrDist num_cells;
@@ -459,11 +459,11 @@ typedef struct gray_TWorker_ {
   TPixmap target;
 
   FT_Raster_Span_Func render_span;
-  void *render_span_data;
+  void* render_span_data;
   FT_Span spans[FT_MAX_GRAY_SPANS];
   int num_spans;
 
-} gray_TWorker, *gray_PWorker;
+} gray_TWorker, * gray_PWorker;
 
 #if defined( _MSC_VER )
 #pragma warning( pop )
@@ -476,9 +476,9 @@ static gray_TWorker  ras;
 #endif
 
 typedef struct gray_TRaster_ {
-  void *memory;
+  void* memory;
 
-} gray_TRaster, *gray_PRaster;
+} gray_TRaster, * gray_PRaster;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
 
@@ -512,7 +512,7 @@ gray_dump_cells( RAS_ARG )
  */
 static void
 gray_record_cell (RAS_ARG) {
-  PCell *pcell, cell;
+  PCell* pcell, cell;
   TCoord x = ras.ex;
 
   pcell = &ras.ycells[ras.ey - ras.min_ey];
@@ -958,7 +958,7 @@ gray_render_line (RAS_ARG_ TPos to_x,
 #endif
 
 static void
-gray_split_conic (FT_Vector *base) {
+gray_split_conic (FT_Vector* base) {
   TPos a, b;
 
   base[4].x = base[2].x;
@@ -977,10 +977,10 @@ gray_split_conic (FT_Vector *base) {
 }
 
 static void
-gray_render_conic (RAS_ARG_ const FT_Vector *control,
-                   const FT_Vector *to) {
+gray_render_conic (RAS_ARG_ const FT_Vector* control,
+                   const FT_Vector* to) {
   FT_Vector bez_stack[16 * 2 + 1];  /* enough to accommodate bisections */
-  FT_Vector *arc = bez_stack;
+  FT_Vector* arc = bez_stack;
   TPos dx, dy;
   int draw, split;
 
@@ -1035,7 +1035,7 @@ gray_render_conic (RAS_ARG_ const FT_Vector *control,
 }
 
 static void
-gray_split_cubic (FT_Vector *base) {
+gray_split_cubic (FT_Vector* base) {
   TPos a, b, c;
 
   base[6].x = base[3].x;
@@ -1064,11 +1064,11 @@ gray_split_cubic (FT_Vector *base) {
 }
 
 static void
-gray_render_cubic (RAS_ARG_ const FT_Vector *control1,
-                   const FT_Vector *control2,
-                   const FT_Vector *to) {
+gray_render_cubic (RAS_ARG_ const FT_Vector* control1,
+                   const FT_Vector* control2,
+                   const FT_Vector* to) {
   FT_Vector bez_stack[16 * 3 + 1];  /* enough to accommodate bisections */
-  FT_Vector *arc = bez_stack;
+  FT_Vector* arc = bez_stack;
 
   arc[0].x = UPSCALE(to->x);
   arc[0].y = UPSCALE(to->y);
@@ -1118,7 +1118,7 @@ gray_render_cubic (RAS_ARG_ const FT_Vector *control1,
 }
 
 static int
-gray_move_to (const FT_Vector *to,
+gray_move_to (const FT_Vector* to,
               gray_PWorker worker) {
   TPos x, y;
 
@@ -1135,24 +1135,24 @@ gray_move_to (const FT_Vector *to,
 }
 
 static int
-gray_line_to (const FT_Vector *to,
+gray_line_to (const FT_Vector* to,
               gray_PWorker worker) {
   gray_render_line (RAS_VAR_ UPSCALE(to->x), UPSCALE(to->y));
   return 0;
 }
 
 static int
-gray_conic_to (const FT_Vector *control,
-               const FT_Vector *to,
+gray_conic_to (const FT_Vector* control,
+               const FT_Vector* to,
                gray_PWorker worker) {
   gray_render_conic (RAS_VAR_ control, to);
   return 0;
 }
 
 static int
-gray_cubic_to (const FT_Vector *control1,
-               const FT_Vector *control2,
-               const FT_Vector *to,
+gray_cubic_to (const FT_Vector* control1,
+               const FT_Vector* control2,
+               const FT_Vector* to,
                gray_PWorker worker) {
   gray_render_cubic (RAS_VAR_ control1, control2, to);
   return 0;
@@ -1184,7 +1184,7 @@ gray_hline (RAS_ARG_ TCoord x,
 
   if (ras.num_spans >= 0)  /* for FT_RASTER_FLAG_DIRECT only */
   {
-    FT_Span *span = ras.spans + ras.num_spans++;
+    FT_Span* span = ras.spans + ras.num_spans++;
 
     span->x = (short) x;
     span->len = (unsigned short) acount;
@@ -1197,7 +1197,7 @@ gray_hline (RAS_ARG_ TCoord x,
     }
   }
   else {
-    unsigned char *q = ras.target.origin - ras.target.pitch * y + x;
+    unsigned char* q = ras.target.origin - ras.target.pitch * y + x;
     unsigned char c = (unsigned char) coverage;
 
 
@@ -1610,7 +1610,7 @@ gray_convert_glyph (RAS_ARG) {
   size_t n = FT_MAX_GRAY_POOL / 8;
   TCoord y;
   TCoord bands[32];  /* enough to accommodate bisections */
-  TCoord *band;
+  TCoord* band;
 
   int continued = 0;
 
@@ -1627,7 +1627,7 @@ gray_convert_glyph (RAS_ARG) {
 
   ras.cells = buffer + n;
   ras.max_cells = (FT_PtrDist) (FT_MAX_GRAY_POOL - n);
-  ras.ycells = (PCell *) buffer;
+  ras.ycells = (PCell*) buffer;
 
   for (y = yMin; y < yMax;) {
     ras.min_ey = y;
@@ -1681,9 +1681,9 @@ gray_convert_glyph (RAS_ARG) {
 
 static int
 gray_raster_render (FT_Raster raster,
-                    const FT_Raster_Params *params) {
-  const FT_Outline *outline = (const FT_Outline *) params->source;
-  const FT_Bitmap *target_map = params->target;
+                    const FT_Raster_Params* params) {
+  const FT_Outline* outline = (const FT_Outline*) params->source;
+  const FT_Bitmap* target_map = params->target;
 
 #ifndef FT_STATIC_RASTER
   gray_TWorker worker[1];
@@ -1795,7 +1795,7 @@ gray_raster_done( FT_Raster  raster )
 
 static int
 gray_raster_new (FT_Memory memory,
-                 FT_Raster *araster) {
+                 FT_Raster* araster) {
   FT_Error error;
   gray_PRaster raster = NULL;
 
@@ -1819,7 +1819,7 @@ gray_raster_done (FT_Raster raster) {
 
 static void
 gray_raster_reset (FT_Raster raster,
-                   unsigned char *pool_base,
+                   unsigned char* pool_base,
                    unsigned long pool_size) {
   FT_UNUSED(raster);
   FT_UNUSED(pool_base);
@@ -1829,7 +1829,7 @@ gray_raster_reset (FT_Raster raster,
 static int
 gray_raster_set_mode (FT_Raster raster,
                       unsigned long mode,
-                      void *args) {
+                      void* args) {
   FT_UNUSED(raster);
   FT_UNUSED(mode);
   FT_UNUSED(args);

@@ -51,7 +51,7 @@
 /* `error').                                               */
 FT_LOCAL_DEF(CF2_Stack)
 cf2_stack_init (FT_Memory memory,
-                FT_Error *e,
+                FT_Error* e,
                 FT_UInt stackSize) {
   FT_Error error = FT_Err_Ok;     /* for FT_NEW */
 

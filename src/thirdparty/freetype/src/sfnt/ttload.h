@@ -34,7 +34,7 @@ FT_LOCAL(FT_Error)
 tt_face_goto_table (TT_Face face,
                     FT_ULong tag,
                     FT_Stream stream,
-                    FT_ULong *length);
+                    FT_ULong* length);
 
 FT_LOCAL(FT_Error)
 tt_face_load_font_dir (TT_Face face,
@@ -44,8 +44,8 @@ FT_LOCAL(FT_Error)
 tt_face_load_any (TT_Face face,
                   FT_ULong tag,
                   FT_Long offset,
-                  FT_Byte *buffer,
-                  FT_ULong *length);
+                  FT_Byte* buffer,
+                  FT_ULong* length);
 
 FT_LOCAL(FT_Error)
 tt_face_load_head (TT_Face face,

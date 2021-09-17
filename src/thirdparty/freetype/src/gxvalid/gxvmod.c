@@ -49,8 +49,8 @@
 static FT_Error
 gxv_load_table (FT_Face face,
                 FT_Tag tag,
-                FT_Byte *volatile *table,
-                FT_ULong *table_len) {
+                FT_Byte* volatile* table,
+                FT_ULong* table_len) {
   FT_Error error;
   FT_Memory memory = FT_FACE_MEMORY (face);
 
@@ -181,10 +181,10 @@ gxv_validate (FT_Face face,
 static FT_Error
 classic_kern_validate (FT_Face face,
                        FT_UInt ckern_flags,
-                       FT_Bytes *ckern_table) {
+                       FT_Bytes* ckern_table) {
   FT_Memory volatile memory = FT_FACE_MEMORY (face);
 
-  FT_Byte *volatile ckern = NULL;
+  FT_Byte* volatile ckern = NULL;
   FT_ULong len_ckern = 0;
 
   /* without volatile on `error' GCC 4.1.1. emits:                         */
@@ -241,7 +241,7 @@ const FT_ServiceDescRec gxvalid_services[] =
 
 static FT_Pointer
 gxvalid_get_service (FT_Module module,
-                     const char *service_id) {
+                     const char* service_id) {
   FT_UNUSED (module);
 
   return ft_service_list_lookup (gxvalid_services, service_id);

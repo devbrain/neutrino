@@ -937,7 +937,7 @@ typedef unsigned long png_ptruint;
 /* This is used for 16-bit gamma tables -- only the top level pointers are
  * const; this could be changed:
  */
-typedef const png_uint_16p *png_const_uint_16pp;
+typedef const png_uint_16p* png_const_uint_16pp;
 
 /* Added to libpng-1.5.7: sRGB conversion tables */
 #if defined(PNG_SIMPLIFIED_READ_SUPPORTED) || \
@@ -1146,7 +1146,7 @@ PNG_INTERNAL_FUNCTION(void, png_write_sBIT, (png_structrp png_ptr,
 
 #ifdef PNG_WRITE_cHRM_SUPPORTED
 PNG_INTERNAL_FUNCTION(void, png_write_cHRM_fixed, (png_structrp png_ptr,
-    const png_xy *xy), PNG_EMPTY);
+    const png_xy* xy), PNG_EMPTY);
 /* The xy value must have been previously validated */
 #endif
 
@@ -1653,11 +1653,11 @@ PNG_INTERNAL_FUNCTION(void, png_colorspace_sync, (png_const_structrp png_ptr,
  * a png_info or png_struct (or, indeed, both).
  */
 PNG_INTERNAL_FUNCTION(int, png_colorspace_set_chromaticities,
-                      (png_const_structrp png_ptr, png_colorspacerp colorspace, const png_xy *xy,
+                      (png_const_structrp png_ptr, png_colorspacerp colorspace, const png_xy* xy,
                           int preferred), PNG_EMPTY);
 
 PNG_INTERNAL_FUNCTION(int, png_colorspace_set_endpoints,
-                      (png_const_structrp png_ptr, png_colorspacerp colorspace, const png_XYZ *XYZ,
+                      (png_const_structrp png_ptr, png_colorspacerp colorspace, const png_XYZ* XYZ,
                           int preferred), PNG_EMPTY);
 
 #ifdef PNG_sRGB_SUPPORTED
@@ -1958,7 +1958,7 @@ PNG_INTERNAL_FUNCTION(void, png_ascii_from_fixed, (png_const_structrp png_ptr,
  * the problem character.)  This has not been tested within libpng.
  */
 PNG_INTERNAL_FUNCTION(int, png_check_fp_number, (png_const_charp string,
-    size_t size, int *statep, png_size_tp whereami), PNG_EMPTY);
+    size_t size, int* statep, png_size_tp whereami), PNG_EMPTY);
 
 /* This is the same but it checks a complete string and returns true
  * only if it just contains a floating point number.  As of 1.5.4 this
@@ -2071,7 +2071,7 @@ PNG_INTERNAL_CALLBACK(void, png_safe_warning, (png_structp png_ptr,
 #endif
 
 PNG_INTERNAL_FUNCTION(int, png_safe_execute, (png_imagep image,
-    int (*function) (png_voidp), png_voidp arg), PNG_EMPTY);
+    int (* function) (png_voidp), png_voidp arg), PNG_EMPTY);
 
 /* Utility to log an error; this also cleans up the png_image; the function
  * always returns 0 (false).

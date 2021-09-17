@@ -52,8 +52,8 @@
 extern struct ExecIFace *IExec;
 extern struct DOSIFace  *IDOS;
 #else
-extern struct Library *SysBase;
-extern struct Library *DOSBase;
+extern struct Library* SysBase;
+extern struct Library* DOSBase;
 #endif
 
 #define IOBUF_SIZE 512
@@ -69,12 +69,13 @@ struct SysFile {
 };
 
 #ifndef __amigaos4__
+
 /* C implementation of AllocVecPooled (see autodoc exec/AllocPooled) */
 APTR
 Alloc_VecPooled (APTR poolHeader,
                  ULONG memSize) {
   ULONG newSize = memSize + sizeof (ULONG);
-  ULONG *mem = AllocPooled (poolHeader, newSize);
+  ULONG* mem = AllocPooled (poolHeader, newSize);
 
   if (!mem)
     return NULL;
@@ -86,10 +87,11 @@ Alloc_VecPooled (APTR poolHeader,
 void
 Free_VecPooled (APTR poolHeader,
                 APTR memory) {
-  ULONG *realmem = (ULONG *) memory - 1;
+  ULONG* realmem = (ULONG*) memory - 1;
 
   FreePooled (poolHeader, realmem, *realmem);
 }
+
 #endif
 
 #include <ft2build.h>
@@ -135,7 +137,7 @@ Free_VecPooled (APTR poolHeader,
 /* <Return>                                                              */
 /*    The address of newly allocated block.                              */
 /*                                                                       */
-FT_CALLBACK_DEF (void *)
+FT_CALLBACK_DEF (void*)
 ft_alloc( FT_Memory
 memory,
 long size
@@ -171,15 +173,15 @@ Alloc_VecPooled( memory
 /* <Return>                                                              */
 /*    The address of the reallocated memory block.                       */
 /*                                                                       */
-FT_CALLBACK_DEF (void *)
+FT_CALLBACK_DEF (void*)
 ft_realloc( FT_Memory
 memory,
 long cur_size,
 long new_size,
-void *block
+void* block
 )
 {
-void *new_block;
+void* new_block;
 
 #ifdef __amigaos4__
 new_block = AllocVecPooled ( memory->user, new_size );
@@ -219,7 +221,7 @@ new_block;
 FT_CALLBACK_DEF (void)
 ft_free( FT_Memory
 memory,
-void *block
+void* block
 )
 {
 #ifdef __amigaos4__
@@ -267,7 +269,7 @@ FT_CALLBACK_DEF (void)
 ft_amiga_stream_close( FT_Stream
 stream )
 {
-struct SysFile *sysfile;
+struct SysFile* sysfile;
 
 sysfile = STREAM_FILE(stream);
 Close ( sysfile
@@ -308,11 +310,11 @@ FT_CALLBACK_DEF (unsigned long)
 ft_amiga_stream_io( FT_Stream
 stream,
 unsigned long offset,
-unsigned char *buffer,
+unsigned char* buffer,
 unsigned long count
 )
 {
-struct SysFile *sysfile;
+struct SysFile* sysfile;
 unsigned long read_bytes;
 
 if ( count != 0 )
@@ -405,11 +407,11 @@ read_bytes;
 FT_BASE_DEF( FT_Error )
 FT_Stream_Open( FT_Stream
 stream,
-const char *filepathname
+const char* filepathname
 )
 {
-struct FileInfoBlock *fib;
-struct SysFile *sysfile;
+struct FileInfoBlock* fib;
+struct SysFile* sysfile;
 
 if ( !stream )
 return
@@ -476,9 +478,9 @@ FreeDosObject( DOS_FIB, fib
 );
 
 stream->descriptor.
-pointer = (void *) sysfile;
+pointer = (void*) sysfile;
 stream->pathname.
-pointer = (char *) filepathname;
+pointer = (char*) filepathname;
 sysfile->
 iobuf_start = 0;
 sysfile->
@@ -521,6 +523,7 @@ ft_mem_debug_done( FT_Memory  memory );
 /* documentation is in ftobjs.h */
 
 FT_BASE_DEF( FT_Memory )
+
 FT_New_Memory (void) {
   FT_Memory memory;
 

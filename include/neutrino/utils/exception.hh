@@ -18,16 +18,16 @@ namespace neutrino {
       static bool use_function_signature (bool v);
     public:
       template <typename ... Args>
-      exception (const char *function, const char *source, int line, Args &&... args);
+      exception (const char* function, const char* source, int line, Args&& ... args);
 
       template <typename ... Args>
-      exception (exception cause, const char *function, const char *source, int line, Args &&... args);
+      exception (exception cause, const char* function, const char* source, int line, Args&& ... args);
 
-      exception (exception &&) = default;
+      exception (exception&&) = default;
 
       virtual ~exception () = default;
 
-      const char *what () const noexcept override;
+      const char* what () const noexcept override;
 
       [[nodiscard]] std::string function () const noexcept {
         return m_function;
@@ -45,7 +45,7 @@ namespace neutrino {
         return m_text;
       }
 
-      [[nodiscard]] const exception *cause () const noexcept {
+      [[nodiscard]] const exception* cause () const noexcept {
         if (m_chain) {
           return m_chain.get ();
         }
@@ -58,14 +58,14 @@ namespace neutrino {
       };
 
       template <typename ... Args>
-      exception (dummy_t custom, std::string prefix, const char *function, const char *source, int line,
-                 Args &&... args);
+      exception (dummy_t custom, std::string prefix, const char* function, const char* source, int line,
+                 Args&& ... args);
 
     private:
       template <typename ... Args>
-      static std::string _create (bool use_locus, const char *function, const char *source, int line, Args &&... args);
+      static std::string _create (bool use_locus, const char* function, const char* source, int line, Args&& ... args);
 
-      static const char *_transform_source (const char *source);
+      static const char* _transform_source (const char* source);
     private:
       std::string m_function;
       std::string m_source;
@@ -84,35 +84,38 @@ namespace neutrino {
 namespace neutrino {
   template <typename ... Args>
   inline
-  exception::exception (const char *function, const char *source, int line, Args &&... args)
+  exception::exception (const char* function, const char* source, int line, Args&& ... args)
       : m_function (function),
         m_source (source),
         m_line (line),
         m_text (_create (false, function, source, line, std::forward<Args> (args)...)) {
   }
+
   // --------------------------------------------------------------------------------------------------------
   template <typename ... Args>
-  exception::exception (exception cause, const char *function, const char *source, int line, Args &&... args)
+  exception::exception (exception cause, const char* function, const char* source, int line, Args&& ... args)
       : m_function (function),
         m_source (source),
         m_line (line),
         m_text (_create (false, function, source, line, std::forward<Args> (args)...)),
         m_chain (std::make_unique<exception> (std::move (cause))) {
   }
+
   // --------------------------------------------------------------------------------------------------------
   template <typename ... Args>
   exception::exception ([[maybe_unused]] dummy_t custom, std::string prefix,
-                        const char *function, const char *source, int line, Args &&... args)
+                        const char* function, const char* source, int line, Args&& ... args)
       :
       m_function (function),
       m_source (source),
       m_line (line),
       m_text (_create (false, function, source, line, prefix, std::forward<Args> (args)...)) {
   }
+
   // --------------------------------------------------------------------------------------------------------
   template <typename ... Args>
   inline
-  std::string exception::_create (bool use_locus, const char *function, const char *source, int line, Args &&... args) {
+  std::string exception::_create (bool use_locus, const char* function, const char* source, int line, Args&& ... args) {
     std::ostringstream os;
 
     if (use_locus) {
@@ -129,14 +132,14 @@ namespace neutrino {
 
   template <typename ... Args>
   inline
-  void raise_exception [[noreturn]] (const char *function, const char *source, int line, Args &&... args) {
+  void raise_exception [[noreturn]] (const char* function, const char* source, int line, Args&& ... args) {
     throw exception (function, source, line, std::forward<Args> (args)...);
   }
 
   template <typename ... Args>
   inline
   void
-  raise_exception [[noreturn]] (exception cause, const char *function, const char *source, int line, Args &&... args) {
+  raise_exception [[noreturn]] (exception cause, const char* function, const char* source, int line, Args&& ... args) {
     throw exception (std::move (cause), function, source, line, std::forward<Args> (args)...);
   }
 }

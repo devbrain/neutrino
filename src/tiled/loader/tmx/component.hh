@@ -35,18 +35,18 @@ namespace neutrino::tiled::tmx {
   class component {
     public:
 
-      static void parse (component &obj, const reader &elt, const component *parent = nullptr);
+      static void parse (component& obj, const reader& elt, const component* parent = nullptr);
 
       template <typename T>
-      void add (const std::string &name, T &&v) {
+      void add (const std::string& name, T&& v) {
         m_prop.insert (std::make_pair (name, property_t{std::forward<T> (v)}));
       }
 
       [[nodiscard]] bool empty () const noexcept;
 
-      [[nodiscard]] bool contains (const std::string &name) const noexcept;
+      [[nodiscard]] bool contains (const std::string& name) const noexcept;
 
-      [[nodiscard]] std::optional<property_t> get (const std::string &name) const noexcept;
+      [[nodiscard]] std::optional<property_t> get (const std::string& name) const noexcept;
 
     private:
       std::map<std::string, property_t> m_prop;

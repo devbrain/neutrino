@@ -67,8 +67,8 @@ struct lzma_index_hash_s {
 };
 
 extern LZMA_API(lzma_index_hash *)
-lzma_index_hash_init (lzma_index_hash *index_hash,
-                      const lzma_allocator *allocator) {
+lzma_index_hash_init (lzma_index_hash* index_hash,
+                      const lzma_allocator* allocator) {
   if (index_hash == NULL) {
     index_hash = lzma_alloc (sizeof (lzma_index_hash), allocator);
     if (index_hash == NULL)
@@ -97,14 +97,14 @@ lzma_index_hash_init (lzma_index_hash *index_hash,
 }
 
 extern LZMA_API(void)
-lzma_index_hash_end (lzma_index_hash *index_hash,
-                     const lzma_allocator *allocator) {
+lzma_index_hash_end (lzma_index_hash* index_hash,
+                     const lzma_allocator* allocator) {
   lzma_free (index_hash, allocator);
   return;
 }
 
 extern LZMA_API(lzma_vli)
-lzma_index_hash_size (const lzma_index_hash *index_hash) {
+lzma_index_hash_size (const lzma_index_hash* index_hash) {
   // Get the size of the Index from ->blocks instead of ->records for
   // cases where application wants to know the Index Size before
   // decoding the Index.
@@ -114,7 +114,7 @@ lzma_index_hash_size (const lzma_index_hash *index_hash) {
 
 /// Updates the sizes and the hash without any validation.
 static lzma_ret
-hash_append (lzma_index_hash_info *info, lzma_vli unpadded_size,
+hash_append (lzma_index_hash_info* info, lzma_vli unpadded_size,
              lzma_vli uncompressed_size) {
   info->blocks_size += vli_ceil4 (unpadded_size);
   info->uncompressed_size += uncompressed_size;
@@ -124,13 +124,13 @@ hash_append (lzma_index_hash_info *info, lzma_vli unpadded_size,
 
   const lzma_vli sizes[2] = {unpadded_size, uncompressed_size};
   lzma_check_update (&info->check, LZMA_CHECK_BEST,
-                     (const uint8_t *) (sizes), sizeof (sizes));
+                     (const uint8_t*) (sizes), sizeof (sizes));
 
   return LZMA_OK;
 }
 
 extern LZMA_API(lzma_ret)
-lzma_index_hash_append (lzma_index_hash *index_hash, lzma_vli unpadded_size,
+lzma_index_hash_append (lzma_index_hash* index_hash, lzma_vli unpadded_size,
                         lzma_vli uncompressed_size) {
   // Validate the arguments.
   if (index_hash->sequence != SEQ_BLOCK
@@ -159,8 +159,8 @@ lzma_index_hash_append (lzma_index_hash *index_hash, lzma_vli unpadded_size,
 }
 
 extern LZMA_API(lzma_ret)
-lzma_index_hash_decode (lzma_index_hash *index_hash, const uint8_t *in,
-                        size_t *in_pos, size_t in_size) {
+lzma_index_hash_decode (lzma_index_hash* index_hash, const uint8_t* in,
+                        size_t* in_pos, size_t in_size) {
   // Catch zero input buffer here, because in contrast to Index encoder
   // and decoder functions, applications call this function directly
   // instead of via lzma_code(), which does the buffer checking.
@@ -204,7 +204,7 @@ lzma_index_hash_decode (lzma_index_hash *index_hash, const uint8_t *in,
 
       case SEQ_UNPADDED:
       case SEQ_UNCOMPRESSED: {
-        lzma_vli *size = index_hash->sequence == SEQ_UNPADDED
+        lzma_vli* size = index_hash->sequence == SEQ_UNPADDED
                          ? &index_hash->unpadded_size
                          : &index_hash->uncompressed_size;
 

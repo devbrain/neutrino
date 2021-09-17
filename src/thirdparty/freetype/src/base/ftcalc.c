@@ -637,8 +637,8 @@ FT_DivFix( FT_Long  a_,
 /* documentation is in ftglyph.h */
 
 FT_EXPORT_DEF(void)
-FT_Matrix_Multiply (const FT_Matrix *a,
-                    FT_Matrix *b) {
+FT_Matrix_Multiply (const FT_Matrix* a,
+                    FT_Matrix* b) {
   FT_Fixed xx, xy, yx, yy;
 
   if (!a || !b)
@@ -663,7 +663,7 @@ FT_Matrix_Multiply (const FT_Matrix *a,
 /* documentation is in ftglyph.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Matrix_Invert (FT_Matrix *matrix) {
+FT_Matrix_Invert (FT_Matrix* matrix) {
   FT_Pos delta, xx, yy;
 
   if (!matrix)
@@ -692,8 +692,8 @@ FT_Matrix_Invert (FT_Matrix *matrix) {
 /* documentation is in ftcalc.h */
 
 FT_BASE_DEF(void)
-FT_Matrix_Multiply_Scaled (const FT_Matrix *a,
-                           FT_Matrix *b,
+FT_Matrix_Multiply_Scaled (const FT_Matrix* a,
+                           FT_Matrix* b,
                            FT_Long scaling) {
   FT_Fixed xx, xy, yx, yy;
 
@@ -721,7 +721,7 @@ FT_Matrix_Multiply_Scaled (const FT_Matrix *a,
 /* documentation is in ftcalc.h */
 
 FT_BASE_DEF(FT_Bool)
-FT_Matrix_Check (const FT_Matrix *matrix) {
+FT_Matrix_Check (const FT_Matrix* matrix) {
   FT_Matrix m;
   FT_Fixed val[4];
   FT_Fixed nonzero_minval, maxval;
@@ -786,8 +786,8 @@ FT_Matrix_Check (const FT_Matrix *matrix) {
 /* documentation is in ftcalc.h */
 
 FT_BASE_DEF(void)
-FT_Vector_Transform_Scaled (FT_Vector *vector,
-                            const FT_Matrix *matrix,
+FT_Vector_Transform_Scaled (FT_Vector* vector,
+                            const FT_Matrix* matrix,
                             FT_Long scaling) {
   FT_Pos xz, yz;
 
@@ -809,7 +809,7 @@ FT_Vector_Transform_Scaled (FT_Vector *vector,
 /* documentation is in ftcalc.h */
 
 FT_BASE_DEF(FT_UInt32)
-FT_Vector_NormLen (FT_Vector *vector) {
+FT_Vector_NormLen (FT_Vector* vector) {
   FT_Int32 x_ = vector->x;
   FT_Int32 y_ = vector->y;
   FT_Int32 b, z;

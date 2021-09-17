@@ -232,7 +232,7 @@ typedef struct {
    * future, the .xz format will likely get support for preset
    * dictionary though.
    */
-  const uint8_t *preset_dict;
+  const uint8_t* preset_dict;
 
   /**
    * \brief       Size of the preset dictionary
@@ -388,8 +388,8 @@ typedef struct {
   lzma_reserved_enum reserved_enum2;
   lzma_reserved_enum reserved_enum3;
   lzma_reserved_enum reserved_enum4;
-  void *reserved_ptr1;
-  void *reserved_ptr2;
+  void* reserved_ptr1;
+  void* reserved_ptr2;
 
 } lzma_options_lzma;
 
@@ -411,4 +411,4 @@ typedef struct {
  *              supported, true is returned.
  */
 extern LZMA_API(lzma_bool) lzma_lzma_preset (
-    lzma_options_lzma *options, uint32_t preset) lzma_nothrow;
+    lzma_options_lzma* options, uint32_t preset) lzma_nothrow;

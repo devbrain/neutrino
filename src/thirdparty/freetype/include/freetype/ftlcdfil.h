@@ -247,7 +247,7 @@ FT_Library_SetLcdFilter (FT_Library library,
  */
 FT_EXPORT(FT_Error)
 FT_Library_SetLcdFilterWeights (FT_Library library,
-                                unsigned char *weights);
+                                unsigned char* weights);
 
 
 /**************************************************************************

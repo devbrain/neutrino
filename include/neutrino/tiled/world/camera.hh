@@ -17,7 +17,7 @@ namespace neutrino::tiled {
       friend class world_renderer;
 
     public:
-      explicit camera (const world &w);
+      explicit camera (const world& w);
 
       void bind_camera_to_layer (std::size_t layer_id, int x, int y, int w, int h);
 

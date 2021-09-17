@@ -85,7 +85,7 @@ T42_Open_Face (T42_Face face) {
   /* we copy the glyph names `block' and `elements' fields; */
   /* the `lengths' field must be released later             */
   type1->glyph_names_block = loader.glyph_names.block;
-  type1->glyph_names = (FT_String **) loader.glyph_names.elements;
+  type1->glyph_names = (FT_String**) loader.glyph_names.elements;
   loader.glyph_names.block = NULL;
   loader.glyph_names.elements = NULL;
 
@@ -105,15 +105,15 @@ T42_Open_Face (T42_Face face) {
 
     charcode = 0;
     for (; charcode < loader.encoding_table.max_elems; charcode++) {
-      const FT_String *char_name =
-          (const FT_String *) loader.encoding_table.elements[charcode];
+      const FT_String* char_name =
+          (const FT_String*) loader.encoding_table.elements[charcode];
 
       type1->encoding.char_index[charcode] = 0;
       type1->encoding.char_name[charcode] = ".notdef";
 
       if (char_name)
         for (idx = 0; idx < type1->num_glyphs; idx++) {
-          const FT_String *glyph_name = type1->glyph_names[idx];
+          const FT_String* glyph_name = type1->glyph_names[idx];
 
           if (ft_strcmp (char_name, glyph_name) == 0) {
             type1->encoding.char_index[charcode] = (FT_UShort) idx;
@@ -151,7 +151,7 @@ T42_Face_Init (FT_Stream stream,
                FT_Face t42face,       /* T42_Face */
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params) {
+               FT_Parameter* params) {
   T42_Face face = (T42_Face) t42face;
   FT_Error error;
   FT_Service_PsCMaps psnames;
@@ -223,10 +223,10 @@ T42_Face_Init (FT_Stream stream,
   /* have a `/FontName' dictionary entry!                 */
   root->family_name = info->family_name;
   /* assume "Regular" style if we don't know better */
-  root->style_name = (char *) "Regular";
+  root->style_name = (char*) "Regular";
   if (root->family_name) {
-    char *full = info->full_name;
-    char *family = root->family_name;
+    char* full = info->full_name;
+    char* family = root->family_name;
 
     if (full) {
       while (*full) {
@@ -592,7 +592,7 @@ T42_GlyphSlot_Load (FT_GlyphSlot glyph,
 
   /* map T42 glyph index to embedded TTF's glyph index */
   glyph_index = (FT_UInt) ft_strtol (
-      (const char *) t42face->type1.charstrings[glyph_index],
+      (const char*) t42face->type1.charstrings[glyph_index],
       NULL, 10);
 
   t42_glyphslot_clear (t42slot->ttslot);

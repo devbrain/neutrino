@@ -126,10 +126,15 @@ namespace neutrino::utils {
 #endif
 
 d_NEUTRINO_UTILS_IMPLEMENT_BYTEORDER_BIG (to_big_endian)
+
 d_NEUTRINO_UTILS_IMPLEMENT_BYTEORDER_BIG (from_big_endian)
+
 d_NEUTRINO_UTILS_IMPLEMENT_BYTEORDER_BIG (to_network)
+
 d_NEUTRINO_UTILS_IMPLEMENT_BYTEORDER_BIG (from_network)
+
 d_NEUTRINO_UTILS_IMPLEMENT_BYTEORDER_LIT (to_little_endian)
+
 d_NEUTRINO_UTILS_IMPLEMENT_BYTEORDER_LIT (from_little_endian)
 
 #endif 

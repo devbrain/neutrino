@@ -31,7 +31,7 @@ tt_face_load_loca (TT_Face face,
 FT_LOCAL(FT_ULong)
 tt_face_get_location (TT_Face face,
                       FT_UInt gindex,
-                      FT_UInt *asize);
+                      FT_UInt* asize);
 
 FT_LOCAL(void)
 tt_face_done_loca (TT_Face face);

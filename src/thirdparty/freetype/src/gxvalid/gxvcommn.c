@@ -47,8 +47,8 @@
 /*************************************************************************/
 
 static int
-gxv_compare_ushort_offset (FT_UShort *a,
-                           FT_UShort *b) {
+gxv_compare_ushort_offset (FT_UShort* a,
+                           FT_UShort* b) {
   if (*a < *b)
     return -1;
   else if (*a > *b)
@@ -60,7 +60,7 @@ gxv_compare_ushort_offset (FT_UShort *a,
 FT_LOCAL_DEF (void)
 gxv_set_length_by_ushort_offset( FT_UShort
 *     offset,
-FT_UShort **length,
+FT_UShort** length,
     FT_UShort
 *     buff,
 FT_UInt nmemb,
@@ -126,8 +126,8 @@ FT_INVALID_OFFSET;
 /*************************************************************************/
 
 static int
-gxv_compare_ulong_offset (FT_ULong *a,
-                          FT_ULong *b) {
+gxv_compare_ulong_offset (FT_ULong* a,
+                          FT_ULong* b) {
   if (*a < *b)
     return -1;
   else if (*a > *b)
@@ -139,7 +139,7 @@ gxv_compare_ulong_offset (FT_ULong *a,
 FT_LOCAL_DEF (void)
 gxv_set_length_by_ulong_offset( FT_ULong
 *      offset,
-FT_ULong **length,
+FT_ULong** length,
     FT_ULong
 *      buff,
 FT_UInt nmemb,
@@ -211,7 +211,7 @@ table,
 FT_Bytes limit,
     FT_Byte
 *       min,
-FT_Byte *max,
+FT_Byte* max,
     GXV_Validator
 gxvalid )
 {
@@ -231,11 +231,11 @@ val = FT_NEXT_BYTE (p);
 
 *
 min = (FT_Byte)
-FT_MIN( *min, val
+FT_MIN( * min, val
 );
 *
 max = (FT_Byte)
-FT_MAX( *max, val
+FT_MAX( * max, val
 );
 }
 
@@ -249,7 +249,7 @@ table,
 FT_Bytes limit,
     FT_UShort
 *     min,
-FT_UShort *max,
+FT_UShort* max,
     GXV_Validator
 gxvalid )
 {
@@ -269,11 +269,11 @@ val = FT_NEXT_USHORT (p);
 
 *
 min = (FT_Byte)
-FT_MIN( *min, val
+FT_MIN( * min, val
 );
 *
 max = (FT_Byte)
-FT_MAX( *max, val
+FT_MAX( * max, val
 );
 }
 
@@ -300,7 +300,7 @@ typedef struct GXV_BinSrchHeader_ {
 } GXV_BinSrchHeader;
 
 static void
-gxv_BinSrchHeader_check_consistency (GXV_BinSrchHeader *binSrchHeader,
+gxv_BinSrchHeader_check_consistency (GXV_BinSrchHeader* binSrchHeader,
                                      GXV_Validator gxvalid) {
   FT_UShort searchRange;
   FT_UShort entrySelector;
@@ -369,7 +369,7 @@ table,
 FT_Bytes limit,
     FT_UShort
 *     unitSize_p,
-FT_UShort *nUnits_p,
+FT_UShort* nUnits_p,
     GXV_Validator
 gxvalid )
 {
@@ -975,9 +975,9 @@ GXV_EXIT;
 
 static void
 gxv_ClassTable_validate (FT_Bytes table,
-                         FT_UShort *length_p,
+                         FT_UShort* length_p,
                          FT_UShort stateSize,
-                         FT_Byte *maxClassID_p,
+                         FT_Byte* maxClassID_p,
                          GXV_Validator gxvalid) {
   FT_Bytes p = table;
   FT_Bytes limit = table + *length_p;
@@ -1045,11 +1045,11 @@ gxv_ClassTable_validate (FT_Bytes table,
 
 static void
 gxv_StateArray_validate (FT_Bytes table,
-                         FT_UShort *length_p,
+                         FT_UShort* length_p,
                          FT_Byte maxClassID,
                          FT_UShort stateSize,
-                         FT_Byte *maxState_p,
-                         FT_Byte *maxEntry_p,
+                         FT_Byte* maxState_p,
+                         FT_Byte* maxEntry_p,
                          GXV_Validator gxvalid) {
   FT_Bytes p = table;
   FT_Bytes limit = table + *length_p;
@@ -1094,7 +1094,7 @@ gxv_StateArray_validate (FT_Bytes table,
 
 static void
 gxv_EntryTable_validate (FT_Bytes table,
-                         FT_UShort *length_p,
+                         FT_UShort* length_p,
                          FT_Byte maxEntry,
                          FT_UShort stateArray,
                          FT_UShort stateArray_length,
@@ -1203,14 +1203,14 @@ stateArray,
 FT_UShort entryTable,
     FT_UShort
 *     classTable_length_p,
-FT_UShort *stateArray_length_p,
+FT_UShort* stateArray_length_p,
     FT_UShort
 *     entryTable_length_p,
 GXV_Validator gxvalid
 )
 {
 FT_UShort o[3];
-FT_UShort *l[3];
+FT_UShort* l[3];
 FT_UShort buff[4];
 
 o[0] =
@@ -1350,14 +1350,14 @@ stateArray,
 FT_ULong entryTable,
     FT_ULong
 *      classTable_length_p,
-FT_ULong *stateArray_length_p,
+FT_ULong* stateArray_length_p,
     FT_ULong
 *      entryTable_length_p,
 GXV_Validator gxvalid
 )
 {
 FT_ULong o[3];
-FT_ULong *l[3];
+FT_ULong* l[3];
 FT_ULong buff[4];
 
 o[0] =
@@ -1440,11 +1440,11 @@ gxv_XClassTable_lookupfmt4_transit (FT_UShort relative_gindex,
 
 static void
 gxv_XStateArray_validate (FT_Bytes table,
-                          FT_ULong *length_p,
+                          FT_ULong* length_p,
                           FT_UShort maxClassID,
                           FT_ULong stateSize,
-                          FT_UShort *maxState_p,
-                          FT_UShort *maxEntry_p,
+                          FT_UShort* maxState_p,
+                          FT_UShort* maxEntry_p,
                           GXV_Validator gxvalid) {
   FT_Bytes p = table;
   FT_Bytes limit = table + *length_p;
@@ -1487,7 +1487,7 @@ gxv_XStateArray_validate (FT_Bytes table,
 
 static void
 gxv_XEntryTable_validate (FT_Bytes table,
-                          FT_ULong *length_p,
+                          FT_ULong* length_p,
                           FT_UShort maxEntry,
                           FT_ULong stateArray_length,
                           FT_UShort maxClassID,
@@ -1738,7 +1738,7 @@ FT_LOCAL_DEF (void)
 gxv_odtect_add_range( FT_Bytes
 start,
 FT_ULong length,
-const FT_String *name,
+const FT_String* name,
     GXV_odtect_Range
 odtect )
 {
@@ -1747,7 +1747,7 @@ start = start;
 odtect->range[odtect->nRanges].
 length = length;
 odtect->range[odtect->nRanges].
-name = (FT_String *) name;
+name = (FT_String*) name;
 odtect->nRanges++;
 }
 

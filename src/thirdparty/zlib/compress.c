@@ -20,9 +20,9 @@
    Z_STREAM_ERROR if the level parameter is invalid.
 */
 int ZEXPORT compress2 (dest, destLen, source, sourceLen, level)
-    Bytef *dest;
-    uLongf *destLen;
-    const Bytef *source;
+    Bytef* dest;
+    uLongf* destLen;
+    const Bytef* source;
     uLong sourceLen;
     int level;
 {
@@ -44,7 +44,7 @@ int ZEXPORT compress2 (dest, destLen, source, sourceLen, level)
 
   stream.next_out = dest;
   stream.avail_out = 0;
-  stream.next_in = (z_const Bytef *) source;
+  stream.next_in = (z_const Bytef*) source;
   stream.avail_in = 0;
 
   do {
@@ -68,9 +68,9 @@ int ZEXPORT compress2 (dest, destLen, source, sourceLen, level)
 /* ===========================================================================
  */
 int ZEXPORT compress (dest, destLen, source, sourceLen)
-    Bytef *dest;
-    uLongf *destLen;
-    const Bytef *source;
+    Bytef* dest;
+    uLongf* destLen;
+    const Bytef* source;
     uLong sourceLen;
 {
   return compress2 (dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);

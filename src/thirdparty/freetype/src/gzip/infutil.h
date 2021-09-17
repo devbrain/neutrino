@@ -37,13 +37,13 @@ struct inflate_blocks_state {
     struct {
       uInt table;               /* table lengths (14 bits) */
       uInt index;               /* index into blens (or border) */
-      uIntf *blens;             /* bit lengths of codes */
+      uIntf* blens;             /* bit lengths of codes */
       uInt bb;                  /* bit length tree depth */
-      inflate_huft *tb;         /* bit length decoding tree */
+      inflate_huft* tb;         /* bit length decoding tree */
     } trees;            /* if DTREE, decoding info for trees */
     struct {
       inflate_codes_statef
-          *codes;
+          * codes;
     } decode;           /* if CODES, current state */
   } sub;                /* submode */
   uInt last;            /* true if this block is the last block */
@@ -51,11 +51,11 @@ struct inflate_blocks_state {
   /* mode independent information */
   uInt bitk;            /* bits in bit buffer */
   uLong bitb;           /* bit buffer */
-  inflate_huft *hufts;  /* single malloc for tree space */
-  Bytef *window;        /* sliding window */
-  Bytef *end;           /* one byte after sliding window */
-  Bytef *read;          /* window read pointer */
-  Bytef *write;         /* window write pointer */
+  inflate_huft* hufts;  /* single malloc for tree space */
+  Bytef* window;        /* sliding window */
+  Bytef* end;           /* one byte after sliding window */
+  Bytef* read;          /* window read pointer */
+  Bytef* write;         /* window write pointer */
   check_func checkfn;   /* check function */
   uLong check;          /* check on output */
 

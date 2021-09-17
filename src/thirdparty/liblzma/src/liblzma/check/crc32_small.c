@@ -40,7 +40,7 @@ lzma_crc32_init (void) {
 }
 
 extern LZMA_API(uint32_t)
-lzma_crc32 (const uint8_t *buf, size_t size, uint32_t crc) {
+lzma_crc32 (const uint8_t* buf, size_t size, uint32_t crc) {
   lzma_crc32_init ();
 
   crc = ~crc;

@@ -179,10 +179,10 @@ rpng2_win_wndproc(HWND, UINT, WPARAM, LPARAM
 );
 
 static char titlebar[1024];
-static char *progname = PROGNAME;
-static char *appname = LONGNAME;
-static char *filename;
-static FILE *infile;
+static char* progname = PROGNAME;
+static char* appname = LONGNAME;
+static char* filename;
+static FILE* infile;
 
 static mainprog_info rpng2_info;
 
@@ -193,7 +193,7 @@ static int pat = 6;         /* must be less than num_bgpat */
 static int bg_image = 0;
 static int bgscale = 16;
 static ulg bg_rowbytes;
-static uch *bg_data;
+static uch* bg_data;
 
 static struct rgb_color {
   uch r, g, b;
@@ -262,9 +262,9 @@ static int num_bgpat = sizeof (bg) / sizeof (struct background_pattern);
 
 /* Windows-specific global variables (could go in struct, but messy...) */
 static ulg wimage_rowbytes;
-static uch *dib;
-static uch *wimage_data;
-static BITMAPINFOHEADER *bmih;
+static uch* dib;
+static uch* wimage_data;
+static BITMAPINFOHEADER* bmih;
 
 static HWND global_hwnd;
 static HINSTANCE global_hInst;
@@ -278,9 +278,9 @@ cmd,
 int showmode
 )
 {
-char *args[1024];                 /* arbitrary limit, but should suffice */
-char **argv = args;
-char *p, *q, *bgstr = NULL;
+char* args[1024];                 /* arbitrary limit, but should suffice */
+char** argv = args;
+char* p, * q, * bgstr = NULL;
 int argc = 0;
 int rc, alen, flen;
 int error = 0;
@@ -297,7 +297,7 @@ MSG msg;
 
 global_hInst = hInst;
 global_showmode = showmode;
-filename = (char *) NULL;
+filename = (char*) NULL;
 memset(&rpng2_info, 0, sizeof(mainprog_info));
 
 #ifndef __CYGWIN__
@@ -399,7 +399,7 @@ NULL;   /* terminate the argv array itself */
 
 while (*++argv && !error) {
 if (!
-strncmp(*argv,
+strncmp(* argv,
 "-gamma", 2)) {
 if (!*++argv)
 ++
@@ -412,7 +412,7 @@ if (rpng2_info.display_exponent <= 0.0)
 error;
 }
 } else if (!
-strncmp(*argv,
+strncmp(* argv,
 "-bgcolor", 4)) {
 if (!*++argv)
 ++
@@ -430,7 +430,7 @@ bg_image = FALSE;
 }
 }
 } else if (!
-strncmp(*argv,
+strncmp(* argv,
 "-bgpat", 4)) {
 if (!*++argv)
 ++
@@ -446,7 +446,7 @@ have_bg = FALSE;
 }
 }
 } else if (!
-strncmp(*argv,
+strncmp(* argv,
 "-timing", 2)) {
 timing = TRUE;
 } else {
@@ -709,13 +709,13 @@ static void rpng2_win_init () {
     return;
   }
 
-  rpng2_info.image_data = (uch *) malloc (rowbytes * rpng2_info.height);
+  rpng2_info.image_data = (uch*) malloc (rowbytes * rpng2_info.height);
   if (!rpng2_info.image_data) {
     readpng2_cleanup (&rpng2_info);
     return;
   }
 
-  rpng2_info.row_pointers = (uch **) malloc (rpng2_info.height * sizeof (uch *));
+  rpng2_info.row_pointers = (uch**) malloc (rpng2_info.height * sizeof (uch*));
   if (!rpng2_info.row_pointers) {
     free (rpng2_info.image_data);
     rpng2_info.image_data = NULL;
@@ -743,7 +743,7 @@ static int rpng2_win_create_window () {
   uch bg_red = rpng2_info.bg_red;
   uch bg_green = rpng2_info.bg_green;
   uch bg_blue = rpng2_info.bg_blue;
-  uch *dest;
+  uch* dest;
   int extra_width, extra_height;
   ulg i, j;
   WNDCLASSEX wndclass;
@@ -757,8 +757,8 @@ static int rpng2_win_create_window () {
 
   wimage_rowbytes = ((3 * rpng2_info.width + 3L) >> 2) << 2;
 
-  if (!(dib = (uch *) malloc (sizeof (BITMAPINFOHEADER) +
-                              wimage_rowbytes * rpng2_info.height))) {
+  if (!(dib = (uch*) malloc (sizeof (BITMAPINFOHEADER) +
+                             wimage_rowbytes * rpng2_info.height))) {
     return 4;   /* fail */
   }
 
@@ -770,7 +770,7 @@ static int rpng2_win_create_window () {
   ---------------------------------------------------------------------------*/
 
   memset (dib, 0, sizeof (BITMAPINFOHEADER));
-  bmih = (BITMAPINFOHEADER *) dib;
+  bmih = (BITMAPINFOHEADER*) dib;
   bmih->biSize = sizeof (BITMAPINFOHEADER);
   bmih->biWidth = rpng2_info.width;
   bmih->biHeight = -((long) rpng2_info.height);
@@ -841,7 +841,7 @@ static int rpng2_win_create_window () {
   ---------------------------------------------------------------------------*/
 
   if (bg_image) {
-    static const char *msg = "Computing background image...";
+    static const char* msg = "Computing background image...";
     int x, y, len = strlen (msg);
     HDC hdc = GetDC (global_hwnd);
     TEXTMETRIC tm;
@@ -885,7 +885,7 @@ static int rpng2_win_create_window () {
 
 
 static int rpng2_win_load_bg_image () {
-  uch *src, *dest;
+  uch* src, * dest;
   uch r1, r2, g1, g2, b1, b2;
   uch r1_inv, r2_inv, g1_inv, g2_inv, b1_inv, b2_inv;
   int k, hmax, max;
@@ -901,7 +901,7 @@ static int rpng2_win_load_bg_image () {
   ---------------------------------------------------------------------------*/
 
   bg_rowbytes = 3 * rpng2_info.width;
-  bg_data = (uch *) malloc (bg_rowbytes * rpng2_info.height);
+  bg_data = (uch*) malloc (bg_rowbytes * rpng2_info.height);
   if (!bg_data) {
     fprintf (stderr, PROGNAME
                      ":  unable to allocate memory for background image\n");
@@ -1153,7 +1153,7 @@ static void rpng2_win_display_row (ulg row) {
   uch bg_red = rpng2_info.bg_red;
   uch bg_green = rpng2_info.bg_green;
   uch bg_blue = rpng2_info.bg_blue;
-  uch *src, *src2 = NULL, *dest;
+  uch* src, * src2 = NULL, * dest;
   uch r, g, b, a;
   ulg i;
   static int rows = 0;
@@ -1310,7 +1310,7 @@ case WM_PAINT:
 hdc = BeginPaint (hwnd, &ps);
 rc = StretchDIBits (hdc, 0, 0, rpng2_info.width, rpng2_info.height,
                     0, 0, rpng2_info.width, rpng2_info.height,
-                    wimage_data, (BITMAPINFO *) bmih,
+                    wimage_data, (BITMAPINFO*) bmih,
                     0, SRCCOPY);
 EndPaint(hwnd,
 &ps);

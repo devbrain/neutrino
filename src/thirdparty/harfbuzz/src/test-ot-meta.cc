@@ -30,15 +30,15 @@
 #endif
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   if (argc != 2) {
     fprintf (stderr, "usage: %s font-file\n", argv[0]);
     exit (1);
   }
 
-  hb_blob_t *blob = hb_blob_create_from_file_or_fail (argv[1]);
+  hb_blob_t* blob = hb_blob_create_from_file_or_fail (argv[1]);
   assert (blob);
-  hb_face_t *face = hb_face_create (blob, 0 /* first face */);
+  hb_face_t* face = hb_face_create (blob, 0 /* first face */);
   hb_blob_destroy (blob);
   blob = nullptr;
 
@@ -47,11 +47,11 @@ main (int argc, char **argv) {
 #ifndef HB_NO_META
   count = hb_ot_meta_get_entry_tags (face, 0, nullptr, nullptr);
 
-  hb_ot_meta_tag_t *tags = (hb_ot_meta_tag_t *)
+  hb_ot_meta_tag_t* tags = (hb_ot_meta_tag_t*)
       malloc (sizeof (hb_ot_meta_tag_t) * count);
   hb_ot_meta_get_entry_tags (face, 0, &count, tags);
   for (unsigned i = 0; i < count; ++i) {
-    hb_blob_t *entry = hb_ot_meta_reference_entry (face, tags[i]);
+    hb_blob_t* entry = hb_ot_meta_reference_entry (face, tags[i]);
     printf ("%c%c%c%c, size: %d: %.*s\n",
             HB_UNTAG (tags[i]), hb_blob_get_length (entry),
             hb_blob_get_length (entry), hb_blob_get_data (entry, nullptr));

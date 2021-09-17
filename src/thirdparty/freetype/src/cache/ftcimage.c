@@ -51,7 +51,7 @@ FTC_INode_Free (FTC_INode inode,
 
 /* initialize a new glyph image node */
 FT_LOCAL_DEF(FT_Error)
-FTC_INode_New (FTC_INode *pinode,
+FTC_INode_New (FTC_INode* pinode,
                FTC_GQuery gquery,
                FTC_Cache cache) {
   FT_Memory memory = cache->memory;
@@ -82,10 +82,10 @@ FTC_INode_New (FTC_INode *pinode,
 }
 
 FT_LOCAL_DEF(FT_Error)
-ftc_inode_new (FTC_Node *ftcpinode,
+ftc_inode_new (FTC_Node* ftcpinode,
                FT_Pointer ftcgquery,
                FTC_Cache cache) {
-  FTC_INode *pinode = (FTC_INode *) ftcpinode;
+  FTC_INode* pinode = (FTC_INode*) ftcpinode;
   FTC_GQuery gquery = (FTC_GQuery) ftcgquery;
 
   return FTC_INode_New (pinode, gquery, cache);

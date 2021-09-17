@@ -157,7 +157,7 @@ typedef unsigned char FT_Byte;
  * @description:
  *   A typedef for constant memory areas.
  */
-typedef const FT_Byte *FT_Bytes;
+typedef const FT_Byte* FT_Bytes;
 
 /**************************************************************************
  *
@@ -289,7 +289,7 @@ typedef int FT_Error;
  * @description:
  *   A simple typedef for a typeless pointer.
  */
-typedef void *FT_Pointer;
+typedef void* FT_Pointer;
 
 /**************************************************************************
  *
@@ -386,7 +386,7 @@ typedef struct FT_Matrix_ {
  *     The length of the data in bytes.
  */
 typedef struct FT_Data_ {
-  const FT_Byte *pointer;
+  const FT_Byte* pointer;
   FT_Int length;
 
 } FT_Data;
@@ -405,7 +405,7 @@ typedef struct FT_Data_ {
  *   The address of the FreeType object that is under finalization.  Its
  *   client data is accessed through its `generic` field.
  */
-typedef void  (*FT_Generic_Finalizer) (void *object);
+typedef void  (* FT_Generic_Finalizer) (void* object);
 
 /**************************************************************************
  *
@@ -437,7 +437,7 @@ typedef void  (*FT_Generic_Finalizer) (void *object);
  *     code will be called.
  */
 typedef struct FT_Generic_ {
-  void *data;
+  void* data;
   FT_Generic_Finalizer finalizer;
 
 } FT_Generic;
@@ -491,7 +491,7 @@ typedef struct FT_Generic_ {
  *    record (see @FT_ListRec).  As its name suggests, an FT_ListNode is a
  *    handle to a single list element.
  */
-typedef struct FT_ListNodeRec_ *FT_ListNode;
+typedef struct FT_ListNodeRec_* FT_ListNode;
 
 /**************************************************************************
  *
@@ -501,7 +501,7 @@ typedef struct FT_ListNodeRec_ *FT_ListNode;
  * @description:
  *   A handle to a list record (see @FT_ListRec).
  */
-typedef struct FT_ListRec_ *FT_List;
+typedef struct FT_ListRec_* FT_List;
 
 /**************************************************************************
  *
@@ -524,7 +524,7 @@ typedef struct FT_ListRec_ *FT_List;
 typedef struct FT_ListNodeRec_ {
   FT_ListNode prev;
   FT_ListNode next;
-  void *data;
+  void* data;
 
 } FT_ListNodeRec;
 

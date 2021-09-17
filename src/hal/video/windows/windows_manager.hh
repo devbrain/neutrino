@@ -45,32 +45,32 @@ namespace neutrino::hal {
         void clear ();
         void present ();
 
-        void attach (sdl::window &sdl_window, neutrino::hal::window *engine_window);
-        void detach (neutrino::hal::window *engine_window);
+        void attach (sdl::window& sdl_window, neutrino::hal::window* engine_window);
+        void detach (neutrino::hal::window* engine_window);
       private:
-        void on_event (const sdl::events::window_shown &ev) override;
-        void on_event (const sdl::events::window_hidden &ev) override;
-        void on_event (const sdl::events::window_exposed &ev) override;
-        void on_event (const sdl::events::window_minimized &ev) override;
-        void on_event (const sdl::events::window_maximized &ev) override;
-        void on_event (const sdl::events::window_restored &ev) override;
-        void on_event (const sdl::events::window_mouse_entered &ev) override;
-        void on_event (const sdl::events::window_mouse_leaved &ev) override;
-        void on_event (const sdl::events::window_focus_gained &ev) override;
-        void on_event (const sdl::events::window_focus_lost &ev) override;
-        void on_event (const sdl::events::window_close &ev) override;
-        void on_event (const sdl::events::window_moved &ev) override;
-        void on_event (const sdl::events::window_resized &ev) override;
+        void on_event (const sdl::events::window_shown& ev) override;
+        void on_event (const sdl::events::window_hidden& ev) override;
+        void on_event (const sdl::events::window_exposed& ev) override;
+        void on_event (const sdl::events::window_minimized& ev) override;
+        void on_event (const sdl::events::window_maximized& ev) override;
+        void on_event (const sdl::events::window_restored& ev) override;
+        void on_event (const sdl::events::window_mouse_entered& ev) override;
+        void on_event (const sdl::events::window_mouse_leaved& ev) override;
+        void on_event (const sdl::events::window_focus_gained& ev) override;
+        void on_event (const sdl::events::window_focus_lost& ev) override;
+        void on_event (const sdl::events::window_close& ev) override;
+        void on_event (const sdl::events::window_moved& ev) override;
+        void on_event (const sdl::events::window_resized& ev) override;
 
-        void on_event (const sdl::events::keyboard &ev) override;
-        void on_event (const sdl::events::mouse_button &ev) override;
-        void on_event (const sdl::events::mouse_motion &ev) override;
-        void on_event (const sdl::events::mouse_wheel &ev) override;
-        void on_event (const sdl::events::touch_device_button &ev) override;
-        void on_event (const sdl::events::touch_device_motion &ev) override;
-        void on_event (const sdl::events::touch_device_wheel &ev) override;
+        void on_event (const sdl::events::keyboard& ev) override;
+        void on_event (const sdl::events::mouse_button& ev) override;
+        void on_event (const sdl::events::mouse_motion& ev) override;
+        void on_event (const sdl::events::mouse_wheel& ev) override;
+        void on_event (const sdl::events::touch_device_button& ev) override;
+        void on_event (const sdl::events::touch_device_motion& ev) override;
+        void on_event (const sdl::events::touch_device_wheel& ev) override;
       private:
-        std::vector<window *> m_windows;
+        std::vector<window*> m_windows;
     };
   } // ns detail
   using windows_manager = utils::singleton<detail::windows_manager>;

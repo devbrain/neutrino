@@ -102,8 +102,8 @@ namespace double_conversion {
 
   static void CutToMaxSignificantDigits (Vector<const char> buffer,
                                          int exponent,
-                                         char *significant_buffer,
-                                         int *significant_exponent) {
+                                         char* significant_buffer,
+                                         int* significant_exponent) {
     for (int i = 0; i < kMaxSignificantDecimalDigits - 1; ++i) {
       significant_buffer[i] = buffer[i];
     }
@@ -122,8 +122,8 @@ namespace double_conversion {
 // modified (due to cutting), then the input needs to be copied into the
 // buffer_copy_space.
   static void TrimAndCut (Vector<const char> buffer, int exponent,
-                          char *buffer_copy_space, int space_size,
-                          Vector<const char> *trimmed, int *updated_exponent) {
+                          char* buffer_copy_space, int space_size,
+                          Vector<const char>* trimmed, int* updated_exponent) {
     Vector<const char> left_trimmed = TrimLeadingZeros (buffer);
     Vector<const char> right_trimmed = TrimTrailingZeros (left_trimmed);
     exponent += left_trimmed.length () - right_trimmed.length ();
@@ -147,7 +147,7 @@ namespace double_conversion {
 // Since 2^64 = 18446744073709551616 it would still be possible read another
 // digit if it was less or equal than 6, but this would complicate the code.
   static uint64_t ReadUint64 (Vector<const char> buffer,
-                              int *number_of_read_digits) {
+                              int* number_of_read_digits) {
     uint64_t result = 0;
     int i = 0;
     while (i < buffer.length () && result <= (kMaxUint64 / 10 - 1)) {
@@ -164,8 +164,8 @@ namespace double_conversion {
 // If remaining_decimals is zero then the returned DiyFp is accurate.
 // Otherwise it has been rounded and has error of at most 1/2 ulp.
   static void ReadDiyFp (Vector<const char> buffer,
-                         DiyFp *result,
-                         int *remaining_decimals) {
+                         DiyFp* result,
+                         int* remaining_decimals) {
     int read_digits;
     uint64_t significand = ReadUint64 (buffer, &read_digits);
     if (buffer.length () == read_digits) {
@@ -186,7 +186,7 @@ namespace double_conversion {
 
   static bool DoubleStrtod (Vector<const char> trimmed,
                             int exponent,
-                            double *result) {
+                            double* result) {
 #if !defined(DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS)
     // Avoid "unused parameter" warnings
     (void) trimmed;
@@ -271,7 +271,7 @@ namespace double_conversion {
 // the correct double.
   static bool DiyFpStrtod (Vector<const char> buffer,
                            int exponent,
-                           double *result) {
+                           double* result) {
     DiyFp input;
     int remaining_decimals;
     ReadDiyFp (buffer, &input, &remaining_decimals);
@@ -421,7 +421,7 @@ namespace double_conversion {
 // Returns true if the guess is the correct double.
 // Returns false, when guess is either correct or the next-lower double.
   static bool ComputeGuess (Vector<const char> trimmed, int exponent,
-                            double *guess) {
+                            double* guess) {
     if (trimmed.length () == 0) {
       *guess = 0.0;
       return true;
@@ -458,7 +458,8 @@ namespace double_conversion {
   [[maybe_unused]]
 #endif
 #endif
-  static bool AssertTrimmedDigits (const Vector<const char> &buffer) {
+
+  static bool AssertTrimmedDigits (const Vector<const char>& buffer) {
     for (int i = 0; i < buffer.length (); ++i) {
       if (!IsDigit (buffer[i])) {
         return false;

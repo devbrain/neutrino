@@ -25,10 +25,10 @@
    an incomplete zlib stream.
 */
 int ZEXPORT uncompress2 (dest, destLen, source, sourceLen)
-    Bytef *dest;
-    uLongf *destLen;
-    const Bytef *source;
-    uLong *sourceLen;
+    Bytef* dest;
+    uLongf* destLen;
+    const Bytef* source;
+    uLong* sourceLen;
 {
   z_stream stream;
   int err;
@@ -46,7 +46,7 @@ int ZEXPORT uncompress2 (dest, destLen, source, sourceLen)
     dest = buf;
   }
 
-  stream.next_in = (z_const Bytef *) source;
+  stream.next_in = (z_const Bytef*) source;
   stream.avail_in = 0;
   stream.zalloc = (alloc_func) 0;
   stream.zfree = (free_func) 0;
@@ -86,9 +86,9 @@ int ZEXPORT uncompress2 (dest, destLen, source, sourceLen)
 }
 
 int ZEXPORT uncompress (dest, destLen, source, sourceLen)
-    Bytef *dest;
-    uLongf *destLen;
-    const Bytef *source;
+    Bytef* dest;
+    uLongf* destLen;
+    const Bytef* source;
     uLong sourceLen;
 {
   return uncompress2 (dest, destLen, source, &sourceLen);

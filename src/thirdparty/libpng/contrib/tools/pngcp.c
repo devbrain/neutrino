@@ -2445,9 +2445,11 @@ if (!(d.options & NOWRITE) && option_end+2 < argc && !checkdir(argv[argc-1]))
 }
 }
 #else /* !READ_PNG || !WRITE_PNG */
+
 int
 main (void) {
   fprintf (stderr, "pngcp: no support for png_read/write_image\n");
   return 77;
 }
+
 #endif /* !READ_PNG || !WRITE_PNG */

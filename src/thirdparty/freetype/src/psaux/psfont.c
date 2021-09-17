@@ -51,10 +51,10 @@ static void
 cf2_computeDarkening (CF2_Fixed emRatio,
                       CF2_Fixed ppem,
                       CF2_Fixed stemWidth,
-                      CF2_Fixed *darkenAmount,
+                      CF2_Fixed* darkenAmount,
                       CF2_Fixed boldenAmount,
                       FT_Bool stemDarkened,
-                      FT_Int *darkenParams) {
+                      FT_Int* darkenParams) {
   /*
    * Total darkening amount is computed in 1000 unit character space
    * using the modified 5 part curve as Adobe's Avalon rasterizer.
@@ -229,13 +229,13 @@ cf2_computeDarkening (CF2_Fixed emRatio,
 /* caller's transform is adjusted for subpixel positioning */
 static void
 cf2_font_setup (CF2_Font font,
-                const CF2_Matrix *transform) {
+                const CF2_Matrix* transform) {
   /* pointer to parsed font object */
-  PS_Decoder *decoder = font->decoder;
+  PS_Decoder* decoder = font->decoder;
 
   FT_Bool needExtraSetup = FALSE;
 
-  CFF_VStoreRec *vstore;
+  CFF_VStoreRec* vstore;
   FT_Bool hasVariations = FALSE;
 
   /* character space units */
@@ -246,7 +246,7 @@ cf2_font_setup (CF2_Font font,
   CF2_Fixed ppem;
 
   CF2_UInt lenNormalizedV = 0;
-  FT_Fixed *normalizedV = NULL;
+  FT_Fixed* normalizedV = NULL;
 
   /* clear previous error */
   font->error = FT_Err_Ok;
@@ -463,8 +463,8 @@ cf2_font_setup (CF2_Font font,
 FT_LOCAL_DEF(FT_Error)
 cf2_getGlyphOutline (CF2_Font font,
                      CF2_Buffer charstring,
-                     const CF2_Matrix *transform,
-                     CF2_F16Dot16 *glyphWidth) {
+                     const CF2_Matrix* transform,
+                     CF2_F16Dot16* glyphWidth) {
   FT_Error lastError = FT_Err_Ok;
 
   FT_Vector translation;

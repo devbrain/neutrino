@@ -343,7 +343,7 @@ typedef struct FT_Frame_Field_ {
 /* initialize a stream for reading a regular system stream */
 FT_BASE(FT_Error)
 FT_Stream_Open (FT_Stream stream,
-                const char *filepathname);
+                const char* filepathname);
 
 #endif /* FT_CONFIG_OPTION_NO_DEFAULT_SYSTEM */
 
@@ -351,8 +351,8 @@ FT_Stream_Open (FT_Stream stream,
 /* create a new (input) stream from an FT_Open_Args structure */
 FT_BASE(FT_Error)
 FT_Stream_New (FT_Library library,
-               const FT_Open_Args *args,
-               FT_Stream *astream);
+               const FT_Open_Args* args,
+               FT_Stream* astream);
 
 /* free a stream */
 FT_BASE(void)
@@ -362,7 +362,7 @@ FT_Stream_Free (FT_Stream stream,
 /* initialize a stream for reading in-memory data */
 FT_BASE(void)
 FT_Stream_OpenMemory (FT_Stream stream,
-                      const FT_Byte *base,
+                      const FT_Byte* base,
                       FT_ULong size);
 
 /* close a stream (does not destroy the stream structure) */
@@ -388,21 +388,21 @@ FT_Stream_Pos (FT_Stream stream);
 /* error if not all bytes could be read.                             */
 FT_BASE(FT_Error)
 FT_Stream_Read (FT_Stream stream,
-                FT_Byte *buffer,
+                FT_Byte* buffer,
                 FT_ULong count);
 
 /* read bytes from a stream at a given position */
 FT_BASE(FT_Error)
 FT_Stream_ReadAt (FT_Stream stream,
                   FT_ULong pos,
-                  FT_Byte *buffer,
+                  FT_Byte* buffer,
                   FT_ULong count);
 
 /* try to read bytes at the end of a stream; return number of bytes */
 /* really available                                                 */
 FT_BASE(FT_ULong)
 FT_Stream_TryRead (FT_Stream stream,
-                   FT_Byte *buffer,
+                   FT_Byte* buffer,
                    FT_ULong count);
 
 /* Enter a frame of `count' consecutive bytes in a stream.  Returns an */
@@ -438,12 +438,12 @@ FT_Stream_ExitFrame (FT_Stream stream);
 FT_BASE(FT_Error)
 FT_Stream_ExtractFrame (FT_Stream stream,
                         FT_ULong count,
-                        FT_Byte **pbytes);
+                        FT_Byte** pbytes);
 
 /* release an extract frame (see `FT_Stream_ExtractFrame') */
 FT_BASE(void)
 FT_Stream_ReleaseFrame (FT_Stream stream,
-                        FT_Byte **pbytes);
+                        FT_Byte** pbytes);
 
 
 /* read a byte from an entered frame */
@@ -474,39 +474,39 @@ FT_Stream_GetULongLE (FT_Stream stream);
 /* read a byte from a stream */
 FT_BASE(FT_Char)
 FT_Stream_ReadChar (FT_Stream stream,
-                    FT_Error *error);
+                    FT_Error* error);
 
 /* read a 16-bit big-endian unsigned integer from a stream */
 FT_BASE(FT_UShort)
 FT_Stream_ReadUShort (FT_Stream stream,
-                      FT_Error *error);
+                      FT_Error* error);
 
 /* read a 24-bit big-endian unsigned integer from a stream */
 FT_BASE(FT_ULong)
 FT_Stream_ReadUOffset (FT_Stream stream,
-                       FT_Error *error);
+                       FT_Error* error);
 
 /* read a 32-bit big-endian integer from a stream */
 FT_BASE(FT_ULong)
 FT_Stream_ReadULong (FT_Stream stream,
-                     FT_Error *error);
+                     FT_Error* error);
 
 /* read a 16-bit little-endian unsigned integer from a stream */
 FT_BASE(FT_UShort)
 FT_Stream_ReadUShortLE (FT_Stream stream,
-                        FT_Error *error);
+                        FT_Error* error);
 
 /* read a 32-bit little-endian unsigned integer from a stream */
 FT_BASE(FT_ULong)
 FT_Stream_ReadULongLE (FT_Stream stream,
-                       FT_Error *error);
+                       FT_Error* error);
 
 /* Read a structure from a stream.  The structure must be described */
 /* by an array of FT_Frame_Field records.                           */
 FT_BASE(FT_Error)
 FT_Stream_ReadFields (FT_Stream stream,
-                      const FT_Frame_Field *fields,
-                      void *structure);
+                      const FT_Frame_Field* fields,
+                      void* structure);
 
 #define FT_STREAM_POS()           \
           FT_Stream_Pos( stream )

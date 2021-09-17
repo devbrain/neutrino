@@ -37,7 +37,7 @@ typedef struct {
 
   /// Index is hashed so that it can be compared to the sizes of Blocks
   /// with O(1) memory usage.
-  lzma_index_hash *index_hash;
+  lzma_index_hash* index_hash;
 
   /// Memory usage limit
   uint64_t memlimit;
@@ -82,7 +82,7 @@ typedef struct {
 } lzma_stream_coder;
 
 static lzma_ret
-stream_decoder_reset (lzma_stream_coder *coder, const lzma_allocator *allocator) {
+stream_decoder_reset (lzma_stream_coder* coder, const lzma_allocator* allocator) {
   // Initialize the Index hash used to verify the Index.
   coder->index_hash = lzma_index_hash_init (coder->index_hash, allocator);
   if (coder->index_hash == NULL)
@@ -96,11 +96,11 @@ stream_decoder_reset (lzma_stream_coder *coder, const lzma_allocator *allocator)
 }
 
 static lzma_ret
-stream_decode (void *coder_ptr, const lzma_allocator *allocator,
-               const uint8_t *restrict in, size_t *restrict in_pos,
-               size_t in_size, uint8_t *restrict out,
-               size_t *restrict out_pos, size_t out_size, lzma_action action) {
-  lzma_stream_coder *coder = coder_ptr;
+stream_decode (void* coder_ptr, const lzma_allocator* allocator,
+               const uint8_t* restrict in, size_t* restrict in_pos,
+               size_t in_size, uint8_t* restrict out,
+               size_t* restrict out_pos, size_t out_size, lzma_action action) {
+  lzma_stream_coder* coder = coder_ptr;
 
   // When decoding the actual Block, it may be able to produce more
   // output even if we don't give it any new input.
@@ -373,8 +373,8 @@ stream_decode (void *coder_ptr, const lzma_allocator *allocator,
 }
 
 static void
-stream_decoder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_stream_coder *coder = coder_ptr;
+stream_decoder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_stream_coder* coder = coder_ptr;
   lzma_next_end (&coder->block_decoder, allocator);
   lzma_index_hash_end (coder->index_hash, allocator);
   lzma_free (coder, allocator);
@@ -382,15 +382,15 @@ stream_decoder_end (void *coder_ptr, const lzma_allocator *allocator) {
 }
 
 static lzma_check
-stream_decoder_get_check (const void *coder_ptr) {
-  const lzma_stream_coder *coder = coder_ptr;
+stream_decoder_get_check (const void* coder_ptr) {
+  const lzma_stream_coder* coder = coder_ptr;
   return coder->stream_flags.check;
 }
 
 static lzma_ret
-stream_decoder_memconfig (void *coder_ptr, uint64_t *memusage,
-                          uint64_t *old_memlimit, uint64_t new_memlimit) {
-  lzma_stream_coder *coder = coder_ptr;
+stream_decoder_memconfig (void* coder_ptr, uint64_t* memusage,
+                          uint64_t* old_memlimit, uint64_t new_memlimit) {
+  lzma_stream_coder* coder = coder_ptr;
 
   *memusage = coder->memusage;
   *old_memlimit = coder->memlimit;
@@ -407,14 +407,14 @@ stream_decoder_memconfig (void *coder_ptr, uint64_t *memusage,
 
 extern lzma_ret
 lzma_stream_decoder_init (
-    lzma_next_coder *next, const lzma_allocator *allocator,
+    lzma_next_coder* next, const lzma_allocator* allocator,
     uint64_t memlimit, uint32_t flags) {
   lzma_next_coder_init(&lzma_stream_decoder_init, next, allocator);
 
   if (flags & ~LZMA_SUPPORTED_FLAGS)
     return LZMA_OPTIONS_ERROR;
 
-  lzma_stream_coder *coder = next->coder;
+  lzma_stream_coder* coder = next->coder;
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_stream_coder), allocator);
     if (coder == NULL)
@@ -444,7 +444,7 @@ lzma_stream_decoder_init (
 }
 
 extern LZMA_API(lzma_ret)
-lzma_stream_decoder (lzma_stream *strm, uint64_t memlimit, uint32_t flags) {
+lzma_stream_decoder (lzma_stream* strm, uint64_t memlimit, uint32_t flags) {
   lzma_next_strm_init(lzma_stream_decoder_init, strm, memlimit, flags);
 
   strm->internal->supported_actions[LZMA_RUN] = true;

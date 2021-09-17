@@ -27,11 +27,11 @@
 #include "hb-number.hh"
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   {
     const char str[] = "123";
-    const char *pp = str;
-    const char *end = str + 3;
+    const char* pp = str;
+    const char* end = str + 3;
 
     int pv;
     assert (hb_parse_int (&pp, end, &pv));
@@ -43,8 +43,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "123";
-    const char *pp = str;
-    const char *end = str + strlen (str);
+    const char* pp = str;
+    const char* end = str + strlen (str);
 
     unsigned int pv;
     assert (hb_parse_uint (&pp, end, &pv));
@@ -56,8 +56,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "12F";
-    const char *pp = str;
-    const char *end = str + 3;
+    const char* pp = str;
+    const char* end = str + 3;
 
     unsigned int pv;
     assert (hb_parse_uint (&pp, end, &pv, true, 16));
@@ -69,8 +69,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "12Fq";
-    const char *pp = str;
-    const char *end = str + 4;
+    const char* pp = str;
+    const char* end = str + 4;
 
     unsigned int pv;
     assert (!hb_parse_uint (&pp, end, &pv, true, 16));
@@ -83,8 +83,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "-123";
-    const char *pp = str;
-    const char *end = str + 4;
+    const char* pp = str;
+    const char* end = str + 4;
 
     int pv;
     assert (hb_parse_int (&pp, end, &pv));
@@ -96,9 +96,9 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "123";
-    const char *pp = str;
+    const char* pp = str;
     assert (ARRAY_LENGTH (str) == 4);
-    const char *end = str + ARRAY_LENGTH (str);
+    const char* end = str + ARRAY_LENGTH (str);
 
     unsigned int pv;
     assert (hb_parse_uint (&pp, end, &pv));
@@ -109,9 +109,9 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "123\0";
-    const char *pp = str;
+    const char* pp = str;
     assert (ARRAY_LENGTH (str) == 5);
-    const char *end = str + ARRAY_LENGTH (str);
+    const char* end = str + ARRAY_LENGTH (str);
 
     unsigned int pv;
     assert (hb_parse_uint (&pp, end, &pv));
@@ -122,9 +122,9 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "123V";
-    const char *pp = str;
+    const char* pp = str;
     assert (ARRAY_LENGTH (str) == 5);
-    const char *end = str + ARRAY_LENGTH (str);
+    const char* end = str + ARRAY_LENGTH (str);
 
     unsigned int pv;
     assert (hb_parse_uint (&pp, end, &pv));
@@ -135,8 +135,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = ".123";
-    const char *pp = str;
-    const char *end = str + ARRAY_LENGTH (str);
+    const char* pp = str;
+    const char* end = str + ARRAY_LENGTH (str);
 
     double pv;
     assert (hb_parse_double (&pp, end, &pv));
@@ -147,8 +147,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "0.123";
-    const char *pp = str;
-    const char *end = str + ARRAY_LENGTH (str) - 1;
+    const char* pp = str;
+    const char* end = str + ARRAY_LENGTH (str) - 1;
 
     double pv;
     assert (hb_parse_double (&pp, end, &pv));
@@ -159,8 +159,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "0.123e0";
-    const char *pp = str;
-    const char *end = str + ARRAY_LENGTH (str) - 1;
+    const char* pp = str;
+    const char* end = str + ARRAY_LENGTH (str) - 1;
 
     double pv;
     assert (hb_parse_double (&pp, end, &pv));
@@ -171,8 +171,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "123e-3";
-    const char *pp = str;
-    const char *end = str + ARRAY_LENGTH (str) - 1;
+    const char* pp = str;
+    const char* end = str + ARRAY_LENGTH (str) - 1;
 
     double pv;
     assert (hb_parse_double (&pp, end, &pv));
@@ -183,8 +183,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = ".000123e+3";
-    const char *pp = str;
-    const char *end = str + ARRAY_LENGTH (str) - 1;
+    const char* pp = str;
+    const char* end = str + ARRAY_LENGTH (str) - 1;
 
     double pv;
     assert (hb_parse_double (&pp, end, &pv));
@@ -195,8 +195,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "-.000000123e6";
-    const char *pp = str;
-    const char *end = str + ARRAY_LENGTH (str) - 1;
+    const char* pp = str;
+    const char* end = str + ARRAY_LENGTH (str) - 1;
 
     double pv;
     assert (hb_parse_double (&pp, end, &pv));
@@ -208,8 +208,8 @@ main (int argc, char **argv) {
 
   {
     const char str[] = "-1.23E-1";
-    const char *pp = str;
-    const char *end = str + ARRAY_LENGTH (str) - 1;
+    const char* pp = str;
+    const char* end = str + ARRAY_LENGTH (str) - 1;
 
     double pv;
     assert (hb_parse_double (&pp, end, &pv));

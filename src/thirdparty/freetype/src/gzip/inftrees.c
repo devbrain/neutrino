@@ -91,16 +91,16 @@ local const uInt cpdext[30] = { /* Extra bits for distance codes */
 #define BMAX 15         /* maximum bit length of any code */
 
 local int huft_build ( /* b, n, s, d, e, t, m, hp, hn, v) */
-    uIntf *b,               /* code lengths in bits (all assumed <= BMAX) */
+    uIntf* b,               /* code lengths in bits (all assumed <= BMAX) */
     uInt n,                 /* number of codes (assumed <= 288) */
     uInt s,                 /* number of simple-valued codes (0..s-1) */
-    const uIntf *d,         /* list of base values for non-simple codes */
-    const uIntf *e,         /* list of extra bits for non-simple codes */
-    inflate_huft *FAR *t,  /* result: starting table */
-    uIntf *m,               /* maximum lookup bits, returns actual */
-    inflate_huft *hp,       /* space for trees */
-    uInt *hn,               /* hufts used in space */
-    uIntf *v                /* working area: values in order of bit length */
+    const uIntf* d,         /* list of base values for non-simple codes */
+    const uIntf* e,         /* list of extra bits for non-simple codes */
+    inflate_huft* FAR* t,  /* result: starting table */
+    uIntf* m,               /* maximum lookup bits, returns actual */
+    inflate_huft* hp,       /* space for trees */
+    uInt* hn,               /* hufts used in space */
+    uIntf* v                /* working area: values in order of bit length */
 /* Given a list of code lengths and a maximum table size, make a set of
    tables to decode that set of codes.  Return Z_OK on success, Z_BUF_ERROR
    if the given code set is incomplete (the tables are still built in this
@@ -117,13 +117,13 @@ local int huft_build ( /* b, n, s, d, e, t, m, hp, hn, v) */
   int k;                        /* number of bits in current code */
   int l;                        /* bits per table (returned in m) */
   uInt mask;                    /* (1 << w) - 1, to avoid cc -O bug on HP */
-  uIntf *p;                     /* pointer into c[], b[], or v[] */
-  inflate_huft *q;              /* points to current table */
+  uIntf* p;                     /* pointer into c[], b[], or v[] */
+  inflate_huft* q;              /* points to current table */
   struct inflate_huft_s r;      /* table entry for structure assignment */
-  inflate_huft *u[BMAX];        /* table stack */
+  inflate_huft* u[BMAX];        /* table stack */
   int w;                        /* bits before this table == (l * h) */
   uInt x[BMAX + 1];               /* bit offsets, then code stack */
-  uIntf *xp;                    /* pointer into x */
+  uIntf* xp;                    /* pointer into x */
   int y;                        /* number of dummy codes added */
   uInt z;                       /* number of entries in current table */
 
@@ -145,7 +145,7 @@ local int huft_build ( /* b, n, s, d, e, t, m, hp, hn, v) */
   while (--i);
   if (c[0] == n)                /* null input--all zero length codes */
   {
-    *t = (inflate_huft *) Z_NULL;
+    *t = (inflate_huft*) Z_NULL;
     *m = 0;
     return Z_OK;
   }
@@ -202,8 +202,8 @@ local int huft_build ( /* b, n, s, d, e, t, m, hp, hn, v) */
   p = v;                        /* grab values in bit order */
   h = -1;                       /* no tables yet--level -1 */
   w = -l;                       /* bits decoded == (l * h) */
-  u[0] = (inflate_huft *) Z_NULL;        /* just to keep compilers happy */
-  q = (inflate_huft *) Z_NULL;   /* ditto */
+  u[0] = (inflate_huft*) Z_NULL;        /* just to keep compilers happy */
+  q = (inflate_huft*) Z_NULL;   /* ditto */
   z = 0;                        /* ditto */
 
   /* go through the bit lengths (k already is bits in shortest code) */
@@ -291,24 +291,24 @@ local int huft_build ( /* b, n, s, d, e, t, m, hp, hn, v) */
 }
 
 local int inflate_trees_bits ( /* c, bb, tb, hp, z) */
-    uIntf *c,               /* 19 code lengths */
-    uIntf *bb,              /* bits tree desired/actual depth */
-    inflate_huft *FAR *tb, /* bits tree result */
-    inflate_huft *hp,       /* space for trees */
+    uIntf* c,               /* 19 code lengths */
+    uIntf* bb,              /* bits tree desired/actual depth */
+    inflate_huft* FAR* tb, /* bits tree result */
+    inflate_huft* hp,       /* space for trees */
     z_streamp z             /* for messages */
 ) {
   int r;
   uInt hn = 0;          /* hufts used in space */
-  uIntf *v;             /* work area for huft_build */
+  uIntf* v;             /* work area for huft_build */
 
-  if ((v = (uIntf *) ZALLOC(z, 19, sizeof (uInt))) == Z_NULL)
+  if ((v = (uIntf*) ZALLOC(z, 19, sizeof (uInt))) == Z_NULL)
     return Z_MEM_ERROR;
-  r = huft_build (c, 19, 19, (uIntf *) Z_NULL, (uIntf *) Z_NULL,
+  r = huft_build (c, 19, 19, (uIntf*) Z_NULL, (uIntf*) Z_NULL,
                   tb, bb, hp, &hn, v);
   if (r == Z_DATA_ERROR)
-    z->msg = (char *) "oversubscribed dynamic bit lengths tree";
+    z->msg = (char*) "oversubscribed dynamic bit lengths tree";
   else if (r == Z_BUF_ERROR || *bb == 0) {
-    z->msg = (char *) "incomplete dynamic bit lengths tree";
+    z->msg = (char*) "incomplete dynamic bit lengths tree";
     r = Z_DATA_ERROR;
   }
   ZFREE(z, v);
@@ -318,29 +318,29 @@ local int inflate_trees_bits ( /* c, bb, tb, hp, z) */
 local int inflate_trees_dynamic ( /* nl, nd, c, bl, bd, tl, td, hp, z) */
     uInt nl,                /* number of literal/length codes */
     uInt nd,                /* number of distance codes */
-    uIntf *c,               /* that many (total) code lengths */
-    uIntf *bl,              /* literal desired/actual bit depth */
-    uIntf *bd,              /* distance desired/actual bit depth */
-    inflate_huft *FAR *tl, /* literal/length tree result */
-    inflate_huft *FAR *td, /* distance tree result */
-    inflate_huft *hp,       /* space for trees */
+    uIntf* c,               /* that many (total) code lengths */
+    uIntf* bl,              /* literal desired/actual bit depth */
+    uIntf* bd,              /* distance desired/actual bit depth */
+    inflate_huft* FAR* tl, /* literal/length tree result */
+    inflate_huft* FAR* td, /* distance tree result */
+    inflate_huft* hp,       /* space for trees */
     z_streamp z             /* for messages */
 ) {
   int r;
   uInt hn = 0;          /* hufts used in space */
-  uIntf *v;             /* work area for huft_build */
+  uIntf* v;             /* work area for huft_build */
 
   /* allocate work area */
-  if ((v = (uIntf *) ZALLOC(z, 288, sizeof (uInt))) == Z_NULL)
+  if ((v = (uIntf*) ZALLOC(z, 288, sizeof (uInt))) == Z_NULL)
     return Z_MEM_ERROR;
 
   /* build literal/length tree */
   r = huft_build (c, nl, 257, cplens, cplext, tl, bl, hp, &hn, v);
   if (r != Z_OK || *bl == 0) {
     if (r == Z_DATA_ERROR)
-      z->msg = (char *) "oversubscribed literal/length tree";
+      z->msg = (char*) "oversubscribed literal/length tree";
     else if (r != Z_MEM_ERROR) {
-      z->msg = (char *) "incomplete literal/length tree";
+      z->msg = (char*) "incomplete literal/length tree";
       r = Z_DATA_ERROR;
     }
     ZFREE(z, v);
@@ -351,7 +351,7 @@ local int inflate_trees_dynamic ( /* nl, nd, c, bl, bd, tl, td, hp, z) */
   r = huft_build (c + nl, nd, 0, cpdist, cpdext, td, bd, hp, &hn, v);
   if (r != Z_OK || (*bd == 0 && nl > 257)) {
     if (r == Z_DATA_ERROR)
-      z->msg = (char *) "oversubscribed distance tree";
+      z->msg = (char*) "oversubscribed distance tree";
     else if (r == Z_BUF_ERROR) {
 #if 0
       {
@@ -360,11 +360,11 @@ local int inflate_trees_dynamic ( /* nl, nd, c, bl, bd, tl, td, hp, z) */
       r = Z_OK;
     }
 #else
-      z->msg = (char *) "incomplete distance tree";
+      z->msg = (char*) "incomplete distance tree";
       r = Z_DATA_ERROR;
     }
     else if (r != Z_MEM_ERROR) {
-      z->msg = (char *) "empty distance tree with lengths";
+      z->msg = (char*) "empty distance tree with lengths";
       r = Z_DATA_ERROR;
     }
     ZFREE(z, v);
@@ -393,10 +393,10 @@ local inflate_huft *fixed_td;
 #endif
 
 local int inflate_trees_fixed ( /* bl, bd, tl, td, z) */
-    uIntf *bl,                      /* literal desired/actual bit depth */
-    uIntf *bd,                      /* distance desired/actual bit depth */
-    const inflate_huft *FAR *tl,   /* literal/length tree result */
-    const inflate_huft *FAR *td,   /* distance tree result */
+    uIntf* bl,                      /* literal desired/actual bit depth */
+    uIntf* bd,                      /* distance desired/actual bit depth */
+    const inflate_huft* FAR* tl,   /* literal/length tree result */
+    const inflate_huft* FAR* td,   /* distance tree result */
     z_streamp z                     /* for memory allocation */
 ) {
 #ifdef BUILDFIXED

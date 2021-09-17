@@ -379,9 +379,10 @@ extern "C" {
 
 typedef struct {
   int
-  (*read) (void *user, char *data, int size);   // fill 'data' with 'size' bytes.  return number of bytes actually read
-  void (*skip) (void *user, int n);                 // skip the next 'n' bytes, or 'unget' the last -n bytes if negative
-  int (*eof) (void *user);                       // returns nonzero if we are at end of file/data
+  (* read) (void* user, char* data, int size);   // fill 'data' with 'size' bytes.  return number of bytes actually read
+  void
+  (* skip) (void* user, int n);                 // skip the next 'n' bytes, or 'unget' the last -n bytes if negative
+  int (* eof) (void* user);                       // returns nonzero if we are at end of file/data
 } stbi_io_callbacks;
 
 ////////////////////////////////////
@@ -389,10 +390,11 @@ typedef struct {
 // 8-bits-per-channel interface
 //
 
-STBIDEF stbi_uc *
-stbi_load_from_memory (stbi_uc const *buffer, int len, int *x, int *y, int *channels_in_file, int desired_channels);
-STBIDEF stbi_uc *
-stbi_load_from_callbacks (stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *channels_in_file, int desired_channels);
+STBIDEF stbi_uc*
+stbi_load_from_memory (stbi_uc const* buffer, int len, int* x, int* y, int* channels_in_file, int desired_channels);
+STBIDEF stbi_uc*
+stbi_load_from_callbacks (stbi_io_callbacks const* clbk, void* user, int* x, int* y, int* channels_in_file,
+                          int desired_channels);
 
 #ifndef STBI_NO_STDIO
 STBIDEF stbi_uc *stbi_load            (char const *filename, int *x, int *y, int *channels_in_file, int desired_channels);
@@ -401,8 +403,9 @@ STBIDEF stbi_uc *stbi_load_from_file  (FILE *f, int *x, int *y, int *channels_in
 #endif
 
 #ifndef STBI_NO_GIF
-STBIDEF stbi_uc *
-stbi_load_gif_from_memory (stbi_uc const *buffer, int len, int **delays, int *x, int *y, int *z, int *comp, int req_comp);
+STBIDEF stbi_uc*
+stbi_load_gif_from_memory (stbi_uc const* buffer, int len, int** delays, int* x, int* y, int* z, int* comp,
+                           int req_comp);
 #endif
 
 #ifdef STBI_WINDOWS_UTF8
@@ -414,10 +417,11 @@ STBIDEF int stbi_convert_wchar_to_utf8(char *buffer, size_t bufferlen, const wch
 // 16-bits-per-channel interface
 //
 
-STBIDEF stbi_us *
-stbi_load_16_from_memory (stbi_uc const *buffer, int len, int *x, int *y, int *channels_in_file, int desired_channels);
-STBIDEF stbi_us *
-stbi_load_16_from_callbacks (stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *channels_in_file, int desired_channels);
+STBIDEF stbi_us*
+stbi_load_16_from_memory (stbi_uc const* buffer, int len, int* x, int* y, int* channels_in_file, int desired_channels);
+STBIDEF stbi_us*
+stbi_load_16_from_callbacks (stbi_io_callbacks const* clbk, void* user, int* x, int* y, int* channels_in_file,
+                             int desired_channels);
 
 #ifndef STBI_NO_STDIO
 STBIDEF stbi_us *stbi_load_16          (char const *filename, int *x, int *y, int *channels_in_file, int desired_channels);
@@ -429,10 +433,11 @@ STBIDEF stbi_us *stbi_load_from_file_16(FILE *f, int *x, int *y, int *channels_i
 // float-per-channel interface
 //
 #ifndef STBI_NO_LINEAR
-STBIDEF float *
-stbi_loadf_from_memory (stbi_uc const *buffer, int len, int *x, int *y, int *channels_in_file, int desired_channels);
-STBIDEF float *
-stbi_loadf_from_callbacks (stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *channels_in_file, int desired_channels);
+STBIDEF float*
+stbi_loadf_from_memory (stbi_uc const* buffer, int len, int* x, int* y, int* channels_in_file, int desired_channels);
+STBIDEF float*
+stbi_loadf_from_callbacks (stbi_io_callbacks const* clbk, void* user, int* x, int* y, int* channels_in_file,
+                           int desired_channels);
 
 #ifndef STBI_NO_STDIO
 STBIDEF float *stbi_loadf            (char const *filename, int *x, int *y, int *channels_in_file, int desired_channels);
@@ -451,8 +456,8 @@ STBIDEF void stbi_ldr_to_hdr_scale (float scale);
 #endif // STBI_NO_LINEAR
 
 // stbi_is_hdr is always defined, but always returns false if STBI_NO_HDR
-STBIDEF int stbi_is_hdr_from_callbacks (stbi_io_callbacks const *clbk, void *user);
-STBIDEF int stbi_is_hdr_from_memory (stbi_uc const *buffer, int len);
+STBIDEF int stbi_is_hdr_from_callbacks (stbi_io_callbacks const* clbk, void* user);
+STBIDEF int stbi_is_hdr_from_memory (stbi_uc const* buffer, int len);
 #ifndef STBI_NO_STDIO
 STBIDEF int      stbi_is_hdr          (char const *filename);
 STBIDEF int      stbi_is_hdr_from_file(FILE *f);
@@ -461,16 +466,16 @@ STBIDEF int      stbi_is_hdr_from_file(FILE *f);
 
 // get a VERY brief reason for failure
 // on most compilers (and ALL modern mainstream compilers) this is threadsafe
-STBIDEF const char *stbi_failure_reason (void);
+STBIDEF const char* stbi_failure_reason (void);
 
 // free the loaded image -- this is just free()
-STBIDEF void stbi_image_free (void *retval_from_stbi_load);
+STBIDEF void stbi_image_free (void* retval_from_stbi_load);
 
 // get image dimensions & components without fully decoding
-STBIDEF int stbi_info_from_memory (stbi_uc const *buffer, int len, int *x, int *y, int *comp);
-STBIDEF int stbi_info_from_callbacks (stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp);
-STBIDEF int stbi_is_16_bit_from_memory (stbi_uc const *buffer, int len);
-STBIDEF int stbi_is_16_bit_from_callbacks (stbi_io_callbacks const *clbk, void *user);
+STBIDEF int stbi_info_from_memory (stbi_uc const* buffer, int len, int* x, int* y, int* comp);
+STBIDEF int stbi_info_from_callbacks (stbi_io_callbacks const* clbk, void* user, int* x, int* y, int* comp);
+STBIDEF int stbi_is_16_bit_from_memory (stbi_uc const* buffer, int len);
+STBIDEF int stbi_is_16_bit_from_callbacks (stbi_io_callbacks const* clbk, void* user);
 
 #ifndef STBI_NO_STDIO
 STBIDEF int      stbi_info               (char const *filename,     int *x, int *y, int *comp);
@@ -500,14 +505,15 @@ STBIDEF void stbi_set_flip_vertically_on_load_thread (int flag_true_if_should_fl
 
 // ZLIB client - used by PNG, available for other purposes
 
-STBIDEF char *stbi_zlib_decode_malloc_guesssize (const char *buffer, int len, int initial_size, int *outlen);
-STBIDEF char *
-stbi_zlib_decode_malloc_guesssize_headerflag (const char *buffer, int len, int initial_size, int *outlen, int parse_header);
-STBIDEF char *stbi_zlib_decode_malloc (const char *buffer, int len, int *outlen);
-STBIDEF int stbi_zlib_decode_buffer (char *obuffer, int olen, const char *ibuffer, int ilen);
+STBIDEF char* stbi_zlib_decode_malloc_guesssize (const char* buffer, int len, int initial_size, int* outlen);
+STBIDEF char*
+stbi_zlib_decode_malloc_guesssize_headerflag (const char* buffer, int len, int initial_size, int* outlen,
+                                              int parse_header);
+STBIDEF char* stbi_zlib_decode_malloc (const char* buffer, int len, int* outlen);
+STBIDEF int stbi_zlib_decode_buffer (char* obuffer, int olen, const char* ibuffer, int ilen);
 
-STBIDEF char *stbi_zlib_decode_noheader_malloc (const char *buffer, int len, int *outlen);
-STBIDEF int stbi_zlib_decode_noheader_buffer (char *obuffer, int olen, const char *ibuffer, int ilen);
+STBIDEF char* stbi_zlib_decode_noheader_malloc (const char* buffer, int len, int* outlen);
+STBIDEF int stbi_zlib_decode_noheader_buffer (char* obuffer, int olen, const char* ibuffer, int ilen);
 
 #ifdef __cplusplus
 }

@@ -39,8 +39,8 @@ FT_LOCAL(void)
 tt_face_get_metrics (TT_Face face,
                      FT_Bool vertical,
                      FT_UInt gindex,
-                     FT_Short *abearing,
-                     FT_UShort *aadvance);
+                     FT_Short* abearing,
+                     FT_UShort* aadvance);
 
 FT_END_HEADER
 

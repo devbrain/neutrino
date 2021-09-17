@@ -96,16 +96,17 @@ uint64_t const _hb_NullPool[(HB_NULL_POOL_SIZE + sizeof (uint64_t) - 1) / sizeof
 /* Generic nul-content Null objects. */
 template <typename Type>
 struct Null {
-  static Type const &get_null () {
+  static Type const& get_null () {
     static_assert (hb_null_size (Type) <= HB_NULL_POOL_SIZE, "Increase HB_NULL_POOL_SIZE.");
-    return *reinterpret_cast<Type const *> (_hb_NullPool);
+    return *reinterpret_cast<Type const*> (_hb_NullPool);
   }
 };
 
 template <typename QType>
 struct NullHelper {
   typedef hb_remove_const<hb_remove_reference<QType>> Type;
-  static const Type &get_null () {
+
+  static const Type& get_null () {
     return Null<Type>::get_null ();
   }
 };
@@ -151,9 +152,9 @@ extern HB_INTERNAL
 
 /* CRAP pool: Common Region for Access Protection. */
 template <typename Type>
-static inline Type &Crap () {
+static inline Type& Crap () {
   static_assert (hb_null_size (Type) <= HB_NULL_POOL_SIZE, "Increase HB_NULL_POOL_SIZE.");
-  Type *obj = reinterpret_cast<Type *> (_hb_CrapPool);
+  Type* obj = reinterpret_cast<Type*> (_hb_CrapPool);
   memcpy (obj, &Null (Type), sizeof (*obj));
   return *obj;
 }
@@ -161,7 +162,8 @@ static inline Type &Crap () {
 template <typename QType>
 struct CrapHelper {
   typedef hb_remove_const<hb_remove_reference<QType>> Type;
-  static Type &get_crap () {
+
+  static Type& get_crap () {
     return Crap<Type> ();
   }
 };
@@ -170,14 +172,14 @@ struct CrapHelper {
 
 template <typename Type>
 struct CrapOrNullHelper {
-  static Type &get () {
+  static Type& get () {
     return Crap (Type);
   }
 };
 
 template <typename Type>
 struct CrapOrNullHelper<const Type> {
-  static const Type &get () {
+  static const Type& get () {
     return Null (Type);
   }
 };
@@ -192,37 +194,45 @@ template <typename P>
 struct hb_nonnull_ptr_t {
     typedef hb_remove_pointer<P> T;
 
-    hb_nonnull_ptr_t (T *v_ = nullptr)
+    hb_nonnull_ptr_t (T* v_ = nullptr)
         : v (v_) {
     }
-    T *operator= (T *v_) {
+
+    T* operator = (T* v_) {
       return v = v_;
     }
-    T *operator-> () const {
+
+    T* operator -> () const {
       return get ();
     }
-    T &operator* () const {
+
+    T& operator * () const {
       return *get ();
     }
-    T **operator& () const {
+
+    T** operator & () const {
       return &v;
     }
+
     /* Only auto-cast to const types. */
-    template <typename C> operator const C * () const {
+    template <typename C> operator const C* () const {
       return get ();
     }
-    operator const char * () const {
-      return (const char *) get ();
+
+    operator const char* () const {
+      return (const char*) get ();
     }
-    T *get () const {
-      return v ? v : const_cast<T *> (&Null (T));
+
+    T* get () const {
+      return v ? v : const_cast<T*> (&Null (T));
     }
-    T *get_raw () const {
+
+    T* get_raw () const {
       return v;
     }
 
   private:
-    T *v;
+    T* v;
 };
 
 #endif /* HB_NULL_HH */

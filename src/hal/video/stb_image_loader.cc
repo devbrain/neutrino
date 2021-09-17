@@ -37,26 +37,29 @@ namespace neutrino::hal {
         stbi_image_loader ()
             : m_surface (nullptr) {
         }
-        surface load ([[maybe_unused]] std::istream &is) override {
+
+        surface load ([[maybe_unused]] std::istream& is) override {
           if (m_surface) {
             auto impl = std::make_unique<surface_impl> (sdl::object<SDL_Surface> (m_surface, true));
             return create (std::move (impl));
           }
           return {};
         }
-        bool test (std::istream &is) const override {
+
+        bool test (std::istream& is) const override {
           istream_wrapper io (&is);
           m_surface = STBIMG_Load_RW (io.handle (), 0);
           return (m_surface != nullptr);
         }
+
       private:
-        mutable SDL_Surface *m_surface;
+        mutable SDL_Surface* m_surface;
     };
 
     NEUTRINO_REGISTER_IMAGE_LOADER(stbi_image_loader);
 
-    using loader_fn_ptr = SDL_Surface *(*) (SDL_RWops *src);
-    using tester_fn_ptr = int (*) (SDL_RWops *src);
+    using loader_fn_ptr = SDL_Surface* (*) (SDL_RWops* src);
+    using tester_fn_ptr = int (*) (SDL_RWops* src);
 
     class sdl_image_loader : public image_loader {
       public:
@@ -64,7 +67,7 @@ namespace neutrino::hal {
             : m_loader (loader), m_tester (tester) {
         }
 
-        surface load ([[maybe_unused]] std::istream &is) override {
+        surface load ([[maybe_unused]] std::istream& is) override {
           istream_wrapper io (&is);
           auto s = m_loader (io.handle ());
           if (s) {
@@ -73,11 +76,13 @@ namespace neutrino::hal {
           }
           return {};
         }
-        bool test (std::istream &is) const override {
+
+        bool test (std::istream& is) const override {
           istream_wrapper io (&is);
 
           return m_tester (io.handle ()) != 0;
         }
+
       private:
         loader_fn_ptr m_loader;
         tester_fn_ptr m_tester;

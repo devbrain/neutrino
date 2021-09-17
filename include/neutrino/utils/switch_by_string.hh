@@ -7,7 +7,7 @@
 
 // https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
 
-constexpr inline auto switcher (const char *s) {
+constexpr inline auto switcher (const char* s) {
   unsigned long long hash{}, c{};
   for (auto p = s; *p; ++p, ++c) {
     hash += *p << c;
@@ -15,7 +15,7 @@ constexpr inline auto switcher (const char *s) {
   return hash;
 }
 
-constexpr inline auto operator "" _case (const char *s, size_t) {
+constexpr inline auto operator "" _case (const char* s, size_t) {
   return switcher (s);
 }
 

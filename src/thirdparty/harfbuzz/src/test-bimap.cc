@@ -28,7 +28,7 @@
 #include "hb-bimap.hh"
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   hb_bimap_t bm;
 
   assert (bm.is_empty () == true);

@@ -37,7 +37,7 @@ namespace neutrino::hal::events {
 
 #define d_KM_S11(MOD) d_KM2STR(MOD)
 
-  const char *s11n<key_mod_t>::to_string (const key_mod_t &x) {
+  const char* s11n<key_mod_t>::to_string (const key_mod_t& x) {
     d_KM_FUNC
     return "";
   }
@@ -45,7 +45,7 @@ namespace neutrino::hal::events {
 #undef d_KM_S11
 #define d_KM_S11(MOD) d_STR2KM(MOD)
 
-  key_mod_t s11n<key_mod_t>::from_string (const std::string &x) {
+  key_mod_t s11n<key_mod_t>::from_string (const std::string& x) {
     d_KM_FUNC
     if (x.empty ()) {
       return key_mod_t::NONE;
@@ -304,7 +304,7 @@ namespace neutrino::hal::events {
 #define d_SC_S11(SC) d_SC2STR(SC)
 #define d_SC_S11_1(SC) d_SC2STR1(SC)
 
-  const char *s11n<scan_code_t>::to_string (const scan_code_t &x) {
+  const char* s11n<scan_code_t>::to_string (const scan_code_t& x) {
     switch (x) {
       d_SCFN
       default:
@@ -317,7 +317,8 @@ namespace neutrino::hal::events {
 
 #define d_SC_S11(SC) d_STR2SC(SC)
 #define d_SC_S11_1(SC) d_STR2SC1(SC)
-  scan_code_t s11n<scan_code_t>::from_string (const std::string &x) {
+
+  scan_code_t s11n<scan_code_t>::from_string (const std::string& x) {
     d_SCFN
     return scan_code_t::UNKNOWN;
   }
@@ -342,7 +343,7 @@ namespace neutrino::hal::events {
 
 #define d_PB_S11(MOD) d_PB2STR(MOD)
 
-  const char *s11n<pointer_button_t>::to_string (const pointer_button_t &x) {
+  const char* s11n<pointer_button_t>::to_string (const pointer_button_t& x) {
     d_PB_FUNC
     return "";
   }
@@ -350,7 +351,7 @@ namespace neutrino::hal::events {
 #undef d_PB_S11
 #define d_PB_S11(MOD) d_STR2PB(MOD)
 
-  pointer_button_t s11n<pointer_button_t>::from_string (const std::string &x) {
+  pointer_button_t s11n<pointer_button_t>::from_string (const std::string& x) {
     d_PB_FUNC
     RAISE_EX("Can not deserialize ", x, " as pointer_button_t");
   }

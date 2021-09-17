@@ -45,12 +45,12 @@ typedef struct {
   } symbols[RC_SYMBOLS_MAX];
 
   /// Probabilities associated with RC_BIT_0 or RC_BIT_1
-  probability *probs[RC_SYMBOLS_MAX];
+  probability* probs[RC_SYMBOLS_MAX];
 
 } lzma_range_encoder;
 
 static inline void
-rc_reset (lzma_range_encoder *rc) {
+rc_reset (lzma_range_encoder* rc) {
   rc->low = 0;
   rc->cache_size = 1;
   rc->range = UINT32_MAX;
@@ -60,14 +60,14 @@ rc_reset (lzma_range_encoder *rc) {
 }
 
 static inline void
-rc_bit (lzma_range_encoder *rc, probability *prob, uint32_t bit) {
+rc_bit (lzma_range_encoder* rc, probability* prob, uint32_t bit) {
   rc->symbols[rc->count] = bit;
   rc->probs[rc->count] = prob;
   ++rc->count;
 }
 
 static inline void
-rc_bittree (lzma_range_encoder *rc, probability *probs,
+rc_bittree (lzma_range_encoder* rc, probability* probs,
             uint32_t bit_count, uint32_t symbol) {
   uint32_t model_index = 1;
 
@@ -80,7 +80,7 @@ rc_bittree (lzma_range_encoder *rc, probability *probs,
 }
 
 static inline void
-rc_bittree_reverse (lzma_range_encoder *rc, probability *probs,
+rc_bittree_reverse (lzma_range_encoder* rc, probability* probs,
                     uint32_t bit_count, uint32_t symbol) {
   uint32_t model_index = 1;
 
@@ -94,7 +94,7 @@ rc_bittree_reverse (lzma_range_encoder *rc, probability *probs,
 }
 
 static inline void
-rc_direct (lzma_range_encoder *rc,
+rc_direct (lzma_range_encoder* rc,
            uint32_t value, uint32_t bit_count) {
   do {
     rc->symbols[rc->count++]
@@ -104,14 +104,14 @@ rc_direct (lzma_range_encoder *rc,
 }
 
 static inline void
-rc_flush (lzma_range_encoder *rc) {
+rc_flush (lzma_range_encoder* rc) {
   for (size_t i = 0; i < 5; ++i)
     rc->symbols[rc->count++] = RC_FLUSH;
 }
 
 static inline bool
-rc_shift_low (lzma_range_encoder *rc,
-              uint8_t *out, size_t *out_pos, size_t out_size) {
+rc_shift_low (lzma_range_encoder* rc,
+              uint8_t* out, size_t* out_pos, size_t out_size) {
   if ((uint32_t) (rc->low) < (uint32_t) (0xFF000000)
       || (uint32_t) (rc->low >> 32) != 0) {
     do {
@@ -135,8 +135,8 @@ rc_shift_low (lzma_range_encoder *rc,
 }
 
 static inline bool
-rc_encode (lzma_range_encoder *rc,
-           uint8_t *out, size_t *out_pos, size_t out_size) {
+rc_encode (lzma_range_encoder* rc,
+           uint8_t* out, size_t* out_pos, size_t out_size) {
   assert(rc->count <= RC_SYMBOLS_MAX);
 
   while (rc->pos < rc->count) {
@@ -210,7 +210,7 @@ rc_encode (lzma_range_encoder *rc,
 }
 
 static inline uint64_t
-rc_pending (const lzma_range_encoder *rc) {
+rc_pending (const lzma_range_encoder* rc) {
   return rc->cache_size + 5 - 1;
 }
 

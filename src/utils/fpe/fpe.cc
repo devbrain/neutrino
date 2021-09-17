@@ -73,7 +73,7 @@ namespace neutrino::utils {
     fegetenv (&_env);
   }
 
-  fpe_impl::fpe_impl (const fpe_impl &env) {
+  fpe_impl::fpe_impl (const fpe_impl& env) {
     _env = env._env;
   }
 
@@ -81,7 +81,7 @@ namespace neutrino::utils {
     fesetenv (&_env);
   }
 
-  fpe_impl &fpe_impl::operator= (const fpe_impl &env) {
+  fpe_impl& fpe_impl::operator = (const fpe_impl& env) {
     _env = env._env;
     return *this;
   }
@@ -121,16 +121,16 @@ namespace neutrino::utils {
     set_rounding_mode (rm);
   }
 
-  fpe::fpe (const fpe &env)
+  fpe::fpe (const fpe& env)
       : fpe_impl (env) {
   }
 
   fpe::~fpe () {
   }
 
-  fpe &fpe::operator= (const fpe &env) {
+  fpe& fpe::operator = (const fpe& env) {
     if (&env != this) {
-      fpe_impl::operator= (env);
+      fpe_impl::operator = (env);
     }
     return *this;
   }

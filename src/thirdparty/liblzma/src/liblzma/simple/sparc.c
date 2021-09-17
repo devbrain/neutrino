@@ -14,9 +14,9 @@
 #include "simple_private.h"
 
 static size_t
-sparc_code (void *simple lzma_attribute((__unused__)),
+sparc_code (void* simple lzma_attribute((__unused__)),
             uint32_t now_pos, bool is_encoder,
-            uint8_t *buffer, size_t size) {
+            uint8_t* buffer, size_t size) {
   size_t i;
   for (i = 0; i + 4 <= size; i += 4) {
 
@@ -54,22 +54,22 @@ sparc_code (void *simple lzma_attribute((__unused__)),
 }
 
 static lzma_ret
-sparc_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                  const lzma_filter_info *filters, bool is_encoder) {
+sparc_coder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                  const lzma_filter_info* filters, bool is_encoder) {
   return lzma_simple_coder_init (next, allocator, filters,
                                  &sparc_code, 0, 4, 4, is_encoder);
 }
 
 extern lzma_ret
-lzma_simple_sparc_encoder_init (lzma_next_coder *next,
-                                const lzma_allocator *allocator,
-                                const lzma_filter_info *filters) {
+lzma_simple_sparc_encoder_init (lzma_next_coder* next,
+                                const lzma_allocator* allocator,
+                                const lzma_filter_info* filters) {
   return sparc_coder_init (next, allocator, filters, true);
 }
 
 extern lzma_ret
-lzma_simple_sparc_decoder_init (lzma_next_coder *next,
-                                const lzma_allocator *allocator,
-                                const lzma_filter_info *filters) {
+lzma_simple_sparc_decoder_init (lzma_next_coder* next,
+                                const lzma_allocator* allocator,
+                                const lzma_filter_info* filters) {
   return sparc_coder_init (next, allocator, filters, false);
 }

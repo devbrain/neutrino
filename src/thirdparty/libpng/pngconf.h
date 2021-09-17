@@ -577,49 +577,49 @@ typedef size_t png_alloc_size_t;
 typedef png_int_32 png_fixed_point;
 
 /* Add typedefs for pointers */
-typedef void *png_voidp;
-typedef const void *png_const_voidp;
-typedef png_byte *png_bytep;
-typedef const png_byte *png_const_bytep;
-typedef png_uint_32 *png_uint_32p;
-typedef const png_uint_32 *png_const_uint_32p;
-typedef png_int_32 *png_int_32p;
-typedef const png_int_32 *png_const_int_32p;
-typedef png_uint_16 *png_uint_16p;
-typedef const png_uint_16 *png_const_uint_16p;
-typedef png_int_16 *png_int_16p;
-typedef const png_int_16 *png_const_int_16p;
-typedef char *png_charp;
-typedef const char *png_const_charp;
-typedef png_fixed_point *png_fixed_point_p;
-typedef const png_fixed_point *png_const_fixed_point_p;
-typedef size_t *png_size_tp;
-typedef const size_t *png_const_size_tp;
+typedef void* png_voidp;
+typedef const void* png_const_voidp;
+typedef png_byte* png_bytep;
+typedef const png_byte* png_const_bytep;
+typedef png_uint_32* png_uint_32p;
+typedef const png_uint_32* png_const_uint_32p;
+typedef png_int_32* png_int_32p;
+typedef const png_int_32* png_const_int_32p;
+typedef png_uint_16* png_uint_16p;
+typedef const png_uint_16* png_const_uint_16p;
+typedef png_int_16* png_int_16p;
+typedef const png_int_16* png_const_int_16p;
+typedef char* png_charp;
+typedef const char* png_const_charp;
+typedef png_fixed_point* png_fixed_point_p;
+typedef const png_fixed_point* png_const_fixed_point_p;
+typedef size_t* png_size_tp;
+typedef const size_t* png_const_size_tp;
 
 #ifdef PNG_STDIO_SUPPORTED
-typedef FILE *png_FILE_p;
+typedef FILE* png_FILE_p;
 #endif
 
 #ifdef PNG_FLOATING_POINT_SUPPORTED
-typedef double *png_doublep;
-typedef const double *png_const_doublep;
+typedef double* png_doublep;
+typedef const double* png_const_doublep;
 #endif
 
 /* Pointers to pointers; i.e. arrays */
-typedef png_byte **png_bytepp;
-typedef png_uint_32 **png_uint_32pp;
-typedef png_int_32 **png_int_32pp;
-typedef png_uint_16 **png_uint_16pp;
-typedef png_int_16 **png_int_16pp;
-typedef const char **png_const_charpp;
-typedef char **png_charpp;
-typedef png_fixed_point **png_fixed_point_pp;
+typedef png_byte** png_bytepp;
+typedef png_uint_32** png_uint_32pp;
+typedef png_int_32** png_int_32pp;
+typedef png_uint_16** png_uint_16pp;
+typedef png_int_16** png_int_16pp;
+typedef const char** png_const_charpp;
+typedef char** png_charpp;
+typedef png_fixed_point** png_fixed_point_pp;
 #ifdef PNG_FLOATING_POINT_SUPPORTED
-typedef double **png_doublepp;
+typedef double** png_doublepp;
 #endif
 
 /* Pointers to pointers to pointers; i.e., pointer to array */
-typedef char ***png_charppp;
+typedef char*** png_charppp;
 
 #endif /* PNG_BUILDING_SYMBOL_TABLE */
 

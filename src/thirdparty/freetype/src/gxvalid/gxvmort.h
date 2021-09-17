@@ -39,7 +39,7 @@ typedef struct GXV_mort_featureRec_ {
   FT_ULong enableFlags;
   FT_ULong disableFlags;
 
-} GXV_mort_featureRec, *GXV_mort_feature;
+} GXV_mort_featureRec, * GXV_mort_feature;
 
 #define GXV_MORT_FEATURE_OFF  {0, 1, 0x00000000UL, 0x00000000UL}
 

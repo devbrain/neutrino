@@ -140,10 +140,10 @@ FT_BEGIN_HEADER
 /*************************************************************************/
 
 /* handle to internal charmap object */
-typedef struct FT_CMapRec_ *FT_CMap;
+typedef struct FT_CMapRec_* FT_CMap;
 
 /* handle to charmap class structure */
-typedef const struct FT_CMap_ClassRec_ *FT_CMap_Class;
+typedef const struct FT_CMap_ClassRec_* FT_CMap_Class;
 
 /* internal charmap object structure */
 typedef struct FT_CMapRec_ {
@@ -163,44 +163,44 @@ typedef struct FT_CMapRec_ {
 
 /* class method definitions */
 typedef FT_Error
-(*FT_CMap_InitFunc) (FT_CMap cmap,
-                     FT_Pointer init_data);
+(* FT_CMap_InitFunc) (FT_CMap cmap,
+                      FT_Pointer init_data);
 
 typedef void
-(*FT_CMap_DoneFunc) (FT_CMap cmap);
+(* FT_CMap_DoneFunc) (FT_CMap cmap);
 
 typedef FT_UInt
-(*FT_CMap_CharIndexFunc) (FT_CMap cmap,
-                          FT_UInt32 char_code);
+(* FT_CMap_CharIndexFunc) (FT_CMap cmap,
+                           FT_UInt32 char_code);
 
 typedef FT_UInt
-(*FT_CMap_CharNextFunc) (FT_CMap cmap,
-                         FT_UInt32 *achar_code);
+(* FT_CMap_CharNextFunc) (FT_CMap cmap,
+                          FT_UInt32* achar_code);
 
 typedef FT_UInt
-(*FT_CMap_CharVarIndexFunc) (FT_CMap cmap,
-                             FT_CMap unicode_cmap,
-                             FT_UInt32 char_code,
-                             FT_UInt32 variant_selector);
+(* FT_CMap_CharVarIndexFunc) (FT_CMap cmap,
+                              FT_CMap unicode_cmap,
+                              FT_UInt32 char_code,
+                              FT_UInt32 variant_selector);
 
 typedef FT_Int
-(*FT_CMap_CharVarIsDefaultFunc) (FT_CMap cmap,
-                                 FT_UInt32 char_code,
+(* FT_CMap_CharVarIsDefaultFunc) (FT_CMap cmap,
+                                  FT_UInt32 char_code,
+                                  FT_UInt32 variant_selector);
+
+typedef FT_UInt32*
+(* FT_CMap_VariantListFunc) (FT_CMap cmap,
+                             FT_Memory mem);
+
+typedef FT_UInt32*
+(* FT_CMap_CharVariantListFunc) (FT_CMap cmap,
+                                 FT_Memory mem,
+                                 FT_UInt32 char_code);
+
+typedef FT_UInt32*
+(* FT_CMap_VariantCharListFunc) (FT_CMap cmap,
+                                 FT_Memory mem,
                                  FT_UInt32 variant_selector);
-
-typedef FT_UInt32 *
-(*FT_CMap_VariantListFunc) (FT_CMap cmap,
-                            FT_Memory mem);
-
-typedef FT_UInt32 *
-(*FT_CMap_CharVariantListFunc) (FT_CMap cmap,
-                                FT_Memory mem,
-                                FT_UInt32 char_code);
-
-typedef FT_UInt32 *
-(*FT_CMap_VariantCharListFunc) (FT_CMap cmap,
-                                FT_Memory mem,
-                                FT_UInt32 variant_selector);
 
 typedef struct FT_CMap_ClassRec_ {
   FT_ULong size;
@@ -257,7 +257,7 @@ FT_BASE(FT_Error)
 FT_CMap_New (FT_CMap_Class clazz,
              FT_Pointer init_data,
              FT_CharMap charmap,
-             FT_CMap *acmap);
+             FT_CMap* acmap);
 
 /* destroy a charmap and remove it from face's list */
 FT_BASE(void)
@@ -266,7 +266,7 @@ FT_CMap_Done (FT_CMap cmap);
 
 /* add LCD padding to CBox */
 FT_BASE(void)
-ft_lcd_padding (FT_BBox *cbox,
+ft_lcd_padding (FT_BBox* cbox,
                 FT_GlyphSlot slot,
                 FT_Render_Mode mode);
 
@@ -357,7 +357,7 @@ typedef struct FT_Face_InternalRec_ {
   FT_ServiceCacheRec services;
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-  FT_Incremental_InterfaceRec *incremental_interface;
+  FT_Incremental_InterfaceRec* incremental_interface;
 #endif
 
   FT_Char no_stem_darkening;
@@ -420,7 +420,7 @@ typedef struct FT_Slot_InternalRec_ {
   FT_Bool glyph_transformed;
   FT_Matrix glyph_matrix;
   FT_Vector glyph_delta;
-  void *glyph_hints;
+  void* glyph_hints;
 
   FT_Int32 load_flags;
 
@@ -447,7 +447,7 @@ typedef struct FT_Slot_InternalRec_ {
  */
 
 typedef struct FT_Size_InternalRec_ {
-  void *module_data;
+  void* module_data;
 
   FT_Render_Mode autohint_mode;
   FT_Size_Metrics autohint_metrics;
@@ -487,7 +487,7 @@ typedef struct FT_Size_InternalRec_ {
  *     A handle to the memory manager.
  */
 typedef struct FT_ModuleRec_ {
-  FT_Module_Class *clazz;
+  FT_Module_Class* clazz;
   FT_Library library;
   FT_Memory memory;
 
@@ -551,19 +551,19 @@ typedef struct FT_ModuleRec_ {
  */
 FT_BASE(const void*)
 FT_Get_Module_Interface (FT_Library library,
-                         const char *mod_name);
+                         const char* mod_name);
 
 FT_BASE(FT_Pointer)
 ft_module_get_service (FT_Module module,
-                       const char *service_id,
+                       const char* service_id,
                        FT_Bool global);
 
 #ifdef FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
 FT_BASE(FT_Error)
 ft_property_string_set (FT_Library library,
-                        const FT_String *module_name,
-                        const FT_String *property_name,
-                        FT_String *value);
+                        const FT_String* module_name,
+                        const FT_String* property_name,
+                        FT_String* value);
 #endif
 
 /* */
@@ -622,7 +622,7 @@ ft_property_string_set (FT_Library library,
  */
 FT_BASE(FT_Error)
 FT_New_GlyphSlot (FT_Face face,
-                  FT_GlyphSlot *aslot);
+                  FT_GlyphSlot* aslot);
 
 
 /**************************************************************************
@@ -672,13 +672,13 @@ FT_BASE(FT_Error)
 FT_Match_Size (FT_Face face,
                FT_Size_Request req,
                FT_Bool ignore_width,
-               FT_ULong *size_index);
+               FT_ULong* size_index);
 
 
 /* Use the horizontal metrics to synthesize the vertical metrics. */
 /* If `advance' is zero, it is also synthesized.                  */
 FT_BASE(void)
-ft_synthesize_vertical_metrics (FT_Glyph_Metrics *metrics,
+ft_synthesize_vertical_metrics (FT_Glyph_Metrics* metrics,
                                 FT_Pos advance);
 
 
@@ -693,7 +693,7 @@ ft_glyphslot_free_bitmap (FT_GlyphSlot slot);
 FT_BASE(FT_Bool)
 ft_glyphslot_preset_bitmap (FT_GlyphSlot slot,
                             FT_Render_Mode mode,
-                            const FT_Vector *origin);
+                            const FT_Vector* origin);
 
 /* Allocate a new bitmap buffer in a glyph slot. */
 FT_BASE(FT_Error)
@@ -705,7 +705,7 @@ ft_glyphslot_alloc_bitmap (FT_GlyphSlot slot,
 /* will not be freed by a later call to ft_glyphslot_free_bitmap.        */
 FT_BASE(void)
 ft_glyphslot_set_bitmap (FT_GlyphSlot slot,
-                         FT_Byte *buffer);
+                         FT_Byte* buffer);
 
 
 /*************************************************************************/
@@ -728,7 +728,7 @@ ft_glyphslot_set_bitmap (FT_GlyphSlot slot,
 
 typedef struct FT_RendererRec_ {
   FT_ModuleRec root;
-  FT_Renderer_Class *clazz;
+  FT_Renderer_Class* clazz;
   FT_Glyph_Format glyph_format;
   FT_Glyph_Class glyph_class;
 
@@ -905,25 +905,25 @@ typedef struct FT_LibraryRec_ {
 FT_BASE(FT_Renderer)
 FT_Lookup_Renderer (FT_Library library,
                     FT_Glyph_Format format,
-                    FT_ListNode *node);
+                    FT_ListNode* node);
 
 FT_BASE(FT_Error)
 FT_Render_Glyph_Internal (FT_Library library,
                           FT_GlyphSlot slot,
                           FT_Render_Mode render_mode);
 
-typedef const char *
-(*FT_Face_GetPostscriptNameFunc) (FT_Face face);
+typedef const char*
+(* FT_Face_GetPostscriptNameFunc) (FT_Face face);
 
 typedef FT_Error
-(*FT_Face_GetGlyphNameFunc) (FT_Face face,
-                             FT_UInt glyph_index,
-                             FT_Pointer buffer,
-                             FT_UInt buffer_max);
+(* FT_Face_GetGlyphNameFunc) (FT_Face face,
+                              FT_UInt glyph_index,
+                              FT_Pointer buffer,
+                              FT_UInt buffer_max);
 
 typedef FT_UInt
-(*FT_Face_GetGlyphNameIndexFunc) (FT_Face face,
-                                  const FT_String *glyph_name);
+(* FT_Face_GetGlyphNameIndexFunc) (FT_Face face,
+                                   const FT_String* glyph_name);
 
 #ifndef FT_CONFIG_OPTION_NO_DEFAULT_SYSTEM
 

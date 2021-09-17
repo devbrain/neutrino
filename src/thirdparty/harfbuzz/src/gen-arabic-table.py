@@ -144,7 +144,7 @@ def print_joining_table(f):
             offset = "joining_offset_0x%04xu" % start
             print(
                 "      if (hb_in_range<hb_codepoint_t> (u, 0x%04Xu, 0x%04Xu)) return joining_table[u - 0x%04Xu + %s];" % (
-                start, end, start, offset))
+                    start, end, start, offset))
         print("      break;")
         print("")
     print("    default:")

@@ -28,6 +28,7 @@ namespace neutrino::engine {
       m_pimpl->monitor->on_terminating ();
     }
   }
+
   void application::on_low_memory () {
     if (m_pimpl->monitor) {
       m_pimpl->monitor->on_low_memory ();
@@ -39,11 +40,13 @@ namespace neutrino::engine {
       m_pimpl->monitor->on_will_enter_background ();
     }
   }
+
   void application::on_in_background () {
     if (m_pimpl->monitor) {
       m_pimpl->monitor->on_in_background ();
     }
   }
+
   void application::on_in_foreground () {
     if (m_pimpl->monitor) {
       m_pimpl->monitor->on_in_foreground ();
@@ -54,7 +57,7 @@ namespace neutrino::engine {
     scene_manager::instance ().update (ms);
   }
 
-  void application::on_event (const events::quit &) {
+  void application::on_event (const events::quit&) {
     this->quit ();
   }
 }

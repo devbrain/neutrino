@@ -43,12 +43,12 @@ FT_BEGIN_HEADER
 
 
 typedef struct CF2_BufferRec_ {
-  FT_Error *error;
-  const FT_Byte *start;
-  const FT_Byte *end;
-  const FT_Byte *ptr;
+  FT_Error* error;
+  const FT_Byte* start;
+  const FT_Byte* end;
+  const FT_Byte* ptr;
 
-} CF2_BufferRec, *CF2_Buffer;
+} CF2_BufferRec, * CF2_Buffer;
 
 FT_LOCAL(CF2_Int)
 cf2_buf_readByte (CF2_Buffer buf);

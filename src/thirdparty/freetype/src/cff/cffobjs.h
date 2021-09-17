@@ -57,7 +57,7 @@ cff_face_init (FT_Stream stream,
                FT_Face face,           /* CFF_Face */
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params);
+               FT_Parameter* params);
 
 FT_LOCAL(void)
 cff_face_done (FT_Face face);               /* CFF_Face */

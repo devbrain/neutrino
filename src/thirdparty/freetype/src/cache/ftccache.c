@@ -47,9 +47,9 @@
 static void
 ftc_node_mru_link (FTC_Node node,
                    FTC_Manager manager) {
-  void *nl = &manager->nodes_list;
+  void* nl = &manager->nodes_list;
 
-  FTC_MruNode_Prepend ((FTC_MruNode *) nl,
+  FTC_MruNode_Prepend ((FTC_MruNode*) nl,
                        (FTC_MruNode) node);
   manager->num_nodes++;
 }
@@ -58,9 +58,9 @@ ftc_node_mru_link (FTC_Node node,
 static void
 ftc_node_mru_unlink (FTC_Node node,
                      FTC_Manager manager) {
-  void *nl = &manager->nodes_list;
+  void* nl = &manager->nodes_list;
 
-  FTC_MruNode_Remove ((FTC_MruNode *) nl,
+  FTC_MruNode_Remove ((FTC_MruNode*) nl,
                       (FTC_MruNode) node);
   manager->num_nodes--;
 }
@@ -104,7 +104,7 @@ ftc_get_top_node_for_hash( FTC_Cache  cache,
 static void
 ftc_cache_resize (FTC_Cache cache) {
   for (;;) {
-    FTC_Node node, *pnode;
+    FTC_Node node, * pnode;
     FT_UFast p = cache->p;
     FT_UFast mask = cache->mask;
     FT_UFast count = mask + p + 1;    /* number of buckets */
@@ -161,7 +161,7 @@ ftc_cache_resize (FTC_Cache cache) {
       /* do we need to expand the buckets array? */
     else if (cache->slack > (FT_Long) count * FTC_HASH_SUB_LOAD) {
       FT_UFast old_index = p + mask;
-      FTC_Node *pold;
+      FTC_Node* pold;
 
       if (old_index + 1 <= FTC_HASH_INITIAL_SIZE)
         break;
@@ -204,7 +204,7 @@ ftc_cache_resize (FTC_Cache cache) {
 static void
 ftc_node_hash_unlink (FTC_Node node0,
                       FTC_Cache cache) {
-  FTC_Node *pnode = FTC_NODE_TOP_FOR_HASH(cache, node0->hash);
+  FTC_Node* pnode = FTC_NODE_TOP_FOR_HASH(cache, node0->hash);
 
   for (;;) {
     FTC_Node node = *pnode;
@@ -231,7 +231,7 @@ ftc_node_hash_unlink (FTC_Node node0,
 static void
 ftc_node_hash_link (FTC_Node node,
                     FTC_Cache cache) {
-  FTC_Node *pnode = FTC_NODE_TOP_FOR_HASH(cache, node->hash);
+  FTC_Node* pnode = FTC_NODE_TOP_FOR_HASH(cache, node->hash);
 
   node->link = *pnode;
   *pnode = node;
@@ -323,7 +323,7 @@ FTC_Cache_Clear (FTC_Cache cache) {
     count = cache->p + cache->mask + 1;
 
     for (i = 0; i < count; i++) {
-      FTC_Node *pnode = cache->buckets + i, next, node = *pnode;
+      FTC_Node* pnode = cache->buckets + i, next, node = *pnode;
 
       while (node) {
         next = node->link;
@@ -393,7 +393,7 @@ FT_LOCAL_DEF(FT_Error)
 FTC_Cache_NewNode (FTC_Cache cache,
                    FT_Offset hash,
                    FT_Pointer query,
-                   FTC_Node *anode) {
+                   FTC_Node* anode) {
   FT_Error error;
   FTC_Node node;
 
@@ -514,8 +514,8 @@ FTC_Cache_RemoveFaceID (FTC_Cache cache,
 
   count = cache->p + cache->mask + 1;
   for (i = 0; i < count; i++) {
-    FTC_Node *bucket = cache->buckets + i;
-    FTC_Node *pnode = bucket;
+    FTC_Node* bucket = cache->buckets + i;
+    FTC_Node* pnode = bucket;
 
     for (;;) {
       FTC_Node node = *pnode;

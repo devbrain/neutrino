@@ -10,22 +10,22 @@
 using namespace neutrino::tiled::tmx;
 
 TEST_CASE("test_flipped") {
-  auto resolver = [] (const std::string &p) -> std::string {
+  auto resolver = [] (const std::string& p) -> std::string {
     if (p == "tilesheet.tsx") {
-      return std::string ((char *) tilesheet, tilesheet_length);
+      return std::string ((char*) tilesheet, tilesheet_length);
     }
     return {};
   };
   auto the_map = test::load_map (tiled_flipped, tiled_flipped_length, resolver);
   REQUIRE(!the_map.layers ().empty ());
-  const auto *tl = std::get_if<tile_layer> (&the_map.layers ()[0]);
+  const auto* tl = std::get_if<tile_layer> (&the_map.layers ()[0]);
   REQUIRE(tl != nullptr);
 
   REQUIRE(tl->cells ().size () == 4);
-  const auto &t1 = tl->cells ()[0];
-  const auto &t2 = tl->cells ()[1];
-  const auto &t3 = tl->cells ()[2];
-  const auto &t4 = tl->cells ()[3];
+  const auto& t1 = tl->cells ()[0];
+  const auto& t2 = tl->cells ()[1];
+  const auto& t3 = tl->cells ()[2];
+  const auto& t4 = tl->cells ()[3];
 
   REQUIRE(t1.gid () == 3);
   REQUIRE(t1.diag_flipped ());

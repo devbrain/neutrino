@@ -313,11 +313,12 @@ FT_BASE_DEF (void)
 }
 
 FT_BASE_DEF( FT_Int )
+
 FT_Trace_Get_Count (void) {
   return 0;
 }
 
-FT_BASE_DEF (const char *)
+FT_BASE_DEF (const char*)
 FT_Trace_Get_Name( FT_Int
 idx )
 {

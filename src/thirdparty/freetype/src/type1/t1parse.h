@@ -69,17 +69,17 @@ typedef struct T1_ParserRec_ {
   PS_ParserRec root;
   FT_Stream stream;
 
-  FT_Byte *base_dict;
+  FT_Byte* base_dict;
   FT_ULong base_len;
 
-  FT_Byte *private_dict;
+  FT_Byte* private_dict;
   FT_ULong private_len;
 
   FT_Bool in_pfb;
   FT_Bool in_memory;
   FT_Bool single_block;
 
-} T1_ParserRec, *T1_Parser;
+} T1_ParserRec, * T1_Parser;
 
 #define T1_Add_Table(p, i, o, l)  (p)->funcs.add( (p), i, o, l )
 #define T1_Release_Table(p)          \

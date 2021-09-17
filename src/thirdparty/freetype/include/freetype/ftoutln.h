@@ -119,9 +119,9 @@ FT_BEGIN_HEADER
  *   should filter this out, too.
  */
 FT_EXPORT(FT_Error)
-FT_Outline_Decompose (FT_Outline *outline,
-                      const FT_Outline_Funcs *func_interface,
-                      void *user);
+FT_Outline_Decompose (FT_Outline* outline,
+                      const FT_Outline_Funcs* func_interface,
+                      void* user);
 
 
 /**************************************************************************
@@ -161,7 +161,7 @@ FT_EXPORT(FT_Error)
 FT_Outline_New (FT_Library library,
                 FT_UInt numPoints,
                 FT_Int numContours,
-                FT_Outline *anoutline);
+                FT_Outline* anoutline);
 
 
 /**************************************************************************
@@ -188,7 +188,7 @@ FT_Outline_New (FT_Library library,
  */
 FT_EXPORT(FT_Error)
 FT_Outline_Done (FT_Library library,
-                 FT_Outline *outline);
+                 FT_Outline* outline);
 
 
 /**************************************************************************
@@ -211,7 +211,7 @@ FT_Outline_Done (FT_Library library,
  *   valid.
  */
 FT_EXPORT(FT_Error)
-FT_Outline_Check (FT_Outline *outline);
+FT_Outline_Check (FT_Outline* outline);
 
 
 /**************************************************************************
@@ -243,8 +243,8 @@ FT_Outline_Check (FT_Outline *outline);
  *   See @FT_Glyph_Get_CBox for a discussion of tricky fonts.
  */
 FT_EXPORT(void)
-FT_Outline_Get_CBox (const FT_Outline *outline,
-                     FT_BBox *acbox);
+FT_Outline_Get_CBox (const FT_Outline* outline,
+                     FT_BBox* acbox);
 
 
 /**************************************************************************
@@ -267,7 +267,7 @@ FT_Outline_Get_CBox (const FT_Outline *outline,
  *     The vertical offset.
  */
 FT_EXPORT(void)
-FT_Outline_Translate (const FT_Outline *outline,
+FT_Outline_Translate (const FT_Outline* outline,
                       FT_Pos xOffset,
                       FT_Pos yOffset);
 
@@ -294,8 +294,8 @@ FT_Outline_Translate (const FT_Outline *outline,
  *   FreeType error code.  0~means success.
  */
 FT_EXPORT(FT_Error)
-FT_Outline_Copy (const FT_Outline *source,
-                 FT_Outline *target);
+FT_Outline_Copy (const FT_Outline* source,
+                 FT_Outline* target);
 
 
 /**************************************************************************
@@ -320,8 +320,8 @@ FT_Outline_Copy (const FT_Outline *source,
  *   outline's points.
  */
 FT_EXPORT(void)
-FT_Outline_Transform (const FT_Outline *outline,
-                      const FT_Matrix *matrix);
+FT_Outline_Transform (const FT_Outline* outline,
+                      const FT_Matrix* matrix);
 
 
 /**************************************************************************
@@ -370,7 +370,7 @@ FT_Outline_Transform (const FT_Outline *outline,
  *
  */
 FT_EXPORT(FT_Error)
-FT_Outline_Embolden (FT_Outline *outline,
+FT_Outline_Embolden (FT_Outline* outline,
                      FT_Pos strength);
 
 
@@ -388,7 +388,7 @@ FT_Outline_Embolden (FT_Outline *outline,
  *   2.4.10
  */
 FT_EXPORT(FT_Error)
-FT_Outline_EmboldenXY (FT_Outline *outline,
+FT_Outline_EmboldenXY (FT_Outline* outline,
                        FT_Pos xstrength,
                        FT_Pos ystrength);
 
@@ -414,7 +414,7 @@ FT_Outline_EmboldenXY (FT_Outline *outline,
  *   what it is doing.
  */
 FT_EXPORT(void)
-FT_Outline_Reverse (FT_Outline *outline);
+FT_Outline_Reverse (FT_Outline* outline);
 
 
 /**************************************************************************
@@ -453,8 +453,8 @@ FT_Outline_Reverse (FT_Outline *outline);
  */
 FT_EXPORT(FT_Error)
 FT_Outline_Get_Bitmap (FT_Library library,
-                       FT_Outline *outline,
-                       const FT_Bitmap *abitmap);
+                       FT_Outline* outline,
+                       const FT_Bitmap* abitmap);
 
 
 /**************************************************************************
@@ -497,8 +497,8 @@ FT_Outline_Get_Bitmap (FT_Library library,
  */
 FT_EXPORT(FT_Error)
 FT_Outline_Render (FT_Library library,
-                   FT_Outline *outline,
-                   FT_Raster_Params *params);
+                   FT_Outline* outline,
+                   FT_Raster_Params* params);
 
 /**************************************************************************
  *
@@ -570,7 +570,7 @@ typedef enum FT_Orientation_ {
  *
  */
 FT_EXPORT(FT_Orientation)
-FT_Outline_Get_Orientation (FT_Outline *outline);
+FT_Outline_Get_Orientation (FT_Outline* outline);
 
 
 /* */

@@ -47,12 +47,12 @@ typedef struct Cpal_ {
   FT_UShort version;        /* Table version number (0 or 1 supported). */
   FT_UShort num_colors;               /* Total number of color records, */
   /* combined for all palettes.     */
-  FT_Byte *colors;                              /* RGBA array of colors */
-  FT_Byte *color_indices; /* Index of each palette's first color record */
+  FT_Byte* colors;                              /* RGBA array of colors */
+  FT_Byte* color_indices; /* Index of each palette's first color record */
   /* in the combined color record array.        */
 
   /* The memory which backs up the `CPAL' table. */
-  void *table;
+  void* table;
   FT_ULong table_size;
 
 } Cpal;
@@ -73,10 +73,10 @@ tt_face_load_cpal (TT_Face face,
   FT_Error error;
   FT_Memory memory = face->root.memory;
 
-  FT_Byte *table = NULL;
-  FT_Byte *p = NULL;
+  FT_Byte* table = NULL;
+  FT_Byte* p = NULL;
 
-  Cpal *cpal = NULL;
+  Cpal* cpal = NULL;
 
   FT_ULong colors_offset;
   FT_ULong table_size;
@@ -119,13 +119,13 @@ tt_face_load_cpal (TT_Face face,
     goto InvalidTable;
 
   cpal->color_indices = p;
-  cpal->colors = (FT_Byte *) (table + colors_offset);
+  cpal->colors = (FT_Byte*) (table + colors_offset);
 
   if (cpal->version == 1) {
     FT_ULong type_offset, label_offset, entry_label_offset;
-    FT_UShort *array = NULL;
-    FT_UShort *limit;
-    FT_UShort *q;
+    FT_UShort* array = NULL;
+    FT_UShort* limit;
+    FT_UShort* q;
 
     if (CPAL_V0_HEADER_BASE_SIZE +
         face->palette_data.num_palettes * 2U +
@@ -234,7 +234,7 @@ tt_face_free_cpal (TT_Face face) {
   FT_Stream stream = face->root.stream;
   FT_Memory memory = face->root.memory;
 
-  Cpal *cpal = (Cpal *) face->cpal;
+  Cpal* cpal = (Cpal*) face->cpal;
 
   if (cpal) {
     FT_FRAME_RELEASE(cpal->table);
@@ -245,13 +245,13 @@ tt_face_free_cpal (TT_Face face) {
 FT_LOCAL_DEF(FT_Error)
 tt_face_palette_set (TT_Face face,
                      FT_UInt palette_index) {
-  Cpal *cpal = (Cpal *) face->cpal;
+  Cpal* cpal = (Cpal*) face->cpal;
 
-  FT_Byte *offset;
-  FT_Byte *p;
+  FT_Byte* offset;
+  FT_Byte* p;
 
-  FT_Color *q;
-  FT_Color *limit;
+  FT_Color* q;
+  FT_Color* limit;
 
   FT_UShort color_index;
 

@@ -80,10 +80,10 @@ static const FT_Char  ft_char_table[128] =
 #endif /* 'A' == 193 */
 
 FT_LOCAL_DEF(FT_Long)
-PS_Conv_Strtol (FT_Byte **cursor,
-                FT_Byte *limit,
+PS_Conv_Strtol (FT_Byte** cursor,
+                FT_Byte* limit,
                 FT_Long base) {
-  FT_Byte *p = *cursor;
+  FT_Byte* p = *cursor;
 
   FT_Long num = 0;
   FT_Bool sign = 0;
@@ -150,10 +150,10 @@ PS_Conv_Strtol (FT_Byte **cursor,
 }
 
 FT_LOCAL_DEF(FT_Long)
-PS_Conv_ToInt (FT_Byte **cursor,
-               FT_Byte *limit) {
-  FT_Byte *p = *cursor;
-  FT_Byte *curp;
+PS_Conv_ToInt (FT_Byte** cursor,
+               FT_Byte* limit) {
+  FT_Byte* p = *cursor;
+  FT_Byte* curp;
 
   FT_Long num;
 
@@ -179,11 +179,11 @@ PS_Conv_ToInt (FT_Byte **cursor,
 }
 
 FT_LOCAL_DEF(FT_Fixed)
-PS_Conv_ToFixed (FT_Byte **cursor,
-                 FT_Byte *limit,
+PS_Conv_ToFixed (FT_Byte** cursor,
+                 FT_Byte* limit,
                  FT_Long power_ten) {
-  FT_Byte *p = *cursor;
-  FT_Byte *curp;
+  FT_Byte* p = *cursor;
+  FT_Byte* curp;
 
   FT_Fixed integral = 0;
   FT_Long decimal = 0;
@@ -432,11 +432,11 @@ PS_Conv_StringDecode( FT_Byte**  cursor,
 #endif /* 0 */
 
 FT_LOCAL_DEF(FT_UInt)
-PS_Conv_ASCIIHexDecode (FT_Byte **cursor,
-                        FT_Byte *limit,
-                        FT_Byte *buffer,
+PS_Conv_ASCIIHexDecode (FT_Byte** cursor,
+                        FT_Byte* limit,
+                        FT_Byte* buffer,
                         FT_Offset n) {
-  FT_Byte *p;
+  FT_Byte* p;
   FT_UInt r = 0;
   FT_UInt w = 0;
   FT_UInt pad = 0x01;
@@ -519,12 +519,12 @@ PS_Conv_ASCIIHexDecode (FT_Byte **cursor,
 }
 
 FT_LOCAL_DEF(FT_UInt)
-PS_Conv_EexecDecode (FT_Byte **cursor,
-                     FT_Byte *limit,
-                     FT_Byte *buffer,
+PS_Conv_EexecDecode (FT_Byte** cursor,
+                     FT_Byte* limit,
+                     FT_Byte* buffer,
                      FT_Offset n,
-                     FT_UShort *seed) {
-  FT_Byte *p;
+                     FT_UShort* seed) {
+  FT_Byte* p;
   FT_UInt r;
   FT_UInt s = *seed;
 

@@ -68,7 +68,7 @@ typedef struct CID_Parser_ {
   PS_ParserRec root;
   FT_Stream stream;
 
-  FT_Byte *postscript;
+  FT_Byte* postscript;
   FT_ULong postscript_len;
 
   FT_ULong data_offset;
@@ -81,13 +81,13 @@ typedef struct CID_Parser_ {
 } CID_Parser;
 
 FT_LOCAL(FT_Error)
-cid_parser_new (CID_Parser *parser,
+cid_parser_new (CID_Parser* parser,
                 FT_Stream stream,
                 FT_Memory memory,
                 PSAux_Service psaux);
 
 FT_LOCAL(void)
-cid_parser_done (CID_Parser *parser);
+cid_parser_done (CID_Parser* parser);
 
 
 /**************************************************************************

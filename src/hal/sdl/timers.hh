@@ -13,7 +13,7 @@
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::sdl {
-  inline void delay (const std::chrono::milliseconds &ms) noexcept {
+  inline void delay (const std::chrono::milliseconds& ms) noexcept {
     SDL_Delay (static_cast<uint32_t>(ms.count ()));
   }
 
@@ -24,12 +24,13 @@ namespace neutrino::sdl {
   [[nodiscard]] inline uint64_t get_performance_frequency () noexcept {
     return SDL_GetPerformanceFrequency ();
   }
+
   [[nodiscard]] inline std::chrono::milliseconds get_ms_since_init () noexcept {
     return std::chrono::milliseconds (SDL_GetTicks ());
   }
 
   [[nodiscard]] inline SDL_TimerID
-  add_timer (const std::chrono::milliseconds &interval, SDL_TimerCallback callback, void *param) {
+  add_timer (const std::chrono::milliseconds& interval, SDL_TimerCallback callback, void* param) {
     SDL_TimerID id = SDL_AddTimer (static_cast<uint32_t>(interval.count ()), callback, param);
 
     if (id == 0) {

@@ -71,7 +71,7 @@ void png_fixed_warning (png_const_structrp png_ptr, png_const_charp msg) {
 /* Validate ASCII to fp routines. */
 static int verbose = 0;
 
-int validation_ascii_to_fp (int count, int argc, char **argv) {
+int validation_ascii_to_fp (int count, int argc, char** argv) {
   int showall = 0;
   double max_error = 2;      /* As a percentage error-in-last-digit/.5 */
   double max_error_abs = 17; /* Used when precision is DBL_DIG */
@@ -267,9 +267,9 @@ static const char none[] = "";
 static const char hexdigits[16] = "0123456789ABCDEF";
 
 static const struct {
-  const char *start; /* Characters valid at the start */
-  const char *end;   /* Valid characters that end the state */
-  const char *tests; /* Characters to test after 2 digits seen */
+  const char* start; /* Characters valid at the start */
+  const char* end;   /* Valid characters that end the state */
+  const char* tests; /* Characters to test after 2 digits seen */
 }
     state_characters[states] =
     {
@@ -302,12 +302,12 @@ typedef struct {
 }
     checkfp_control;
 
-static int check_all_characters (checkfp_command *co, checkfp_control c);
+static int check_all_characters (checkfp_command* co, checkfp_control c);
 
-static int check_some_characters (checkfp_command *co, checkfp_control c,
-                                  const char *tests);
+static int check_some_characters (checkfp_command* co, checkfp_control c,
+                                  const char* tests);
 
-static int check_one_character (checkfp_command *co, checkfp_control c, int ch) {
+static int check_one_character (checkfp_command* co, checkfp_control c, int ch) {
   /* Test this character (ch) to ensure the parser does the correct thing.
    */
   size_t index = 0;
@@ -479,7 +479,7 @@ static int check_one_character (checkfp_command *co, checkfp_control c, int ch) 
   return 1;
 }
 
-static int check_all_characters (checkfp_command *co, checkfp_control c) {
+static int check_all_characters (checkfp_command* co, checkfp_control c) {
   int ch;
 
   if (c.cnumber + 4 < sizeof co->number) {
@@ -492,8 +492,8 @@ static int check_all_characters (checkfp_command *co, checkfp_control c) {
   return 1;
 }
 
-static int check_some_characters (checkfp_command *co, checkfp_control c,
-                                  const char *tests) {
+static int check_some_characters (checkfp_command* co, checkfp_control c,
+                                  const char* tests) {
   int i;
 
   --(c.limit);
@@ -514,7 +514,7 @@ static int check_some_characters (checkfp_command *co, checkfp_control c,
   return 1;
 }
 
-int validation_checkfp (int count, int argc, char **argv) {
+int validation_checkfp (int count, int argc, char** argv) {
   int result;
   checkfp_command command;
   checkfp_control control;
@@ -560,7 +560,7 @@ int validation_checkfp (int count, int argc, char **argv) {
   return result;
 }
 
-int validation_muldiv (int count, int argc, char **argv) {
+int validation_muldiv (int count, int argc, char** argv) {
   int tested = 0;
   int overflow = 0;
   int error = 0;
@@ -724,7 +724,7 @@ static png_uint_16 png_exp16bit(png_uint_32 log)
 }
 #endif /* FLOATING_ARITHMETIC */
 
-int validation_gamma (int argc, char **argv) {
+int validation_gamma (int argc, char** argv) {
   double gamma[9] = {2.2, 1.8, 1.52, 1.45, 1., 1 / 1.45, 1 / 1.52, 1 / 1.8, 1 / 2.2};
   double maxerr;
   int i, silent = 0, onlygamma = 0;
@@ -899,7 +899,7 @@ int validation_gamma (int argc, char **argv) {
  */
 #define COUNT 1000000000
 
-int main (int argc, char **argv) {
+int main (int argc, char** argv) {
   int count = COUNT;
 
   while (argc > 1) {

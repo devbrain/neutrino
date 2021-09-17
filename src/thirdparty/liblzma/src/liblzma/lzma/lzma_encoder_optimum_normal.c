@@ -19,10 +19,10 @@
 ////////////
 
 static uint32_t
-get_literal_price (const lzma_lzma1_encoder *const coder, const uint32_t pos,
+get_literal_price (const lzma_lzma1_encoder* const coder, const uint32_t pos,
                    const uint32_t prev_byte, const bool match_mode,
                    uint32_t match_byte, uint32_t symbol) {
-  const probability *const subcoder = literal_subcoder(coder->literal,
+  const probability* const subcoder = literal_subcoder(coder->literal,
                                                        coder->literal_context_bits, coder->literal_pos_mask,
                                                        pos, prev_byte);
 
@@ -55,7 +55,7 @@ get_literal_price (const lzma_lzma1_encoder *const coder, const uint32_t pos,
 }
 
 static inline uint32_t
-get_len_price (const lzma_length_encoder *const lencoder,
+get_len_price (const lzma_length_encoder* const lencoder,
                const uint32_t len, const uint32_t pos_state) {
   // NOTE: Unlike the other price tables, length prices are updated
   // in lzma_encoder.c
@@ -63,14 +63,14 @@ get_len_price (const lzma_length_encoder *const lencoder,
 }
 
 static inline uint32_t
-get_short_rep_price (const lzma_lzma1_encoder *const coder,
+get_short_rep_price (const lzma_lzma1_encoder* const coder,
                      const lzma_lzma_state state, const uint32_t pos_state) {
   return rc_bit_0_price (coder->is_rep0[state])
          + rc_bit_0_price (coder->is_rep0_long[state][pos_state]);
 }
 
 static inline uint32_t
-get_pure_rep_price (const lzma_lzma1_encoder *const coder, const uint32_t rep_index,
+get_pure_rep_price (const lzma_lzma1_encoder* const coder, const uint32_t rep_index,
                     const lzma_lzma_state state, uint32_t pos_state) {
   uint32_t price;
 
@@ -95,7 +95,7 @@ get_pure_rep_price (const lzma_lzma1_encoder *const coder, const uint32_t rep_in
 }
 
 static inline uint32_t
-get_rep_price (const lzma_lzma1_encoder *const coder, const uint32_t rep_index,
+get_rep_price (const lzma_lzma1_encoder* const coder, const uint32_t rep_index,
                const uint32_t len, const lzma_lzma_state state,
                const uint32_t pos_state) {
   return get_len_price (&coder->rep_len_encoder, len, pos_state)
@@ -103,7 +103,7 @@ get_rep_price (const lzma_lzma1_encoder *const coder, const uint32_t rep_index,
 }
 
 static inline uint32_t
-get_dist_len_price (const lzma_lzma1_encoder *const coder, const uint32_t dist,
+get_dist_len_price (const lzma_lzma1_encoder* const coder, const uint32_t dist,
                     const uint32_t len, const uint32_t pos_state) {
   const uint32_t dist_state = get_dist_state(len);
   uint32_t price;
@@ -123,10 +123,10 @@ get_dist_len_price (const lzma_lzma1_encoder *const coder, const uint32_t dist,
 }
 
 static void
-fill_dist_prices (lzma_lzma1_encoder *coder) {
+fill_dist_prices (lzma_lzma1_encoder* coder) {
   for (uint32_t dist_state = 0; dist_state < DIST_STATES; ++dist_state) {
 
-    uint32_t *const dist_slot_prices
+    uint32_t* const dist_slot_prices
         = coder->dist_slot_prices[dist_state];
 
     // Price to encode the dist_slot.
@@ -176,7 +176,7 @@ fill_dist_prices (lzma_lzma1_encoder *coder) {
 }
 
 static void
-fill_align_prices (lzma_lzma1_encoder *coder) {
+fill_align_prices (lzma_lzma1_encoder* coder) {
   for (uint32_t i = 0; i < ALIGN_SIZE; ++i)
     coder->align_prices[i] = rc_bittree_reverse_price (
         coder->dist_align, ALIGN_BITS, i);
@@ -191,13 +191,13 @@ fill_align_prices (lzma_lzma1_encoder *coder) {
 /////////////
 
 static inline void
-make_literal (lzma_optimal *optimal) {
+make_literal (lzma_optimal* optimal) {
   optimal->back_prev = UINT32_MAX;
   optimal->prev_1_is_literal = false;
 }
 
 static inline void
-make_short_rep (lzma_optimal *optimal) {
+make_short_rep (lzma_optimal* optimal) {
   optimal->back_prev = 0;
   optimal->prev_1_is_literal = false;
 }
@@ -206,8 +206,8 @@ make_short_rep (lzma_optimal *optimal) {
     ((optimal).back_prev == 0)
 
 static void
-backward (lzma_lzma1_encoder *restrict coder, uint32_t *restrict len_res,
-          uint32_t *restrict back_res, uint32_t cur) {
+backward (lzma_lzma1_encoder* restrict coder, uint32_t* restrict len_res,
+          uint32_t* restrict back_res, uint32_t cur) {
   coder->opts_end_index = cur;
 
   uint32_t pos_mem = coder->opts[cur].pos_prev;
@@ -254,8 +254,8 @@ backward (lzma_lzma1_encoder *restrict coder, uint32_t *restrict len_res,
 //////////
 
 static inline uint32_t
-helper1 (lzma_lzma1_encoder *restrict coder, lzma_mf *restrict mf,
-         uint32_t *restrict back_res, uint32_t *restrict len_res,
+helper1 (lzma_lzma1_encoder* restrict coder, lzma_mf* restrict mf,
+         uint32_t* restrict back_res, uint32_t* restrict len_res,
          uint32_t position) {
   const uint32_t nice_len = mf->nice_len;
 
@@ -278,13 +278,13 @@ helper1 (lzma_lzma1_encoder *restrict coder, lzma_mf *restrict mf,
     return UINT32_MAX;
   }
 
-  const uint8_t *const buf = mf_ptr (mf) - 1;
+  const uint8_t* const buf = mf_ptr (mf) - 1;
 
   uint32_t rep_lens[REPS];
   uint32_t rep_max_index = 0;
 
   for (uint32_t i = 0; i < REPS; ++i) {
-    const uint8_t *const buf_back = buf - coder->reps[i] - 1;
+    const uint8_t* const buf_back = buf - coder->reps[i] - 1;
 
     if (not_equal_16(buf, buf_back)) {
       rep_lens[i] = 0;
@@ -424,7 +424,7 @@ helper1 (lzma_lzma1_encoder *restrict coder, lzma_mf *restrict mf,
 }
 
 static inline uint32_t
-helper2 (lzma_lzma1_encoder *coder, uint32_t *reps, const uint8_t *buf,
+helper2 (lzma_lzma1_encoder* coder, uint32_t* reps, const uint8_t* buf,
          uint32_t len_end, uint32_t position, const uint32_t cur,
          const uint32_t nice_len, const uint32_t buf_avail_full) {
   uint32_t matches_count = coder->matches_count;
@@ -549,7 +549,7 @@ helper2 (lzma_lzma1_encoder *coder, uint32_t *reps, const uint8_t *buf,
 
   if (!next_is_literal && match_byte != current_byte) { // speed optimization
     // try literal + rep0
-    const uint8_t *const buf_back = buf - reps[0] - 1;
+    const uint8_t* const buf_back = buf - reps[0] - 1;
     const uint32_t limit = my_min(buf_avail_full, nice_len + 1);
 
     const uint32_t len_test = lzma_memcmplen (buf, buf_back, 1, limit) - 1;
@@ -587,7 +587,7 @@ helper2 (lzma_lzma1_encoder *coder, uint32_t *reps, const uint8_t *buf,
   uint32_t start_len = 2; // speed optimization
 
   for (uint32_t rep_index = 0; rep_index < REPS; ++rep_index) {
-    const uint8_t *const buf_back = buf - reps[rep_index] - 1;
+    const uint8_t* const buf_back = buf - reps[rep_index] - 1;
     if (not_equal_16(buf, buf_back))
       continue;
 
@@ -713,7 +713,7 @@ helper2 (lzma_lzma1_encoder *coder, uint32_t *reps, const uint8_t *buf,
 
       if (len_test == coder->matches[i].len) {
         // Try Match + Literal + Rep0
-        const uint8_t *const buf_back = buf - cur_back - 1;
+        const uint8_t* const buf_back = buf - cur_back - 1;
         uint32_t len_test_2 = len_test + 1;
         const uint32_t limit = my_min(buf_avail_full,
                                       len_test_2 + nice_len);
@@ -785,9 +785,9 @@ helper2 (lzma_lzma1_encoder *coder, uint32_t *reps, const uint8_t *buf,
 }
 
 extern void
-lzma_lzma_optimum_normal (lzma_lzma1_encoder *restrict coder,
-                          lzma_mf *restrict mf,
-                          uint32_t *restrict back_res, uint32_t *restrict len_res,
+lzma_lzma_optimum_normal (lzma_lzma1_encoder* restrict coder,
+                          lzma_mf* restrict mf,
+                          uint32_t* restrict back_res, uint32_t* restrict len_res,
                           uint32_t position) {
   // If we have symbols pending, return the next pending symbol.
   if (coder->opts_end_index != coder->opts_current_index) {

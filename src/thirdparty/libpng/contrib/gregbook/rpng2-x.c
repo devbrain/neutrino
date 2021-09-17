@@ -193,13 +193,13 @@ static int  is_number (char *p);
 static void rpng2_x_cleanup (void);
 static int rpng2_x_msb (ulg u32val);
 
-static char titlebar[1024], *window_name = titlebar;
-static char *appname = LONGNAME;
-static char *icon_name = PROGNAME;
-static char *res_name = RESNAME;
-static char *res_class = RESCLASS;
-static char *filename;
-static FILE *infile;
+static char titlebar[1024], * window_name = titlebar;
+static char* appname = LONGNAME;
+static char* icon_name = PROGNAME;
+static char* res_name = RESNAME;
+static char* res_class = RESCLASS;
+static char* filename;
+static FILE* infile;
 
 static mainprog_info rpng2_info;
 
@@ -210,7 +210,7 @@ static int pat = 6;        /* must be less than num_bgpat */
 static int bg_image = 0;
 static int bgscale, bgscale_default = 16;
 static ulg bg_rowbytes;
-static uch *bg_data;
+static uch* bg_data;
 
 int pause_after_pass = FALSE;
 int demo_timing = FALSE;
@@ -284,12 +284,12 @@ static struct background_pattern {
 static int num_bgpat = sizeof (bg) / sizeof (struct background_pattern);
 
 /* X-specific variables */
-static char *displayname;
-static XImage *ximage;
-static Display *display;
+static char* displayname;
+static XImage* ximage;
+static Display* display;
 static int depth;
-static Visual *visual;
-static XVisualInfo *visual_list;
+static Visual* visual;
+static XVisualInfo* visual_list;
 static int RShift, GShift, BShift;
 static ulg RMask, GMask, BMask;
 static Window window;
@@ -301,11 +301,11 @@ static int have_colormap = FALSE;
 static int have_window = FALSE;
 static int have_gc = FALSE;
 
-int main (int argc, char **argv) {
+int main (int argc, char** argv) {
 #ifdef sgi
   char tmpline[80];
 #endif
-  char *p, *bgstr = NULL;
+  char* p, * bgstr = NULL;
   int rc, alen, flen;
   int error = 0;
   int timing = FALSE;
@@ -325,8 +325,8 @@ int main (int argc, char **argv) {
    * default background color (black), booleans (FALSE), pointers (NULL),
    * etc. */
 
-  displayname = (char *) NULL;
-  filename = (char *) NULL;
+  displayname = (char*) NULL;
+  filename = (char*) NULL;
   memset (&rpng2_info, 0, sizeof (mainprog_info));
 
 
@@ -744,7 +744,7 @@ int main (int argc, char **argv) {
     do {
       XNextEvent (display, &e);
       if (e.type == Expose) {
-        XExposeEvent *ex = (XExposeEvent * ) & e;
+        XExposeEvent* ex = (XExposeEvent * ) & e;
         rpng2_x_redisplay_image (ex->x, ex->y, ex->width, ex->height);
       }
     }
@@ -784,13 +784,13 @@ static void rpng2_x_init (void) {
     return;
   }
 
-  rpng2_info.image_data = (uch *) malloc (rowbytes * rpng2_info.height);
+  rpng2_info.image_data = (uch*) malloc (rowbytes * rpng2_info.height);
   if (!rpng2_info.image_data) {
     readpng2_cleanup (&rpng2_info);
     return;
   }
 
-  rpng2_info.row_pointers = (uch **) malloc (rpng2_info.height * sizeof (uch *));
+  rpng2_info.row_pointers = (uch**) malloc (rpng2_info.height * sizeof (uch*));
   if (!rpng2_info.row_pointers) {
     free (rpng2_info.image_data);
     rpng2_info.image_data = NULL;
@@ -830,17 +830,17 @@ static int rpng2_x_create_window (void) {
   ulg attrmask;
   int need_colormap = FALSE;
   int screen, pad;
-  uch *xdata;
+  uch* xdata;
   Window root;
   XEvent e;
   XGCValues gcvalues;
   XSetWindowAttributes attr;
-  XTextProperty windowName, *pWindowName = &windowName;
-  XTextProperty iconName, *pIconName = &iconName;
+  XTextProperty windowName, * pWindowName = &windowName;
+  XTextProperty iconName, * pIconName = &iconName;
   XVisualInfo visual_info;
-  XSizeHints *size_hints;
-  XWMHints *wm_hints;
-  XClassHint *class_hints;
+  XSizeHints* size_hints;
+  XWMHints* wm_hints;
+  XClassHint* class_hints;
 
   Trace((stderr, "beginning rpng2_x_create_window()\n"))
 
@@ -994,15 +994,15 @@ static int rpng2_x_create_window (void) {
   ---------------------------------------------------------------------------*/
 
   if (depth == 24 || depth == 32) {
-    xdata = (uch *) malloc (4 * rpng2_info.width * rpng2_info.height);
+    xdata = (uch*) malloc (4 * rpng2_info.width * rpng2_info.height);
     pad = 32;
   }
   else if (depth == 16) {
-    xdata = (uch *) malloc (2 * rpng2_info.width * rpng2_info.height);
+    xdata = (uch*) malloc (2 * rpng2_info.width * rpng2_info.height);
     pad = 16;
   }
   else /* depth == 8 */ {
-    xdata = (uch *) malloc (rpng2_info.width * rpng2_info.height);
+    xdata = (uch*) malloc (rpng2_info.width * rpng2_info.height);
     pad = 8;
   }
 
@@ -1012,7 +1012,7 @@ static int rpng2_x_create_window (void) {
   }
 
   ximage = XCreateImage (display, visual, depth, ZPixmap, 0,
-                         (char *) xdata, rpng2_info.width, rpng2_info.height, pad, 0);
+                         (char*) xdata, rpng2_info.width, rpng2_info.height, pad, 0);
 
   if (!ximage) {
     fprintf (stderr, PROGNAME ":  XCreateImage() failed\n");
@@ -1078,8 +1078,8 @@ static int rpng2_x_create_window (void) {
 
 
 static int rpng2_x_load_bg_image (void) {
-  uch *src;
-  char *dest;
+  uch* src;
+  char* dest;
   uch r1, r2, g1, g2, b1, b2;
   uch r1_inv, r2_inv, g1_inv, g2_inv, b1_inv, b2_inv;
   int k, hmax, max;
@@ -1097,7 +1097,7 @@ static int rpng2_x_load_bg_image (void) {
   ---------------------------------------------------------------------------*/
 
   bg_rowbytes = 3 * rpng2_info.width;
-  bg_data = (uch *) malloc (bg_rowbytes * rpng2_info.height);
+  bg_data = (uch*) malloc (bg_rowbytes * rpng2_info.height);
   if (!bg_data) {
     fprintf (stderr, PROGNAME
                      ":  unable to allocate memory for background image\n");
@@ -1145,7 +1145,7 @@ static int rpng2_x_load_bg_image (void) {
       g2_inv = g2_min + (g2_diff * (yidx_max - yidx)) / yidx_max;
       b2_inv = b2_min + (b2_diff * (yidx_max - yidx)) / yidx_max;
 
-      dest = (char *) bg_data + row * bg_rowbytes;
+      dest = (char*) bg_data + row * bg_rowbytes;
       for (i = 0; i < rpng2_info.width; ++i) {
         even_odd_horiz = (int) ((i / bgscale) & 1);
         even_odd = even_odd_vert ^ even_odd_horiz;
@@ -1201,7 +1201,7 @@ static int rpng2_x_load_bg_image (void) {
       yidx = (int) (row % bgscale);
       if (yidx > hmax)
         yidx = bgscale - 1 - yidx;
-      dest = (char *) bg_data + row * bg_rowbytes;
+      dest = (char*) bg_data + row * bg_rowbytes;
       for (i = 0; i < rpng2_info.width; ++i) {
         xidx = (int) (i % bgscale);
         if (xidx > hmax)
@@ -1252,7 +1252,7 @@ static int rpng2_x_load_bg_image (void) {
 
     for (row = 0; row < rpng2_info.height; ++row) {
       y = (int) (row - hh);
-      dest = (char *) bg_data + row * bg_rowbytes;
+      dest = (char*) bg_data + row * bg_rowbytes;
       for (i = 0; i < rpng2_info.width; ++i) {
         x = (int) (i - hw);
         angle = (x == 0) ? PI_2 : atan ((double) y / (double) x);
@@ -1411,8 +1411,8 @@ static void rpng2_x_display_row (ulg row) {
   uch bg_red = rpng2_info.bg_red;
   uch bg_green = rpng2_info.bg_green;
   uch bg_blue = rpng2_info.bg_blue;
-  uch *src, *src2 = NULL;
-  char *dest;
+  uch* src, * src2 = NULL;
+  char* dest;
   uch r, g, b, a;
   int ximage_rowbytes = ximage->bytes_per_line;
   ulg i, pixel;
@@ -1652,8 +1652,8 @@ static void rpng2_x_redisplay_image (ulg startcol, ulg startrow,
   uch bg_red = rpng2_info.bg_red;
   uch bg_green = rpng2_info.bg_green;
   uch bg_blue = rpng2_info.bg_blue;
-  uch *src, *src2 = NULL;
-  char *dest;
+  uch* src, * src2 = NULL;
+  char* dest;
   uch r, g, b, a;
   ulg i, row, lastrow = 0;
   ulg pixel;
@@ -2137,7 +2137,7 @@ static void rpng2_x_cleanup (void) {
   if (ximage) {
     if (ximage->data) {
       free (ximage->data);           /* we allocated it, so we free it */
-      ximage->data = (char *) NULL;  /*  instead of XDestroyImage() */
+      ximage->data = (char*) NULL;  /*  instead of XDestroyImage() */
     }
     XDestroyImage (ximage);
     ximage = NULL;

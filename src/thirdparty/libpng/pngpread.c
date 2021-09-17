@@ -953,6 +953,7 @@ png_push_have_row (png_structrp png_ptr, png_bytep row) {
 }
 
 #ifdef PNG_READ_INTERLACING_SUPPORTED
+
 void PNGAPI
 png_progressive_combine_row (png_const_structrp png_ptr, png_bytep old_row,
                              png_const_bytep new_row) {
@@ -966,6 +967,7 @@ png_progressive_combine_row (png_const_structrp png_ptr, png_bytep old_row,
   if (new_row != NULL)
     png_combine_row (png_ptr, old_row, 1/*blocky display*/);
 }
+
 #endif /* READ_INTERLACING */
 
 void PNGAPI
@@ -989,4 +991,5 @@ png_get_progressive_ptr (png_const_structrp png_ptr) {
 
   return png_ptr->io_ptr;
 }
+
 #endif /* PROGRESSIVE_READ */

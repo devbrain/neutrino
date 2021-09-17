@@ -32,51 +32,42 @@
 #endif
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   if (argc != 2) {
     fprintf (stderr, "usage: %s font-file\n", argv[0]);
     exit (1);
   }
 
-  hb_blob_t *blob = hb_blob_create_from_file_or_fail (argv[1]);
+  hb_blob_t* blob = hb_blob_create_from_file_or_fail (argv[1]);
   assert (blob);
-  hb_face_t *face = hb_face_create (blob, 0 /* first face */);
-  hb_font_t *font = hb_font_create (face);
+  hb_face_t* face = hb_face_create (blob, 0 /* first face */);
+  hb_font_t* font = hb_font_create (face);
   hb_blob_destroy (blob);
   blob = nullptr;
-  
 
   const unsigned int num_glyphs = hb_face_get_glyph_count (face);
-  int	result = 1;
+  int result = 1;
 
-  for (hb_codepoint_t gid = 0; gid < num_glyphs; gid++)
-  {
+  for (hb_codepoint_t gid = 0; gid < num_glyphs; gid++) {
     char buf[64];
     unsigned int buf_size = sizeof (buf);
-    if (hb_font_get_glyph_name (font, gid, buf, buf_size))
-    {
-      hb_codepoint_t	gid_inv;
-      if (hb_font_get_glyph_from_name(font, buf, strlen (buf), &gid_inv))
-      {
-	if (gid == gid_inv)
-	{
-	  printf ("%u <-> %s\n", gid, buf);
-	}
-	else
-	{
-	  printf ("%u -> %s -> %u\n", gid, buf, gid_inv);
-	  result = 0;
-	}
+    if (hb_font_get_glyph_name (font, gid, buf, buf_size)) {
+      hb_codepoint_t gid_inv;
+      if (hb_font_get_glyph_from_name (font, buf, strlen (buf), &gid_inv)) {
+        if (gid == gid_inv) {
+          printf ("%u <-> %s\n", gid, buf);
+        }
+        else {
+          printf ("%u -> %s -> %u\n", gid, buf, gid_inv);
+          result = 0;
+        }
       }
-      else
-      {
-	printf ("%u -> %s -> ?\n", gid, buf);
-	result = 0;
+      else {
+        printf ("%u -> %s -> ?\n", gid, buf);
+        result = 0;
       }
     }
-    else
-    {
+    else {
       printf ("%u -> ?\n", gid);
       result = 0;
     }

@@ -45,12 +45,12 @@ typedef struct FT_SubGlyphRec_ {
 
 typedef struct FT_GlyphLoadRec_ {
   FT_Outline outline;       /* outline                   */
-  FT_Vector *extra_points;  /* extra points table        */
-  FT_Vector *extra_points2; /* second extra points table */
+  FT_Vector* extra_points;  /* extra points table        */
+  FT_Vector* extra_points2; /* second extra points table */
   FT_UInt num_subglyphs; /* number of subglyphs       */
   FT_SubGlyph subglyphs;     /* subglyphs                 */
 
-} FT_GlyphLoadRec, *FT_GlyphLoad;
+} FT_GlyphLoadRec, * FT_GlyphLoad;
 
 typedef struct FT_GlyphLoaderRec_ {
   FT_Memory memory;
@@ -62,15 +62,15 @@ typedef struct FT_GlyphLoaderRec_ {
   FT_GlyphLoadRec base;
   FT_GlyphLoadRec current;
 
-  void *other;            /* for possible future extension? */
+  void* other;            /* for possible future extension? */
 
-} FT_GlyphLoaderRec, *FT_GlyphLoader;
+} FT_GlyphLoaderRec, * FT_GlyphLoader;
 
 
 /* create new empty glyph loader */
 FT_BASE(FT_Error)
 FT_GlyphLoader_New (FT_Memory memory,
-                    FT_GlyphLoader *aloader);
+                    FT_GlyphLoader* aloader);
 
 /* add an extra points table to a glyph loader */
 FT_BASE(FT_Error)

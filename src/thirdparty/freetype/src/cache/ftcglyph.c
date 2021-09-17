@@ -59,7 +59,7 @@ FT_LOCAL_DEF(FT_Bool)
 ftc_gnode_compare (FTC_Node ftcgnode,
                    FT_Pointer ftcgquery,
                    FTC_Cache cache,
-                   FT_Bool *list_changed) {
+                   FT_Bool* list_changed) {
   FTC_GNode gnode = (FTC_GNode) ftcgnode;
   FTC_GQuery gquery = (FTC_GQuery) ftcgquery;
   FT_UNUSED(cache);
@@ -76,7 +76,7 @@ FT_LOCAL_DEF(FT_Bool)
 FTC_GNode_Compare (FTC_GNode gnode,
                    FTC_GQuery gquery,
                    FTC_Cache cache,
-                   FT_Bool *list_changed) {
+                   FT_Bool* list_changed) {
   return ftc_gnode_compare (FTC_NODE(gnode), gquery,
                             cache, list_changed);
 }
@@ -151,9 +151,9 @@ FTC_GCache_Done( FTC_GCache  cache )
 FT_LOCAL_DEF(FT_Error)
 FTC_GCache_New (FTC_Manager manager,
                 FTC_GCacheClass clazz,
-                FTC_GCache *acache) {
+                FTC_GCache* acache) {
   return FTC_Manager_RegisterCache (manager, (FTC_CacheClass) clazz,
-                                    (FTC_Cache *) acache);
+                                    (FTC_Cache*) acache);
 }
 
 #ifndef FTC_INLINE

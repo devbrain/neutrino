@@ -85,11 +85,11 @@ FT_BEGIN_HEADER
  *   FontInfo dictionary.
  */
 typedef struct PS_FontInfoRec_ {
-  FT_String *version;
-  FT_String *notice;
-  FT_String *full_name;
-  FT_String *family_name;
-  FT_String *weight;
+  FT_String* version;
+  FT_String* notice;
+  FT_String* full_name;
+  FT_String* family_name;
+  FT_String* weight;
   FT_Long italic_angle;
   FT_Bool is_fixed_pitch;
   FT_Short underline_position;
@@ -105,7 +105,7 @@ typedef struct PS_FontInfoRec_ {
  * @description:
  *   A handle to a @PS_FontInfoRec structure.
  */
-typedef struct PS_FontInfoRec_ *PS_FontInfo;
+typedef struct PS_FontInfoRec_* PS_FontInfo;
 
 /**************************************************************************
  *
@@ -175,7 +175,7 @@ typedef struct PS_PrivateRec_ {
  * @description:
  *   A handle to a @PS_PrivateRec structure.
  */
-typedef struct PS_PrivateRec_ *PS_Private;
+typedef struct PS_PrivateRec_* PS_Private;
 
 /**************************************************************************
  *
@@ -271,10 +271,10 @@ typedef enum T1_Blend_Flags_ {
 /* this structure is used to store the BlendDesignMap entry for an axis */
 typedef struct PS_DesignMap_ {
   FT_Byte num_points;
-  FT_Long *design_points;
-  FT_Fixed *blend_points;
+  FT_Long* design_points;
+  FT_Fixed* blend_points;
 
-} PS_DesignMapRec, *PS_DesignMap;
+} PS_DesignMapRec, * PS_DesignMap;
 
 /* backward compatible definition */
 typedef PS_DesignMapRec T1_DesignMap;
@@ -283,19 +283,19 @@ typedef struct PS_BlendRec_ {
   FT_UInt num_designs;
   FT_UInt num_axis;
 
-  FT_String *axis_names[T1_MAX_MM_AXIS];
-  FT_Fixed *design_pos[T1_MAX_MM_DESIGNS];
+  FT_String* axis_names[T1_MAX_MM_AXIS];
+  FT_Fixed* design_pos[T1_MAX_MM_DESIGNS];
   PS_DesignMapRec design_map[T1_MAX_MM_AXIS];
 
-  FT_Fixed *weight_vector;
-  FT_Fixed *default_weight_vector;
+  FT_Fixed* weight_vector;
+  FT_Fixed* default_weight_vector;
 
   PS_FontInfo font_infos[T1_MAX_MM_DESIGNS + 1];
   PS_Private privates[T1_MAX_MM_DESIGNS + 1];
 
   FT_ULong blend_bitflags;
 
-  FT_BBox *bboxes[T1_MAX_MM_DESIGNS + 1];
+  FT_BBox* bboxes[T1_MAX_MM_DESIGNS + 1];
 
   /* since 2.3.0 */
 
@@ -306,7 +306,7 @@ typedef struct PS_BlendRec_ {
   FT_UInt default_design_vector[T1_MAX_MM_DESIGNS];
   FT_UInt num_default_design_vector;
 
-} PS_BlendRec, *PS_Blend;
+} PS_BlendRec, * PS_Blend;
 
 /* backward compatible definition */
 typedef PS_BlendRec T1_Blend;
@@ -355,7 +355,7 @@ typedef struct CID_FaceDictRec_ {
  * @description:
  *   A handle to a @CID_FaceDictRec structure.
  */
-typedef struct CID_FaceDictRec_ *CID_FaceDict;
+typedef struct CID_FaceDictRec_* CID_FaceDict;
 
 /**************************************************************************
  *
@@ -378,12 +378,12 @@ typedef CID_FaceDictRec CID_FontDict;
  *   A structure used to represent CID Face information.
  */
 typedef struct CID_FaceInfoRec_ {
-  FT_String *cid_font_name;
+  FT_String* cid_font_name;
   FT_Fixed cid_version;
   FT_Int cid_font_type;
 
-  FT_String *registry;
-  FT_String *ordering;
+  FT_String* registry;
+  FT_String* ordering;
   FT_Int supplement;
 
   PS_FontInfoRec font_info;
@@ -413,7 +413,7 @@ typedef struct CID_FaceInfoRec_ {
  * @description:
  *   A handle to a @CID_FaceInfoRec structure.
  */
-typedef struct CID_FaceInfoRec_ *CID_FaceInfo;
+typedef struct CID_FaceInfoRec_* CID_FaceInfo;
 
 /**************************************************************************
  *
@@ -733,7 +733,7 @@ FT_EXPORT(FT_Long)
 FT_Get_PS_Font_Value (FT_Face face,
                       PS_Dict_Keys key,
                       FT_UInt idx,
-                      void *value,
+                      void* value,
                       FT_Long value_len);
 
 /* */

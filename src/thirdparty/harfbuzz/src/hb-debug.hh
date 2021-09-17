@@ -87,7 +87,7 @@ _hb_debug (unsigned int level,
 #define DEBUG_ENABLED(WHAT) (DEBUG_LEVEL_ENABLED (WHAT, 0))
 
 static inline void
-_hb_print_func (const char *func) {
+_hb_print_func (const char* func) {
   if (func) {
     unsigned int func_len = strlen (func);
     /* Skip "static" */
@@ -97,11 +97,11 @@ _hb_print_func (const char *func) {
     if (0 == strncmp (func, "typename ", 9))
       func += 9;
     /* Skip return type */
-    const char *space = strchr (func, ' ');
+    const char* space = strchr (func, ' ');
     if (space)
       func = space + 1;
     /* Skip parameter list */
-    const char *paren = strchr (func, '(');
+    const char* paren = strchr (func, '(');
     if (paren)
       func_len = paren - func;
     fprintf (stderr, "%.*s", func_len, func);
@@ -109,22 +109,23 @@ _hb_print_func (const char *func) {
 }
 
 template <int max_level> static inline void
-_hb_debug_msg_va (const char *what,
-                  const void *obj,
-                  const char *func,
+_hb_debug_msg_va (const char* what,
+                  const void* obj,
+                  const char* func,
                   bool indented,
                   unsigned int level,
                   int level_dir,
-                  const char *message,
+                  const char* message,
                   va_list ap) HB_PRINTF_FUNC(7, 0);
+
 template <int max_level> static inline void
-_hb_debug_msg_va (const char *what,
-                  const void *obj,
-                  const char *func,
+_hb_debug_msg_va (const char* what,
+                  const void* obj,
+                  const char* func,
                   bool indented,
                   unsigned int level,
                   int level_dir,
-                  const char *message,
+                  const char* message,
                   va_list ap) {
   if (!_hb_debug (level, max_level))
     return;
@@ -132,9 +133,9 @@ _hb_debug_msg_va (const char *what,
   fprintf (stderr, "%-10s", what ? what : "");
 
   if (obj)
-    fprintf (stderr, "(%*p) ", (unsigned int) (2 * sizeof (void *)), obj);
+    fprintf (stderr, "(%*p) ", (unsigned int) (2 * sizeof (void*)), obj);
   else
-    fprintf (stderr, " %*s  ", (unsigned int) (2 * sizeof (void *)), "");
+    fprintf (stderr, " %*s  ", (unsigned int) (2 * sizeof (void*)), "");
 
   if (indented) {
 #define VBAR    "\342\224\202"    /* U+2502 BOX DRAWINGS LIGHT VERTICAL */
@@ -166,57 +167,61 @@ _hb_debug_msg_va (const char *what,
 
   fprintf (stderr, "\n");
 }
+
 template <> inline void HB_PRINTF_FUNC(7, 0)
-_hb_debug_msg_va<0> (const char *what HB_UNUSED,
-                     const void *obj HB_UNUSED,
-                     const char *func HB_UNUSED,
+_hb_debug_msg_va<0> (const char* what HB_UNUSED,
+                     const void* obj HB_UNUSED,
+                     const char* func HB_UNUSED,
                      bool indented HB_UNUSED,
                      unsigned int level HB_UNUSED,
                      int level_dir HB_UNUSED,
-                     const char *message HB_UNUSED,
+                     const char* message HB_UNUSED,
                      va_list ap HB_UNUSED) {
 }
 
 template <int max_level> static inline void
-_hb_debug_msg (const char *what,
-               const void *obj,
-               const char *func,
+_hb_debug_msg (const char* what,
+               const void* obj,
+               const char* func,
                bool indented,
                unsigned int level,
                int level_dir,
-               const char *message,
+               const char* message,
                ...) HB_PRINTF_FUNC(7, 8);
+
 template <int max_level> static inline void HB_PRINTF_FUNC(7, 8)
-_hb_debug_msg (const char *what,
-               const void *obj,
-               const char *func,
+_hb_debug_msg (const char* what,
+               const void* obj,
+               const char* func,
                bool indented,
                unsigned int level,
                int level_dir,
-               const char *message,
+               const char* message,
                ...) {
   va_list ap;
   va_start (ap, message);
   _hb_debug_msg_va<max_level> (what, obj, func, indented, level, level_dir, message, ap);
   va_end (ap);
 }
+
 template <> inline void
-_hb_debug_msg<0> (const char *what HB_UNUSED,
-                  const void *obj HB_UNUSED,
-                  const char *func HB_UNUSED,
+_hb_debug_msg<0> (const char* what HB_UNUSED,
+                  const void* obj HB_UNUSED,
+                  const char* func HB_UNUSED,
                   bool indented HB_UNUSED,
                   unsigned int level HB_UNUSED,
                   int level_dir HB_UNUSED,
-                  const char *message HB_UNUSED,
+                  const char* message HB_UNUSED,
                   ...) HB_PRINTF_FUNC(7, 8);
+
 template <> inline void HB_PRINTF_FUNC(7, 8)
-_hb_debug_msg<0> (const char *what HB_UNUSED,
-                  const void *obj HB_UNUSED,
-                  const char *func HB_UNUSED,
+_hb_debug_msg<0> (const char* what HB_UNUSED,
+                  const void* obj HB_UNUSED,
+                  const char* func HB_UNUSED,
                   bool indented HB_UNUSED,
                   unsigned int level HB_UNUSED,
                   int level_dir HB_UNUSED,
-                  const char *message HB_UNUSED,
+                  const char* message HB_UNUSED,
                   ...) {
 }
 
@@ -230,21 +235,21 @@ _hb_debug_msg<0> (const char *what HB_UNUSED,
 
 template <typename T>
 struct hb_printer_t {
-  const char *print (const T &) {
+  const char* print (const T&) {
     return "something";
   }
 };
 
 template <>
 struct hb_printer_t<bool> {
-  const char *print (bool v) {
+  const char* print (bool v) {
     return v ? "true" : "false";
   }
 };
 
 template <>
 struct hb_printer_t<hb_empty_t> {
-  const char *print (hb_empty_t) {
+  const char* print (hb_empty_t) {
     return "";
   }
 };
@@ -259,17 +264,18 @@ static inline void _hb_warn_no_return (bool returned) {
     fprintf (stderr, "OUCH, returned with no call to return_trace().  This is a bug, please report.\n");
   }
 }
+
 template <>
 /*static*/ inline void _hb_warn_no_return<hb_empty_t> (bool returned HB_UNUSED) {
 }
 
 template <int max_level, typename ret_t>
 struct hb_auto_trace_t {
-    explicit inline hb_auto_trace_t (unsigned int *plevel_,
-                                     const char *what_,
-                                     const void *obj_,
-                                     const char *func,
-                                     const char *message,
+    explicit inline hb_auto_trace_t (unsigned int* plevel_,
+                                     const char* what_,
+                                     const void* obj_,
+                                     const char* func,
+                                     const char* message,
                                      ...) HB_PRINTF_FUNC(6, 7)
         : plevel (plevel_), what (what_), obj (obj_), returned (false) {
       if (plevel)
@@ -280,6 +286,7 @@ struct hb_auto_trace_t {
       _hb_debug_msg_va<max_level> (what, obj, func, true, plevel ? *plevel : 0, +1, message, ap);
       va_end (ap);
     }
+
     ~hb_auto_trace_t () {
       _hb_warn_no_return<ret_t> (returned);
       if (!returned) {
@@ -290,8 +297,8 @@ struct hb_auto_trace_t {
     }
 
     template <typename T>
-    T ret (T &&v,
-           const char *func = "",
+    T ret (T&& v,
+           const char* func = "",
            unsigned int line = 0) {
       if (unlikely (returned)) {
         fprintf (stderr, "OUCH, double calls to return_trace().  This is a bug, please report.\n");
@@ -309,25 +316,25 @@ struct hb_auto_trace_t {
     }
 
   private:
-    unsigned int *plevel;
-    const char *what;
-    const void *obj;
+    unsigned int* plevel;
+    const char* what;
+    const void* obj;
     bool returned;
 };
 
 template <typename ret_t> /* Make sure we don't use hb_auto_trace_t when not tracing. */
 struct hb_auto_trace_t<0, ret_t> {
-  explicit inline hb_auto_trace_t (unsigned int *plevel_,
-                                   const char *what_,
-                                   const void *obj_,
-                                   const char *func,
-                                   const char *message,
+  explicit inline hb_auto_trace_t (unsigned int* plevel_,
+                                   const char* what_,
+                                   const void* obj_,
+                                   const char* func,
+                                   const char* message,
                                    ...) HB_PRINTF_FUNC(6, 7) {
   }
 
   template <typename T>
-  T ret (T &&v,
-         const char *func HB_UNUSED = nullptr,
+  T ret (T&& v,
+         const char* func HB_UNUSED = nullptr,
          unsigned int line HB_UNUSED = 0) {
     return hb_forward<T> (v);
   }
@@ -338,8 +345,8 @@ struct hb_auto_trace_t<0, ret_t> {
 template <typename ret_t>
 struct hb_no_trace_t {
   template <typename T>
-  T ret (T &&v,
-         const char *func HB_UNUSED = nullptr,
+  T ret (T&& v,
+         const char* func HB_UNUSED = nullptr,
          unsigned int line HB_UNUSED = 0) {
     return hb_forward<T> (v);
   }

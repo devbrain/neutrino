@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 FT_LOCAL_DEF(void)
-BitOrderInvert (unsigned char *buf,
+BitOrderInvert (unsigned char* buf,
                 size_t nbytes) {
   for (; nbytes > 0; nbytes--, buf++) {
     unsigned int val = *buf;
@@ -60,7 +60,7 @@ BitOrderInvert (unsigned char *buf,
  */
 
 FT_LOCAL_DEF(void)
-TwoByteSwap (unsigned char *buf,
+TwoByteSwap (unsigned char* buf,
              size_t nbytes) {
   for (; nbytes >= 2; nbytes -= 2, buf += 2) {
     unsigned char c;
@@ -76,7 +76,7 @@ TwoByteSwap (unsigned char *buf,
  */
 
 FT_LOCAL_DEF(void)
-FourByteSwap (unsigned char *buf,
+FourByteSwap (unsigned char* buf,
               size_t nbytes) {
   for (; nbytes >= 4; nbytes -= 4, buf += 4) {
     unsigned char c;

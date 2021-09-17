@@ -39,63 +39,97 @@ enum indic_syllable_type_t {
 };
 
 %%{
-  machine indic_syllable_machine;
-  alphtype unsigned char;
-  write exports;
-  write data;
+machine indic_syllable_machine;
+alphtype unsigned char;
+write exports;
+write data;
 }%%
 
 %%{
 
-export C    = 1;
-export V    = 2;
-export N    = 3;
-export H    = 4;
+export C = 1;
+export V = 2;
+export N = 3;
+export H = 4;
 export ZWNJ = 5;
-export ZWJ  = 6;
-export M    = 7;
-export SM   = 8;
-export A    = 10;
+export ZWJ = 6;
+export M = 7;
+export SM = 8;
+export A = 10;
 export PLACEHOLDER = 11;
 export DOTTEDCIRCLE = 12;
-export RS    = 13;
+export RS = 13;
 export Repha = 15;
-export Ra    = 16;
-export CM    = 17;
-export Symbol= 18;
-export CS    = 19;
+export Ra = 16;
+export CM = 17;
+export Symbol = 18;
+export CS = 19;
 
-c = (C | Ra);			# is_consonant
-n = ((ZWNJ?.RS)? (N.N?)?);	# is_consonant_modifier
-z = ZWJ|ZWNJ;			# is_joiner
-reph = (Ra H | Repha);		# possible reph
+c = (C | Ra);
+#
+is_consonant
+    n = ((ZWNJ ?.RS) ? (N.N ?) ?
+);    #
+is_consonant_modifier
+    z = ZWJ | ZWNJ;
+#
+is_joiner
+    reph = (Ra
+H | Repha);        #
+possible reph
 
-cn = c.ZWJ?.n?;
-forced_rakar = ZWJ H ZWJ Ra;
-symbol = Symbol.N?;
-matra_group = z*.M.N?.(H | forced_rakar)?;
-syllable_tail = (z?.SM.SM?.ZWNJ?)? A*;
-halant_group = (z?.H.(ZWJ.N?)?);
+cn = c.ZWJ ?
+.n?;
+forced_rakar = ZWJ
+H ZWJ
+Ra;
+symbol = Symbol.N ?;
+matra_group = z *
+.M.N?.(H | forced_rakar)?;
+syllable_tail = (z ?.SM.SM ?
+.ZWNJ?)? A*;
+halant_group = (z ?.H. (ZWJ.N ?) ?
+);
 final_halant_group = halant_group | H.ZWNJ;
-medial_group = CM?;
-halant_or_matra_group = (final_halant_group | matra_group*);
+medial_group = CM ?;
+halant_or_matra_group = (final_halant_group | matra_group * );
 
-complex_syllable_tail = (halant_group.cn)* medial_group halant_or_matra_group syllable_tail;
+complex_syllable_tail = (halant_group.cn) * medial_group
+halant_or_matra_group syllable_tail;
 
-consonant_syllable =	(Repha|CS)? cn complex_syllable_tail;
-vowel_syllable =	reph? V.n? (ZWJ | complex_syllable_tail);
-standalone_cluster =	((Repha|CS)? PLACEHOLDER | reph? DOTTEDCIRCLE).n? complex_syllable_tail;
-symbol_cluster =	symbol syllable_tail;
-broken_cluster =	reph? n? complex_syllable_tail;
-other =			any;
+consonant_syllable = (Repha | CS) ? cn complex_syllable_tail;
+vowel_syllable = reph ? V.n ? (ZWJ | complex_syllable_tail);
+standalone_cluster = ((Repha | CS) ? PLACEHOLDER | reph ? DOTTEDCIRCLE).n ? complex_syllable_tail;
+symbol_cluster = symbol
+syllable_tail;
+broken_cluster = reph ? n ? complex_syllable_tail;
+other = any;
 
 main := |*
-	consonant_syllable	=> { found_syllable (indic_consonant_syllable); };
-	vowel_syllable		=> { found_syllable (indic_vowel_syllable); };
-	standalone_cluster	=> { found_syllable (indic_standalone_cluster); };
-	symbol_cluster		=> { found_syllable (indic_symbol_cluster); };
-	broken_cluster		=> { found_syllable (indic_broken_cluster); };
-	other			=> { found_syllable (indic_non_indic_cluster); };
+consonant_syllable =
+> {
+found_syllable (indic_consonant_syllable);
+};
+vowel_syllable =
+> {
+found_syllable (indic_vowel_syllable);
+};
+standalone_cluster =
+> {
+found_syllable (indic_standalone_cluster);
+};
+symbol_cluster =
+> {
+found_syllable (indic_symbol_cluster);
+};
+broken_cluster =
+> {
+found_syllable (indic_broken_cluster);
+};
+other =
+> {
+found_syllable (indic_non_indic_cluster);
+};
 *|;
 
 
@@ -111,14 +145,14 @@ main := |*
   } HB_STMT_END
 
 static void
-find_syllables_indic (hb_buffer_t *buffer)
-{
+find_syllables_indic (hb_buffer_t* buffer) {
   unsigned int p, pe, eof, ts, te, act;
   int cs;
-  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_info_t* info = buffer->info;
   %%{
     write init;
-    getkey info[p].indic_category();
+    getkey
+    info[p].indic_category ();
   }%%
 
   p = 0;

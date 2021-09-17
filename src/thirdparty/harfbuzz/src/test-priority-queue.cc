@@ -28,8 +28,7 @@
 #include "hb-priority-queue.hh"
 
 static void
-test_insert ()
-{
+test_insert () {
   hb_priority_queue_t queue;
   assert (queue.is_empty ());
 
@@ -51,20 +50,18 @@ test_insert ()
 }
 
 static void
-test_extract ()
-{
+test_extract () {
   hb_priority_queue_t queue;
   queue.insert (0, 0);
   queue.insert (60, 6);
   queue.insert (30, 3);
-  queue.insert (40 ,4);
+  queue.insert (40, 4);
   queue.insert (20, 2);
   queue.insert (50, 5);
   queue.insert (70, 7);
   queue.insert (10, 1);
 
-  for (int i = 0; i < 8; i++)
-  {
+  for (int i = 0; i < 8; i++) {
     assert (!queue.is_empty ());
     assert (queue.minimum () == hb_pair (i * 10, i));
     assert (queue.pop_minimum () == hb_pair (i * 10, i));
@@ -74,15 +71,13 @@ test_extract ()
 }
 
 static void
-test_extract_empty ()
-{
+test_extract_empty () {
   hb_priority_queue_t queue;
   assert (queue.pop_minimum () == hb_pair (0, 0));
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   test_insert ();
   test_extract ();
   test_extract_empty ();

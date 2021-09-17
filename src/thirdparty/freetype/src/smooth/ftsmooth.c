@@ -31,7 +31,7 @@ ft_smooth_init (FT_Renderer render) {
 
 #ifndef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
 
-  FT_Vector *sub = render->root.library->lcd_geometry;
+  FT_Vector* sub = render->root.library->lcd_geometry;
 
 
   /* set up default subpixel geometry for striped RGB panels. */
@@ -68,8 +68,8 @@ ft_smooth_set_mode (FT_Renderer render,
 static FT_Error
 ft_smooth_transform (FT_Renderer render,
                      FT_GlyphSlot slot,
-                     const FT_Matrix *matrix,
-                     const FT_Vector *delta) {
+                     const FT_Matrix* matrix,
+                     const FT_Vector* delta) {
   FT_Error error = FT_Err_Ok;
 
   if (slot->format != render->glyph_format) {
@@ -91,7 +91,7 @@ ft_smooth_transform (FT_Renderer render,
 static void
 ft_smooth_get_cbox (FT_Renderer render,
                     FT_GlyphSlot slot,
-                    FT_BBox *cbox) {
+                    FT_BBox* cbox) {
   FT_ZERO(cbox);
 
   if (slot->format == render->glyph_format)
@@ -103,11 +103,11 @@ static FT_Error
 ft_smooth_render_generic (FT_Renderer render,
                           FT_GlyphSlot slot,
                           FT_Render_Mode mode,
-                          const FT_Vector *origin,
+                          const FT_Vector* origin,
                           FT_Render_Mode required_mode) {
   FT_Error error = FT_Err_Ok;
-  FT_Outline *outline = &slot->outline;
-  FT_Bitmap *bitmap = &slot->bitmap;
+  FT_Outline* outline = &slot->outline;
+  FT_Bitmap* bitmap = &slot->bitmap;
   FT_Memory memory = render->root.memory;
   FT_Pos x_shift = 0;
   FT_Pos y_shift = 0;
@@ -237,15 +237,15 @@ ft_smooth_render_generic (FT_Renderer render,
 
   if (hmul)  /* lcd */
   {
-    FT_Byte *line;
-    FT_Byte *temp = NULL;
+    FT_Byte* line;
+    FT_Byte* temp = NULL;
     FT_UInt i, j;
 
     unsigned int height = bitmap->rows;
     unsigned int width = bitmap->width;
     int pitch = bitmap->pitch;
 
-    FT_Vector *sub = slot->library->lcd_geometry;
+    FT_Vector* sub = slot->library->lcd_geometry;
 
 
     /* Render 3 separate monochrome bitmaps, shifting the outline.  */
@@ -301,7 +301,7 @@ ft_smooth_render_generic (FT_Renderer render,
   {
     int pitch = bitmap->pitch;
 
-    FT_Vector *sub = slot->library->lcd_geometry;
+    FT_Vector* sub = slot->library->lcd_geometry;
 
 
     /* Render 3 separate monochrome bitmaps, shifting the outline. */
@@ -367,7 +367,7 @@ static FT_Error
 ft_smooth_render (FT_Renderer render,
                   FT_GlyphSlot slot,
                   FT_Render_Mode mode,
-                  const FT_Vector *origin) {
+                  const FT_Vector* origin) {
   if (mode == FT_RENDER_MODE_LIGHT)
     mode = FT_RENDER_MODE_NORMAL;
 
@@ -380,7 +380,7 @@ static FT_Error
 ft_smooth_render_lcd (FT_Renderer render,
                       FT_GlyphSlot slot,
                       FT_Render_Mode mode,
-                      const FT_Vector *origin) {
+                      const FT_Vector* origin) {
   return ft_smooth_render_generic (render, slot, mode, origin,
                                    FT_RENDER_MODE_LCD);
 }
@@ -390,7 +390,7 @@ static FT_Error
 ft_smooth_render_lcd_v (FT_Renderer render,
                         FT_GlyphSlot slot,
                         FT_Render_Mode mode,
-                        const FT_Vector *origin) {
+                        const FT_Vector* origin) {
   return ft_smooth_render_generic (render, slot, mode, origin,
                                    FT_RENDER_MODE_LCD_V);
 }
@@ -418,7 +418,7 @@ FT_DEFINE_RENDERER(
     (FT_Renderer_GetCBoxFunc) ft_smooth_get_cbox,   /* get_glyph_cbox  */
     (FT_Renderer_SetModeFunc) ft_smooth_set_mode,   /* set_mode        */
 
-    (FT_Raster_Funcs *) &ft_grays_raster               /* raster_class    */
+    (FT_Raster_Funcs*) &ft_grays_raster               /* raster_class    */
 )
 
 FT_DEFINE_RENDERER(
@@ -444,7 +444,7 @@ FT_DEFINE_RENDERER(
     (FT_Renderer_GetCBoxFunc) ft_smooth_get_cbox,    /* get_glyph_cbox  */
     (FT_Renderer_SetModeFunc) ft_smooth_set_mode,    /* set_mode        */
 
-    (FT_Raster_Funcs *) &ft_grays_raster                /* raster_class    */
+    (FT_Raster_Funcs*) &ft_grays_raster                /* raster_class    */
 )
 
 FT_DEFINE_RENDERER(
@@ -470,7 +470,7 @@ FT_DEFINE_RENDERER(
     (FT_Renderer_GetCBoxFunc) ft_smooth_get_cbox,      /* get_glyph_cbox  */
     (FT_Renderer_SetModeFunc) ft_smooth_set_mode,      /* set_mode        */
 
-    (FT_Raster_Funcs *) &ft_grays_raster                  /* raster_class    */
+    (FT_Raster_Funcs*) &ft_grays_raster                  /* raster_class    */
 )
 
 

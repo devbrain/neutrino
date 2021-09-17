@@ -218,8 +218,8 @@ typedef struct TT_HoriHeader_ {
   /* but they are used to connect the metrics header to the relevant    */
   /* 'hmtx' table.                                                      */
 
-  void *long_metrics;
-  void *short_metrics;
+  void* long_metrics;
+  void* short_metrics;
 
 } TT_HoriHeader;
 
@@ -334,8 +334,8 @@ typedef struct TT_VertHeader_ {
   /* but they are used to connect the metrics header to the relevant    */
   /* 'vmtx' table.                                                      */
 
-  void *long_metrics;
-  void *short_metrics;
+  void* long_metrics;
+  void* short_metrics;
 
 } TT_VertHeader;
 
@@ -739,8 +739,8 @@ FT_EXPORT(FT_Error)
 FT_Load_Sfnt_Table (FT_Face face,
                     FT_ULong tag,
                     FT_Long offset,
-                    FT_Byte *buffer,
-                    FT_ULong *length);
+                    FT_Byte* buffer,
+                    FT_ULong* length);
 
 
 /**************************************************************************
@@ -781,8 +781,8 @@ FT_Load_Sfnt_Table (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Sfnt_Table_Info (FT_Face face,
                     FT_UInt table_index,
-                    FT_ULong *tag,
-                    FT_ULong *length);
+                    FT_ULong* tag,
+                    FT_ULong* length);
 
 
 /**************************************************************************

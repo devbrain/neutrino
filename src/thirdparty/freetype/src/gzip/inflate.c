@@ -47,7 +47,7 @@ struct internal_state {
   int nowrap;          /* flag for no wrapper */
   uInt wbits;           /* log2(window size)  (8..15, defaults to 15) */
   inflate_blocks_statef
-      *blocks;            /* current inflate_blocks state */
+      * blocks;            /* current inflate_blocks state */
 
 };
 
@@ -78,7 +78,7 @@ ZEXPORT(int) inflateEnd ( /* z) */
 ZEXPORT(int) inflateInit2_ ( /* z, w, version, stream_size) */
     z_streamp z,
     int w,
-    const char *version,
+    const char* version,
     int stream_size) {
   if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
       stream_size != sizeof (z_stream))
@@ -94,7 +94,7 @@ ZEXPORT(int) inflateInit2_ ( /* z, w, version, stream_size) */
   }
   if (z->zfree == Z_NULL)
     z->zfree = zcfree;
-  if ((z->state = (struct internal_state FAR *)
+  if ((z->state = (struct internal_state FAR*)
       ZALLOC(z, 1, sizeof (struct internal_state))) == Z_NULL)
     return Z_MEM_ERROR;
   z->state->blocks = Z_NULL;
@@ -148,13 +148,13 @@ ZEXPORT(int) inflate ( /* z, f) */
       case METHOD: NEEDBYTE
         if (((z->state->sub.method = NEXTBYTE) & 0xf) != Z_DEFLATED) {
           z->state->mode = BAD;
-          z->msg = (char *) "unknown compression method";
+          z->msg = (char*) "unknown compression method";
           z->state->sub.marker = 5;       /* can't try inflateSync */
           break;
         }
         if ((z->state->sub.method >> 4) + 8 > z->state->wbits) {
           z->state->mode = BAD;
-          z->msg = (char *) "invalid window size";
+          z->msg = (char*) "invalid window size";
           z->state->sub.marker = 5;       /* can't try inflateSync */
           break;
         }
@@ -164,7 +164,7 @@ ZEXPORT(int) inflate ( /* z, f) */
         b = NEXTBYTE;
         if (((z->state->sub.method << 8) + b) % 31) {
           z->state->mode = BAD;
-          z->msg = (char *) "incorrect header check";
+          z->msg = (char*) "incorrect header check";
           z->state->sub.marker = 5;       /* can't try inflateSync */
           break;
         }
@@ -194,7 +194,7 @@ ZEXPORT(int) inflate ( /* z, f) */
         return Z_NEED_DICT;
       case DICT0:
         z->state->mode = BAD;
-        z->msg = (char *) "need dictionary";
+        z->msg = (char*) "need dictionary";
         z->state->sub.marker = 0;       /* can try inflateSync */
         return Z_STREAM_ERROR;
       case BLOCKS:
@@ -233,7 +233,7 @@ ZEXPORT(int) inflate ( /* z, f) */
 
         if (z->state->sub.check.was != z->state->sub.check.need) {
           z->state->mode = BAD;
-          z->msg = (char *) "incorrect data check";
+          z->msg = (char*) "incorrect data check";
           z->state->sub.marker = 5;       /* can't try inflateSync */
           break;
         }

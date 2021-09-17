@@ -133,11 +133,11 @@ struct lzma_lzma1_encoder_s {
 };
 
 extern void lzma_lzma_optimum_fast (
-    lzma_lzma1_encoder *restrict coder, lzma_mf *restrict mf,
-    uint32_t *restrict back_res, uint32_t *restrict len_res);
+    lzma_lzma1_encoder* restrict coder, lzma_mf* restrict mf,
+    uint32_t* restrict back_res, uint32_t* restrict len_res);
 
-extern void lzma_lzma_optimum_normal (lzma_lzma1_encoder *restrict coder,
-                                      lzma_mf *restrict mf, uint32_t *restrict back_res,
-                                      uint32_t *restrict len_res, uint32_t position);
+extern void lzma_lzma_optimum_normal (lzma_lzma1_encoder* restrict coder,
+                                      lzma_mf* restrict mf, uint32_t* restrict back_res,
+                                      uint32_t* restrict len_res, uint32_t position);
 
 #endif

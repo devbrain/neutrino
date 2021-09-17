@@ -49,38 +49,38 @@ FT_BEGIN_HEADER
 
 /* Rounding function */
 typedef FT_F26Dot6
-(*TT_Round_Func) (TT_ExecContext exc,
-                  FT_F26Dot6 distance,
-                  FT_F26Dot6 compensation);
+(* TT_Round_Func) (TT_ExecContext exc,
+                   FT_F26Dot6 distance,
+                   FT_F26Dot6 compensation);
 
 /* Point displacement along the freedom vector routine */
 typedef void
-(*TT_Move_Func) (TT_ExecContext exc,
-                 TT_GlyphZone zone,
-                 FT_UShort point,
-                 FT_F26Dot6 distance);
+(* TT_Move_Func) (TT_ExecContext exc,
+                  TT_GlyphZone zone,
+                  FT_UShort point,
+                  FT_F26Dot6 distance);
 
 /* Distance projection along one of the projection vectors */
 typedef FT_F26Dot6
-(*TT_Project_Func) (TT_ExecContext exc,
-                    FT_Pos dx,
-                    FT_Pos dy);
+(* TT_Project_Func) (TT_ExecContext exc,
+                     FT_Pos dx,
+                     FT_Pos dy);
 
 /* getting current ppem.  Take care of non-square pixels if necessary */
 typedef FT_Long
-(*TT_Cur_Ppem_Func) (TT_ExecContext exc);
+(* TT_Cur_Ppem_Func) (TT_ExecContext exc);
 
 /* reading a cvt value.  Take care of non-square pixels if necessary */
 typedef FT_F26Dot6
-(*TT_Get_CVT_Func) (TT_ExecContext exc,
-                    FT_ULong idx);
+(* TT_Get_CVT_Func) (TT_ExecContext exc,
+                     FT_ULong idx);
 
 /* setting or moving a cvt value.  Take care of non-square pixels  */
 /* if necessary                                                    */
 typedef void
-(*TT_Set_CVT_Func) (TT_ExecContext exc,
-                    FT_ULong idx,
-                    FT_F26Dot6 value);
+(* TT_Set_CVT_Func) (TT_ExecContext exc,
+                     FT_ULong idx,
+                     FT_F26Dot6 value);
 
 /**************************************************************************
  *
@@ -91,9 +91,9 @@ typedef struct TT_CallRec_ {
   FT_Long Caller_IP;
   FT_Long Cur_Count;
 
-  TT_DefRecord *Def; /* either FDEF or IDEF */
+  TT_DefRecord* Def; /* either FDEF or IDEF */
 
-} TT_CallRec, *TT_CallStack;
+} TT_CallRec, * TT_CallStack;
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
 
@@ -153,7 +153,7 @@ typedef struct TT_ExecContextRec_ {
   FT_Long top;        /* top of exec. stack   */
 
   FT_Long stackSize;  /* size of exec. stack  */
-  FT_Long *stack;      /* current exec. stack  */
+  FT_Long* stack;      /* current exec. stack  */
 
   FT_Long args;
   FT_Long new_top;    /* new top after exec.  */
@@ -171,7 +171,7 @@ typedef struct TT_ExecContextRec_ {
   TT_GraphicsState GS;         /* current graphics state */
 
   FT_Int curRange;  /* current code range number   */
-  FT_Byte *code;      /* current code range          */
+  FT_Byte* code;      /* current code range          */
   FT_Long IP;        /* current instruction pointer */
   FT_Long codeSize;  /* size of current range       */
 
@@ -181,10 +181,10 @@ typedef struct TT_ExecContextRec_ {
   FT_Bool step_ins;  /* true if the interpreter must */
   /* increment IP after ins. exec */
   FT_ULong cvtSize;
-  FT_Long *cvt;
+  FT_Long* cvt;
 
   FT_UInt glyphSize; /* glyph instructions buffer size */
-  FT_Byte *glyphIns;  /* glyph instructions buffer */
+  FT_Byte* glyphIns;  /* glyph instructions buffer */
 
   FT_UInt numFDefs;  /* number of function defs         */
   FT_UInt maxFDefs;  /* maximum number of function defs */
@@ -209,7 +209,7 @@ typedef struct TT_ExecContextRec_ {
   /* useful for the debugger   */
 
   FT_UShort storeSize;  /* size of current storage */
-  FT_Long *storage;    /* storage area            */
+  FT_Long* storage;    /* storage area            */
 
   FT_F26Dot6 period;     /* values used for the */
   FT_F26Dot6 phase;      /* `SuperRounding'     */
@@ -439,7 +439,7 @@ TT_Goto_CodeRange (TT_ExecContext exec,
 FT_LOCAL(void)
 TT_Set_CodeRange (TT_ExecContext exec,
                   FT_Int range,
-                  void *base,
+                  void* base,
                   FT_Long length);
 
 FT_LOCAL(void)
@@ -448,9 +448,9 @@ TT_Clear_CodeRange (TT_ExecContext exec,
 
 FT_LOCAL(FT_Error)
 Update_Max (FT_Memory memory,
-            FT_ULong *size,
+            FT_ULong* size,
             FT_ULong multiplier,
-            void *_pbuff,
+            void* _pbuff,
             FT_ULong new_max);
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 

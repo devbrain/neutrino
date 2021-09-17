@@ -100,7 +100,7 @@ psh_hint_table_record (PSH_Hint_Table table,
   /* now scan the current active hint set to check */
   /* whether `hint' overlaps with another hint     */
   {
-    PSH_Hint *sorted = table->sort_global;
+    PSH_Hint* sorted = table->sort_global;
     FT_UInt count = table->num_hints;
     PSH_Hint hint2;
 
@@ -125,7 +125,7 @@ static void
 psh_hint_table_record_mask (PSH_Hint_Table table,
                             PS_Mask hint_mask) {
   FT_Int mask = 0, val = 0;
-  FT_Byte *cursor = hint_mask->bytes;
+  FT_Byte* cursor = hint_mask->bytes;
   FT_UInt idx, limit;
 
   limit = hint_mask->num_bits;
@@ -212,7 +212,7 @@ static void
 psh_hint_table_activate_mask (PSH_Hint_Table table,
                               PS_Mask hint_mask) {
   FT_Int mask = 0, val = 0;
-  FT_Byte *cursor = hint_mask->bytes;
+  FT_Byte* cursor = hint_mask->bytes;
   FT_UInt idx, limit, count;
 
   limit = hint_mask->num_bits;
@@ -268,7 +268,7 @@ psh_hint_table_activate_mask (PSH_Hint_Table table,
   {
     FT_Int i1, i2;
     PSH_Hint hint1, hint2;
-    PSH_Hint *sort = table->sort;
+    PSH_Hint* sort = table->sort;
 
 
     /* a simple bubble sort will do, since in 99% of cases, the hints */
@@ -298,6 +298,7 @@ psh_hint_table_activate_mask (PSH_Hint_Table table,
 /*************************************************************************/
 
 #if 1
+
 static FT_Pos
 psh_dimension_quantize_len (PSH_Dimension dim,
                             FT_Pos len,
@@ -341,6 +342,7 @@ psh_dimension_quantize_len (PSH_Dimension dim,
 
   return len;
 }
+
 #endif /* 0 */
 
 #ifdef DEBUG_HINTER
@@ -990,7 +992,7 @@ psh_compute_dir (FT_Pos dx,
 static void
 psh_glyph_load_points (PSH_Glyph glyph,
                        FT_Int dimension) {
-  FT_Vector *vec = glyph->outline->points;
+  FT_Vector* vec = glyph->outline->points;
   PSH_Point point = glyph->points;
   FT_UInt count = glyph->num_points;
 
@@ -1020,8 +1022,8 @@ psh_glyph_save_points (PSH_Glyph glyph,
                        FT_Int dimension) {
   FT_UInt n;
   PSH_Point point = glyph->points;
-  FT_Vector *vec = glyph->outline->points;
-  char *tags = glyph->outline->tags;
+  FT_Vector* vec = glyph->outline->points;
+  char* tags = glyph->outline->tags;
 
   for (n = 0; n < glyph->num_points; n++) {
     if (dimension == 0)
@@ -1053,7 +1055,7 @@ psh_glyph_save_points (PSH_Glyph glyph,
 
 static FT_Error
 psh_glyph_init (PSH_Glyph glyph,
-                FT_Outline *outline,
+                FT_Outline* outline,
                 PS_Hints ps_hints,
                 PSH_Globals globals) {
   FT_Error error;
@@ -1111,7 +1113,7 @@ psh_glyph_init (PSH_Glyph glyph,
   {
     PSH_Point points = glyph->points;
     PSH_Point point = points;
-    FT_Vector *vec = outline->points;
+    FT_Vector* vec = outline->points;
     FT_UInt n;
 
     for (n = 0; n < glyph->num_points; n++, point++) {
@@ -1289,7 +1291,7 @@ psh_hint_table_find_strong_points (PSH_Hint_Table table,
                                    FT_UInt count,
                                    FT_Int threshold,
                                    FT_Int major_dir) {
-  PSH_Hint *sort = table->sort;
+  PSH_Hint* sort = table->sort;
   FT_UInt num_hints = table->num_hints;
 
   for (; count > 0; count--, point++) {
@@ -1592,7 +1594,7 @@ psh_glyph_interpolate_normal_points (PSH_Glyph glyph,
   FT_Fixed scale = dim->scale_mult;
   FT_Memory memory = glyph->memory;
 
-  PSH_Point *strongs = NULL;
+  PSH_Point* strongs = NULL;
   PSH_Point strongs_0[PSH_MAX_STRONG_INTERNAL];
   FT_UInt num_strongs = 0;
 
@@ -1623,7 +1625,7 @@ psh_glyph_interpolate_normal_points (PSH_Glyph glyph,
 
   num_strongs = 0;
   for (point = points; point < points_end; point++) {
-    PSH_Point *insert;
+    PSH_Point* insert;
 
     if (!psh_point_is_strong(point))
       continue;
@@ -1855,7 +1857,7 @@ psh_glyph_interpolate_other_points (PSH_Glyph glyph,
 
 FT_Error
 ps_hints_apply (PS_Hints ps_hints,
-                FT_Outline *outline,
+                FT_Outline* outline,
                 PSH_Globals globals,
                 FT_Render_Mode hint_mode) {
   PSH_GlyphRec glyphrec;

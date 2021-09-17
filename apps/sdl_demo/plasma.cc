@@ -23,11 +23,11 @@ struct plasma : public demoscene::scene {
       }
     }
 
-    void effect (demoscene::vga &vga) override {
+    void effect (demoscene::vga& vga) override {
       uint16_t i, j;
       uint8_t index;
       int x;
-      uint8_t *image = vga.surface ().data ();
+      uint8_t* image = vga.surface ().data ();
 
       tpos4 = pos4;
       tpos3 = pos3;
@@ -64,8 +64,8 @@ struct plasma : public demoscene::scene {
       pos3 += 8;
     }
 
-    void init (demoscene::vga &vga) override {
-      auto &colors = vga.palette ();
+    void init (demoscene::vga& vga) override {
+      auto& colors = vga.palette ();
       /* create palette */
       for (int i = 0; i < 64; ++i) {
         colors[i].r = i << 2;
@@ -83,7 +83,7 @@ struct plasma : public demoscene::scene {
     int aSin[512];
 };
 
-int main ([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
+int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   engine::application app (nullptr);
   plasma window;
   window.show ();

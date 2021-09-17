@@ -27,10 +27,10 @@ FT_BEGIN_HEADER
          ( ( (FT_Offset)(i) >> 3 ) ^ ( (FT_Offset)(i) << 7 ) )
 
 /* handle to cache object */
-typedef struct FTC_CacheRec_ *FTC_Cache;
+typedef struct FTC_CacheRec_* FTC_Cache;
 
 /* handle to cache class */
-typedef const struct FTC_CacheClassRec_ *FTC_CacheClass;
+typedef const struct FTC_CacheClassRec_* FTC_CacheClass;
 
 
 /*************************************************************************/
@@ -94,30 +94,30 @@ ftc_get_top_node_for_hash( FTC_Cache  cache,
 
 /* initialize a new cache node */
 typedef FT_Error
-(*FTC_Node_NewFunc) (FTC_Node *pnode,
-                     FT_Pointer query,
-                     FTC_Cache cache);
+(* FTC_Node_NewFunc) (FTC_Node* pnode,
+                      FT_Pointer query,
+                      FTC_Cache cache);
 
 typedef FT_Offset
-(*FTC_Node_WeightFunc) (FTC_Node node,
-                        FTC_Cache cache);
+(* FTC_Node_WeightFunc) (FTC_Node node,
+                         FTC_Cache cache);
 
 /* compare a node to a given key pair */
 typedef FT_Bool
-(*FTC_Node_CompareFunc) (FTC_Node node,
-                         FT_Pointer key,
-                         FTC_Cache cache,
-                         FT_Bool *list_changed);
+(* FTC_Node_CompareFunc) (FTC_Node node,
+                          FT_Pointer key,
+                          FTC_Cache cache,
+                          FT_Bool* list_changed);
 
 typedef void
-(*FTC_Node_FreeFunc) (FTC_Node node,
-                      FTC_Cache cache);
+(* FTC_Node_FreeFunc) (FTC_Node node,
+                       FTC_Cache cache);
 
 typedef FT_Error
-(*FTC_Cache_InitFunc) (FTC_Cache cache);
+(* FTC_Cache_InitFunc) (FTC_Cache cache);
 
 typedef void
-(*FTC_Cache_DoneFunc) (FTC_Cache cache);
+(* FTC_Cache_DoneFunc) (FTC_Cache cache);
 
 typedef struct FTC_CacheClassRec_ {
   FTC_Node_NewFunc node_new;
@@ -137,7 +137,7 @@ typedef struct FTC_CacheRec_ {
   FT_UFast p;
   FT_UFast mask;
   FT_Long slack;
-  FTC_Node *buckets;
+  FTC_Node* buckets;
 
   FTC_CacheClassRec clazz;       /* local copy, for speed  */
 
@@ -179,7 +179,7 @@ FT_LOCAL(FT_Error)
 FTC_Cache_NewNode (FTC_Cache cache,
                    FT_Offset hash,
                    FT_Pointer query,
-                   FTC_Node *anode);
+                   FTC_Node* anode);
 
 /* Remove all nodes that relate to a given face_id.  This is useful
  * when un-installing fonts.  Note that if a cache node relates to

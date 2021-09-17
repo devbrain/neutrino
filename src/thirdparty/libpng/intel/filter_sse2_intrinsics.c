@@ -27,24 +27,24 @@
  * whichever of a, b, or c is closest to p=a+b-c.
  */
 
-static __m128i load4 (const void *p) {
+static __m128i load4 (const void* p) {
   int tmp;
   memcpy (&tmp, p, sizeof (tmp));
   return _mm_cvtsi32_si128 (tmp);
 }
 
-static void store4 (void *p, __m128i v) {
+static void store4 (void* p, __m128i v) {
   int tmp = _mm_cvtsi128_si32 (v);
   memcpy (p, &tmp, sizeof (int));
 }
 
-static __m128i load3 (const void *p) {
+static __m128i load3 (const void* p) {
   png_uint_32 tmp = 0;
   memcpy (&tmp, p, 3);
   return _mm_cvtsi32_si128 (tmp);
 }
 
-static void store3 (void *p, __m128i v) {
+static void store3 (void* p, __m128i v) {
   int tmp = _mm_cvtsi128_si32 (v);
   memcpy (p, &tmp, 3);
 }

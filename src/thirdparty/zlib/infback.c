@@ -28,11 +28,11 @@ local void fixedtables OF((struct inflate_state FAR *state));
 int ZEXPORT inflateBackInit_ (strm, windowBits, window, version, stream_size)
     z_streamp strm;
     int windowBits;
-    unsigned char FAR *window;
-    const char *version;
+    unsigned char FAR* window;
+    const char* version;
     int stream_size;
 {
-  struct inflate_state FAR *state;
+  struct inflate_state FAR* state;
 
   if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
       stream_size != (int) (sizeof (z_stream)))
@@ -55,12 +55,12 @@ int ZEXPORT inflateBackInit_ (strm, windowBits, window, version, stream_size)
 #else
     strm->zfree = zcfree;
 #endif
-  state = (struct inflate_state FAR *) ZALLOC(strm, 1,
-                                              sizeof (struct inflate_state));
+  state = (struct inflate_state FAR*) ZALLOC(strm, 1,
+                                             sizeof (struct inflate_state));
   if (state == Z_NULL)
     return Z_MEM_ERROR;
   Tracev((stderr, "inflate: allocated\n"));
-  strm->state = (struct internal_state FAR *) state;
+  strm->state = (struct internal_state FAR*) state;
   state->dmax = 32768U;
   state->wbits = (uInt) windowBits;
   state->wsize = 1U << windowBits;
@@ -81,7 +81,7 @@ int ZEXPORT inflateBackInit_ (strm, windowBits, window, version, stream_size)
    may not be thread-safe.
  */
 local void fixedtables (state)
-    struct inflate_state FAR *state;
+    struct inflate_state FAR* state;
 {
 #ifdef BUILDFIXED
   static int virgin = 1;
@@ -252,18 +252,18 @@ local void fixedtables (state)
 int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
     z_streamp strm;
     in_func in;
-    void FAR *in_desc;
+    void FAR* in_desc;
     out_func out;
-    void FAR *out_desc;
+    void FAR* out_desc;
 {
-  struct inflate_state FAR *state;
-  z_const unsigned char FAR *next;    /* next input */
-  unsigned char FAR *put;     /* next output */
+  struct inflate_state FAR* state;
+  z_const unsigned char FAR* next;    /* next input */
+  unsigned char FAR* put;     /* next output */
   unsigned have, left;        /* available input and output */
   unsigned long hold;         /* bit buffer */
   unsigned bits;              /* bits in bit buffer */
   unsigned copy;              /* number of stored or match bytes to copy */
-  unsigned char FAR *from;    /* where to copy match bytes from */
+  unsigned char FAR* from;    /* where to copy match bytes from */
   code here;                  /* current decoding table entry */
   code last;                  /* parent table entry */
   unsigned len;               /* length to copy for repeats, bits to drop */
@@ -274,7 +274,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
   /* Check that the strm exists and that the state was initialized */
   if (strm == Z_NULL || strm->state == Z_NULL)
     return Z_STREAM_ERROR;
-  state = (struct inflate_state FAR *) strm->state;
+  state = (struct inflate_state FAR*) strm->state;
 
   /* Reset the state */
   strm->msg = Z_NULL;
@@ -319,7 +319,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
             state->mode = TABLE;
             break;
           case 3:
-            strm->msg = (char *) "invalid block type";
+            strm->msg = (char*) "invalid block type";
             state->mode = BAD;
         }
         DROPBITS(2);
@@ -330,7 +330,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
         BYTEBITS();                         /* go to byte boundary */
         NEEDBITS(32);
         if ((hold & 0xffff) != ((hold >> 16) ^ 0xffff)) {
-          strm->msg = (char *) "invalid stored block lengths";
+          strm->msg = (char*) "invalid stored block lengths";
           state->mode = BAD;
           break;
         }
@@ -370,7 +370,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
         DROPBITS(4);
 #ifndef PKZIP_BUG_WORKAROUND
         if (state->nlen > 286 || state->ndist > 30) {
-          strm->msg = (char *) "too many length or distance symbols";
+          strm->msg = (char*) "too many length or distance symbols";
           state->mode = BAD;
           break;
         }
@@ -387,12 +387,12 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
         while (state->have < 19)
           state->lens[order[state->have++]] = 0;
         state->next = state->codes;
-        state->lencode = (code const FAR *) (state->next);
+        state->lencode = (code const FAR*) (state->next);
         state->lenbits = 7;
         ret = inflate_table (CODES, state->lens, 19, &(state->next),
                              &(state->lenbits), state->work);
         if (ret) {
-          strm->msg = (char *) "invalid code lengths set";
+          strm->msg = (char*) "invalid code lengths set";
           state->mode = BAD;
           break;
         }
@@ -416,7 +416,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
               NEEDBITS(here.bits + 2);
               DROPBITS(here.bits);
               if (state->have == 0) {
-                strm->msg = (char *) "invalid bit length repeat";
+                strm->msg = (char*) "invalid bit length repeat";
                 state->mode = BAD;
                 break;
               }
@@ -439,7 +439,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
               DROPBITS(7);
             }
             if (state->have + copy > state->nlen + state->ndist) {
-              strm->msg = (char *) "invalid bit length repeat";
+              strm->msg = (char*) "invalid bit length repeat";
               state->mode = BAD;
               break;
             }
@@ -454,7 +454,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
 
         /* check for end-of-block code (better have one) */
         if (state->lens[256] == 0) {
-          strm->msg = (char *) "invalid code -- missing end-of-block";
+          strm->msg = (char*) "invalid code -- missing end-of-block";
           state->mode = BAD;
           break;
         }
@@ -463,21 +463,21 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
            values here (9 and 6) without reading the comments in inftrees.h
            concerning the ENOUGH constants, which depend on those values */
         state->next = state->codes;
-        state->lencode = (code const FAR *) (state->next);
+        state->lencode = (code const FAR*) (state->next);
         state->lenbits = 9;
         ret = inflate_table (LENS, state->lens, state->nlen, &(state->next),
                              &(state->lenbits), state->work);
         if (ret) {
-          strm->msg = (char *) "invalid literal/lengths set";
+          strm->msg = (char*) "invalid literal/lengths set";
           state->mode = BAD;
           break;
         }
-        state->distcode = (code const FAR *) (state->next);
+        state->distcode = (code const FAR*) (state->next);
         state->distbits = 6;
         ret = inflate_table (DISTS, state->lens + state->nlen, state->ndist,
                              &(state->next), &(state->distbits), state->work);
         if (ret) {
-          strm->msg = (char *) "invalid distances set";
+          strm->msg = (char*) "invalid distances set";
           state->mode = BAD;
           break;
         }
@@ -537,7 +537,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
 
         /* invalid code */
         if (here.op & 64) {
-          strm->msg = (char *) "invalid literal/length code";
+          strm->msg = (char*) "invalid literal/length code";
           state->mode = BAD;
           break;
         }
@@ -571,7 +571,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
         }
         DROPBITS(here.bits);
         if (here.op & 64) {
-          strm->msg = (char *) "invalid distance code";
+          strm->msg = (char*) "invalid distance code";
           state->mode = BAD;
           break;
         }
@@ -586,7 +586,7 @@ int ZEXPORT inflateBack (strm, in, in_desc, out, out_desc)
         }
         if (state->offset > state->wsize - (state->whave < state->wsize ?
                                             left : 0)) {
-          strm->msg = (char *) "invalid distance too far back";
+          strm->msg = (char*) "invalid distance too far back";
           state->mode = BAD;
           break;
         }

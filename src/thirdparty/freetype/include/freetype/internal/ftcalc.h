@@ -278,8 +278,8 @@ FT_MulDiv_No_Round (FT_Long a,
  * and `b', respectively, then the scaling factor of the result is `sa*sb'.
  */
 FT_BASE(void)
-FT_Matrix_Multiply_Scaled (const FT_Matrix *a,
-                           FT_Matrix *b,
+FT_Matrix_Multiply_Scaled (const FT_Matrix* a,
+                           FT_Matrix* b,
                            FT_Long scaling);
 
 
@@ -295,7 +295,7 @@ FT_Matrix_Multiply_Scaled (const FT_Matrix *a,
  * Value 50 is heuristic.
  */
 FT_BASE(FT_Bool)
-FT_Matrix_Check (const FT_Matrix *matrix);
+FT_Matrix_Check (const FT_Matrix* matrix);
 
 
 /*
@@ -303,8 +303,8 @@ FT_Matrix_Check (const FT_Matrix *matrix);
  * FT_Matrix_Multiply_Scaled.
  */
 FT_BASE(void)
-FT_Vector_Transform_Scaled (FT_Vector *vector,
-                            const FT_Matrix *matrix,
+FT_Vector_Transform_Scaled (FT_Vector* vector,
+                            const FT_Matrix* matrix,
                             FT_Long scaling);
 
 
@@ -317,7 +317,7 @@ FT_Vector_Transform_Scaled (FT_Vector *vector,
  * instead.
  */
 FT_BASE(FT_UInt32)
-FT_Vector_NormLen (FT_Vector *vector);
+FT_Vector_NormLen (FT_Vector* vector);
 
 
 /*

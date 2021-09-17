@@ -68,8 +68,8 @@
 
 static FT_Error
 read_pfb_tag (FT_Stream stream,
-              FT_UShort *atag,
-              FT_ULong *asize) {
+              FT_UShort* atag,
+              FT_ULong* asize) {
   FT_Error error;
   FT_UShort tag;
   FT_ULong size;
@@ -91,7 +91,7 @@ read_pfb_tag (FT_Stream stream,
 
 static FT_Error
 check_type1_format (FT_Stream stream,
-                    const char *header_string,
+                    const char* header_string,
                     size_t header_length) {
   FT_Error error;
   FT_UShort tag;
@@ -196,7 +196,7 @@ T1_New_Parser (T1_Parser parser,
 
   /* if it is a memory-based resource, set up pointers */
   if (!stream->read) {
-    parser->base_dict = (FT_Byte *) stream->base + stream->pos;
+    parser->base_dict = (FT_Byte*) stream->base + stream->pos;
     parser->base_len = size;
     parser->in_memory = 1;
 
@@ -304,8 +304,8 @@ T1_Get_Private_Dict (T1_Parser parser,
     /* dictionary block in the heap.                                 */
 
     /* first of all, look at the `eexec' keyword */
-    FT_Byte *cur = parser->base_dict;
-    FT_Byte *limit = cur + parser->base_len;
+    FT_Byte* cur = parser->base_dict;
+    FT_Byte* limit = cur + parser->base_len;
     FT_Pointer pos_lf;
     FT_Bool test_cr;
 

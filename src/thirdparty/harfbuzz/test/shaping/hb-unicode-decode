@@ -2,4 +2,4 @@
 
 from hb_test_tools import *
 
-UtilMains.filter_multiple_strings_or_stdin (Unicode.decode, "UNICODE_STRING")
+UtilMains.filter_multiple_strings_or_stdin(Unicode.decode, "UNICODE_STRING")

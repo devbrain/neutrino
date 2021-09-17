@@ -30,7 +30,7 @@ FT_CALLBACK_DEF(FT_Error)
 pfr_get_kerning (FT_Face pfrface,     /* PFR_Face */
                  FT_UInt left,
                  FT_UInt right,
-                 FT_Vector *avector) {
+                 FT_Vector* avector) {
   PFR_Face face = (PFR_Face) pfrface;
   PFR_PhyFont phys = &face->phy_font;
 
@@ -61,7 +61,7 @@ pfr_get_kerning (FT_Face pfrface,     /* PFR_Face */
 FT_CALLBACK_DEF(FT_Error)
 pfr_get_advance (FT_Face pfrface,       /* PFR_Face */
                  FT_UInt gindex,
-                 FT_Pos *anadvance) {
+                 FT_Pos* anadvance) {
   PFR_Face face = (PFR_Face) pfrface;
   FT_Error error = FT_ERR(Invalid_Argument);
 
@@ -87,10 +87,10 @@ pfr_get_advance (FT_Face pfrface,       /* PFR_Face */
 
 FT_CALLBACK_DEF(FT_Error)
 pfr_get_metrics (FT_Face pfrface,      /* PFR_Face */
-                 FT_UInt *anoutline_resolution,
-                 FT_UInt *ametrics_resolution,
-                 FT_Fixed *ametrics_x_scale,
-                 FT_Fixed *ametrics_y_scale) {
+                 FT_UInt* anoutline_resolution,
+                 FT_UInt* ametrics_resolution,
+                 FT_Fixed* ametrics_x_scale,
+                 FT_Fixed* ametrics_y_scale) {
   PFR_Face face = (PFR_Face) pfrface;
   PFR_PhyFont phys = &face->phy_font;
   FT_Fixed x_scale, y_scale;
@@ -144,7 +144,7 @@ static const FT_ServiceDescRec pfr_services[] =
 
 FT_CALLBACK_DEF(FT_Module_Interface)
 pfr_get_service (FT_Module module,
-                 const FT_String *service_id) {
+                 const FT_String* service_id) {
   FT_UNUSED(module);
 
   return ft_service_list_lookup (pfr_services, service_id);

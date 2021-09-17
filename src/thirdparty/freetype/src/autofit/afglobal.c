@@ -124,7 +124,7 @@ af_face_globals_compute_style_coverage (AF_FaceGlobals globals) {
   FT_Error error;
   FT_Face face = globals->face;
   FT_CharMap old_charmap = face->charmap;
-  FT_UShort *gstyles = globals->glyph_styles;
+  FT_UShort* gstyles = globals->glyph_styles;
   FT_UInt ss;
   FT_UInt i;
   FT_UInt dflt = ~0U; /* a non-valid value */
@@ -301,7 +301,7 @@ af_face_globals_compute_style_coverage (AF_FaceGlobals globals) {
 
 FT_LOCAL_DEF(FT_Error)
 af_face_globals_new (FT_Face face,
-                     AF_FaceGlobals *aglobals,
+                     AF_FaceGlobals* aglobals,
                      AF_Module module) {
   FT_Error error;
   FT_Memory memory;
@@ -319,7 +319,7 @@ af_face_globals_new (FT_Face face,
   globals->face = face;
   globals->glyph_count = face->num_glyphs;
   /* right after the globals structure come the glyph styles */
-  globals->glyph_styles = (FT_UShort *) (globals + 1);
+  globals->glyph_styles = (FT_UShort*) (globals + 1);
   globals->module = module;
   globals->stem_darkening_for_ppem = 0;
   globals->darken_x = 0;
@@ -381,7 +381,7 @@ FT_LOCAL_DEF(FT_Error)
 af_face_globals_get_metrics (AF_FaceGlobals globals,
                              FT_UInt gindex,
                              FT_UInt options,
-                             AF_StyleMetrics *ametrics) {
+                             AF_StyleMetrics* ametrics) {
   AF_StyleMetrics metrics = NULL;
 
   AF_Style style = (AF_Style) options;

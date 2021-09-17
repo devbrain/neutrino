@@ -48,34 +48,34 @@ AboutDlgProc (HWND, UINT, WPARAM, LPARAM
 
 BOOL CenterAbout (HWND hwndChild, HWND hwndParent);
 
-BOOL BuildPngList (PTSTR pstrPathName, TCHAR **ppFileList, int *pFileCount,
-                   int *pFileIndex);
+BOOL BuildPngList (PTSTR pstrPathName, TCHAR** ppFileList, int* pFileCount,
+                   int* pFileIndex);
 
-BOOL SearchPngList (TCHAR *pFileList, int FileCount, int *pFileIndex,
+BOOL SearchPngList (TCHAR* pFileList, int FileCount, int* pFileIndex,
                     PTSTR pstrPrevName, PTSTR pstrNextName);
 
 BOOL LoadImageFile (HWND hwnd, PTSTR pstrPathName,
-                    png_byte **ppbImage, int *pxImgSize, int *pyImgSize, int *piChannels,
-                    png_color *pBkgColor);
+                    png_byte** ppbImage, int* pxImgSize, int* pyImgSize, int* piChannels,
+                    png_color* pBkgColor);
 
-BOOL DisplayImage (HWND hwnd, BYTE **ppDib,
-                   BYTE **ppDiData, int cxWinSize, int cyWinSize,
-                   BYTE *pbImage, int cxImgSize, int cyImgSize, int cImgChannels,
+BOOL DisplayImage (HWND hwnd, BYTE** ppDib,
+                   BYTE** ppDiData, int cxWinSize, int cyWinSize,
+                   BYTE* pbImage, int cxImgSize, int cyImgSize, int cImgChannels,
                    BOOL bStretched);
 
 BOOL InitBitmap (
-    BYTE *pDiData, int cxWinSize, int cyWinSize);
+    BYTE* pDiData, int cxWinSize, int cyWinSize);
 
 BOOL FillBitmap (
-    BYTE *pDiData, int cxWinSize, int cyWinSize,
-    BYTE *pbImage, int cxImgSize, int cyImgSize, int cImgChannels,
+    BYTE* pDiData, int cxWinSize, int cyWinSize,
+    BYTE* pbImage, int cxImgSize, int cyImgSize, int cImgChannels,
     BOOL bStretched);
 
 /* a few global variables */
 
-static char *szProgName = PROGNAME;
-static char *szAppName = LONGNAME;
-static char *szIconName = PROGNAME;
+static char* szProgName = PROGNAME;
+static char* szAppName = LONGNAME;
+static char* szIconName = PROGNAME;
 static char szCmdFileName[MAX_PATH];
 
 /* MAIN routine */
@@ -187,9 +187,9 @@ static HDC hdc;
 static PAINTSTRUCT ps;
 static HMENU hMenu;
 
-static BITMAPFILEHEADER *pbmfh;
-static BITMAPINFOHEADER *pbmih;
-static BYTE *pbImage;
+static BITMAPFILEHEADER* pbmfh;
+static BITMAPINFOHEADER* pbmih;
+static BYTE* pbImage;
 static int cxWinSize, cyWinSize;
 static int cxImgSize, cyImgSize;
 static int cImgChannels;
@@ -197,13 +197,13 @@ static png_color bkgColor = {127, 127, 127};
 
 static BOOL bStretched = TRUE;
 
-static BYTE *pDib = NULL;
-static BYTE *pDiData = NULL;
+static BYTE* pDib = NULL;
+static BYTE* pDiData = NULL;
 
 static TCHAR szImgPathName[MAX_PATH];
 static TCHAR szTitleName[MAX_PATH];
 
-static TCHAR *pPngFileList = NULL;
+static TCHAR* pPngFileList = NULL;
 static int iPngFileCount;
 static int iPngFileIndex;
 
@@ -607,8 +607,8 @@ BOOL CenterAbout (HWND hwndChild, HWND hwndParent) {
  *  BuildPngList
  *----------------
  */
-BOOL BuildPngList (PTSTR pstrPathName, TCHAR **ppFileList, int *pFileCount,
-                   int *pFileIndex) {
+BOOL BuildPngList (PTSTR pstrPathName, TCHAR** ppFileList, int* pFileCount,
+                   int* pFileIndex) {
   static TCHAR szImgPathName[MAX_PATH];
   static TCHAR szImgFileName[MAX_PATH];
   static TCHAR szImgFindName[MAX_PATH];
@@ -652,7 +652,7 @@ BOOL BuildPngList (PTSTR pstrPathName, TCHAR **ppFileList, int *pFileCount,
 
   /* allocation memory for file-list */
 
-  *ppFileList = (TCHAR *) malloc (*pFileCount * MAX_PATH);
+  *ppFileList = (TCHAR*) malloc (*pFileCount * MAX_PATH);
 
   /* second cycle: read directory and store filenames in file-list */
 
@@ -705,7 +705,7 @@ BOOL BuildPngList (PTSTR pstrPathName, TCHAR **ppFileList, int *pFileCount,
  */
 
 BOOL SearchPngList (
-    TCHAR *pFileList, int FileCount, int *pFileIndex,
+    TCHAR* pFileList, int FileCount, int* pFileIndex,
     PTSTR pstrPrevName, PTSTR pstrNextName) {
   if (FileCount > 0) {
     /* get previous entry */
@@ -743,8 +743,8 @@ BOOL SearchPngList (
  */
 
 BOOL LoadImageFile (HWND hwnd, PTSTR pstrPathName,
-                    png_byte **ppbImage, int *pxImgSize, int *pyImgSize,
-                    int *piChannels, png_color *pBkgColor) {
+                    png_byte** ppbImage, int* pxImgSize, int* pyImgSize,
+                    int* piChannels, png_color* pBkgColor) {
   static TCHAR szTmp[MAX_PATH];
 
   /* if there's an existing PNG, free the memory */
@@ -782,14 +782,14 @@ BOOL LoadImageFile (HWND hwnd, PTSTR pstrPathName,
  *  DisplayImage
  *----------------
  */
-BOOL DisplayImage (HWND hwnd, BYTE **ppDib,
-                   BYTE **ppDiData, int cxWinSize, int cyWinSize,
-                   BYTE *pbImage, int cxImgSize, int cyImgSize, int cImgChannels,
+BOOL DisplayImage (HWND hwnd, BYTE** ppDib,
+                   BYTE** ppDiData, int cxWinSize, int cyWinSize,
+                   BYTE* pbImage, int cxImgSize, int cyImgSize, int cImgChannels,
                    BOOL bStretched) {
-  BYTE *pDib = *ppDib;
-  BYTE *pDiData = *ppDiData;
+  BYTE* pDib = *ppDib;
+  BYTE* pDiData = *ppDiData;
   /* BITMAPFILEHEADER        *pbmfh; */
-  BITMAPINFOHEADER *pbmih;
+  BITMAPINFOHEADER* pbmih;
   WORD wDIRowBytes;
   png_color bkgBlack = {0, 0, 0};
   png_color bkgGray = {127, 127, 127};
@@ -808,8 +808,8 @@ BOOL DisplayImage (HWND hwnd, BYTE **ppDib,
     {
       MessageBox (hwnd, TEXT ("Visual PNG: image is too big");
     }
-    if (!(pDib = (BYTE *) malloc (sizeof (BITMAPINFOHEADER) +
-                                  wDIRowBytes * cyWinSize))) {
+    if (!(pDib = (BYTE*) malloc (sizeof (BITMAPINFOHEADER) +
+                                 wDIRowBytes * cyWinSize))) {
       MessageBox (hwnd, TEXT ("Error in displaying the PNG image"),
                   szProgName, MB_ICONEXCLAMATION | MB_OK);
       *ppDib = pDib = NULL;
@@ -820,7 +820,7 @@ BOOL DisplayImage (HWND hwnd, BYTE **ppDib,
 
     /* initialize the dib-structure */
 
-    pbmih = (BITMAPINFOHEADER *) pDib;
+    pbmih = (BITMAPINFOHEADER*) pDib;
     pbmih->biSize = sizeof (BITMAPINFOHEADER);
     pbmih->biWidth = cxWinSize;
     pbmih->biHeight = -((long) cyWinSize);
@@ -850,8 +850,8 @@ BOOL DisplayImage (HWND hwnd, BYTE **ppDib,
  *  InitBitmap
  *--------------
  */
-  BOOL InitBitmap (BYTE *pDiData, int cxWinSize, int cyWinSize) {
-    BYTE *dst;
+  BOOL InitBitmap (BYTE* pDiData, int cxWinSize, int cyWinSize) {
+    BYTE* dst;
     int x, y, col;
 
     /* initialize the background with gray */
@@ -881,12 +881,12 @@ BOOL DisplayImage (HWND hwnd, BYTE **ppDib,
  *--------------
  */
   BOOL FillBitmap (
-      BYTE *pDiData, int cxWinSize, int cyWinSize,
-      BYTE *pbImage, int cxImgSize, int cyImgSize, int cImgChannels,
+      BYTE* pDiData, int cxWinSize, int cyWinSize,
+      BYTE* pbImage, int cxImgSize, int cyImgSize, int cImgChannels,
       BOOL bStretched) {
-    BYTE *pStretchedImage;
-    BYTE *pImg;
-    BYTE *src, *dst;
+    BYTE* pStretchedImage;
+    BYTE* pImg;
+    BYTE* src, * dst;
     BYTE r, g, b, a;
     const int cDIChannels = 3;
     WORD wImgRowBytes;

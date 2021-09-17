@@ -136,7 +136,7 @@ typedef struct FTC_FamilyRec_ {
   FTC_Cache cache;
   FTC_MruListClass clazz;
 
-} FTC_FamilyRec, *FTC_Family;
+} FTC_FamilyRec, * FTC_Family;
 
 #define  FTC_FAMILY(x)    ( (FTC_Family)(x) )
 #define  FTC_FAMILY_P(x)  ( (FTC_Family*)(x) )
@@ -146,7 +146,7 @@ typedef struct FTC_GNodeRec_ {
   FTC_Family family;
   FT_UInt gindex;
 
-} FTC_GNodeRec, *FTC_GNode;
+} FTC_GNodeRec, * FTC_GNode;
 
 #define FTC_GNODE(x)    ( (FTC_GNode)(x) )
 #define FTC_GNODE_P(x)  ( (FTC_GNode*)(x) )
@@ -155,7 +155,7 @@ typedef struct FTC_GQueryRec_ {
   FT_UInt gindex;
   FTC_Family family;
 
-} FTC_GQueryRec, *FTC_GQuery;
+} FTC_GQueryRec, * FTC_GQuery;
 
 #define FTC_GQUERY(x)  ( (FTC_GQuery)(x) )
 
@@ -182,7 +182,7 @@ FT_LOCAL(FT_Bool)
 FTC_GNode_Compare (FTC_GNode gnode,
                    FTC_GQuery gquery,
                    FTC_Cache cache,
-                   FT_Bool *list_changed);
+                   FT_Bool* list_changed);
 
 #endif
 
@@ -205,7 +205,7 @@ typedef struct FTC_GCacheRec_ {
   FTC_CacheRec cache;
   FTC_MruListRec families;
 
-} FTC_GCacheRec, *FTC_GCache;
+} FTC_GCacheRec, * FTC_GCache;
 
 #define FTC_GCACHE(x)  ((FTC_GCache)(x))
 
@@ -228,7 +228,7 @@ typedef struct FTC_GCacheClassRec_ {
 
 } FTC_GCacheClassRec;
 
-typedef const FTC_GCacheClassRec *FTC_GCacheClass;
+typedef const FTC_GCacheClassRec* FTC_GCacheClass;
 
 #define FTC_GCACHE_CLASS(x)  ((FTC_GCacheClass)(x))
 
@@ -242,7 +242,7 @@ typedef const FTC_GCacheClassRec *FTC_GCacheClass;
 FT_LOCAL(FT_Error)
 FTC_GCache_New (FTC_Manager manager,
                 FTC_GCacheClass clazz,
-                FTC_GCache *acache);
+                FTC_GCache* acache);
 
 #ifndef FTC_INLINE
 FT_LOCAL( FT_Error )

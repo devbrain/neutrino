@@ -66,10 +66,10 @@ typedef enum GXV_kern_Dialect_ {
 
 typedef struct GXV_kern_DataRec_ {
   GXV_kern_Version version;
-  void *subtable_data;
+  void* subtable_data;
   GXV_kern_Dialect dialect_request;
 
-} GXV_kern_DataRec, *GXV_kern_Data;
+} GXV_kern_DataRec, * GXV_kern_Data;
 
 #define GXV_KERN_DATA(field)  GXV_TABLE_DATA( kern, field )
 
@@ -188,7 +188,7 @@ typedef struct GXV_kern_fmt1_StateOptRec_ {
   FT_UShort valueTable;
   FT_UShort valueTable_length;
 
-} GXV_kern_fmt1_StateOptRec, *GXV_kern_fmt1_StateOptRecData;
+} GXV_kern_fmt1_StateOptRec, * GXV_kern_fmt1_StateOptRecData;
 
 static void
 gxv_kern_subtable_fmt1_valueTable_load (FT_Bytes table,
@@ -210,9 +210,9 @@ gxv_kern_subtable_fmt1_subtable_setup (FT_UShort table_size,
                                        FT_UShort classTable,
                                        FT_UShort stateArray,
                                        FT_UShort entryTable,
-                                       FT_UShort *classTable_length_p,
-                                       FT_UShort *stateArray_length_p,
-                                       FT_UShort *entryTable_length_p,
+                                       FT_UShort* classTable_length_p,
+                                       FT_UShort* stateArray_length_p,
+                                       FT_UShort* entryTable_length_p,
                                        GXV_Validator gxvalid) {
   FT_UShort o[4];
   FT_UShort * l[4];
@@ -325,10 +325,10 @@ typedef struct GXV_kern_subtable_fmt2_DataRec_ {
   FT_UShort array;
   FT_UShort offset_min[2];
   FT_UShort offset_max[2];
-  const FT_String *class_tag[2];
+  const FT_String* class_tag[2];
   GXV_odtect_Range odtect;
 
-} GXV_kern_subtable_fmt2_DataRec, *GXV_kern_subtable_fmt2_Data;
+} GXV_kern_subtable_fmt2_DataRec, * GXV_kern_subtable_fmt2_Data;
 
 #define GXV_KERN_FMT2_DATA(field)                         \
         ( ( (GXV_kern_subtable_fmt2_DataRec *)              \
@@ -341,7 +341,7 @@ gxv_kern_subtable_fmt2_clstbl_validate (FT_Bytes table,
                                         FT_Bytes limit,
                                         GXV_kern_ClassSpec spec,
                                         GXV_Validator gxvalid) {
-  const FT_String *tag = GXV_KERN_FMT2_DATA(class_tag[spec]);
+  const FT_String* tag = GXV_KERN_FMT2_DATA(class_tag[spec]);
   GXV_odtect_Range odtect = GXV_KERN_FMT2_DATA(odtect);
 
   FT_Bytes p = table;
@@ -508,7 +508,7 @@ gxv_kern_subtable_fmt3_validate (FT_Bytes table,
 
 static FT_Bool
 gxv_kern_coverage_new_apple_validate (FT_UShort coverage,
-                                      FT_UShort *format,
+                                      FT_UShort* format,
                                       GXV_Validator gxvalid) {
   /* new Apple-dialect */
 #ifdef GXV_LOAD_TRACE_VARS
@@ -543,7 +543,7 @@ gxv_kern_coverage_new_apple_validate (FT_UShort coverage,
 
 static FT_Bool
 gxv_kern_coverage_classic_apple_validate (FT_UShort coverage,
-                                          FT_UShort *format,
+                                          FT_UShort* format,
                                           GXV_Validator gxvalid) {
   /* classic Apple-dialect */
 #ifdef GXV_LOAD_TRACE_VARS
@@ -582,7 +582,7 @@ gxv_kern_coverage_classic_apple_validate (FT_UShort coverage,
 
 static FT_Bool
 gxv_kern_coverage_classic_microsoft_validate (FT_UShort coverage,
-                                              FT_UShort *format,
+                                              FT_UShort* format,
                                               GXV_Validator gxvalid) {
   /* classic Microsoft-dialect */
 #ifdef GXV_LOAD_TRACE_VARS
@@ -631,7 +631,7 @@ gxv_kern_coverage_classic_microsoft_validate (FT_UShort coverage,
 
 static GXV_kern_Dialect
 gxv_kern_coverage_validate (FT_UShort coverage,
-                            FT_UShort *format,
+                            FT_UShort* format,
                             GXV_Validator gxvalid) {
   GXV_kern_Dialect result = KERN_DIALECT_UNKNOWN;
 

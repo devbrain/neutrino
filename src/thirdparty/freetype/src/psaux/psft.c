@@ -61,7 +61,7 @@
  *
  */
 static FT_Error
-cf2_checkTransform (const CF2_Matrix *transform,
+cf2_checkTransform (const CF2_Matrix* transform,
                     CF2_Int unitsPerEm) {
   CF2_Fixed maxScale;
 
@@ -87,7 +87,7 @@ cf2_checkTransform (const CF2_Matrix *transform,
 static void
 cf2_setGlyphWidth (CF2_Outline outline,
                    CF2_Fixed width) {
-  PS_Decoder *decoder = outline->decoder;
+  PS_Decoder* decoder = outline->decoder;
 
   FT_ASSERT(decoder);
 
@@ -97,7 +97,7 @@ cf2_setGlyphWidth (CF2_Outline outline,
 
 /* Clean up font instance. */
 static void
-cf2_free_instance (void *ptr) {
+cf2_free_instance (void* ptr) {
   CF2_Font font = (CF2_Font) ptr;
 
   if (font) {
@@ -120,7 +120,7 @@ cf2_builder_moveTo (CF2_OutlineCallbacks callbacks,
                     const CF2_CallbackParams params) {
   /* downcast the object pointer */
   CF2_Outline outline = (CF2_Outline) callbacks;
-  PS_Builder *builder;
+  PS_Builder* builder;
 
   (void) params;        /* only used in debug mode */
 
@@ -142,7 +142,7 @@ cf2_builder_lineTo (CF2_OutlineCallbacks callbacks,
 
   /* downcast the object pointer */
   CF2_Outline outline = (CF2_Outline) callbacks;
-  PS_Builder *builder;
+  PS_Builder* builder;
 
   FT_ASSERT(outline && outline->decoder);
   FT_ASSERT(params->op == CF2_PathOpLineTo);
@@ -180,7 +180,7 @@ cf2_builder_cubeTo (CF2_OutlineCallbacks callbacks,
 
   /* downcast the object pointer */
   CF2_Outline outline = (CF2_Outline) callbacks;
-  PS_Builder *builder;
+  PS_Builder* builder;
 
   FT_ASSERT(outline && outline->decoder);
   FT_ASSERT(params->op == CF2_PathOpCubeTo);
@@ -222,7 +222,7 @@ cf2_builder_cubeTo (CF2_OutlineCallbacks callbacks,
 static void
 cf2_outline_init (CF2_Outline outline,
                   FT_Memory memory,
-                  FT_Error *error) {
+                  FT_Error* error) {
   FT_ZERO(outline);
 
   outline->root.memory = memory;
@@ -235,11 +235,11 @@ cf2_outline_init (CF2_Outline outline,
 
 /* get scaling and hint flag from GlyphSlot */
 static void
-cf2_getScaleAndHintFlag (PS_Decoder *decoder,
-                         CF2_Fixed *x_scale,
-                         CF2_Fixed *y_scale,
-                         FT_Bool *hinted,
-                         FT_Bool *scaled) {
+cf2_getScaleAndHintFlag (PS_Decoder* decoder,
+                         CF2_Fixed* x_scale,
+                         CF2_Fixed* y_scale,
+                         FT_Bool* hinted,
+                         FT_Bool* scaled) {
   FT_ASSERT(decoder && decoder->builder.glyph);
 
   /* note: FreeType scale includes a factor of 64 */
@@ -263,7 +263,7 @@ cf2_getScaleAndHintFlag (PS_Decoder *decoder,
 /* get units per em from `FT_Face' */
 /* TODO: should handle font matrix concatenation? */
 static FT_UShort
-cf2_getUnitsPerEm (PS_Decoder *decoder) {
+cf2_getUnitsPerEm (PS_Decoder* decoder) {
   FT_ASSERT(decoder && decoder->builder.face);
   FT_ASSERT(decoder->builder.face->units_per_EM);
 
@@ -273,8 +273,8 @@ cf2_getUnitsPerEm (PS_Decoder *decoder) {
 
 /* Main entry point: Render one glyph. */
 FT_LOCAL_DEF(FT_Error)
-cf2_decoder_parse_charstrings (PS_Decoder *decoder,
-                               FT_Byte *charstring_base,
+cf2_decoder_parse_charstrings (PS_Decoder* decoder,
+                               FT_Byte* charstring_base,
                                FT_ULong charstring_len) {
   FT_Memory memory;
   FT_Error error = FT_Err_Ok;
@@ -324,7 +324,7 @@ cf2_decoder_parse_charstrings (PS_Decoder *decoder,
   {
     /* build parameters for Adobe engine */
 
-    PS_Builder *builder = &decoder->builder;
+    PS_Builder* builder = &decoder->builder;
     PS_Driver driver = (PS_Driver) FT_FACE_DRIVER(builder->face);
 
     FT_Bool no_stem_darkening_driver =
@@ -407,7 +407,7 @@ cf2_decoder_parse_charstrings (PS_Decoder *decoder,
 
 /* get pointer to current FreeType subfont (based on current glyphID) */
 FT_LOCAL_DEF(CFF_SubFont)
-cf2_getSubfont (PS_Decoder *decoder) {
+cf2_getSubfont (PS_Decoder* decoder) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   return decoder->current_subfont;
@@ -416,7 +416,7 @@ cf2_getSubfont (PS_Decoder *decoder) {
 
 /* get pointer to VStore structure */
 FT_LOCAL_DEF(CFF_VStore)
-cf2_getVStore (PS_Decoder *decoder) {
+cf2_getVStore (PS_Decoder* decoder) {
   FT_ASSERT(decoder && decoder->cff);
 
   return &decoder->cff->vstore;
@@ -425,7 +425,7 @@ cf2_getVStore (PS_Decoder *decoder) {
 
 /* get maxstack value from CFF2 Top DICT */
 FT_LOCAL_DEF(FT_UInt)
-cf2_getMaxstack (PS_Decoder *decoder) {
+cf2_getMaxstack (PS_Decoder* decoder) {
   FT_ASSERT(decoder && decoder->cff);
 
   return decoder->cff->top_font.font_dict.maxstack;
@@ -437,9 +437,9 @@ cf2_getMaxstack (PS_Decoder *decoder) {
 /*                                                          */
 /* Note: Uses FT_Fixed not CF2_Fixed for the vector.        */
 FT_LOCAL_DEF(FT_Error)
-cf2_getNormalizedVector (PS_Decoder *decoder,
-                         CF2_UInt *len,
-                         FT_Fixed **vec) {
+cf2_getNormalizedVector (PS_Decoder* decoder,
+                         CF2_UInt* len,
+                         FT_Fixed** vec) {
   TT_Face face;
   FT_Service_MultiMasters mm;
 
@@ -452,12 +452,13 @@ cf2_getNormalizedVector (PS_Decoder *decoder,
 
   return mm->get_var_blend (FT_FACE(face), len, NULL, vec, NULL);
 }
+
 #endif
 
 
 /* get `y_ppem' from `CFF_Size' */
 FT_LOCAL_DEF(CF2_Fixed)
-cf2_getPpemY (PS_Decoder *decoder) {
+cf2_getPpemY (PS_Decoder* decoder) {
   FT_ASSERT(decoder &&
             decoder->builder.face &&
             decoder->builder.face->size);
@@ -480,7 +481,7 @@ cf2_getPpemY (PS_Decoder *decoder) {
 /* FreeType stores these as integer font units       */
 /* (note: variable names seem swapped)               */
 FT_LOCAL_DEF(CF2_Fixed)
-cf2_getStdVW (PS_Decoder *decoder) {
+cf2_getStdVW (PS_Decoder* decoder) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   return cf2_intToFixed(
@@ -488,7 +489,7 @@ cf2_getStdVW (PS_Decoder *decoder) {
 }
 
 FT_LOCAL_DEF(CF2_Fixed)
-cf2_getStdHW (PS_Decoder *decoder) {
+cf2_getStdHW (PS_Decoder* decoder) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   return cf2_intToFixed(
@@ -498,10 +499,10 @@ cf2_getStdHW (PS_Decoder *decoder) {
 
 /* note: FreeType stores 1000 times the actual value for `BlueScale' */
 FT_LOCAL_DEF(void)
-cf2_getBlueMetrics (PS_Decoder *decoder,
-                    CF2_Fixed *blueScale,
-                    CF2_Fixed *blueShift,
-                    CF2_Fixed *blueFuzz) {
+cf2_getBlueMetrics (PS_Decoder* decoder,
+                    CF2_Fixed* blueScale,
+                    CF2_Fixed* blueShift,
+                    CF2_Fixed* blueFuzz) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   *blueScale = FT_DivFix (
@@ -517,51 +518,51 @@ cf2_getBlueMetrics (PS_Decoder *decoder,
 /* get blue values counts and arrays; the FreeType parser has validated */
 /* the counts and verified that each is an even number                  */
 FT_LOCAL_DEF(void)
-cf2_getBlueValues (PS_Decoder *decoder,
-                   size_t *count,
-                   FT_Pos **data) {
+cf2_getBlueValues (PS_Decoder* decoder,
+                   size_t* count,
+                   FT_Pos** data) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   *count = decoder->current_subfont->private_dict.num_blue_values;
-  *data = (FT_Pos *)
+  *data = (FT_Pos*)
       &decoder->current_subfont->private_dict.blue_values;
 }
 
 FT_LOCAL_DEF(void)
-cf2_getOtherBlues (PS_Decoder *decoder,
-                   size_t *count,
-                   FT_Pos **data) {
+cf2_getOtherBlues (PS_Decoder* decoder,
+                   size_t* count,
+                   FT_Pos** data) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   *count = decoder->current_subfont->private_dict.num_other_blues;
-  *data = (FT_Pos *)
+  *data = (FT_Pos*)
       &decoder->current_subfont->private_dict.other_blues;
 }
 
 FT_LOCAL_DEF(void)
-cf2_getFamilyBlues (PS_Decoder *decoder,
-                    size_t *count,
-                    FT_Pos **data) {
+cf2_getFamilyBlues (PS_Decoder* decoder,
+                    size_t* count,
+                    FT_Pos** data) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   *count = decoder->current_subfont->private_dict.num_family_blues;
-  *data = (FT_Pos *)
+  *data = (FT_Pos*)
       &decoder->current_subfont->private_dict.family_blues;
 }
 
 FT_LOCAL_DEF(void)
-cf2_getFamilyOtherBlues (PS_Decoder *decoder,
-                         size_t *count,
-                         FT_Pos **data) {
+cf2_getFamilyOtherBlues (PS_Decoder* decoder,
+                         size_t* count,
+                         FT_Pos** data) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   *count = decoder->current_subfont->private_dict.num_family_other_blues;
-  *data = (FT_Pos *)
+  *data = (FT_Pos*)
       &decoder->current_subfont->private_dict.family_other_blues;
 }
 
 FT_LOCAL_DEF(CF2_Int)
-cf2_getLanguageGroup (PS_Decoder *decoder) {
+cf2_getLanguageGroup (PS_Decoder* decoder) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   return decoder->current_subfont->private_dict.language_group;
@@ -571,7 +572,7 @@ cf2_getLanguageGroup (PS_Decoder *decoder) {
 /* convert unbiased subroutine index to `CF2_Buffer' and */
 /* return 0 on success                                   */
 FT_LOCAL_DEF(CF2_Int)
-cf2_initGlobalRegionBuffer (PS_Decoder *decoder,
+cf2_initGlobalRegionBuffer (PS_Decoder* decoder,
                             CF2_Int subrNum,
                             CF2_Buffer buf) {
   CF2_UInt idx;
@@ -597,11 +598,11 @@ cf2_initGlobalRegionBuffer (PS_Decoder *decoder,
 /* convert AdobeStandardEncoding code to CF2_Buffer; */
 /* used for seac component                           */
 FT_LOCAL_DEF(FT_Error)
-cf2_getSeacComponent (PS_Decoder *decoder,
+cf2_getSeacComponent (PS_Decoder* decoder,
                       CF2_Int code,
                       CF2_Buffer buf) {
   CF2_Int gid;
-  FT_Byte *charstring;
+  FT_Byte* charstring;
   FT_ULong len;
   FT_Error error;
 
@@ -642,18 +643,18 @@ cf2_getSeacComponent (PS_Decoder *decoder,
 }
 
 FT_LOCAL_DEF(void)
-cf2_freeSeacComponent (PS_Decoder *decoder,
+cf2_freeSeacComponent (PS_Decoder* decoder,
                        CF2_Buffer buf) {
   FT_ASSERT(decoder);
   FT_ASSERT(!decoder->builder.is_t1);
 
   decoder->free_glyph_callback ((TT_Face) decoder->builder.face,
-                                (FT_Byte **) &buf->start,
+                                (FT_Byte**) &buf->start,
                                 (FT_ULong) (buf->end - buf->start));
 }
 
 FT_LOCAL_DEF(FT_Error)
-cf2_getT1SeacComponent (PS_Decoder *decoder,
+cf2_getT1SeacComponent (PS_Decoder* decoder,
                         FT_UInt glyph_index,
                         CF2_Buffer buf) {
   FT_Data glyph_data;
@@ -662,7 +663,7 @@ cf2_getT1SeacComponent (PS_Decoder *decoder,
   T1_Font type1 = &face->type1;
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-  FT_Incremental_InterfaceRec *inc =
+  FT_Incremental_InterfaceRec* inc =
       face->root.internal->incremental_interface;
 
 
@@ -680,7 +681,7 @@ cf2_getT1SeacComponent (PS_Decoder *decoder,
   }
 
   if (!error) {
-    FT_Byte *charstring_base = (FT_Byte *) glyph_data.pointer;
+    FT_Byte* charstring_base = (FT_Byte*) glyph_data.pointer;
     FT_ULong charstring_len = (FT_ULong) glyph_data.length;
 
     FT_ASSERT(charstring_base + charstring_len >= charstring_base);
@@ -695,7 +696,7 @@ cf2_getT1SeacComponent (PS_Decoder *decoder,
 }
 
 FT_LOCAL_DEF(void)
-cf2_freeT1SeacComponent (PS_Decoder *decoder,
+cf2_freeT1SeacComponent (PS_Decoder* decoder,
                          CF2_Buffer buf) {
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
 
@@ -723,7 +724,7 @@ cf2_freeT1SeacComponent (PS_Decoder *decoder,
 }
 
 FT_LOCAL_DEF(CF2_Int)
-cf2_initLocalRegionBuffer (PS_Decoder *decoder,
+cf2_initLocalRegionBuffer (PS_Decoder* decoder,
                            CF2_Int subrNum,
                            CF2_Buffer buf) {
   CF2_UInt idx;
@@ -768,7 +769,7 @@ cf2_initLocalRegionBuffer (PS_Decoder *decoder,
 }
 
 FT_LOCAL_DEF(CF2_Fixed)
-cf2_getDefaultWidthX (PS_Decoder *decoder) {
+cf2_getDefaultWidthX (PS_Decoder* decoder) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   return cf2_intToFixed(
@@ -776,7 +777,7 @@ cf2_getDefaultWidthX (PS_Decoder *decoder) {
 }
 
 FT_LOCAL_DEF(CF2_Fixed)
-cf2_getNominalWidthX (PS_Decoder *decoder) {
+cf2_getNominalWidthX (PS_Decoder* decoder) {
   FT_ASSERT(decoder && decoder->current_subfont);
 
   return cf2_intToFixed(
@@ -785,7 +786,7 @@ cf2_getNominalWidthX (PS_Decoder *decoder) {
 
 FT_LOCAL_DEF(void)
 cf2_outline_reset (CF2_Outline outline) {
-  PS_Decoder *decoder = outline->decoder;
+  PS_Decoder* decoder = outline->decoder;
 
   FT_ASSERT(decoder);
 
@@ -796,7 +797,7 @@ cf2_outline_reset (CF2_Outline outline) {
 
 FT_LOCAL_DEF(void)
 cf2_outline_close (CF2_Outline outline) {
-  PS_Decoder *decoder = outline->decoder;
+  PS_Decoder* decoder = outline->decoder;
 
   FT_ASSERT(decoder);
 

@@ -6,7 +6,7 @@
 #include <neutrino/utils/strings/string_constant.hh>
 #include <cstring>
 
-static const char *remove_slash (const char *x) {
+static const char* remove_slash (const char* x) {
   if (x[0] == '/' || x[0] == '\\') {
     return x + 1;
   }
@@ -21,12 +21,12 @@ namespace neutrino {
     return v;
   }
 
-  const char *exception::what () const noexcept {
+  const char* exception::what () const noexcept {
     if (m_what.empty ()) {
       try {
         std::ostringstream os;
         os << _create (true, s_use_function_sig ? m_function.c_str () : "", m_source.c_str (), m_line, m_text);
-        const exception *cause = m_chain.get ();
+        const exception* cause = m_chain.get ();
         while (cause) {
           os << "\n" << "|-> "
              << _create (true, s_use_function_sig ? cause->m_function.c_str () : "",
@@ -42,7 +42,7 @@ namespace neutrino {
     return m_what.c_str ();
   }
 
-  const char *exception::_transform_source (const char *source) {
+  const char* exception::_transform_source (const char* source) {
 #if defined(NEUTRINO_PATH_INCLUDE)
     auto pfx1 = utils::string_factory (NEUTRINO_PATH_INCLUDE);
 #else
@@ -55,7 +55,7 @@ namespace neutrino {
 #endif
 
     if constexpr(pfx1.length () < pfx2.length ()) {
-      const char *p = strstr (source, pfx2.c_str ());
+      const char* p = strstr (source, pfx2.c_str ());
       if (!p) {
         p = strstr (source, pfx1.c_str ());
         if (p) {
@@ -67,7 +67,7 @@ namespace neutrino {
       }
     }
     else {
-      const char *p = strstr (source, pfx1.c_str ());
+      const char* p = strstr (source, pfx1.c_str ());
       if (!p) {
         p = strstr (source, pfx2.c_str ());
         if (p) {

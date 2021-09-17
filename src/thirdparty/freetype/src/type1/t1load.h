@@ -48,7 +48,7 @@ typedef struct T1_Loader_ {
 
   FT_UInt keywords_encountered; /* T1_LOADER_ENCOUNTERED_XXX */
 
-} T1_LoaderRec, *T1_Loader;
+} T1_LoaderRec, * T1_Loader;
 
 
 /* treatment of some keywords differs depending on whether */
@@ -64,26 +64,26 @@ T1_Open_Face (T1_Face face);
 
 FT_LOCAL(FT_Error)
 T1_Get_Multi_Master (T1_Face face,
-                     FT_Multi_Master *master);
+                     FT_Multi_Master* master);
 
 FT_LOCAL(FT_Error)
 T1_Get_MM_Var (T1_Face face,
-               FT_MM_Var **master);
+               FT_MM_Var** master);
 
 FT_LOCAL(FT_Error)
 T1_Set_MM_Blend (T1_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords);
+                 FT_Fixed* coords);
 
 FT_LOCAL(FT_Error)
 T1_Get_MM_Blend (T1_Face face,
                  FT_UInt num_coords,
-                 FT_Fixed *coords);
+                 FT_Fixed* coords);
 
 FT_LOCAL(FT_Error)
 T1_Set_MM_Design (T1_Face face,
                   FT_UInt num_coords,
-                  FT_Long *coords);
+                  FT_Long* coords);
 
 FT_LOCAL(FT_Error)
 T1_Reset_MM_Blend (T1_Face face,
@@ -92,12 +92,12 @@ T1_Reset_MM_Blend (T1_Face face,
 FT_LOCAL(FT_Error)
 T1_Get_Var_Design (T1_Face face,
                    FT_UInt num_coords,
-                   FT_Fixed *coords);
+                   FT_Fixed* coords);
 
 FT_LOCAL(FT_Error)
 T1_Set_Var_Design (T1_Face face,
                    FT_UInt num_coords,
-                   FT_Fixed *coords);
+                   FT_Fixed* coords);
 
 FT_LOCAL(void)
 T1_Done_Blend (T1_Face face);
@@ -105,12 +105,12 @@ T1_Done_Blend (T1_Face face);
 FT_LOCAL(FT_Error)
 T1_Set_MM_WeightVector (T1_Face face,
                         FT_UInt len,
-                        FT_Fixed *weightvector);
+                        FT_Fixed* weightvector);
 
 FT_LOCAL(FT_Error)
 T1_Get_MM_WeightVector (T1_Face face,
-                        FT_UInt *len,
-                        FT_Fixed *weightvector);
+                        FT_UInt* len,
+                        FT_Fixed* weightvector);
 
 #endif /* !T1_CONFIG_OPTION_NO_MM_SUPPORT */
 

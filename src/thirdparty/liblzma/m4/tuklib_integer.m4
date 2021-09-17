@@ -88,6 +88,7 @@ main (void) {
   FUNC[] (42);
   return 0;
 }
+
 ])], [
 AC_DEFINE(HAVE_[]
 m4_toupper(FUNC),
@@ -113,7 +114,7 @@ be used
 AC_ARG_ENABLE([unaligned-access], AS_HELP_STRING([--enable-unaligned-access],
 [Enable if
 the system
-supports *fast
+supports* fast
 *
 unaligned memory
 access
@@ -201,7 +202,7 @@ Define to
 to use
 unsafe type
 punning, e.g.
-char *x =
+char* x =
 ...; *(int *)
 x = 123;
 which violates

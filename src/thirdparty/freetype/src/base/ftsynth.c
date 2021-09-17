@@ -47,7 +47,7 @@
 FT_EXPORT_DEF(void)
 FT_GlyphSlot_Oblique (FT_GlyphSlot slot) {
   FT_Matrix transform;
-  FT_Outline *outline;
+  FT_Outline* outline;
 
   if (!slot)
     return;

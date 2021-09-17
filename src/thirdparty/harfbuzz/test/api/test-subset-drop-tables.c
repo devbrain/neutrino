@@ -30,26 +30,25 @@
 /* Unit tests for hb-subset.cc drop tables functionality */
 
 static void
-test_subset_drop_tables (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
+test_subset_drop_tables (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
 
-  hb_set_t *codepoints = hb_set_create();
+  hb_set_t* codepoints = hb_set_create ();
   hb_set_add (codepoints, 97);
   hb_set_add (codepoints, 99);
-  hb_subset_input_t *input = hb_subset_test_create_input (codepoints);
+  hb_subset_input_t * input = hb_subset_test_create_input (codepoints);
   hb_set_add (hb_subset_input_drop_tables_set (input), HB_TAG ('h', 'd', 'm', 'x'));
   hb_set_add (hb_subset_input_drop_tables_set (input), HB_TAG ('h', 'm', 't', 'x'));
   hb_set_destroy (codepoints);
 
-  hb_face_t* subset = hb_subset (face, input);
+  hb_face_t * subset = hb_subset (face, input);
 
-  hb_blob_t *hdmx = hb_face_reference_table (subset, HB_TAG ('h', 'd', 'm', 'x'));
-  hb_blob_t *hmtx = hb_face_reference_table (subset, HB_TAG ('h', 'm', 't', 'x'));
-  hb_blob_t *cmap = hb_face_reference_table (subset, HB_TAG ('c', 'm', 'a', 'p'));
+  hb_blob_t* hdmx = hb_face_reference_table (subset, HB_TAG ('h', 'd', 'm', 'x'));
+  hb_blob_t* hmtx = hb_face_reference_table (subset, HB_TAG ('h', 'm', 't', 'x'));
+  hb_blob_t* cmap = hb_face_reference_table (subset, HB_TAG ('c', 'm', 'a', 'p'));
   g_assert (!hb_blob_get_length (hdmx));
   g_assert (!hb_blob_get_length (hmtx));
-  g_assert ( hb_blob_get_length (cmap));
+  g_assert (hb_blob_get_length (cmap));
   hb_blob_destroy (hdmx);
   hb_blob_destroy (hmtx);
   hb_blob_destroy (cmap);
@@ -59,13 +58,11 @@ test_subset_drop_tables (void)
   hb_face_destroy (face);
 }
 
-
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_subset_drop_tables);
 
-  return hb_test_run();
+  return hb_test_run ();
 }

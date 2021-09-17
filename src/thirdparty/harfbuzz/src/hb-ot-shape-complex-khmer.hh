@@ -35,14 +35,12 @@
 /* buffer var allocations */
 #define khmer_category() indic_category() /* khmer_category_t */
 
-
 /* Note: This enum is duplicated in the -machine.rl source file.
  * Not sure how to avoid duplication. */
-enum khmer_category_t
-{
+enum khmer_category_t {
   OT_Robatic = 20,
-  OT_Xgroup  = 21,
-  OT_Ygroup  = 22,
+  OT_Xgroup = 21,
+  OT_Ygroup = 22,
   //OT_VAbv = 26,
   //OT_VBlw = 27,
   //OT_VPre = 28,
@@ -50,8 +48,7 @@ enum khmer_category_t
 };
 
 static inline void
-set_khmer_properties (hb_glyph_info_t &info)
-{
+set_khmer_properties (hb_glyph_info_t& info) {
   hb_codepoint_t u = info.codepoint;
   unsigned int type = hb_indic_get_categories (u);
   khmer_category_t cat = (khmer_category_t) (type & 0xFFu);
@@ -63,8 +60,7 @@ set_khmer_properties (hb_glyph_info_t &info)
    *
    * These categories are experimentally extracted from what Uniscribe allows.
    */
-  switch (u)
-  {
+  switch (u) {
     case 0x179Au:
       cat = (khmer_category_t) OT_Ra;
       break;
@@ -97,17 +93,24 @@ set_khmer_properties (hb_glyph_info_t &info)
    * Re-assign position.
    */
   if (cat == (khmer_category_t) OT_M)
-    switch ((int) pos)
-    {
-      case POS_PRE_C:	cat = (khmer_category_t) OT_VPre; break;
-      case POS_BELOW_C:	cat = (khmer_category_t) OT_VBlw; break;
-      case POS_ABOVE_C:	cat = (khmer_category_t) OT_VAbv; break;
-      case POS_POST_C:	cat = (khmer_category_t) OT_VPst; break;
-      default: assert (0);
+    switch ((int) pos) {
+      case POS_PRE_C:
+        cat = (khmer_category_t) OT_VPre;
+        break;
+      case POS_BELOW_C:
+        cat = (khmer_category_t) OT_VBlw;
+        break;
+      case POS_ABOVE_C:
+        cat = (khmer_category_t) OT_VAbv;
+        break;
+      case POS_POST_C:
+        cat = (khmer_category_t) OT_VPst;
+        break;
+      default:
+        assert (0);
     }
 
   info.khmer_category() = cat;
 }
-
 
 #endif /* HB_OT_SHAPE_COMPLEX_KHMER_HH */

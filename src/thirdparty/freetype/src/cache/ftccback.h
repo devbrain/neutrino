@@ -31,7 +31,7 @@ ftc_inode_free (FTC_Node inode,
                 FTC_Cache cache);
 
 FT_LOCAL(FT_Error)
-ftc_inode_new (FTC_Node *pinode,
+ftc_inode_new (FTC_Node* pinode,
                FT_Pointer gquery,
                FTC_Cache cache);
 
@@ -44,7 +44,7 @@ ftc_snode_free (FTC_Node snode,
                 FTC_Cache cache);
 
 FT_LOCAL(FT_Error)
-ftc_snode_new (FTC_Node *psnode,
+ftc_snode_new (FTC_Node* psnode,
                FT_Pointer gquery,
                FTC_Cache cache);
 
@@ -56,13 +56,13 @@ FT_LOCAL(FT_Bool)
 ftc_snode_compare (FTC_Node snode,
                    FT_Pointer gquery,
                    FTC_Cache cache,
-                   FT_Bool *list_changed);
+                   FT_Bool* list_changed);
 
 FT_LOCAL(FT_Bool)
 ftc_gnode_compare (FTC_Node gnode,
                    FT_Pointer gquery,
                    FTC_Cache cache,
-                   FT_Bool *list_changed);
+                   FT_Bool* list_changed);
 
 FT_LOCAL(FT_Error)
 ftc_gcache_init (FTC_Cache cache);

@@ -162,8 +162,8 @@ load_format_20 (TT_Face face,
   FT_Int num_glyphs;
   FT_UShort num_names;
 
-  FT_UShort *glyph_indices = NULL;
-  FT_Char **name_strings = NULL;
+  FT_UShort* glyph_indices = NULL;
+  FT_Char** name_strings = NULL;
 
   if (FT_READ_USHORT(num_glyphs))
     goto Exit;
@@ -297,7 +297,7 @@ load_format_25 (TT_Face face,
   FT_Error error;
 
   FT_Int num_glyphs;
-  FT_Char *offset_table = NULL;
+  FT_Char* offset_table = NULL;
 
   FT_UNUSED(post_limit);
 
@@ -447,7 +447,7 @@ tt_face_free_ps_names (TT_Face face) {
 FT_LOCAL_DEF(FT_Error)
 tt_face_get_ps_name (TT_Face face,
                      FT_UInt idx,
-                     FT_String **PSname) {
+                     FT_String** PSname) {
   FT_Error error;
   TT_Post_Names names;
   FT_Fixed format;
@@ -494,7 +494,7 @@ tt_face_get_ps_name (TT_Face face,
       if (name_index < 258)
         *PSname = MAC_NAME(name_index);
       else
-        *PSname = (FT_String *) table->glyph_names[name_index - 258];
+        *PSname = (FT_String*) table->glyph_names[name_index - 258];
     }
   }
   else if (format == 0x00025000L) {

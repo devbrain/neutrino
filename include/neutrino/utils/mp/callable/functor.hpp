@@ -10,7 +10,7 @@ namespace neutrino::mp {
   namespace detail {
 
     template <typename Class>
-    using call_operator_traits = member_function_traits<decltype (&Class::operator())>;
+    using call_operator_traits = member_function_traits<decltype (&Class::operator ())>;
 
     // classes with operator()
     template <typename Class>

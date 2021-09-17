@@ -200,9 +200,9 @@ int WAI_PREFIX(getModulePath)(char* out, int capacity, int* dirname_length)
 #endif
 
 WAI_FUNCSPEC
-int WAI_PREFIX(getExecutablePath) (char *out, int capacity, int *dirname_length) {
+int WAI_PREFIX(getExecutablePath) (char* out, int capacity, int* dirname_length) {
   char buffer[PATH_MAX];
-  char *resolved = NULL;
+  char* resolved = NULL;
   int length = -1;
 #if defined(__sun) || defined(sun)
   int pid;
@@ -252,9 +252,9 @@ int WAI_PREFIX(getExecutablePath) (char *out, int capacity, int *dirname_length)
 
 WAI_NOINLINE
 WAI_FUNCSPEC
-int WAI_PREFIX(getModulePath) (char *out, int capacity, int *dirname_length) {
+int WAI_PREFIX(getModulePath) (char* out, int capacity, int* dirname_length) {
   int length = -1;
-  FILE *maps = NULL;
+  FILE* maps = NULL;
   int i;
 
   for (i = 0; i < WAI_PROC_SELF_MAPS_RETRY; ++i) {
@@ -279,7 +279,7 @@ int WAI_PREFIX(getModulePath) (char *out, int capacity, int *dirname_length) {
           == 8) {
         uint64_t addr = (uint64_t) (uintptr_t) WAI_RETURN_ADDRESS();
         if (low <= addr && addr <= high) {
-          char *resolved;
+          char* resolved;
 
           resolved = realpath (path, buffer);
           if (!resolved)

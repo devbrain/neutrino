@@ -1715,9 +1715,11 @@ main(int argc, char **argv)
    }
 }
 #else /* !READ_PNG */
+
 int
 main (void) {
   fprintf (stderr, "pngimage: no support for png_read/write_image\n");
   return SKIP;
 }
+
 #endif

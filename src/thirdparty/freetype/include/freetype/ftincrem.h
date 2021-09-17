@@ -82,7 +82,7 @@ FT_BEGIN_HEADER
  *   to use incremental objects with FreeType.
  *
  */
-typedef struct FT_IncrementalRec_ *FT_Incremental;
+typedef struct FT_IncrementalRec_* FT_Incremental;
 
 /**************************************************************************
  *
@@ -129,7 +129,7 @@ typedef struct FT_Incremental_MetricsRec_ {
  *   A handle to an @FT_Incremental_MetricsRec structure.
  *
  */
-typedef struct FT_Incremental_MetricsRec_ *FT_Incremental_Metrics;
+typedef struct FT_Incremental_MetricsRec_* FT_Incremental_Metrics;
 
 /**************************************************************************
  *
@@ -173,9 +173,9 @@ typedef struct FT_Incremental_MetricsRec_ *FT_Incremental_Metrics;
  *
  */
 typedef FT_Error
-(*FT_Incremental_GetGlyphDataFunc) (FT_Incremental incremental,
-                                    FT_UInt glyph_index,
-                                    FT_Data *adata);
+(* FT_Incremental_GetGlyphDataFunc) (FT_Incremental incremental,
+                                     FT_UInt glyph_index,
+                                     FT_Data* adata);
 
 /**************************************************************************
  *
@@ -197,8 +197,8 @@ typedef FT_Error
  *
  */
 typedef void
-(*FT_Incremental_FreeGlyphDataFunc) (FT_Incremental incremental,
-                                     FT_Data *data);
+(* FT_Incremental_FreeGlyphDataFunc) (FT_Incremental incremental,
+                                      FT_Data* data);
 
 /**************************************************************************
  *
@@ -233,11 +233,11 @@ typedef void
  *
  */
 typedef FT_Error
-(*FT_Incremental_GetGlyphMetricsFunc)
+(* FT_Incremental_GetGlyphMetricsFunc)
     (FT_Incremental incremental,
      FT_UInt glyph_index,
      FT_Bool vertical,
-     FT_Incremental_MetricsRec *ametrics);
+     FT_Incremental_MetricsRec* ametrics);
 
 /**************************************************************************
  *
@@ -304,7 +304,7 @@ typedef struct FT_Incremental_FuncsRec_ {
  *
  */
 typedef struct FT_Incremental_InterfaceRec_ {
-  const FT_Incremental_FuncsRec *funcs;
+  const FT_Incremental_FuncsRec* funcs;
   FT_Incremental object;
 
 } FT_Incremental_InterfaceRec;
@@ -318,7 +318,7 @@ typedef struct FT_Incremental_InterfaceRec_ {
  *   A pointer to an @FT_Incremental_InterfaceRec structure.
  *
  */
-typedef FT_Incremental_InterfaceRec *FT_Incremental_Interface;
+typedef FT_Incremental_InterfaceRec* FT_Incremental_Interface;
 
 
 /* */

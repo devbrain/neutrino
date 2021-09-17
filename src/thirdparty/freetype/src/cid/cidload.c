@@ -40,10 +40,10 @@
 
 /* read a single offset */
 FT_LOCAL_DEF(FT_ULong)
-cid_get_offset (FT_Byte **start,
+cid_get_offset (FT_Byte** start,
                 FT_Byte offsize) {
   FT_ULong result;
-  FT_Byte *p = *start;
+  FT_Byte* p = *start;
 
   for (result = 0; offsize > 0; offsize--) {
     result <<= 8;
@@ -66,12 +66,12 @@ cid_get_offset (FT_Byte **start,
 
 static FT_Error
 cid_load_keyword (CID_Face face,
-                  CID_Loader *loader,
+                  CID_Loader* loader,
                   const T1_Field keyword) {
   FT_Error error;
-  CID_Parser *parser = &loader->parser;
-  FT_Byte *object;
-  void *dummy_object;
+  CID_Parser* parser = &loader->parser;
+  FT_Byte* object;
+  void* dummy_object;
   CID_FaceInfo cid = &face->cid;
 
 
@@ -87,19 +87,19 @@ cid_load_keyword (CID_Face face,
   /* we must now compute the address of our target object */
   switch (keyword->location) {
     case T1_FIELD_LOCATION_CID_INFO:
-      object = (FT_Byte *) cid;
+      object = (FT_Byte*) cid;
       break;
 
     case T1_FIELD_LOCATION_FONT_INFO:
-      object = (FT_Byte *) &cid->font_info;
+      object = (FT_Byte*) &cid->font_info;
       break;
 
     case T1_FIELD_LOCATION_FONT_EXTRA:
-      object = (FT_Byte *) &face->font_extra;
+      object = (FT_Byte*) &face->font_extra;
       break;
 
     case T1_FIELD_LOCATION_BBOX:
-      object = (FT_Byte *) &cid->font_bbox;
+      object = (FT_Byte*) &cid->font_bbox;
       break;
 
     default: {
@@ -115,11 +115,11 @@ cid_load_keyword (CID_Face face,
       dict = cid->font_dicts + parser->num_dict;
       switch (keyword->location) {
         case T1_FIELD_LOCATION_PRIVATE:
-          object = (FT_Byte *) &dict->private_dict;
+          object = (FT_Byte*) &dict->private_dict;
           break;
 
         default:
-          object = (FT_Byte *) dict;
+          object = (FT_Byte*) dict;
       }
     }
   }
@@ -145,15 +145,15 @@ cid_load_keyword (CID_Face face,
 
 FT_CALLBACK_DEF(void)
 cid_parse_font_matrix (CID_Face face,
-                       CID_Parser *parser) {
+                       CID_Parser* parser) {
   CID_FaceDict dict;
   FT_Face root = (FT_Face) &face->root;
   FT_Fixed temp[6];
   FT_Fixed temp_scale;
 
   if (parser->num_dict >= 0 && parser->num_dict < face->cid.num_dicts) {
-    FT_Matrix *matrix;
-    FT_Vector *offset;
+    FT_Matrix* matrix;
+    FT_Vector* offset;
     FT_Int result;
 
     dict = face->cid.font_dicts + parser->num_dict;
@@ -218,7 +218,7 @@ cid_parse_font_matrix (CID_Face face,
 
 FT_CALLBACK_DEF(void)
 parse_fd_array (CID_Face face,
-                CID_Parser *parser) {
+                CID_Parser* parser) {
   CID_FaceInfo cid = &face->cid;
   FT_Memory memory = face->root.memory;
   FT_Stream stream = parser->stream;
@@ -289,7 +289,7 @@ parse_fd_array (CID_Face face,
 
 FT_CALLBACK_DEF(void)
 parse_expansion_factor (CID_Face face,
-                        CID_Parser *parser) {
+                        CID_Parser* parser) {
   CID_FaceDict dict;
 
   if (parser->num_dict >= 0 && parser->num_dict < face->cid.num_dicts) {
@@ -311,7 +311,7 @@ parse_expansion_factor (CID_Face face,
 
 FT_CALLBACK_DEF(void)
 parse_font_name (CID_Face face,
-                 CID_Parser *parser) {
+                 CID_Parser* parser) {
 #ifdef FT_DEBUG_LEVEL_TRACE
   if ( parser->num_dict >= 0 && parser->num_dict < face->cid.num_dicts )
   {
@@ -351,21 +351,21 @@ const T1_FieldRec cid_field_records[] =
 
 static FT_Error
 cid_parse_dict (CID_Face face,
-                CID_Loader *loader,
-                FT_Byte *base,
+                CID_Loader* loader,
+                FT_Byte* base,
                 FT_ULong size) {
-  CID_Parser *parser = &loader->parser;
+  CID_Parser* parser = &loader->parser;
 
   parser->root.cursor = base;
   parser->root.limit = base + size;
   parser->root.error = FT_Err_Ok;
 
   {
-    FT_Byte *cur = base;
-    FT_Byte *limit = cur + size;
+    FT_Byte* cur = base;
+    FT_Byte* limit = cur + size;
 
     for (;;) {
-      FT_Byte *newlimit;
+      FT_Byte* newlimit;
 
       parser->root.cursor = cur;
       cid_parser_skip_spaces(parser);
@@ -378,7 +378,7 @@ cid_parse_dict (CID_Face face,
       /* look for `%ADOBeginFontDict' */
       for (; cur < newlimit; cur++) {
         if (*cur == '%' &&
-            ft_strncmp ((char *) cur, "%ADOBeginFontDict", 17) == 0) {
+            ft_strncmp ((char*) cur, "%ADOBeginFontDict", 17) == 0) {
           /* if /FDArray was found, then cid->num_dicts is > 0, and */
           /* we can start increasing parser->num_dict               */
           if (face->cid.num_dicts > 0) {
@@ -415,14 +415,14 @@ cid_parse_dict (CID_Face face,
           T1_Field keyword = (T1_Field) cid_field_records;
 
           for (;;) {
-            FT_Byte *name;
+            FT_Byte* name;
 
-            name = (FT_Byte *) keyword->ident;
+            name = (FT_Byte*) keyword->ident;
             if (!name)
               break;
 
             if (cur[0] == name[0] &&
-                len == ft_strlen ((const char *) name)) {
+                len == ft_strlen ((const char*) name)) {
               FT_UInt n;
 
               for (n = 1; n < len; n++)
@@ -466,7 +466,7 @@ cid_read_subrs (CID_Face face) {
   FT_Int n;
   CID_Subrs subr;
   FT_UInt max_offsets = 0;
-  FT_ULong *offsets = NULL;
+  FT_ULong* offsets = NULL;
   PSAux_Service psaux = (PSAux_Service) face->psaux;
 
   if (FT_NEW_ARRAY(face->subrs, cid->num_dicts))
@@ -478,7 +478,7 @@ cid_read_subrs (CID_Face face) {
     FT_Int lenIV = dict->private_dict.lenIV;
     FT_UInt count, num_subrs = dict->num_subrs;
     FT_ULong data_len;
-    FT_Byte *p;
+    FT_Byte* p;
 
     if (!num_subrs)
       continue;
@@ -503,7 +503,7 @@ cid_read_subrs (CID_Face face) {
         FT_FRAME_ENTER((num_subrs + 1) * (FT_UInt) dict->sd_bytes))
       goto Fail;
 
-    p = (FT_Byte *) stream->cursor;
+    p = (FT_Byte*) stream->cursor;
     for (count = 0; count <= num_subrs; count++)
       offsets[count] = cid_get_offset (&p, (FT_Byte) dict->sd_bytes);
 
@@ -574,7 +574,7 @@ cid_read_subrs (CID_Face face) {
 }
 
 static void
-cid_init_loader (CID_Loader *loader,
+cid_init_loader (CID_Loader* loader,
                  CID_Face face) {
   FT_UNUSED(face);
 
@@ -582,8 +582,8 @@ cid_init_loader (CID_Loader *loader,
 }
 
 static void
-cid_done_loader (CID_Loader *loader) {
-  CID_Parser *parser = &loader->parser;
+cid_done_loader (CID_Loader* loader) {
+  CID_Parser* parser = &loader->parser;
 
 
   /* finalize parser */
@@ -591,7 +591,7 @@ cid_done_loader (CID_Loader *loader) {
 }
 
 static FT_Error
-cid_hex_to_binary (FT_Byte *data,
+cid_hex_to_binary (FT_Byte* data,
                    FT_ULong data_len,
                    FT_ULong offset,
                    CID_Face face) {
@@ -599,8 +599,8 @@ cid_hex_to_binary (FT_Byte *data,
   FT_Error error;
 
   FT_Byte buffer[256];
-  FT_Byte *p, *plimit;
-  FT_Byte *d, *dlimit;
+  FT_Byte* p, * plimit;
+  FT_Byte* d, * dlimit;
   FT_Byte val;
 
   FT_Bool upper_nibble, done;
@@ -681,7 +681,7 @@ FT_LOCAL_DEF(FT_Error)
 cid_face_open (CID_Face face,
                FT_Int face_index) {
   CID_Loader loader;
-  CID_Parser *parser;
+  CID_Parser* parser;
   FT_Memory memory = face->root.memory;
   FT_Error error;
   FT_Int n;

@@ -49,7 +49,7 @@
 FT_BASE_DEF(FT_Pointer)
 ft_mem_alloc (FT_Memory memory,
               FT_Long size,
-              FT_Error *p_error) {
+              FT_Error* p_error) {
   FT_Error error;
   FT_Pointer block = ft_mem_qalloc (memory, size, &error);
 
@@ -63,7 +63,7 @@ ft_mem_alloc (FT_Memory memory,
 FT_BASE_DEF(FT_Pointer)
 ft_mem_qalloc (FT_Memory memory,
                FT_Long size,
-               FT_Error *p_error) {
+               FT_Error* p_error) {
   FT_Error error = FT_Err_Ok;
   FT_Pointer block = NULL;
 
@@ -86,14 +86,14 @@ ft_mem_realloc (FT_Memory memory,
                 FT_Long item_size,
                 FT_Long cur_count,
                 FT_Long new_count,
-                void *block,
-                FT_Error *p_error) {
+                void* block,
+                FT_Error* p_error) {
   FT_Error error = FT_Err_Ok;
 
   block = ft_mem_qrealloc (memory, item_size,
                            cur_count, new_count, block, &error);
   if (!error && block && new_count > cur_count)
-    FT_MEM_ZERO((char *) block + cur_count * item_size,
+    FT_MEM_ZERO((char*) block + cur_count * item_size,
                 (new_count - cur_count) * item_size);
 
   *p_error = error;
@@ -105,8 +105,8 @@ ft_mem_qrealloc (FT_Memory memory,
                  FT_Long item_size,
                  FT_Long cur_count,
                  FT_Long new_count,
-                 void *block,
-                 FT_Error *p_error) {
+                 void* block,
+                 FT_Error* p_error) {
   FT_Error error = FT_Err_Ok;
 
 
@@ -150,16 +150,16 @@ ft_mem_qrealloc (FT_Memory memory,
 
 FT_BASE_DEF(void)
 ft_mem_free (FT_Memory memory,
-             const void *P) {
+             const void* P) {
   if (P)
-    memory->free (memory, (void *) P);
+    memory->free (memory, (void*) P);
 }
 
 FT_BASE_DEF(FT_Pointer)
 ft_mem_dup (FT_Memory memory,
-            const void *address,
+            const void* address,
             FT_ULong size,
-            FT_Error *p_error) {
+            FT_Error* p_error) {
   FT_Error error;
   FT_Pointer p = ft_mem_qalloc (memory, (FT_Long) size, &error);
 
@@ -172,8 +172,8 @@ ft_mem_dup (FT_Memory memory,
 
 FT_BASE_DEF(FT_Pointer)
 ft_mem_strdup (FT_Memory memory,
-               const char *str,
-               FT_Error *p_error) {
+               const char* str,
+               FT_Error* p_error) {
   FT_ULong len = str ? (FT_ULong) ft_strlen (str) + 1
                      : 0;
 
@@ -181,8 +181,8 @@ ft_mem_strdup (FT_Memory memory,
 }
 
 FT_BASE_DEF(FT_Int)
-ft_mem_strcpyn (char *dst,
-                const char *src,
+ft_mem_strcpyn (char* dst,
+                const char* src,
                 FT_ULong size) {
   while (size > 1 && *src != 0) {
     *dst++ = *src++;
@@ -214,7 +214,7 @@ ft_mem_strcpyn (char *dst,
 
 FT_EXPORT_DEF(FT_ListNode)
 FT_List_Find (FT_List list,
-              void *data) {
+              void* data) {
   FT_ListNode cur;
 
   if (!list)
@@ -341,7 +341,7 @@ FT_List_Up (FT_List list,
 FT_EXPORT_DEF(FT_Error)
 FT_List_Iterate (FT_List list,
                  FT_List_Iterator iterator,
-                 void *user) {
+                 void* user) {
   FT_ListNode cur;
   FT_Error error = FT_Err_Ok;
 
@@ -370,7 +370,7 @@ FT_EXPORT_DEF(void)
 FT_List_Finalize (FT_List list,
                   FT_List_Destructor destroy,
                   FT_Memory memory,
-                  void *user) {
+                  void* user) {
   FT_ListNode cur;
 
   if (!list || !memory)
@@ -379,7 +379,7 @@ FT_List_Finalize (FT_List list,
   cur = list->head;
   while (cur) {
     FT_ListNode next = cur->next;
-    void *data = cur->data;
+    void* data = cur->data;
 
     if (destroy)
       destroy (memory, data, user);

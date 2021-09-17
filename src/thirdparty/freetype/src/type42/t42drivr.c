@@ -67,14 +67,14 @@ t42_get_glyph_name (T42_Face face,
 
 static FT_UInt
 t42_get_name_index (T42_Face face,
-                    const FT_String *glyph_name) {
+                    const FT_String* glyph_name) {
   FT_Int i;
 
   for (i = 0; i < face->type1.num_glyphs; i++) {
-    FT_String *gname = face->type1.glyph_names[i];
+    FT_String* gname = face->type1.glyph_names[i];
 
     if (glyph_name[0] == gname[0] && !ft_strcmp (glyph_name, gname))
-      return (FT_UInt) ft_strtol ((const char *) face->type1.charstrings[i],
+      return (FT_UInt) ft_strtol ((const char*) face->type1.charstrings[i],
                                   NULL, 10);
   }
 
@@ -93,9 +93,9 @@ static const FT_Service_GlyphDictRec t42_service_glyph_dict =
  *
  */
 
-static const char *
+static const char*
 t42_get_ps_font_name (T42_Face face) {
-  return (const char *) face->type1.font_name;
+  return (const char*) face->type1.font_name;
 }
 
 static const FT_Service_PsFontNameRec t42_service_ps_font_name =
@@ -111,7 +111,7 @@ static const FT_Service_PsFontNameRec t42_service_ps_font_name =
 
 static FT_Error
 t42_ps_get_font_info (FT_Face face,
-                      PS_FontInfoRec *afont_info) {
+                      PS_FontInfoRec* afont_info) {
   *afont_info = ((T42_Face) face)->type1.font_info;
 
   return FT_Err_Ok;
@@ -119,7 +119,7 @@ t42_ps_get_font_info (FT_Face face,
 
 static FT_Error
 t42_ps_get_font_extra (FT_Face face,
-                       PS_FontExtraRec *afont_extra) {
+                       PS_FontExtraRec* afont_extra) {
   *afont_extra = ((T42_Face) face)->type1.font_extra;
 
   return FT_Err_Ok;
@@ -134,7 +134,7 @@ t42_ps_has_glyph_names (FT_Face face) {
 
 static FT_Error
 t42_ps_get_font_private (FT_Face face,
-                         PS_PrivateRec *afont_private) {
+                         PS_PrivateRec* afont_private) {
   *afont_private = ((T42_Face) face)->type1.private_dict;
 
   return FT_Err_Ok;
@@ -167,7 +167,7 @@ static const FT_ServiceDescRec t42_services[] =
 
 FT_CALLBACK_DEF(FT_Module_Interface)
 T42_Get_Interface (FT_Module module,
-                   const FT_String *t42_interface) {
+                   const FT_String* t42_interface) {
   FT_UNUSED(module);
 
   return ft_service_list_lookup (t42_services, t42_interface);

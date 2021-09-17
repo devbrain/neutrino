@@ -37,21 +37,21 @@ typedef struct T42_SizeRec_ {
   FT_SizeRec root;
   FT_Size ttsize;
 
-} T42_SizeRec, *T42_Size;
+} T42_SizeRec, * T42_Size;
 
 /* Type42 slot */
 typedef struct T42_GlyphSlotRec_ {
   FT_GlyphSlotRec root;
   FT_GlyphSlot ttslot;
 
-} T42_GlyphSlotRec, *T42_GlyphSlot;
+} T42_GlyphSlotRec, * T42_GlyphSlot;
 
 /* Type 42 driver */
 typedef struct T42_DriverRec_ {
   FT_DriverRec root;
   FT_Driver_Class ttclazz;
 
-} T42_DriverRec, *T42_Driver;
+} T42_DriverRec, * T42_Driver;
 
 
 /* */
@@ -62,7 +62,7 @@ T42_Face_Init (FT_Stream stream,
                FT_Face face,
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params);
+               FT_Parameter* params);
 
 FT_LOCAL(void)
 T42_Face_Done (FT_Face face);

@@ -35,8 +35,8 @@
 struct hb_ot_shape_plan_key_t {
   unsigned int variations_index[2];
 
-  void init (hb_face_t *face,
-             const int *coords,
+  void init (hb_face_t* face,
+             const int* coords,
              unsigned num_coords) {
     for (unsigned int table_index = 0; table_index < 2; table_index++)
       hb_ot_layout_table_find_feature_variations (face,
@@ -46,7 +46,7 @@ struct hb_ot_shape_plan_key_t {
                                                   &variations_index[table_index]);
   }
 
-  bool equal (const hb_ot_shape_plan_key_t *other) {
+  bool equal (const hb_ot_shape_plan_key_t* other) {
     return 0 == memcmp (this, other, sizeof (*this));
   }
 };
@@ -55,10 +55,10 @@ struct hb_shape_plan_key_t;
 
 struct hb_ot_shape_plan_t {
   hb_segment_properties_t props;
-  const struct hb_ot_complex_shaper_t *shaper;
+  const struct hb_ot_complex_shaper_t* shaper;
   hb_ot_map_t map;
   hb_aat_map_t aat_map;
-  const void *data;
+  const void* data;
 #ifndef HB_NO_OT_SHAPE_FRACTIONS
   hb_mask_t frac_mask, numr_mask, dnom_mask;
 #else
@@ -116,7 +116,7 @@ struct hb_ot_shape_plan_t {
   static constexpr bool apply_trak = false;
 #endif
 
-  void collect_lookups (hb_tag_t table_tag, hb_set_t *lookups) const {
+  void collect_lookups (hb_tag_t table_tag, hb_set_t* lookups) const {
     unsigned int table_index;
     switch (table_tag) {
       case HB_OT_TAG_GSUB:
@@ -131,19 +131,19 @@ struct hb_ot_shape_plan_t {
     map.collect_lookups (table_index, lookups);
   }
 
-  HB_INTERNAL bool init0 (hb_face_t *face,
-                          const hb_shape_plan_key_t *key);
+  HB_INTERNAL bool init0 (hb_face_t* face,
+                          const hb_shape_plan_key_t* key);
   HB_INTERNAL void fini ();
 
-  HB_INTERNAL void substitute (hb_font_t *font, hb_buffer_t *buffer) const;
-  HB_INTERNAL void position (hb_font_t *font, hb_buffer_t *buffer) const;
+  HB_INTERNAL void substitute (hb_font_t* font, hb_buffer_t* buffer) const;
+  HB_INTERNAL void position (hb_font_t* font, hb_buffer_t* buffer) const;
 };
 
 struct hb_shape_plan_t;
 
 struct hb_ot_shape_planner_t {
   /* In the order that they are filled in. */
-  hb_face_t *face;
+  hb_face_t* face;
   hb_segment_properties_t props;
   hb_ot_map_builder_t map;
   hb_aat_map_builder_t aat_map;
@@ -154,13 +154,13 @@ struct hb_ot_shape_planner_t {
 #endif
   bool script_zero_marks: 1;
   bool script_fallback_mark_positioning: 1;
-  const struct hb_ot_complex_shaper_t *shaper;
+  const struct hb_ot_complex_shaper_t* shaper;
 
-  HB_INTERNAL hb_ot_shape_planner_t (hb_face_t *face,
-                                     const hb_segment_properties_t *props);
+  HB_INTERNAL hb_ot_shape_planner_t (hb_face_t* face,
+                                     const hb_segment_properties_t* props);
 
-  HB_INTERNAL void compile (hb_ot_shape_plan_t &plan,
-                            const hb_ot_shape_plan_key_t &key);
+  HB_INTERNAL void compile (hb_ot_shape_plan_t& plan,
+                            const hb_ot_shape_plan_key_t& key);
 };
 
 #endif /* HB_OT_SHAPE_HH */

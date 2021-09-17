@@ -36,18 +36,18 @@ static int fastrand () {
   return (alloc_state >> 16) & 0x7FFF;
 }
 
-void *hb_malloc_impl (size_t size) {
+void* hb_malloc_impl (size_t size) {
   return (fastrand () % 16) ? malloc (size) : NULL;
 }
 
-void *hb_calloc_impl (size_t nmemb, size_t size) {
+void* hb_calloc_impl (size_t nmemb, size_t size) {
   return (fastrand () % 16) ? calloc (nmemb, size) : NULL;
 }
 
-void *hb_realloc_impl (void *ptr, size_t size) {
+void* hb_realloc_impl (void* ptr, size_t size) {
   return (fastrand () % 16) ? realloc (ptr, size) : NULL;
 }
 
-void hb_free_impl (void *ptr) {
+void hb_free_impl (void* ptr) {
   return free (ptr);
 }

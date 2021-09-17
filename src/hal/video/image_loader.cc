@@ -12,8 +12,8 @@
 namespace neutrino::hal {
 
   namespace detail {
-    std::vector<image_loader *> &loaders_registry () {
-      static std::vector<image_loader *> loaders;
+    std::vector<image_loader*>& loaders_registry () {
+      static std::vector<image_loader*> loaders;
       return loaders;
     }
   }
@@ -21,21 +21,25 @@ namespace neutrino::hal {
   image_loader::image_loader () {
     detail::loaders_registry ().push_back (this);
   }
+
   // ------------------------------------------------------------------------
   image_loader::~image_loader () = default;
+
   // -------------------------------------------------------------------------
-  surface image_loader::create (std::unique_ptr<detail::surface_impl> &&impl) {
+  surface image_loader::create (std::unique_ptr<detail::surface_impl>&& impl) {
     return surface (std::move (impl));
   }
+
   // -------------------------------------------------------------------------
-  surface load (const std::filesystem::path &path) {
+  surface load (const std::filesystem::path& path) {
     std::ifstream is (path, std::ios::in | std::ios::binary);
     return load (is);
   }
+
   // -------------------------------------------------------------------------
-  surface load (std::istream &is) {
+  surface load (std::istream& is) {
     auto offs = is.tellg ();
-    for (auto *loader : detail::loaders_registry ()) {
+    for (auto* loader : detail::loaders_registry ()) {
       if (loader->test (is)) {
         is.seekg (offs);
         auto s = loader->load (is);

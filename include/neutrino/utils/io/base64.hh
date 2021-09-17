@@ -32,7 +32,7 @@ namespace neutrino::utils::io {
       /// not updated to match the buffer's state.
   {
     public:
-      explicit base64_encoder_buf (std::ostream &ostr, int options = 0);
+      explicit base64_encoder_buf (std::ostream& ostr, int options = 0);
       ~base64_encoder_buf () override;
 
       int close ();
@@ -57,11 +57,11 @@ namespace neutrino::utils::io {
       int m_group_length;
       int m_pos;
       int m_line_length;
-      std::streambuf &m_buf;
-      const unsigned char *m_out_enc;
+      std::streambuf& m_buf;
+      const unsigned char* m_out_enc;
 
-      base64_encoder_buf (const base64_encoder_buf &);
-      base64_encoder_buf &operator= (const base64_encoder_buf &);
+      base64_encoder_buf (const base64_encoder_buf&);
+      base64_encoder_buf& operator = (const base64_encoder_buf&);
   };
 
   class base64_encoder_ios : public virtual std::ios
@@ -71,17 +71,17 @@ namespace neutrino::utils::io {
 /// order of the stream buffer and base classes.
   {
     public:
-      explicit base64_encoder_ios (std::ostream &ostr, int options = 0);
+      explicit base64_encoder_ios (std::ostream& ostr, int options = 0);
       ~base64_encoder_ios () override;
       int close ();
-      base64_encoder_buf *rdbuf ();
+      base64_encoder_buf* rdbuf ();
 
     protected:
       base64_encoder_buf m_buf;
 
     private:
-      base64_encoder_ios (const base64_encoder_ios &);
-      base64_encoder_ios &operator= (const base64_encoder_ios &);
+      base64_encoder_ios (const base64_encoder_ios&);
+      base64_encoder_ios& operator = (const base64_encoder_ios&);
   };
 
   class base64_encoder : public base64_encoder_ios, public std::ostream
@@ -100,12 +100,12 @@ namespace neutrino::utils::io {
 /// not updated to match the buffer's state.
   {
     public:
-      explicit base64_encoder (std::ostream &ostr, int options = 0);
+      explicit base64_encoder (std::ostream& ostr, int options = 0);
       ~base64_encoder () override;
 
     private:
-      base64_encoder (const base64_encoder &);
-      base64_encoder &operator= (const base64_encoder &);
+      base64_encoder (const base64_encoder&);
+      base64_encoder& operator = (const base64_encoder&);
   };
 
   class base64_decoder_buf : public unbuffered_stream_buf
@@ -119,7 +119,7 @@ namespace neutrino::utils::io {
       /// its streambuf.
   {
     public:
-      explicit base64_decoder_buf (std::istream &istr, int options = 0);
+      explicit base64_decoder_buf (std::istream& istr, int options = 0);
       ~base64_decoder_buf () override;
 
     private:
@@ -130,12 +130,12 @@ namespace neutrino::utils::io {
       unsigned char m_group[3];
       int m_group_length;
       int m_group_index;
-      std::streambuf &m_buf;
-      const unsigned char *m_in_enc;
+      std::streambuf& m_buf;
+      const unsigned char* m_in_enc;
 
     private:
-      base64_decoder_buf (const base64_decoder_buf &);
-      base64_decoder_buf &operator= (const base64_decoder_buf &);
+      base64_decoder_buf (const base64_decoder_buf&);
+      base64_decoder_buf& operator = (const base64_decoder_buf&);
   };
 
   class base64_decoder_ios : public virtual std::ios
@@ -145,16 +145,16 @@ namespace neutrino::utils::io {
 /// order of the stream buffer and base classes.
   {
     public:
-      explicit base64_decoder_ios (std::istream &istr, int options = 0);
+      explicit base64_decoder_ios (std::istream& istr, int options = 0);
       ~base64_decoder_ios () override;
-      base64_decoder_buf *rdbuf ();
+      base64_decoder_buf* rdbuf ();
 
     protected:
       base64_decoder_buf m_buf;
 
     private:
-      base64_decoder_ios (const base64_decoder_ios &);
-      base64_decoder_ios &operator= (const base64_decoder_ios &);
+      base64_decoder_ios (const base64_decoder_ios&);
+      base64_decoder_ios& operator = (const base64_decoder_ios&);
   };
 
   class base64_decoder : public base64_decoder_ios, public std::istream
@@ -170,11 +170,11 @@ namespace neutrino::utils::io {
 /// its streambuf.
   {
     public:
-      explicit base64_decoder (std::istream &istr, int options = 0);
+      explicit base64_decoder (std::istream& istr, int options = 0);
       ~base64_decoder () override;
     private:
-      base64_decoder (const base64_decoder &);
-      base64_decoder &operator= (const base64_decoder &);
+      base64_decoder (const base64_decoder&);
+      base64_decoder& operator = (const base64_decoder&);
   };
 
 }

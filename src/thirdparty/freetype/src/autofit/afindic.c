@@ -71,7 +71,7 @@ af_indic_hints_init (AF_GlyphHints hints,
 static FT_Error
 af_indic_hints_apply (FT_UInt glyph_index,
                       AF_GlyphHints hints,
-                      FT_Outline *outline,
+                      FT_Outline* outline,
                       AF_CJKMetrics metrics) {
   /* use CJK routines */
   return af_cjk_hints_apply (glyph_index, hints, outline, metrics);
@@ -83,8 +83,8 @@ af_indic_hints_apply (FT_UInt glyph_index,
 
 static void
 af_indic_get_standard_widths (AF_CJKMetrics metrics,
-                              FT_Pos *stdHW,
-                              FT_Pos *stdVW) {
+                              FT_Pos* stdHW,
+                              FT_Pos* stdVW) {
   if (stdHW)
     *stdHW = metrics->axis[AF_DIMENSION_VERT].standard_width;
 

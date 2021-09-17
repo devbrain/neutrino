@@ -148,7 +148,7 @@ T1_GlyphSlot_Init (FT_GlyphSlot slot) {
       T1_Hints_Funcs funcs;
 
       funcs = pshinter->get_t1_funcs (module);
-      slot->internal->glyph_hints = (void *) funcs;
+      slot->internal->glyph_hints = (void*) funcs;
     }
   }
 
@@ -284,7 +284,7 @@ T1_Face_Init (FT_Stream stream,
               FT_Face t1face,          /* T1_Face */
               FT_Int face_index,
               FT_Int num_params,
-              FT_Parameter *params) {
+              FT_Parameter* params) {
   T1_Face face = (T1_Face) t1face;
   FT_Error error;
   FT_Service_PsCMaps psnames;
@@ -369,8 +369,8 @@ T1_Face_Init (FT_Stream stream,
     root->style_name = NULL;
 
     if (root->family_name) {
-      char *full = info->full_name;
-      char *family = root->family_name;
+      char* full = info->full_name;
+      char* family = root->family_name;
 
       if (full) {
         FT_Bool the_same = TRUE;
@@ -396,7 +396,7 @@ T1_Face_Init (FT_Stream stream,
         }
 
         if (the_same)
-          root->style_name = (char *) "Regular";
+          root->style_name = (char*) "Regular";
       }
     }
     else {
@@ -410,7 +410,7 @@ T1_Face_Init (FT_Stream stream,
         root->style_name = info->weight;
       else
         /* assume `Regular' style because we don't know better */
-        root->style_name = (char *) "Regular";
+        root->style_name = (char*) "Regular";
     }
 
     /* compute style flags */
@@ -570,9 +570,9 @@ T1_Driver_Init (FT_Module module) {
   driver->darken_params[7] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y4;
 
   /* compute random seed from some memory addresses */
-  seed = (FT_UInt32) ((FT_Offset) (char *) &seed ^
-                      (FT_Offset) (char *) &module ^
-                      (FT_Offset) (char *) module->memory);
+  seed = (FT_UInt32) ((FT_Offset) (char*) &seed ^
+                      (FT_Offset) (char*) &module ^
+                      (FT_Offset) (char*) module->memory);
   seed = seed ^ (seed >> 10) ^ (seed >> 20);
 
   driver->random_seed = (FT_Int32) seed;

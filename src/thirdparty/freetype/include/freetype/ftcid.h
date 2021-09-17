@@ -84,9 +84,9 @@ FT_BEGIN_HEADER
  */
 FT_EXPORT(FT_Error)
 FT_Get_CID_Registry_Ordering_Supplement (FT_Face face,
-                                         const char **registry,
-                                         const char **ordering,
-                                         FT_Int *supplement);
+                                         const char** registry,
+                                         const char** ordering,
+                                         FT_Int* supplement);
 
 
 /**************************************************************************
@@ -119,7 +119,7 @@ FT_Get_CID_Registry_Ordering_Supplement (FT_Face face,
  */
 FT_EXPORT(FT_Error)
 FT_Get_CID_Is_Internally_CID_Keyed (FT_Face face,
-                                    FT_Bool *is_cid);
+                                    FT_Bool* is_cid);
 
 
 /**************************************************************************
@@ -154,7 +154,7 @@ FT_Get_CID_Is_Internally_CID_Keyed (FT_Face face,
 FT_EXPORT(FT_Error)
 FT_Get_CID_From_Glyph_Index (FT_Face face,
                              FT_UInt glyph_index,
-                             FT_UInt *cid);
+                             FT_UInt* cid);
 
 /* */
 

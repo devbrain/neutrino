@@ -399,7 +399,7 @@ typedef struct {
    *              returned NULL if some function from liblzma
    *              returns LZMA_MEM_ERROR.
    */
-  void *(LZMA_API_CALL *alloc) (void *opaque, size_t nmemb, size_t size);
+  void* (LZMA_API_CALL* alloc) (void* opaque, size_t nmemb, size_t size);
 
   /**
    * \brief       Pointer to a custom memory freeing function
@@ -413,7 +413,7 @@ typedef struct {
    *                      or when it is set to NULL, a pointer returned
    *                      by the standard malloc().
    */
-  void (LZMA_API_CALL *free) (void *opaque, void *ptr);
+  void (LZMA_API_CALL* free) (void* opaque, void* ptr);
 
   /**
    * \brief       Pointer passed to .alloc() and .free()
@@ -424,7 +424,7 @@ typedef struct {
    *
    * If you don't need this, you should set this to NULL.
    */
-  void *opaque;
+  void* opaque;
 
 } lzma_allocator;
 
@@ -476,11 +476,11 @@ typedef struct lzma_internal_s lzma_internal;
  * values from lzma_get_progress().
  */
 typedef struct {
-  const uint8_t *next_in; /**< Pointer to the next input byte. */
+  const uint8_t* next_in; /**< Pointer to the next input byte. */
   size_t avail_in;    /**< Number of available input bytes in next_in. */
   uint64_t total_in;  /**< Total number of bytes read by liblzma. */
 
-  uint8_t *next_out;  /**< Pointer to the next output position. */
+  uint8_t* next_out;  /**< Pointer to the next output position. */
   size_t avail_out;   /**< Amount of free space in next_out. */
   uint64_t total_out; /**< Total number of bytes written by liblzma. */
 
@@ -492,10 +492,10 @@ typedef struct {
    *
    * \note        In 5.0.x this is not a const pointer.
    */
-  const lzma_allocator *allocator;
+  const lzma_allocator* allocator;
 
   /** Internal state is not visible to applications. */
-  lzma_internal *internal;
+  lzma_internal* internal;
 
   /*
    * Reserved space to allow possible future extensions without
@@ -503,10 +503,10 @@ typedef struct {
    * you should not touch these, because the names of these variables
    * may change.
    */
-  void *reserved_ptr1;
-  void *reserved_ptr2;
-  void *reserved_ptr3;
-  void *reserved_ptr4;
+  void* reserved_ptr1;
+  void* reserved_ptr2;
+  void* reserved_ptr3;
+  void* reserved_ptr4;
   uint64_t reserved_int1;
   uint64_t reserved_int2;
   size_t reserved_int3;
@@ -552,7 +552,7 @@ typedef struct {
  * See the description of the coder-specific initialization function to find
  * out what `action' values are supported by the coder.
  */
-extern LZMA_API(lzma_ret) lzma_code (lzma_stream *strm, lzma_action action)
+extern LZMA_API(lzma_ret) lzma_code (lzma_stream* strm, lzma_action action)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -568,7 +568,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              stream structure. liblzma doesn't do this, and assumes that
  *              application knows what it is doing.
  */
-extern LZMA_API(void) lzma_end (lzma_stream *strm) lzma_nothrow;
+extern LZMA_API(void) lzma_end (lzma_stream* strm) lzma_nothrow;
 
 /**
  * \brief       Get progress information
@@ -585,8 +585,8 @@ extern LZMA_API(void) lzma_end (lzma_stream *strm) lzma_nothrow;
  * single-threaded mode *progress_in and *progress_out are set to
  * strm->total_in and strm->total_out, respectively.
  */
-extern LZMA_API(void) lzma_get_progress (lzma_stream *strm,
-                                         uint64_t *progress_in, uint64_t *progress_out) lzma_nothrow;
+extern LZMA_API(void) lzma_get_progress (lzma_stream* strm,
+                                         uint64_t* progress_in, uint64_t* progress_out) lzma_nothrow;
 
 /**
  * \brief       Get the memory usage of decoder filter chain
@@ -610,7 +610,7 @@ extern LZMA_API(void) lzma_get_progress (lzma_stream *strm,
  *              If this function isn't supported by *strm or some other error
  *              occurs, zero is returned.
  */
-extern LZMA_API(uint64_t) lzma_memusage (const lzma_stream *strm)
+extern LZMA_API(uint64_t) lzma_memusage (const lzma_stream* strm)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -622,7 +622,7 @@ lzma_nothrow lzma_attr_pure;
  * \return      On success, the current memory usage limit is returned
  *              (always non-zero). On error, zero is returned.
  */
-extern LZMA_API(uint64_t) lzma_memlimit_get (const lzma_stream *strm)
+extern LZMA_API(uint64_t) lzma_memlimit_get (const lzma_stream* strm)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -643,4 +643,4 @@ lzma_nothrow lzma_attr_pure;
  *                support memory usage limit.
  */
 extern LZMA_API(lzma_ret) lzma_memlimit_set (
-    lzma_stream *strm, uint64_t memlimit) lzma_nothrow;
+    lzma_stream* strm, uint64_t memlimit) lzma_nothrow;

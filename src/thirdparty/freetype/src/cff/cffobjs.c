@@ -330,7 +330,7 @@ cff_slot_init (FT_GlyphSlot slot) {
       T2_Hints_Funcs funcs;
 
       funcs = pshinter->get_t2_funcs (module);
-      slot->internal->glyph_hints = (void *) funcs;
+      slot->internal->glyph_hints = (void*) funcs;
     }
   }
 
@@ -343,11 +343,11 @@ cff_slot_init (FT_GlyphSlot slot) {
  *
  */
 
-static FT_String *
+static FT_String*
 cff_strcpy (FT_Memory memory,
-            const FT_String *source) {
+            const FT_String* source) {
   FT_Error error;
-  FT_String *result;
+  FT_String* result;
 
   (void) FT_STRDUP(result, source);
 
@@ -362,7 +362,7 @@ cff_strcpy (FT_Memory memory,
 /* have been seen in the wild.                                      */
 
 static void
-remove_subset_prefix (FT_String *name) {
+remove_subset_prefix (FT_String* name) {
   FT_Int32 idx = 0;
   FT_Int32 length = (FT_Int32) ft_strlen (name) + 1;
   FT_Bool continue_search = 1;
@@ -389,8 +389,8 @@ remove_subset_prefix (FT_String *name) {
 /* Remove the style part from the family name (if present). */
 
 static void
-remove_style (FT_String *family_name,
-              const FT_String *style_name) {
+remove_style (FT_String* family_name,
+              const FT_String* style_name) {
   FT_Int32 family_name_length, style_name_length;
 
   family_name_length = (FT_Int32) ft_strlen (family_name);
@@ -429,7 +429,7 @@ cff_face_init (FT_Stream stream,
                FT_Face cffface,        /* CFF_Face */
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params) {
+               FT_Parameter* params) {
   CFF_Face face = (CFF_Face) cffface;
   FT_Error error;
   SFNT_Service sfnt;
@@ -667,9 +667,9 @@ cff_face_init (FT_Stream stream,
     /* units.                                                   */
 
     {
-      FT_Matrix *matrix = &dict->font_matrix;
-      FT_Vector *offset = &dict->font_offset;
-      FT_ULong *upm = &dict->units_per_em;
+      FT_Matrix* matrix = &dict->font_matrix;
+      FT_Vector* offset = &dict->font_offset;
+      FT_ULong* upm = &dict->units_per_em;
       FT_Fixed temp;
 
       temp = matrix->yy ? FT_ABS(matrix->yy)
@@ -694,9 +694,9 @@ cff_face_init (FT_Stream stream,
       CFF_FontRecDict sub = &cff->subfonts[i - 1]->font_dict;
       CFF_FontRecDict top = &cff->top_font.font_dict;
 
-      FT_Matrix *matrix;
-      FT_Vector *offset;
-      FT_ULong *upm;
+      FT_Matrix* matrix;
+      FT_Vector* offset;
+      FT_ULong* upm;
       FT_Fixed temp;
 
       if (sub->has_font_matrix) {
@@ -756,7 +756,7 @@ cff_face_init (FT_Stream stream,
     }
 
     if (pure_cff) {
-      char *style_name = NULL;
+      char* style_name = NULL;
 
 
       /* set up num_faces */
@@ -792,7 +792,7 @@ cff_face_init (FT_Stream stream,
 
       /* retrieve font family & style name */
       if (dict->family_name) {
-        char *family_name;
+        char* family_name;
 
         family_name = cff_index_get_sid_string (cff, dict->family_name);
         if (family_name)
@@ -808,10 +808,10 @@ cff_face_init (FT_Stream stream,
       }
 
       if (cffface->family_name) {
-        char *full = cff_index_get_sid_string (cff,
+        char* full = cff_index_get_sid_string (cff,
                                                dict->full_name);
-        char *fullp = full;
-        char *family = cffface->family_name;
+        char* fullp = full;
+        char* family = cffface->family_name;
 
 
         /* We try to extract the style name from the full name.   */
@@ -852,7 +852,7 @@ cff_face_init (FT_Stream stream,
         }
       }
       else {
-        char *cid_font_name =
+        char* cid_font_name =
             cff_index_get_sid_string (cff,
                                       dict->cid_font_name);
 
@@ -902,7 +902,7 @@ cff_face_init (FT_Stream stream,
         flags |= FT_STYLE_FLAG_ITALIC;
 
       {
-        char *weight = cff_index_get_sid_string (cff,
+        char* weight = cff_index_get_sid_string (cff,
                                                  dict->weight);
 
         if (weight)
@@ -1072,9 +1072,9 @@ cff_driver_init (FT_Module module)        /* CFF_Driver */
   driver->darken_params[7] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y4;
 
   /* compute random seed from some memory addresses */
-  seed = (FT_UInt32) ((FT_Offset) (char *) &seed ^
-                      (FT_Offset) (char *) &module ^
-                      (FT_Offset) (char *) module->memory);
+  seed = (FT_UInt32) ((FT_Offset) (char*) &seed ^
+                      (FT_Offset) (char*) &module ^
+                      (FT_Offset) (char*) module->memory);
   seed = seed ^ (seed >> 10) ^ (seed >> 20);
 
   driver->random_seed = (FT_Int32) seed;

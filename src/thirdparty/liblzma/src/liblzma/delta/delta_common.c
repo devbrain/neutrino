@@ -14,18 +14,18 @@
 #include "delta_private.h"
 
 static void
-delta_coder_end (void *coder_ptr, const lzma_allocator *allocator) {
-  lzma_delta_coder *coder = coder_ptr;
+delta_coder_end (void* coder_ptr, const lzma_allocator* allocator) {
+  lzma_delta_coder* coder = coder_ptr;
   lzma_next_end (&coder->next, allocator);
   lzma_free (coder, allocator);
   return;
 }
 
 extern lzma_ret
-lzma_delta_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                       const lzma_filter_info *filters) {
+lzma_delta_coder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                       const lzma_filter_info* filters) {
   // Allocate memory for the decoder if needed.
-  lzma_delta_coder *coder = next->coder;
+  lzma_delta_coder* coder = next->coder;
   if (coder == NULL) {
     coder = lzma_alloc (sizeof (lzma_delta_coder), allocator);
     if (coder == NULL)
@@ -43,7 +43,7 @@ lzma_delta_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
     return LZMA_OPTIONS_ERROR;
 
   // Set the delta distance.
-  const lzma_options_delta *opt = filters[0].options;
+  const lzma_options_delta* opt = filters[0].options;
   coder->distance = opt->dist;
 
   // Initialize the rest of the variables.
@@ -55,8 +55,8 @@ lzma_delta_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
 }
 
 extern uint64_t
-lzma_delta_coder_memusage (const void *options) {
-  const lzma_options_delta *opt = options;
+lzma_delta_coder_memusage (const void* options) {
+  const lzma_options_delta* opt = options;
 
   if (opt == NULL || opt->type != LZMA_DELTA_TYPE_BYTE
       || opt->dist < LZMA_DELTA_DIST_MIN

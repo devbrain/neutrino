@@ -152,8 +152,8 @@ FT_LOCAL_DEF(void)
 af_warper_compute (AF_Warper warper,
                    AF_GlyphHints hints,
                    AF_Dimension dim,
-                   FT_Fixed *a_scale,
-                   FT_Pos *a_delta) {
+                   FT_Fixed* a_scale,
+                   FT_Pos* a_delta) {
   AF_AxisHints axis;
   AF_Point points;
 

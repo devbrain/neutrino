@@ -30,7 +30,6 @@
 #include "hb.hh"
 #endif
 
-
 _S(".notdef")
 _S(".null")
 _S("nonmarkingreturn")
@@ -289,6 +288,5 @@ _S("cacute")
 _S("Ccaron")
 _S("ccaron")
 _S("dcroat")
-
 
 #endif /* HB_OT_POST_MACROMAN_HH */

@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <vector>
 #include <variant>
-#include <neutrino/tiled/world/tile_types.hh>
+#include <neutrino/tiled/world/types.hh>
 
 namespace neutrino::tiled {
   enum class flip_t {

@@ -9,7 +9,7 @@
 #include <neutrino/utils/switch_by_string.hh>
 
 namespace neutrino::tiled::tmx {
-  map map::parse (const reader &elt, path_resolver_t resolver) {
+  map map::parse (const reader& elt, path_resolver_t resolver) {
     try {
       json_reader::assert_type ("map", elt);
 
@@ -56,11 +56,11 @@ namespace neutrino::tiled::tmx {
       map result (version, orientation, width, height, tilewidth, tileheight, colori (bgcolor), render_order,
                   side_length, axis, index, infinite);
 
-      const char *tileset_name = dynamic_cast<const json_reader *>(&elt) ? "tilesets" : "tileset";
+      const char* tileset_name = dynamic_cast<const json_reader*>(&elt) ? "tilesets" : "tileset";
 
       component::parse (result, elt);
 
-      elt.parse_many_elements (tileset_name, [&result, &resolver] (const reader &e) {
+      elt.parse_many_elements (tileset_name, [&result, &resolver] (const reader& e) {
         result.m_tilesets.push_back (tile_set::parse (e, resolver));
       });
 
@@ -68,24 +68,15 @@ namespace neutrino::tiled::tmx {
 
       return result;
     }
-    catch (exception &e) {
+    catch (exception& e) {
       RAISE_EX_WITH_CAUSE(std::move (e), "Failed to parse map");
     }
   }
-  // ------------------------------------------------------------------------------------------
-  const tile_set *map::tile_set_from_gid (unsigned int gid) const noexcept {
-    for (auto i = m_tilesets.rbegin (); i != m_tilesets.rend (); i++) {
-      const auto &tileset = *i;
-      if (tileset.first_gid () <= gid) {
-        return &tileset;
-      }
-    }
-    return nullptr;
-  }
+
   // -------------------------------------------------------------------------------------------
-  void map::parse_group (const reader &elt, map &result, const group *parent, path_resolver_t resolver) {
-    if (dynamic_cast<const json_reader *>(&elt)) {
-      elt.parse_many_elements ("layers", [&result, &resolver, parent] (const reader &e) {
+  void map::parse_group (const reader& elt, map& result, const group* parent, path_resolver_t resolver) {
+    if (dynamic_cast<const json_reader*>(&elt)) {
+      elt.parse_many_elements ("layers", [&result, &resolver, parent] (const reader& e) {
         auto type = e.get_string_attribute ("type");
         switch (switcher (type.c_str ())) {
           case "tilelayer"_case:
@@ -108,16 +99,16 @@ namespace neutrino::tiled::tmx {
       });
     }
     else {
-      elt.parse_many_elements ("layer", [&result, &resolver, parent] (const reader &e) {
+      elt.parse_many_elements ("layer", [&result, parent] (const reader& e) {
         result.m_layers.emplace_back (tile_layer::parse (e, parent));
       });
-      elt.parse_many_elements ("objectgroup", [&result, &resolver, parent] (const reader &e) {
+      elt.parse_many_elements ("objectgroup", [&result, parent] (const reader& e) {
         result.m_object_layers.emplace_back (object_layer::parse (e, parent));
       });
-      elt.parse_many_elements ("imagelayer", [&result, &resolver, parent] (const reader &e) {
+      elt.parse_many_elements ("imagelayer", [&result, parent] (const reader& e) {
         result.m_layers.emplace_back (image_layer::parse (e, parent));
       });
-      elt.parse_many_elements ("group", [&result, &resolver, parent] (const reader &e) {
+      elt.parse_many_elements ("group", [&result, &resolver, parent] (const reader& e) {
         auto current = group::parse (e, parent);
         parse_group (e, result, &current, resolver);
       });

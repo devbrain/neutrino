@@ -39,7 +39,7 @@ typedef struct CID_Glyph_Hints_ CID_Glyph_Hints;
  * @Description:
  *   A handle to a Type 1 driver object.
  */
-typedef struct CID_DriverRec_ *CID_Driver;
+typedef struct CID_DriverRec_* CID_Driver;
 
 /**************************************************************************
  *
@@ -49,7 +49,7 @@ typedef struct CID_DriverRec_ *CID_Driver;
  * @Description:
  *   A handle to a Type 1 size object.
  */
-typedef struct CID_SizeRec_ *CID_Size;
+typedef struct CID_SizeRec_* CID_Size;
 
 /**************************************************************************
  *
@@ -59,7 +59,7 @@ typedef struct CID_SizeRec_ *CID_Size;
  * @Description:
  *   A handle to a Type 1 glyph slot object.
  */
-typedef struct CID_GlyphSlotRec_ *CID_GlyphSlot;
+typedef struct CID_GlyphSlotRec_* CID_GlyphSlot;
 
 /**************************************************************************
  *
@@ -74,7 +74,7 @@ typedef struct CID_GlyphSlotRec_ *CID_GlyphSlot;
  *   The driver is responsible for making up charmap objects
  *   corresponding to these tables.
  */
-typedef struct CID_CharMapRec_ *CID_CharMap;
+typedef struct CID_CharMapRec_* CID_CharMap;
 
 /**************************************************************************
  *
@@ -121,7 +121,7 @@ cid_face_init (FT_Stream stream,
                FT_Face face,           /* CID_Face */
                FT_Int face_index,
                FT_Int num_params,
-               FT_Parameter *params);
+               FT_Parameter* params);
 
 FT_LOCAL(void)
 cid_face_done (FT_Face face);               /* CID_Face */

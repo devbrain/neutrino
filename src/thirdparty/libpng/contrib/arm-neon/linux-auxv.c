@@ -36,9 +36,9 @@
  * may result.
  */
 static size_t
-safe_read (png_structp png_ptr, int fd, void *buffer_in, size_t nbytes) {
+safe_read (png_structp png_ptr, int fd, void* buffer_in, size_t nbytes) {
   size_t ntotal = 0;
-  char *buffer = png_voidcast (
+  char* buffer = png_voidcast (
   char*, buffer_in);
 
   while (nbytes > 0) {

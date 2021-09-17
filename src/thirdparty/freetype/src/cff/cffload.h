@@ -40,12 +40,12 @@ cff_index_get_sid_string (CFF_Font font,
 FT_LOCAL(FT_Error)
 cff_index_access_element (CFF_Index idx,
                           FT_UInt element,
-                          FT_Byte **pbytes,
-                          FT_ULong *pbyte_len);
+                          FT_Byte** pbytes,
+                          FT_ULong* pbyte_len);
 
 FT_LOCAL(void)
 cff_index_forget_element (CFF_Index idx,
-                          FT_Byte **pbytes);
+                          FT_Byte** pbytes);
 
 FT_LOCAL(FT_String*)
 cff_index_get_name (CFF_Font font,
@@ -71,7 +71,7 @@ FT_LOCAL(FT_Error)
 cff_load_private_dict (CFF_Font font,
                        CFF_SubFont subfont,
                        FT_UInt lenNDV,
-                       FT_Fixed *NDV);
+                       FT_Fixed* NDV);
 
 FT_LOCAL(FT_Byte)
 cff_fd_select_get (CFF_FDSelect fdselect,
@@ -81,13 +81,13 @@ FT_LOCAL(FT_Bool)
 cff_blend_check_vector (CFF_Blend blend,
                         FT_UInt vsindex,
                         FT_UInt lenNDV,
-                        FT_Fixed *NDV);
+                        FT_Fixed* NDV);
 
 FT_LOCAL(FT_Error)
 cff_blend_build_vector (CFF_Blend blend,
                         FT_UInt vsindex,
                         FT_UInt lenNDV,
-                        FT_Fixed *NDV);
+                        FT_Fixed* NDV);
 
 FT_LOCAL(void)
 cff_blend_clear (CFF_SubFont subFont);
@@ -100,10 +100,10 @@ cff_blend_doBlend (CFF_SubFont subfont,
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
 FT_LOCAL(FT_Error)
 cff_get_var_blend (CFF_Face face,
-                   FT_UInt *num_coords,
-                   FT_Fixed **coords,
-                   FT_Fixed **normalizedcoords,
-                   FT_MM_Var **mm_var);
+                   FT_UInt* num_coords,
+                   FT_Fixed** coords,
+                   FT_Fixed** normalizedcoords,
+                   FT_MM_Var** mm_var);
 
 FT_LOCAL(void)
 cff_done_blend (CFF_Face face);

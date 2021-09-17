@@ -25,57 +25,57 @@
 FT_BEGIN_HEADER
 
 typedef FT_Error
-(*FT_Face_InitFunc) (FT_Stream stream,
-                     FT_Face face,
-                     FT_Int typeface_index,
-                     FT_Int num_params,
-                     FT_Parameter *parameters);
+(* FT_Face_InitFunc) (FT_Stream stream,
+                      FT_Face face,
+                      FT_Int typeface_index,
+                      FT_Int num_params,
+                      FT_Parameter* parameters);
 
 typedef void
-(*FT_Face_DoneFunc) (FT_Face face);
+(* FT_Face_DoneFunc) (FT_Face face);
 
 typedef FT_Error
-(*FT_Size_InitFunc) (FT_Size size);
+(* FT_Size_InitFunc) (FT_Size size);
 
 typedef void
-(*FT_Size_DoneFunc) (FT_Size size);
+(* FT_Size_DoneFunc) (FT_Size size);
 
 typedef FT_Error
-(*FT_Slot_InitFunc) (FT_GlyphSlot slot);
+(* FT_Slot_InitFunc) (FT_GlyphSlot slot);
 
 typedef void
-(*FT_Slot_DoneFunc) (FT_GlyphSlot slot);
+(* FT_Slot_DoneFunc) (FT_GlyphSlot slot);
 
 typedef FT_Error
-(*FT_Size_RequestFunc) (FT_Size size,
-                        FT_Size_Request req);
+(* FT_Size_RequestFunc) (FT_Size size,
+                         FT_Size_Request req);
 
 typedef FT_Error
-(*FT_Size_SelectFunc) (FT_Size size,
-                       FT_ULong size_index);
+(* FT_Size_SelectFunc) (FT_Size size,
+                        FT_ULong size_index);
 
 typedef FT_Error
-(*FT_Slot_LoadFunc) (FT_GlyphSlot slot,
-                     FT_Size size,
-                     FT_UInt glyph_index,
-                     FT_Int32 load_flags);
+(* FT_Slot_LoadFunc) (FT_GlyphSlot slot,
+                      FT_Size size,
+                      FT_UInt glyph_index,
+                      FT_Int32 load_flags);
 
 typedef FT_Error
-(*FT_Face_GetKerningFunc) (FT_Face face,
-                           FT_UInt left_glyph,
-                           FT_UInt right_glyph,
-                           FT_Vector *kerning);
+(* FT_Face_GetKerningFunc) (FT_Face face,
+                            FT_UInt left_glyph,
+                            FT_UInt right_glyph,
+                            FT_Vector* kerning);
 
 typedef FT_Error
-(*FT_Face_AttachFunc) (FT_Face face,
-                       FT_Stream stream);
+(* FT_Face_AttachFunc) (FT_Face face,
+                        FT_Stream stream);
 
 typedef FT_Error
-(*FT_Face_GetAdvancesFunc) (FT_Face face,
-                            FT_UInt first,
-                            FT_UInt count,
-                            FT_Int32 flags,
-                            FT_Fixed *advances);
+(* FT_Face_GetAdvancesFunc) (FT_Face face,
+                             FT_UInt first,
+                             FT_UInt count,
+                             FT_Int32 flags,
+                             FT_Fixed* advances);
 
 /**************************************************************************
  *
@@ -177,7 +177,7 @@ typedef struct FT_Driver_ClassRec_ {
   FT_Size_RequestFunc request_size;
   FT_Size_SelectFunc select_size;
 
-} FT_Driver_ClassRec, *FT_Driver_Class;
+} FT_Driver_ClassRec, * FT_Driver_Class;
 
 
 /**************************************************************************

@@ -33,7 +33,7 @@ typedef struct CID_Loader_ {
 } CID_Loader;
 
 FT_LOCAL(FT_ULong)
-cid_get_offset (FT_Byte **start,
+cid_get_offset (FT_Byte** start,
                 FT_Byte offsize);
 
 FT_LOCAL(FT_Error)

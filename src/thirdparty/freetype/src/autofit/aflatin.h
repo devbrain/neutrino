@@ -79,7 +79,7 @@ typedef struct AF_LatinBlueRec_ {
   FT_Pos descender;
   FT_UInt flags;
 
-} AF_LatinBlueRec, *AF_LatinBlue;
+} AF_LatinBlueRec, * AF_LatinBlue;
 
 typedef struct AF_LatinAxisRec_ {
   FT_Fixed scale;
@@ -98,14 +98,14 @@ typedef struct AF_LatinAxisRec_ {
   FT_Fixed org_scale;
   FT_Pos org_delta;
 
-} AF_LatinAxisRec, *AF_LatinAxis;
+} AF_LatinAxisRec, * AF_LatinAxis;
 
 typedef struct AF_LatinMetricsRec_ {
   AF_StyleMetricsRec root;
   FT_UInt units_per_em;
   AF_LatinAxisRec axis[AF_DIMENSION_MAX];
 
-} AF_LatinMetricsRec, *AF_LatinMetrics;
+} AF_LatinMetricsRec, * AF_LatinMetrics;
 
 FT_LOCAL(FT_Error)
 af_latin_metrics_init (AF_LatinMetrics metrics,
@@ -162,7 +162,7 @@ af_latin_hints_compute_segments (AF_GlyphHints hints,
 FT_LOCAL(void)
 af_latin_hints_link_segments (AF_GlyphHints hints,
                               FT_UInt width_count,
-                              AF_WidthRec *widths,
+                              AF_WidthRec* widths,
                               AF_Dimension dim);
 
 FT_LOCAL(FT_Error)
@@ -172,7 +172,7 @@ af_latin_hints_compute_edges (AF_GlyphHints hints,
 FT_LOCAL(FT_Error)
 af_latin_hints_detect_features (AF_GlyphHints hints,
                                 FT_UInt width_count,
-                                AF_WidthRec *widths,
+                                AF_WidthRec* widths,
                                 AF_Dimension dim);
 
 /* */

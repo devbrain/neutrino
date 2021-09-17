@@ -6,7 +6,7 @@
 #include <algorithm>
 
 namespace neutrino::hal {
-  void message_broker::on_event (const sdl::events::user &ev) {
+  void message_broker::on_event (const sdl::events::user& ev) {
     detail::event_handler_holder key{static_cast<uint32_t>(ev.code)};
     auto itr = utils::sorted_array<container_t>::find (m_table, key);
     if (itr != m_table.end ()) {

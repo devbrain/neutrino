@@ -14,9 +14,9 @@
 #include "simple_private.h"
 
 static size_t
-powerpc_code (void *simple lzma_attribute((__unused__)),
+powerpc_code (void* simple lzma_attribute((__unused__)),
               uint32_t now_pos, bool is_encoder,
-              uint8_t *buffer, size_t size) {
+              uint8_t* buffer, size_t size) {
   size_t i;
   for (i = 0; i + 4 <= size; i += 4) {
     // PowerPC branch 6(48) 24(Offset) 1(Abs) 1(Link)
@@ -47,22 +47,22 @@ powerpc_code (void *simple lzma_attribute((__unused__)),
 }
 
 static lzma_ret
-powerpc_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                    const lzma_filter_info *filters, bool is_encoder) {
+powerpc_coder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                    const lzma_filter_info* filters, bool is_encoder) {
   return lzma_simple_coder_init (next, allocator, filters,
                                  &powerpc_code, 0, 4, 4, is_encoder);
 }
 
 extern lzma_ret
-lzma_simple_powerpc_encoder_init (lzma_next_coder *next,
-                                  const lzma_allocator *allocator,
-                                  const lzma_filter_info *filters) {
+lzma_simple_powerpc_encoder_init (lzma_next_coder* next,
+                                  const lzma_allocator* allocator,
+                                  const lzma_filter_info* filters) {
   return powerpc_coder_init (next, allocator, filters, true);
 }
 
 extern lzma_ret
-lzma_simple_powerpc_decoder_init (lzma_next_coder *next,
-                                  const lzma_allocator *allocator,
-                                  const lzma_filter_info *filters) {
+lzma_simple_powerpc_decoder_init (lzma_next_coder* next,
+                                  const lzma_allocator* allocator,
+                                  const lzma_filter_info* filters) {
   return powerpc_coder_init (next, allocator, filters, false);
 }

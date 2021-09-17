@@ -301,7 +301,7 @@ pcf_get_metric (FT_Stream stream,
   FT_Error error = FT_Err_Ok;
 
   if (PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT)) {
-    const FT_Frame_Field *fields;
+    const FT_Frame_Field* fields;
 
 
     /* parsing normal metrics */
@@ -348,8 +348,8 @@ pcf_seek_to_table_type (FT_Stream stream,
                         PCF_Table tables,
                         FT_ULong ntables, /* same as PCF_Toc->count */
                         FT_ULong type,
-                        FT_ULong *aformat,
-                        FT_ULong *asize) {
+                        FT_ULong* aformat,
+                        FT_ULong* asize) {
   FT_Error error = FT_ERR(Invalid_File_Format);
   FT_ULong i;
 
@@ -419,7 +419,7 @@ const FT_Frame_Field pcf_property_msb_header[] =
 
 FT_LOCAL_DEF(PCF_Property)
 pcf_find_property (PCF_Face face,
-                   const FT_String *prop) {
+                   const FT_String* prop) {
   PCF_Property properties = face->properties;
   FT_Bool found = 0;
   int i;
@@ -445,7 +445,7 @@ pcf_get_properties (FT_Stream stream,
   FT_Error error;
   FT_Memory memory = FT_FACE(face)->memory;
   FT_ULong string_size;
-  FT_String *strings = NULL;
+  FT_String* strings = NULL;
 
   error = pcf_seek_to_table_type (stream,
                                   face->toc.tables,
@@ -559,7 +559,7 @@ pcf_get_properties (FT_Stream stream,
   if (FT_NEW_ARRAY(strings, string_size + 1))
     goto Bail;
 
-  error = FT_Stream_Read (stream, (FT_Byte *) strings, string_size);
+  error = FT_Stream_Read (stream, (FT_Byte*) strings, string_size);
   if (error)
     goto Bail;
 
@@ -903,11 +903,11 @@ pcf_get_encodings (FT_Stream stream,
   FT_ULong format, size;
   PCF_Enc enc = &face->enc;
   FT_ULong nencoding;
-  FT_UShort *offset;
+  FT_UShort* offset;
   FT_UShort defaultCharRow, defaultCharCol;
   FT_UShort encodingOffset, defaultCharEncodingOffset;
   FT_UShort i, j;
-  FT_Byte *pos;
+  FT_Byte* pos;
 
   error = pcf_seek_to_table_type (stream,
                                   face->toc.tables,
@@ -1210,7 +1210,7 @@ pcf_interpret_style (PCF_Face pcf) {
 
   PCF_Property prop;
 
-  const char *strings[4] = {NULL, NULL, NULL, NULL};
+  const char* strings[4] = {NULL, NULL, NULL, NULL};
   size_t lengths[4], nn, len;
 
   face->style_flags = 0;
@@ -1236,13 +1236,13 @@ pcf_interpret_style (PCF_Face pcf) {
   if (prop && prop->isString &&
       *(prop->value.atom) &&
       !(*(prop->value.atom) == 'N' || *(prop->value.atom) == 'n'))
-    strings[3] = (const char *) (prop->value.atom);
+    strings[3] = (const char*) (prop->value.atom);
 
   prop = pcf_find_property (pcf, "ADD_STYLE_NAME");
   if (prop && prop->isString &&
       *(prop->value.atom) &&
       !(*(prop->value.atom) == 'N' || *(prop->value.atom) == 'n'))
-    strings[0] = (const char *) (prop->value.atom);
+    strings[0] = (const char*) (prop->value.atom);
 
   for (len = 0, nn = 0; nn < 4; nn++) {
     lengths[nn] = 0;
@@ -1259,7 +1259,7 @@ pcf_interpret_style (PCF_Face pcf) {
   }
 
   {
-    char *s;
+    char* s;
 
     if (FT_ALLOC(face->style_name, len))
       return error;
@@ -1267,7 +1267,7 @@ pcf_interpret_style (PCF_Face pcf) {
     s = face->style_name;
 
     for (nn = 0; nn < 4; nn++) {
-      const char *src = strings[nn];
+      const char* src = strings[nn];
 
       len = lengths[nn];
 
@@ -1451,7 +1451,7 @@ pcf_load_font (FT_Stream stream,
       goto Exit;
 
     {
-      FT_Bitmap_Size *bsize = root->available_sizes;
+      FT_Bitmap_Size* bsize = root->available_sizes;
       FT_Short resolution_x = 0, resolution_y = 0;
 
       FT_ZERO(bsize);

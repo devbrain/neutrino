@@ -76,7 +76,7 @@
 FT_BEGIN_HEADER
 
 
-typedef struct FT_AutoHinterRec_ *FT_AutoHinter;
+typedef struct FT_AutoHinterRec_* FT_AutoHinter;
 
 /**************************************************************************
  *
@@ -104,10 +104,10 @@ typedef struct FT_AutoHinterRec_ *FT_AutoHinter;
  *     The size in bytes of the global hints.
  */
 typedef void
-(*FT_AutoHinter_GlobalGetFunc) (FT_AutoHinter hinter,
-                                FT_Face face,
-                                void **global_hints,
-                                long *global_len);
+(* FT_AutoHinter_GlobalGetFunc) (FT_AutoHinter hinter,
+                                 FT_Face face,
+                                 void** global_hints,
+                                 long* global_len);
 
 /**************************************************************************
  *
@@ -127,8 +127,8 @@ typedef void
  *     A pointer to retrieved global hints to discard.
  */
 typedef void
-(*FT_AutoHinter_GlobalDoneFunc) (FT_AutoHinter hinter,
-                                 void *global);
+(* FT_AutoHinter_GlobalDoneFunc) (FT_AutoHinter hinter,
+                                  void* global);
 
 /**************************************************************************
  *
@@ -148,8 +148,8 @@ typedef void
  *     A handle to the face.
  */
 typedef void
-(*FT_AutoHinter_GlobalResetFunc) (FT_AutoHinter hinter,
-                                  FT_Face face);
+(* FT_AutoHinter_GlobalResetFunc) (FT_AutoHinter hinter,
+                                   FT_Face face);
 
 /**************************************************************************
  *
@@ -178,11 +178,11 @@ typedef void
  *   @FT_LOAD_NO_SCALE set.
  */
 typedef FT_Error
-(*FT_AutoHinter_GlyphLoadFunc) (FT_AutoHinter hinter,
-                                FT_GlyphSlot slot,
-                                FT_Size size,
-                                FT_UInt glyph_index,
-                                FT_Int32 load_flags);
+(* FT_AutoHinter_GlyphLoadFunc) (FT_AutoHinter hinter,
+                                 FT_GlyphSlot slot,
+                                 FT_Size size,
+                                 FT_UInt glyph_index,
+                                 FT_Int32 load_flags);
 
 /**************************************************************************
  *
@@ -198,7 +198,7 @@ typedef struct FT_AutoHinter_InterfaceRec_ {
   FT_AutoHinter_GlobalDoneFunc done_global_hints;
   FT_AutoHinter_GlyphLoadFunc load_glyph;
 
-} FT_AutoHinter_InterfaceRec, *FT_AutoHinter_Interface;
+} FT_AutoHinter_InterfaceRec, * FT_AutoHinter_Interface;
 
 #define FT_DEFINE_AUTOHINTER_INTERFACE(\
           class_, \

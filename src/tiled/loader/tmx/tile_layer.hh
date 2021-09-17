@@ -16,32 +16,38 @@ namespace neutrino::tiled::tmx {
   class chunk {
     public:
       static chunk
-      parse (const reader &elt, const std::string &encoding, const std::string &compression, int chunk_id = 0);
+      parse (const reader& elt, const std::string& encoding, const std::string& compression, int chunk_id = 0);
 
       chunk (int x, int y, int w, int h)
           : m_x (x), m_y (y), m_width (w), m_height (h) {
       }
 
-      chunk (chunk &&) = default;
+      chunk (chunk&&) = default;
 
       [[nodiscard]] int x () const noexcept {
         return m_x;
       }
+
       [[nodiscard]] int y () const noexcept {
         return m_y;
       }
+
       [[nodiscard]] int width () const noexcept {
         return m_width;
       }
+
       [[nodiscard]] int height () const noexcept {
         return m_height;
       }
+
       void add (cell acell) {
         m_cells.emplace_back (acell);
       }
-      [[nodiscard]] const std::vector<cell> &cells () const noexcept {
+
+      [[nodiscard]] const std::vector<cell>& cells () const noexcept {
         return m_cells;
       }
+
     private:
       int m_x;
       int m_y;
@@ -56,7 +62,8 @@ namespace neutrino::tiled::tmx {
    */
   class tile_layer : public layer {
     public:
-      static tile_layer parse (const reader &elt, const group *parent = nullptr);
+      static tile_layer parse (const reader& elt, const group* parent = nullptr);
+
       /**
        * @brief TileLayer constructor.
        */
@@ -73,7 +80,7 @@ namespace neutrino::tiled::tmx {
             m_height (height) {
       }
 
-      tile_layer (tile_layer &&) = default;
+      tile_layer (tile_layer&&) = default;
 
       void add (cell acell) {
         m_cells.emplace_back (acell);
@@ -83,11 +90,11 @@ namespace neutrino::tiled::tmx {
         m_chunks.emplace_back (std::move (achunk));
       }
 
-      [[nodiscard]] const std::vector<cell> &cells () const noexcept {
+      [[nodiscard]] const std::vector<cell>& cells () const noexcept {
         return m_cells;
       }
 
-      [[nodiscard]] const std::vector<chunk> &chunks () const noexcept {
+      [[nodiscard]] const std::vector<chunk>& chunks () const noexcept {
         return m_chunks;
       }
 
@@ -118,6 +125,7 @@ namespace neutrino::tiled::tmx {
       [[nodiscard]] int height () const noexcept {
         return m_height;
       }
+
     private:
       int m_offsetx;
       int m_offsety;

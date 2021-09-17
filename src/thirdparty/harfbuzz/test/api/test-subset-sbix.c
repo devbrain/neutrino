@@ -30,36 +30,34 @@
 /* Unit tests for sbix subsetting */
 
 static void
-test_subset_sbix_noop (void)
-{
-  hb_face_t *face_XY = hb_test_open_font_file ("fonts/sbix.ttf");
+test_subset_sbix_noop (void) {
+  hb_face_t * face_XY = hb_test_open_font_file ("fonts/sbix.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_XY_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_XY_subset;
   hb_set_add (codepoints, 88);
   hb_set_add (codepoints, 89);
   face_XY_subset = hb_subset_test_create_subset (face_XY, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_XY, face_XY_subset, HB_TAG ('s','b','i','x'));
+  hb_subset_test_check (face_XY, face_XY_subset, HB_TAG ('s', 'b', 'i', 'x'));
 
   hb_face_destroy (face_XY_subset);
   hb_face_destroy (face_XY);
 }
 
 static void
-test_subset_sbix_keep_one (void)
-{
-  hb_face_t *face_XY = hb_test_open_font_file ("fonts/sbix.ttf");
-  hb_face_t *face_X = hb_test_open_font_file ("fonts/sbix_X.ttf");
+test_subset_sbix_keep_one (void) {
+  hb_face_t * face_XY = hb_test_open_font_file ("fonts/sbix.ttf");
+  hb_face_t * face_X = hb_test_open_font_file ("fonts/sbix_X.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_X_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_X_subset;
   hb_set_add (codepoints, 88);
   face_X_subset = hb_subset_test_create_subset (face_XY, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_X, face_X_subset, HB_TAG ('s','b','i','x'));
+  hb_subset_test_check (face_X, face_X_subset, HB_TAG ('s', 'b', 'i', 'x'));
 
   hb_face_destroy (face_X_subset);
   hb_face_destroy (face_XY);
@@ -70,12 +68,11 @@ test_subset_sbix_keep_one (void)
 // TODO: add a test that keeps no codepoints.
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_subset_sbix_noop);
   hb_test_add (test_subset_sbix_keep_one);
 
-  return hb_test_run();
+  return hb_test_run ();
 }

@@ -14,9 +14,9 @@
 #include "simple_private.h"
 
 static size_t
-ia64_code (void *simple lzma_attribute((__unused__)),
+ia64_code (void* simple lzma_attribute((__unused__)),
            uint32_t now_pos, bool is_encoder,
-           uint8_t *buffer, size_t size) {
+           uint8_t* buffer, size_t size) {
   static const uint32_t BRANCH_TABLE[32] = {
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0,
@@ -83,22 +83,22 @@ ia64_code (void *simple lzma_attribute((__unused__)),
 }
 
 static lzma_ret
-ia64_coder_init (lzma_next_coder *next, const lzma_allocator *allocator,
-                 const lzma_filter_info *filters, bool is_encoder) {
+ia64_coder_init (lzma_next_coder* next, const lzma_allocator* allocator,
+                 const lzma_filter_info* filters, bool is_encoder) {
   return lzma_simple_coder_init (next, allocator, filters,
                                  &ia64_code, 0, 16, 16, is_encoder);
 }
 
 extern lzma_ret
-lzma_simple_ia64_encoder_init (lzma_next_coder *next,
-                               const lzma_allocator *allocator,
-                               const lzma_filter_info *filters) {
+lzma_simple_ia64_encoder_init (lzma_next_coder* next,
+                               const lzma_allocator* allocator,
+                               const lzma_filter_info* filters) {
   return ia64_coder_init (next, allocator, filters, true);
 }
 
 extern lzma_ret
-lzma_simple_ia64_decoder_init (lzma_next_coder *next,
-                               const lzma_allocator *allocator,
-                               const lzma_filter_info *filters) {
+lzma_simple_ia64_decoder_init (lzma_next_coder* next,
+                               const lzma_allocator* allocator,
+                               const lzma_filter_info* filters) {
   return ia64_coder_init (next, allocator, filters, false);
 }

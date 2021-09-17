@@ -48,9 +48,9 @@ T1_Done_Metrics (FT_Memory memory,
 
 /* read a glyph name and return the equivalent glyph index */
 static FT_Int
-t1_get_index (const char *name,
+t1_get_index (const char* name,
               FT_Offset len,
-              void *user_data) {
+              void* user_data) {
   T1_Font type1 = (T1_Font) user_data;
   FT_Int n;
 
@@ -60,7 +60,7 @@ t1_get_index (const char *name,
     return 0;
 
   for (n = 0; n < type1->num_glyphs; n++) {
-    char *gname = (char *) type1->glyph_names[n];
+    char* gname = (char*) type1->glyph_names[n];
 
     if (gname && gname[0] == name[0] &&
         ft_strlen (gname) == len &&
@@ -77,8 +77,8 @@ t1_get_index (const char *name,
 
 /* compare two kerning pairs */
 FT_CALLBACK_DEF(int)
-compare_kern_pairs (const void *a,
-                    const void *b) {
+compare_kern_pairs (const void* a,
+                    const void* b) {
   AFM_KernPair pair1 = (AFM_KernPair) a;
   AFM_KernPair pair2 = (AFM_KernPair) b;
 
@@ -100,17 +100,17 @@ T1_Read_PFM (FT_Face t1_face,
              AFM_FontInfo fi) {
   FT_Error error = FT_Err_Ok;
   FT_Memory memory = stream->memory;
-  FT_Byte *start;
-  FT_Byte *limit;
-  FT_Byte *p;
+  FT_Byte* start;
+  FT_Byte* limit;
+  FT_Byte* p;
   AFM_KernPair kp;
   FT_Int width_table_length;
   FT_CharMap oldcharmap;
   FT_CharMap charmap;
   FT_Int n;
 
-  start = (FT_Byte *) stream->cursor;
-  limit = (FT_Byte *) stream->limit;
+  start = (FT_Byte*) stream->cursor;
+  limit = (FT_Byte*) stream->limit;
 
   /* Figure out how long the width table is.          */
   /* This info is a little-endian short at offset 99. */
@@ -257,7 +257,7 @@ T1_Read_Metrics (FT_Face t1_face,
   }
 
   if (FT_ERR_EQ(error, Unknown_File_Format)) {
-    FT_Byte *start = stream->cursor;
+    FT_Byte* start = stream->cursor;
 
 
     /* MS Windows allows versions up to 0x3FF without complaining */
@@ -302,7 +302,7 @@ FT_LOCAL_DEF(void)
 T1_Get_Kerning (AFM_FontInfo fi,
                 FT_UInt glyph1,
                 FT_UInt glyph2,
-                FT_Vector *kerning) {
+                FT_Vector* kerning) {
   AFM_KernPair min, mid, max;
   FT_ULong idx = KERN_INDEX(glyph1, glyph2);
 
@@ -338,7 +338,7 @@ FT_LOCAL_DEF(FT_Error)
 T1_Get_Track_Kerning (FT_Face face,
                       FT_Fixed ptsize,
                       FT_Int degree,
-                      FT_Fixed *kerning) {
+                      FT_Fixed* kerning) {
   AFM_FontInfo fi = (AFM_FontInfo) ((T1_Face) face)->afm_data;
   FT_UInt i;
 

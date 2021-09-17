@@ -55,26 +55,32 @@
 GType
 @enum_name@_get_type ()
 {
-  static gsize type_id = 0;
+static gsize type_id = 0;
 
-  if (g_once_init_enter (&type_id))
-    {
-      static const G@Type@Value values[] = {
+if (
+g_once_init_enter (& type_id)
+)
+{
+static const G@Type@
+Value values[] = {
 /*** END value-header ***/
 
 /*** BEGIN value-production ***/
-        { @VALUENAME@, "@VALUENAME@", "@valuenick@" },
+    {@VALUENAME@, "@VALUENAME@", "@valuenick@"},
 /*** END value-production ***/
 
 /*** BEGIN value-tail ***/
-        { 0, NULL, NULL }
-      };
-      GType id =
-        g_@type@_register_static (g_intern_static_string ("@EnumName@"), values);
-      g_once_init_leave (&type_id, id);
-    }
+    {0, NULL, NULL}
+};
+GType id =
+    g_
+@type@_register_static (g_intern_static_string ("@EnumName@"), values);
+g_once_init_leave (& type_id, id
+);
+}
 
-  return type_id;
+return
+type_id;
 }
 
 /*** END value-tail ***/

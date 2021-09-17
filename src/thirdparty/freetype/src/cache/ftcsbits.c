@@ -41,7 +41,7 @@
 
 static FT_Error
 ftc_sbit_copy_bitmap (FTC_SBit sbit,
-                      FT_Bitmap *bitmap,
+                      FT_Bitmap* bitmap,
                       FT_Memory memory) {
   FT_Error error;
   FT_Int pitch = bitmap->pitch;
@@ -96,7 +96,7 @@ static FT_Error
 ftc_snode_load (FTC_SNode snode,
                 FTC_Manager manager,
                 FT_UInt gindex,
-                FT_ULong *asize) {
+                FT_ULong* asize) {
   FT_Error error;
   FTC_GNode gnode = FTC_GNODE(snode);
   FTC_Family family = gnode->family;
@@ -122,7 +122,7 @@ ftc_snode_load (FTC_SNode snode,
   {
     FT_Int temp;
     FT_GlyphSlot slot = face->glyph;
-    FT_Bitmap *bitmap = &slot->bitmap;
+    FT_Bitmap* bitmap = &slot->bitmap;
     FT_Pos xadvance, yadvance; /* FT_GlyphSlot->advance.{x|y} */
 
 
@@ -192,7 +192,7 @@ ftc_snode_load (FTC_SNode snode,
 }
 
 FT_LOCAL_DEF(FT_Error)
-FTC_SNode_New (FTC_SNode *psnode,
+FTC_SNode_New (FTC_SNode* psnode,
                FTC_GQuery gquery,
                FTC_Cache cache) {
   FT_Memory memory = cache->memory;
@@ -242,10 +242,10 @@ FTC_SNode_New (FTC_SNode *psnode,
 }
 
 FT_LOCAL_DEF(FT_Error)
-ftc_snode_new (FTC_Node *ftcpsnode,
+ftc_snode_new (FTC_Node* ftcpsnode,
                FT_Pointer ftcgquery,
                FTC_Cache cache) {
-  FTC_SNode *psnode = (FTC_SNode *) ftcpsnode;
+  FTC_SNode* psnode = (FTC_SNode*) ftcpsnode;
   FTC_GQuery gquery = (FTC_GQuery) ftcgquery;
 
   return FTC_SNode_New (psnode, gquery, cache);
@@ -295,7 +295,7 @@ FT_LOCAL_DEF(FT_Bool)
 ftc_snode_compare (FTC_Node ftcsnode,
                    FT_Pointer ftcgquery,
                    FTC_Cache cache,
-                   FT_Bool *list_changed) {
+                   FT_Bool* list_changed) {
   FTC_SNode snode = (FTC_SNode) ftcsnode;
   FTC_GQuery gquery = (FTC_GQuery) ftcgquery;
   FTC_GNode gnode = FTC_GNODE(snode);
@@ -374,7 +374,7 @@ FT_LOCAL_DEF(FT_Bool)
 FTC_SNode_Compare (FTC_SNode snode,
                    FTC_GQuery gquery,
                    FTC_Cache cache,
-                   FT_Bool *list_changed) {
+                   FT_Bool* list_changed) {
   return ftc_snode_compare (FTC_NODE(snode), gquery,
                             cache, list_changed);
 }

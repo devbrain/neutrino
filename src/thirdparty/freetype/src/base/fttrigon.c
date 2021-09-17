@@ -126,7 +126,7 @@ ft_trig_downscale( FT_Fixed  val )
 
 /* undefined and never called for zero vector */
 static FT_Int
-ft_trig_prenorm (FT_Vector *vec) {
+ft_trig_prenorm (FT_Vector* vec) {
   FT_Pos x, y;
   FT_Int shift;
 
@@ -151,11 +151,11 @@ ft_trig_prenorm (FT_Vector *vec) {
 }
 
 static void
-ft_trig_pseudo_rotate (FT_Vector *vec,
+ft_trig_pseudo_rotate (FT_Vector* vec,
                        FT_Angle theta) {
   FT_Int i;
   FT_Fixed x, y, xtemp, b;
-  const FT_Angle *arctanptr;
+  const FT_Angle* arctanptr;
 
   x = vec->x;
   y = vec->y;
@@ -198,11 +198,11 @@ ft_trig_pseudo_rotate (FT_Vector *vec,
 }
 
 static void
-ft_trig_pseudo_polarize (FT_Vector *vec) {
+ft_trig_pseudo_polarize (FT_Vector* vec) {
   FT_Angle theta;
   FT_Int i;
   FT_Fixed x, y, xtemp, b;
-  const FT_Angle *arctanptr;
+  const FT_Angle* arctanptr;
 
   x = vec->x;
   y = vec->y;
@@ -321,7 +321,7 @@ FT_Atan2 (FT_Fixed dx,
 /* documentation is in fttrigon.h */
 
 FT_EXPORT_DEF(void)
-FT_Vector_Unit (FT_Vector *vec,
+FT_Vector_Unit (FT_Vector* vec,
                 FT_Angle angle) {
   if (!vec)
     return;
@@ -337,7 +337,7 @@ FT_Vector_Unit (FT_Vector *vec,
 /* documentation is in fttrigon.h */
 
 FT_EXPORT_DEF(void)
-FT_Vector_Rotate (FT_Vector *vec,
+FT_Vector_Rotate (FT_Vector* vec,
                   FT_Angle angle) {
   FT_Int shift;
   FT_Vector v;
@@ -372,7 +372,7 @@ FT_Vector_Rotate (FT_Vector *vec,
 /* documentation is in fttrigon.h */
 
 FT_EXPORT_DEF(FT_Fixed)
-FT_Vector_Length (FT_Vector *vec) {
+FT_Vector_Length (FT_Vector* vec) {
   FT_Int shift;
   FT_Vector v;
 
@@ -405,9 +405,9 @@ FT_Vector_Length (FT_Vector *vec) {
 /* documentation is in fttrigon.h */
 
 FT_EXPORT_DEF(void)
-FT_Vector_Polarize (FT_Vector *vec,
-                    FT_Fixed *length,
-                    FT_Angle *angle) {
+FT_Vector_Polarize (FT_Vector* vec,
+                    FT_Fixed* length,
+                    FT_Angle* angle) {
   FT_Int shift;
   FT_Vector v;
 
@@ -433,7 +433,7 @@ FT_Vector_Polarize (FT_Vector *vec,
 /* documentation is in fttrigon.h */
 
 FT_EXPORT_DEF(void)
-FT_Vector_From_Polar (FT_Vector *vec,
+FT_Vector_From_Polar (FT_Vector* vec,
                       FT_Fixed length,
                       FT_Angle angle) {
   if (!vec)

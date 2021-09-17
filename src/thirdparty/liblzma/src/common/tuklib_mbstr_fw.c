@@ -13,7 +13,7 @@
 #include "tuklib_mbstr.h"
 
 extern int
-tuklib_mbstr_fw (const char *str, int columns_min) {
+tuklib_mbstr_fw (const char* str, int columns_min) {
   size_t len;
   const size_t width = tuklib_mbstr_width (str, &len);
   if (width == (size_t) -1)

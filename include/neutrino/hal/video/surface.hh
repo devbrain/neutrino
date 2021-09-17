@@ -39,7 +39,7 @@ namespace neutrino::hal {
     public:
       surface () = default;
 
-      surface (const window &w);
+      surface (const window& w);
       surface (unsigned width, unsigned height, pixel_format format);
 
       static surface make_rgba (unsigned width, unsigned height);
@@ -58,10 +58,10 @@ namespace neutrino::hal {
        * @param r
        * @return Returns true if the rectangle intersects the surface, otherwise false and blits will be completely clipped.
        */
-      bool clip (const math::rect &r);
+      bool clip (const math::rect& r);
 
       void color_key (uint32_t c);
-      void color_key (const color &c);
+      void color_key (const color& c);
       void disable_color_key ();
       [[nodiscard]] std::optional<uint32_t> color_key () const;
 
@@ -87,7 +87,7 @@ namespace neutrino::hal {
        * @param drect destination area
        * @throws @see sdl::exception on failure
        */
-      void blit (const math::rect &srect, surface &dst, const math::rect &drect) const;
+      void blit (const math::rect& srect, surface& dst, const math::rect& drect) const;
 
       /**
        * @brief Blit this surface to @c dst surface
@@ -98,9 +98,9 @@ namespace neutrino::hal {
        * @param dst destination surface
        * @throws @see sdl::exception on failure
        */
-      void blit_scaled (const math::rect &srect, surface &dst) const;
-      void blit_scaled (surface &dst) const;
-      void blit_scaled (const math::rect &srect, surface &dst, const math::rect &drect) const;
+      void blit_scaled (const math::rect& srect, surface& dst) const;
+      void blit_scaled (surface& dst) const;
+      void blit_scaled (const math::rect& srect, surface& dst, const math::rect& drect) const;
 
       /**
        * @brief Blit this surface to @c dst surface
@@ -113,7 +113,7 @@ namespace neutrino::hal {
        * @param dpoint destination point
        * @throws @see sdl::exception on failure
        */
-      void blit (const math::rect &srect, surface &dst, const math::point2d &dpoint) const;
+      void blit (const math::rect& srect, surface& dst, const math::point2d& dpoint) const;
 
       /**
        * @brief Blit this surface to @c dst surface
@@ -125,7 +125,7 @@ namespace neutrino::hal {
        * @param dst destination surface
        * @throws @see sdl::exception on failure
        */
-      void blit (const math::rect &srect, surface &dst) const;
+      void blit (const math::rect& srect, surface& dst) const;
       /**
        * @brief Blit this surface to @c dst surface
        *
@@ -135,25 +135,25 @@ namespace neutrino::hal {
        * @param dst destination surface
        * @throws @see sdl::exception on failure
        */
-      void blit (surface &dst) const;
+      void blit (surface& dst) const;
 
       // returns pixels, pitch, w, h
-      [[nodiscard]] std::tuple<void *, std::size_t, unsigned, unsigned> pixels_data () const;
+      [[nodiscard]] std::tuple<void*, std::size_t, unsigned, unsigned> pixels_data () const;
 
-      void fill (const math::rect &r, uint32_t c);
-      void fill (const math::rect &r, const color &c);
+      void fill (const math::rect& r, uint32_t c);
+      void fill (const math::rect& r, const color& c);
       void fill (uint32_t c);
-      void fill (const color &c);
+      void fill (const color& c);
 
-      surface convert (const pixel_format &fmt) const;
+      surface convert (const pixel_format& fmt) const;
 
       [[nodiscard]] pixel_format get_pixel_format () const;
-      [[nodiscard]] uint32_t map_color (const color &c);
+      [[nodiscard]] uint32_t map_color (const color& c);
 
       surface roto_zoom (double angle, double zoomx, double zoomy, bool smooth);
 
     private:
-      surface (std::unique_ptr<detail::surface_impl> &&impl);
+      surface (std::unique_ptr<detail::surface_impl>&& impl);
     private:
       spimpl::unique_impl_ptr<detail::surface_impl> m_pimpl;
   };

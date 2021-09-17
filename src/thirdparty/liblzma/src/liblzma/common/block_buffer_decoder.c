@@ -13,9 +13,9 @@
 #include "block_decoder.h"
 
 extern LZMA_API(lzma_ret)
-lzma_block_buffer_decode (lzma_block *block, const lzma_allocator *allocator,
-                          const uint8_t *in, size_t *in_pos, size_t in_size,
-                          uint8_t *out, size_t *out_pos, size_t out_size) {
+lzma_block_buffer_decode (lzma_block* block, const lzma_allocator* allocator,
+                          const uint8_t* in, size_t* in_pos, size_t in_size,
+                          uint8_t* out, size_t* out_pos, size_t out_size) {
   if (in_pos == NULL || (in == NULL && *in_pos != in_size)
       || *in_pos > in_size || out_pos == NULL
       || (out == NULL && *out_pos != out_size)

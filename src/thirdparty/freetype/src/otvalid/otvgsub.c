@@ -569,7 +569,7 @@ LookupList = FT_NEXT_USHORT (p);
 otvalid->
 type_count = 8;
 otvalid->
-type_funcs = (OTV_Validate_Func *) otv_gsub_validate_funcs;
+type_funcs = (OTV_Validate_Func*) otv_gsub_validate_funcs;
 otvalid->
 glyph_count = glyph_count;
 

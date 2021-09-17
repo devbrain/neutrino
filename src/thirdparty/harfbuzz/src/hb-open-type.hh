@@ -58,62 +58,73 @@ namespace OT {
       typedef Type type;
 
       IntType () = default;
+
       explicit constexpr IntType (Type V)
           : v{V} {
       }
-      IntType &operator= (Type i) {
+
+      IntType& operator = (Type i) {
         v = i;
         return *this;
       }
+
       /* For reason we define cast out operator for signed/unsigned, instead of Type, see:
        * https://github.com/harfbuzz/harfbuzz/pull/2875/commits/09836013995cab2b9f07577a179ad7b024130467 */
       operator hb_conditional<hb_is_signed (Type), signed, unsigned> () const {
         return v;
       }
 
-      bool operator== (const IntType &o) const {
+      bool operator == (const IntType& o) const {
         return (Type) v == (Type) o.v;
       }
-      bool operator!= (const IntType &o) const {
+
+      bool operator != (const IntType& o) const {
         return !(*this == o);
       }
 
-      IntType &operator+= (unsigned count) {
+      IntType& operator += (unsigned count) {
         *this = *this + count;
         return *this;
       }
-      IntType &operator-= (unsigned count) {
+
+      IntType& operator -= (unsigned count) {
         *this = *this - count;
         return *this;
       }
-      IntType &operator++ () {
+
+      IntType& operator ++ () {
         *this += 1;
         return *this;
       }
-      IntType &operator-- () {
+
+      IntType& operator -- () {
         *this -= 1;
         return *this;
       }
-      IntType operator++ (int) {
+
+      IntType operator ++ (int) {
         IntType c (*this);
         ++*this;
         return c;
       }
-      IntType operator-- (int) {
+
+      IntType operator -- (int) {
         IntType c (*this);
         --*this;
         return c;
       }
 
-      HB_INTERNAL static int cmp (const IntType *a, const IntType *b) {
+      HB_INTERNAL static int cmp (const IntType* a, const IntType* b) {
         return b->cmp (*a);
       }
-      HB_INTERNAL static int cmp (const void *a, const void *b) {
-        IntType *pa = (IntType *) a;
-        IntType *pb = (IntType *) b;
+
+      HB_INTERNAL static int cmp (const void* a, const void* b) {
+        IntType* pa = (IntType*) a;
+        IntType* pb = (IntType*) b;
 
         return pb->cmp (*pa);
       }
+
       template <typename Type2,
           hb_enable_if (hb_is_integral (Type2) &&
                             sizeof (Type2) < sizeof (int) &&
@@ -122,16 +133,19 @@ namespace OT {
         Type b = v;
         return (int) a - (int) b;
       }
+
       template <typename Type2,
           hb_enable_if (hb_is_convertible (Type2, Type))>
       int cmp (Type2 a) const {
         Type b = v;
         return a < b ? -1 : a == b ? 0 : +1;
       }
-      bool sanitize (hb_sanitize_context_t *c) const {
+
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (likely (c->check_struct (this)));
       }
+
     protected:
       BEInt<Type, Size> v;
     public:
@@ -159,34 +173,40 @@ namespace OT {
 
 /* 16-bit signed fixed number with the low 14 bits of fraction (2.14). */
   struct F2DOT14 : HBINT16 {
-      F2DOT14 &operator= (uint16_t i) {
-        HBINT16::operator= (i);
+      F2DOT14& operator = (uint16_t i) {
+        HBINT16::operator = (i);
         return *this;
       }
+
       // 16384 means 1<<14
       float to_float () const {
         return ((int32_t) v) / 16384.f;
       }
+
       void set_float (float f) {
         v = roundf (f * 16384.f);
       }
+
     public:
       DEFINE_SIZE_STATIC (2);
   };
 
 /* 32-bit signed fixed-point number (16.16). */
   struct HBFixed : HBINT32 {
-      HBFixed &operator= (uint32_t i) {
-        HBINT32::operator= (i);
+      HBFixed& operator = (uint32_t i) {
+        HBINT32::operator = (i);
         return *this;
       }
+
       // 65536 means 1<<16
       float to_float () const {
         return ((int32_t) v) / 65536.f;
       }
+
       void set_float (float f) {
         v = roundf (f * 65536.f);
       }
+
     public:
       DEFINE_SIZE_STATIC (4);
   };
@@ -194,10 +214,11 @@ namespace OT {
 /* Date represented in number of seconds since 12:00 midnight, January 1,
  * 1904. The value is represented as a signed 64-bit integer. */
   struct LONGDATETIME {
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (likely (c->check_struct (this)));
       }
+
     protected:
       HBINT32 major;
       HBUINT32 minor;
@@ -208,25 +229,28 @@ namespace OT {
 /* Array of four uint8s (length = 32 bits) used to identify a script, language
  * system, feature, or baseline */
   struct Tag : HBUINT32 {
-      Tag &operator= (hb_tag_t i) {
-        HBUINT32::operator= (i);
+      Tag& operator = (hb_tag_t i) {
+        HBUINT32::operator = (i);
         return *this;
       }
+
       /* What the char* converters return is NOT nul-terminated.  Print using "%.4s" */
-      operator const char * () const {
-        return reinterpret_cast<const char *> (this);
+      operator const char* () const {
+        return reinterpret_cast<const char*> (this);
       }
-      operator char * () {
-        return reinterpret_cast<char *> (this);
+
+      operator char* () {
+        return reinterpret_cast<char*> (this);
       }
+
     public:
       DEFINE_SIZE_STATIC (4);
   };
 
 /* Glyph index number, same as uint16 (length = 16 bits) */
   struct HBGlyphID : HBUINT16 {
-    HBGlyphID &operator= (uint16_t i) {
-      HBUINT16::operator= (i);
+    HBGlyphID& operator = (uint16_t i) {
+      HBUINT16::operator = (i);
       return *this;
     }
   };
@@ -234,8 +258,9 @@ namespace OT {
 /* Script/language-system/feature index */
   struct Index : HBUINT16 {
     static constexpr unsigned NOT_FOUND_INDEX = 0xFFFFu;
-    Index &operator= (uint16_t i) {
-      HBUINT16::operator= (i);
+
+    Index& operator = (uint16_t i) {
+      HBUINT16::operator = (i);
       return *this;
     }
   };
@@ -245,8 +270,9 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, Index);
 
   struct VarIdx : HBUINT32 {
     static constexpr unsigned NO_VARIATION = 0xFFFFFFFFu;
-    VarIdx &operator= (uint32_t i) {
-      HBUINT32::operator= (i);
+
+    VarIdx& operator = (uint32_t i) {
+      HBUINT32::operator = (i);
       return *this;
     }
   };
@@ -255,8 +281,8 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 /* Offset, Null offset = 0 */
   template <typename Type, bool has_null = true>
   struct Offset : Type {
-      Offset &operator= (typename Type::type i) {
-        Type::operator= (i);
+      Offset& operator = (typename Type::type i) {
+        Type::operator = (i);
         return *this;
       }
 
@@ -266,10 +292,10 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return has_null && 0 == *this;
       }
 
-      void *serialize (hb_serialize_context_t *c, const void *base) {
-        void *t = c->start_embed<void> ();
+      void* serialize (hb_serialize_context_t* c, const void* base) {
+        void* t = c->start_embed<void> ();
         c->check_assign (*this,
-                         (unsigned) ((char *) t - (char *) base),
+                         (unsigned) ((char*) t - (char*) base),
                          HB_SERIALIZE_ERROR_OFFSET_OVERFLOW);
         return t;
       }
@@ -284,16 +310,16 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 
 /* CheckSum */
   struct CheckSum : HBUINT32 {
-      CheckSum &operator= (uint32_t i) {
-        HBUINT32::operator= (i);
+      CheckSum& operator = (uint32_t i) {
+        HBUINT32::operator = (i);
         return *this;
       }
 
       /* This is reference implementation from the spec. */
-      static uint32_t CalcTableChecksum (const HBUINT32 *Table, uint32_t Length) {
+      static uint32_t CalcTableChecksum (const HBUINT32* Table, uint32_t Length) {
         uint32_t Sum = 0L;
         assert (0 == (Length & 3));
-        const HBUINT32 *EndPtr = Table + Length / HBUINT32::static_size;
+        const HBUINT32* EndPtr = Table + Length / HBUINT32::static_size;
 
         while (Table < EndPtr)
           Sum += *Table++;
@@ -301,8 +327,8 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       }
 
       /* Note: data should be 4byte aligned and have 4byte padding at the end. */
-      void set_for_data (const void *data, unsigned int length) {
-        *this = CalcTableChecksum ((const HBUINT32 *) data, length);
+      void set_for_data (const void* data, unsigned int length) {
+        *this = CalcTableChecksum ((const HBUINT32*) data, length);
       }
 
     public:
@@ -319,7 +345,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return (major << (sizeof (FixedType) * 8)) + minor;
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this));
       }
@@ -337,20 +363,22 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 
   template <typename Type, bool has_null>
   struct _hb_has_null {
-    static const Type *get_null () {
+    static const Type* get_null () {
       return nullptr;
     }
-    static Type *get_crap () {
+
+    static Type* get_crap () {
       return nullptr;
     }
   };
 
   template <typename Type>
   struct _hb_has_null<Type, true> {
-    static const Type *get_null () {
+    static const Type* get_null () {
       return &Null (Type);
     }
-    static Type *get_crap () {
+
+    static Type* get_crap () {
       return &Crap (Type);
     }
   };
@@ -360,17 +388,18 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
     HB_DELETE_COPY_ASSIGN (OffsetTo);
     OffsetTo () = default;
 
-    OffsetTo &operator= (typename OffsetType::type i) {
-      OffsetType::operator= (i);
+    OffsetTo& operator = (typename OffsetType::type i) {
+      OffsetType::operator = (i);
       return *this;
     }
 
-    const Type &operator() (const void *base) const {
+    const Type& operator () (const void* base) const {
       if (unlikely (this->is_null ()))
         return *_hb_has_null<Type, has_null>::get_null ();
       return StructAtOffset<const Type> (base, *this);
     }
-    Type &operator() (void *base) const {
+
+    Type& operator () (void* base) const {
       if (unlikely (this->is_null ()))
         return *_hb_has_null<Type, has_null>::get_crap ();
       return StructAtOffset<Type> (base, *this);
@@ -378,37 +407,40 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 
     template <typename Base,
         hb_enable_if (hb_is_convertible (const Base, const void *))>
-    friend const Type &operator+ (const Base &base, const OffsetTo &offset) {
-      return offset ((const void *) base);
-    }
-    template <typename Base,
-        hb_enable_if (hb_is_convertible (const Base, const void *))>
-    friend const Type &operator+ (const OffsetTo &offset, const Base &base) {
-      return offset ((const void *) base);
-    }
-    template <typename Base,
-        hb_enable_if (hb_is_convertible (Base, void * ))>
-    friend Type &operator+ (Base &&base, OffsetTo &offset) {
-      return offset ((void *) base);
-    }
-    template <typename Base,
-        hb_enable_if (hb_is_convertible (Base, void * ))>
-    friend Type &operator+ (OffsetTo &offset, Base &&base) {
-      return offset ((void *) base);
+    friend const Type& operator + (const Base& base, const OffsetTo& offset) {
+      return offset ((const void*) base);
     }
 
-    Type &serialize (hb_serialize_context_t *c, const void *base) {
-      return *(Type *) Offset<OffsetType>::serialize (c, base);
+    template <typename Base,
+        hb_enable_if (hb_is_convertible (const Base, const void *))>
+    friend const Type& operator + (const OffsetTo& offset, const Base& base) {
+      return offset ((const void*) base);
+    }
+
+    template <typename Base,
+        hb_enable_if (hb_is_convertible (Base, void * ))>
+    friend Type& operator + (Base&& base, OffsetTo& offset) {
+      return offset ((void*) base);
+    }
+
+    template <typename Base,
+        hb_enable_if (hb_is_convertible (Base, void * ))>
+    friend Type& operator + (OffsetTo& offset, Base&& base) {
+      return offset ((void*) base);
+    }
+
+    Type& serialize (hb_serialize_context_t* c, const void* base) {
+      return *(Type*) Offset<OffsetType>::serialize (c, base);
     }
 
     template <typename ...Ts>
-    bool serialize_subset (hb_subset_context_t *c, const OffsetTo &src,
-                           const void *src_base, Ts &&... ds) {
+    bool serialize_subset (hb_subset_context_t* c, const OffsetTo& src,
+                           const void* src_base, Ts&& ... ds) {
       *this = 0;
       if (src.is_null ())
         return false;
 
-      auto *s = c->serializer;
+      auto* s = c->serializer;
 
       s->push ();
 
@@ -423,10 +455,10 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
     }
 
     template <typename ...Ts>
-    bool serialize_serialize (hb_serialize_context_t *c, Ts &&... ds) {
+    bool serialize_serialize (hb_serialize_context_t* c, Ts&& ... ds) {
       *this = 0;
 
-      Type *obj = c->push<Type> ();
+      Type* obj = c->push<Type> ();
       bool ret = obj->serialize (c, hb_forward<Ts> (ds)...);
 
       if (ret)
@@ -442,10 +474,10 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
      * Can't compile: whence = hb_serialize_context_t::Head followed by Ts&&...
      */
     template <typename ...Ts>
-    bool serialize_copy (hb_serialize_context_t *c, const OffsetTo &src,
-                         const void *src_base, unsigned dst_bias,
+    bool serialize_copy (hb_serialize_context_t* c, const OffsetTo& src,
+                         const void* src_base, unsigned dst_bias,
                          hb_serialize_context_t::whence_t whence,
-                         Ts &&... ds) {
+                         Ts&& ... ds) {
       *this = 0;
       if (src.is_null ())
         return false;
@@ -459,24 +491,24 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       return ret;
     }
 
-    bool serialize_copy (hb_serialize_context_t *c, const OffsetTo &src,
-                         const void *src_base, unsigned dst_bias = 0) {
+    bool serialize_copy (hb_serialize_context_t* c, const OffsetTo& src,
+                         const void* src_base, unsigned dst_bias = 0) {
       return serialize_copy (c, src, src_base, dst_bias, hb_serialize_context_t::Head);
     }
 
-    bool sanitize_shallow (hb_sanitize_context_t *c, const void *base) const {
+    bool sanitize_shallow (hb_sanitize_context_t* c, const void* base) const {
       TRACE_SANITIZE (this);
       if (unlikely (!c->check_struct (this)))
         return_trace (false);
       if (unlikely (this->is_null ()))
         return_trace (true);
-      if (unlikely ((const char *) base + (unsigned) *this < (const char *) base))
+      if (unlikely ((const char*) base + (unsigned) *this < (const char*) base))
         return_trace (false);
       return_trace (true);
     }
 
     template <typename ...Ts>
-    bool sanitize (hb_sanitize_context_t *c, const void *base, Ts &&... ds) const {
+    bool sanitize (hb_sanitize_context_t* c, const void* base, Ts&& ... ds) const {
       TRACE_SANITIZE (this);
       return_trace (sanitize_shallow (c, base) &&
                     (this->is_null () ||
@@ -485,11 +517,12 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
     }
 
     /* Set the offset to Null */
-    bool neuter (hb_sanitize_context_t *c) const {
+    bool neuter (hb_sanitize_context_t* c) const {
       if (!has_null)
         return false;
       return c->try_set (this, 0);
     }
+
     DEFINE_SIZE_STATIC (sizeof (OffsetType));
   };
 /* Partial specializations. */
@@ -513,16 +546,17 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 
       HB_DELETE_CREATE_COPY_ASSIGN (UnsizedArrayOf);
 
-      const Type &operator[] (int i_) const {
+      const Type& operator [] (int i_) const {
         unsigned int i = (unsigned int) i_;
-        const Type *p = &arrayZ[i];
+        const Type* p = &arrayZ[i];
         if (unlikely (p < arrayZ))
           return Null (Type); /* Overflowed. */
         return *p;
       }
-      Type &operator[] (int i_) {
+
+      Type& operator [] (int i_) {
         unsigned int i = (unsigned int) i_;
-        Type *p = &arrayZ[i];
+        Type* p = &arrayZ[i];
         if (unlikely (p < arrayZ))
           return Crap (Type); /* Overflowed. */
         return *p;
@@ -532,29 +566,34 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return len * Type::static_size;
       }
 
-      template <typename T> operator T * () {
+      template <typename T> operator T* () {
         return arrayZ;
       }
-      template <typename T> operator const T * () const {
+
+      template <typename T> operator const T* () const {
         return arrayZ;
       }
+
       hb_array_t<Type> as_array (unsigned int len) {
         return hb_array (arrayZ, len);
       }
+
       hb_array_t<const Type> as_array (unsigned int len) const {
         return hb_array (arrayZ, len);
       }
 
       template <typename T>
-      Type &lsearch (unsigned int len, const T &x, Type &not_found = Crap (Type)) {
+      Type& lsearch (unsigned int len, const T& x, Type& not_found = Crap (Type)) {
         return *as_array (len).lsearch (x, &not_found);
       }
+
       template <typename T>
-      const Type &lsearch (unsigned int len, const T &x, const Type &not_found = Null (Type)) const {
+      const Type& lsearch (unsigned int len, const T& x, const Type& not_found = Null (Type)) const {
         return *as_array (len).lsearch (x, &not_found);
       }
+
       template <typename T>
-      bool lfind (unsigned int len, const T &x, unsigned *pos = nullptr) const {
+      bool lfind (unsigned int len, const T& x, unsigned* pos = nullptr) const {
         return as_array (len).lfind (x, pos);
       }
 
@@ -562,15 +601,16 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         as_array (len).qsort (start, end);
       }
 
-      bool serialize (hb_serialize_context_t *c, unsigned int items_len) {
+      bool serialize (hb_serialize_context_t* c, unsigned int items_len) {
         TRACE_SERIALIZE (this);
         if (unlikely (!c->extend (*this, items_len)))
           return_trace (false);
         return_trace (true);
       }
+
       template <typename Iterator,
           hb_requires (hb_is_source_of (Iterator, Type))>
-      bool serialize (hb_serialize_context_t *c, Iterator items) {
+      bool serialize (hb_serialize_context_t* c, Iterator items) {
         TRACE_SERIALIZE (this);
         unsigned count = items.len ();
         if (unlikely (!serialize (c, count)))
@@ -582,16 +622,16 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return_trace (true);
       }
 
-      UnsizedArrayOf *copy (hb_serialize_context_t *c, unsigned count) const {
+      UnsizedArrayOf* copy (hb_serialize_context_t* c, unsigned count) const {
         TRACE_SERIALIZE (this);
-        auto *out = c->start_embed (this);
+        auto* out = c->start_embed (this);
         if (unlikely (!as_array (count).copy (c)))
           return_trace (nullptr);
         return_trace (out);
       }
 
       template <typename ...Ts>
-      bool sanitize (hb_sanitize_context_t *c, unsigned int count, Ts &&... ds) const {
+      bool sanitize (hb_sanitize_context_t* c, unsigned int count, Ts&& ... ds) const {
         TRACE_SANITIZE (this);
         if (unlikely (!sanitize_shallow (c, count)))
           return_trace (false);
@@ -603,7 +643,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return_trace (true);
       }
 
-      bool sanitize_shallow (hb_sanitize_context_t *c, unsigned int count) const {
+      bool sanitize_shallow (hb_sanitize_context_t* c, unsigned int count) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_array (arrayZ, count));
       }
@@ -621,23 +661,24 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 /* Unsized array of offsets relative to the beginning of the array itself. */
   template <typename Type, typename OffsetType, bool has_null = true>
   struct UnsizedListOfOffset16To : UnsizedArray16OfOffsetTo<Type, OffsetType, has_null> {
-    const Type &operator[] (int i_) const {
+    const Type& operator [] (int i_) const {
       unsigned int i = (unsigned int) i_;
-      const OffsetTo<Type, OffsetType, has_null> *p = &this->arrayZ[i];
+      const OffsetTo<Type, OffsetType, has_null>* p = &this->arrayZ[i];
       if (unlikely (p < this->arrayZ))
         return Null (Type); /* Overflowed. */
       return this + *p;
     }
-    Type &operator[] (int i_) {
+
+    Type& operator [] (int i_) {
       unsigned int i = (unsigned int) i_;
-      const OffsetTo<Type, OffsetType, has_null> *p = &this->arrayZ[i];
+      const OffsetTo<Type, OffsetType, has_null>* p = &this->arrayZ[i];
       if (unlikely (p < this->arrayZ))
         return Crap (Type); /* Overflowed. */
       return this + *p;
     }
 
     template <typename ...Ts>
-    bool sanitize (hb_sanitize_context_t *c, unsigned int count, Ts &&... ds) const {
+    bool sanitize (hb_sanitize_context_t* c, unsigned int count, Ts&& ... ds) const {
       TRACE_SANITIZE (this);
       return_trace ((UnsizedArray16OfOffsetTo<Type, OffsetType, has_null>
       ::sanitize (c, count, this, hb_forward<Ts> (ds)...)));
@@ -650,26 +691,31 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
     hb_sorted_array_t<Type> as_array (unsigned int len) {
       return hb_sorted_array (this->arrayZ, len);
     }
+
     hb_sorted_array_t<const Type> as_array (unsigned int len) const {
       return hb_sorted_array (this->arrayZ, len);
     }
+
     operator hb_sorted_array_t<Type> () {
       return as_array ();
     }
+
     operator hb_sorted_array_t<const Type> () const {
       return as_array ();
     }
 
     template <typename T>
-    Type &bsearch (unsigned int len, const T &x, Type &not_found = Crap (Type)) {
+    Type& bsearch (unsigned int len, const T& x, Type& not_found = Crap (Type)) {
       return *as_array (len).bsearch (x, &not_found);
     }
+
     template <typename T>
-    const Type &bsearch (unsigned int len, const T &x, const Type &not_found = Null (Type)) const {
+    const Type& bsearch (unsigned int len, const T& x, const Type& not_found = Null (Type)) const {
       return *as_array (len).bsearch (x, &not_found);
     }
+
     template <typename T>
-    bool bfind (unsigned int len, const T &x, unsigned int *i = nullptr,
+    bool bfind (unsigned int len, const T& x, unsigned int* i = nullptr,
                 hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
                 unsigned int to_store = (unsigned int) -1) const {
       return as_array (len).bfind (x, i, not_found, to_store);
@@ -684,13 +730,14 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 
       HB_DELETE_CREATE_COPY_ASSIGN (ArrayOf);
 
-      const Type &operator[] (int i_) const {
+      const Type& operator [] (int i_) const {
         unsigned int i = (unsigned int) i_;
         if (unlikely (i >= len))
           return Null (Type);
         return arrayZ[i];
       }
-      Type &operator[] (int i_) {
+
+      Type& operator [] (int i_) {
         unsigned int i = (unsigned int) i_;
         if (unlikely (i >= len))
           return Crap (Type);
@@ -712,6 +759,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       hb_array_t<Type> as_array () {
         return hb_array (arrayZ, len);
       }
+
       hb_array_t<const Type> as_array () const {
         return hb_array (arrayZ, len);
       }
@@ -719,15 +767,19 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       /* Iterator. */
       typedef hb_array_t<const Type> iter_t;
       typedef hb_array_t<Type> writer_t;
+
       iter_t iter () const {
         return as_array ();
       }
+
       writer_t writer () {
         return as_array ();
       }
+
       operator iter_t () const {
         return iter ();
       }
+
       operator writer_t () {
         return writer ();
       }
@@ -735,26 +787,31 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       hb_array_t<const Type> sub_array (unsigned int start_offset, unsigned int count) const {
         return as_array ().sub_array (start_offset, count);
       }
-      hb_array_t<const Type> sub_array (unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) const {
+
+      hb_array_t<const Type> sub_array (unsigned int start_offset, unsigned int* count = nullptr /* IN/OUT */) const {
         return as_array ().sub_array (start_offset, count);
       }
+
       hb_array_t<Type> sub_array (unsigned int start_offset, unsigned int count) {
         return as_array ().sub_array (start_offset, count);
       }
-      hb_array_t<Type> sub_array (unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) {
+
+      hb_array_t<Type> sub_array (unsigned int start_offset, unsigned int* count = nullptr /* IN/OUT */) {
         return as_array ().sub_array (start_offset, count);
       }
 
       template <typename T>
-      Type &lsearch (const T &x, Type &not_found = Crap (Type)) {
+      Type& lsearch (const T& x, Type& not_found = Crap (Type)) {
         return *as_array ().lsearch (x, &not_found);
       }
+
       template <typename T>
-      const Type &lsearch (const T &x, const Type &not_found = Null (Type)) const {
+      const Type& lsearch (const T& x, const Type& not_found = Null (Type)) const {
         return *as_array ().lsearch (x, &not_found);
       }
+
       template <typename T>
-      bool lfind (const T &x, unsigned *pos = nullptr) const {
+      bool lfind (const T& x, unsigned* pos = nullptr) const {
         return as_array ().lfind (x, pos);
       }
 
@@ -762,7 +819,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         as_array ().qsort (start, end);
       }
 
-      HB_NODISCARD bool serialize (hb_serialize_context_t *c, unsigned items_len) {
+      HB_NODISCARD bool serialize (hb_serialize_context_t* c, unsigned items_len) {
         TRACE_SERIALIZE (this);
         if (unlikely (!c->extend_min (*this)))
           return_trace (false);
@@ -771,9 +828,10 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
           return_trace (false);
         return_trace (true);
       }
+
       template <typename Iterator,
           hb_requires (hb_is_source_of (Iterator, Type))>
-      HB_NODISCARD bool serialize (hb_serialize_context_t *c, Iterator items) {
+      HB_NODISCARD bool serialize (hb_serialize_context_t* c, Iterator items) {
         TRACE_SERIALIZE (this);
         unsigned count = items.len ();
         if (unlikely (!serialize (c, count)))
@@ -785,7 +843,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return_trace (true);
       }
 
-      Type *serialize_append (hb_serialize_context_t *c) {
+      Type* serialize_append (hb_serialize_context_t* c) {
         TRACE_SERIALIZE (this);
         len++;
         if (unlikely (!len || !c->extend (*this))) {
@@ -795,9 +853,9 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return_trace (&arrayZ[len - 1]);
       }
 
-      ArrayOf *copy (hb_serialize_context_t *c) const {
+      ArrayOf* copy (hb_serialize_context_t* c) const {
         TRACE_SERIALIZE (this);
-        auto *out = c->start_embed (this);
+        auto* out = c->start_embed (this);
         if (unlikely (!c->extend_min (out)))
           return_trace (nullptr);
         c->check_assign (out->len, len, HB_SERIALIZE_ERROR_ARRAY_OVERFLOW);
@@ -807,7 +865,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       }
 
       template <typename ...Ts>
-      bool sanitize (hb_sanitize_context_t *c, Ts &&... ds) const {
+      bool sanitize (hb_sanitize_context_t* c, Ts&& ... ds) const {
         TRACE_SANITIZE (this);
         if (unlikely (!sanitize_shallow (c)))
           return_trace (false);
@@ -820,7 +878,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return_trace (true);
       }
 
-      bool sanitize_shallow (hb_sanitize_context_t *c) const {
+      bool sanitize_shallow (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (len.sanitize (c) && c->check_array (arrayZ, len));
       }
@@ -844,22 +902,23 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 /* Array of offsets relative to the beginning of the array itself. */
   template <typename Type>
   struct List16OfOffset16To : Array16OfOffset16To<Type> {
-    const Type &operator[] (int i_) const {
+    const Type& operator [] (int i_) const {
       unsigned int i = (unsigned int) i_;
       if (unlikely (i >= this->len))
         return Null (Type);
       return this + this->arrayZ[i];
     }
-    const Type &operator[] (int i_) {
+
+    const Type& operator [] (int i_) {
       unsigned int i = (unsigned int) i_;
       if (unlikely (i >= this->len))
         return Crap (Type);
       return this + this->arrayZ[i];
     }
 
-    bool subset (hb_subset_context_t *c) const {
+    bool subset (hb_subset_context_t* c) const {
       TRACE_SUBSET (this);
-      struct List16OfOffset16To<Type> *out = c->serializer->embed (*this);
+      struct List16OfOffset16To<Type>* out = c->serializer->embed (*this);
       if (unlikely (!out))
         return_trace (false);
       unsigned int count = this->len;
@@ -869,7 +928,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
     }
 
     template <typename ...Ts>
-    bool sanitize (hb_sanitize_context_t *c, Ts &&... ds) const {
+    bool sanitize (hb_sanitize_context_t* c, Ts&& ... ds) const {
       TRACE_SANITIZE (this);
       return_trace (Array16OfOffset16To<Type>::sanitize (c, this, hb_forward<Ts> (ds)...));
     }
@@ -882,18 +941,20 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 
       HB_DELETE_CREATE_COPY_ASSIGN (HeadlessArrayOf);
 
-      const Type &operator[] (int i_) const {
+      const Type& operator [] (int i_) const {
         unsigned int i = (unsigned int) i_;
         if (unlikely (i >= lenP1 || !i))
           return Null (Type);
         return arrayZ[i - 1];
       }
-      Type &operator[] (int i_) {
+
+      Type& operator [] (int i_) {
         unsigned int i = (unsigned int) i_;
         if (unlikely (i >= lenP1 || !i))
           return Crap (Type);
         return arrayZ[i - 1];
       }
+
       unsigned int get_size () const {
         return lenP1.static_size + get_length () * Type::static_size;
       }
@@ -905,6 +966,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       hb_array_t<Type> as_array () {
         return hb_array (arrayZ, get_length ());
       }
+
       hb_array_t<const Type> as_array () const {
         return hb_array (arrayZ, get_length ());
       }
@@ -912,20 +974,24 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       /* Iterator. */
       typedef hb_array_t<const Type> iter_t;
       typedef hb_array_t<Type> writer_t;
+
       iter_t iter () const {
         return as_array ();
       }
+
       writer_t writer () {
         return as_array ();
       }
+
       operator iter_t () const {
         return iter ();
       }
+
       operator writer_t () {
         return writer ();
       }
 
-      bool serialize (hb_serialize_context_t *c, unsigned int items_len) {
+      bool serialize (hb_serialize_context_t* c, unsigned int items_len) {
         TRACE_SERIALIZE (this);
         if (unlikely (!c->extend_min (*this)))
           return_trace (false);
@@ -934,9 +1000,10 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
           return_trace (false);
         return_trace (true);
       }
+
       template <typename Iterator,
           hb_requires (hb_is_source_of (Iterator, Type))>
-      bool serialize (hb_serialize_context_t *c, Iterator items) {
+      bool serialize (hb_serialize_context_t* c, Iterator items) {
         TRACE_SERIALIZE (this);
         unsigned count = items.len ();
         if (unlikely (!serialize (c, count)))
@@ -949,7 +1016,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       }
 
       template <typename ...Ts>
-      bool sanitize (hb_sanitize_context_t *c, Ts &&... ds) const {
+      bool sanitize (hb_sanitize_context_t* c, Ts&& ... ds) const {
         TRACE_SANITIZE (this);
         if (unlikely (!sanitize_shallow (c)))
           return_trace (false);
@@ -963,7 +1030,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       }
 
     private:
-      bool sanitize_shallow (hb_sanitize_context_t *c) const {
+      bool sanitize_shallow (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (lenP1.sanitize (c) &&
                       (!lenP1 || c->check_array (arrayZ, lenP1 - 1)));
@@ -981,24 +1048,26 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
   struct ArrayOfM1 {
       HB_DELETE_CREATE_COPY_ASSIGN (ArrayOfM1);
 
-      const Type &operator[] (int i_) const {
+      const Type& operator [] (int i_) const {
         unsigned int i = (unsigned int) i_;
         if (unlikely (i > lenM1))
           return Null (Type);
         return arrayZ[i];
       }
-      Type &operator[] (int i_) {
+
+      Type& operator [] (int i_) {
         unsigned int i = (unsigned int) i_;
         if (unlikely (i > lenM1))
           return Crap (Type);
         return arrayZ[i];
       }
+
       unsigned int get_size () const {
         return lenM1.static_size + (lenM1 + 1) * Type::static_size;
       }
 
       template <typename ...Ts>
-      bool sanitize (hb_sanitize_context_t *c, Ts &&... ds) const {
+      bool sanitize (hb_sanitize_context_t* c, Ts&& ... ds) const {
         TRACE_SANITIZE (this);
         if (unlikely (!sanitize_shallow (c)))
           return_trace (false);
@@ -1012,7 +1081,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       }
 
     private:
-      bool sanitize_shallow (hb_sanitize_context_t *c) const {
+      bool sanitize_shallow (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (lenM1.sanitize (c) &&
                       (c->check_array (arrayZ, lenM1 + 1)));
@@ -1031,6 +1100,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
     hb_sorted_array_t<Type> as_array () {
       return hb_sorted_array (this->arrayZ, this->len);
     }
+
     hb_sorted_array_t<const Type> as_array () const {
       return hb_sorted_array (this->arrayZ, this->len);
     }
@@ -1038,15 +1108,19 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
     /* Iterator. */
     typedef hb_sorted_array_t<const Type> iter_t;
     typedef hb_sorted_array_t<Type> writer_t;
+
     iter_t iter () const {
       return as_array ();
     }
+
     writer_t writer () {
       return as_array ();
     }
+
     operator iter_t () const {
       return iter ();
     }
+
     operator writer_t () {
       return writer ();
     }
@@ -1054,40 +1128,46 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
     hb_sorted_array_t<const Type> sub_array (unsigned int start_offset, unsigned int count) const {
       return as_array ().sub_array (start_offset, count);
     }
+
     hb_sorted_array_t<const Type>
-    sub_array (unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) const {
-      return as_array ().sub_array (start_offset, count);
-    }
-    hb_sorted_array_t<Type> sub_array (unsigned int start_offset, unsigned int count) {
-      return as_array ().sub_array (start_offset, count);
-    }
-    hb_sorted_array_t<Type> sub_array (unsigned int start_offset, unsigned int *count = nullptr /* IN/OUT */) {
+    sub_array (unsigned int start_offset, unsigned int* count = nullptr /* IN/OUT */) const {
       return as_array ().sub_array (start_offset, count);
     }
 
-    bool serialize (hb_serialize_context_t *c, unsigned int items_len) {
+    hb_sorted_array_t<Type> sub_array (unsigned int start_offset, unsigned int count) {
+      return as_array ().sub_array (start_offset, count);
+    }
+
+    hb_sorted_array_t<Type> sub_array (unsigned int start_offset, unsigned int* count = nullptr /* IN/OUT */) {
+      return as_array ().sub_array (start_offset, count);
+    }
+
+    bool serialize (hb_serialize_context_t* c, unsigned int items_len) {
       TRACE_SERIALIZE (this);
       bool ret = ArrayOf<Type, LenType>::serialize (c, items_len);
       return_trace (ret);
     }
+
     template <typename Iterator,
         hb_requires (hb_is_sorted_source_of (Iterator, Type))>
-    bool serialize (hb_serialize_context_t *c, Iterator items) {
+    bool serialize (hb_serialize_context_t* c, Iterator items) {
       TRACE_SERIALIZE (this);
       bool ret = ArrayOf<Type, LenType>::serialize (c, items);
       return_trace (ret);
     }
 
     template <typename T>
-    Type &bsearch (const T &x, Type &not_found = Crap (Type)) {
+    Type& bsearch (const T& x, Type& not_found = Crap (Type)) {
       return *as_array ().bsearch (x, &not_found);
     }
+
     template <typename T>
-    const Type &bsearch (const T &x, const Type &not_found = Null (Type)) const {
+    const Type& bsearch (const T& x, const Type& not_found = Null (Type)) const {
       return *as_array ().bsearch (x, &not_found);
     }
+
     template <typename T>
-    bool bfind (const T &x, unsigned int *i = nullptr,
+    bool bfind (const T& x, unsigned int* i = nullptr,
                 hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
                 unsigned int to_store = (unsigned int) -1) const {
       return as_array ().bfind (x, i, not_found, to_store);
@@ -1107,12 +1187,12 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return len;
       }
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this));
       }
 
-      BinSearchHeader &operator= (unsigned int v) {
+      BinSearchHeader& operator = (unsigned int v) {
         len = v;
         assert (len == v);
         entrySelector = hb_max (1u, hb_bit_storage (v)) - 1;
@@ -1138,7 +1218,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
 
   struct VarSizedBinSearchHeader {
 
-      bool sanitize (hb_sanitize_context_t *c) const {
+      bool sanitize (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (c->check_struct (this));
       }
@@ -1170,7 +1250,7 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
          *
          * "The number of termination values that need to be included is table-specific.
          * The value that indicates binary search termination is 0xFFFF." */
-        const HBUINT16 *words = &StructAtOffset<HBUINT16> (&bytesZ, (header.nUnits - 1) * header.unitSize);
+        const HBUINT16* words = &StructAtOffset<HBUINT16> (&bytesZ, (header.nUnits - 1) * header.unitSize);
         unsigned int count = Type::TerminationWordCount;
         for (unsigned int i = 0; i < count; i++)
           if (words[i] != 0xFFFFu)
@@ -1178,27 +1258,30 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
         return true;
       }
 
-      const Type &operator[] (int i_) const {
+      const Type& operator [] (int i_) const {
         unsigned int i = (unsigned int) i_;
         if (unlikely (i >= get_length ()))
           return Null (Type);
         return StructAtOffset<Type> (&bytesZ, i * header.unitSize);
       }
-      Type &operator[] (int i_) {
+
+      Type& operator [] (int i_) {
         unsigned int i = (unsigned int) i_;
         if (unlikely (i >= get_length ()))
           return Crap (Type);
         return StructAtOffset<Type> (&bytesZ, i * header.unitSize);
       }
+
       unsigned int get_length () const {
         return header.nUnits - last_is_terminator ();
       }
+
       unsigned int get_size () const {
         return header.static_size + header.nUnits * header.unitSize;
       }
 
       template <typename ...Ts>
-      bool sanitize (hb_sanitize_context_t *c, Ts &&... ds) const {
+      bool sanitize (hb_sanitize_context_t* c, Ts&& ... ds) const {
         TRACE_SANITIZE (this);
         if (unlikely (!sanitize_shallow (c)))
           return_trace (false);
@@ -1212,20 +1295,20 @@ DECLARE_NULL_NAMESPACE_BYTES (OT, VarIdx);
       }
 
       template <typename T>
-      const Type *bsearch (const T &key) const {
+      const Type* bsearch (const T& key) const {
         unsigned pos;
         return hb_bsearch_impl (&pos,
                                 key,
-                                (const void *) bytesZ,
+                                (const void*) bytesZ,
                                 get_length (),
                                 header.unitSize,
                                 _hb_cmp_method<T, Type>)
-               ? (const Type *) (((const char *) &bytesZ) + (pos * header.unitSize))
+               ? (const Type*) (((const char*) &bytesZ) + (pos * header.unitSize))
                : nullptr;
       }
 
     private:
-      bool sanitize_shallow (hb_sanitize_context_t *c) const {
+      bool sanitize_shallow (hb_sanitize_context_t* c) const {
         TRACE_SANITIZE (this);
         return_trace (header.sanitize (c) &&
                       Type::static_size <= header.unitSize &&

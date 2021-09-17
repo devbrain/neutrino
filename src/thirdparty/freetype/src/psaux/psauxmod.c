@@ -150,7 +150,7 @@ const PSAux_Interface psaux_interface =
         ps_decoder_init,
         t1_make_subfont,
 
-        (const T1_CMap_ClassesRec *) &t1_cmap_classes,
+        (const T1_CMap_ClassesRec*) &t1_cmap_classes,
 
 #ifndef T1_CONFIG_OPTION_NO_AFM
         &afm_parser_funcs,

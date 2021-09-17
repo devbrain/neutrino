@@ -49,7 +49,7 @@ struct hb_face_t {
     hb_object_header_t header;
 
     hb_reference_table_func_t reference_table_func;
-    void *user_data;
+    void* user_data;
     hb_destroy_func_t destroy;
 
     unsigned int index;            /* Face index in a collection, zero-based. */
@@ -61,18 +61,18 @@ struct hb_face_t {
 
     /* Cache */
     struct plan_node_t {
-      hb_shape_plan_t *shape_plan;
-      plan_node_t *next;
+      hb_shape_plan_t* shape_plan;
+      plan_node_t* next;
     };
     hb_atomic_ptr_t<plan_node_t> shape_plans;
 
-    hb_blob_t *reference_table (hb_tag_t tag) const {
-      hb_blob_t *blob;
+    hb_blob_t* reference_table (hb_tag_t tag) const {
+      hb_blob_t* blob;
 
       if (unlikely (!reference_table_func))
         return hb_blob_get_empty ();
 
-      blob = reference_table_func (/*XXX*/const_cast<hb_face_t *> (this), tag, user_data);
+      blob = reference_table_func (/*XXX*/const_cast<hb_face_t*> (this), tag, user_data);
       if (unlikely (!blob))
         return hb_blob_get_empty ();
 

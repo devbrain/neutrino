@@ -48,9 +48,9 @@
  *
  */
 
-static const char *
+static const char*
 cid_get_postscript_name (CID_Face face) {
-  const char *result = face->cid.cid_font_name;
+  const char* result = face->cid.cid_font_name;
 
   if (result && result[0] == '/')
     result++;
@@ -70,7 +70,7 @@ static const FT_Service_PsFontNameRec cid_service_ps_name =
 
 static FT_Error
 cid_ps_get_font_info (FT_Face face,
-                      PS_FontInfoRec *afont_info) {
+                      PS_FontInfoRec* afont_info) {
   *afont_info = ((CID_Face) face)->cid.font_info;
 
   return FT_Err_Ok;
@@ -78,7 +78,7 @@ cid_ps_get_font_info (FT_Face face,
 
 static FT_Error
 cid_ps_get_font_extra (FT_Face face,
-                       PS_FontExtraRec *afont_extra) {
+                       PS_FontExtraRec* afont_extra) {
   *afont_extra = ((CID_Face) face)->font_extra;
 
   return FT_Err_Ok;
@@ -102,9 +102,9 @@ static const FT_Service_PsInfoRec cid_service_ps_info =
  */
 static FT_Error
 cid_get_ros (CID_Face face,
-             const char **registry,
-             const char **ordering,
-             FT_Int *supplement) {
+             const char** registry,
+             const char** ordering,
+             FT_Int* supplement) {
   CID_FaceInfo cid = &face->cid;
 
   if (registry)
@@ -121,7 +121,7 @@ cid_get_ros (CID_Face face,
 
 static FT_Error
 cid_get_is_cid (CID_Face face,
-                FT_Bool *is_cid) {
+                FT_Bool* is_cid) {
   FT_Error error = FT_Err_Ok;
   FT_UNUSED(face);
 
@@ -134,7 +134,7 @@ cid_get_is_cid (CID_Face face,
 static FT_Error
 cid_get_cid_from_glyph_index (CID_Face face,
                               FT_UInt glyph_index,
-                              FT_UInt *cid) {
+                              FT_UInt* cid) {
   FT_Error error = FT_Err_Ok;
   FT_UNUSED(face);
 
@@ -184,7 +184,7 @@ static const FT_ServiceDescRec cid_services[] =
 
 FT_CALLBACK_DEF(FT_Module_Interface)
 cid_get_interface (FT_Module module,
-                   const char *cid_interface) {
+                   const char* cid_interface) {
   FT_UNUSED(module);
 
   return ft_service_list_lookup (cid_services, cid_interface);

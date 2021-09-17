@@ -43,9 +43,9 @@ static unsigned const kInverseProbabilityLog256[256] = {
     5, 4, 2, 1,
 };
 
-static unsigned ZSTD_getFSEMaxSymbolValue (FSE_CTable const *ctable) {
-  void const *ptr = ctable;
-  U16 const *u16ptr = (U16 const *) ptr;
+static unsigned ZSTD_getFSEMaxSymbolValue (FSE_CTable const* ctable) {
+  void const* ptr = ctable;
+  U16 const* u16ptr = (U16 const*) ptr;
   U32 const maxSymbolValue = MEM_read16 (u16ptr + 1);
   return maxSymbolValue;
 }
@@ -66,7 +66,7 @@ static unsigned ZSTD_useLowProbCount (size_t const nbSeq) {
  * Returns the cost in bytes of encoding the normalized count header.
  * Returns an error if any of the helper functions return an error.
  */
-static size_t ZSTD_NCountCost (unsigned const *count, unsigned const max,
+static size_t ZSTD_NCountCost (unsigned const* count, unsigned const max,
                                size_t const nbSeq, unsigned const FSELog) {
   BYTE wksp[FSE_NCOUNTBOUND];
   S16 norm[MaxSeq + 1];
@@ -79,7 +79,7 @@ static size_t ZSTD_NCountCost (unsigned const *count, unsigned const max,
  * Returns the cost in bits of encoding the distribution described by count
  * using the entropy bound.
  */
-static size_t ZSTD_entropyCost (unsigned const *count, unsigned const max, size_t const total) {
+static size_t ZSTD_entropyCost (unsigned const* count, unsigned const max, size_t const total) {
   unsigned cost = 0;
   unsigned s;
 
@@ -99,8 +99,8 @@ static size_t ZSTD_entropyCost (unsigned const *count, unsigned const max, size_
  * Returns an error if ctable cannot represent all the symbols in count.
  */
 size_t ZSTD_fseBitCost (
-    FSE_CTable const *ctable,
-    unsigned const *count,
+    FSE_CTable const* ctable,
+    unsigned const* count,
     unsigned const max) {
   unsigned const kAccuracyLog = 8;
   size_t cost = 0;
@@ -132,8 +132,8 @@ size_t ZSTD_fseBitCost (
  * table described by norm. The max symbol support by norm is assumed >= max.
  * norm must be valid for every symbol with non-zero probability in count.
  */
-size_t ZSTD_crossEntropyCost (short const *norm, unsigned accuracyLog,
-                              unsigned const *count, unsigned const max) {
+size_t ZSTD_crossEntropyCost (short const* norm, unsigned accuracyLog,
+                              unsigned const* count, unsigned const max) {
   unsigned const shift = 8 - accuracyLog;
   size_t cost = 0;
   unsigned s;
@@ -150,10 +150,10 @@ size_t ZSTD_crossEntropyCost (short const *norm, unsigned accuracyLog,
 
 symbolEncodingType_e
 ZSTD_selectEncodingType (
-    FSE_repeat *repeatMode, unsigned const *count, unsigned const max,
+    FSE_repeat* repeatMode, unsigned const* count, unsigned const max,
     size_t const mostFrequent, size_t nbSeq, unsigned const FSELog,
-    FSE_CTable const *prevCTable,
-    short const *defaultNorm, U32 defaultNormLog,
+    FSE_CTable const* prevCTable,
+    short const* defaultNorm, U32 defaultNormLog,
     ZSTD_defaultPolicy_e const isDefaultAllowed,
     ZSTD_strategy const strategy) {
   ZSTD_STATIC_ASSERT(ZSTD_defaultDisallowed == 0 && ZSTD_defaultAllowed != 0);
@@ -238,15 +238,15 @@ typedef struct {
 } ZSTD_BuildCTableWksp;
 
 size_t
-ZSTD_buildCTable (void *dst, size_t dstCapacity,
-                  FSE_CTable *nextCTable, U32 FSELog, symbolEncodingType_e type,
-                  unsigned *count, U32 max,
-                  const BYTE *codeTable, size_t nbSeq,
-                  const S16 *defaultNorm, U32 defaultNormLog, U32 defaultMax,
-                  const FSE_CTable *prevCTable, size_t prevCTableSize,
-                  void *entropyWorkspace, size_t entropyWorkspaceSize) {
-  BYTE *op = (BYTE *) dst;
-  const BYTE *const oend = op + dstCapacity;
+ZSTD_buildCTable (void* dst, size_t dstCapacity,
+                  FSE_CTable* nextCTable, U32 FSELog, symbolEncodingType_e type,
+                  unsigned* count, U32 max,
+                  const BYTE* codeTable, size_t nbSeq,
+                  const S16* defaultNorm, U32 defaultNormLog, U32 defaultMax,
+                  const FSE_CTable* prevCTable, size_t prevCTableSize,
+                  void* entropyWorkspace, size_t entropyWorkspaceSize) {
+  BYTE* op = (BYTE*) dst;
+  const BYTE* const oend = op + dstCapacity;
   DEBUGLOG(6, "ZSTD_buildCTable (dstCapacity=%u)", (unsigned) dstCapacity);
 
   switch (type) {
@@ -262,7 +262,7 @@ ZSTD_buildCTable (void *dst, size_t dstCapacity,
       FORWARD_IF_ERROR(FSE_buildCTable_wksp (nextCTable, defaultNorm, defaultMax, defaultNormLog, entropyWorkspace, entropyWorkspaceSize), "");  /* note : could be pre-calculated */
       return 0;
     case set_compressed: {
-      ZSTD_BuildCTableWksp *wksp = (ZSTD_BuildCTableWksp *) entropyWorkspace;
+      ZSTD_BuildCTableWksp* wksp = (ZSTD_BuildCTableWksp*) entropyWorkspace;
       size_t nbSeq_1 = nbSeq;
       const U32 tableLog = FSE_optimalTableLog (FSELog, nbSeq, max);
       if (count[codeTable[nbSeq - 1]] > 1) {
@@ -288,11 +288,11 @@ ZSTD_buildCTable (void *dst, size_t dstCapacity,
 
 FORCE_INLINE_TEMPLATE size_t
 ZSTD_encodeSequences_body (
-    void *dst, size_t dstCapacity,
-    FSE_CTable const *CTable_MatchLength, BYTE const *mlCodeTable,
-    FSE_CTable const *CTable_OffsetBits, BYTE const *ofCodeTable,
-    FSE_CTable const *CTable_LitLength, BYTE const *llCodeTable,
-    seqDef const *sequences, size_t nbSeq, int longOffsets) {
+    void* dst, size_t dstCapacity,
+    FSE_CTable const* CTable_MatchLength, BYTE const* mlCodeTable,
+    FSE_CTable const* CTable_OffsetBits, BYTE const* ofCodeTable,
+    FSE_CTable const* CTable_LitLength, BYTE const* llCodeTable,
+    seqDef const* sequences, size_t nbSeq, int longOffsets) {
   BIT_CStream_t blockStream;
   FSE_CState_t stateMatchLength;
   FSE_CState_t stateOffsetBits;
@@ -391,11 +391,11 @@ ZSTD_encodeSequences_body (
 
 static size_t
 ZSTD_encodeSequences_default (
-    void *dst, size_t dstCapacity,
-    FSE_CTable const *CTable_MatchLength, BYTE const *mlCodeTable,
-    FSE_CTable const *CTable_OffsetBits, BYTE const *ofCodeTable,
-    FSE_CTable const *CTable_LitLength, BYTE const *llCodeTable,
-    seqDef const *sequences, size_t nbSeq, int longOffsets) {
+    void* dst, size_t dstCapacity,
+    FSE_CTable const* CTable_MatchLength, BYTE const* mlCodeTable,
+    FSE_CTable const* CTable_OffsetBits, BYTE const* ofCodeTable,
+    FSE_CTable const* CTable_LitLength, BYTE const* llCodeTable,
+    seqDef const* sequences, size_t nbSeq, int longOffsets) {
   return ZSTD_encodeSequences_body (dst, dstCapacity,
                                     CTable_MatchLength, mlCodeTable,
                                     CTable_OffsetBits, ofCodeTable,
@@ -407,11 +407,11 @@ ZSTD_encodeSequences_default (
 
 static TARGET_ATTRIBUTE("bmi2") size_t
 ZSTD_encodeSequences_bmi2 (
-    void *dst, size_t dstCapacity,
-    FSE_CTable const *CTable_MatchLength, BYTE const *mlCodeTable,
-    FSE_CTable const *CTable_OffsetBits, BYTE const *ofCodeTable,
-    FSE_CTable const *CTable_LitLength, BYTE const *llCodeTable,
-    seqDef const *sequences, size_t nbSeq, int longOffsets) {
+    void* dst, size_t dstCapacity,
+    FSE_CTable const* CTable_MatchLength, BYTE const* mlCodeTable,
+    FSE_CTable const* CTable_OffsetBits, BYTE const* ofCodeTable,
+    FSE_CTable const* CTable_LitLength, BYTE const* llCodeTable,
+    seqDef const* sequences, size_t nbSeq, int longOffsets) {
   return ZSTD_encodeSequences_body (dst, dstCapacity,
                                     CTable_MatchLength, mlCodeTable,
                                     CTable_OffsetBits, ofCodeTable,
@@ -422,11 +422,11 @@ ZSTD_encodeSequences_bmi2 (
 #endif
 
 size_t ZSTD_encodeSequences (
-    void *dst, size_t dstCapacity,
-    FSE_CTable const *CTable_MatchLength, BYTE const *mlCodeTable,
-    FSE_CTable const *CTable_OffsetBits, BYTE const *ofCodeTable,
-    FSE_CTable const *CTable_LitLength, BYTE const *llCodeTable,
-    seqDef const *sequences, size_t nbSeq, int longOffsets, int bmi2) {
+    void* dst, size_t dstCapacity,
+    FSE_CTable const* CTable_MatchLength, BYTE const* mlCodeTable,
+    FSE_CTable const* CTable_OffsetBits, BYTE const* ofCodeTable,
+    FSE_CTable const* CTable_LitLength, BYTE const* llCodeTable,
+    seqDef const* sequences, size_t nbSeq, int longOffsets, int bmi2) {
   DEBUGLOG(5, "ZSTD_encodeSequences: dstCapacity = %u", (unsigned) dstCapacity);
 #if DYNAMIC_BMI2
   if (bmi2) {

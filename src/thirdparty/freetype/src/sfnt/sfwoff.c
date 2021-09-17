@@ -63,10 +63,10 @@ sfnt_stream_close (FT_Stream stream) {
 }
 
 FT_CALLBACK_DEF(int)
-compare_offsets (const void *a,
-                 const void *b) {
-  WOFF_Table table1 = *(WOFF_Table *) a;
-  WOFF_Table table2 = *(WOFF_Table *) b;
+compare_offsets (const void* a,
+                 const void* b) {
+  WOFF_Table table1 = *(WOFF_Table*) a;
+  WOFF_Table table2 = *(WOFF_Table*) b;
 
   FT_ULong offset1 = table1->Offset;
   FT_ULong offset2 = table2->Offset;
@@ -91,14 +91,14 @@ woff_open_font (FT_Stream stream,
 
   WOFF_HeaderRec woff;
   WOFF_Table tables = NULL;
-  WOFF_Table *indices = NULL;
+  WOFF_Table* indices = NULL;
 
   FT_ULong woff_offset;
 
-  FT_Byte *sfnt = NULL;
+  FT_Byte* sfnt = NULL;
   FT_Stream sfnt_stream = NULL;
 
-  FT_Byte *sfnt_header;
+  FT_Byte* sfnt_header;
   FT_ULong sfnt_offset;
 
   FT_Int nn;

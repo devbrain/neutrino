@@ -104,7 +104,7 @@ static FT_Outline dummy_outline_3 =
     };
 
 static void
-dump_outline (FT_Outline *outline) {
+dump_outline (FT_Outline* outline) {
   FT_BBox bbox;
 
   /* compute and display cbox */
@@ -125,7 +125,7 @@ dump_outline (FT_Outline *outline) {
 }
 
 static void
-profile_outline (FT_Outline *outline,
+profile_outline (FT_Outline* outline,
                  long repeat) {
   FT_BBox bbox;
   long count;
@@ -162,7 +162,7 @@ profile_outline (FT_Outline *outline,
 
 #define REPEAT  1000000L
 
-int main (int argc, char **argv) {
+int main (int argc, char** argv) {
   printf ("outline #1\n");
   profile_outline (&dummy_outline_1, REPEAT);
 

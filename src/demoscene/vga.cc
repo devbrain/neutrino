@@ -6,7 +6,7 @@
 #include <neutrino/hal/video/pixel_format.hh>
 
 namespace neutrino::demoscene {
-  vga::vga (engine::main_window &window)
+  vga::vga (engine::main_window& window)
       : m_window (window),
         m_renderer (window.get_renderer ()) {
 
@@ -20,7 +20,7 @@ namespace neutrino::demoscene {
   void vga::present () {
     auto[w, h] = m_renderer.logical_size ();
     auto[px, pitch] = m_texture.lock ();
-    auto *pixels = (uint32_t *) px;
+    auto* pixels = (uint32_t*) px;
     std::size_t idx = 0;
     for (unsigned y = 0; y < h; y++) {
       for (unsigned x = 0; x < w; x++) {
@@ -44,11 +44,11 @@ namespace neutrino::demoscene {
     return h;
   }
 
-  vga::palette_t &vga::palette () {
+  vga::palette_t& vga::palette () {
     return m_palette;
   }
 
-  vga::surface_t &vga::surface () {
+  vga::surface_t& vga::surface () {
     return m_surface;
   }
 

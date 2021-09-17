@@ -40,7 +40,7 @@ namespace neutrino::utils {
     template <typename T>
     class IsNegativeImpl<true, T> {
       public:
-        bool operator() (T x) {
+        bool operator () (T x) {
           return x < 0;
         }
     };
@@ -48,7 +48,7 @@ namespace neutrino::utils {
     template <typename T>
     class IsNegativeImpl<false, T> {
       public:
-        bool operator() (T) {
+        bool operator () (T) {
           return false;
         }
     };
@@ -80,7 +80,7 @@ namespace neutrino::utils {
   }
 
   template <typename F, typename T>
-  inline T &isSafeIntCast (F from)
+  inline T& isSafeIntCast (F from)
   /// Returns true if it is safe to cast
   /// integer from F to T.
   {
@@ -91,7 +91,7 @@ namespace neutrino::utils {
   }
 
   template <typename F, typename T>
-  inline T &safeIntCast (F from, T &to)
+  inline T& safeIntCast (F from, T& to)
   /// Returns csted value if it is safe
   /// to cast integer from F to T,
   /// otherwise throws BadCastException.
@@ -131,7 +131,7 @@ namespace neutrino::utils {
 //
 
   template <typename I>
-  bool str_to_int (const char *pStr, I &outResult, short base, char thSep = ',')
+  bool str_to_int (const char* pStr, I& outResult, short base, char thSep = ',')
   /// Converts zero-terminated character array to integer number;
   /// Thousand separators are recognized for base10 and current locale;
   /// they are silently skipped and not verified for correct positioning.
@@ -320,7 +320,7 @@ namespace neutrino::utils {
   }
 
   template <typename I>
-  bool str_to_int (const std::string &str, I &result, short base, char thSep = ',')
+  bool str_to_int (const std::string& str, I& result, short base, char thSep = ',')
   /// Converts string to integer number;
   /// This is a wrapper function, for details see see the
   /// bool str_to_int(const char*, I&, short, char) implementation.
@@ -340,47 +340,47 @@ namespace neutrino::utils {
         /// Class ensures increment/decrement remain within boundaries.
     {
       public:
-        ptr (char *ptr, std::size_t offset)
+        ptr (char* ptr, std::size_t offset)
             : _beg (ptr), _cur (ptr), _end (ptr + offset) {
         }
 
-        char *&operator++ () // prefix
+        char*& operator ++ () // prefix
         {
           checkBounds (_cur + 1);
           return ++_cur;
         }
 
-        char *operator++ (int) // postfix
+        char* operator ++ (int) // postfix
         {
           checkBounds (_cur + 1);
-          char *tmp = _cur++;
+          char* tmp = _cur++;
           return tmp;
         }
 
-        char *&operator-- () // prefix
+        char*& operator -- () // prefix
         {
           checkBounds (_cur - 1);
           return --_cur;
         }
 
-        char *operator-- (int) // postfix
+        char* operator -- (int) // postfix
         {
           checkBounds (_cur - 1);
-          char *tmp = _cur--;
+          char* tmp = _cur--;
           return tmp;
         }
 
-        char *&operator+= (int incr) {
+        char*& operator += (int incr) {
           checkBounds (_cur + incr);
           return _cur += incr;
         }
 
-        char *&operator-= (int decr) {
+        char*& operator -= (int decr) {
           checkBounds (_cur - decr);
           return _cur -= decr;
         }
 
-        operator char * () const {
+        operator char* () const {
           return _cur;
         }
 
@@ -389,14 +389,14 @@ namespace neutrino::utils {
         }
 
       private:
-        void checkBounds (const char *ptr) {
+        void checkBounds (const char* ptr) {
           if (ptr > _end)
             RAISE_EX("RangeException");
         }
 
-        const char *_beg;
-        char *_cur;
-        const char *_end;
+        const char* _beg;
+        char* _cur;
+        const char* _end;
     };
 
   } // namespace Impl
@@ -405,8 +405,8 @@ namespace neutrino::utils {
   template <typename T>
   bool int_to_str (T value,
                    unsigned short base,
-                   char *result,
-                   std::size_t &size,
+                   char* result,
+                   std::size_t& size,
                    bool prefix = false,
                    int width = -1,
                    char fill = ' ',
@@ -478,7 +478,7 @@ namespace neutrino::utils {
     ENFORCE ((-1 == width) || (size >= size_t (width)));
     *ptr-- = '\0';
 
-    char *ptrr = result;
+    char* ptrr = result;
     char tmp;
     while (ptrr < ptr) {
       tmp = *ptr;
@@ -492,8 +492,8 @@ namespace neutrino::utils {
   template <typename T>
   bool uint_to_str (T value,
                     unsigned short base,
-                    char *result,
-                    std::size_t &size,
+                    char* result,
+                    std::size_t& size,
                     bool prefix = false,
                     int width = -1,
                     char fill = ' ',
@@ -558,7 +558,7 @@ namespace neutrino::utils {
     ENFORCE ((-1 == width) || (size >= size_t (width)));
     *ptr-- = '\0';
 
-    char *ptrr = result;
+    char* ptrr = result;
     char tmp;
     while (ptrr < ptr) {
       tmp = *ptr;
@@ -571,7 +571,7 @@ namespace neutrino::utils {
 
   template <typename T>
   bool
-  int_to_str (T number, unsigned short base, std::string &result, bool prefix = false, int width = -1, char fill = ' ',
+  int_to_str (T number, unsigned short base, std::string& result, bool prefix = false, int width = -1, char fill = ' ',
               char thSep = 0)
   /// Converts integer to string; This is a wrapper function, for details see see the
   /// bool int_to_str(T, unsigned short, char*, int, int, char, char) implementation.
@@ -584,7 +584,7 @@ namespace neutrino::utils {
   }
 
   template <typename T>
-  bool uint_to_str (T number, unsigned short base, std::string &result, bool prefix = false, int width = -1,
+  bool uint_to_str (T number, unsigned short base, std::string& result, bool prefix = false, int width = -1,
                     char fill = ' ', char thSep = 0)
   /// Converts unsigned integer to string; This is a wrapper function, for details see see the
   /// bool uint_to_str(T, unsigned short, char*, int, int, char, char) implementation.
@@ -605,7 +605,7 @@ namespace neutrino::utils {
 //
 
 
-  void float_to_str (char *buffer,
+  void float_to_str (char* buffer,
                      int bufferSize,
                      float value,
                      int lowDec = -std::numeric_limits<float>::digits10,
@@ -615,7 +615,7 @@ namespace neutrino::utils {
   /// the input number. Depending on lowDec and highDec values, the function returns
   /// decimal or exponential representation.
 
-  void float_to_fixed_str (char *buffer,
+  void float_to_fixed_str (char* buffer,
                            int bufferSize,
                            float value,
                            int precision);
@@ -624,7 +624,7 @@ namespace neutrino::utils {
   /// decimal point.
 
 
-  std::string &float_to_str (std::string &str,
+  std::string& float_to_str (std::string& str,
                              float value,
                              int precision = -1,
                              int width = 0,
@@ -636,7 +636,7 @@ namespace neutrino::utils {
   /// and width (total length of formatted string).
 
 
-  std::string &float_to_fixed_str (std::string &str,
+  std::string& float_to_fixed_str (std::string& str,
                                    float value,
                                    int precision,
                                    int width = 0,
@@ -647,7 +647,7 @@ namespace neutrino::utils {
   /// precision (total number of digits after the decimal point) and width (total length of formatted string).
 
 
-  void double_to_str (char *buffer,
+  void double_to_str (char* buffer,
                       int bufferSize,
                       double value,
                       int lowDec = -std::numeric_limits<double>::digits10,
@@ -658,7 +658,7 @@ namespace neutrino::utils {
   /// decimal or exponential representation.
 
 
-  void double_to_fixed_str (char *buffer,
+  void double_to_fixed_str (char* buffer,
                             int bufferSize,
                             double value,
                             int precision);
@@ -667,7 +667,7 @@ namespace neutrino::utils {
   /// decimal point.
 
 
-  std::string &double_to_str (std::string &str,
+  std::string& double_to_str (std::string& str,
                               double value,
                               int precision = -1,
                               int width = 0,
@@ -679,7 +679,7 @@ namespace neutrino::utils {
   /// and width (total length of formatted string).
 
 
-  std::string &double_to_fixed_str (std::string &str,
+  std::string& double_to_fixed_str (std::string& str,
                                     double value,
                                     int precision = -1,
                                     int width = 0,
@@ -690,15 +690,15 @@ namespace neutrino::utils {
   /// precision (total number of digits after the decimal point) and width (total length of formatted string).
 
 
-  float str_to_float (const char *str,
-                      const char *inf = NEUTRINO_FLT_INF, const char *nan = NEUTRINO_FLT_NAN);
+  float str_to_float (const char* str,
+                      const char* inf = NEUTRINO_FLT_INF, const char* nan = NEUTRINO_FLT_NAN);
   /// Converts the string of characters into single-precision floating point number.
   /// Function uses double_conversion::DoubleToStringConverter to do the conversion.
 
 
-  bool str_to_float (const std::string &, float &result,
+  bool str_to_float (const std::string&, float& result,
                      char decSep = '.', char thSep = ',',
-                     const char *inf = NEUTRINO_FLT_INF, const char *nan = NEUTRINO_FLT_NAN);
+                     const char* inf = NEUTRINO_FLT_INF, const char* nan = NEUTRINO_FLT_NAN);
   /// Converts the string of characters into single-precision floating point number.
   /// The conversion result is assigned to the result parameter.
   /// If decimal separator and/or thousand separator are different from defaults, they should be
@@ -707,14 +707,14 @@ namespace neutrino::utils {
   /// Returns true if successful, false otherwise.
 
 
-  double str_to_double (const char *str,
-                        const char *inf = NEUTRINO_FLT_INF, const char *nan = NEUTRINO_FLT_NAN);
+  double str_to_double (const char* str,
+                        const char* inf = NEUTRINO_FLT_INF, const char* nan = NEUTRINO_FLT_NAN);
   /// Converts the string of characters into double-precision floating point number.
 
 
-  bool str_to_double (const std::string &str, double &result,
+  bool str_to_double (const std::string& str, double& result,
                       char decSep = '.', char thSep = ',',
-                      const char *inf = NEUTRINO_FLT_INF, const char *nan = NEUTRINO_FLT_NAN);
+                      const char* inf = NEUTRINO_FLT_INF, const char* nan = NEUTRINO_FLT_NAN);
   /// Converts the string of characters into double-precision floating point number.
   /// The conversion result is assigned to the result parameter.
   /// If decimal separator and/or thousand separator are different from defaults, they should be

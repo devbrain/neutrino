@@ -55,7 +55,7 @@
 FT_LOCAL_DEF(void)
 cf2_arrstack_init (CF2_ArrStack arrstack,
                    FT_Memory memory,
-                   FT_Error *error,
+                   FT_Error* error,
                    size_t sizeItem) {
   FT_ASSERT(arrstack);
 
@@ -172,7 +172,7 @@ cf2_arrstack_getBuffer (const CF2_ArrStack arrstack) {
 FT_LOCAL_DEF(void*)
 cf2_arrstack_getPointer (const CF2_ArrStack arrstack,
                          size_t idx) {
-  void *newPtr;
+  void* newPtr;
 
   FT_ASSERT(arrstack);
 
@@ -182,7 +182,7 @@ cf2_arrstack_getPointer (const CF2_ArrStack arrstack,
     idx = 0;    /* choose safe default */
   }
 
-  newPtr = (FT_Byte *) arrstack->ptr + idx * arrstack->sizeItem;
+  newPtr = (FT_Byte*) arrstack->ptr + idx * arrstack->sizeItem;
 
   return newPtr;
 }
@@ -193,7 +193,7 @@ cf2_arrstack_getPointer (const CF2_ArrStack arrstack,
 /* TODO: should there be a length param for extra checking? */
 FT_LOCAL_DEF(void)
 cf2_arrstack_push (CF2_ArrStack arrstack,
-                   const void *ptr) {
+                   const void* ptr) {
   FT_ASSERT(arrstack);
 
   if (arrstack->count == arrstack->allocated) {
@@ -209,7 +209,7 @@ cf2_arrstack_push (CF2_ArrStack arrstack,
 
   {
     size_t offset = arrstack->count * arrstack->sizeItem;
-    void *newPtr = (FT_Byte *) arrstack->ptr + offset;
+    void* newPtr = (FT_Byte*) arrstack->ptr + offset;
 
     FT_MEM_COPY(newPtr, ptr, arrstack->sizeItem);
     arrstack->count += 1;

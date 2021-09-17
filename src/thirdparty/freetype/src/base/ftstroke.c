@@ -33,7 +33,7 @@ FT_CALLBACK_TABLE const FT_Glyph_Class ft_outline_glyph_class;
 /* documentation is in ftstroke.h */
 
 FT_EXPORT_DEF(FT_StrokerBorder)
-FT_Outline_GetInsideBorder (FT_Outline *outline) {
+FT_Outline_GetInsideBorder (FT_Outline* outline) {
   FT_Orientation o = FT_Outline_Get_Orientation (outline);
 
   return o == FT_ORIENTATION_TRUETYPE ? FT_STROKER_BORDER_RIGHT
@@ -44,7 +44,7 @@ FT_Outline_GetInsideBorder (FT_Outline *outline) {
 /* documentation is in ftstroke.h */
 
 FT_EXPORT_DEF(FT_StrokerBorder)
-FT_Outline_GetOutsideBorder (FT_Outline *outline) {
+FT_Outline_GetOutsideBorder (FT_Outline* outline) {
   FT_Orientation o = FT_Outline_Get_Orientation (outline);
 
   return o == FT_ORIENTATION_TRUETYPE ? FT_STROKER_BORDER_LEFT
@@ -73,7 +73,7 @@ ft_pos_abs (FT_Pos x) {
 }
 
 static void
-ft_conic_split (FT_Vector *base) {
+ft_conic_split (FT_Vector* base) {
   FT_Pos a, b;
 
   base[4].x = base[2].x;
@@ -92,9 +92,9 @@ ft_conic_split (FT_Vector *base) {
 }
 
 static FT_Bool
-ft_conic_is_small_enough (FT_Vector *base,
-                          FT_Angle *angle_in,
-                          FT_Angle *angle_out) {
+ft_conic_is_small_enough (FT_Vector* base,
+                          FT_Angle* angle_in,
+                          FT_Angle* angle_out) {
   FT_Vector d1, d2;
   FT_Angle theta;
   FT_Int close1, close2;
@@ -135,7 +135,7 @@ ft_conic_is_small_enough (FT_Vector *base,
 }
 
 static void
-ft_cubic_split (FT_Vector *base) {
+ft_cubic_split (FT_Vector* base) {
   FT_Pos a, b, c;
 
   base[6].x = base[3].x;
@@ -174,10 +174,10 @@ ft_angle_mean (FT_Angle angle1,
 }
 
 static FT_Bool
-ft_cubic_is_small_enough (FT_Vector *base,
-                          FT_Angle *angle_in,
-                          FT_Angle *angle_mid,
-                          FT_Angle *angle_out) {
+ft_cubic_is_small_enough (FT_Vector* base,
+                          FT_Angle* angle_in,
+                          FT_Angle* angle_mid,
+                          FT_Angle* angle_out) {
   FT_Vector d1, d2, d3;
   FT_Angle theta1, theta2;
   FT_Int close1, close2, close3;
@@ -281,14 +281,14 @@ typedef enum FT_StrokeTags_ {
 typedef struct FT_StrokeBorderRec_ {
   FT_UInt num_points;
   FT_UInt max_points;
-  FT_Vector *points;
-  FT_Byte *tags;
+  FT_Vector* points;
+  FT_Byte* tags;
   FT_Bool movable;  /* TRUE for ends of lineto borders */
   FT_Int start;    /* index of current sub-path start point */
   FT_Memory memory;
   FT_Bool valid;
 
-} FT_StrokeBorderRec, *FT_StrokeBorder;
+} FT_StrokeBorderRec, * FT_StrokeBorder;
 
 static FT_Error
 ft_stroke_border_grow (FT_StrokeBorder border,
@@ -336,8 +336,8 @@ ft_stroke_border_close (FT_StrokeBorder border,
     if (reverse) {
       /* reverse the points */
       {
-        FT_Vector *vec1 = border->points + start + 1;
-        FT_Vector *vec2 = border->points + count - 1;
+        FT_Vector* vec1 = border->points + start + 1;
+        FT_Vector* vec2 = border->points + count - 1;
 
         for (; vec1 < vec2; vec1++, vec2--) {
           FT_Vector tmp;
@@ -350,8 +350,8 @@ ft_stroke_border_close (FT_StrokeBorder border,
 
       /* then the tags */
       {
-        FT_Byte *tag1 = border->tags + start + 1;
-        FT_Byte *tag2 = border->tags + count - 1;
+        FT_Byte* tag1 = border->tags + start + 1;
+        FT_Byte* tag2 = border->tags + count - 1;
 
         for (; tag1 < tag2; tag1++, tag2--) {
           FT_Byte tmp;
@@ -373,7 +373,7 @@ ft_stroke_border_close (FT_StrokeBorder border,
 
 static FT_Error
 ft_stroke_border_lineto (FT_StrokeBorder border,
-                         FT_Vector *to,
+                         FT_Vector* to,
                          FT_Bool movable) {
   FT_Error error = FT_Err_Ok;
 
@@ -393,8 +393,8 @@ ft_stroke_border_lineto (FT_StrokeBorder border,
     /* add one point */
     error = ft_stroke_border_grow (border, 1);
     if (!error) {
-      FT_Vector *vec = border->points + border->num_points;
-      FT_Byte *tag = border->tags + border->num_points;
+      FT_Vector* vec = border->points + border->num_points;
+      FT_Byte* tag = border->tags + border->num_points;
 
       vec[0] = *to;
       tag[0] = FT_STROKE_TAG_ON;
@@ -408,16 +408,16 @@ ft_stroke_border_lineto (FT_StrokeBorder border,
 
 static FT_Error
 ft_stroke_border_conicto (FT_StrokeBorder border,
-                          FT_Vector *control,
-                          FT_Vector *to) {
+                          FT_Vector* control,
+                          FT_Vector* to) {
   FT_Error error;
 
   FT_ASSERT(border->start >= 0);
 
   error = ft_stroke_border_grow (border, 2);
   if (!error) {
-    FT_Vector *vec = border->points + border->num_points;
-    FT_Byte *tag = border->tags + border->num_points;
+    FT_Vector* vec = border->points + border->num_points;
+    FT_Byte* tag = border->tags + border->num_points;
 
     vec[0] = *control;
     vec[1] = *to;
@@ -435,17 +435,17 @@ ft_stroke_border_conicto (FT_StrokeBorder border,
 
 static FT_Error
 ft_stroke_border_cubicto (FT_StrokeBorder border,
-                          FT_Vector *control1,
-                          FT_Vector *control2,
-                          FT_Vector *to) {
+                          FT_Vector* control1,
+                          FT_Vector* control2,
+                          FT_Vector* to) {
   FT_Error error;
 
   FT_ASSERT(border->start >= 0);
 
   error = ft_stroke_border_grow (border, 3);
   if (!error) {
-    FT_Vector *vec = border->points + border->num_points;
-    FT_Byte *tag = border->tags + border->num_points;
+    FT_Vector* vec = border->points + border->num_points;
+    FT_Byte* tag = border->tags + border->num_points;
 
     vec[0] = *control1;
     vec[1] = *control2;
@@ -467,7 +467,7 @@ ft_stroke_border_cubicto (FT_StrokeBorder border,
 
 static FT_Error
 ft_stroke_border_arcto (FT_StrokeBorder border,
-                        FT_Vector *center,
+                        FT_Vector* center,
                         FT_Fixed radius,
                         FT_Angle angle_start,
                         FT_Angle angle_diff) {
@@ -523,7 +523,7 @@ ft_stroke_border_arcto (FT_StrokeBorder border,
 
 static FT_Error
 ft_stroke_border_moveto (FT_StrokeBorder border,
-                         FT_Vector *to) {
+                         FT_Vector* to) {
   /* close current open path if any ? */
   if (border->start >= 0)
     ft_stroke_border_close (border, FALSE);
@@ -569,15 +569,15 @@ ft_stroke_border_done (FT_StrokeBorder border) {
 
 static FT_Error
 ft_stroke_border_get_counts (FT_StrokeBorder border,
-                             FT_UInt *anum_points,
-                             FT_UInt *anum_contours) {
+                             FT_UInt* anum_points,
+                             FT_UInt* anum_contours) {
   FT_Error error = FT_Err_Ok;
   FT_UInt num_points = 0;
   FT_UInt num_contours = 0;
 
   FT_UInt count = border->num_points;
-  FT_Vector *point = border->points;
-  FT_Byte *tags = border->tags;
+  FT_Vector* point = border->points;
+  FT_Byte* tags = border->tags;
   FT_Int in_contour = 0;
 
   for (; count > 0; count--, num_points++, point++, tags++) {
@@ -614,7 +614,7 @@ ft_stroke_border_get_counts (FT_StrokeBorder border,
 
 static void
 ft_stroke_border_export (FT_StrokeBorder border,
-                         FT_Outline *outline) {
+                         FT_Outline* outline) {
   /* copy point locations */
   if (border->num_points)
     FT_ARRAY_COPY(outline->points + outline->n_points,
@@ -624,8 +624,8 @@ ft_stroke_border_export (FT_StrokeBorder border,
   /* copy tags */
   {
     FT_UInt count = border->num_points;
-    FT_Byte *read = border->tags;
-    FT_Byte *write = (FT_Byte *) outline->tags + outline->n_points;
+    FT_Byte* read = border->tags;
+    FT_Byte* write = (FT_Byte*) outline->tags + outline->n_points;
 
     for (; count > 0; count--, read++, write++) {
       if (*read & FT_STROKE_TAG_ON)
@@ -640,8 +640,8 @@ ft_stroke_border_export (FT_StrokeBorder border,
   /* copy contours */
   {
     FT_UInt count = border->num_points;
-    FT_Byte *tags = border->tags;
-    FT_Short *write = outline->contours + outline->n_contours;
+    FT_Byte* tags = border->tags;
+    FT_Short* write = outline->contours + outline->n_contours;
     FT_Short idx = (FT_Short) outline->n_points;
 
     for (; count > 0; count--, tags++, idx++) {
@@ -696,7 +696,7 @@ typedef struct FT_StrokerRec_ {
 
 FT_EXPORT_DEF(FT_Error)
 FT_Stroker_New (FT_Library library,
-                FT_Stroker *astroker) {
+                FT_Stroker* astroker) {
   FT_Error error;           /* assigned in FT_NEW */
   FT_Memory memory;
   FT_Stroker stroker = NULL;
@@ -1130,7 +1130,7 @@ ft_stroker_subpath_start (FT_Stroker stroker,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Stroker_LineTo (FT_Stroker stroker,
-                   FT_Vector *to) {
+                   FT_Vector* to) {
   FT_Error error = FT_Err_Ok;
   FT_StrokeBorder border;
   FT_Vector delta;
@@ -1200,12 +1200,12 @@ FT_Stroker_LineTo (FT_Stroker stroker,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Stroker_ConicTo (FT_Stroker stroker,
-                    FT_Vector *control,
-                    FT_Vector *to) {
+                    FT_Vector* control,
+                    FT_Vector* to) {
   FT_Error error = FT_Err_Ok;
   FT_Vector bez_stack[34];
-  FT_Vector *arc;
-  FT_Vector *limit = bez_stack + 30;
+  FT_Vector* arc;
+  FT_Vector* limit = bez_stack + 30;
   FT_Bool first_arc = TRUE;
 
   if (!stroker || !control || !to) {
@@ -1388,13 +1388,13 @@ FT_Stroker_ConicTo (FT_Stroker stroker,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Stroker_CubicTo (FT_Stroker stroker,
-                    FT_Vector *control1,
-                    FT_Vector *control2,
-                    FT_Vector *to) {
+                    FT_Vector* control1,
+                    FT_Vector* control2,
+                    FT_Vector* to) {
   FT_Error error = FT_Err_Ok;
   FT_Vector bez_stack[37];
-  FT_Vector *arc;
-  FT_Vector *limit = bez_stack + 32;
+  FT_Vector* arc;
+  FT_Vector* limit = bez_stack + 32;
   FT_Bool first_arc = TRUE;
 
   if (!stroker || !control1 || !control2 || !to) {
@@ -1591,7 +1591,7 @@ FT_Stroker_CubicTo (FT_Stroker stroker,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Stroker_BeginSubPath (FT_Stroker stroker,
-                         FT_Vector *to,
+                         FT_Vector* to,
                          FT_Bool open) {
   if (!stroker || !to)
     return FT_THROW(Invalid_Argument);
@@ -1639,10 +1639,10 @@ ft_stroker_add_reverse_left (FT_Stroker stroker,
       goto Exit;
 
     {
-      FT_Vector *dst_point = right->points + right->num_points;
-      FT_Byte *dst_tag = right->tags + right->num_points;
-      FT_Vector *src_point = left->points + left->num_points - 1;
-      FT_Byte *src_tag = left->tags + left->num_points - 1;
+      FT_Vector* dst_point = right->points + right->num_points;
+      FT_Byte* dst_tag = right->tags + right->num_points;
+      FT_Vector* src_point = left->points + left->num_points - 1;
+      FT_Byte* src_tag = left->tags + left->num_points - 1;
 
       while (src_point >= left->points + left->start) {
         *dst_point = *src_point;
@@ -1772,8 +1772,8 @@ FT_Stroker_EndSubPath (FT_Stroker stroker) {
 FT_EXPORT_DEF(FT_Error)
 FT_Stroker_GetBorderCounts (FT_Stroker stroker,
                             FT_StrokerBorder border,
-                            FT_UInt *anum_points,
-                            FT_UInt *anum_contours) {
+                            FT_UInt* anum_points,
+                            FT_UInt* anum_contours) {
   FT_UInt num_points = 0, num_contours = 0;
   FT_Error error;
 
@@ -1799,8 +1799,8 @@ FT_Stroker_GetBorderCounts (FT_Stroker stroker,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Stroker_GetCounts (FT_Stroker stroker,
-                      FT_UInt *anum_points,
-                      FT_UInt *anum_contours) {
+                      FT_UInt* anum_points,
+                      FT_UInt* anum_contours) {
   FT_UInt count1, count2, num_points = 0;
   FT_UInt count3, count4, num_contours = 0;
   FT_Error error;
@@ -1839,7 +1839,7 @@ FT_Stroker_GetCounts (FT_Stroker stroker,
 FT_EXPORT_DEF(void)
 FT_Stroker_ExportBorder (FT_Stroker stroker,
                          FT_StrokerBorder border,
-                         FT_Outline *outline) {
+                         FT_Outline* outline) {
   if (!stroker || !outline)
     return;
 
@@ -1857,7 +1857,7 @@ FT_Stroker_ExportBorder (FT_Stroker stroker,
 
 FT_EXPORT_DEF(void)
 FT_Stroker_Export (FT_Stroker stroker,
-                   FT_Outline *outline) {
+                   FT_Outline* outline) {
   FT_Stroker_ExportBorder (stroker, FT_STROKER_BORDER_LEFT, outline);
   FT_Stroker_ExportBorder (stroker, FT_STROKER_BORDER_RIGHT, outline);
 }
@@ -1871,15 +1871,15 @@ FT_Stroker_Export (FT_Stroker stroker,
    */
 FT_EXPORT_DEF(FT_Error)
 FT_Stroker_ParseOutline (FT_Stroker stroker,
-                         FT_Outline *outline,
+                         FT_Outline* outline,
                          FT_Bool opened) {
   FT_Vector v_last;
   FT_Vector v_control;
   FT_Vector v_start;
 
-  FT_Vector *point;
-  FT_Vector *limit;
-  char *tags;
+  FT_Vector* point;
+  FT_Vector* limit;
+  char* tags;
 
   FT_Error error;
 
@@ -2062,7 +2062,7 @@ FT_Stroker_ParseOutline (FT_Stroker stroker,
 /* documentation is in ftstroke.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Glyph_Stroke (FT_Glyph *pglyph,
+FT_Glyph_Stroke (FT_Glyph* pglyph,
                  FT_Stroker stroker,
                  FT_Bool destroy) {
   FT_Error error = FT_ERR(Invalid_Argument);
@@ -2087,7 +2087,7 @@ FT_Glyph_Stroke (FT_Glyph *pglyph,
 
   {
     FT_OutlineGlyph oglyph = (FT_OutlineGlyph) glyph;
-    FT_Outline *outline = &oglyph->outline;
+    FT_Outline* outline = &oglyph->outline;
     FT_UInt num_points, num_contours;
 
     error = FT_Stroker_ParseOutline (stroker, outline, FALSE);
@@ -2132,7 +2132,7 @@ FT_Glyph_Stroke (FT_Glyph *pglyph,
 /* documentation is in ftstroke.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Glyph_StrokeBorder (FT_Glyph *pglyph,
+FT_Glyph_StrokeBorder (FT_Glyph* pglyph,
                        FT_Stroker stroker,
                        FT_Bool inside,
                        FT_Bool destroy) {
@@ -2159,7 +2159,7 @@ FT_Glyph_StrokeBorder (FT_Glyph *pglyph,
   {
     FT_OutlineGlyph oglyph = (FT_OutlineGlyph) glyph;
     FT_StrokerBorder border;
-    FT_Outline *outline = &oglyph->outline;
+    FT_Outline* outline = &oglyph->outline;
     FT_UInt num_points, num_contours;
 
     border = FT_Outline_GetOutsideBorder (outline);

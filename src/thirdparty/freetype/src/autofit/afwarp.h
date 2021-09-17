@@ -42,15 +42,15 @@ typedef struct AF_WarperRec_ {
   AF_WarpScore best_score;
   AF_WarpScore best_distort;
 
-} AF_WarperRec, *AF_Warper;
+} AF_WarperRec, * AF_Warper;
 
 #ifdef AF_CONFIG_OPTION_USE_WARPER
 FT_LOCAL(void)
 af_warper_compute (AF_Warper warper,
                    AF_GlyphHints hints,
                    AF_Dimension dim,
-                   FT_Fixed *a_scale,
-                   FT_Pos *a_delta);
+                   FT_Fixed* a_scale,
+                   FT_Pos* a_delta);
 #endif
 
 FT_END_HEADER

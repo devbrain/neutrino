@@ -66,7 +66,7 @@ enum {
  */
 
 typedef struct CF2_HintMaskRec_ {
-  FT_Error *error;
+  FT_Error* error;
 
   FT_Bool isValid;
   FT_Bool isNew;
@@ -76,7 +76,7 @@ typedef struct CF2_HintMaskRec_ {
 
   FT_Byte mask[(CF2_MAX_HINTS + 7) / 8];
 
-} CF2_HintMaskRec, *CF2_HintMask;
+} CF2_HintMaskRec, * CF2_HintMask;
 
 typedef struct CF2_StemHintRec_ {
   FT_Bool used;     /* DS positions are valid         */
@@ -87,7 +87,7 @@ typedef struct CF2_StemHintRec_ {
   CF2_Fixed minDS;  /* DS position after first use    */
   CF2_Fixed maxDS;
 
-} CF2_StemHintRec, *CF2_StemHint;
+} CF2_StemHintRec, * CF2_StemHint;
 
 
 /*
@@ -120,7 +120,7 @@ typedef struct CF2_HintMapRec_ {
   CF2_Font font;
 
   /* initial map based on blue zones */
-  struct CF2_HintMapRec_ *initialHintMap;
+  struct CF2_HintMapRec_* initialHintMap;
 
   /* working storage for 2nd pass adjustHints */
   CF2_ArrStack hintMoves;
@@ -136,7 +136,7 @@ typedef struct CF2_HintMapRec_ {
 
   CF2_HintRec edge[CF2_MAX_HINT_EDGES]; /* 192 */
 
-} CF2_HintMapRec, *CF2_HintMap;
+} CF2_HintMapRec, * CF2_HintMap;
 
 FT_LOCAL(FT_Bool)
 cf2_hint_isValid (const CF2_Hint hint);
@@ -200,7 +200,7 @@ typedef struct CF2_GlyphPathRec_ {
   CF2_ArrStack vStemHintArray;
   CF2_HintMask hintMask;     /* ptr to the current mask */
   CF2_Fixed hintOriginY;  /* copy of current origin  */
-  const CF2_BluesRec *blues;
+  const CF2_BluesRec* blues;
 
   CF2_Fixed xOffset;        /* character space offsets */
   CF2_Fixed yOffset;
@@ -229,7 +229,7 @@ typedef struct CF2_GlyphPathRec_ {
   FT_Vector prevElemP2;
   FT_Vector prevElemP3;
 
-} CF2_GlyphPathRec, *CF2_GlyphPath;
+} CF2_GlyphPathRec, * CF2_GlyphPath;
 
 FT_LOCAL(void)
 cf2_glyphpath_init (CF2_GlyphPath glyphpath,
@@ -242,7 +242,7 @@ cf2_glyphpath_init (CF2_GlyphPath glyphpath,
                     CF2_HintMask hintMask,
                     CF2_Fixed hintOrigin,
                     const CF2_Blues blues,
-                    const FT_Vector *fractionalTranslation);
+                    const FT_Vector* fractionalTranslation);
 FT_LOCAL(void)
 cf2_glyphpath_finalize (CF2_GlyphPath glyphpath);
 

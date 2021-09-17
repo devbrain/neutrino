@@ -14,11 +14,11 @@
 #include <string.h>
 
 #if !HAVE_DECL_PROGRAM_INVOCATION_NAME
-char *progname = NULL;
+char* progname = NULL;
 #endif
 
 extern void
-tuklib_progname_init (char **argv) {
+tuklib_progname_init (char** argv) {
 #ifdef TUKLIB_DOSLIKE
   // On these systems, argv[0] always has the full path and .exe
   // suffix even if the user just types the plain program name.

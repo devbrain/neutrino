@@ -14,7 +14,7 @@
 #include "check.h"
 
 extern LZMA_API(lzma_ret)
-lzma_block_header_size (lzma_block *block) {
+lzma_block_header_size (lzma_block* block) {
   if (block->version > 1)
     return LZMA_OPTIONS_ERROR;
 
@@ -68,7 +68,7 @@ lzma_block_header_size (lzma_block *block) {
 }
 
 extern LZMA_API(lzma_ret)
-lzma_block_header_encode (const lzma_block *block, uint8_t *out) {
+lzma_block_header_encode (const lzma_block* block, uint8_t* out) {
   // Validate everything but filters.
   if (lzma_block_unpadded_size (block) == 0
       || !lzma_vli_is_valid(block->uncompressed_size))

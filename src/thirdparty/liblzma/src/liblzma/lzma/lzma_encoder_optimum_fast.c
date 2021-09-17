@@ -16,9 +16,9 @@
     (((big_dist) >> 7) > (small_dist))
 
 extern void
-lzma_lzma_optimum_fast (lzma_lzma1_encoder *restrict coder,
-                        lzma_mf *restrict mf,
-                        uint32_t *restrict back_res, uint32_t *restrict len_res) {
+lzma_lzma_optimum_fast (lzma_lzma1_encoder* restrict coder,
+                        lzma_mf* restrict mf,
+                        uint32_t* restrict back_res, uint32_t* restrict len_res) {
   const uint32_t nice_len = mf->nice_len;
 
   uint32_t len_main;
@@ -32,7 +32,7 @@ lzma_lzma_optimum_fast (lzma_lzma1_encoder *restrict coder,
     matches_count = coder->matches_count;
   }
 
-  const uint8_t *buf = mf_ptr (mf) - 1;
+  const uint8_t* buf = mf_ptr (mf) - 1;
   const uint32_t buf_avail = my_min(mf_avail (mf) + 1, MATCH_LEN_MAX);
 
   if (buf_avail < 2) {
@@ -48,7 +48,7 @@ lzma_lzma_optimum_fast (lzma_lzma1_encoder *restrict coder,
 
   for (uint32_t i = 0; i < REPS; ++i) {
     // Pointer to the beginning of the match candidate
-    const uint8_t *const buf_back = buf - coder->reps[i] - 1;
+    const uint8_t* const buf_back = buf - coder->reps[i] - 1;
 
     // If the first two bytes (2 == MATCH_LEN_MIN) do not match,
     // this rep is not useful.

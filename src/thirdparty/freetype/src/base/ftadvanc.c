@@ -24,7 +24,7 @@
 
 static FT_Error
 _ft_face_scale_advances (FT_Face face,
-                         FT_Fixed *advances,
+                         FT_Fixed* advances,
                          FT_UInt count,
                          FT_Int32 flags) {
   FT_Fixed scale;
@@ -72,7 +72,7 @@ FT_EXPORT_DEF(FT_Error)
 FT_Get_Advance (FT_Face face,
                 FT_UInt gindex,
                 FT_Int32 flags,
-                FT_Fixed *padvance) {
+                FT_Fixed* padvance) {
   FT_Face_GetAdvancesFunc func;
 
   if (!face)
@@ -107,7 +107,7 @@ FT_Get_Advances (FT_Face face,
                  FT_UInt start,
                  FT_UInt count,
                  FT_Int32 flags,
-                 FT_Fixed *padvances) {
+                 FT_Fixed* padvances) {
   FT_Error error = FT_Err_Ok;
 
   FT_Face_GetAdvancesFunc func;

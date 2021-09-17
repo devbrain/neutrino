@@ -48,12 +48,12 @@ FT_BEGIN_HEADER
 
 typedef struct CFF_ParserRec_ {
   FT_Library library;
-  FT_Byte *start;
-  FT_Byte *limit;
-  FT_Byte *cursor;
+  FT_Byte* start;
+  FT_Byte* limit;
+  FT_Byte* cursor;
 
-  FT_Byte **stack;
-  FT_Byte **top;
+  FT_Byte** stack;
+  FT_Byte** top;
   FT_UInt stackSize;  /* allocated size */
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
@@ -61,21 +61,21 @@ typedef struct CFF_ParserRec_ {
 #endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
 
   FT_UInt object_code;
-  void *object;
+  void* object;
 
   FT_UShort num_designs; /* a copy of `CFF_FontRecDict->num_designs' */
   FT_UShort num_axes;    /* a copy of `CFF_FontRecDict->num_axes'    */
 
-} CFF_ParserRec, *CFF_Parser;
+} CFF_ParserRec, * CFF_Parser;
 
 FT_LOCAL(FT_Long)
 cff_parse_num (CFF_Parser parser,
-               FT_Byte **d);
+               FT_Byte** d);
 
 FT_LOCAL(FT_Error)
 cff_parser_init (CFF_Parser parser,
                  FT_UInt code,
-                 void *object,
+                 void* object,
                  FT_Library library,
                  FT_UInt stackSize,
                  FT_UShort num_designs,
@@ -86,8 +86,8 @@ cff_parser_done (CFF_Parser parser);
 
 FT_LOCAL(FT_Error)
 cff_parser_run (CFF_Parser parser,
-                FT_Byte *start,
-                FT_Byte *limit);
+                FT_Byte* start,
+                FT_Byte* limit);
 
 enum {
   cff_kind_none = 0,
@@ -104,7 +104,7 @@ enum {
 };
 
 /* now generate handlers for the most simple fields */
-typedef FT_Error  (*CFF_Field_Reader) (CFF_Parser parser);
+typedef FT_Error  (* CFF_Field_Reader) (CFF_Parser parser);
 
 typedef struct CFF_Field_Handler_ {
   int kind;

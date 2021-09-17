@@ -16,7 +16,7 @@ namespace neutrino::tiled::tmx {
           : m_tileid (tileid), m_duration (duration) {
       }
 
-      frame (frame &&) = default;
+      frame (frame&&) = default;
 
       [[nodiscard]] int id () const noexcept {
         return m_tileid;
@@ -25,6 +25,7 @@ namespace neutrino::tiled::tmx {
       [[nodiscard]] std::chrono::milliseconds duration () const noexcept {
         return m_duration;
       }
+
     private:
       int m_tileid;
       std::chrono::milliseconds m_duration;
@@ -32,15 +33,16 @@ namespace neutrino::tiled::tmx {
 
   class animation {
     public:
-      static animation parse (const reader &elt);
+      static animation parse (const reader& elt);
 
       void add (frame f) {
         m_frames.emplace_back (std::move (f));
       }
 
-      const std::vector<frame> &frames () const noexcept {
+      [[nodiscard]] const std::vector<frame>& frames () const noexcept {
         return m_frames;
       }
+
     private:
       std::vector<frame> m_frames;
   };

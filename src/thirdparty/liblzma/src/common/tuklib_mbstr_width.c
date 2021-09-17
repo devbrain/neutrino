@@ -18,7 +18,7 @@
 #endif
 
 extern size_t
-tuklib_mbstr_width (const char *str, size_t *bytes) {
+tuklib_mbstr_width (const char* str, size_t* bytes) {
   const size_t len = strlen (str);
   if (bytes != NULL)
     *bytes = len;

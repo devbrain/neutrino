@@ -141,7 +141,7 @@ static void tooManyBlocks (Int32 max_handled_blocks) {
 
 typedef
 struct {
-  FILE *handle;
+  FILE* handle;
   Int32 buffer;
   Int32 buffLive;
   Char mode;
@@ -149,8 +149,8 @@ struct {
     BitStream;
 
 /*---------------------------------------------*/
-static BitStream *bsOpenReadStream (FILE *stream) {
-  BitStream *bs = malloc (sizeof (BitStream));
+static BitStream* bsOpenReadStream (FILE* stream) {
+  BitStream* bs = malloc (sizeof (BitStream));
   if (bs == NULL)
     mallocFail (sizeof (BitStream));
   bs->handle = stream;
@@ -161,8 +161,8 @@ static BitStream *bsOpenReadStream (FILE *stream) {
 }
 
 /*---------------------------------------------*/
-static BitStream *bsOpenWriteStream (FILE *stream) {
-  BitStream *bs = malloc (sizeof (BitStream));
+static BitStream* bsOpenWriteStream (FILE* stream) {
+  BitStream* bs = malloc (sizeof (BitStream));
   if (bs == NULL)
     mallocFail (sizeof (BitStream));
   bs->handle = stream;
@@ -173,7 +173,7 @@ static BitStream *bsOpenWriteStream (FILE *stream) {
 }
 
 /*---------------------------------------------*/
-static void bsPutBit (BitStream *bs, Int32 bit) {
+static void bsPutBit (BitStream* bs, Int32 bit) {
   if (bs->buffLive == 8) {
     Int32 retVal = putc ((UChar) bs->buffer, bs->handle);
     if (retVal == EOF)
@@ -193,7 +193,7 @@ static void bsPutBit (BitStream *bs, Int32 bit) {
 /*--
    Returns 0 or 1, or 2 to indicate EOF.
 --*/
-static Int32 bsGetBit (BitStream *bs) {
+static Int32 bsGetBit (BitStream* bs) {
   if (bs->buffLive > 0) {
     bs->buffLive--;
     return (((bs->buffer) >> (bs->buffLive)) & 0x1);
@@ -212,7 +212,7 @@ static Int32 bsGetBit (BitStream *bs) {
 }
 
 /*---------------------------------------------*/
-static void bsClose (BitStream *bs) {
+static void bsClose (BitStream* bs) {
   Int32 retVal;
 
   if (bs->mode == 'w') {
@@ -239,14 +239,14 @@ static void bsClose (BitStream *bs) {
 }
 
 /*---------------------------------------------*/
-static void bsPutUChar (BitStream *bs, UChar c) {
+static void bsPutUChar (BitStream* bs, UChar c) {
   Int32 i;
   for (i = 7; i >= 0; i--)
     bsPutBit (bs, (((UInt32) c) >> i) & 0x1);
 }
 
 /*---------------------------------------------*/
-static void bsPutUInt32 (BitStream *bs, UInt32 c) {
+static void bsPutUInt32 (BitStream* bs, UInt32 c) {
   Int32 i;
 
   for (i = 31; i >= 0; i--)
@@ -254,7 +254,7 @@ static void bsPutUInt32 (BitStream *bs, UInt32 c) {
 }
 
 /*---------------------------------------------*/
-static Bool endsInBz2 (Char *name) {
+static Bool endsInBz2 (Char* name) {
   Int32 n = strlen (name);
   if (n <= 4)
     return False;
@@ -270,7 +270,7 @@ static Bool endsInBz2 (Char *name) {
  * Opens a file, but refuses to overwrite an existing one.
  */
 static
-FILE *fopen_output_safely (Char *name, const char *mode) {
+FILE* fopen_output_safely (Char* name, const char* mode) {
 #  if BZ_UNIX
   FILE*     fp;
   int       fh;
@@ -314,15 +314,15 @@ MaybeUInt64 bEnd[BZ_MAX_HANDLED_BLOCKS];
 MaybeUInt64 rbStart[BZ_MAX_HANDLED_BLOCKS];
 MaybeUInt64 rbEnd[BZ_MAX_HANDLED_BLOCKS];
 
-Int32 main (Int32 argc, Char **argv) {
-  FILE *inFile;
-  FILE *outFile;
-  BitStream *bsIn, *bsWr;
+Int32 main (Int32 argc, Char** argv) {
+  FILE* inFile;
+  FILE* outFile;
+  BitStream* bsIn, * bsWr;
   Int32 b, wrBlock, currBlock, rbCtr;
   MaybeUInt64 bitsRead;
 
   UInt32 buffHi, buffLo, blockCRC;
-  Char *p;
+  Char* p;
 
   strncpy (progName, argv[0], BZ_MAX_FILENAME - 1);
   progName[BZ_MAX_FILENAME - 1] = '\0';
@@ -489,7 +489,7 @@ Int32 main (Int32 argc, Char **argv) {
     else if (bitsRead == rbStart[wrBlock]) {
       /* Create the output file name, correctly handling leading paths.
          (31.10.2001 by Sergey E. Kusikov) */
-      Char *split;
+      Char* split;
       Int32 ofs, k;
       for (k = 0; k < BZ_MAX_FILENAME; k++)
         outFileName[k] = 0;

@@ -34,7 +34,7 @@ template <typename T> struct U {
 };
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   static_assert (hb_is_convertible (void, void), "");
   static_assert (hb_is_convertible (void, const void), "");
   static_assert (hb_is_convertible (const void, void), "");

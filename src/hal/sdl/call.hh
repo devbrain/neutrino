@@ -13,12 +13,13 @@ namespace neutrino::sdl {
   class sdl_error : public exception {
     public:
       template <typename ... Args>
-      sdl_error (const char *function, const char *source, int line, Args &&... args)
+      sdl_error (const char* function, const char* source, int line, Args&& ... args)
           : exception (exception::dummy_t::CUSTOM, _create_prefix (function, source, line),
                        function, source, line, std::forward<Args> (args)...) {
       }
+
     private:
-      static std::string _create_prefix (const char *function, const char *source, int line) {
+      static std::string _create_prefix (const char* function, const char* source, int line) {
         std::ostringstream os;
         os << "SDL error [" << SDL_GetError () << "] at ";
         os << function << " " << source << "@" << line;
@@ -29,14 +30,15 @@ namespace neutrino::sdl {
   namespace detail {
     template <typename R, typename... Args2, typename... Args>
     inline
-    auto call_sdl (R(f) (Args2...), const char * /*function*/, const char * /*file*/, int /*line*/, Args &&... args)
+    auto call_sdl (R(f) (Args2...), const char* /*function*/, const char* /*file*/, int /*line*/, Args&& ... args)
     -> decltype (f (std::forward<Args> (args)...)) {
       return f (std::forward<Args> (args)...);
     }
+
     // ----------------------------------------------------------------------------------------------
     template <typename R, typename... Args2, typename... Args>
     inline
-    auto call_sdl (R *(f) (Args2...), const char *function, const char *file, int line, Args &&... args)
+    auto call_sdl (R* (f) (Args2...), const char* function, const char* file, int line, Args&& ... args)
     -> decltype (f (std::forward<Args> (args)...)) {
       auto r = f (std::forward<Args> (args)...);
       if (r == nullptr) {
@@ -47,7 +49,7 @@ namespace neutrino::sdl {
     // ----------------------------------------------------------------------------------------------
 
     template <typename... Args2, typename... Args>
-    auto call_sdl (int(f) (Args2...), const char *function, const char *file, int line, Args &&... args)
+    auto call_sdl (int(f) (Args2...), const char* function, const char* file, int line, Args&& ... args)
     -> decltype (f (std::forward<Args> (args)...)) {
 
       auto r = f (std::forward<Args> (args)...);
@@ -57,9 +59,10 @@ namespace neutrino::sdl {
       return r;
 
     }
+
     // ----------------------------------------------------------------------------------------------
     template <typename... Args2, typename... Args>
-    auto call_sdl (void(f) (Args2...), const char * /*function*/, const char * /*file*/, int /*line*/, Args &&... args)
+    auto call_sdl (void(f) (Args2...), const char* /*function*/, const char* /*file*/, int /*line*/, Args&& ... args)
     -> decltype (f (std::forward<Args> (args)...)) {
       f (std::forward<Args> (args)...);
     }

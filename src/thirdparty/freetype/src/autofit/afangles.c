@@ -184,7 +184,7 @@ af_angle_atan( FT_Fixed  dx,
 
 FT_LOCAL_DEF(void)
 af_sort_pos (FT_UInt count,
-             FT_Pos *table) {
+             FT_Pos* table) {
   FT_UInt i, j;
   FT_Pos swap;
 
@@ -201,7 +201,7 @@ af_sort_pos (FT_UInt count,
 }
 
 FT_LOCAL_DEF(void)
-af_sort_and_quantize_widths (FT_UInt *count,
+af_sort_and_quantize_widths (FT_UInt* count,
                              AF_Width table,
                              FT_Pos threshold) {
   FT_UInt i, j;

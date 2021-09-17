@@ -47,7 +47,7 @@
 #undef HB_OT_TABLE
 
 struct hb_ot_face_t {
-  HB_INTERNAL void init0 (hb_face_t *face);
+  HB_INTERNAL void init0 (hb_face_t* face);
   HB_INTERNAL void fini ();
 
 #define HB_OT_TABLE_ORDER(Namespace, Type) \
@@ -60,7 +60,7 @@ struct hb_ot_face_t {
 #undef HB_OT_TABLE
   };
 
-  hb_face_t *face; /* MUST be JUST before the lazy loaders. */
+  hb_face_t* face; /* MUST be JUST before the lazy loaders. */
 #define HB_OT_TABLE(Namespace, Type) \
   hb_table_lazy_loader_t<Namespace::Type, HB_OT_TABLE_ORDER (Namespace, Type)> Type;
 #define HB_OT_ACCELERATOR(Namespace, Type) \

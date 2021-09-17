@@ -85,7 +85,7 @@ struct hb_buffer_t {
   hb_object_header_t header;
 
   /* Information about how the text in the buffer should be treated */
-  hb_unicode_funcs_t *unicode; /* Unicode functions */
+  hb_unicode_funcs_t* unicode; /* Unicode functions */
   hb_buffer_flags_t flags; /* BOT / EOT / etc. */
   hb_buffer_cluster_level_t cluster_level;
   hb_codepoint_t replacement; /* U+FFFD or something else. */
@@ -107,9 +107,9 @@ struct hb_buffer_t {
   unsigned int out_len; /* Length of ->out array if have_output */
 
   unsigned int allocated; /* Length of allocated arrays */
-  hb_glyph_info_t *info;
-  hb_glyph_info_t *out_info;
-  hb_glyph_position_t *pos;
+  hb_glyph_info_t* info;
+  hb_glyph_info_t* out_info;
+  hb_glyph_position_t* pos;
 
   unsigned int serial;
 
@@ -123,7 +123,7 @@ struct hb_buffer_t {
   /* Debugging API */
 #ifndef HB_NO_BUFFER_MESSAGE
   hb_buffer_message_func_t message_func;
-  void *message_data;
+  void* message_data;
   hb_destroy_func_t message_destroy;
   unsigned message_depth; /* How deeply are we inside a message callback? */
 #else
@@ -152,6 +152,7 @@ struct hb_buffer_t {
     allocated_var_bits |= bits;
 #endif
   }
+
   void deallocate_var (unsigned int start, unsigned int count) {
 #ifndef HB_NDEBUG
     unsigned int end = start + count;
@@ -161,6 +162,7 @@ struct hb_buffer_t {
     allocated_var_bits &= ~bits;
 #endif
   }
+
   void assert_var (unsigned int start, unsigned int count) {
 #ifndef HB_NDEBUG
     unsigned int end = start + count;
@@ -169,29 +171,33 @@ struct hb_buffer_t {
     assert (bits == (allocated_var_bits & bits));
 #endif
   }
+
   void deallocate_var_all () {
 #ifndef HB_NDEBUG
     allocated_var_bits = 0;
 #endif
   }
 
-  hb_glyph_info_t &cur (unsigned int i = 0) {
+  hb_glyph_info_t& cur (unsigned int i = 0) {
     return info[idx + i];
   }
+
   hb_glyph_info_t cur (unsigned int i = 0) const {
     return info[idx + i];
   }
 
-  hb_glyph_position_t &cur_pos (unsigned int i = 0) {
+  hb_glyph_position_t& cur_pos (unsigned int i = 0) {
     return pos[idx + i];
   }
+
   hb_glyph_position_t cur_pos (unsigned int i = 0) const {
     return pos[idx + i];
   }
 
-  hb_glyph_info_t &prev () {
+  hb_glyph_info_t& prev () {
     return out_info[out_len ? out_len - 1 : 0];
   }
+
   hb_glyph_info_t prev () const {
     return out_info[out_len ? out_len - 1 : 0];
   }
@@ -206,16 +212,18 @@ struct hb_buffer_t {
   unsigned int backtrack_len () const {
     return have_output ? out_len : idx;
   }
+
   unsigned int lookahead_len () const {
     return len - idx;
   }
+
   unsigned int next_serial () {
     return serial++;
   }
 
   HB_INTERNAL void add (hb_codepoint_t codepoint,
                         unsigned int cluster);
-  HB_INTERNAL void add_info (const hb_glyph_info_t &glyph_info);
+  HB_INTERNAL void add_info (const hb_glyph_info_t& glyph_info);
 
   HB_INTERNAL void reverse_range (unsigned int start, unsigned int end);
   HB_INTERNAL void reverse ();
@@ -230,7 +238,7 @@ struct hb_buffer_t {
   template <typename T>
   HB_NODISCARD bool replace_glyphs (unsigned int num_in,
                                     unsigned int num_out,
-                                    const T *glyph_data) {
+                                    const T* glyph_data) {
     if (unlikely (!make_room_for (num_in, num_out)))
       return false;
 
@@ -238,9 +246,9 @@ struct hb_buffer_t {
 
     merge_clusters (idx, idx + num_in);
 
-    hb_glyph_info_t &orig_info = idx < len ? cur () : prev ();
+    hb_glyph_info_t& orig_info = idx < len ? cur () : prev ();
 
-    hb_glyph_info_t *pinfo = &out_info[out_len];
+    hb_glyph_info_t* pinfo = &out_info[out_len];
     for (unsigned int i = 0; i < num_out; i++) {
       *pinfo = orig_info;
       pinfo->codepoint = glyph_data[i];
@@ -261,7 +269,7 @@ struct hb_buffer_t {
     return replace_glyphs (0, 1, &glyph_index);
   }
 
-  HB_NODISCARD bool output_info (const hb_glyph_info_t &glyph_info) {
+  HB_NODISCARD bool output_info (const hb_glyph_info_t& glyph_info) {
     if (unlikely (!make_room_for (0, 1)))
       return false;
 
@@ -307,18 +315,22 @@ struct hb_buffer_t {
     idx += n;
     return true;
   }
+
   /* Advance idx without copying to output. */
   void skip_glyph () {
     idx++;
   }
+
   void reset_masks (hb_mask_t mask) {
     for (unsigned int j = 0; j < len; j++)
       info[j].mask = mask;
   }
+
   void add_masks (hb_mask_t mask) {
     for (unsigned int j = 0; j < len; j++)
       info[j].mask |= mask;
   }
+
   HB_INTERNAL void set_masks (hb_mask_t value, hb_mask_t mask,
                               unsigned int cluster_start, unsigned int cluster_end);
 
@@ -327,6 +339,7 @@ struct hb_buffer_t {
       return;
     merge_clusters_impl (start, end);
   }
+
   HB_INTERNAL void merge_clusters_impl (unsigned int start, unsigned int end);
   HB_INTERNAL void merge_out_clusters (unsigned int start, unsigned int end);
   /* Merge clusters for deleting current glyph, and skip it. */
@@ -338,6 +351,7 @@ struct hb_buffer_t {
       return;
     unsafe_to_break_impl (start, end);
   }
+
   HB_INTERNAL void unsafe_to_break_impl (unsigned int start, unsigned int end);
   HB_INTERNAL void unsafe_to_break_from_outbuffer (unsigned int start, unsigned int end);
 
@@ -359,10 +373,12 @@ struct hb_buffer_t {
     assert ((content_type == HB_BUFFER_CONTENT_TYPE_GLYPHS) ||
             (!len && (content_type == HB_BUFFER_CONTENT_TYPE_INVALID)));
   }
+
   void assert_unicode () {
     assert ((content_type == HB_BUFFER_CONTENT_TYPE_UNICODE) ||
             (!len && (content_type == HB_BUFFER_CONTENT_TYPE_INVALID)));
   }
+
   HB_NODISCARD bool ensure_glyphs () {
     if (unlikely (content_type != HB_BUFFER_CONTENT_TYPE_GLYPHS)) {
       if (content_type != HB_BUFFER_CONTENT_TYPE_INVALID)
@@ -372,6 +388,7 @@ struct hb_buffer_t {
     }
     return true;
   }
+
   HB_NODISCARD bool ensure_unicode () {
     if (unlikely (content_type != HB_BUFFER_CONTENT_TYPE_UNICODE)) {
       if (content_type != HB_BUFFER_CONTENT_TYPE_INVALID)
@@ -386,14 +403,14 @@ struct hb_buffer_t {
   HB_NODISCARD HB_INTERNAL bool shift_forward (unsigned int count);
 
   typedef long scratch_buffer_t;
-  HB_INTERNAL scratch_buffer_t *get_scratch_buffer (unsigned int *size);
+  HB_INTERNAL scratch_buffer_t* get_scratch_buffer (unsigned int* size);
 
   void clear_context (unsigned int side) {
     context_len[side] = 0;
   }
 
   HB_INTERNAL void
-  sort (unsigned int start, unsigned int end, int(*compar) (const hb_glyph_info_t *, const hb_glyph_info_t *));
+  sort (unsigned int start, unsigned int end, int(* compar) (const hb_glyph_info_t*, const hb_glyph_info_t*));
 
   bool messaging () {
 #ifdef HB_NO_BUFFER_MESSAGE
@@ -402,7 +419,8 @@ struct hb_buffer_t {
     return unlikely (message_func);
 #endif
   }
-  bool message (hb_font_t *font, const char *fmt, ...) HB_PRINTF_FUNC(3, 4) {
+
+  bool message (hb_font_t* font, const char* fmt, ...) HB_PRINTF_FUNC(3, 4) {
 #ifdef HB_NO_BUFFER_MESSAGE
     return true;
 #else
@@ -421,10 +439,11 @@ struct hb_buffer_t {
     return ret;
 #endif
   }
-  HB_INTERNAL bool message_impl (hb_font_t *font, const char *fmt, va_list ap) HB_PRINTF_FUNC(3, 0);
+
+  HB_INTERNAL bool message_impl (hb_font_t* font, const char* fmt, va_list ap) HB_PRINTF_FUNC(3, 0);
 
   static void
-  set_cluster (hb_glyph_info_t &inf, unsigned int cluster, unsigned int mask = 0) {
+  set_cluster (hb_glyph_info_t& inf, unsigned int cluster, unsigned int mask = 0) {
     if (inf.cluster != cluster) {
       if (mask & HB_GLYPH_FLAG_UNSAFE_TO_BREAK)
         inf.mask |= HB_GLYPH_FLAG_UNSAFE_TO_BREAK;
@@ -435,15 +454,16 @@ struct hb_buffer_t {
   }
 
   unsigned int
-  _unsafe_to_break_find_min_cluster (const hb_glyph_info_t *infos,
+  _unsafe_to_break_find_min_cluster (const hb_glyph_info_t* infos,
                                      unsigned int start, unsigned int end,
                                      unsigned int cluster) const {
     for (unsigned int i = start; i < end; i++)
       cluster = hb_min (cluster, infos[i].cluster);
     return cluster;
   }
+
   void
-  _unsafe_to_break_set_mask (hb_glyph_info_t *infos,
+  _unsafe_to_break_set_mask (hb_glyph_info_t* infos,
                              unsigned int start, unsigned int end,
                              unsigned int cluster) {
     for (unsigned int i = start; i < end; i++)
@@ -456,6 +476,7 @@ struct hb_buffer_t {
   void unsafe_to_break_all () {
     unsafe_to_break_impl (0, len);
   }
+
   void safe_to_break_all () {
     for (unsigned int i = 0; i < len; i++)
       info[i].mask &= ~HB_GLYPH_FLAG_UNSAFE_TO_BREAK;
@@ -474,8 +495,8 @@ DECLARE_NULL_INSTANCE (hb_buffer_t);
        start = end, end = _next_cluster (buffer, start))
 
 static inline unsigned int
-_next_cluster (hb_buffer_t *buffer, unsigned int start) {
-  hb_glyph_info_t *info = buffer->info;
+_next_cluster (hb_buffer_t* buffer, unsigned int start) {
+  hb_glyph_info_t* info = buffer->info;
   unsigned int count = buffer->len;
 
   unsigned int cluster = info[start].cluster;

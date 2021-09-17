@@ -13,7 +13,7 @@
 #include "stream_flags_common.h"
 
 static bool
-stream_flags_encode (const lzma_stream_flags *options, uint8_t *out) {
+stream_flags_encode (const lzma_stream_flags* options, uint8_t* out) {
   if ((unsigned int) (options->check) > LZMA_CHECK_ID_MAX)
     return true;
 
@@ -24,7 +24,7 @@ stream_flags_encode (const lzma_stream_flags *options, uint8_t *out) {
 }
 
 extern LZMA_API(lzma_ret)
-lzma_stream_header_encode (const lzma_stream_flags *options, uint8_t *out) {
+lzma_stream_header_encode (const lzma_stream_flags* options, uint8_t* out) {
   assert(sizeof (lzma_header_magic) + LZMA_STREAM_FLAGS_SIZE
          + 4 == LZMA_STREAM_HEADER_SIZE);
 
@@ -49,7 +49,7 @@ lzma_stream_header_encode (const lzma_stream_flags *options, uint8_t *out) {
 }
 
 extern LZMA_API(lzma_ret)
-lzma_stream_footer_encode (const lzma_stream_flags *options, uint8_t *out) {
+lzma_stream_footer_encode (const lzma_stream_flags* options, uint8_t* out) {
   assert(2 * 4 + LZMA_STREAM_FLAGS_SIZE + sizeof (lzma_footer_magic)
          == LZMA_STREAM_HEADER_SIZE);
 

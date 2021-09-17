@@ -27,8 +27,8 @@ namespace neutrino::demoscene {
       using palette_t = std::array<hal::color, 256>;
       using surface_t = std::vector<uint8_t>;
 
-      palette_t &palette ();
-      surface_t &surface ();
+      palette_t& palette ();
+      surface_t& surface ();
 
       [[nodiscard]] int width () const noexcept;
       [[nodiscard]] int height () const noexcept;
@@ -36,10 +36,10 @@ namespace neutrino::demoscene {
       void cls ();
 
     private:
-      vga (engine::main_window &window);
+      vga (engine::main_window& window);
       void present ();
     private:
-      engine::main_window &m_window;
+      engine::main_window& m_window;
 
       palette_t m_palette;
       surface_t m_surface;

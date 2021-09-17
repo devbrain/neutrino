@@ -47,11 +47,11 @@ typedef struct FT_RFork_Ref_ {
 
 #ifdef FT_CONFIG_OPTION_GUESSING_EMBEDDED_RFORK
 typedef FT_Error
-(*ft_raccess_guess_func) (FT_Library library,
-                          FT_Stream stream,
-                          char *base_file_name,
-                          char **result_file_name,
-                          FT_Long *result_offset);
+(* ft_raccess_guess_func) (FT_Library library,
+                           FT_Stream stream,
+                           char* base_file_name,
+                           char** result_file_name,
+                           FT_Long* result_offset);
 
 typedef enum FT_RFork_Rule_ {
   FT_RFork_Rule_invalid = -2,
@@ -129,10 +129,10 @@ typedef struct ft_raccess_guess_rec_ {
 FT_BASE(void)
 FT_Raccess_Guess (FT_Library library,
                   FT_Stream stream,
-                  char *base_name,
-                  char **new_names,
-                  FT_Long *offsets,
-                  FT_Error *errors);
+                  char* base_name,
+                  char** new_names,
+                  FT_Long* offsets,
+                  FT_Error* errors);
 
 
 /**************************************************************************
@@ -170,8 +170,8 @@ FT_BASE(FT_Error)
 FT_Raccess_Get_HeaderInfo (FT_Library library,
                            FT_Stream stream,
                            FT_Long rfork_offset,
-                           FT_Long *map_offset,
-                           FT_Long *rdata_pos);
+                           FT_Long* map_offset,
+                           FT_Long* rdata_pos);
 
 
 /**************************************************************************
@@ -229,8 +229,8 @@ FT_Raccess_Get_DataOffsets (FT_Library library,
                             FT_Long rdata_pos,
                             FT_Long tag,
                             FT_Bool sort_by_res_id,
-                            FT_Long **offsets,
-                            FT_Long *count);
+                            FT_Long** offsets,
+                            FT_Long* count);
 
 FT_END_HEADER
 

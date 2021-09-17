@@ -17,7 +17,7 @@ namespace neutrino::engine {
     public:
       explicit application (std::unique_ptr<application_monitor> monitor);
 
-      void on_event (const events::quit &) override;
+      void on_event (const events::quit&) override;
 
     private:
       void on_terminating () override;

@@ -12,7 +12,7 @@
 
 namespace neutrino::utils {
   template <class S>
-  S trim_left (const S &str)
+  S trim_left (const S& str)
   /// Returns a copy of str with all leading
   /// whitespace removed.
   {
@@ -25,7 +25,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S &trim_left_in_place (S &str)
+  S& trim_left_in_place (S& str)
   /// Removes all leading whitespace in str.
   {
     typename S::iterator it = str.begin ();
@@ -38,7 +38,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S trim_right (const S &str)
+  S trim_right (const S& str)
   /// Returns a copy of str with all trailing
   /// whitespace removed.
   {
@@ -50,7 +50,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S &trim_right_in_place (S &str)
+  S& trim_right_in_place (S& str)
   /// Removes all trailing whitespace in str.
   {
     int pos = int (str.size ()) - 1;
@@ -63,7 +63,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S trim (const S &str)
+  S trim (const S& str)
   /// Returns a copy of str with all leading and
   /// trailing whitespace removed.
   {
@@ -79,7 +79,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S &trim_in_place (S &str)
+  S& trim_in_place (S& str)
   /// Removes all leading and trailing whitespace in str.
   {
     int first = 0;
@@ -98,7 +98,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S to_upper (const S &str)
+  S to_upper (const S& str)
   /// Returns a copy of str containing all upper-case characters.
   {
     typename S::const_iterator it = str.begin ();
@@ -112,7 +112,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S &to_upper_in_place (S &str)
+  S& to_upper_in_place (S& str)
   /// Replaces all characters in str with their upper-case counterparts.
   {
     typename S::iterator it = str.begin ();
@@ -126,7 +126,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S to_lower (const S &str)
+  S to_lower (const S& str)
   /// Returns a copy of str containing all lower-case characters.
   {
     typename S::const_iterator it = str.begin ();
@@ -140,7 +140,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S &to_lower_in_place (S &str)
+  S& to_lower_in_place (S& str)
   /// Replaces all characters in str with their lower-case counterparts.
   {
     typename S::iterator it = str.begin ();
@@ -155,7 +155,7 @@ namespace neutrino::utils {
 
   template <class S, class It>
   int icompare (
-      const S &str,
+      const S& str,
       typename S::size_type pos,
       typename S::size_type n,
       It it2,
@@ -187,7 +187,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  int icompare (const S &str1, const S &str2)
+  int icompare (const S& str1, const S& str2)
   // A special optimization for an often used case.
   {
     typename S::const_iterator it1 (str1.begin ());
@@ -212,30 +212,30 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  int icompare (const S &str1, typename S::size_type n1, const S &str2, typename S::size_type n2) {
+  int icompare (const S& str1, typename S::size_type n1, const S& str2, typename S::size_type n2) {
     if (n2 > str2.size ())
       n2 = str2.size ();
     return icompare (str1, 0, n1, str2.begin (), str2.begin () + n2);
   }
 
   template <class S>
-  int icompare (const S &str1, typename S::size_type n, const S &str2) {
+  int icompare (const S& str1, typename S::size_type n, const S& str2) {
     if (n > str2.size ())
       n = str2.size ();
     return icompare (str1, 0, n, str2.begin (), str2.begin () + n);
   }
 
   template <class S>
-  int icompare (const S &str1, typename S::size_type pos, typename S::size_type n, const S &str2) {
+  int icompare (const S& str1, typename S::size_type pos, typename S::size_type n, const S& str2) {
     return icompare (str1, pos, n, str2.begin (), str2.end ());
   }
 
   template <class S>
   int icompare (
-      const S &str1,
+      const S& str1,
       typename S::size_type pos1,
       typename S::size_type n1,
-      const S &str2,
+      const S& str2,
       typename S::size_type pos2,
       typename S::size_type n2) {
     typename S::size_type sz2 = str2.size ();
@@ -248,10 +248,10 @@ namespace neutrino::utils {
 
   template <class S>
   int icompare (
-      const S &str1,
+      const S& str1,
       typename S::size_type pos1,
       typename S::size_type n,
-      const S &str2,
+      const S& str2,
       typename S::size_type pos2) {
     typename S::size_type sz2 = str2.size ();
     if (pos2 > sz2)
@@ -263,10 +263,10 @@ namespace neutrino::utils {
 
   template <class S>
   int icompare (
-      const S &str,
+      const S& str,
       typename S::size_type pos,
       typename S::size_type n,
-      const typename S::value_type *ptr) {
+      const typename S::value_type* ptr) {
     typename S::size_type sz = str.size ();
     if (pos > sz)
       pos = sz;
@@ -293,21 +293,21 @@ namespace neutrino::utils {
 
   template <class S>
   int icompare (
-      const S &str,
+      const S& str,
       typename S::size_type pos,
-      const typename S::value_type *ptr) {
+      const typename S::value_type* ptr) {
     return icompare (str, pos, str.size () - pos, ptr);
   }
 
   template <class S>
   int icompare (
-      const S &str,
-      const typename S::value_type *ptr) {
+      const S& str,
+      const typename S::value_type* ptr) {
     return icompare (str, 0, str.size (), ptr);
   }
 
   template <class S>
-  S translate (const S &str, const S &from, const S &to)
+  S translate (const S& str, const S& from, const S& to)
   /// Returns a copy of str with all characters in
   /// from replaced by the corresponding (by position)
   /// characters in to. If there is no corresponding
@@ -334,12 +334,12 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S translate (const S &str, const typename S::value_type *from, const typename S::value_type *to) {
+  S translate (const S& str, const typename S::value_type* from, const typename S::value_type* to) {
     return translate (str, S (from), S (to));
   }
 
   template <class S>
-  S &translate_in_place (S &str, const S &from, const S &to)
+  S& translate_in_place (S& str, const S& from, const S& to)
   /// Replaces in str all occurrences of characters in from
   /// with the corresponding (by position) characters in to.
   /// If there is no corresponding character, the character
@@ -350,7 +350,7 @@ namespace neutrino::utils {
   }
 
   template <class S>
-  S translate_in_place (S &str, const typename S::value_type *from, const typename S::value_type *to) {
+  S translate_in_place (S& str, const typename S::value_type* from, const typename S::value_type* to) {
     str = translate (str, S (from), S (to));
 #if defined(__SUNPRO_CC)
     // Fix around the RVO bug in SunStudio 12.4
@@ -362,7 +362,7 @@ return ret;
   }
 
   template <class S>
-  S &replace_in_place (S &str, const S &from, const S &to, typename S::size_type start = 0) {
+  S& replace_in_place (S& str, const S& from, const S& to, typename S::size_type start = 0) {
     S result;
     typename S::size_type pos = 0;
     result.append (str, 0, start);
@@ -382,8 +382,9 @@ return ret;
   }
 
   template <class S>
-  S &
-  replace_in_place (S &str, const typename S::value_type *from, const typename S::value_type *to, typename S::size_type start = 0) {
+  S&
+  replace_in_place (S& str, const typename S::value_type* from, const typename S::value_type* to,
+                    typename S::size_type start = 0) {
     S result;
     typename S::size_type pos = 0;
     typename S::size_type fromLen = std::strlen (from);
@@ -404,8 +405,9 @@ return ret;
   }
 
   template <class S>
-  S &
-  replace_in_place (S &str, const typename S::value_type from, const typename S::value_type to = 0, typename S::size_type start = 0) {
+  S&
+  replace_in_place (S& str, const typename S::value_type from, const typename S::value_type to = 0,
+                    typename S::size_type start = 0) {
     if (from == to)
       return str;
 
@@ -425,12 +427,12 @@ return ret;
   }
 
   template <class S>
-  S &remove_in_place (S &str, const typename S::value_type ch, typename S::size_type start = 0) {
+  S& remove_in_place (S& str, const typename S::value_type ch, typename S::size_type start = 0) {
     return replace_in_place (str, ch, 0, start);
   }
 
   template <class S>
-  S replace (const S &str, const S &from, const S &to, typename S::size_type start = 0)
+  S replace (const S& str, const S& from, const S& to, typename S::size_type start = 0)
   /// Replace all occurrences of from (which must not be the empty string)
   /// in str with to, starting at position start.
   {
@@ -441,7 +443,8 @@ return ret;
 
   template <class S>
   S
-  replace (const S &str, const typename S::value_type *from, const typename S::value_type *to, typename S::size_type start = 0) {
+  replace (const S& str, const typename S::value_type* from, const typename S::value_type* to,
+           typename S::size_type start = 0) {
     S result (str);
     replace_in_place (result, from, to, start);
     return result;
@@ -449,21 +452,22 @@ return ret;
 
   template <class S>
   S
-  replace (const S &str, const typename S::value_type from, const typename S::value_type to = 0, typename S::size_type start = 0) {
+  replace (const S& str, const typename S::value_type from, const typename S::value_type to = 0,
+           typename S::size_type start = 0) {
     S result (str);
     replace_in_place (result, from, to, start);
     return result;
   }
 
   template <class S>
-  S remove (const S &str, const typename S::value_type ch, typename S::size_type start = 0) {
+  S remove (const S& str, const typename S::value_type ch, typename S::size_type start = 0) {
     S result (str);
     replace_in_place (result, ch, 0, start);
     return result;
   }
 
   template <class S>
-  S cat (const S &s1, const S &s2)
+  S cat (const S& s1, const S& s2)
   /// Concatenates two strings.
   {
     S result = s1;
@@ -473,7 +477,7 @@ return ret;
   }
 
   template <class S>
-  S cat (const S &s1, const S &s2, const S &s3)
+  S cat (const S& s1, const S& s2, const S& s3)
   /// Concatenates three strings.
   {
     S result = s1;
@@ -484,7 +488,7 @@ return ret;
   }
 
   template <class S>
-  S cat (const S &s1, const S &s2, const S &s3, const S &s4)
+  S cat (const S& s1, const S& s2, const S& s3, const S& s4)
   /// Concatenates four strings.
   {
     S result = s1;
@@ -496,7 +500,7 @@ return ret;
   }
 
   template <class S>
-  S cat (const S &s1, const S &s2, const S &s3, const S &s4, const S &s5)
+  S cat (const S& s1, const S& s2, const S& s3, const S& s4, const S& s5)
   /// Concatenates five strings.
   {
     S result = s1;
@@ -509,7 +513,7 @@ return ret;
   }
 
   template <class S>
-  S cat (const S &s1, const S &s2, const S &s3, const S &s4, const S &s5, const S &s6)
+  S cat (const S& s1, const S& s2, const S& s3, const S& s4, const S& s5, const S& s6)
   /// Concatenates six strings.
   {
     S result = s1;
@@ -523,7 +527,7 @@ return ret;
   }
 
   template <class S, class It>
-  S cat (const S &delim, const It &begin, const It &end)
+  S cat (const S& delim, const It& begin, const It& end)
   /// Concatenates a sequence of strings, delimited
   /// by the string given in delim.
   {
@@ -537,14 +541,14 @@ return ret;
   }
 
   template <class S>
-  bool starts_with (const S &str, const S &prefix)
+  bool starts_with (const S& str, const S& prefix)
   /// Tests whether the string starts with the given prefix.
   {
     return str.size () >= prefix.size () && equal (prefix.begin (), prefix.end (), str.begin ());
   }
 
   template <class S>
-  bool ends_with (const S &str, const S &suffix)
+  bool ends_with (const S& str, const S& suffix)
   /// Tests whether the string ends with the given suffix.
   {
     return str.size () >= suffix.size () && equal (suffix.rbegin (), suffix.rend (), str.rbegin ());
@@ -570,7 +574,7 @@ return ret;
       return ascii::to_lower (c1) < ascii::to_lower (c2);
     }
 
-    static int compare (const charT *s1, const charT *s2, std::size_t n) {
+    static int compare (const charT* s1, const charT* s2, std::size_t n) {
       for (std::size_t i = 0; i < n && s1 && s2; ++i, ++s1, ++s2) {
         if (ascii::to_lower (*s1) == ascii::to_lower (*s2))
           continue;
@@ -583,7 +587,7 @@ return ret;
       return 0;
     }
 
-    static const charT *find (const charT *s, int n, charT a) {
+    static const charT* find (const charT* s, int n, charT a) {
       while (n-- > 0 && ascii::to_lower (*s) != ascii::to_lower (a)) {
         ++s;
       }
@@ -596,7 +600,7 @@ return ret;
 
 
   template <typename T>
-  std::size_t isubstr (const T &str, const T &sought)
+  std::size_t isubstr (const T& str, const T& sought)
   /// Case-insensitive substring; searches for a substring
   /// without regards to case.
   {
@@ -615,7 +619,7 @@ return ret;
     /// and sets with std::strings keys and case-insensitive ordering
     /// requirement.
   {
-    inline bool operator() (const std::string &s1, const std::string &s2) const {
+    inline bool operator () (const std::string& s1, const std::string& s2) const {
       return icompare (s1, s2) < 0;
     }
   };

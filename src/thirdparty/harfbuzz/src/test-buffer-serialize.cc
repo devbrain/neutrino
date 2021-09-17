@@ -28,6 +28,7 @@
 
 #include "hb.h"
 #include "hb-ot.h"
+
 #ifdef HAVE_FREETYPE
 #include "hb-ft.h"
 #endif
@@ -37,8 +38,7 @@
 #endif
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   bool ret = true;
 
 #ifndef HB_NO_BUFFER_SERIALIZE
@@ -48,14 +48,14 @@ main (int argc, char **argv)
     exit (1);
   }
 
-  hb_blob_t *blob = hb_blob_create_from_file_or_fail (argv[1]);
+  hb_blob_t* blob = hb_blob_create_from_file_or_fail (argv[1]);
   assert (blob);
-  hb_face_t *face = hb_face_create (blob, 0 /* first face */);
+  hb_face_t* face = hb_face_create (blob, 0 /* first face */);
   hb_blob_destroy (blob);
   blob = nullptr;
 
   unsigned int upem = hb_face_get_upem (face);
-  hb_font_t *font = hb_font_create (face);
+  hb_font_t* font = hb_font_create (face);
   hb_face_destroy (face);
   hb_font_set_scale (font, upem, upem);
   hb_ot_font_set_funcs (font);
@@ -63,27 +63,25 @@ main (int argc, char **argv)
   //hb_ft_font_set_funcs (font);
 #endif
 
-  hb_buffer_t *buf;
+  hb_buffer_t* buf;
   buf = hb_buffer_create ();
 
   char line[BUFSIZ], out[BUFSIZ];
-  while (fgets (line, sizeof(line), stdin))
-  {
+  while (fgets (line, sizeof (line), stdin)) {
     hb_buffer_clear_contents (buf);
 
-    const char *p = line;
+    const char* p = line;
     while (hb_buffer_deserialize_glyphs (buf,
-					 p, -1, &p,
-					 font,
-					 HB_BUFFER_SERIALIZE_FORMAT_JSON))
-      ;
+                                         p, -1, &p,
+                                         font,
+                                         HB_BUFFER_SERIALIZE_FORMAT_JSON));
     if (*p && *p != '\n')
       ret = false;
 
     hb_buffer_serialize_glyphs (buf, 0, hb_buffer_get_length (buf),
-				out, sizeof (out), nullptr,
-				font, HB_BUFFER_SERIALIZE_FORMAT_JSON,
-				HB_BUFFER_SERIALIZE_FLAG_DEFAULT);
+                                out, sizeof (out), nullptr,
+                                font, HB_BUFFER_SERIALIZE_FORMAT_JSON,
+                                HB_BUFFER_SERIALIZE_FLAG_DEFAULT);
     puts (out);
   }
 

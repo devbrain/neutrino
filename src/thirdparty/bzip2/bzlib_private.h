@@ -185,7 +185,7 @@ extern UInt32 BZ2_crc32Table[256];
 typedef
 struct {
   /* pointer back to the struct bz_stream */
-  bz_stream *strm;
+  bz_stream* strm;
 
   /* mode this stream is in, and whether inputting */
   /* or outputting data */
@@ -196,16 +196,16 @@ struct {
   UInt32 avail_in_expect;
 
   /* for doing the block sorting */
-  UInt32 *arr1;
-  UInt32 *arr2;
-  UInt32 *ftab;
+  UInt32* arr1;
+  UInt32* arr2;
+  UInt32* ftab;
   Int32 origPtr;
 
   /* aliases for arr1 and arr2 */
-  UInt32 *ptr;
-  UChar *block;
-  UInt16 *mtfv;
-  UChar *zbits;
+  UInt32* ptr;
+  UChar* block;
+  UInt16* mtfv;
+  UChar* zbits;
 
   /* for deciding when to use the fallback sorting algorithm */
   Int32 workFactor;
@@ -257,19 +257,19 @@ struct {
 /*-- externs for compression. --*/
 
 extern void
-BZ2_blockSort (EState *);
+BZ2_blockSort (EState*);
 
 extern void
-BZ2_compressBlock (EState *, Bool);
+BZ2_compressBlock (EState*, Bool);
 
 extern void
-BZ2_bsInitWrite (EState *);
+BZ2_bsInitWrite (EState*);
 
 extern void
-BZ2_hbAssignCodes (Int32 *, UChar *, Int32, Int32, Int32);
+BZ2_hbAssignCodes (Int32*, UChar*, Int32, Int32, Int32);
 
 extern void
-BZ2_hbMakeCodeLengths (UChar *, Int32 *, Int32, Int32);
+BZ2_hbMakeCodeLengths (UChar*, Int32*, Int32, Int32);
 
 
 
@@ -332,7 +332,7 @@ BZ2_hbMakeCodeLengths (UChar *, Int32 *, Int32, Int32);
 typedef
 struct {
   /* pointer back to the struct bz_stream */
-  bz_stream *strm;
+  bz_stream* strm;
 
   /* state indicator for this stream */
   Int32 state;
@@ -363,11 +363,11 @@ struct {
   Int32 cftabCopy[257];
 
   /* for undoing the Burrows-Wheeler transform (FAST) */
-  UInt32 *tt;
+  UInt32* tt;
 
   /* for undoing the Burrows-Wheeler transform (SMALL) */
-  UInt16 *ll16;
-  UChar *ll4;
+  UInt16* ll16;
+  UChar* ll4;
 
   /* stored and calculated CRCs */
   UInt32 storedBlockCRC;
@@ -415,9 +415,9 @@ struct {
   Int32 save_zj;
   Int32 save_gSel;
   Int32 save_gMinlen;
-  Int32 *save_gLimit;
-  Int32 *save_gBase;
-  Int32 *save_gPerm;
+  Int32* save_gLimit;
+  Int32* save_gBase;
+  Int32* save_gPerm;
 
 }
     DState;
@@ -466,13 +466,13 @@ struct {
 /*-- externs for decompression. --*/
 
 extern Int32
-BZ2_indexIntoF (Int32, Int32 *);
+BZ2_indexIntoF (Int32, Int32*);
 
 extern Int32
-BZ2_decompress (DState *);
+BZ2_decompress (DState*);
 
 extern void
-BZ2_hbCreateDecodeTables (Int32 *, Int32 *, Int32 *, UChar *,
+BZ2_hbCreateDecodeTables (Int32*, Int32*, Int32*, UChar*,
                           Int32, Int32, Int32);
 
 #endif

@@ -118,7 +118,7 @@ typedef struct {
  *              - LZMA_PROG_ERROR: Invalid options.
  */
 extern LZMA_API(lzma_ret) lzma_stream_header_encode (
-    const lzma_stream_flags *options, uint8_t *out)
+    const lzma_stream_flags* options, uint8_t* out)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -134,7 +134,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR: Invalid options.
  */
 extern LZMA_API(lzma_ret) lzma_stream_footer_encode (
-    const lzma_stream_flags *options, uint8_t *out)
+    const lzma_stream_flags* options, uint8_t* out)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -168,7 +168,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              when decoding non-first Stream.
  */
 extern LZMA_API(lzma_ret) lzma_stream_header_decode (
-    lzma_stream_flags *options, const uint8_t *in)
+    lzma_stream_flags* options, const uint8_t* in)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -194,7 +194,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              uses LZMA_DATA_ERROR in this situation.
  */
 extern LZMA_API(lzma_ret) lzma_stream_footer_decode (
-    lzma_stream_flags *options, const uint8_t *in)
+    lzma_stream_flags* options, const uint8_t* in)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -213,5 +213,5 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *                backward_size.
  */
 extern LZMA_API(lzma_ret) lzma_stream_flags_compare (
-    const lzma_stream_flags *a, const lzma_stream_flags *b)
+    const lzma_stream_flags* a, const lzma_stream_flags* b)
 lzma_nothrow lzma_attr_pure;

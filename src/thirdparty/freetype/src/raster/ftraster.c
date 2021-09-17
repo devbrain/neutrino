@@ -303,19 +303,19 @@
 typedef int Int;
 typedef unsigned int UInt;
 typedef short Short;
-typedef unsigned short UShort, *PUShort;
-typedef long Long, *PLong;
+typedef unsigned short UShort, * PUShort;
+typedef long Long, * PLong;
 typedef unsigned long ULong;
 
-typedef unsigned char Byte, *PByte;
+typedef unsigned char Byte, * PByte;
 typedef char Bool;
 
 typedef union Alignment_ {
   Long l;
-  void *p;
-  void (*f) (void);
+  void* p;
+  void (* f) (void);
 
-} Alignment, *PAlignment;
+} Alignment, * PAlignment;
 
 typedef struct TPoint_ {
   Long x;
@@ -339,7 +339,7 @@ typedef enum TStates_ {
 } TStates;
 
 typedef struct TProfile_ TProfile;
-typedef TProfile *PProfile;
+typedef TProfile* PProfile;
 
 struct TProfile_ {
   FT_F26Dot6 X;           /* current coordinate during sweep          */
@@ -360,7 +360,7 @@ struct TProfile_ {
 };
 
 typedef PProfile TProfileList;
-typedef PProfile *PProfileList;
+typedef PProfile* PProfileList;
 
 
 /* Simple record used to implement a stack of bands, required */
@@ -403,12 +403,12 @@ typedef struct black_TBand_ {
 
 #endif /* !FT_STATIC_RASTER */
 
-typedef struct black_TWorker_ black_TWorker, *black_PWorker;
+typedef struct black_TWorker_ black_TWorker, * black_PWorker;
 
 /* prototypes used for sweep function dispatch */
 typedef void
-    Function_Sweep_Init (RAS_ARGS Short *min,
-                         Short *max);
+    Function_Sweep_Init (RAS_ARGS Short* min,
+                         Short* max);
 
 typedef void
     Function_Sweep_Span (RAS_ARGS Short y,
@@ -467,7 +467,7 @@ struct black_TWorker_ {
 
   Int numTurns;           /* number of Y-turns in outline        */
 
-  TPoint *arc;                /* current Bezier arc pointer          */
+  TPoint* arc;                /* current Bezier arc pointer          */
 
   UShort bWidth;             /* target bitmap width                 */
   PByte bOrigin;            /* target bitmap bottom-left origin    */
@@ -497,10 +497,10 @@ struct black_TWorker_ {
 
   /* dispatch variables */
 
-  Function_Sweep_Init *Proc_Sweep_Init;
-  Function_Sweep_Span *Proc_Sweep_Span;
-  Function_Sweep_Span *Proc_Sweep_Drop;
-  Function_Sweep_Step *Proc_Sweep_Step;
+  Function_Sweep_Init* Proc_Sweep_Init;
+  Function_Sweep_Span* Proc_Sweep_Span;
+  Function_Sweep_Span* Proc_Sweep_Drop;
+  Function_Sweep_Step* Proc_Sweep_Step;
 
   Byte dropOutControl;     /* current drop_out control method     */
 
@@ -517,9 +517,9 @@ struct black_TWorker_ {
 };
 
 typedef struct black_TRaster_ {
-  void *memory;
+  void* memory;
 
-} black_TRaster, *black_PRaster;
+} black_TRaster, * black_PRaster;
 
 #ifdef FT_STATIC_RASTER
 
@@ -853,7 +853,7 @@ Finalize_Profile_Table (RAS_ARG) {
    *   loop that should be optimized to hell to get the best performance.
    */
 static void
-Split_Conic (TPoint *base) {
+Split_Conic (TPoint* base) {
   Long a, b;
 
   base[4].x = base[2].x;
@@ -889,7 +889,7 @@ Split_Conic (TPoint *base) {
    *   performance.
    */
 static void
-Split_Cubic (TPoint *base) {
+Split_Cubic (TPoint* base) {
   Long a, b, c;
 
   base[6].x = base[3].x;
@@ -1096,7 +1096,7 @@ Line_Down (RAS_ARGS Long x1,
 }
 
 /* A function type describing the functions used to split Bezier arcs */
-typedef void  (*TSplitter) (TPoint *base);
+typedef void  (* TSplitter) (TPoint* base);
 
 /**************************************************************************
    *
@@ -1131,8 +1131,8 @@ Bezier_Up (RAS_ARGS Int degree,
   Long y1, y2, e, e2, e0;
   Short f1;
 
-  TPoint *arc;
-  TPoint *start_arc;
+  TPoint* arc;
+  TPoint* start_arc;
 
   PLong top;
 
@@ -1252,7 +1252,7 @@ Bezier_Down (RAS_ARGS Int degree,
              TSplitter splitter,
              Long miny,
              Long maxy) {
-  TPoint *arc = ras.arc;
+  TPoint* arc = ras.arc;
   Bool result, fresh;
 
   arc[0].y = -arc[0].y;
@@ -1639,10 +1639,10 @@ Decompose_Curve (RAS_ARGS UShort first,
   FT_Vector v_control;
   FT_Vector v_start;
 
-  FT_Vector *points;
-  FT_Vector *point;
-  FT_Vector *limit;
-  char *tags;
+  FT_Vector* points;
+  FT_Vector* point;
+  FT_Vector* limit;
+  char* tags;
 
   UInt tag;       /* current point's state           */
 
@@ -1922,7 +1922,7 @@ Convert_Glyph (RAS_ARGS Int flipped) {
    *   Initializes an empty linked list.
    */
 static void
-Init_Linked (TProfileList *l) {
+Init_Linked (TProfileList* l) {
   *l = NULL;
 }
 
@@ -1935,7 +1935,7 @@ Init_Linked (TProfileList *l) {
 static void
 InsNew (PProfileList list,
         PProfile profile) {
-  PProfile *old, current;
+  PProfile* old, current;
   Long x;
 
   old = list;
@@ -1962,7 +1962,7 @@ InsNew (PProfileList list,
 static void
 DelOld (PProfileList list,
         PProfile profile) {
-  PProfile *old, current;
+  PProfile* old, current;
 
   old = list;
   current = *old;
@@ -1991,7 +1991,7 @@ DelOld (PProfileList list,
    */
 static void
 Sort (PProfileList list) {
-  PProfile *old, current, next;
+  PProfile* old, current, next;
 
 
   /* First, set the new X coordinate of each profile */
@@ -2043,8 +2043,8 @@ Sort (PProfileList list) {
    */
 
 static void
-Vertical_Sweep_Init (RAS_ARGS Short *min,
-                     Short *max) {
+Vertical_Sweep_Init (RAS_ARGS Short* min,
+                     Short* max) {
   Long pitch = ras.target.pitch;
 
   FT_UNUSED(max);
@@ -2060,7 +2060,7 @@ Vertical_Sweep_Span (RAS_ARGS Short y,
                      PProfile left,
                      PProfile right) {
   Long e1, e2;
-  Byte *target;
+  Byte* target;
 
   Int dropOutControl = left->flags & 7;
 
@@ -2293,8 +2293,8 @@ Vertical_Sweep_Step (RAS_ARG) {
    */
 
 static void
-Horizontal_Sweep_Init (RAS_ARGS Short *min,
-                       Short *max) {
+Horizontal_Sweep_Init (RAS_ARGS Short* min,
+                       Short* max) {
   /* nothing, really */
   FT_UNUSED_RASTER;
   FT_UNUSED(min);
@@ -2888,7 +2888,7 @@ Render_Glyph (RAS_ARG) {
   ras.band_stack[0].y_max = (Short) (ras.target.rows - 1);
 
   ras.bWidth = (UShort) ras.target.width;
-  ras.bOrigin = (Byte *) ras.target.buffer;
+  ras.bOrigin = (Byte*) ras.target.buffer;
 
   if (ras.target.pitch > 0)
     ras.bOrigin += (Long) (ras.target.rows - 1) * ras.target.pitch;
@@ -2957,7 +2957,7 @@ ft_black_init (black_PRaster raster) {
 
 static int
 ft_black_new (FT_Memory memory,
-              black_PRaster *araster) {
+              black_PRaster* araster) {
   FT_Error error;
   black_PRaster raster = NULL;
 
@@ -2993,7 +2993,7 @@ ft_black_reset (FT_Raster raster,
 static int
 ft_black_set_mode (FT_Raster raster,
                    ULong mode,
-                   void *args) {
+                   void* args) {
   FT_UNUSED(raster);
   FT_UNUSED(mode);
   FT_UNUSED(args);
@@ -3003,9 +3003,9 @@ ft_black_set_mode (FT_Raster raster,
 
 static int
 ft_black_render (FT_Raster raster,
-                 const FT_Raster_Params *params) {
-  const FT_Outline *outline = (const FT_Outline *) params->source;
-  const FT_Bitmap *target_map = params->target;
+                 const FT_Raster_Params* params) {
+  const FT_Outline* outline = (const FT_Outline*) params->source;
+  const FT_Bitmap* target_map = params->target;
 
 #ifndef FT_STATIC_RASTER
   black_TWorker worker[1];

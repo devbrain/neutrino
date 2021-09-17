@@ -32,7 +32,7 @@ const FT_Palette_Data null_palette_data = {0, NULL, NULL, 0, NULL};
 
 FT_EXPORT_DEF(FT_Error)
 FT_Palette_Data_Get (FT_Face face,
-                     FT_Palette_Data *apalette_data) {
+                     FT_Palette_Data* apalette_data) {
   if (!face)
     return FT_THROW(Invalid_Face_Handle);
   if (!apalette_data)
@@ -52,7 +52,7 @@ FT_Palette_Data_Get (FT_Face face,
 FT_EXPORT_DEF(FT_Error)
 FT_Palette_Select (FT_Face face,
                    FT_UShort palette_index,
-                   FT_Color **apalette) {
+                   FT_Color** apalette) {
   FT_Error error;
 
   TT_Face ttface;

@@ -1,13 +1,17 @@
 my_add_library_static(tiled
         SOURCES
 
-        ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_types.hh
+        ${PROJECT_INCLUDE}/neutrino/tiled/world/types.hh
+        ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_sheet_builder.hh
+        world/tile_sheet_builder.cc
         ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_sheet.hh
         world/tile_sheet.cc
-        world/tile_sheet_impl.hh
+        ${PROJECT_INCLUDE}/neutrino/tiled/world/texture_atlas.hh
+        world/texture_atlas.cc
+        #world/tile_sheet_impl.hh
 
-        ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_sheet_manager.hh
-        world/tile_sheet_manager.cc
+        #${PROJECT_INCLUDE}/neutrino/tiled/world/tile_sheet_manager.hh
+        #world/tile_sheet_manager.cc
 
         ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_description.hh
 
@@ -17,8 +21,8 @@ my_add_library_static(tiled
         #${PROJECT_INCLUDE}/neutrino/tiled/world/world_renderer.hh
         #world/world_renderer.cc
 
-        ${PROJECT_INCLUDE}/neutrino/tiled/world/camera.hh
-        world/camera.cc
+        #${PROJECT_INCLUDE}/neutrino/tiled/world/camera.hh
+        #world/camera.cc
 
         ${PROJECT_INCLUDE}/neutrino/tiled/loader/tmx.hh
         ${PROJECT_INCLUDE}/neutrino/tiled/loader/path_resolver.hh

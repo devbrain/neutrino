@@ -35,28 +35,28 @@ FT_BEGIN_HEADER
  * Used to implement FT_Load_Sfnt_Table().
  */
 typedef FT_Error
-(*FT_SFNT_TableLoadFunc) (FT_Face face,
-                          FT_ULong tag,
-                          FT_Long offset,
-                          FT_Byte *buffer,
-                          FT_ULong *length);
+(* FT_SFNT_TableLoadFunc) (FT_Face face,
+                           FT_ULong tag,
+                           FT_Long offset,
+                           FT_Byte* buffer,
+                           FT_ULong* length);
 
 /*
  * Used to implement FT_Get_Sfnt_Table().
  */
-typedef void *
-(*FT_SFNT_TableGetFunc) (FT_Face face,
-                         FT_Sfnt_Tag tag);
+typedef void*
+(* FT_SFNT_TableGetFunc) (FT_Face face,
+                          FT_Sfnt_Tag tag);
 
 /*
  * Used to implement FT_Sfnt_Table_Info().
  */
 typedef FT_Error
-(*FT_SFNT_TableInfoFunc) (FT_Face face,
-                          FT_UInt idx,
-                          FT_ULong *tag,
-                          FT_ULong *offset,
-                          FT_ULong *length);
+(* FT_SFNT_TableInfoFunc) (FT_Face face,
+                           FT_UInt idx,
+                           FT_ULong* tag,
+                           FT_ULong* offset,
+                           FT_ULong* length);
 
 FT_DEFINE_SERVICE(SFNT_Table) {
   FT_SFNT_TableLoadFunc load_table;

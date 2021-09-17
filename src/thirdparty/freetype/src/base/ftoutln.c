@@ -40,9 +40,9 @@ const FT_Outline null_outline = {0, 0, NULL, NULL, NULL, 0};
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Outline_Decompose (FT_Outline *outline,
-                      const FT_Outline_Funcs *func_interface,
-                      void *user) {
+FT_Outline_Decompose (FT_Outline* outline,
+                      const FT_Outline_Funcs* func_interface,
+                      void* user) {
 #undef  SCALED
 #define SCALED(x)  ( (x) * ( 1L << shift ) - delta )
 
@@ -50,9 +50,9 @@ FT_Outline_Decompose (FT_Outline *outline,
   FT_Vector v_control;
   FT_Vector v_start;
 
-  FT_Vector *point;
-  FT_Vector *limit;
-  char *tags;
+  FT_Vector* point;
+  FT_Vector* limit;
+  char* tags;
 
   FT_Error error;
 
@@ -278,7 +278,7 @@ FT_EXPORT_DEF(FT_Error)
 FT_Outline_New (FT_Library library,
                 FT_UInt numPoints,
                 FT_Int numContours,
-                FT_Outline *anoutline) {
+                FT_Outline* anoutline) {
   FT_Error error;
   FT_Memory memory;
 
@@ -321,7 +321,7 @@ FT_Outline_New (FT_Library library,
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Outline_Check (FT_Outline *outline) {
+FT_Outline_Check (FT_Outline* outline) {
   if (outline) {
     FT_Int n_points = outline->n_points;
     FT_Int n_contours = outline->n_contours;
@@ -363,8 +363,8 @@ FT_Outline_Check (FT_Outline *outline) {
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Outline_Copy (const FT_Outline *source,
-                 FT_Outline *target) {
+FT_Outline_Copy (const FT_Outline* source,
+                 FT_Outline* target) {
   FT_Int is_owner;
 
   if (!source || !target)
@@ -400,7 +400,7 @@ FT_Outline_Copy (const FT_Outline *source,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Outline_Done (FT_Library library,
-                 FT_Outline *outline) {
+                 FT_Outline* outline) {
   FT_Memory memory;
 
   if (!library)
@@ -428,8 +428,8 @@ FT_Outline_Done (FT_Library library,
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(void)
-FT_Outline_Get_CBox (const FT_Outline *outline,
-                     FT_BBox *acbox) {
+FT_Outline_Get_CBox (const FT_Outline* outline,
+                     FT_BBox* acbox) {
   FT_Pos xMin, yMin, xMax, yMax;
 
   if (outline && acbox) {
@@ -440,8 +440,8 @@ FT_Outline_Get_CBox (const FT_Outline *outline,
       yMax = 0;
     }
     else {
-      FT_Vector *vec = outline->points;
-      FT_Vector *limit = vec + outline->n_points;
+      FT_Vector* vec = outline->points;
+      FT_Vector* limit = vec + outline->n_points;
 
       xMin = xMax = vec->x;
       yMin = yMax = vec->y;
@@ -474,11 +474,11 @@ FT_Outline_Get_CBox (const FT_Outline *outline,
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(void)
-FT_Outline_Translate (const FT_Outline *outline,
+FT_Outline_Translate (const FT_Outline* outline,
                       FT_Pos xOffset,
                       FT_Pos yOffset) {
   FT_UShort n;
-  FT_Vector *vec;
+  FT_Vector* vec;
 
   if (!outline)
     return;
@@ -496,7 +496,7 @@ FT_Outline_Translate (const FT_Outline *outline,
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(void)
-FT_Outline_Reverse (FT_Outline *outline) {
+FT_Outline_Reverse (FT_Outline* outline) {
   FT_UShort n;
   FT_Int first, last;
 
@@ -510,8 +510,8 @@ FT_Outline_Reverse (FT_Outline *outline) {
 
     /* reverse point table */
     {
-      FT_Vector *p = outline->points + first;
-      FT_Vector *q = outline->points + last;
+      FT_Vector* p = outline->points + first;
+      FT_Vector* q = outline->points + last;
       FT_Vector swap;
 
       while (p < q) {
@@ -525,8 +525,8 @@ FT_Outline_Reverse (FT_Outline *outline) {
 
     /* reverse tags table */
     {
-      char *p = outline->tags + first;
-      char *q = outline->tags + last;
+      char* p = outline->tags + first;
+      char* q = outline->tags + last;
 
       while (p < q) {
         char swap;
@@ -550,8 +550,8 @@ FT_Outline_Reverse (FT_Outline *outline) {
 
 FT_EXPORT_DEF(FT_Error)
 FT_Outline_Render (FT_Library library,
-                   FT_Outline *outline,
-                   FT_Raster_Params *params) {
+                   FT_Outline* outline,
+                   FT_Raster_Params* params) {
   FT_Error error;
   FT_Renderer renderer;
   FT_ListNode node;
@@ -574,7 +574,7 @@ FT_Outline_Render (FT_Library library,
   renderer = library->cur_renderer;
   node = library->renderers.head;
 
-  params->source = (void *) outline;
+  params->source = (void*) outline;
 
   /* preset clip_box for direct mode */
   if (params->flags & FT_RASTER_FLAG_DIRECT &&
@@ -609,8 +609,8 @@ FT_Outline_Render (FT_Library library,
 
 FT_EXPORT_DEF(FT_Error)
 FT_Outline_Get_Bitmap (FT_Library library,
-                       FT_Outline *outline,
-                       const FT_Bitmap *abitmap) {
+                       FT_Outline* outline,
+                       const FT_Bitmap* abitmap) {
   FT_Raster_Params params;
 
   if (!abitmap)
@@ -633,8 +633,8 @@ FT_Outline_Get_Bitmap (FT_Library library,
 /* documentation is in freetype.h */
 
 FT_EXPORT_DEF(void)
-FT_Vector_Transform (FT_Vector *vector,
-                     const FT_Matrix *matrix) {
+FT_Vector_Transform (FT_Vector* vector,
+                     const FT_Matrix* matrix) {
   FT_Pos xz, yz;
 
   if (!vector || !matrix)
@@ -654,10 +654,10 @@ FT_Vector_Transform (FT_Vector *vector,
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(void)
-FT_Outline_Transform (const FT_Outline *outline,
-                      const FT_Matrix *matrix) {
-  FT_Vector *vec;
-  FT_Vector *limit;
+FT_Outline_Transform (const FT_Outline* outline,
+                      const FT_Matrix* matrix) {
+  FT_Vector* vec;
+  FT_Vector* limit;
 
   if (!outline || !matrix || !outline->points)
     return;
@@ -839,7 +839,7 @@ ft_outline_get_orientation( FT_Outline*  outline )
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Outline_Embolden (FT_Outline *outline,
+FT_Outline_Embolden (FT_Outline* outline,
                      FT_Pos strength) {
   return FT_Outline_EmboldenXY (outline, strength, strength);
 }
@@ -848,10 +848,10 @@ FT_Outline_Embolden (FT_Outline *outline,
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Outline_EmboldenXY (FT_Outline *outline,
+FT_Outline_EmboldenXY (FT_Outline* outline,
                        FT_Pos xstrength,
                        FT_Pos ystrength) {
-  FT_Vector *points;
+  FT_Vector* points;
   FT_Int c, first, last;
   FT_Orientation orientation;
 
@@ -970,10 +970,10 @@ FT_Outline_EmboldenXY (FT_Outline *outline,
 /* documentation is in ftoutln.h */
 
 FT_EXPORT_DEF(FT_Orientation)
-FT_Outline_Get_Orientation (FT_Outline *outline) {
+FT_Outline_Get_Orientation (FT_Outline* outline) {
   FT_BBox cbox = {0, 0, 0, 0};
   FT_Int xshift, yshift;
-  FT_Vector *points;
+  FT_Vector* points;
   FT_Vector v_prev, v_cur;
   FT_Int c, n, first;
   FT_Pos area = 0;

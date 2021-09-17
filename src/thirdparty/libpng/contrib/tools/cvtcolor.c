@@ -22,7 +22,7 @@
 #include "sRGB.h"
 
 static void
-usage (const char *prog) {
+usage (const char* prog) {
   fprintf (stderr,
            "%s: usage: %s [-linear|-sRGB] [-gray|-color] component{1,4}\n",
            prog, prog);
@@ -30,8 +30,8 @@ usage (const char *prog) {
 }
 
 unsigned long
-component (const char *prog, const char *arg, int issRGB) {
-  char *ep;
+component (const char* prog, const char* arg, int issRGB) {
+  char* ep;
   unsigned long c = strtoul (arg, &ep, 0);
 
   if (ep <= arg || *ep || c > 65535 || (issRGB && c > 255)) {
@@ -43,8 +43,8 @@ component (const char *prog, const char *arg, int issRGB) {
 }
 
 int
-main (int argc, const char **argv) {
-  const char *prog = *argv++;
+main (int argc, const char** argv) {
+  const char* prog = *argv++;
   int to_linear = 0, to_gray = 0, to_color = 0;
   int channels = 0;
   double c[4];
@@ -58,7 +58,7 @@ main (int argc, const char **argv) {
   c[3] = c[2] = c[1] = c[0] = 0;
 
   while (--argc > 0 && **argv == '-') {
-    const char *arg = 1 + *argv++;
+    const char* arg = 1 + *argv++;
 
     if (strcmp (arg, "sRGB") == 0)
       to_linear = 0;

@@ -30,19 +30,18 @@
 /* Unit tests for cmap subsetting */
 
 static void
-test_subset_cmap (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
-  hb_face_t *face_ac = hb_test_open_font_file ("fonts/Roboto-Regular.ac.ttf");
+test_subset_cmap (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
+  hb_face_t * face_ac = hb_test_open_font_file ("fonts/Roboto-Regular.ac.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 97);
   hb_set_add (codepoints, 99);
   face_abc_subset = hb_subset_test_create_subset (face_abc, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('c','m','a','p'));
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('c', 'm', 'a', 'p'));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
@@ -50,12 +49,11 @@ test_subset_cmap (void)
 }
 
 static void
-test_subset_cmap_non_consecutive_glyphs (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/Roboto-Regular.D7,D8,D9,DA,DE.ttf");
+test_subset_cmap_non_consecutive_glyphs (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/Roboto-Regular.D7,D8,D9,DA,DE.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_subset;
   hb_set_add (codepoints, 0xD7);
   hb_set_add (codepoints, 0xD8);
   hb_set_add (codepoints, 0xD9);
@@ -65,39 +63,37 @@ test_subset_cmap_non_consecutive_glyphs (void)
   face_subset = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face, face_subset, HB_TAG ('c','m','a','p'));
+  hb_subset_test_check (face, face_subset, HB_TAG ('c', 'm', 'a', 'p'));
 
   hb_face_destroy (face_subset);
   hb_face_destroy (face);
 }
 
 static void
-test_subset_cmap_noop (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
+test_subset_cmap_noop (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
 
-  hb_set_t *codepoints = hb_set_create();
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 97);
   hb_set_add (codepoints, 98);
   hb_set_add (codepoints, 99);
   face_abc_subset = hb_subset_test_create_subset (face_abc, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_abc, face_abc_subset, HB_TAG ('c','m','a','p'));
+  hb_subset_test_check (face_abc, face_abc_subset, HB_TAG ('c', 'm', 'a', 'p'));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
 }
 
 static void
-test_subset_cmap4_no_exceeding_maximum_codepoint (void)
-{
-  hb_face_t *face_origin = hb_test_open_font_file ("fonts/Mplus1p-Regular.ttf");
-  hb_face_t *face_expected = hb_test_open_font_file ("fonts/Mplus1p-Regular-cmap4-testing.ttf");
+test_subset_cmap4_no_exceeding_maximum_codepoint (void) {
+  hb_face_t * face_origin = hb_test_open_font_file ("fonts/Mplus1p-Regular.ttf");
+  hb_face_t * face_expected = hb_test_open_font_file ("fonts/Mplus1p-Regular-cmap4-testing.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_subset;
   hb_set_add (codepoints, 0x20);
   hb_set_add (codepoints, 0x21);
   hb_set_add (codepoints, 0x1d542);
@@ -106,7 +102,7 @@ test_subset_cmap4_no_exceeding_maximum_codepoint (void)
   face_subset = hb_subset_test_create_subset (face_origin, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('c','m','a','p'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('c', 'm', 'a', 'p'));
 
   hb_face_destroy (face_subset);
   hb_face_destroy (face_expected);
@@ -114,19 +110,18 @@ test_subset_cmap4_no_exceeding_maximum_codepoint (void)
 }
 
 static void
-test_subset_cmap_empty_tables (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
-  hb_face_t *face_empty = hb_test_open_font_file ("fonts/Roboto-Regular.empty.ttf");
+test_subset_cmap_empty_tables (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
+  hb_face_t * face_empty = hb_test_open_font_file ("fonts/Roboto-Regular.empty.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 100);
   hb_set_add (codepoints, 101);
   face_abc_subset = hb_subset_test_create_subset (face_abc, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_empty, face_abc_subset, HB_TAG ('c','m','a','p'));
+  hb_subset_test_check (face_empty, face_abc_subset, HB_TAG ('c', 'm', 'a', 'p'));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
@@ -134,12 +129,11 @@ test_subset_cmap_empty_tables (void)
 }
 
 static void
-test_subset_cmap_noto_color_emoji_noop (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/NotoColorEmoji.cmap.ttf");
+test_subset_cmap_noto_color_emoji_noop (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/NotoColorEmoji.cmap.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_subset;
   hb_set_add (codepoints, 0x38);
   hb_set_add (codepoints, 0x39);
   hb_set_add (codepoints, 0xAE);
@@ -148,27 +142,26 @@ test_subset_cmap_noto_color_emoji_noop (void)
   face_subset = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face, face_subset, HB_TAG ('c','m','a','p'));
+  hb_subset_test_check (face, face_subset, HB_TAG ('c', 'm', 'a', 'p'));
 
   hb_face_destroy (face_subset);
   hb_face_destroy (face);
 }
 
 static void
-test_subset_cmap_noto_color_emoji_non_consecutive_glyphs (void)
-{
-  hb_face_t *face = hb_test_open_font_file ("fonts/NotoColorEmoji.cmap.ttf");
-  hb_face_t *face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.cmap.38,AE,2049.ttf");
+test_subset_cmap_noto_color_emoji_non_consecutive_glyphs (void) {
+  hb_face_t * face = hb_test_open_font_file ("fonts/NotoColorEmoji.cmap.ttf");
+  hb_face_t * face_expected = hb_test_open_font_file ("fonts/NotoColorEmoji.cmap.38,AE,2049.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_subset;
   hb_set_add (codepoints, 0x38);
   hb_set_add (codepoints, 0xAE);
   hb_set_add (codepoints, 0x2049);
   face_subset = hb_subset_test_create_subset (face, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_expected, face_subset, HB_TAG ('c','m','a','p'));
+  hb_subset_test_check (face_expected, face_subset, HB_TAG ('c', 'm', 'a', 'p'));
 
   hb_face_destroy (face_subset);
   hb_face_destroy (face_expected);
@@ -178,8 +171,7 @@ test_subset_cmap_noto_color_emoji_non_consecutive_glyphs (void)
 // TODO(rsheeter) test cmap to no codepoints
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_subset_cmap);
@@ -190,5 +182,5 @@ main (int argc, char **argv)
   hb_test_add (test_subset_cmap_noto_color_emoji_noop);
   hb_test_add (test_subset_cmap_noto_color_emoji_non_consecutive_glyphs);
 
-  return hb_test_run();
+  return hb_test_run ();
 }

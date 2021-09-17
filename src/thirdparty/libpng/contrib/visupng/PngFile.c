@@ -90,18 +90,18 @@ BOOL PngFileSaveDlg (HWND hwnd, PTSTR pstrFileName, PTSTR pstrTitleName) {
 
 /* PNG image handler functions */
 
-BOOL PngLoadImage (PTSTR pstrFileName, png_byte **ppbImageData,
-                   int *piWidth, int *piHeight, int *piChannels, png_color *pBkgColor) {
-  static FILE *pfFile;
+BOOL PngLoadImage (PTSTR pstrFileName, png_byte** ppbImageData,
+                   int* piWidth, int* piHeight, int* piChannels, png_color* pBkgColor) {
+  static FILE* pfFile;
   png_byte pbSig[8];
   int iBitDepth;
   int iColorType;
   double dGamma;
-  png_color_16 *pBackground;
+  png_color_16* pBackground;
   png_uint_32 ulChannels;
   png_uint_32 ulRowBytes;
-  png_byte *pbImageData = *ppbImageData;
-  static png_byte **ppbRowPointers = NULL;
+  png_byte* pbImageData = *ppbImageData;
+  static png_byte** ppbRowPointers = NULL;
   int i;
 
   /* open the PNG input file */
@@ -224,8 +224,8 @@ BOOL PngLoadImage (PTSTR pstrFileName, png_byte **ppbImageData,
           {
             png_error (png_ptr, "Visual PNG: image is too big");
           }
-          if ((pbImageData = (png_byte *) malloc (ulRowBytes * (*piHeight)
-                                                  * sizeof (png_byte))) == NULL) {
+          if ((pbImageData = (png_byte*) malloc (ulRowBytes * (*piHeight)
+                                                 * sizeof (png_byte))) == NULL) {
             png_error (png_ptr, "Visual PNG: out of memory");
           }
           *ppbImageData = pbImageData;
@@ -276,14 +276,14 @@ BOOL PngLoadImage (PTSTR pstrFileName, png_byte **ppbImageData,
     return TRUE;
   }
 
-  BOOL PngSaveImage (PTSTR pstrFileName, png_byte *pDiData,
+  BOOL PngSaveImage (PTSTR pstrFileName, png_byte* pDiData,
                      int iWidth, int iHeight, png_color bkgColor) {
     const int ciBitDepth = 8;
     const int ciChannels = 3;
 
-    static FILE *pfFile;
+    static FILE* pfFile;
     png_uint_32 ulRowBytes;
-    static png_byte **ppbRowPointers = NULL;
+    static png_byte** ppbRowPointers = NULL;
     int i;
 
     /* open the PNG output file */
@@ -392,7 +392,7 @@ BOOL PngLoadImage (PTSTR pstrFileName, png_byte **ppbImageData,
     /* fread() returns 0 on error, so it is OK to store this in a size_t
      * instead of an int, which is what fread() actually returns.
      */
-    check = fread (data, 1, length, (FILE *) png_ptr->io_ptr);
+    check = fread (data, 1, length, (FILE*) png_ptr->io_ptr);
 
     if (check != length) {
       png_error (png_ptr, "Read Error");
@@ -411,8 +411,8 @@ BOOL PngLoadImage (PTSTR pstrFileName, png_byte **ppbImageData,
 
   static void
   png_flush (png_structp png_ptr) {
-    FILE *io_ptr;
-    io_ptr = (FILE *) CVT_PTR ((png_ptr->io_ptr));
+    FILE* io_ptr;
+    io_ptr = (FILE*) CVT_PTR ((png_ptr->io_ptr));
     if (io_ptr != NULL)
       fflush (io_ptr);
   }

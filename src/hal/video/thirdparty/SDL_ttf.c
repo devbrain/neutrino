@@ -127,6 +127,7 @@ int TTF_SetScript (int script) /* hb_script_t */
 //#define USE_DUFFS_LOOP
 
 #if defined(HAVE_SSE2_INTRINSICS)
+
 static SDL_INLINE int hasSSE2 () {
   static int val = -1;
   if (val != -1) {
@@ -135,6 +136,7 @@ static SDL_INLINE int hasSSE2 () {
   val = SDL_HasSSE2 ();
   return val;
 }
+
 #endif
 
 #if defined(HAVE_NEON_INTRINSICS)
@@ -180,7 +182,7 @@ static SDL_INLINE int hasSSE2 () {
 #define CACHED_SUBPIX   0x08
 
 typedef struct {
-  unsigned char *buffer; /* aligned */
+  unsigned char* buffer; /* aligned */
   int left;
   int top;
   int width;
@@ -254,13 +256,13 @@ struct _TTF_Font {
   FT_UInt cache_index[128];
 
   /* We are responsible for closing the font stream */
-  SDL_RWops *src;
+  SDL_RWops* src;
   int freesrc;
   FT_Open_Args args;
 
   /* Internal buffer to store positions computed by TTF_Size_Internal()
      * for rendered string by Render_Line() */
-  PosBuf_t *pos_buf;
+  PosBuf_t* pos_buf;
   Uint32 pos_len;
   Uint32 pos_max;
 
@@ -311,25 +313,26 @@ typedef enum {
   STR_UNICODE
 } str_type_t;
 
-static int TTF_initFontMetrics (TTF_Font *font);
+static int TTF_initFontMetrics (TTF_Font* font);
 
-static int TTF_Size_Internal (TTF_Font *font, const char *text, str_type_t str_type,
-                              int *w, int *h, int *xstart, int *ystart, int measure_width, int *extent, int *count);
+static int TTF_Size_Internal (TTF_Font* font, const char* text, str_type_t str_type,
+                              int* w, int* h, int* xstart, int* ystart, int measure_width, int* extent, int* count);
 
 #define NO_MEASUREMENT  \
         0, NULL, NULL
 
-static SDL_Surface *TTF_Render_Internal (TTF_Font *font, const char *text, str_type_t str_type,
+static SDL_Surface* TTF_Render_Internal (TTF_Font* font, const char* text, str_type_t str_type,
                                          SDL_Color fg, SDL_Color bg, render_mode_t render_mode);
 
-static SDL_Surface *TTF_Render_Wrapped_Internal (TTF_Font *font, const char *text, str_type_t str_type,
-                                                 SDL_Color fg, SDL_Color bg, Uint32 wrapLength, render_mode_t render_mode);
+static SDL_Surface* TTF_Render_Wrapped_Internal (TTF_Font* font, const char* text, str_type_t str_type,
+                                                 SDL_Color fg, SDL_Color bg, Uint32 wrapLength,
+                                                 render_mode_t render_mode);
 
-static SDL_INLINE int Find_GlyphByIndex (TTF_Font *font, FT_UInt idx,
+static SDL_INLINE int Find_GlyphByIndex (TTF_Font* font, FT_UInt idx,
                                          int want_bitmap, int want_pixmap, int want_color, int want_subpixel,
-                                         int translation, c_glyph **out_glyph, TTF_Image **out_image);
+                                         int translation, c_glyph** out_glyph, TTF_Image** out_image);
 
-static void Flush_Cache (TTF_Font *font);
+static void Flush_Cache (TTF_Font* font);
 
 #if defined(USE_DUFFS_LOOP)
 
@@ -362,9 +365,9 @@ static void Flush_Cache (TTF_Font *font);
 
 /* Blend colored glyphs */
 static SDL_INLINE void
-BG_Blended_Color (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
-  const Uint32 *src = (Uint32 *) image->buffer;
-  Uint32 *dst = destination;
+BG_Blended_Color (const TTF_Image* image, Uint32* destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
+  const Uint32* src = (Uint32*) image->buffer;
+  Uint32* dst = destination;
   Uint32 width = image->width;
   Uint32 height = image->rows;
 
@@ -374,8 +377,8 @@ BG_Blended_Color (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, U
       DUFFS_LOOP4(
           *dst++ = *src++;, width);
       /* *INDENT-ON* */
-      src = (const Uint32 *) ((const Uint8 *) src + srcskip);
-      dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+      src = (const Uint32*) ((const Uint8*) src + srcskip);
+      dst = (Uint32*) ((Uint8*) dst + dstskip);
     }
   }
   else {
@@ -391,17 +394,17 @@ BG_Blended_Color (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, U
           alpha = DIVIDE_BY_255 (fg_alpha * alpha) << 24;
           *dst++ = tmp | alpha, width);
       /* *INDENT-ON* */
-      src = (const Uint32 *) ((const Uint8 *) src + srcskip);
-      dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+      src = (const Uint32*) ((const Uint8*) src + srcskip);
+      dst = (Uint32*) ((Uint8*) dst + dstskip);
     }
   }
 }
 
 /* Blended Opaque SDF */
 static SDL_INLINE void
-BG_Blended_Opaque_SDF (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip) {
-  const Uint8 *src = image->buffer;
-  Uint32 *dst = destination;
+BG_Blended_Opaque_SDF (const TTF_Image* image, Uint32* destination, Sint32 srcskip, Uint32 dstskip) {
+  const Uint8* src = image->buffer;
+  Uint32* dst = destination;
   Uint32 width = image->width;
   Uint32 height = image->rows;
 
@@ -419,15 +422,15 @@ BG_Blended_Opaque_SDF (const TTF_Image *image, Uint32 *destination, Sint32 srcsk
         dst++;, width);
     /* *INDENT-ON* */
     src += srcskip;
-    dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+    dst = (Uint32*) ((Uint8*) dst + dstskip);
   }
 }
 
 /* Blended non-opaque SDF */
 static SDL_INLINE void
-BG_Blended_SDF (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
-  const Uint8 *src = image->buffer;
-  Uint32 *dst = destination;
+BG_Blended_SDF (const TTF_Image* image, Uint32* destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
+  const Uint8* src = image->buffer;
+  Uint32* dst = destination;
   Uint32 width = image->width;
   Uint32 height = image->rows;
 
@@ -447,14 +450,14 @@ BG_Blended_SDF (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uin
         dst++;, width);
     /* *INDENT-ON* */
     src += srcskip;
-    dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+    dst = (Uint32*) ((Uint8*) dst + dstskip);
   }
 }
 
 /* Blended Opaque */
-static SDL_INLINE void BG_Blended_Opaque (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip) {
-  const Uint8 *src = image->buffer;
-  Uint32 *dst = destination;
+static SDL_INLINE void BG_Blended_Opaque (const TTF_Image* image, Uint32* destination, Sint32 srcskip, Uint32 dstskip) {
+  const Uint8* src = image->buffer;
+  Uint32* dst = destination;
   Uint32 width = image->width;
   Uint32 height = image->rows;
 
@@ -464,15 +467,15 @@ static SDL_INLINE void BG_Blended_Opaque (const TTF_Image *image, Uint32 *destin
         *dst++ |= *src++ << 24;, width);
     /* *INDENT-ON* */
     src += srcskip;
-    dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+    dst = (Uint32*) ((Uint8*) dst + dstskip);
   }
 }
 
 /* Blended non-opaque */
 static SDL_INLINE void
-BG_Blended (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
-  const Uint8 *src = image->buffer;
-  Uint32 *dst = destination;
+BG_Blended (const TTF_Image* image, Uint32* destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
+  const Uint8* src = image->buffer;
+  Uint32* dst = destination;
   Uint32 width = image->width;
   Uint32 height = image->rows;
 
@@ -485,15 +488,16 @@ BG_Blended (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 
         *dst++ |= DIVIDE_BY_255 (tmp) << 24;, width);
     /* *INDENT-ON* */
     src += srcskip;
-    dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+    dst = (Uint32*) ((Uint8*) dst + dstskip);
   }
 }
 
 #if defined(HAVE_BLIT_GLYPH_32) || defined(HAVE_BLIT_GLYPH_64)
+
 static SDL_INLINE void
-BG_Blended_Opaque_32 (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip) {
-  const Uint8 *src = image->buffer;
-  Uint32 *dst = destination;
+BG_Blended_Opaque_32 (const TTF_Image* image, Uint32* destination, Sint32 srcskip, Uint32 dstskip) {
+  const Uint8* src = image->buffer;
+  Uint32* dst = destination;
   Uint32 width = image->width / 4;
   Uint32 height = image->rows;
 
@@ -506,14 +510,14 @@ BG_Blended_Opaque_32 (const TTF_Image *image, Uint32 *destination, Sint32 srcski
         *dst++ |= *src++ << 24;, width);
     /* *INDENT-ON* */
     src += srcskip;
-    dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+    dst = (Uint32*) ((Uint8*) dst + dstskip);
   }
 }
 
 static SDL_INLINE void
-BG_Blended_32 (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
-  const Uint8 *src = image->buffer;
-  Uint32 *dst = destination;
+BG_Blended_32 (const TTF_Image* image, Uint32* destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
+  const Uint8* src = image->buffer;
+  Uint32* dst = destination;
   Uint32 width = image->width / 4;
   Uint32 height = image->rows;
 
@@ -532,17 +536,19 @@ BG_Blended_32 (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint
         *dst++ |= DIVIDE_BY_255 (tmp3) << 24;, width);
     /* *INDENT-ON* */
     src += srcskip;
-    dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+    dst = (Uint32*) ((Uint8*) dst + dstskip);
   }
 }
+
 #endif
 
 #if defined(HAVE_SSE2_INTRINSICS)
+
 /* Apply: alpha_table[i] = i << 24; */
 static SDL_INLINE void
-BG_Blended_Opaque_SSE (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip) {
-  const __m128i *src = (__m128i *) image->buffer;
-  __m128i *dst = (__m128i *) destination;
+BG_Blended_Opaque_SSE (const TTF_Image* image, Uint32* destination, Sint32 srcskip, Uint32 dstskip) {
+  const __m128i* src = (__m128i*) image->buffer;
+  __m128i* dst = (__m128i*) destination;
   Uint32 width = image->width / 16;
   Uint32 height = image->rows;
 
@@ -580,15 +586,15 @@ BG_Blended_Opaque_SSE (const TTF_Image *image, Uint32 *destination, Sint32 srcsk
         dst += 4;
         src += 1;, width);
     /* *INDENT-ON* */
-    src = (const __m128i *) ((const Uint8 *) src + srcskip);
-    dst = (__m128i *) ((Uint8 *) dst + dstskip);
+    src = (const __m128i*) ((const Uint8*) src + srcskip);
+    dst = (__m128i*) ((Uint8*) dst + dstskip);
   }
 }
 
 static SDL_INLINE void
-BG_Blended_SSE (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
-  const __m128i *src = (__m128i *) image->buffer;
-  __m128i *dst = (__m128i *) destination;
+BG_Blended_SSE (const TTF_Image* image, Uint32* destination, Sint32 srcskip, Uint32 dstskip, Uint8 fg_alpha) {
+  const __m128i* src = (__m128i*) image->buffer;
+  __m128i* dst = (__m128i*) destination;
   Uint32 width = image->width / 16;
   Uint32 height = image->rows;
 
@@ -647,10 +653,11 @@ BG_Blended_SSE (const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uin
         dst += 4;
         src += 1;, width);
     /* *INDENT-ON* */
-    src = (const __m128i *) ((const Uint8 *) src + srcskip);
-    dst = (__m128i *) ((Uint8 *) dst + dstskip);
+    src = (const __m128i*) ((const Uint8*) src + srcskip);
+    dst = (__m128i*) ((Uint8*) dst + dstskip);
   }
 }
+
 #endif
 
 #if defined(HAVE_NEON_INTRINSICS)
@@ -777,9 +784,9 @@ static SDL_INLINE void BG_Blended_NEON(const TTF_Image *image, Uint32 *destinati
 }
 #endif
 
-static SDL_INLINE void BG (const TTF_Image *image, Uint8 *destination, Sint32 srcskip, Uint32 dstskip) {
-  const Uint8 *src = image->buffer;
-  Uint8 *dst = destination;
+static SDL_INLINE void BG (const TTF_Image* image, Uint8* destination, Sint32 srcskip, Uint32 dstskip) {
+  const Uint8* src = image->buffer;
+  Uint8* dst = destination;
   Uint32 width = image->width;
   Uint32 height = image->rows;
 
@@ -794,9 +801,10 @@ static SDL_INLINE void BG (const TTF_Image *image, Uint8 *destination, Sint32 sr
 }
 
 #if defined(HAVE_BLIT_GLYPH_64)
-static SDL_INLINE void BG_64 (const TTF_Image *image, Uint8 *destination, Sint32 srcskip, Uint32 dstskip) {
-  const Uint64 *src = (Uint64 *) image->buffer;
-  Uint64 *dst = (Uint64 *) destination;
+
+static SDL_INLINE void BG_64 (const TTF_Image* image, Uint8* destination, Sint32 srcskip, Uint32 dstskip) {
+  const Uint64* src = (Uint64*) image->buffer;
+  Uint64* dst = (Uint64*) destination;
   Uint32 width = image->width / 8;
   Uint32 height = image->rows;
 
@@ -805,10 +813,11 @@ static SDL_INLINE void BG_64 (const TTF_Image *image, Uint8 *destination, Sint32
     DUFFS_LOOP4(
         *dst++ |= *src++;, width);
     /* *INDENT-ON* */
-    src = (const Uint64 *) ((const Uint8 *) src + srcskip);
-    dst = (Uint64 *) ((Uint8 *) dst + dstskip);
+    src = (const Uint64*) ((const Uint8*) src + srcskip);
+    dst = (Uint64*) ((Uint8*) dst + dstskip);
   }
 }
+
 #elif defined(HAVE_BLIT_GLYPH_32)
                                                                                                                         static SDL_INLINE void BG_32(const TTF_Image *image, Uint8 *destination, Sint32 srcskip, Uint32 dstskip)
 {
@@ -830,9 +839,10 @@ static SDL_INLINE void BG_64 (const TTF_Image *image, Uint8 *destination, Sint32
 #endif
 
 #if defined(HAVE_SSE2_INTRINSICS)
-static SDL_INLINE void BG_SSE (const TTF_Image *image, Uint8 *destination, Sint32 srcskip, Uint32 dstskip) {
-  const __m128i *src = (__m128i *) image->buffer;
-  __m128i *dst = (__m128i *) destination;
+
+static SDL_INLINE void BG_SSE (const TTF_Image* image, Uint8* destination, Sint32 srcskip, Uint32 dstskip) {
+  const __m128i* src = (__m128i*) image->buffer;
+  __m128i* dst = (__m128i*) destination;
   Uint32 width = image->width / 16;
   Uint32 height = image->rows;
 
@@ -848,10 +858,11 @@ static SDL_INLINE void BG_SSE (const TTF_Image *image, Uint8 *destination, Sint3
         src += 1;
         dst += 1;, width);
     /* *INDENT-ON* */
-    src = (const __m128i *) ((const Uint8 *) src + srcskip);
-    dst = (__m128i *) ((Uint8 *) dst + dstskip);
+    src = (const __m128i*) ((const Uint8*) src + srcskip);
+    dst = (__m128i*) ((Uint8*) dst + dstskip);
   }
 }
+
 #endif
 
 #if defined(HAVE_NEON_INTRINSICS)
@@ -883,9 +894,10 @@ static SDL_INLINE void BG_SSE (const TTF_Image *image, Uint8 *destination, Sint3
 
 /* Underline and Strikethrough style. Draw a line at the given row. */
 static void
-Draw_Line (const SDL_Surface *textbuf, int row, int line_width, int line_thickness, Uint32 color, const render_mode_t render_mode) {
+Draw_Line (const SDL_Surface* textbuf, int row, int line_width, int line_thickness, Uint32 color,
+           const render_mode_t render_mode) {
   int tmp = row + line_thickness - textbuf->h;
-  Uint8 *dst = (Uint8 *) textbuf->pixels + row * textbuf->pitch;
+  Uint8* dst = (Uint8*) textbuf->pixels + row * textbuf->pitch;
 
   /* Not needed because of "font->height = SDL_max(font->height, bottom_row);".
      * But if you patch to render textshaping and break line in middle of a cluster,
@@ -913,7 +925,7 @@ Draw_Line (const SDL_Surface *textbuf, int row, int line_width, int line_thickne
   }
 }
 
-static void clip_glyph (int *_x, int *_y, TTF_Image *image, const SDL_Surface *textbuf) {
+static void clip_glyph (int* _x, int* _y, TTF_Image* image, const SDL_Surface* textbuf) {
   int above_w;
   int above_h;
   int x = *_x;
@@ -1097,13 +1109,21 @@ int Render_Line_##NAME(TTF_Font *font, SDL_Surface *textbuf, int xstart, int yst
 /* BUILD_RENDER_LINE(NAME, IS_BLENDED, IS_BLENDED_OPAQUE, WANT_BITMAP_PIXMAP_COLOR, WANT_SUBPIXEL, BLIT_GLYPH_BLENDED_OPAQUE_OPTIM, BLIT_GLYPH_BLENDED_OPTIM, BLIT_GLYPH_OPTIM) */
 
 #if defined(HAVE_SSE2_INTRINSICS)
+
 BUILD_RENDER_LINE(SSE_Shaded, 0, 0, PIXMAP, 0, , , BG_SSE)
+
 BUILD_RENDER_LINE(SSE_Blended, 1, 0, COLOR, 0, , BG_Blended_SSE,)
+
 BUILD_RENDER_LINE(SSE_Blended_Opaque, 1, 1, COLOR, 0, BG_Blended_Opaque_SSE, ,)
+
 BUILD_RENDER_LINE(SSE_Solid, 0, 0, BITMAP, 0, , , BG_SSE)
+
 BUILD_RENDER_LINE(SSE_Shaded_SP, 0, 0, PIXMAP, SUBPIX, , , BG_SSE)
+
 BUILD_RENDER_LINE(SSE_Blended_SP, 1, 0, COLOR, SUBPIX, , BG_Blended_SSE,)
+
 BUILD_RENDER_LINE(SSE_Blended_Opaque_SP, 1, 1, COLOR, SUBPIX, BG_Blended_Opaque_SSE, ,)
+
 #endif
 
 #if defined(HAVE_NEON_INTRINSICS)
@@ -1117,13 +1137,21 @@ BUILD_RENDER_LINE(NEON_Blended_Opaque_SP, 1, 1,  COLOR, SUBPIX, BG_Blended_Opaqu
 #endif
 
 #if defined(HAVE_BLIT_GLYPH_64)
+
 BUILD_RENDER_LINE(64_Shaded, 0, 0, PIXMAP, 0, , , BG_64)
+
 BUILD_RENDER_LINE(64_Blended, 1, 0, COLOR, 0, , BG_Blended_32,)
+
 BUILD_RENDER_LINE(64_Blended_Opaque, 1, 1, COLOR, 0, BG_Blended_Opaque_32, ,)
+
 BUILD_RENDER_LINE(64_Solid, 0, 0, BITMAP, 0, , , BG_64)
+
 BUILD_RENDER_LINE(64_Shaded_SP, 0, 0, PIXMAP, SUBPIX, , , BG_64)
+
 BUILD_RENDER_LINE(64_Blended_SP, 1, 0, COLOR, SUBPIX, , BG_Blended_32,)
+
 BUILD_RENDER_LINE(64_Blended_Opaque_SP, 1, 1, COLOR, SUBPIX, BG_Blended_Opaque_32, ,)
+
 #elif defined(HAVE_BLIT_GLYPH_32)
                                                                                                                         BUILD_RENDER_LINE(32_Shaded             , 0, 0, PIXMAP, 0     ,                       ,                , BG_32      )
 BUILD_RENDER_LINE(32_Blended            , 1, 0,  COLOR, 0     ,                       , BG_Blended_32  ,            )
@@ -1157,7 +1185,8 @@ BUILD_RENDER_LINE(SDF_Blended_Opaque_SP , 1, 1,  COLOR, SUBPIX, BG_Blended_Opaqu
 #endif
 
 static SDL_INLINE int
-Render_Line (const render_mode_t render_mode, int subpixel, TTF_Font *font, SDL_Surface *textbuf, int xstart, int ystart, Uint8 fg_alpha) {
+Render_Line (const render_mode_t render_mode, int subpixel, TTF_Font* font, SDL_Surface* textbuf, int xstart,
+             int ystart, Uint8 fg_alpha) {
   /* Render line (pos_buf) to textbuf at (xstart, ystart) */
 
   /* Subpixel with RENDER_SOLID doesn't make sense. */
@@ -1215,21 +1244,21 @@ Render_Line (const render_mode_t render_mode, int subpixel, TTF_Font *font, SDL_
 #endif
 }
 
-static SDL_Surface *Create_Surface_Solid (int width, int height, SDL_Color fg, Uint32 *color) {
+static SDL_Surface* Create_Surface_Solid (int width, int height, SDL_Color fg, Uint32* color) {
   const int alignment = Get_Alignement () - 1;
-  SDL_Surface *textbuf;
+  SDL_Surface* textbuf;
   Sint64 size;
 
   /* Create a surface with memory:
      * - pitch is rounded to alignment
      * - adress is aligned
      */
-  void *pixels, *ptr;
+  void* pixels, * ptr;
   /* Worse case at the end of line pulling 'alignment' extra blank pixels */
   int pitch = width + alignment;
   pitch += alignment;
   pitch &= ~alignment;
-  size = height * pitch + sizeof (void *) + alignment;
+  size = height * pitch + sizeof (void*) + alignment;
   if (size < 0 || size > SDL_MAX_SINT32) {
     /* Overflow... */
     return NULL;
@@ -1241,8 +1270,8 @@ static SDL_Surface *Create_Surface_Solid (int width, int height, SDL_Color fg, U
   }
 
   /* address is aligned */
-  pixels = (void *) (((size_t) ptr + sizeof (void *) + alignment) & ~alignment);
-  ((void **) pixels)[-1] = ptr;
+  pixels = (void*) (((size_t) ptr + sizeof (void*) + alignment) & ~alignment);
+  ((void**) pixels)[-1] = ptr;
 
   textbuf = SDL_CreateRGBSurfaceWithFormatFrom (pixels, width, height, 0, pitch, SDL_PIXELFORMAT_INDEX8);
   if (textbuf == NULL) {
@@ -1262,7 +1291,7 @@ static SDL_Surface *Create_Surface_Solid (int width, int height, SDL_Color fg, U
 
   /* Fill the palette: 1 is foreground */
   {
-    SDL_Palette *palette = textbuf->format->palette;
+    SDL_Palette* palette = textbuf->format->palette;
     palette->colors[0].r = 255 - fg.r;
     palette->colors[0].g = 255 - fg.g;
     palette->colors[0].b = 255 - fg.b;
@@ -1277,9 +1306,9 @@ static SDL_Surface *Create_Surface_Solid (int width, int height, SDL_Color fg, U
   return textbuf;
 }
 
-static SDL_Surface *Create_Surface_Shaded (int width, int height, SDL_Color fg, SDL_Color bg, Uint32 *color) {
+static SDL_Surface* Create_Surface_Shaded (int width, int height, SDL_Color fg, SDL_Color bg, Uint32* color) {
   const int alignment = Get_Alignement () - 1;
-  SDL_Surface *textbuf;
+  SDL_Surface* textbuf;
   Sint64 size;
   Uint8 bg_alpha = bg.a;
 
@@ -1287,12 +1316,12 @@ static SDL_Surface *Create_Surface_Shaded (int width, int height, SDL_Color fg, 
      * - pitch is rounded to alignment
      * - adress is aligned
      */
-  void *pixels, *ptr;
+  void* pixels, * ptr;
   /* Worse case at the end of line pulling 'alignment' extra blank pixels */
   int pitch = width + alignment;
   pitch += alignment;
   pitch &= ~alignment;
-  size = height * pitch + sizeof (void *) + alignment;
+  size = height * pitch + sizeof (void*) + alignment;
   if (size < 0 || size > SDL_MAX_SINT32) {
     /* Overflow... */
     return NULL;
@@ -1304,8 +1333,8 @@ static SDL_Surface *Create_Surface_Shaded (int width, int height, SDL_Color fg, 
   }
 
   /* address is aligned */
-  pixels = (void *) (((size_t) ptr + sizeof (void *) + alignment) & ~alignment);
-  ((void **) pixels)[-1] = ptr;
+  pixels = (void*) (((size_t) ptr + sizeof (void*) + alignment) & ~alignment);
+  ((void**) pixels)[-1] = ptr;
 
   textbuf = SDL_CreateRGBSurfaceWithFormatFrom (pixels, width, height, 0, pitch, SDL_PIXELFORMAT_INDEX8);
   if (textbuf == NULL) {
@@ -1335,7 +1364,7 @@ static SDL_Surface *Create_Surface_Shaded (int width, int height, SDL_Color fg, 
 
   /* Fill the palette with NUM_GRAYS levels of shading from bg to fg */
   {
-    SDL_Palette *palette = textbuf->format->palette;
+    SDL_Palette* palette = textbuf->format->palette;
     int rdiff = fg.r - bg.r;
     int gdiff = fg.g - bg.g;
     int bdiff = fg.b - bg.b;
@@ -1365,9 +1394,9 @@ static SDL_Surface *Create_Surface_Shaded (int width, int height, SDL_Color fg, 
   return textbuf;
 }
 
-static SDL_Surface *Create_Surface_Blended (int width, int height, SDL_Color fg, Uint32 *color) {
+static SDL_Surface* Create_Surface_Blended (int width, int height, SDL_Color fg, Uint32* color) {
   const int alignment = Get_Alignement () - 1;
-  SDL_Surface *textbuf = NULL;
+  SDL_Surface* textbuf = NULL;
   Uint32 bgcolor;
 
   /* Background color */
@@ -1383,12 +1412,12 @@ static SDL_Surface *Create_Surface_Blended (int width, int height, SDL_Color fg,
          * - adress is aligned
          */
     Sint64 size;
-    void *pixels, *ptr;
+    void* pixels, * ptr;
     /* Worse case at the end of line pulling 'alignment' extra blank pixels */
     int pitch = (width + alignment) * 4;
     pitch += alignment;
     pitch &= ~alignment;
-    size = height * pitch + sizeof (void *) + alignment;
+    size = height * pitch + sizeof (void*) + alignment;
     if (size < 0 || size > SDL_MAX_SINT32) {
       /* Overflow... */
       return NULL;
@@ -1400,8 +1429,8 @@ static SDL_Surface *Create_Surface_Blended (int width, int height, SDL_Color fg,
     }
 
     /* address is aligned */
-    pixels = (void *) (((size_t) ptr + sizeof (void *) + alignment) & ~alignment);
-    ((void **) pixels)[-1] = ptr;
+    pixels = (void*) (((size_t) ptr + sizeof (void*) + alignment) & ~alignment);
+    ((void**) pixels)[-1] = ptr;
 
     textbuf = SDL_CreateRGBSurfaceWithFormatFrom (pixels, width, height, 0, pitch, SDL_PIXELFORMAT_ARGB8888);
     if (textbuf == NULL) {
@@ -1426,7 +1455,7 @@ static SDL_Surface *Create_Surface_Blended (int width, int height, SDL_Color fg,
 }
 
 /* rcg06192001 get linked library's version. */
-const SDL_version *TTF_Linked_Version (void) {
+const SDL_version* TTF_Linked_Version (void) {
   static SDL_version linked_version;
   SDL_TTF_VERSION(&linked_version);
   return &linked_version;
@@ -1520,12 +1549,12 @@ int TTF_Init (void) {
 static unsigned long RWread (
     FT_Stream stream,
     unsigned long offset,
-    unsigned char *buffer,
+    unsigned char* buffer,
     unsigned long count
 ) {
-  SDL_RWops *src;
+  SDL_RWops* src;
 
-  src = (SDL_RWops *) stream->descriptor.pointer;
+  src = (SDL_RWops*) stream->descriptor.pointer;
   SDL_RWseek (src, (int) offset, RW_SEEK_SET);
   if (count == 0) {
     return 0;
@@ -1533,9 +1562,9 @@ static unsigned long RWread (
   return (unsigned long) SDL_RWread (src, buffer, 1, (int) count);
 }
 
-TTF_Font *
-TTF_OpenFontIndexDPIRW (SDL_RWops *src, int freesrc, int ptsize, long index, unsigned int hdpi, unsigned int vdpi) {
-  TTF_Font *font;
+TTF_Font*
+TTF_OpenFontIndexDPIRW (SDL_RWops* src, int freesrc, int ptsize, long index, unsigned int hdpi, unsigned int vdpi) {
+  TTF_Font* font;
   FT_Error error;
   FT_Face face;
   FT_Stream stream;
@@ -1566,7 +1595,7 @@ TTF_OpenFontIndexDPIRW (SDL_RWops *src, int freesrc, int ptsize, long index, uns
     return NULL;
   }
 
-  font = (TTF_Font *) SDL_malloc (sizeof (*font));
+  font = (TTF_Font*) SDL_malloc (sizeof (*font));
   if (font == NULL) {
     TTF_SetError ("Out of memory");
     if (freesrc) {
@@ -1645,7 +1674,7 @@ TTF_OpenFontIndexDPIRW (SDL_RWops *src, int freesrc, int ptsize, long index, uns
 
   font->pos_len = 0;
   font->pos_max = 16;
-  font->pos_buf = (PosBuf_t *) SDL_malloc (font->pos_max * sizeof (font->pos_buf[0]));
+  font->pos_buf = (PosBuf_t*) SDL_malloc (font->pos_max * sizeof (font->pos_buf[0]));
   if (!font->pos_buf) {
     TTF_SetError ("Out of memory");
     TTF_CloseFont (font);
@@ -1674,7 +1703,7 @@ TTF_OpenFontIndexDPIRW (SDL_RWops *src, int freesrc, int ptsize, long index, uns
   return font;
 }
 
-int TTF_SetFontSizeDPI (TTF_Font *font, int ptsize, unsigned int hdpi, unsigned int vdpi) {
+int TTF_SetFontSizeDPI (TTF_Font* font, int ptsize, unsigned int hdpi, unsigned int vdpi) {
   FT_Face face = font->face;
   FT_Error error;
 
@@ -1724,12 +1753,12 @@ int TTF_SetFontSizeDPI (TTF_Font *font, int ptsize, unsigned int hdpi, unsigned 
   return 0;
 }
 
-int TTF_SetFontSize (TTF_Font *font, int ptsize) {
+int TTF_SetFontSize (TTF_Font* font, int ptsize) {
   return TTF_SetFontSizeDPI (font, ptsize, 0, 0);
 }
 
 /* Update font parameter depending on a style change */
-static int TTF_initFontMetrics (TTF_Font *font) {
+static int TTF_initFontMetrics (TTF_Font* font) {
   FT_Face face = font->face;
   int underline_offset;
 
@@ -1801,53 +1830,53 @@ static int TTF_initFontMetrics (TTF_Font *font) {
   return 0;
 }
 
-TTF_Font *TTF_OpenFontDPIRW (SDL_RWops *src, int freesrc, int ptsize, unsigned int hdpi, unsigned int vdpi) {
+TTF_Font* TTF_OpenFontDPIRW (SDL_RWops* src, int freesrc, int ptsize, unsigned int hdpi, unsigned int vdpi) {
   return TTF_OpenFontIndexDPIRW (src, freesrc, ptsize, 0, hdpi, vdpi);
 }
 
-TTF_Font *TTF_OpenFontIndexRW (SDL_RWops *src, int freesrc, int ptsize, long index) {
+TTF_Font* TTF_OpenFontIndexRW (SDL_RWops* src, int freesrc, int ptsize, long index) {
   return TTF_OpenFontIndexDPIRW (src, freesrc, ptsize, index, 0, 0);
 }
 
-TTF_Font *TTF_OpenFontIndexDPI (const char *file, int ptsize, long index, unsigned int hdpi, unsigned int vdpi) {
-  SDL_RWops *rw = SDL_RWFromFile (file, "rb");
+TTF_Font* TTF_OpenFontIndexDPI (const char* file, int ptsize, long index, unsigned int hdpi, unsigned int vdpi) {
+  SDL_RWops* rw = SDL_RWFromFile (file, "rb");
   if (rw == NULL) {
     return NULL;
   }
   return TTF_OpenFontIndexDPIRW (rw, 1, ptsize, index, hdpi, vdpi);
 }
 
-TTF_Font *TTF_OpenFontRW (SDL_RWops *src, int freesrc, int ptsize) {
+TTF_Font* TTF_OpenFontRW (SDL_RWops* src, int freesrc, int ptsize) {
   return TTF_OpenFontIndexRW (src, freesrc, ptsize, 0);
 }
 
-TTF_Font *TTF_OpenFontDPI (const char *file, int ptsize, unsigned int hdpi, unsigned int vdpi) {
+TTF_Font* TTF_OpenFontDPI (const char* file, int ptsize, unsigned int hdpi, unsigned int vdpi) {
   return TTF_OpenFontIndexDPI (file, ptsize, 0, hdpi, vdpi);
 }
 
-TTF_Font *TTF_OpenFontIndex (const char *file, int ptsize, long index) {
+TTF_Font* TTF_OpenFontIndex (const char* file, int ptsize, long index) {
   return TTF_OpenFontIndexDPI (file, ptsize, index, 0, 0);
 }
 
-TTF_Font *TTF_OpenFont (const char *file, int ptsize) {
+TTF_Font* TTF_OpenFont (const char* file, int ptsize) {
   return TTF_OpenFontIndex (file, ptsize, 0);
 }
 
-static void Flush_Glyph_Image (TTF_Image *image) {
+static void Flush_Glyph_Image (TTF_Image* image) {
   if (image->buffer) {
     SDL_free (image->buffer);
     image->buffer = NULL;
   }
 }
 
-static void Flush_Glyph (c_glyph *glyph) {
+static void Flush_Glyph (c_glyph* glyph) {
   glyph->stored = 0;
   glyph->index = 0;
   Flush_Glyph_Image (&glyph->pixmap);
   Flush_Glyph_Image (&glyph->bitmap);
 }
 
-static void Flush_Cache (TTF_Font *font) {
+static void Flush_Cache (TTF_Font* font) {
   int i;
   int size = sizeof (font->cache) / sizeof (font->cache[0]);
 
@@ -1858,7 +1887,7 @@ static void Flush_Cache (TTF_Font *font) {
   }
 }
 
-static FT_Error Load_Glyph (TTF_Font *font, c_glyph *cached, int want, int translation) {
+static FT_Error Load_Glyph (TTF_Font* font, c_glyph* cached, int want, int translation) {
   const int alignment = Get_Alignement () - 1;
   FT_GlyphSlot slot;
   FT_Error error;
@@ -1889,7 +1918,7 @@ static FT_Error Load_Glyph (TTF_Font *font, c_glyph *cached, int want, int trans
     /* Current version of freetype is 2.9.1, but on older freetype (2.8.1) this can be 0.
          * Try to get them from 'FT_Glyph_Metrics' */
     if (cached->sz_left == 0 && cached->sz_top == 0 && cached->sz_rows == 0 && cached->sz_width == 0) {
-      FT_Glyph_Metrics *metrics = &slot->metrics;
+      FT_Glyph_Metrics* metrics = &slot->metrics;
       if (metrics) {
         int minx = FT_FLOOR(metrics->horiBearingX);
         int maxx = FT_CEIL(metrics->horiBearingX + metrics->width);
@@ -1955,9 +1984,9 @@ static FT_Error Load_Glyph (TTF_Font *font, c_glyph *cached, int want, int trans
       (want & CACHED_SUBPIX)
       ) {
     const int mono = (want & CACHED_BITMAP);
-    TTF_Image *dst = (mono ? &cached->bitmap : &cached->pixmap);
+    TTF_Image* dst = (mono ? &cached->bitmap : &cached->pixmap);
     FT_Glyph glyph = NULL;
-    FT_Bitmap *src;
+    FT_Bitmap* src;
     FT_Render_Mode ft_render_mode;
 
     if (mono) {
@@ -2070,7 +2099,7 @@ static FT_Error Load_Glyph (TTF_Font *font, c_glyph *cached, int want, int trans
 
       /* Glyph buffer is NOT aligned,
              * Extra width so it can read an 'aligned' size expanding on the left */
-      dst->buffer = (unsigned char *) SDL_malloc (alignment + dst->pitch * dst->rows);
+      dst->buffer = (unsigned char*) SDL_malloc (alignment + dst->pitch * dst->rows);
 
       if (!dst->buffer) {
         return FT_Err_Out_Of_Memory;
@@ -2090,8 +2119,8 @@ static FT_Error Load_Glyph (TTF_Font *font, c_glyph *cached, int want, int trans
              * FT_Render_Glyph() canreturn two-color bitmap or 4/16/256 color graymap
              * according to the format of embedded bitmap/graymap. */
       for (i = 0; i < (unsigned int) src->rows; i++) {
-        unsigned char *srcp = src->buffer + i * src->pitch;
-        unsigned char *dstp = dst->buffer + i * dst->pitch;
+        unsigned char* srcp = src->buffer + i * src->pitch;
+        unsigned char* dstp = dst->buffer + i * dst->pitch;
         unsigned int k, quotient, remainder;
 
         /* Decode exactly the needed size from src->width */
@@ -2277,7 +2306,7 @@ static FT_Error Load_Glyph (TTF_Font *font, c_glyph *cached, int want, int trans
       int row;
       /* The pixmap is a little hard, we have to add and clamp */
       for (row = dst->rows - 1; row >= 0; --row) {
-        Uint8 *pixmap = dst->buffer + row * dst->pitch;
+        Uint8* pixmap = dst->buffer + row * dst->pitch;
         int col, offset;
         /* Minimal memset */
         /* SDL_memset(pixmap + dst->width - font->glyph_overhang, 0, font->glyph_overhang); */
@@ -2350,11 +2379,12 @@ static FT_Error Load_Glyph (TTF_Font *font, c_glyph *cached, int want, int trans
   return 0;
 }
 
-static SDL_INLINE int Find_GlyphByIndex (TTF_Font *font, FT_UInt idx,
-                                         const int want_bitmap, const int want_pixmap, const int want_color, const int want_subpixel,
-                                         int translation, c_glyph **out_glyph, TTF_Image **out_image) {
+static SDL_INLINE int Find_GlyphByIndex (TTF_Font* font, FT_UInt idx,
+                                         const int want_bitmap, const int want_pixmap, const int want_color,
+                                         const int want_subpixel,
+                                         int translation, c_glyph** out_glyph, TTF_Image** out_image) {
   /* cache size is 256, get key by masking */
-  c_glyph *glyph = &font->cache[idx & 0xff];
+  c_glyph* glyph = &font->cache[idx & 0xff];
 
   if (out_glyph) {
     *out_glyph = glyph;
@@ -2447,7 +2477,7 @@ static SDL_INLINE int Find_GlyphByIndex (TTF_Font *font, FT_UInt idx,
   }
 }
 
-static SDL_INLINE FT_UInt get_char_index (TTF_Font *font, Uint32 ch) {
+static SDL_INLINE FT_UInt get_char_index (TTF_Font* font, Uint32 ch) {
   Uint32 cache_index_size = sizeof (font->cache_index) / sizeof (font->cache_index[0]);
 
   if (ch < cache_index_size) {
@@ -2463,12 +2493,12 @@ static SDL_INLINE FT_UInt get_char_index (TTF_Font *font, Uint32 ch) {
   return FT_Get_Char_Index (font->face, ch);
 }
 
-static SDL_INLINE int Find_GlyphMetrics (TTF_Font *font, Uint32 ch, c_glyph **out_glyph) {
+static SDL_INLINE int Find_GlyphMetrics (TTF_Font* font, Uint32 ch, c_glyph** out_glyph) {
   FT_UInt idx = get_char_index (font, ch);
   return Find_GlyphByIndex (font, idx, 0, 0, 0, 0, 0, out_glyph, NULL);
 }
 
-void TTF_CloseFont (TTF_Font *font) {
+void TTF_CloseFont (TTF_Font* font) {
   if (font) {
 #if TTF_USE_HARFBUZZ
     hb_font_destroy(font->hb_font);
@@ -2491,10 +2521,10 @@ void TTF_CloseFont (TTF_Font *font) {
 }
 
 /* Gets the number of bytes needed to convert a Latin-1 string to UTF-8 */
-static size_t LATIN1_to_UTF8_len (const char *text) {
+static size_t LATIN1_to_UTF8_len (const char* text) {
   size_t bytes = 1;
   while (*text) {
-    Uint8 ch = *(const Uint8 *) text++;
+    Uint8 ch = *(const Uint8*) text++;
     if (ch <= 0x7F) {
       bytes += 1;
     }
@@ -2506,7 +2536,7 @@ static size_t LATIN1_to_UTF8_len (const char *text) {
 }
 
 /* Gets the number of bytes needed to convert a UCS2 string to UTF-8 */
-static size_t UCS2_to_UTF8_len (const Uint16 *text) {
+static size_t UCS2_to_UTF8_len (const Uint16* text) {
   size_t bytes = 1;
   while (*text) {
     Uint16 ch = *text++;
@@ -2524,9 +2554,9 @@ static size_t UCS2_to_UTF8_len (const Uint16 *text) {
 }
 
 /* Convert a Latin-1 string to a UTF-8 string */
-static void LATIN1_to_UTF8 (const char *src, Uint8 *dst) {
+static void LATIN1_to_UTF8 (const char* src, Uint8* dst) {
   while (*src) {
-    Uint8 ch = *(const Uint8 *) src++;
+    Uint8 ch = *(const Uint8*) src++;
     if (ch <= 0x7F) {
       *dst++ = ch;
     }
@@ -2539,7 +2569,7 @@ static void LATIN1_to_UTF8 (const char *src, Uint8 *dst) {
 }
 
 /* Convert a UCS-2 string to a UTF-8 string */
-static void UCS2_to_UTF8 (const Uint16 *src, Uint8 *dst) {
+static void UCS2_to_UTF8 (const Uint16* src, Uint8* dst) {
   int swapped = TTF_byteswapped;
 
   while (*src) {
@@ -2572,7 +2602,7 @@ static void UCS2_to_UTF8 (const Uint16 *src, Uint8 *dst) {
 }
 
 /* Convert a unicode char to a UTF-8 string */
-static SDL_bool Char_to_UTF8 (Uint32 ch, Uint8 *dst) {
+static SDL_bool Char_to_UTF8 (Uint32 ch, Uint8* dst) {
   if (ch <= 0x7F) {
     *dst++ = (Uint8) ch;
   }
@@ -2617,8 +2647,9 @@ static SDL_bool Char_to_UTF8 (Uint32 ch, Uint8 *dst) {
 /* Gets a unicode value from a UTF-8 encoded string
  * Ouputs increment to advance the string */
 #define UNKNOWN_UNICODE 0xFFFD
-static Uint32 UTF8_getch (const char *src, size_t srclen, int *inc) {
-  const Uint8 *p = (const Uint8 *) src;
+
+static Uint32 UTF8_getch (const char* src, size_t srclen, int* inc) {
+  const Uint8* p = (const Uint8*) src;
   size_t left = 0;
   size_t save_srclen = srclen;
   SDL_bool overlong = SDL_FALSE;
@@ -2714,63 +2745,63 @@ static Uint32 UTF8_getch (const char *src, size_t srclen, int *inc) {
   return ch;
 }
 
-int TTF_FontHeight (const TTF_Font *font) {
+int TTF_FontHeight (const TTF_Font* font) {
   return font->height;
 }
 
-int TTF_FontAscent (const TTF_Font *font) {
+int TTF_FontAscent (const TTF_Font* font) {
   return font->ascent + 2 * font->outline_val;
 }
 
-int TTF_FontDescent (const TTF_Font *font) {
+int TTF_FontDescent (const TTF_Font* font) {
   return font->descent;
 }
 
-int TTF_FontLineSkip (const TTF_Font *font) {
+int TTF_FontLineSkip (const TTF_Font* font) {
   return font->lineskip;
 }
 
-int TTF_GetFontKerning (const TTF_Font *font) {
+int TTF_GetFontKerning (const TTF_Font* font) {
   return font->allow_kerning;
 }
 
-void TTF_SetFontKerning (TTF_Font *font, int allowed) {
+void TTF_SetFontKerning (TTF_Font* font, int allowed) {
   font->allow_kerning = allowed;
   font->use_kerning = allowed && FT_HAS_KERNING(font->face);
 }
 
-long TTF_FontFaces (const TTF_Font *font) {
+long TTF_FontFaces (const TTF_Font* font) {
   return font->face->num_faces;
 }
 
-int TTF_FontFaceIsFixedWidth (const TTF_Font *font) {
+int TTF_FontFaceIsFixedWidth (const TTF_Font* font) {
   return FT_IS_FIXED_WIDTH(font->face);
 }
 
-char *TTF_FontFaceFamilyName (const TTF_Font *font) {
+char* TTF_FontFaceFamilyName (const TTF_Font* font) {
   return font->face->family_name;
 }
 
-char *TTF_FontFaceStyleName (const TTF_Font *font) {
+char* TTF_FontFaceStyleName (const TTF_Font* font) {
   return font->face->style_name;
 }
 
-int TTF_GlyphIsProvided (TTF_Font *font, Uint16 ch) {
+int TTF_GlyphIsProvided (TTF_Font* font, Uint16 ch) {
   return (int) get_char_index (font, ch);
 }
 
-int TTF_GlyphIsProvided32 (TTF_Font *font, Uint32 ch) {
+int TTF_GlyphIsProvided32 (TTF_Font* font, Uint32 ch) {
   return (int) get_char_index (font, ch);
 }
 
-int TTF_GlyphMetrics (TTF_Font *font, Uint16 ch,
-                      int *minx, int *maxx, int *miny, int *maxy, int *advance) {
+int TTF_GlyphMetrics (TTF_Font* font, Uint16 ch,
+                      int* minx, int* maxx, int* miny, int* maxy, int* advance) {
   return TTF_GlyphMetrics32 (font, ch, minx, maxx, miny, maxy, advance);
 }
 
-int TTF_GlyphMetrics32 (TTF_Font *font, Uint32 ch,
-                        int *minx, int *maxx, int *miny, int *maxy, int *advance) {
-  c_glyph *glyph;
+int TTF_GlyphMetrics32 (TTF_Font* font, Uint32 ch,
+                        int* minx, int* maxx, int* miny, int* maxy, int* advance) {
+  c_glyph* glyph;
 
   TTF_CHECK_POINTER(font, -1);
 
@@ -2798,16 +2829,16 @@ int TTF_GlyphMetrics32 (TTF_Font *font, Uint32 ch,
   return 0;
 }
 
-static int TTF_Size_Internal (TTF_Font *font,
-                              const char *text, const str_type_t str_type,
-                              int *w, int *h, int *xstart, int *ystart,
-                              int measure_width, int *extent, int *count) {
+static int TTF_Size_Internal (TTF_Font* font,
+                              const char* text, const str_type_t str_type,
+                              int* w, int* h, int* xstart, int* ystart,
+                              int measure_width, int* extent, int* count) {
   int x = 0;
   int pos_x, pos_y;
   int minx = 0, maxx = 0;
   int miny = 0, maxy = 0;
-  Uint8 *utf8_alloc = NULL;
-  c_glyph *glyph;
+  Uint8* utf8_alloc = NULL;
+  c_glyph* glyph;
 #if TTF_USE_HARFBUZZ
                                                                                                                           hb_buffer_t *hb_buffer = NULL;
     unsigned int g;
@@ -2838,17 +2869,17 @@ static int TTF_Size_Internal (TTF_Font *font,
       goto failure;
     }
     LATIN1_to_UTF8 (text, utf8_alloc);
-    text = (const char *) utf8_alloc;
+    text = (const char*) utf8_alloc;
   }
   else if (str_type == STR_UNICODE) {
-    const Uint16 *text16 = (const Uint16 *) text;
+    const Uint16* text16 = (const Uint16*) text;
     utf8_alloc = SDL_stack_alloc(Uint8, UCS2_to_UTF8_len (text16));
     if (utf8_alloc == NULL) {
       SDL_OutOfMemory();
       goto failure;
     }
     UCS2_to_UTF8 (text16, utf8_alloc);
-    text = (const char *) utf8_alloc;
+    text = (const char*) utf8_alloc;
   }
 
   maxy = font->height;
@@ -2903,9 +2934,9 @@ static int TTF_Size_Internal (TTF_Font *font,
 
     /* Realloc, if needed */
     if (font->pos_len >= font->pos_max) {
-      PosBuf_t *saved = font->pos_buf;
+      PosBuf_t* saved = font->pos_buf;
       font->pos_max *= 2;
-      font->pos_buf = (PosBuf_t *) SDL_realloc (font->pos_buf, font->pos_max * sizeof (font->pos_buf[0]));
+      font->pos_buf = (PosBuf_t*) SDL_realloc (font->pos_buf, font->pos_max * sizeof (font->pos_buf[0]));
       if (font->pos_buf == NULL) {
         font->pos_buf = saved;
         TTF_SetError ("Out of memory");
@@ -3043,36 +3074,36 @@ static int TTF_Size_Internal (TTF_Font *font,
   return -1;
 }
 
-int TTF_SizeText (TTF_Font *font, const char *text, int *w, int *h) {
+int TTF_SizeText (TTF_Font* font, const char* text, int* w, int* h) {
   return TTF_Size_Internal (font, text, STR_TEXT, w, h, NULL, NULL, NO_MEASUREMENT);
 }
 
-int TTF_SizeUTF8 (TTF_Font *font, const char *text, int *w, int *h) {
+int TTF_SizeUTF8 (TTF_Font* font, const char* text, int* w, int* h) {
   return TTF_Size_Internal (font, text, STR_UTF8, w, h, NULL, NULL, NO_MEASUREMENT);
 }
 
-int TTF_SizeUNICODE (TTF_Font *font, const Uint16 *text, int *w, int *h) {
-  return TTF_Size_Internal (font, (const char *) text, STR_UNICODE, w, h, NULL, NULL, NO_MEASUREMENT);
+int TTF_SizeUNICODE (TTF_Font* font, const Uint16* text, int* w, int* h) {
+  return TTF_Size_Internal (font, (const char*) text, STR_UNICODE, w, h, NULL, NULL, NO_MEASUREMENT);
 }
 
-int TTF_MeasureText (TTF_Font *font, const char *text, int width, int *extent, int *count) {
+int TTF_MeasureText (TTF_Font* font, const char* text, int width, int* extent, int* count) {
   return TTF_Size_Internal (font, text, STR_TEXT, NULL, NULL, NULL, NULL, width, extent, count);
 }
 
-int TTF_MeasureUTF8 (TTF_Font *font, const char *text, int width, int *extent, int *count) {
+int TTF_MeasureUTF8 (TTF_Font* font, const char* text, int width, int* extent, int* count) {
   return TTF_Size_Internal (font, text, STR_UTF8, NULL, NULL, NULL, NULL, width, extent, count);
 }
 
-int TTF_MeasureUNICODE (TTF_Font *font, const Uint16 *text, int width, int *extent, int *count) {
-  return TTF_Size_Internal (font, (const char *) text, STR_UNICODE, NULL, NULL, NULL, NULL, width, extent, count);
+int TTF_MeasureUNICODE (TTF_Font* font, const Uint16* text, int width, int* extent, int* count) {
+  return TTF_Size_Internal (font, (const char*) text, STR_UNICODE, NULL, NULL, NULL, NULL, width, extent, count);
 }
 
-static SDL_Surface *TTF_Render_Internal (TTF_Font *font, const char *text, const str_type_t str_type,
+static SDL_Surface* TTF_Render_Internal (TTF_Font* font, const char* text, const str_type_t str_type,
                                          SDL_Color fg, SDL_Color bg, const render_mode_t render_mode) {
   Uint32 color;
   int xstart, ystart, width, height;
-  SDL_Surface *textbuf = NULL;
-  Uint8 *utf8_alloc = NULL;
+  SDL_Surface* textbuf = NULL;
+  Uint8* utf8_alloc = NULL;
 
   TTF_CHECK_INITIALIZED(NULL);
   TTF_CHECK_POINTER(font, NULL);
@@ -3086,17 +3117,17 @@ static SDL_Surface *TTF_Render_Internal (TTF_Font *font, const char *text, const
       goto failure;
     }
     LATIN1_to_UTF8 (text, utf8_alloc);
-    text = (const char *) utf8_alloc;
+    text = (const char*) utf8_alloc;
   }
   else if (str_type == STR_UNICODE) {
-    const Uint16 *text16 = (const Uint16 *) text;
+    const Uint16* text16 = (const Uint16*) text;
     utf8_alloc = SDL_stack_alloc(Uint8, UCS2_to_UTF8_len (text16));
     if (utf8_alloc == NULL) {
       SDL_OutOfMemory();
       goto failure;
     }
     UCS2_to_UTF8 (text16, utf8_alloc);
-    text = (const char *) utf8_alloc;
+    text = (const char*) utf8_alloc;
   }
 
   /* Get the dimensions of the text surface */
@@ -3152,23 +3183,23 @@ static SDL_Surface *TTF_Render_Internal (TTF_Font *font, const char *text, const
   return NULL;
 }
 
-SDL_Surface *TTF_RenderText_Solid (TTF_Font *font, const char *text, SDL_Color fg) {
+SDL_Surface* TTF_RenderText_Solid (TTF_Font* font, const char* text, SDL_Color fg) {
   return TTF_Render_Internal (font, text, STR_TEXT, fg, fg /* unused */, RENDER_SOLID);
 }
 
-SDL_Surface *TTF_RenderUTF8_Solid (TTF_Font *font, const char *text, SDL_Color fg) {
+SDL_Surface* TTF_RenderUTF8_Solid (TTF_Font* font, const char* text, SDL_Color fg) {
   return TTF_Render_Internal (font, text, STR_UTF8, fg, fg /* unused */, RENDER_SOLID);
 }
 
-SDL_Surface *TTF_RenderUNICODE_Solid (TTF_Font *font, const Uint16 *text, SDL_Color fg) {
-  return TTF_Render_Internal (font, (const char *) text, STR_UNICODE, fg, fg /* unused */, RENDER_SOLID);
+SDL_Surface* TTF_RenderUNICODE_Solid (TTF_Font* font, const Uint16* text, SDL_Color fg) {
+  return TTF_Render_Internal (font, (const char*) text, STR_UNICODE, fg, fg /* unused */, RENDER_SOLID);
 }
 
-SDL_Surface *TTF_RenderGlyph_Solid (TTF_Font *font, Uint16 ch, SDL_Color fg) {
+SDL_Surface* TTF_RenderGlyph_Solid (TTF_Font* font, Uint16 ch, SDL_Color fg) {
   return TTF_RenderGlyph32_Solid (font, ch, fg);
 }
 
-SDL_Surface *TTF_RenderGlyph32_Solid (TTF_Font *font, Uint32 ch, SDL_Color fg) {
+SDL_Surface* TTF_RenderGlyph32_Solid (TTF_Font* font, Uint32 ch, SDL_Color fg) {
   Uint8 utf8[7];
 
   TTF_CHECK_POINTER(font, NULL);
@@ -3177,26 +3208,26 @@ SDL_Surface *TTF_RenderGlyph32_Solid (TTF_Font *font, Uint32 ch, SDL_Color fg) {
     return NULL;
   }
 
-  return TTF_RenderUTF8_Solid (font, (char *) utf8, fg);
+  return TTF_RenderUTF8_Solid (font, (char*) utf8, fg);
 }
 
-SDL_Surface *TTF_RenderText_Shaded (TTF_Font *font, const char *text, SDL_Color fg, SDL_Color bg) {
+SDL_Surface* TTF_RenderText_Shaded (TTF_Font* font, const char* text, SDL_Color fg, SDL_Color bg) {
   return TTF_Render_Internal (font, text, STR_TEXT, fg, bg, RENDER_SHADED);
 }
 
-SDL_Surface *TTF_RenderUTF8_Shaded (TTF_Font *font, const char *text, SDL_Color fg, SDL_Color bg) {
+SDL_Surface* TTF_RenderUTF8_Shaded (TTF_Font* font, const char* text, SDL_Color fg, SDL_Color bg) {
   return TTF_Render_Internal (font, text, STR_UTF8, fg, bg, RENDER_SHADED);
 }
 
-SDL_Surface *TTF_RenderUNICODE_Shaded (TTF_Font *font, const Uint16 *text, SDL_Color fg, SDL_Color bg) {
-  return TTF_Render_Internal (font, (const char *) text, STR_UNICODE, fg, bg, RENDER_SHADED);
+SDL_Surface* TTF_RenderUNICODE_Shaded (TTF_Font* font, const Uint16* text, SDL_Color fg, SDL_Color bg) {
+  return TTF_Render_Internal (font, (const char*) text, STR_UNICODE, fg, bg, RENDER_SHADED);
 }
 
-SDL_Surface *TTF_RenderGlyph_Shaded (TTF_Font *font, Uint16 ch, SDL_Color fg, SDL_Color bg) {
+SDL_Surface* TTF_RenderGlyph_Shaded (TTF_Font* font, Uint16 ch, SDL_Color fg, SDL_Color bg) {
   return TTF_RenderGlyph32_Shaded (font, ch, fg, bg);
 }
 
-SDL_Surface *TTF_RenderGlyph32_Shaded (TTF_Font *font, Uint32 ch, SDL_Color fg, SDL_Color bg) {
+SDL_Surface* TTF_RenderGlyph32_Shaded (TTF_Font* font, Uint32 ch, SDL_Color fg, SDL_Color bg) {
   Uint8 utf8[7];
 
   TTF_CHECK_POINTER(font, NULL);
@@ -3205,19 +3236,19 @@ SDL_Surface *TTF_RenderGlyph32_Shaded (TTF_Font *font, Uint32 ch, SDL_Color fg, 
     return NULL;
   }
 
-  return TTF_RenderUTF8_Shaded (font, (char *) utf8, fg, bg);
+  return TTF_RenderUTF8_Shaded (font, (char*) utf8, fg, bg);
 }
 
-SDL_Surface *TTF_RenderText_Blended (TTF_Font *font, const char *text, SDL_Color fg) {
+SDL_Surface* TTF_RenderText_Blended (TTF_Font* font, const char* text, SDL_Color fg) {
   return TTF_Render_Internal (font, text, STR_TEXT, fg, fg /* unused */, RENDER_BLENDED);
 }
 
-SDL_Surface *TTF_RenderUTF8_Blended (TTF_Font *font, const char *text, SDL_Color fg) {
+SDL_Surface* TTF_RenderUTF8_Blended (TTF_Font* font, const char* text, SDL_Color fg) {
   return TTF_Render_Internal (font, text, STR_UTF8, fg, fg /* unused */, RENDER_BLENDED);
 }
 
-SDL_Surface *TTF_RenderUNICODE_Blended (TTF_Font *font, const Uint16 *text, SDL_Color fg) {
-  return TTF_Render_Internal (font, (const char *) text, STR_UNICODE, fg, fg /* unused */, RENDER_BLENDED);
+SDL_Surface* TTF_RenderUNICODE_Blended (TTF_Font* font, const Uint16* text, SDL_Color fg) {
+  return TTF_Render_Internal (font, (const char*) text, STR_UNICODE, fg, fg /* unused */, RENDER_BLENDED);
 }
 
 static SDL_bool CharacterIsDelimiter (Uint32 c) {
@@ -3227,15 +3258,16 @@ static SDL_bool CharacterIsDelimiter (Uint32 c) {
   return SDL_FALSE;
 }
 
-static SDL_Surface *TTF_Render_Wrapped_Internal (TTF_Font *font, const char *text, const str_type_t str_type,
-                                                 SDL_Color fg, SDL_Color bg, Uint32 wrapLength, const render_mode_t render_mode) {
+static SDL_Surface* TTF_Render_Wrapped_Internal (TTF_Font* font, const char* text, const str_type_t str_type,
+                                                 SDL_Color fg, SDL_Color bg, Uint32 wrapLength,
+                                                 const render_mode_t render_mode) {
   Uint32 color;
   int width, height;
-  SDL_Surface *textbuf = NULL;
-  Uint8 *utf8_alloc = NULL;
+  SDL_Surface* textbuf = NULL;
+  Uint8* utf8_alloc = NULL;
 
   int i, numLines, rowHeight, lineskip;
-  char **strLines = NULL, *text_cpy;
+  char** strLines = NULL, * text_cpy;
 
   TTF_CHECK_INITIALIZED(NULL);
   TTF_CHECK_POINTER(font, NULL);
@@ -3249,17 +3281,17 @@ static SDL_Surface *TTF_Render_Wrapped_Internal (TTF_Font *font, const char *tex
       goto failure;
     }
     LATIN1_to_UTF8 (text, utf8_alloc);
-    text_cpy = (char *) utf8_alloc;
+    text_cpy = (char*) utf8_alloc;
   }
   else if (str_type == STR_UNICODE) {
-    const Uint16 *text16 = (const Uint16 *) text;
+    const Uint16* text16 = (const Uint16*) text;
     utf8_alloc = SDL_stack_alloc(Uint8, UCS2_to_UTF8_len (text16));
     if (utf8_alloc == NULL) {
       SDL_OutOfMemory();
       goto failure;
     }
     UCS2_to_UTF8 (text16, utf8_alloc);
-    text_cpy = (char *) utf8_alloc;
+    text_cpy = (char*) utf8_alloc;
   }
   else {
     /* Use a copy anyway */
@@ -3270,7 +3302,7 @@ static SDL_Surface *TTF_Render_Wrapped_Internal (TTF_Font *font, const char *tex
       goto failure;
     }
     SDL_memcpy (utf8_alloc, text, str_len + 1);
-    text_cpy = (char *) utf8_alloc;
+    text_cpy = (char*) utf8_alloc;
   }
 
   /* Get the dimensions of the text surface */
@@ -3289,12 +3321,12 @@ static SDL_Surface *TTF_Render_Wrapped_Internal (TTF_Font *font, const char *tex
     do {
       int extent = 0, max_count = 0, char_count = 0;
       size_t save_textlen = (size_t) -1;
-      char *save_text = NULL;
+      char* save_text = NULL;
 
       if (numLines >= maxNumLines) {
-        char **saved = strLines;
+        char** saved = strLines;
         maxNumLines += (width / wrapLength) + 1;
-        strLines = (char **) SDL_realloc (strLines, maxNumLines * sizeof (*strLines));
+        strLines = (char**) SDL_realloc (strLines, maxNumLines * sizeof (*strLines));
         if (strLines == NULL) {
           strLines = saved;
           SDL_OutOfMemory();
@@ -3440,50 +3472,50 @@ static SDL_Surface *TTF_Render_Wrapped_Internal (TTF_Font *font, const char *tex
   return NULL;
 }
 
-SDL_Surface *TTF_RenderText_Solid_Wrapped (TTF_Font *font, const char *text, SDL_Color fg, Uint32 wrapLength) {
+SDL_Surface* TTF_RenderText_Solid_Wrapped (TTF_Font* font, const char* text, SDL_Color fg, Uint32 wrapLength) {
   return TTF_Render_Wrapped_Internal (font, text, STR_TEXT, fg, fg /* unused */, wrapLength, RENDER_SOLID);
 }
 
-SDL_Surface *TTF_RenderUTF8_Solid_Wrapped (TTF_Font *font, const char *text, SDL_Color fg, Uint32 wrapLength) {
+SDL_Surface* TTF_RenderUTF8_Solid_Wrapped (TTF_Font* font, const char* text, SDL_Color fg, Uint32 wrapLength) {
   return TTF_Render_Wrapped_Internal (font, text, STR_UTF8, fg, fg /* unused */, wrapLength, RENDER_SOLID);
 }
 
-SDL_Surface *TTF_RenderUNICODE_Solid_Wrapped (TTF_Font *font, const Uint16 *text, SDL_Color fg, Uint32 wrapLength) {
-  return TTF_Render_Wrapped_Internal (font, (const char *) text, STR_UNICODE, fg, fg /* unused */, wrapLength, RENDER_SOLID);
+SDL_Surface* TTF_RenderUNICODE_Solid_Wrapped (TTF_Font* font, const Uint16* text, SDL_Color fg, Uint32 wrapLength) {
+  return TTF_Render_Wrapped_Internal (font, (const char*) text, STR_UNICODE, fg, fg /* unused */, wrapLength, RENDER_SOLID);
 }
 
-SDL_Surface *
-TTF_RenderText_Shaded_Wrapped (TTF_Font *font, const char *text, SDL_Color fg, SDL_Color bg, Uint32 wrapLength) {
+SDL_Surface*
+TTF_RenderText_Shaded_Wrapped (TTF_Font* font, const char* text, SDL_Color fg, SDL_Color bg, Uint32 wrapLength) {
   return TTF_Render_Wrapped_Internal (font, text, STR_TEXT, fg, bg, wrapLength, RENDER_SHADED);
 }
 
-SDL_Surface *
-TTF_RenderUTF8_Shaded_Wrapped (TTF_Font *font, const char *text, SDL_Color fg, SDL_Color bg, Uint32 wrapLength) {
+SDL_Surface*
+TTF_RenderUTF8_Shaded_Wrapped (TTF_Font* font, const char* text, SDL_Color fg, SDL_Color bg, Uint32 wrapLength) {
   return TTF_Render_Wrapped_Internal (font, text, STR_UTF8, fg, bg, wrapLength, RENDER_SHADED);
 }
 
-SDL_Surface *
-TTF_RenderUNICODE_Shaded_Wrapped (TTF_Font *font, const Uint16 *text, SDL_Color fg, SDL_Color bg, Uint32 wrapLength) {
-  return TTF_Render_Wrapped_Internal (font, (const char *) text, STR_UNICODE, fg, bg, wrapLength, RENDER_SHADED);
+SDL_Surface*
+TTF_RenderUNICODE_Shaded_Wrapped (TTF_Font* font, const Uint16* text, SDL_Color fg, SDL_Color bg, Uint32 wrapLength) {
+  return TTF_Render_Wrapped_Internal (font, (const char*) text, STR_UNICODE, fg, bg, wrapLength, RENDER_SHADED);
 }
 
-SDL_Surface *TTF_RenderText_Blended_Wrapped (TTF_Font *font, const char *text, SDL_Color fg, Uint32 wrapLength) {
+SDL_Surface* TTF_RenderText_Blended_Wrapped (TTF_Font* font, const char* text, SDL_Color fg, Uint32 wrapLength) {
   return TTF_Render_Wrapped_Internal (font, text, STR_TEXT, fg, fg /* unused */, wrapLength, RENDER_BLENDED);
 }
 
-SDL_Surface *TTF_RenderUTF8_Blended_Wrapped (TTF_Font *font, const char *text, SDL_Color fg, Uint32 wrapLength) {
+SDL_Surface* TTF_RenderUTF8_Blended_Wrapped (TTF_Font* font, const char* text, SDL_Color fg, Uint32 wrapLength) {
   return TTF_Render_Wrapped_Internal (font, text, STR_UTF8, fg, fg /* unused */, wrapLength, RENDER_BLENDED);
 }
 
-SDL_Surface *TTF_RenderUNICODE_Blended_Wrapped (TTF_Font *font, const Uint16 *text, SDL_Color fg, Uint32 wrapLength) {
-  return TTF_Render_Wrapped_Internal (font, (const char *) text, STR_UNICODE, fg, fg /* unused */, wrapLength, RENDER_BLENDED);
+SDL_Surface* TTF_RenderUNICODE_Blended_Wrapped (TTF_Font* font, const Uint16* text, SDL_Color fg, Uint32 wrapLength) {
+  return TTF_Render_Wrapped_Internal (font, (const char*) text, STR_UNICODE, fg, fg /* unused */, wrapLength, RENDER_BLENDED);
 }
 
-SDL_Surface *TTF_RenderGlyph_Blended (TTF_Font *font, Uint16 ch, SDL_Color fg) {
+SDL_Surface* TTF_RenderGlyph_Blended (TTF_Font* font, Uint16 ch, SDL_Color fg) {
   return TTF_RenderGlyph32_Blended (font, ch, fg);
 }
 
-SDL_Surface *TTF_RenderGlyph32_Blended (TTF_Font *font, Uint32 ch, SDL_Color fg) {
+SDL_Surface* TTF_RenderGlyph32_Blended (TTF_Font* font, Uint32 ch, SDL_Color fg) {
   Uint8 utf8[7];
 
   TTF_CHECK_POINTER(font, NULL);
@@ -3492,10 +3524,10 @@ SDL_Surface *TTF_RenderGlyph32_Blended (TTF_Font *font, Uint32 ch, SDL_Color fg)
     return NULL;
   }
 
-  return TTF_RenderUTF8_Blended (font, (char *) utf8, fg);
+  return TTF_RenderUTF8_Blended (font, (char*) utf8, fg);
 }
 
-void TTF_SetFontStyle (TTF_Font *font, int style) {
+void TTF_SetFontStyle (TTF_Font* font, int style) {
   int prev_style;
   long face_style;
 
@@ -3523,7 +3555,7 @@ void TTF_SetFontStyle (TTF_Font *font, int style) {
   }
 }
 
-int TTF_GetFontStyle (const TTF_Font *font) {
+int TTF_GetFontStyle (const TTF_Font* font) {
   int style;
   long face_style;
 
@@ -3543,7 +3575,7 @@ int TTF_GetFontStyle (const TTF_Font *font) {
   return style;
 }
 
-void TTF_SetFontOutline (TTF_Font *font, int outline) {
+void TTF_SetFontOutline (TTF_Font* font, int outline) {
   TTF_CHECK_POINTER(font,);
 
   font->outline_val = SDL_max(0, outline);
@@ -3551,13 +3583,13 @@ void TTF_SetFontOutline (TTF_Font *font, int outline) {
   Flush_Cache (font);
 }
 
-int TTF_GetFontOutline (const TTF_Font *font) {
+int TTF_GetFontOutline (const TTF_Font* font) {
   TTF_CHECK_POINTER(font, -1);
 
   return font->outline_val;
 }
 
-void TTF_SetFontHinting (TTF_Font *font, int hinting) {
+void TTF_SetFontHinting (TTF_Font* font, int hinting) {
   TTF_CHECK_POINTER(font,);
 
   if (hinting == TTF_HINTING_LIGHT || hinting == TTF_HINTING_LIGHT_SUBPIXEL) {
@@ -3582,7 +3614,7 @@ void TTF_SetFontHinting (TTF_Font *font, int hinting) {
   Flush_Cache (font);
 }
 
-int TTF_GetFontHinting (const TTF_Font *font) {
+int TTF_GetFontHinting (const TTF_Font* font) {
   TTF_CHECK_POINTER(font, -1);
 
   if (font->ft_load_target == FT_LOAD_TARGET_LIGHT) {
@@ -3602,7 +3634,7 @@ int TTF_GetFontHinting (const TTF_Font *font) {
   return TTF_HINTING_NORMAL;
 }
 
-int TTF_SetFontSDF (TTF_Font *font, SDL_bool on_off) {
+int TTF_SetFontSDF (TTF_Font* font, SDL_bool on_off) {
   TTF_CHECK_POINTER(font, -1);
 #if TTF_USE_SDF
                                                                                                                           font->render_sdf = on_off;
@@ -3614,7 +3646,7 @@ int TTF_SetFontSDF (TTF_Font *font, SDL_bool on_off) {
 #endif
 }
 
-SDL_bool TTF_GetFontSDF (const TTF_Font *font) {
+SDL_bool TTF_GetFontSDF (const TTF_Font* font) {
   TTF_CHECK_POINTER(font, -1);
   return font->render_sdf;
 }
@@ -3632,7 +3664,7 @@ int TTF_WasInit (void) {
 }
 
 /* don't use this function. It's just here for binary compatibility. */
-int TTF_GetFontKerningSize (TTF_Font *font, int prev_index, int index) {
+int TTF_GetFontKerningSize (TTF_Font* font, int prev_index, int index) {
   FT_Vector delta;
 
   TTF_CHECK_POINTER(font, -1);
@@ -3641,13 +3673,13 @@ int TTF_GetFontKerningSize (TTF_Font *font, int prev_index, int index) {
   return (int) (delta.x >> 6);
 }
 
-int TTF_GetFontKerningSizeGlyphs (TTF_Font *font, Uint16 previous_ch, Uint16 ch) {
+int TTF_GetFontKerningSizeGlyphs (TTF_Font* font, Uint16 previous_ch, Uint16 ch) {
   return TTF_GetFontKerningSizeGlyphs32 (font, previous_ch, ch);
 }
 
-int TTF_GetFontKerningSizeGlyphs32 (TTF_Font *font, Uint32 previous_ch, Uint32 ch) {
+int TTF_GetFontKerningSizeGlyphs32 (TTF_Font* font, Uint32 previous_ch, Uint32 ch) {
   FT_Error error;
-  c_glyph *prev_glyph, *glyph;
+  c_glyph* prev_glyph, * glyph;
   FT_Vector delta;
 
   TTF_CHECK_POINTER(font, -1);

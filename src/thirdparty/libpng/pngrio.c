@@ -40,6 +40,7 @@ png_read_data (png_structrp png_ptr, png_bytep data, size_t length) {
 }
 
 #ifdef PNG_STDIO_SUPPORTED
+
 /* This is the function that does the actual reading of data.  If you are
  * not reading from a standard C stream, you should create a replacement
  * read_data function and use it at run time with png_set_read_fn(), rather
@@ -60,6 +61,7 @@ png_default_read_data (png_structp png_ptr, png_bytep data, size_t length) {
   if (check != length)
     png_error (png_ptr, "Read Error");
 }
+
 #endif
 
 /* This function allows the application to supply a new input function
@@ -113,4 +115,5 @@ png_set_read_fn (png_structrp png_ptr, png_voidp io_ptr,
   png_ptr->output_flush_fn = NULL;
 #endif
 }
+
 #endif /* READ */

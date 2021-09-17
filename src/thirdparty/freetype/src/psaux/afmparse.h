@@ -27,8 +27,8 @@ FT_BEGIN_HEADER
 FT_LOCAL(FT_Error)
 afm_parser_init (AFM_Parser parser,
                  FT_Memory memory,
-                 FT_Byte *base,
-                 FT_Byte *limit);
+                 FT_Byte* base,
+                 FT_Byte* limit);
 
 FT_LOCAL(void)
 afm_parser_done (AFM_Parser parser);
@@ -48,7 +48,7 @@ enum AFM_ValueType_ {
 typedef struct AFM_ValueRec_ {
   enum AFM_ValueType_ type;
   union {
-    char *s;
+    char* s;
     FT_Fixed f;
     FT_Int i;
     FT_UInt u;
@@ -56,7 +56,7 @@ typedef struct AFM_ValueRec_ {
 
   } u;
 
-} AFM_ValueRec, *AFM_Value;
+} AFM_ValueRec, * AFM_Value;
 
 #define  AFM_MAX_ARGUMENTS  5
 
@@ -69,7 +69,7 @@ afm_parser_read_vals (AFM_Parser parser,
 FT_LOCAL(char*)
 afm_parser_next_key (AFM_Parser parser,
                      FT_Bool line,
-                     FT_Offset *len);
+                     FT_Offset* len);
 
 FT_END_HEADER
 

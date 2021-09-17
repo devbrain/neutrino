@@ -205,10 +205,10 @@ typedef FT_Pointer FTC_FaceID;
  *   transformation through @FT_Set_Transform!
  */
 typedef FT_Error
-(*FTC_Face_Requester) (FTC_FaceID face_id,
-                       FT_Library library,
-                       FT_Pointer req_data,
-                       FT_Face *aface);
+(* FTC_Face_Requester) (FTC_FaceID face_id,
+                        FT_Library library,
+                        FT_Pointer req_data,
+                        FT_Face* aface);
 
 /* */
 
@@ -245,7 +245,7 @@ typedef FT_Error
  *   most-recently-used order, and flushing old nodes to make room for new
  *   ones.
  */
-typedef struct FTC_ManagerRec_ *FTC_Manager;
+typedef struct FTC_ManagerRec_* FTC_Manager;
 
 /**************************************************************************
  *
@@ -264,7 +264,7 @@ typedef struct FTC_ManagerRec_ *FTC_Manager;
  *
  *   See also @FTC_SBitCache_Lookup and @FTC_ImageCache_Lookup.
  */
-typedef struct FTC_NodeRec_ *FTC_Node;
+typedef struct FTC_NodeRec_* FTC_Node;
 
 
 /**************************************************************************
@@ -314,7 +314,7 @@ FTC_Manager_New (FT_Library library,
                  FT_ULong max_bytes,
                  FTC_Face_Requester requester,
                  FT_Pointer req_data,
-                 FTC_Manager *amanager);
+                 FTC_Manager* amanager);
 
 
 /**************************************************************************
@@ -396,7 +396,7 @@ FTC_Manager_Done (FTC_Manager manager);
 FT_EXPORT(FT_Error)
 FTC_Manager_LookupFace (FTC_Manager manager,
                         FTC_FaceID face_id,
-                        FT_Face *aface);
+                        FT_Face* aface);
 
 /**************************************************************************
  *
@@ -452,7 +452,7 @@ typedef struct FTC_ScalerRec_ {
  * @description:
  *   A handle to an @FTC_ScalerRec structure.
  */
-typedef struct FTC_ScalerRec_ *FTC_Scaler;
+typedef struct FTC_ScalerRec_* FTC_Scaler;
 
 
 /**************************************************************************
@@ -497,7 +497,7 @@ typedef struct FTC_ScalerRec_ *FTC_Scaler;
 FT_EXPORT(FT_Error)
 FTC_Manager_LookupSize (FTC_Manager manager,
                         FTC_Scaler scaler,
-                        FT_Size *asize);
+                        FT_Size* asize);
 
 
 /**************************************************************************
@@ -563,7 +563,7 @@ FTC_Manager_RemoveFaceID (FTC_Manager manager,
  *   character codes -> glyph indices mappings.
  *
  */
-typedef struct FTC_CMapCacheRec_ *FTC_CMapCache;
+typedef struct FTC_CMapCacheRec_* FTC_CMapCache;
 
 
 /**************************************************************************
@@ -592,7 +592,7 @@ typedef struct FTC_CMapCacheRec_ *FTC_CMapCache;
  */
 FT_EXPORT(FT_Error)
 FTC_CMapCache_New (FTC_Manager manager,
-                   FTC_CMapCache *acache);
+                   FTC_CMapCache* acache);
 
 
 /**************************************************************************
@@ -679,7 +679,7 @@ typedef struct FTC_ImageTypeRec_ {
  *   A handle to an @FTC_ImageTypeRec structure.
  *
  */
-typedef struct FTC_ImageTypeRec_ *FTC_ImageType;
+typedef struct FTC_ImageTypeRec_* FTC_ImageType;
 
 
 /* */
@@ -700,7 +700,7 @@ typedef struct FTC_ImageTypeRec_ *FTC_ImageType;
  *   many distinct glyph images while not exceeding a certain memory
  *   threshold.
  */
-typedef struct FTC_ImageCacheRec_ *FTC_ImageCache;
+typedef struct FTC_ImageCacheRec_* FTC_ImageCache;
 
 
 /**************************************************************************
@@ -724,7 +724,7 @@ typedef struct FTC_ImageCacheRec_ *FTC_ImageCache;
  */
 FT_EXPORT(FT_Error)
 FTC_ImageCache_New (FTC_Manager manager,
-                    FTC_ImageCache *acache);
+                    FTC_ImageCache* acache);
 
 
 /**************************************************************************
@@ -775,8 +775,8 @@ FT_EXPORT(FT_Error)
 FTC_ImageCache_Lookup (FTC_ImageCache cache,
                        FTC_ImageType type,
                        FT_UInt gindex,
-                       FT_Glyph *aglyph,
-                       FTC_Node *anode);
+                       FT_Glyph* aglyph,
+                       FTC_Node* anode);
 
 
 /**************************************************************************
@@ -835,8 +835,8 @@ FTC_ImageCache_LookupScaler (FTC_ImageCache cache,
                              FTC_Scaler scaler,
                              FT_ULong load_flags,
                              FT_UInt gindex,
-                             FT_Glyph *aglyph,
-                             FTC_Node *anode);
+                             FT_Glyph* aglyph,
+                             FTC_Node* anode);
 
 /**************************************************************************
  *
@@ -847,7 +847,7 @@ FTC_ImageCache_LookupScaler (FTC_ImageCache cache,
  *   A handle to a small bitmap descriptor.  See the @FTC_SBitRec structure
  *   for details.
  */
-typedef struct FTC_SBitRec_ *FTC_SBit;
+typedef struct FTC_SBitRec_* FTC_SBit;
 
 /**************************************************************************
  *
@@ -903,7 +903,7 @@ typedef struct FTC_SBitRec_ {
   FT_Char xadvance;
   FT_Char yadvance;
 
-  FT_Byte *buffer;
+  FT_Byte* buffer;
 
 } FTC_SBitRec;
 
@@ -918,7 +918,7 @@ typedef struct FTC_SBitRec_ {
  *   more efficient way than the traditional glyph image cache implemented
  *   by @FTC_ImageCache.
  */
-typedef struct FTC_SBitCacheRec_ *FTC_SBitCache;
+typedef struct FTC_SBitCacheRec_* FTC_SBitCache;
 
 
 /**************************************************************************
@@ -942,7 +942,7 @@ typedef struct FTC_SBitCacheRec_ *FTC_SBitCache;
  */
 FT_EXPORT(FT_Error)
 FTC_SBitCache_New (FTC_Manager manager,
-                   FTC_SBitCache *acache);
+                   FTC_SBitCache* acache);
 
 
 /**************************************************************************
@@ -998,8 +998,8 @@ FT_EXPORT(FT_Error)
 FTC_SBitCache_Lookup (FTC_SBitCache cache,
                       FTC_ImageType type,
                       FT_UInt gindex,
-                      FTC_SBit *sbit,
-                      FTC_Node *anode);
+                      FTC_SBit* sbit,
+                      FTC_Node* anode);
 
 
 /**************************************************************************
@@ -1059,8 +1059,8 @@ FTC_SBitCache_LookupScaler (FTC_SBitCache cache,
                             FTC_Scaler scaler,
                             FT_ULong load_flags,
                             FT_UInt gindex,
-                            FTC_SBit *sbit,
-                            FTC_Node *anode);
+                            FTC_SBit* sbit,
+                            FTC_Node* anode);
 
 /* */
 

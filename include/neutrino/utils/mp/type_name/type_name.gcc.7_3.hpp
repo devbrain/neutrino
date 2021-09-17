@@ -29,7 +29,8 @@ struct type_name {
     constexpr operator value_type () const noexcept {
       return value;
     }
-    constexpr value_type operator() () const noexcept {
+
+    constexpr value_type operator () () const noexcept {
       return value;
     }
 };

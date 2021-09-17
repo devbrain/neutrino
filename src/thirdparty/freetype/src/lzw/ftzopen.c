@@ -56,7 +56,7 @@ static FT_Int32
 ft_lzwstate_get_code (FT_LzwState state) {
   FT_UInt num_bits = state->num_bits;
   FT_UInt offset = state->buf_offset;
-  FT_Byte *p;
+  FT_Byte* p;
   FT_Int result;
 
   if (state->buf_clear ||
@@ -161,7 +161,7 @@ ft_lzwstate_prefix_grow (FT_LzwState state) {
     return -1;
 
   /* now adjust `suffix' and move the data accordingly */
-  state->suffix = (FT_Byte *) (state->prefix + new_size);
+  state->suffix = (FT_Byte*) (state->prefix + new_size);
 
   FT_MEM_MOVE(state->suffix,
               state->prefix + old_size,
@@ -227,7 +227,7 @@ ft_lzwstate_done (FT_LzwState state) {
 
 FT_LOCAL_DEF(FT_ULong)
 ft_lzwstate_io (FT_LzwState state,
-                FT_Byte *buffer,
+                FT_Byte* buffer,
                 FT_ULong out_size) {
   FT_ULong result = 0;
 

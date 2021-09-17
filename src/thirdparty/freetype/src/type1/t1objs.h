@@ -39,7 +39,7 @@ typedef struct T1_Glyph_Hints_ T1_Glyph_Hints;
  * @Description:
  *   A handle to a Type 1 size object.
  */
-typedef struct T1_SizeRec_ *T1_Size;
+typedef struct T1_SizeRec_* T1_Size;
 
 /**************************************************************************
  *
@@ -49,7 +49,7 @@ typedef struct T1_SizeRec_ *T1_Size;
  * @Description:
  *   A handle to a Type 1 glyph slot object.
  */
-typedef struct T1_GlyphSlotRec_ *T1_GlyphSlot;
+typedef struct T1_GlyphSlotRec_* T1_GlyphSlot;
 
 /**************************************************************************
  *
@@ -64,7 +64,7 @@ typedef struct T1_GlyphSlotRec_ *T1_GlyphSlot;
  *   The driver is responsible for making up charmap objects
  *   corresponding to these tables.
  */
-typedef struct T1_CharMapRec_ *T1_CharMap;
+typedef struct T1_CharMapRec_* T1_CharMap;
 
 
 /**************************************************************************
@@ -124,7 +124,7 @@ T1_Face_Init (FT_Stream stream,
               FT_Face face,
               FT_Int face_index,
               FT_Int num_params,
-              FT_Parameter *params);
+              FT_Parameter* params);
 
 FT_LOCAL(void)
 T1_Face_Done (FT_Face face);

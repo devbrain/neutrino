@@ -30,38 +30,36 @@
 /* Unit tests for VVAR subsetting */
 
 static void
-test_subset_VVAR_noop (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file("fonts/SourceSerifVariable-Roman-VVAR.abc.ttf");
+test_subset_VVAR_noop (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/SourceSerifVariable-Roman-VVAR.abc.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 'a');
   hb_set_add (codepoints, 'b');
   hb_set_add (codepoints, 'c');
   face_abc_subset = hb_subset_test_create_subset (face_abc, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_abc, face_abc_subset, HB_TAG ('V','V','A','R'));
+  hb_subset_test_check (face_abc, face_abc_subset, HB_TAG ('V', 'V', 'A', 'R'));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
 }
 
 static void
-test_subset_VVAR (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/SourceSerifVariable-Roman-VVAR.abc.ttf");
-  hb_face_t *face_ac = hb_test_open_font_file ("fonts/SourceSerifVariable-Roman-VVAR.ac.ttf");
+test_subset_VVAR (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/SourceSerifVariable-Roman-VVAR.abc.ttf");
+  hb_face_t * face_ac = hb_test_open_font_file ("fonts/SourceSerifVariable-Roman-VVAR.ac.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 'a');
   hb_set_add (codepoints, 'c');
   face_abc_subset = hb_subset_test_create_subset (face_abc, hb_subset_test_create_input (codepoints));
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('V','V','A','R'));
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('V', 'V', 'A', 'R'));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
@@ -69,21 +67,20 @@ test_subset_VVAR (void)
 }
 
 static void
-test_subset_VVAR_retaingids (void)
-{
-  hb_face_t *face_abc = hb_test_open_font_file ("fonts/SourceSerifVariable-Roman-VVAR.abc.ttf");
-  hb_face_t *face_ac = hb_test_open_font_file ("fonts/SourceSerifVariable-Roman-VVAR.ac.retaingids.ttf");
+test_subset_VVAR_retaingids (void) {
+  hb_face_t * face_abc = hb_test_open_font_file ("fonts/SourceSerifVariable-Roman-VVAR.abc.ttf");
+  hb_face_t * face_ac = hb_test_open_font_file ("fonts/SourceSerifVariable-Roman-VVAR.ac.retaingids.ttf");
 
-  hb_set_t *codepoints = hb_set_create ();
-  hb_face_t *face_abc_subset;
+  hb_set_t* codepoints = hb_set_create ();
+  hb_face_t * face_abc_subset;
   hb_set_add (codepoints, 'a');
   hb_set_add (codepoints, 'c');
-  hb_subset_input_t *input = hb_subset_test_create_input (codepoints);
+  hb_subset_input_t * input = hb_subset_test_create_input (codepoints);
   hb_subset_input_set_retain_gids (input, true);
   face_abc_subset = hb_subset_test_create_subset (face_abc, input);
   hb_set_destroy (codepoints);
 
-  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('V','V','A','R'));
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('V', 'V', 'A', 'R'));
 
   hb_face_destroy (face_abc_subset);
   hb_face_destroy (face_abc);
@@ -91,8 +88,7 @@ test_subset_VVAR_retaingids (void)
 }
 
 int
-main (int argc, char **argv)
-{
+main (int argc, char** argv) {
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_subset_VVAR_noop);

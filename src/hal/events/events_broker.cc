@@ -10,7 +10,7 @@ namespace neutrino::hal {
   namespace detail {
     abstract_dynamic_event_handler::~abstract_dynamic_event_handler () = default;
 
-    bool abstract_dynamic_event_handler::remove (void *pointer_to_observer) {
+    bool abstract_dynamic_event_handler::remove (void* pointer_to_observer) {
       auto itr = std::find (m_handlers.begin (), m_handlers.end (), pointer_to_observer);
       if (itr != m_handlers.end ()) {
         m_handlers.erase (itr);
@@ -23,7 +23,7 @@ namespace neutrino::hal {
       return m_handlers.empty ();
     }
 
-    bool abstract_dynamic_event_handler::add (void *pointer_to_observer) {
+    bool abstract_dynamic_event_handler::add (void* pointer_to_observer) {
       auto itr = std::find (m_handlers.begin (), m_handlers.end (), pointer_to_observer);
       if (itr != m_handlers.end ()) {
         m_handlers.push_back (pointer_to_observer);
@@ -36,12 +36,13 @@ namespace neutrino::hal {
   events_broker::events_broker () = default;
 
   events_broker::~events_broker () {
-    for (auto *m : m_monitors) {
+    for (auto* m : m_monitors) {
       m->on_unsubscribed ();
     }
   }
+
   // -------------------------------------------------------------------------------------------
-  void events_broker::_pos_event (uint32_t code, void *data1, void *data2) {
+  void events_broker::_pos_event (uint32_t code, void* data1, void* data2) {
     SDL_Event ev;
     ev.type = SDL_USEREVENT;
     ev.user.code = static_cast<int32_t>(code);

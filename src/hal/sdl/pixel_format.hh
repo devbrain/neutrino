@@ -143,7 +143,7 @@ namespace neutrino::sdl {
 }
 
 inline
-std::ostream &operator<< (std::ostream &os, const neutrino::sdl::pixel_format &f) {
+std::ostream& operator << (std::ostream& os, const neutrino::sdl::pixel_format& f) {
   os << SDL_GetPixelFormatName (f.value ());
   return os;
 }
@@ -156,11 +156,13 @@ namespace neutrino::sdl {
   pixel_format pixel_format::make_8bit () {
     return pixel_format (pixel_format::INDEX8);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   pixel_format pixel_format::make_rgba_32bit () {
     return pixel_format (pixel_format::RGBA32);
   }
+
   // ----------------------------------------------------------------------------------------------
   inline
   pixel_format::pixel_format (uint8_t bpp, uint32_t rmask, uint32_t gmask, uint32_t bmask, uint32_t amask)
@@ -169,93 +171,111 @@ namespace neutrino::sdl {
       RAISE_EX("Can not create pixel format from the provided parameters");
     }
   }
+
   // --------------------------------------------------------------------------------
   inline
   pixel_format::pixel_format (std::uint32_t f)
       : m_value (f) {
 
   }
+
   // --------------------------------------------------------------------------------
   inline
   pixel_format::pixel_format (format f)
       : m_value (static_cast<uint32_t>(f)) {
 
   }
+
   // --------------------------------------------------------------------------------
   inline
   pixel_format::operator std::uint32_t () const noexcept {
     return value ();
   }
+
   // --------------------------------------------------------------------------------
   inline
   uint32_t pixel_format::value () const noexcept {
     return m_value;
   }
+
   // --------------------------------------------------------------------------------
   inline
   pixel_format::format pixel_format::get_format () const noexcept {
     return static_cast<format>(m_value);
   }
+
   // --------------------------------------------------------------------------------
   inline
   pixel_format::type pixel_format::get_type () const noexcept {
     return static_cast<type>(SDL_PIXELFLAG(m_value));
   }
+
   // --------------------------------------------------------------------------------
   inline
   pixel_format::order pixel_format::get_order () const noexcept {
     return static_cast<order>(SDL_PIXELORDER(m_value));
   }
+
   // --------------------------------------------------------------------------------
   inline
   pixel_format::component_order pixel_format::get_component_order () const noexcept {
     return static_cast<component_order>(SDL_PIXELORDER(m_value));
   }
+
   // --------------------------------------------------------------------------------
   inline
   pixel_format::array_order pixel_format::get_array_order () const noexcept {
     return static_cast<array_order>(SDL_PIXELORDER(m_value));
   }
+
   // --------------------------------------------------------------------------------
   inline
   pixel_format::layout pixel_format::get_layout_order () const noexcept {
     return static_cast<layout>(SDL_PIXELLAYOUT(m_value));
   }
+
   // --------------------------------------------------------------------------------
   inline
   std::uint8_t pixel_format::get_bits_per_pixels () const noexcept {
     return SDL_BITSPERPIXEL(m_value);
   }
+
   // --------------------------------------------------------------------------------
   inline
   std::uint8_t pixel_format::get_bytes_per_pixels () const noexcept {
     return SDL_BYTESPERPIXEL(m_value);
   }
+
   // --------------------------------------------------------------------------------
   inline
   bool pixel_format::is_indexed () const noexcept {
     return SDL_ISPIXELFORMAT_INDEXED(m_value) != 0;
   }
+
   // --------------------------------------------------------------------------------
   inline
   bool pixel_format::is_array () const noexcept {
     return SDL_ISPIXELFORMAT_ARRAY(m_value) != 0;
   }
+
   // --------------------------------------------------------------------------------
   inline
   bool pixel_format::is_alpha () const noexcept {
     return SDL_ISPIXELFORMAT_ALPHA(m_value) != 0;
   }
+
   // --------------------------------------------------------------------------------
   inline
   bool pixel_format::is_fourcc () const noexcept {
     return SDL_ISPIXELFORMAT_FOURCC(m_value) != 0;
   }
+
   // --------------------------------------------------------------------------------
   inline
   bool pixel_format::is_packed () const noexcept {
     return SDL_ISPIXELFORMAT_PACKED(m_value);
   }
+
   // --------------------------------------------------------------------------------
   inline
   std::tuple<std::uint8_t,

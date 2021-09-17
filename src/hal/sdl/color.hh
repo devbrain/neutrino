@@ -17,8 +17,8 @@ namespace neutrino::sdl {
     color ();
     color (uint8_t r, uint8_t g, uint8_t b);
     color (uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    explicit color (const SDL_Color &c);
-    color &operator= (const SDL_Color &c);
+    explicit color (const SDL_Color& c);
+    color& operator = (const SDL_Color& c);
 
     static color from_hsl (uint8_t h, uint8_t s, uint8_t l);
     static color from_hsv (uint8_t h, uint8_t s, uint8_t v);
@@ -37,19 +37,23 @@ namespace neutrino::sdl {
       : SDL_Color{0, 0, 0, 0} {
 
   }
+
   inline color::color (uint8_t r, uint8_t g, uint8_t b)
       : SDL_Color{r, g, b, 0xFF} {
 
   }
+
   inline color::color (uint8_t r, uint8_t g, uint8_t b, uint8_t a)
       : SDL_Color{r, g, b, a} {
 
   }
-  inline color::color (const SDL_Color &c)
+
+  inline color::color (const SDL_Color& c)
       : SDL_Color{c.r, c.g, c.b, c.a} {
 
   }
-  inline color &color::operator= (const SDL_Color &c) {
+
+  inline color& color::operator = (const SDL_Color& c) {
     r = c.r;
     g = c.g;
     b = c.b;
@@ -205,6 +209,7 @@ namespace neutrino::sdl {
     }
     return color (static_cast<uint8_t >(r * 256), static_cast<uint8_t >(g * 256), static_cast<uint8_t >(b * 256));
   }
+
   inline
   std::tuple<uint8_t, uint8_t, uint8_t> color::to_hsl () const {
     double fr, fg, fb, h, s, l; //this function works with floats between 0 and 1

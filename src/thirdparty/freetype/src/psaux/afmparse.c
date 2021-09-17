@@ -43,9 +43,9 @@ enum {
 };
 
 typedef struct AFM_StreamRec_ {
-  FT_Byte *cursor;
-  FT_Byte *base;
-  FT_Byte *limit;
+  FT_Byte* cursor;
+  FT_Byte* base;
+  FT_Byte* limit;
 
   FT_Int status;
 
@@ -109,9 +109,9 @@ afm_stream_skip_spaces (AFM_Stream stream) {
 }
 
 /* read a key or value in current column */
-static char *
+static char*
 afm_stream_read_one (AFM_Stream stream) {
-  char *str;
+  char* str;
 
   afm_stream_skip_spaces (stream);
   if (AFM_STATUS_EOC(stream))
@@ -142,9 +142,9 @@ afm_stream_read_one (AFM_Stream stream) {
 }
 
 /* read a string (i.e., read to EOL) */
-static char *
+static char*
 afm_stream_read_string (AFM_Stream stream) {
-  char *str;
+  char* str;
 
   afm_stream_skip_spaces (stream);
   if (AFM_STATUS_EOL(stream))
@@ -257,7 +257,7 @@ typedef enum AFM_Token_ {
 
 } AFM_Token;
 
-static const char *const afm_key_table[N_AFM_TOKENS] =
+static const char* const afm_key_table[N_AFM_TOKENS] =
     {
         "Ascender",
         "AxisLabel",
@@ -348,7 +348,7 @@ afm_parser_read_vals (AFM_Parser parser,
                       AFM_Value vals,
                       FT_Int n) {
   AFM_Stream stream = parser->stream;
-  char *str;
+  char* str;
   FT_Int i;
 
   if (n > AFM_MAX_ARGUMENTS)
@@ -382,13 +382,13 @@ afm_parser_read_vals (AFM_Parser parser,
         break;
 
       case AFM_VALUE_TYPE_FIXED:
-        val->u.f = PS_Conv_ToFixed ((FT_Byte **) (void *) &str,
-                                    (FT_Byte *) str + len, 0);
+        val->u.f = PS_Conv_ToFixed ((FT_Byte**) (void*) &str,
+                                    (FT_Byte*) str + len, 0);
         break;
 
       case AFM_VALUE_TYPE_INTEGER:
-        val->u.i = PS_Conv_ToInt ((FT_Byte **) (void *) &str,
-                                  (FT_Byte *) str + len);
+        val->u.i = PS_Conv_ToInt ((FT_Byte**) (void*) &str,
+                                  (FT_Byte*) str + len);
         break;
 
       case AFM_VALUE_TYPE_BOOL:
@@ -411,9 +411,9 @@ afm_parser_read_vals (AFM_Parser parser,
 FT_LOCAL_DEF(char*)
 afm_parser_next_key (AFM_Parser parser,
                      FT_Bool line,
-                     FT_Offset *len) {
+                     FT_Offset* len) {
   AFM_Stream stream = parser->stream;
-  char *key = NULL;  /* make stupid compiler happy */
+  char* key = NULL;  /* make stupid compiler happy */
 
 
   if (line) {
@@ -461,7 +461,7 @@ afm_parser_next_key (AFM_Parser parser,
 }
 
 static AFM_Token
-afm_tokenize (const char *key,
+afm_tokenize (const char* key,
               FT_Offset len) {
   int n;
 
@@ -483,8 +483,8 @@ afm_tokenize (const char *key,
 FT_LOCAL_DEF(FT_Error)
 afm_parser_init (AFM_Parser parser,
                  FT_Memory memory,
-                 FT_Byte *base,
-                 FT_Byte *limit) {
+                 FT_Byte* base,
+                 FT_Byte* limit) {
   AFM_Stream stream = NULL;
   FT_Error error;
 
@@ -514,7 +514,7 @@ afm_parser_done (AFM_Parser parser) {
 
 static FT_Error
 afm_parser_read_int (AFM_Parser parser,
-                     FT_Int *aint) {
+                     FT_Int* aint) {
   AFM_ValueRec val;
 
   val.type = AFM_VALUE_TYPE_INTEGER;
@@ -532,7 +532,7 @@ static FT_Error
 afm_parse_track_kern (AFM_Parser parser) {
   AFM_FontInfo fi = parser->FontInfo;
   AFM_TrackKern tk;
-  char *key;
+  char* key;
   FT_Offset len;
   int n = -1;
   FT_Int tmp;
@@ -605,8 +605,8 @@ afm_parse_track_kern (AFM_Parser parser) {
 
 /* compare two kerning pairs */
 FT_CALLBACK_DEF(int)
-afm_compare_kern_pairs (const void *a,
-                        const void *b) {
+afm_compare_kern_pairs (const void* a,
+                        const void* b) {
   AFM_KernPair kp1 = (AFM_KernPair) a;
   AFM_KernPair kp2 = (AFM_KernPair) b;
 
@@ -625,7 +625,7 @@ static FT_Error
 afm_parse_kern_pairs (AFM_Parser parser) {
   AFM_FontInfo fi = parser->FontInfo;
   AFM_KernPair kp;
-  char *key;
+  char* key;
   FT_Offset len;
   int n = -1;
   FT_Int tmp;
@@ -710,7 +710,7 @@ afm_parse_kern_pairs (AFM_Parser parser) {
 static FT_Error
 afm_parse_kern_data (AFM_Parser parser) {
   FT_Error error;
-  char *key;
+  char* key;
   FT_Offset len;
 
   while ((key = afm_parser_next_key (parser, 1, &len)) != 0) {
@@ -748,7 +748,7 @@ static FT_Error
 afm_parser_skip_section (AFM_Parser parser,
                          FT_Int n,
                          AFM_Token end_section) {
-  char *key;
+  char* key;
   FT_Offset len;
 
   while (n-- > 0) {
@@ -773,7 +773,7 @@ afm_parser_parse (AFM_Parser parser) {
   FT_Memory memory = parser->memory;
   AFM_FontInfo fi = parser->FontInfo;
   FT_Error error = FT_ERR(Syntax_Error);
-  char *key;
+  char* key;
   FT_Offset len;
   FT_Int metrics_sets = 0;
 

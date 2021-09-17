@@ -31,7 +31,7 @@ struct lzma_mf_s {
   ///////////////
 
   /// Pointer to buffer with data to be compressed
-  uint8_t *buffer;
+  uint8_t* buffer;
 
   /// Total size of the allocated buffer (that is, including all
   /// the extra space)
@@ -88,15 +88,15 @@ struct lzma_mf_s {
 
   /// Find matches. Returns the number of distance-length pairs written
   /// to the matches array. This is called only via lzma_mf_find().
-  uint32_t (*find) (lzma_mf *mf, lzma_match *matches);
+  uint32_t (* find) (lzma_mf* mf, lzma_match* matches);
 
   /// Skips num bytes. This is like find() but doesn't make the
   /// distance-length pairs available, thus being a little faster.
   /// This is called only via mf_skip().
-  void (*skip) (lzma_mf *mf, uint32_t num);
+  void (* skip) (lzma_mf* mf, uint32_t num);
 
-  uint32_t *hash;
-  uint32_t *son;
+  uint32_t* hash;
+  uint32_t* son;
   uint32_t cyclic_pos;
   uint32_t cyclic_size; // Must be dictionary size + 1.
   uint32_t hash_mask;
@@ -152,7 +152,7 @@ typedef struct {
   uint32_t depth;
 
   /// TODO: Comment
-  const uint8_t *preset_dict;
+  const uint8_t* preset_dict;
 
   uint32_t preset_dict_size;
 
@@ -189,18 +189,18 @@ typedef struct {
 
 typedef struct {
   /// Data specific to the LZ-based encoder
-  void *coder;
+  void* coder;
 
   /// Function to encode from *dict to out[]
-  lzma_ret (*code) (void *coder,
-                    lzma_mf *restrict mf, uint8_t *restrict out,
-                    size_t *restrict out_pos, size_t out_size);
+  lzma_ret (* code) (void* coder,
+                     lzma_mf* restrict mf, uint8_t* restrict out,
+                     size_t* restrict out_pos, size_t out_size);
 
   /// Free allocated resources
-  void (*end) (void *coder, const lzma_allocator *allocator);
+  void (* end) (void* coder, const lzma_allocator* allocator);
 
   /// Update the options in the middle of the encoding.
-  lzma_ret (*options_update) (void *coder, const lzma_filter *filter);
+  lzma_ret (* options_update) (void* coder, const lzma_filter* filter);
 
 } lzma_lz_encoder;
 
@@ -215,21 +215,21 @@ typedef struct {
 
 
 /// Get pointer to the first byte not ran through the match finder
-static inline const uint8_t *
-mf_ptr (const lzma_mf *mf) {
+static inline const uint8_t*
+mf_ptr (const lzma_mf* mf) {
   return mf->buffer + mf->read_pos;
 }
 
 /// Get the number of bytes that haven't been ran through the match finder yet.
 static inline uint32_t
-mf_avail (const lzma_mf *mf) {
+mf_avail (const lzma_mf* mf) {
   return mf->write_pos - mf->read_pos;
 }
 
 /// Get the number of bytes that haven't been encoded yet (some of these
 /// bytes may have been ran through the match finder though).
 static inline uint32_t
-mf_unencoded (const lzma_mf *mf) {
+mf_unencoded (const lzma_mf* mf) {
   return mf->write_pos - mf->read_pos + mf->read_ahead;
 }
 
@@ -241,7 +241,7 @@ mf_unencoded (const lzma_mf *mf) {
 /// bits of dict->read_pos are not modified to keep this macro working
 /// as intended.
 static inline uint32_t
-mf_position (const lzma_mf *mf) {
+mf_position (const lzma_mf* mf) {
   return mf->read_pos - mf->read_ahead;
 }
 
@@ -254,7 +254,7 @@ mf_position (const lzma_mf *mf) {
 /// of that match was already consumed by mf_find(), and the rest 199 bytes
 /// have to be skipped with mf_skip(mf, 199).
 static inline void
-mf_skip (lzma_mf *mf, uint32_t amount) {
+mf_skip (lzma_mf* mf, uint32_t amount) {
   if (amount != 0) {
     mf->skip (mf, amount);
     mf->read_ahead += amount;
@@ -264,8 +264,8 @@ mf_skip (lzma_mf *mf, uint32_t amount) {
 /// Copies at most *left number of bytes from the history buffer
 /// to out[]. This is needed by LZMA2 to encode uncompressed chunks.
 static inline void
-mf_read (lzma_mf *mf, uint8_t *out, size_t *out_pos, size_t out_size,
-         size_t *left) {
+mf_read (lzma_mf* mf, uint8_t* out, size_t* out_pos, size_t out_size,
+         size_t* left) {
   const size_t out_avail = out_size - *out_pos;
   const size_t copy_size = my_min(out_avail, *left);
 
@@ -281,31 +281,31 @@ mf_read (lzma_mf *mf, uint8_t *out, size_t *out_pos, size_t out_size,
 }
 
 extern lzma_ret lzma_lz_encoder_init (
-    lzma_next_coder *next, const lzma_allocator *allocator,
-    const lzma_filter_info *filters,
-    lzma_ret (*lz_init) (lzma_lz_encoder *lz,
-                         const lzma_allocator *allocator, const void *options,
-                         lzma_lz_options *lz_options));
+    lzma_next_coder* next, const lzma_allocator* allocator,
+    const lzma_filter_info* filters,
+    lzma_ret (* lz_init) (lzma_lz_encoder* lz,
+                          const lzma_allocator* allocator, const void* options,
+                          lzma_lz_options* lz_options));
 
-extern uint64_t lzma_lz_encoder_memusage (const lzma_lz_options *lz_options);
+extern uint64_t lzma_lz_encoder_memusage (const lzma_lz_options* lz_options);
 
 // These are only for LZ encoder's internal use.
 extern uint32_t lzma_mf_find (
-    lzma_mf *mf, uint32_t *count, lzma_match *matches);
+    lzma_mf* mf, uint32_t* count, lzma_match* matches);
 
-extern uint32_t lzma_mf_hc3_find (lzma_mf *dict, lzma_match *matches);
-extern void lzma_mf_hc3_skip (lzma_mf *dict, uint32_t amount);
+extern uint32_t lzma_mf_hc3_find (lzma_mf* dict, lzma_match* matches);
+extern void lzma_mf_hc3_skip (lzma_mf* dict, uint32_t amount);
 
-extern uint32_t lzma_mf_hc4_find (lzma_mf *dict, lzma_match *matches);
-extern void lzma_mf_hc4_skip (lzma_mf *dict, uint32_t amount);
+extern uint32_t lzma_mf_hc4_find (lzma_mf* dict, lzma_match* matches);
+extern void lzma_mf_hc4_skip (lzma_mf* dict, uint32_t amount);
 
-extern uint32_t lzma_mf_bt2_find (lzma_mf *dict, lzma_match *matches);
-extern void lzma_mf_bt2_skip (lzma_mf *dict, uint32_t amount);
+extern uint32_t lzma_mf_bt2_find (lzma_mf* dict, lzma_match* matches);
+extern void lzma_mf_bt2_skip (lzma_mf* dict, uint32_t amount);
 
-extern uint32_t lzma_mf_bt3_find (lzma_mf *dict, lzma_match *matches);
-extern void lzma_mf_bt3_skip (lzma_mf *dict, uint32_t amount);
+extern uint32_t lzma_mf_bt3_find (lzma_mf* dict, lzma_match* matches);
+extern void lzma_mf_bt3_skip (lzma_mf* dict, uint32_t amount);
 
-extern uint32_t lzma_mf_bt4_find (lzma_mf *dict, lzma_match *matches);
-extern void lzma_mf_bt4_skip (lzma_mf *dict, uint32_t amount);
+extern uint32_t lzma_mf_bt4_find (lzma_mf* dict, lzma_match* matches);
+extern void lzma_mf_bt4_skip (lzma_mf* dict, uint32_t amount);
 
 #endif

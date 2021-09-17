@@ -74,7 +74,7 @@ void writepng_version_info (void) {
 /* returns 0 for success, 2 for libpng problem, 4 for out of memory, 11 for
  *  unexpected pnmtype; note that outfile might be stdout */
 
-int writepng_init (mainprog_info *mainprog_ptr) {
+int writepng_init (mainprog_info* mainprog_ptr) {
   png_structp png_ptr;       /* note:  temporary variables! */
   png_infop info_ptr;
   int color_type, interlace_type;
@@ -244,7 +244,7 @@ int writepng_init (mainprog_info *mainprog_ptr) {
 
 /* returns 0 for success, 2 for libpng (longjmp) problem */
 
-int writepng_encode_image (mainprog_info *mainprog_ptr) {
+int writepng_encode_image (mainprog_info* mainprog_ptr) {
   png_structp png_ptr = (png_structp) mainprog_ptr->png_ptr;
   png_infop info_ptr = (png_infop) mainprog_ptr->info_ptr;
 
@@ -277,7 +277,7 @@ int writepng_encode_image (mainprog_info *mainprog_ptr) {
 
 /* returns 0 if succeeds, 2 if libpng problem */
 
-int writepng_encode_row (mainprog_info *mainprog_ptr)  /* NON-interlaced only! */
+int writepng_encode_row (mainprog_info* mainprog_ptr)  /* NON-interlaced only! */
 {
   png_structp png_ptr = (png_structp) mainprog_ptr->png_ptr;
   png_infop info_ptr = (png_infop) mainprog_ptr->info_ptr;
@@ -303,7 +303,7 @@ int writepng_encode_row (mainprog_info *mainprog_ptr)  /* NON-interlaced only! *
 
 /* returns 0 if succeeds, 2 if libpng problem */
 
-int writepng_encode_finish (mainprog_info *mainprog_ptr)   /* NON-interlaced! */
+int writepng_encode_finish (mainprog_info* mainprog_ptr)   /* NON-interlaced! */
 {
   png_structp png_ptr = (png_structp) mainprog_ptr->png_ptr;
   png_infop info_ptr = (png_infop) mainprog_ptr->info_ptr;
@@ -328,7 +328,7 @@ int writepng_encode_finish (mainprog_info *mainprog_ptr)   /* NON-interlaced! */
   return 0;
 }
 
-void writepng_cleanup (mainprog_info *mainprog_ptr) {
+void writepng_cleanup (mainprog_info* mainprog_ptr) {
   png_structp png_ptr = (png_structp) mainprog_ptr->png_ptr;
   png_infop info_ptr = (png_infop) mainprog_ptr->info_ptr;
 
@@ -337,7 +337,7 @@ void writepng_cleanup (mainprog_info *mainprog_ptr) {
 }
 
 static void writepng_error_handler (png_structp png_ptr, png_const_charp msg) {
-  mainprog_info *mainprog_ptr;
+  mainprog_info* mainprog_ptr;
 
   /* This function, aside from the extra step of retrieving the "error
    * pointer" (below) and the fact that it exists within the application

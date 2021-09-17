@@ -48,8 +48,8 @@ ft_raster1_set_mode (FT_Renderer render,
 static FT_Error
 ft_raster1_transform (FT_Renderer render,
                       FT_GlyphSlot slot,
-                      const FT_Matrix *matrix,
-                      const FT_Vector *delta) {
+                      const FT_Matrix* matrix,
+                      const FT_Vector* delta) {
   FT_Error error = FT_Err_Ok;
 
   if (slot->format != render->glyph_format) {
@@ -71,7 +71,7 @@ ft_raster1_transform (FT_Renderer render,
 static void
 ft_raster1_get_cbox (FT_Renderer render,
                      FT_GlyphSlot slot,
-                     FT_BBox *cbox) {
+                     FT_BBox* cbox) {
   FT_ZERO(cbox);
 
   if (slot->format == render->glyph_format)
@@ -83,10 +83,10 @@ static FT_Error
 ft_raster1_render (FT_Renderer render,
                    FT_GlyphSlot slot,
                    FT_Render_Mode mode,
-                   const FT_Vector *origin) {
+                   const FT_Vector* origin) {
   FT_Error error = FT_Err_Ok;
-  FT_Outline *outline = &slot->outline;
-  FT_Bitmap *bitmap = &slot->bitmap;
+  FT_Outline* outline = &slot->outline;
+  FT_Bitmap* bitmap = &slot->bitmap;
   FT_Memory memory = render->root.memory;
   FT_Pos x_shift = 0;
   FT_Pos y_shift = 0;
@@ -181,7 +181,7 @@ FT_DEFINE_RENDERER(
     (FT_Renderer_GetCBoxFunc) ft_raster1_get_cbox,   /* get_glyph_cbox  */
     (FT_Renderer_SetModeFunc) ft_raster1_set_mode,   /* set_mode        */
 
-    (FT_Raster_Funcs *) &ft_standard_raster             /* raster_class    */
+    (FT_Raster_Funcs*) &ft_standard_raster             /* raster_class    */
 )
 
 

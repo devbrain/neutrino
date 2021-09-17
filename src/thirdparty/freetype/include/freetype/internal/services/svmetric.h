@@ -34,46 +34,46 @@ FT_BEGIN_HEADER
 /* HVAR */
 
 typedef FT_Error
-(*FT_HAdvance_Adjust_Func) (FT_Face face,
-                            FT_UInt gindex,
-                            FT_Int *avalue);
+(* FT_HAdvance_Adjust_Func) (FT_Face face,
+                             FT_UInt gindex,
+                             FT_Int* avalue);
 
 typedef FT_Error
-(*FT_LSB_Adjust_Func) (FT_Face face,
-                       FT_UInt gindex,
-                       FT_Int *avalue);
+(* FT_LSB_Adjust_Func) (FT_Face face,
+                        FT_UInt gindex,
+                        FT_Int* avalue);
 
 typedef FT_Error
-(*FT_RSB_Adjust_Func) (FT_Face face,
-                       FT_UInt gindex,
-                       FT_Int *avalue);
+(* FT_RSB_Adjust_Func) (FT_Face face,
+                        FT_UInt gindex,
+                        FT_Int* avalue);
 
 /* VVAR */
 
 typedef FT_Error
-(*FT_VAdvance_Adjust_Func) (FT_Face face,
-                            FT_UInt gindex,
-                            FT_Int *avalue);
+(* FT_VAdvance_Adjust_Func) (FT_Face face,
+                             FT_UInt gindex,
+                             FT_Int* avalue);
 
 typedef FT_Error
-(*FT_TSB_Adjust_Func) (FT_Face face,
-                       FT_UInt gindex,
-                       FT_Int *avalue);
-
-typedef FT_Error
-(*FT_BSB_Adjust_Func) (FT_Face face,
-                       FT_UInt gindex,
-                       FT_Int *avalue);
-
-typedef FT_Error
-(*FT_VOrg_Adjust_Func) (FT_Face face,
+(* FT_TSB_Adjust_Func) (FT_Face face,
                         FT_UInt gindex,
-                        FT_Int *avalue);
+                        FT_Int* avalue);
+
+typedef FT_Error
+(* FT_BSB_Adjust_Func) (FT_Face face,
+                        FT_UInt gindex,
+                        FT_Int* avalue);
+
+typedef FT_Error
+(* FT_VOrg_Adjust_Func) (FT_Face face,
+                         FT_UInt gindex,
+                         FT_Int* avalue);
 
 /* MVAR */
 
 typedef void
-(*FT_Metrics_Adjust_Func) (FT_Face face);
+(* FT_Metrics_Adjust_Func) (FT_Face face);
 
 FT_DEFINE_SERVICE(MetricsVariations) {
   FT_HAdvance_Adjust_Func hadvance_adjust;

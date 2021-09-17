@@ -49,8 +49,8 @@ namespace neutrino::utils::io {
         delete[] _pBuffer;
       }
 
-      basic_buffered_stream_buf (const basic_buffered_stream_buf &) = delete;
-      basic_buffered_stream_buf &operator= (const basic_buffered_stream_buf &) = delete;
+      basic_buffered_stream_buf (const basic_buffered_stream_buf&) = delete;
+      basic_buffered_stream_buf& operator = (const basic_buffered_stream_buf&) = delete;
 
       virtual int_type overflow (int_type c) {
         if (!(_mode & IOS::out))
@@ -107,11 +107,11 @@ namespace neutrino::utils::io {
       }
 
     private:
-      virtual int read_from_device (char_type * /*buffer*/, std::streamsize /*length*/) {
+      virtual int read_from_device (char_type* /*buffer*/, std::streamsize /*length*/) {
         return 0;
       }
 
-      virtual int write_to_device (const char_type * /*buffer*/, std::streamsize /*length*/) {
+      virtual int write_to_device (const char_type* /*buffer*/, std::streamsize /*length*/) {
         return 0;
       }
 
@@ -125,7 +125,7 @@ namespace neutrino::utils::io {
       }
 
       std::streamsize _bufsize;
-      char_type *_pBuffer;
+      char_type* _pBuffer;
       openmode _mode;
   };
 

@@ -43,8 +43,8 @@ tt_face_load_kern (TT_Face face,
                    FT_Stream stream) {
   FT_Error error;
   FT_ULong table_size;
-  FT_Byte *p;
-  FT_Byte *p_limit;
+  FT_Byte* p;
+  FT_Byte* p_limit;
   FT_UInt nn, num_tables;
   FT_UInt32 avail = 0, ordered = 0;
 
@@ -81,7 +81,7 @@ tt_face_load_kern (TT_Face face,
 
   for (nn = 0; nn < num_tables; nn++) {
     FT_UInt num_pairs, length, coverage, format;
-    FT_Byte *p_next;
+    FT_Byte* p_next;
     FT_UInt32 mask = (FT_UInt32) 1UL << nn;
 
     if (p + 6 > p_limit)
@@ -175,8 +175,8 @@ tt_face_get_kerning (TT_Face face,
                      FT_UInt right_glyph) {
   FT_Int result = 0;
   FT_UInt count, mask;
-  FT_Byte *p = face->kern_table;
-  FT_Byte *p_limit = p + face->kern_table_size;
+  FT_Byte* p = face->kern_table;
+  FT_Byte* p_limit = p + face->kern_table_size;
 
   p += 4;
   mask = 0x0001;
@@ -184,8 +184,8 @@ tt_face_get_kerning (TT_Face face,
   for (count = face->num_kern_tables;
        count > 0 && p + 6 <= p_limit;
        count--, mask <<= 1) {
-    FT_Byte *base = p;
-    FT_Byte *next;
+    FT_Byte* base = p;
+    FT_Byte* next;
     FT_UInt version = FT_NEXT_USHORT(p);
     FT_UInt length = FT_NEXT_USHORT(p);
     FT_UInt coverage = FT_NEXT_USHORT(p);
@@ -221,7 +221,7 @@ tt_face_get_kerning (TT_Face face,
 
           while (min < max) {
             FT_UInt mid = (min + max) >> 1;
-            FT_Byte *q = p + 6 * mid;
+            FT_Byte* q = p + 6 * mid;
             FT_ULong key;
 
             key = FT_NEXT_ULONG(q);

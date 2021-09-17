@@ -64,7 +64,7 @@ cff_cmap_encoding_char_index (CFF_CMapStd cmap,
 
 FT_CALLBACK_DEF(FT_UInt32)
 cff_cmap_encoding_char_next (CFF_CMapStd cmap,
-                             FT_UInt32 *pchar_code) {
+                             FT_UInt32* pchar_code) {
   FT_UInt result = 0;
   FT_UInt32 char_code = *pchar_code;
 
@@ -174,7 +174,7 @@ cff_cmap_unicode_char_index (PS_Unicodes unicodes,
 
 FT_CALLBACK_DEF(FT_UInt32)
 cff_cmap_unicode_char_next (PS_Unicodes unicodes,
-                            FT_UInt32 *pchar_code) {
+                            FT_UInt32* pchar_code) {
   TT_Face face = (TT_Face) FT_CMAP_FACE(unicodes);
   CFF_Font cff = (CFF_Font) face->extra.data;
   FT_Service_PsCMaps psnames = (FT_Service_PsCMaps) cff->psnames;

@@ -16,7 +16,7 @@
 #include <zlib.h>
 
 static int
-read_one_file (FILE *ip, const char *name) {
+read_one_file (FILE* ip, const char* name) {
   uLong length = 0;
   uLong a32 = adler32 (0, NULL, 0);
   uLong c32 = crc32 (0, NULL, 0);
@@ -60,7 +60,7 @@ read_one_file (FILE *ip, const char *name) {
   return 1;
 }
 
-int main (int argc, char **argv) {
+int main (int argc, char** argv) {
   int err = 0;
 
   printf ("/* adler32, crc32, MD5[16], intent, date, length, file-name */\n");
@@ -69,7 +69,7 @@ int main (int argc, char **argv) {
     int i;
 
     for (i = 1; i < argc; ++i) {
-      FILE *ip = fopen (argv[i], "rb");
+      FILE* ip = fopen (argv[i], "rb");
 
       if (ip == NULL || !read_one_file (ip, argv[i])) {
         err = 1;

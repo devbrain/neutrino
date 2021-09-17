@@ -37,7 +37,7 @@ namespace neutrino::mp {
   };
 
   template <typename Func>
-  struct function_traits<Func *> : detail::impl::function_traits<detail::remove_cvref_t<Func>> {
+  struct function_traits<Func*> : detail::impl::function_traits<detail::remove_cvref_t<Func>> {
   };
 } // ns mpl
 #endif // CALLABLE_FUNCTION_HPP_INCLUDED

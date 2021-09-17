@@ -29,8 +29,8 @@
 /*---------------------------------------------*/
 static
 __inline__
-void fallbackSimpleSort (UInt32 *fmap,
-                         UInt32 *eclass,
+void fallbackSimpleSort (UInt32* fmap,
+                         UInt32* eclass,
                          Int32 lo,
                          Int32 hi) {
   Int32 i, j, tmp;
@@ -88,8 +88,8 @@ void fallbackSimpleSort (UInt32 *fmap,
 #define FALLBACK_QSORT_STACK_SIZE   100
 
 static
-void fallbackQSort3 (UInt32 *fmap,
-                     UInt32 *eclass,
+void fallbackQSort3 (UInt32* fmap,
+                     UInt32* eclass,
                      Int32 loSt,
                      Int32 hiSt) {
   Int32 unLo, unHi, ltLo, gtHi, n, m;
@@ -222,9 +222,9 @@ void fallbackQSort3 (UInt32 *fmap,
 #define UNALIGNED_BH(zz)  ((zz) & 0x01f)
 
 static
-void fallbackSort (UInt32 *fmap,
-                   UInt32 *eclass,
-                   UInt32 *bhtab,
+void fallbackSort (UInt32* fmap,
+                   UInt32* eclass,
+                   UInt32* bhtab,
                    Int32 nblock,
                    Int32 verb) {
   Int32 ftab[257];
@@ -232,7 +232,7 @@ void fallbackSort (UInt32 *fmap,
   Int32 H, i, j, k, l, r, cc, cc1;
   Int32 nNotDone;
   Int32 nBhtab;
-  UChar *eclass8 = (UChar *) eclass;
+  UChar* eclass8 = (UChar*) eclass;
 
   /*--
      Initial 1-char radix sort to generate
@@ -380,10 +380,10 @@ static
 __inline__
 Bool mainGtU (UInt32 i1,
               UInt32 i2,
-              UChar *block,
-              UInt16 *quadrant,
+              UChar* block,
+              UInt16* quadrant,
               UInt32 nblock,
-              Int32 *budget) {
+              Int32* budget) {
   Int32 k;
   UChar c1, c2;
   UInt16 s1, s2;
@@ -593,14 +593,14 @@ Int32 incs[14] = {1, 4, 13, 40, 121, 364, 1093, 3280,
                   797161, 2391484};
 
 static
-void mainSimpleSort (UInt32 *ptr,
-                     UChar *block,
-                     UInt16 *quadrant,
+void mainSimpleSort (UInt32* ptr,
+                     UChar* block,
+                     UInt16* quadrant,
                      Int32 nblock,
                      Int32 lo,
                      Int32 hi,
                      Int32 d,
-                     Int32 *budget) {
+                     Int32* budget) {
   Int32 i, j, h, bigN, hp;
   UInt32 v;
 
@@ -739,14 +739,14 @@ UChar mmed3 (UChar a, UChar b, UChar c) {
 #define MAIN_QSORT_STACK_SIZE 100
 
 static
-void mainQSort3 (UInt32 *ptr,
-                 UChar *block,
-                 UInt16 *quadrant,
+void mainQSort3 (UInt32* ptr,
+                 UChar* block,
+                 UInt16* quadrant,
                  Int32 nblock,
                  Int32 loSt,
                  Int32 hiSt,
                  Int32 dSt,
-                 Int32 *budget) {
+                 Int32* budget) {
   Int32 unLo, unHi, ltLo, gtHi, n, m, med;
   Int32 sp, lo, hi, d;
 
@@ -888,13 +888,13 @@ void mainQSort3 (UInt32 *ptr,
 #define CLEARMASK (~(SETMASK))
 
 static
-void mainSort (UInt32 *ptr,
-               UChar *block,
-               UInt16 *quadrant,
-               UInt32 *ftab,
+void mainSort (UInt32* ptr,
+               UChar* block,
+               UInt16* quadrant,
+               UInt32* ftab,
                Int32 nblock,
                Int32 verb,
-               Int32 *budget) {
+               Int32* budget) {
   Int32 i, j, k, ss, sb;
   Int32 runningOrder[256];
   Bool bigDone[256];
@@ -1182,14 +1182,14 @@ void mainSort (UInt32 *ptr,
       ftab [ 0 .. 65536 ] destroyed
       arr1 [0 .. nblock-1] holds sorted order
 */
-void BZ2_blockSort (EState *s) {
-  UInt32 *ptr = s->ptr;
-  UChar *block = s->block;
-  UInt32 *ftab = s->ftab;
+void BZ2_blockSort (EState* s) {
+  UInt32* ptr = s->ptr;
+  UChar* block = s->block;
+  UInt32* ftab = s->ftab;
   Int32 nblock = s->nblock;
   Int32 verb = s->verbosity;
   Int32 wfact = s->workFactor;
-  UInt16 *quadrant;
+  UInt16* quadrant;
   Int32 budget;
   Int32 budgetInit;
   Int32 i;
@@ -1206,7 +1206,7 @@ void BZ2_blockSort (EState *s) {
     i = nblock + BZ_N_OVERSHOOT;
     if (i & 1)
       i++;
-    quadrant = (UInt16 *) (&(block[i]));
+    quadrant = (UInt16*) (&(block[i]));
 
     /* (wfact-1) / 3 puts the default-factor-30
        transition point at very roughly the same place as

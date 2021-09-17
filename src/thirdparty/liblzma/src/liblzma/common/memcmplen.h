@@ -40,7 +40,7 @@
 ///             allocated in the buffers being used. It needs to be
 ///             initialized too to keep Valgrind quiet.
 static inline uint32_t lzma_attribute((__always_inline__))
-lzma_memcmplen (const uint8_t *buf1, const uint8_t *buf2,
+lzma_memcmplen (const uint8_t* buf1, const uint8_t* buf2,
                 uint32_t len, uint32_t limit) {
   assert(len <= limit);
   assert(limit <= UINT32_MAX / 2);

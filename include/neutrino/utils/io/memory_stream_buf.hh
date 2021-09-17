@@ -36,12 +36,12 @@ namespace neutrino::utils::io {
       typedef std::vector<char_type> mem_block_t;
     public:
       memory_stream_buf () = delete;
-      memory_stream_buf (const memory_stream_buf &) = delete;
-      memory_stream_buf &operator= (const memory_stream_buf &) = delete;
+      memory_stream_buf (const memory_stream_buf&) = delete;
+      memory_stream_buf& operator = (const memory_stream_buf&) = delete;
 
-      memory_stream_buf (char_type *pBuffer, std::streamsize bufferSize);
+      memory_stream_buf (char_type* pBuffer, std::streamsize bufferSize);
       explicit memory_stream_buf (std::shared_ptr<mem_block_t> mem);
-      explicit memory_stream_buf (std::unique_ptr<mem_block_t> &&mem);
+      explicit memory_stream_buf (std::unique_ptr<mem_block_t>&& mem);
       ~memory_stream_buf () override;
 
       int_type overflow (int_type /*c*/) override;
@@ -55,7 +55,7 @@ namespace neutrino::utils::io {
       /// will be set to the beginning of the buffer.
       void reset ();
     private:
-      char_type *m_buffer;
+      char_type* m_buffer;
       std::streamsize m_buffer_size;
       std::shared_ptr<mem_block_t> m_mem;
   };
@@ -72,15 +72,15 @@ namespace neutrino::utils::io {
       /// order of the stream buffer and base classes.
   {
     public:
-      memory_ios (char *pBuffer, std::streamsize bufferSize);
+      memory_ios (char* pBuffer, std::streamsize bufferSize);
       explicit memory_ios (std::shared_ptr<memory_stream_buf_t::mem_block_t> mem);
-      explicit memory_ios (std::unique_ptr<memory_stream_buf_t::mem_block_t> &&mem);
+      explicit memory_ios (std::unique_ptr<memory_stream_buf_t::mem_block_t>&& mem);
       /// Creates the basic stream.
 
       ~memory_ios () override;
       /// Destroys the stream.
 
-      memory_stream_buf_t *rdbuf ();
+      memory_stream_buf_t* rdbuf ();
       /// Returns a pointer to the underlying streambuf.
 
     protected:
@@ -91,9 +91,9 @@ namespace neutrino::utils::io {
 /// An input stream for reading from a memory area.
   {
     public:
-      memory_input_stream (const char *pBuffer, std::streamsize bufferSize);
+      memory_input_stream (const char* pBuffer, std::streamsize bufferSize);
       explicit memory_input_stream (std::shared_ptr<memory_stream_buf_t::mem_block_t> mem);
-      explicit memory_input_stream (std::unique_ptr<memory_stream_buf_t::mem_block_t> &&mem);
+      explicit memory_input_stream (std::unique_ptr<memory_stream_buf_t::mem_block_t>&& mem);
 /// Creates a MemoryInputStream for the given memory area,
 /// ready for reading.
 
@@ -105,7 +105,7 @@ namespace neutrino::utils::io {
 /// An input stream for reading from a memory area.
   {
     public:
-      memory_output_stream (char *pBuffer, std::streamsize bufferSize);
+      memory_output_stream (char* pBuffer, std::streamsize bufferSize);
 /// Creates a MemoryOutputStream for the given memory area,
 /// ready for writing.
 
@@ -120,13 +120,14 @@ namespace neutrino::utils::io {
 // inlines
 //
   template <typename ch, typename tr>
-  memory_stream_buf<ch, tr>::memory_stream_buf (char_type *pBuffer, std::streamsize bufferSize)
+  memory_stream_buf<ch, tr>::memory_stream_buf (char_type* pBuffer, std::streamsize bufferSize)
       :
       m_buffer (pBuffer),
       m_buffer_size (bufferSize) {
     this->setg (m_buffer, m_buffer, m_buffer + m_buffer_size);
     this->setp (m_buffer, m_buffer + m_buffer_size);
   }
+
   // -----------------------------------------------------------------------------------------
   template <typename ch, typename tr>
   memory_stream_buf<ch, tr>::memory_stream_buf (std::shared_ptr<mem_block_t> mem)
@@ -136,28 +137,33 @@ namespace neutrino::utils::io {
     this->setg (m_buffer, m_buffer, m_buffer + m_buffer_size);
     this->setp (m_buffer, m_buffer + m_buffer_size);
   }
+
   // -----------------------------------------------------------------------------------------
   template <typename ch, typename tr>
-  memory_stream_buf<ch, tr>::memory_stream_buf (std::unique_ptr<mem_block_t> &&mem)
+  memory_stream_buf<ch, tr>::memory_stream_buf (std::unique_ptr<mem_block_t>&& mem)
       : m_mem (std::move (mem)) {
     m_buffer = m_mem->data ();
     m_buffer_size = m_mem->size ();
     this->setg (m_buffer, m_buffer, m_buffer + m_buffer_size);
     this->setp (m_buffer, m_buffer + m_buffer_size);
   }
+
   // -----------------------------------------------------------------------------------------
   template <typename ch, typename tr>
   memory_stream_buf<ch, tr>::~memory_stream_buf () = default;
+
   // -----------------------------------------------------------------------------------------
   template <typename ch, typename tr>
   typename memory_stream_buf<ch, tr>::int_type memory_stream_buf<ch, tr>::overflow (int_type /*c*/) {
     return char_traits::eof ();
   }
+
   // -----------------------------------------------------------------------------------------
   template <typename ch, typename tr>
   typename memory_stream_buf<ch, tr>::int_type memory_stream_buf<ch, tr>::underflow () {
     return char_traits::eof ();
   }
+
   // -----------------------------------------------------------------------------------------
   template <typename ch, typename tr>
   typename memory_stream_buf<ch, tr>::pos_type
@@ -232,26 +238,31 @@ namespace neutrino::utils::io {
 
     return newoff;
   }
+
   // -----------------------------------------------------------------------------------------
   template <typename ch, typename tr>
   int memory_stream_buf<ch, tr>::sync () {
     return 0;
   }
+
   // -----------------------------------------------------------------------------------------
   template <typename ch, typename tr>
   std::streamsize memory_stream_buf<ch, tr>::chars_written () const {
     return static_cast<std::streamsize>(this->pptr () - this->pbase ());
   }
+
   // -----------------------------------------------------------------------------------------
   template <typename ch, typename tr>
   void memory_stream_buf<ch, tr>::reset () {
     this->setg (m_buffer, m_buffer, m_buffer + m_buffer_size);
     this->setp (m_buffer, m_buffer + m_buffer_size);
   }
+
   // ======================================================================================
-  inline memory_stream_buf_t *memory_ios::rdbuf () {
+  inline memory_stream_buf_t* memory_ios::rdbuf () {
     return &m_buf;
   }
+
   // ======================================================================================
   inline std::streamsize memory_output_stream::chars_written () const {
     return m_buf.chars_written ();

@@ -26,18 +26,18 @@ typedef struct {
 
   /// Calculates memory usage of the encoder. If the options are
   /// invalid, UINT64_MAX is returned.
-  uint64_t (*memusage) (const void *options);
+  uint64_t (* memusage) (const void* options);
 
 } lzma_filter_coder;
 
-typedef const lzma_filter_coder *(*lzma_filter_find) (lzma_vli id);
+typedef const lzma_filter_coder* (* lzma_filter_find) (lzma_vli id);
 
 extern lzma_ret lzma_raw_coder_init (
-    lzma_next_coder *next, const lzma_allocator *allocator,
-    const lzma_filter *filters,
+    lzma_next_coder* next, const lzma_allocator* allocator,
+    const lzma_filter* filters,
     lzma_filter_find coder_find, bool is_encoder);
 
 extern uint64_t lzma_raw_coder_memusage (lzma_filter_find coder_find,
-                                         const lzma_filter *filters);
+                                         const lzma_filter* filters);
 
 #endif

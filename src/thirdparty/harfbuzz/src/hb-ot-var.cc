@@ -61,7 +61,7 @@
  * Since: 1.4.2
  **/
 hb_bool_t
-hb_ot_var_has_data (hb_face_t *face) {
+hb_ot_var_has_data (hb_face_t* face) {
   return face->table.fvar->has_data ();
 }
 
@@ -76,11 +76,12 @@ hb_ot_var_has_data (hb_face_t *face) {
  * Since: 1.4.2
  **/
 unsigned int
-hb_ot_var_get_axis_count (hb_face_t *face) {
+hb_ot_var_get_axis_count (hb_face_t* face) {
   return face->table.fvar->get_axis_count ();
 }
 
 #ifndef HB_DISABLE_DEPRECATED
+
 /**
  * hb_ot_var_get_axes:
  * @face: #hb_face_t to work upon
@@ -96,10 +97,10 @@ hb_ot_var_get_axis_count (hb_face_t *face) {
  * Deprecated: 2.2.0: use hb_ot_var_get_axis_infos() instead
  **/
 unsigned int
-hb_ot_var_get_axes (hb_face_t *face,
+hb_ot_var_get_axes (hb_face_t* face,
                     unsigned int start_offset,
-                    unsigned int *axes_count /* IN/OUT */,
-                    hb_ot_var_axis_t *axes_array /* OUT */) {
+                    unsigned int* axes_count /* IN/OUT */,
+                    hb_ot_var_axis_t* axes_array /* OUT */) {
   return face->table.fvar->get_axes_deprecated (start_offset, axes_count, axes_array);
 }
 
@@ -117,12 +118,13 @@ hb_ot_var_get_axes (hb_face_t *face,
  * Deprecated: 2.2.0 - use hb_ot_var_find_axis_info() instead
  **/
 hb_bool_t
-hb_ot_var_find_axis (hb_face_t *face,
+hb_ot_var_find_axis (hb_face_t* face,
                      hb_tag_t axis_tag,
-                     unsigned int *axis_index,
-                     hb_ot_var_axis_t *axis_info) {
+                     unsigned int* axis_index,
+                     hb_ot_var_axis_t* axis_info) {
   return face->table.fvar->find_axis_deprecated (axis_tag, axis_index, axis_info);
 }
+
 #endif
 
 /**
@@ -141,10 +143,10 @@ hb_ot_var_find_axis (hb_face_t *face,
  * Since: 2.2.0
  **/
 HB_EXTERN unsigned int
-hb_ot_var_get_axis_infos (hb_face_t *face,
+hb_ot_var_get_axis_infos (hb_face_t* face,
                           unsigned int start_offset,
-                          unsigned int *axes_count /* IN/OUT */,
-                          hb_ot_var_axis_info_t *axes_array /* OUT */) {
+                          unsigned int* axes_count /* IN/OUT */,
+                          hb_ot_var_axis_info_t* axes_array /* OUT */) {
   return face->table.fvar->get_axis_infos (start_offset, axes_count, axes_array);
 }
 
@@ -162,9 +164,9 @@ hb_ot_var_get_axis_infos (hb_face_t *face,
  * Since: 2.2.0
  **/
 HB_EXTERN hb_bool_t
-hb_ot_var_find_axis_info (hb_face_t *face,
+hb_ot_var_find_axis_info (hb_face_t* face,
                           hb_tag_t axis_tag,
-                          hb_ot_var_axis_info_t *axis_info) {
+                          hb_ot_var_axis_info_t* axis_info) {
   return face->table.fvar->find_axis_info (axis_tag, axis_info);
 }
 
@@ -184,7 +186,7 @@ hb_ot_var_find_axis_info (hb_face_t *face,
  * Since: 2.2.0
  **/
 unsigned int
-hb_ot_var_get_named_instance_count (hb_face_t *face) {
+hb_ot_var_get_named_instance_count (hb_face_t* face) {
   return face->table.fvar->get_instance_count ();
 }
 
@@ -201,7 +203,7 @@ hb_ot_var_get_named_instance_count (hb_face_t *face) {
  * Since: 2.2.0
  **/
 hb_ot_name_id_t
-hb_ot_var_named_instance_get_subfamily_name_id (hb_face_t *face,
+hb_ot_var_named_instance_get_subfamily_name_id (hb_face_t* face,
                                                 unsigned int instance_index) {
   return face->table.fvar->get_instance_subfamily_name_id (instance_index);
 }
@@ -219,7 +221,7 @@ hb_ot_var_named_instance_get_subfamily_name_id (hb_face_t *face,
  * Since: 2.2.0
  **/
 hb_ot_name_id_t
-hb_ot_var_named_instance_get_postscript_name_id (hb_face_t *face,
+hb_ot_var_named_instance_get_postscript_name_id (hb_face_t* face,
                                                  unsigned int instance_index) {
   return face->table.fvar->get_instance_postscript_name_id (instance_index);
 }
@@ -240,10 +242,10 @@ hb_ot_var_named_instance_get_postscript_name_id (hb_face_t *face,
  * Since: 2.2.0
  **/
 unsigned int
-hb_ot_var_named_instance_get_design_coords (hb_face_t *face,
+hb_ot_var_named_instance_get_design_coords (hb_face_t* face,
                                             unsigned int instance_index,
-                                            unsigned int *coords_length, /* IN/OUT */
-                                            float *coords         /* OUT */) {
+                                            unsigned int* coords_length, /* IN/OUT */
+                                            float* coords         /* OUT */) {
   return face->table.fvar->get_instance_coords (instance_index, coords_length, coords);
 }
 
@@ -260,15 +262,15 @@ hb_ot_var_named_instance_get_design_coords (hb_face_t *face,
  * Since: 1.4.2
  **/
 void
-hb_ot_var_normalize_variations (hb_face_t *face,
-                                const hb_variation_t *variations, /* IN */
+hb_ot_var_normalize_variations (hb_face_t* face,
+                                const hb_variation_t* variations, /* IN */
                                 unsigned int variations_length,
-                                int *coords, /* OUT */
+                                int* coords, /* OUT */
                                 unsigned int coords_length) {
   for (unsigned int i = 0; i < coords_length; i++)
     coords[i] = 0;
 
-  const OT::fvar &fvar = *face->table.fvar;
+  const OT::fvar& fvar = *face->table.fvar;
   for (unsigned int i = 0; i < variations_length; i++) {
     hb_ot_var_axis_info_t info;
     if (hb_ot_var_find_axis_info (face, variations[i].tag, &info) &&
@@ -296,11 +298,11 @@ hb_ot_var_normalize_variations (hb_face_t *face,
  * Since: 1.4.2
  **/
 void
-hb_ot_var_normalize_coords (hb_face_t *face,
+hb_ot_var_normalize_coords (hb_face_t* face,
                             unsigned int coords_length,
-                            const float *design_coords, /* IN */
-                            int *normalized_coords /* OUT */) {
-  const OT::fvar &fvar = *face->table.fvar;
+                            const float* design_coords, /* IN */
+                            int* normalized_coords /* OUT */) {
+  const OT::fvar& fvar = *face->table.fvar;
   for (unsigned int i = 0; i < coords_length; i++)
     normalized_coords[i] = fvar.normalize_axis_value (i, design_coords[i]);
 

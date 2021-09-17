@@ -4040,10 +4040,12 @@ main(void)
 }
 #endif /* PNG_READ_SUPPORTED && PNG_EASY_ACCESS_SUPPORTED */
 #else /* No setjmp support */
+
 int
 main (void) {
   fprintf (stderr, "pngfix does not work without setjmp support\n");
   return 77;
 }
+
 #endif /* PNG_SETJMP_SUPPORTED */
 

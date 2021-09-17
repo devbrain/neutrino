@@ -67,11 +67,11 @@ FT_BEGIN_HEADER
  *   SFNT tables in the object.
  */
 typedef FT_Error
-(*TT_Init_Face_Func) (FT_Stream stream,
-                      TT_Face face,
-                      FT_Int face_index,
-                      FT_Int num_params,
-                      FT_Parameter *params);
+(* TT_Init_Face_Func) (FT_Stream stream,
+                       TT_Face face,
+                       FT_Int face_index,
+                       FT_Int num_params,
+                       FT_Parameter* params);
 
 /**************************************************************************
  *
@@ -108,11 +108,11 @@ typedef FT_Error
  *   This function must be called after TT_Init_Face_Func().
  */
 typedef FT_Error
-(*TT_Load_Face_Func) (FT_Stream stream,
-                      TT_Face face,
-                      FT_Int face_index,
-                      FT_Int num_params,
-                      FT_Parameter *params);
+(* TT_Load_Face_Func) (FT_Stream stream,
+                       TT_Face face,
+                       FT_Int face_index,
+                       FT_Int num_params,
+                       FT_Parameter* params);
 
 /**************************************************************************
  *
@@ -130,7 +130,7 @@ typedef FT_Error
  *   This function does NOT destroy the face object.
  */
 typedef void
-(*TT_Done_Face_Func) (TT_Face face);
+(* TT_Done_Face_Func) (TT_Face face);
 
 /**************************************************************************
  *
@@ -172,11 +172,11 @@ typedef void
  *   TrueType error code.  0 means success.
  */
 typedef FT_Error
-(*TT_Load_Any_Func) (TT_Face face,
-                     FT_ULong tag,
-                     FT_Long offset,
-                     FT_Byte *buffer,
-                     FT_ULong *length);
+(* TT_Load_Any_Func) (TT_Face face,
+                      FT_ULong tag,
+                      FT_Long offset,
+                      FT_Byte* buffer,
+                      FT_ULong* length);
 
 /**************************************************************************
  *
@@ -212,12 +212,12 @@ typedef FT_Error
  *   SFNT_Err_Invalid_Argument if no sbit exists for the requested glyph.
  */
 typedef FT_Error
-(*TT_Find_SBit_Image_Func) (TT_Face face,
-                            FT_UInt glyph_index,
-                            FT_ULong strike_index,
-                            TT_SBit_Range *arange,
-                            TT_SBit_Strike *astrike,
-                            FT_ULong *aglyph_offset);
+(* TT_Find_SBit_Image_Func) (TT_Face face,
+                             FT_UInt glyph_index,
+                             FT_ULong strike_index,
+                             TT_SBit_Range* arange,
+                             TT_SBit_Strike* astrike,
+                             FT_ULong* aglyph_offset);
 
 /**************************************************************************
  *
@@ -250,9 +250,9 @@ typedef FT_Error
  *   function exit.
  */
 typedef FT_Error
-(*TT_Load_SBit_Metrics_Func) (FT_Stream stream,
-                              TT_SBit_Range range,
-                              TT_SBit_Metrics metrics);
+(* TT_Load_SBit_Metrics_Func) (FT_Stream stream,
+                               TT_SBit_Range range,
+                               TT_SBit_Metrics metrics);
 
 /**************************************************************************
  *
@@ -294,13 +294,13 @@ typedef FT_Error
  *   The `map.buffer` field is always freed before the glyph is loaded.
  */
 typedef FT_Error
-(*TT_Load_SBit_Image_Func) (TT_Face face,
-                            FT_ULong strike_index,
-                            FT_UInt glyph_index,
-                            FT_UInt load_flags,
-                            FT_Stream stream,
-                            FT_Bitmap *amap,
-                            TT_SBit_MetricsRec *ametrics);
+(* TT_Load_SBit_Image_Func) (TT_Face face,
+                             FT_ULong strike_index,
+                             FT_UInt glyph_index,
+                             FT_UInt load_flags,
+                             FT_Stream stream,
+                             FT_Bitmap* amap,
+                             TT_SBit_MetricsRec* ametrics);
 
 /**************************************************************************
  *
@@ -326,9 +326,9 @@ typedef FT_Error
  *   strike exists for the selected ppem values.
  */
 typedef FT_Error
-(*TT_Set_SBit_Strike_Func) (TT_Face face,
-                            FT_Size_Request req,
-                            FT_ULong *astrike_index);
+(* TT_Set_SBit_Strike_Func) (TT_Face face,
+                             FT_Size_Request req,
+                             FT_ULong* astrike_index);
 
 /**************************************************************************
  *
@@ -354,9 +354,9 @@ typedef FT_Error
  *   sbit strike exists.
  */
 typedef FT_Error
-(*TT_Load_Strike_Metrics_Func) (TT_Face face,
-                                FT_ULong strike_index,
-                                FT_Size_Metrics *metrics);
+(* TT_Load_Strike_Metrics_Func) (TT_Face face,
+                                 FT_ULong strike_index,
+                                 FT_Size_Metrics* metrics);
 
 /**************************************************************************
  *
@@ -380,9 +380,9 @@ typedef FT_Error
  *   FreeType error code.  0 means success.
  */
 typedef FT_Error
-(*TT_Get_PS_Name_Func) (TT_Face face,
-                        FT_UInt idx,
-                        FT_String **PSname);
+(* TT_Get_PS_Name_Func) (TT_Face face,
+                         FT_UInt idx,
+                         FT_String** PSname);
 
 /**************************************************************************
  *
@@ -407,9 +407,9 @@ typedef FT_Error
  *   FreeType error code.  0 means success.
  */
 typedef FT_Error
-(*TT_Load_Metrics_Func) (TT_Face face,
-                         FT_Stream stream,
-                         FT_Bool vertical);
+(* TT_Load_Metrics_Func) (TT_Face face,
+                          FT_Stream stream,
+                          FT_Bool vertical);
 
 /**************************************************************************
  *
@@ -437,11 +437,11 @@ typedef FT_Error
  *     The horizontal (or vertical) advance.  Set to zero in case of error.
  */
 typedef void
-(*TT_Get_Metrics_Func) (TT_Face face,
-                        FT_Bool vertical,
-                        FT_UInt gindex,
-                        FT_Short *abearing,
-                        FT_UShort *aadvance);
+(* TT_Get_Metrics_Func) (TT_Face face,
+                         FT_Bool vertical,
+                         FT_UInt gindex,
+                         FT_Short* abearing,
+                         FT_UShort* aadvance);
 
 /**************************************************************************
  *
@@ -462,8 +462,8 @@ typedef void
  *   FreeType error code.  0 means success.
  */
 typedef FT_Error
-(*TT_Set_Palette_Func) (TT_Face face,
-                        FT_UInt idx);
+(* TT_Set_Palette_Func) (TT_Face face,
+                         FT_UInt idx);
 
 /**************************************************************************
  *
@@ -502,11 +502,11 @@ typedef FT_Error
  *   value~0 is returned also.
  */
 typedef FT_Bool
-(*TT_Get_Colr_Layer_Func) (TT_Face face,
-                           FT_UInt base_glyph,
-                           FT_UInt *aglyph_index,
-                           FT_UInt *acolor_index,
-                           FT_LayerIterator *iterator);
+(* TT_Get_Colr_Layer_Func) (TT_Face face,
+                            FT_UInt base_glyph,
+                            FT_UInt* aglyph_index,
+                            FT_UInt* acolor_index,
+                            FT_LayerIterator* iterator);
 
 /**************************************************************************
  *
@@ -540,10 +540,10 @@ typedef FT_Bool
  *   color_index is invalid or reallocation fails.
  */
 typedef FT_Error
-(*TT_Blend_Colr_Func) (TT_Face face,
-                       FT_UInt color_index,
-                       FT_GlyphSlot base_glyph,
-                       FT_GlyphSlot new_glyph);
+(* TT_Blend_Colr_Func) (TT_Face face,
+                        FT_UInt color_index,
+                        FT_GlyphSlot base_glyph,
+                        FT_GlyphSlot new_glyph);
 
 /**************************************************************************
  *
@@ -569,9 +569,9 @@ typedef FT_Error
  *   FreeType error code.  0 means success.
  */
 typedef FT_Error
-(*TT_Get_Name_Func) (TT_Face face,
-                     FT_UShort nameid,
-                     FT_String **name);
+(* TT_Get_Name_Func) (TT_Face face,
+                      FT_UShort nameid,
+                      FT_String** name);
 
 /**************************************************************************
  *
@@ -602,10 +602,10 @@ typedef FT_Error
  *   1 if there is either a win or apple entry (or both), 0 otheriwse.
  */
 typedef FT_Bool
-(*TT_Get_Name_ID_Func) (TT_Face face,
-                        FT_UShort nameid,
-                        FT_Int *win,
-                        FT_Int *apple);
+(* TT_Get_Name_ID_Func) (TT_Face face,
+                         FT_UShort nameid,
+                         FT_Int* win,
+                         FT_Int* apple);
 
 /**************************************************************************
  *
@@ -630,8 +630,8 @@ typedef FT_Bool
  *   of the table, except while loading the font directory.
  */
 typedef FT_Error
-(*TT_Load_Table_Func) (TT_Face face,
-                       FT_Stream stream);
+(* TT_Load_Table_Func) (TT_Face face,
+                        FT_Stream stream);
 
 /**************************************************************************
  *
@@ -646,7 +646,7 @@ typedef FT_Error
  *     A handle to the target face object.
  */
 typedef void
-(*TT_Free_Table_Func) (TT_Face face);
+(* TT_Free_Table_Func) (TT_Face face);
 
 /*
  * @functype:
@@ -669,9 +669,9 @@ typedef void
  *    The kerning value in font units.
  */
 typedef FT_Int
-(*TT_Face_GetKerningFunc) (TT_Face face,
-                           FT_UInt left_glyph,
-                           FT_UInt right_glyph);
+(* TT_Face_GetKerningFunc) (TT_Face face,
+                            FT_UInt left_glyph,
+                            FT_UInt right_glyph);
 
 /**************************************************************************
  *
@@ -757,7 +757,7 @@ typedef struct SFNT_Interface_ {
 } SFNT_Interface;
 
 /* transitional */
-typedef SFNT_Interface *SFNT_Service;
+typedef SFNT_Interface* SFNT_Service;
 
 #define FT_DEFINE_SFNT_INTERFACE(\
           class_, \

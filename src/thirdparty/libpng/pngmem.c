@@ -20,6 +20,7 @@
 #include "pngpriv.h"
 
 #if defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED)
+
 /* Free a png_struct */
 void /* PRIVATE */
 png_destroy_png_struct (png_structrp png_ptr) {
@@ -96,6 +97,7 @@ PNG_FUNCTION(png_voidp /* PRIVATE */,
 
 #if defined(PNG_TEXT_SUPPORTED) || defined(PNG_sPLT_SUPPORTED) || \
    defined(PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED)
+
 /* This is really here only to work round a spurious warning in GCC 4.6 and 4.7
  * that arises because of the checks in png_realloc_array that are repeated in
  * png_malloc_array.
@@ -143,7 +145,7 @@ PNG_FUNCTION(png_voidp /* PRIVATE */,
       if (old_elements > 0)
         memcpy (new_array, old_array, element_size * (unsigned) old_elements);
 
-      memset ((char *) new_array + element_size * (unsigned) old_elements, 0,
+      memset ((char*) new_array + element_size * (unsigned) old_elements, 0,
               element_size * (unsigned) add_elements);
 
       return new_array;
@@ -152,6 +154,7 @@ PNG_FUNCTION(png_voidp /* PRIVATE */,
 
   return NULL; /* error */
 }
+
 #endif /* TEXT || sPLT || STORE_UNKNOWN_CHUNKS */
 
 /* Various functions that have different error handling are derived from this.
@@ -174,6 +177,7 @@ PNG_FUNCTION(png_voidp, PNGAPI
 }
 
 #ifdef PNG_USER_MEM_SUPPORTED
+
 PNG_FUNCTION(png_voidp, PNGAPI
     png_malloc_default, (png_const_structrp png_ptr, png_alloc_size_t size),
              PNG_ALLOCATED PNG_DEPRECATED) {
@@ -190,6 +194,7 @@ PNG_FUNCTION(png_voidp, PNGAPI
 
   return ret;
 }
+
 #endif /* USER_MEM */
 
 /* This function was added at libpng version 1.2.3.  The png_malloc_warn()
@@ -237,6 +242,7 @@ PNG_FUNCTION(void, PNGAPI
 }
 
 #ifdef PNG_USER_MEM_SUPPORTED
+
 /* This function is called when the application wants to use another method
  * of allocating and freeing memory.
  */
@@ -261,5 +267,6 @@ png_get_mem_ptr (png_const_structrp png_ptr) {
 
   return png_ptr->mem_ptr;
 }
+
 #endif /* USER_MEM */
 #endif /* READ || WRITE */

@@ -241,12 +241,12 @@ hb_codepoint_t OT::cff1::lookup_expert_subset_charset_for_sid (hb_codepoint_t gl
 }
 
 hb_codepoint_t OT::cff1::lookup_expert_charset_for_glyph (hb_codepoint_t sid) {
-  const auto *pair = hb_sorted_array (expert_charset_sid_to_gid).bsearch (sid);
+  const auto* pair = hb_sorted_array (expert_charset_sid_to_gid).bsearch (sid);
   return pair ? pair->gid : 0;
 }
 
 hb_codepoint_t OT::cff1::lookup_expert_subset_charset_for_glyph (hb_codepoint_t sid) {
-  const auto *pair = hb_sorted_array (expert_subset_charset_sid_to_gid).bsearch (sid);
+  const auto* pair = hb_sorted_array (expert_subset_charset_sid_to_gid).bsearch (sid);
   return pair ? pair->gid : 0;
 }
 
@@ -263,7 +263,7 @@ struct bounds_t {
     max.set_int (INT_MIN, INT_MIN);
   }
 
-  void update (const point_t &pt) {
+  void update (const point_t& pt) {
     if (pt.x < min.x)
       min.x = pt.x;
     if (pt.x > max.x)
@@ -274,7 +274,7 @@ struct bounds_t {
       max.y = pt.y;
   }
 
-  void merge (const bounds_t &b) {
+  void merge (const bounds_t& b) {
     if (empty ())
       *this = b;
     else if (!b.empty ()) {
@@ -289,7 +289,7 @@ struct bounds_t {
     }
   }
 
-  void offset (const point_t &delta) {
+  void offset (const point_t& delta) {
     if (!empty ()) {
       min.move (delta);
       max.move (delta);
@@ -305,7 +305,7 @@ struct bounds_t {
 };
 
 struct cff1_extents_param_t {
-  void init (const OT::cff1::accelerator_t *_cff) {
+  void init (const OT::cff1::accelerator_t* _cff) {
     path_open = false;
     cff = _cff;
     bounds.init ();
@@ -314,9 +314,11 @@ struct cff1_extents_param_t {
   void start_path () {
     path_open = true;
   }
+
   void end_path () {
     path_open = false;
   }
+
   bool is_path_open () const {
     return path_open;
   }
@@ -324,16 +326,16 @@ struct cff1_extents_param_t {
   bool path_open;
   bounds_t bounds;
 
-  const OT::cff1::accelerator_t *cff;
+  const OT::cff1::accelerator_t* cff;
 };
 
 struct cff1_path_procs_extents_t : path_procs_t<cff1_path_procs_extents_t, cff1_cs_interp_env_t, cff1_extents_param_t> {
-  static void moveto (cff1_cs_interp_env_t &env, cff1_extents_param_t &param, const point_t &pt) {
+  static void moveto (cff1_cs_interp_env_t& env, cff1_extents_param_t& param, const point_t& pt) {
     param.end_path ();
     env.moveto (pt);
   }
 
-  static void line (cff1_cs_interp_env_t &env, cff1_extents_param_t &param, const point_t &pt1) {
+  static void line (cff1_cs_interp_env_t& env, cff1_extents_param_t& param, const point_t& pt1) {
     if (!param.is_path_open ()) {
       param.start_path ();
       param.bounds.update (env.get_pt ());
@@ -343,7 +345,8 @@ struct cff1_path_procs_extents_t : path_procs_t<cff1_path_procs_extents_t, cff1_
   }
 
   static void
-  curve (cff1_cs_interp_env_t &env, cff1_extents_param_t &param, const point_t &pt1, const point_t &pt2, const point_t &pt3) {
+  curve (cff1_cs_interp_env_t& env, cff1_extents_param_t& param, const point_t& pt1, const point_t& pt2,
+         const point_t& pt3) {
     if (!param.is_path_open ()) {
       param.start_path ();
       param.bounds.update (env.get_pt ());
@@ -357,12 +360,12 @@ struct cff1_path_procs_extents_t : path_procs_t<cff1_path_procs_extents_t, cff1_
 };
 
 static bool
-_get_bounds (const OT::cff1::accelerator_t *cff, hb_codepoint_t glyph, bounds_t &bounds, bool in_seac = false);
+_get_bounds (const OT::cff1::accelerator_t* cff, hb_codepoint_t glyph, bounds_t& bounds, bool in_seac = false);
 
 struct cff1_cs_opset_extents_t : cff1_cs_opset_t<cff1_cs_opset_extents_t,
                                                  cff1_extents_param_t,
                                                  cff1_path_procs_extents_t> {
-  static void process_seac (cff1_cs_interp_env_t &env, cff1_extents_param_t &param) {
+  static void process_seac (cff1_cs_interp_env_t& env, cff1_extents_param_t& param) {
     unsigned int n = env.argStack.get_count ();
     point_t delta;
     delta.x = env.argStack[n - 4];
@@ -383,7 +386,7 @@ struct cff1_cs_opset_extents_t : cff1_cs_opset_t<cff1_cs_opset_extents_t,
   }
 };
 
-bool _get_bounds (const OT::cff1::accelerator_t *cff, hb_codepoint_t glyph, bounds_t &bounds, bool in_seac) {
+bool _get_bounds (const OT::cff1::accelerator_t* cff, hb_codepoint_t glyph, bounds_t& bounds, bool in_seac) {
   bounds.init ();
   if (unlikely (!cff->is_valid () || (glyph >= cff->num_glyphs)))
     return false;
@@ -401,7 +404,7 @@ bool _get_bounds (const OT::cff1::accelerator_t *cff, hb_codepoint_t glyph, boun
   return true;
 }
 
-bool OT::cff1::accelerator_t::get_extents (hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents) const {
+bool OT::cff1::accelerator_t::get_extents (hb_font_t* font, hb_codepoint_t glyph, hb_glyph_extents_t* extents) const {
 #ifdef HB_NO_OT_FONT_CFF
   /* XXX Remove check when this code moves to .hh file. */
   return true;
@@ -557,7 +560,7 @@ bool OT::cff1::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, d
 #endif
 
 struct get_seac_param_t {
-  void init (const OT::cff1::accelerator_t *_cff) {
+  void init (const OT::cff1::accelerator_t* _cff) {
     cff = _cff;
     base = 0;
     accent = 0;
@@ -567,13 +570,13 @@ struct get_seac_param_t {
     return base && accent;
   }
 
-  const OT::cff1::accelerator_t *cff;
+  const OT::cff1::accelerator_t* cff;
   hb_codepoint_t base;
   hb_codepoint_t accent;
 };
 
 struct cff1_cs_opset_seac_t : cff1_cs_opset_t<cff1_cs_opset_seac_t, get_seac_param_t> {
-  static void process_seac (cff1_cs_interp_env_t &env, get_seac_param_t &param) {
+  static void process_seac (cff1_cs_interp_env_t& env, get_seac_param_t& param) {
     unsigned int n = env.argStack.get_count ();
     hb_codepoint_t base_char = (hb_codepoint_t) env.argStack[n - 2].to_int ();
     hb_codepoint_t accent_char = (hb_codepoint_t) env.argStack[n - 1].to_int ();
@@ -584,7 +587,8 @@ struct cff1_cs_opset_seac_t : cff1_cs_opset_t<cff1_cs_opset_seac_t, get_seac_par
 };
 
 bool
-OT::cff1::accelerator_t::get_seac_components (hb_codepoint_t glyph, hb_codepoint_t *base, hb_codepoint_t *accent) const {
+OT::cff1::accelerator_t::get_seac_components (hb_codepoint_t glyph, hb_codepoint_t* base,
+                                              hb_codepoint_t* accent) const {
   if (unlikely (!is_valid () || (glyph >= num_glyphs)))
     return false;
 

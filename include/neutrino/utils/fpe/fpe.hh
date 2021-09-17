@@ -48,14 +48,14 @@ namespace neutrino::utils {
       /// Remembers the current environment and
       /// sets the given rounding mode.
 
-      fpe (const fpe &env);
+      fpe (const fpe& env);
       /// Copy constructor.
 
       ~fpe ();
       /// Restores the previous environment (unless
       /// keep_current() has been called previously)
 
-      fpe &operator= (const fpe &env);
+      fpe& operator = (const fpe& env);
       /// Assignment operator
 
       void keep_current ();

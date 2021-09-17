@@ -28,7 +28,7 @@ TEST_CASE("test1/example/test map attribs")
   REQUIRE(test::check_properties (the_map, expected_map));
 
   REQUIRE(the_map.tile_sets ().size () == 2);
-  const auto &ts1 = the_map.tile_sets ()[0];
+  const auto& ts1 = the_map.tile_sets ()[0];
 
   REQUIRE(ts1.first_gid () == 1);
   REQUIRE(ts1.name () == "marioenemies");
@@ -47,7 +47,7 @@ TEST_CASE("test1/example/test map attribs")
   REQUIRE(ts1.get_tile (1)->id () == 1);
   REQUIRE(test::check_properties (*ts1.get_tile (1), {{"wall", std::string ("true")}}));
 
-  const auto &ts2 = the_map.tile_sets ()[1];
+  const auto& ts2 = the_map.tile_sets ()[1];
 
   REQUIRE(ts2.first_gid () == 101);
   REQUIRE(ts2.name () == "marioobjects");
@@ -70,7 +70,7 @@ TEST_CASE("test1/example/test map attribs")
   };
 
   REQUIRE(the_map.layers ().size () == 2);
-  const auto *tl = std::get_if<tile_layer> (&the_map.layers ()[0]);
+  const auto* tl = std::get_if<tile_layer> (&the_map.layers ()[0]);
   REQUIRE(tl);
   int k = 0;
   for (const auto c : tl->cells ()) {
@@ -81,20 +81,20 @@ TEST_CASE("test1/example/test map attribs")
 
   REQUIRE (the_map.objects ().size () == 2);
 
-  const object_layer &oe = the_map.objects ()[1];
+  const object_layer& oe = the_map.objects ()[1];
   REQUIRE(oe.empty ());
   REQUIRE(oe.name () == "TestObject2");
 
-  const object_layer &ol = the_map.objects ()[0];
+  const object_layer& ol = the_map.objects ()[0];
   REQUIRE(ol.name () == "TestObject");
   REQUIRE(ol.draw_order () == draw_order_t::TOP_DOWN);
   REQUIRE(ol.color () == "#a0a0a4");
   REQUIRE(test::check_properties (ol, {{"objectlayerprop", std::string ("666")}}));
 
-  const auto &objects = ol.objects ();
+  const auto& objects = ol.objects ();
   REQUIRE(objects.size () == 4);
 
-  const auto *o1 = std::get_if<object> (&objects[0]);
+  const auto* o1 = std::get_if<object> (&objects[0]);
   REQUIRE(o1 != nullptr);
   REQUIRE(o1->id () == 1);
   REQUIRE(o1->origin () == neutrino::math::point2f{7, 11});
@@ -102,7 +102,7 @@ TEST_CASE("test1/example/test map attribs")
   REQUIRE(o1->height () == 51);
   REQUIRE(test::check_properties (*o1, {{"asquare", std::string ("test")}}));
 
-  const auto *o2 = std::get_if<polygon> (&objects[2]);
+  const auto* o2 = std::get_if<polygon> (&objects[2]);
   REQUIRE(o2 != nullptr);
 
   std::vector<neutrino::math::point2f> pts = {

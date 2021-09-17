@@ -74,7 +74,7 @@ extern "C" {
  * independent of the compilation flags.
  */
 static INLINE_KEYWORD UNUSED_ATTR
-void _force_has_format_string (const char *format, ...) {
+void _force_has_format_string (const char* format, ...) {
   (void) format;
 }
 
@@ -252,7 +252,7 @@ static UNUSED_ATTR const U32 OF_defaultNormLog = OF_DEFAULTNORMLOG;
 /*-*******************************************
 *  Shared functions to include for inlining
 *********************************************/
-static void ZSTD_copy8 (void *dst, const void *src) {
+static void ZSTD_copy8 (void* dst, const void* src) {
 #if defined(ZSTD_ARCH_ARM_NEON)
   vst1_u8((uint8_t*)dst, vld1_u8((const uint8_t*)src));
 #else
@@ -261,13 +261,15 @@ static void ZSTD_copy8 (void *dst, const void *src) {
 }
 
 #define COPY8(d, s) { ZSTD_copy8(d,s); d+=8; s+=8; }
-static void ZSTD_copy16 (void *dst, const void *src) {
+
+static void ZSTD_copy16 (void* dst, const void* src) {
 #if defined(ZSTD_ARCH_ARM_NEON)
   vst1q_u8((uint8_t*)dst, vld1q_u8((const uint8_t*)src));
 #else
   ZSTD_memcpy(dst, src, 16);
 #endif
 }
+
 #define COPY16(d, s) { ZSTD_copy16(d,s); d+=16; s+=16; }
 
 #define WILDCOPY_OVERLENGTH 32
@@ -287,11 +289,11 @@ typedef enum {
  *           The src buffer must be before the dst buffer.
  */
 MEM_STATIC FORCE_INLINE_ATTR
-void ZSTD_wildcopy (void *dst, const void *src, ptrdiff_t length, ZSTD_overlap_e const ovtype) {
-  ptrdiff_t diff = (BYTE *) dst - (const BYTE *) src;
-  const BYTE *ip = (const BYTE *) src;
-  BYTE *op = (BYTE *) dst;
-  BYTE *const oend = op + length;
+void ZSTD_wildcopy (void* dst, const void* src, ptrdiff_t length, ZSTD_overlap_e const ovtype) {
+  ptrdiff_t diff = (BYTE*) dst - (const BYTE*) src;
+  const BYTE* ip = (const BYTE*) src;
+  BYTE* op = (BYTE*) dst;
+  BYTE* const oend = op + length;
 
   assert(diff >= 8 || (ovtype == ZSTD_no_overlap && diff <= -WILDCOPY_VECLEN));
 
@@ -330,7 +332,7 @@ void ZSTD_wildcopy (void *dst, const void *src, ptrdiff_t length, ZSTD_overlap_e
   }
 }
 
-MEM_STATIC size_t ZSTD_limitCopy (void *dst, size_t dstCapacity, const void *src, size_t srcSize) {
+MEM_STATIC size_t ZSTD_limitCopy (void* dst, size_t dstCapacity, const void* src, size_t srcSize) {
   size_t const length = MIN(dstCapacity, srcSize);
   if (length > 0) {
     ZSTD_memcpy(dst, src, length);
@@ -371,13 +373,13 @@ typedef enum {
 } ZSTD_longLengthType_e;
 
 typedef struct {
-  seqDef *sequencesStart;
-  seqDef *sequences;      /* ptr to end of sequences */
-  BYTE *litStart;
-  BYTE *lit;              /* ptr to end of literals */
-  BYTE *llCode;
-  BYTE *mlCode;
-  BYTE *ofCode;
+  seqDef* sequencesStart;
+  seqDef* sequences;      /* ptr to end of sequences */
+  BYTE* litStart;
+  BYTE* lit;              /* ptr to end of literals */
+  BYTE* llCode;
+  BYTE* mlCode;
+  BYTE* ofCode;
   size_t maxNbSeq;
   size_t maxNbLit;
 
@@ -398,7 +400,7 @@ typedef struct {
  * Returns the ZSTD_sequenceLength for the given sequences. It handles the decoding of long sequences
  * indicated by longLengthPos and longLengthType, and adds MINMATCH back to matchLength.
  */
-MEM_STATIC ZSTD_sequenceLength ZSTD_getSequenceLength (seqStore_t const *seqStore, seqDef const *seq) {
+MEM_STATIC ZSTD_sequenceLength ZSTD_getSequenceLength (seqStore_t const* seqStore, seqDef const* seq) {
   ZSTD_sequenceLength seqLen;
   seqLen.litLength = seq->litLength;
   seqLen.matchLength = seq->matchLength + MINMATCH;
@@ -424,14 +426,15 @@ typedef struct {
   unsigned long long decompressedBound;
 } ZSTD_frameSizeInfo;   /* decompress & legacy */
 
-const seqStore_t *ZSTD_getSeqStore (const ZSTD_CCtx *ctx);   /* compress & dictBuilder */
+const seqStore_t* ZSTD_getSeqStore (const ZSTD_CCtx* ctx);   /* compress & dictBuilder */
 void
-ZSTD_seqToCodes (const seqStore_t *seqStorePtr);   /* compress, dictBuilder, decodeCorpus (shouldn't get its definition from here) */
+ZSTD_seqToCodes (
+    const seqStore_t* seqStorePtr);   /* compress, dictBuilder, decodeCorpus (shouldn't get its definition from here) */
 
 /* custom memory allocation functions */
-void *ZSTD_customMalloc (size_t size, ZSTD_customMem customMem);
-void *ZSTD_customCalloc (size_t size, ZSTD_customMem customMem);
-void ZSTD_customFree (void *ptr, ZSTD_customMem customMem);
+void* ZSTD_customMalloc (size_t size, ZSTD_customMem customMem);
+void* ZSTD_customCalloc (size_t size, ZSTD_customMem customMem);
+void ZSTD_customFree (void* ptr, ZSTD_customMem customMem);
 
 MEM_STATIC U32 ZSTD_highbit32 (U32 val)   /* compress, dictBuilder, decodeCorpus */
 {
@@ -466,7 +469,8 @@ MEM_STATIC U32 ZSTD_highbit32 (U32 val)   /* compress, dictBuilder, decodeCorpus
  * Note : only works with regular variant;
  *        do not use with extDict variant ! */
 void
-ZSTD_invalidateRepCodes (ZSTD_CCtx *cctx);   /* zstdmt, adaptive_compression (shouldn't get this definition from here) */
+ZSTD_invalidateRepCodes (
+    ZSTD_CCtx* cctx);   /* zstdmt, adaptive_compression (shouldn't get this definition from here) */
 
 
 typedef struct {
@@ -478,14 +482,14 @@ typedef struct {
 /*! ZSTD_getcBlockSize() :
  *  Provides the size of compressed block from block header `src` */
 /* Used by: decompress, fullbench (does not get its definition from here) */
-size_t ZSTD_getcBlockSize (const void *src, size_t srcSize,
-                           blockProperties_t *bpPtr);
+size_t ZSTD_getcBlockSize (const void* src, size_t srcSize,
+                           blockProperties_t* bpPtr);
 
 /*! ZSTD_decodeSeqHeaders() :
  *  decode sequence header from src */
 /* Used by: decompress, fullbench (does not get its definition from here) */
-size_t ZSTD_decodeSeqHeaders (ZSTD_DCtx *dctx, int *nbSeqPtr,
-                              const void *src, size_t srcSize);
+size_t ZSTD_decodeSeqHeaders (ZSTD_DCtx* dctx, int* nbSeqPtr,
+                              const void* src, size_t srcSize);
 
 #if defined (__cplusplus)
 }

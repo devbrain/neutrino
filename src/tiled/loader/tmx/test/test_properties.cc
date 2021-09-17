@@ -10,7 +10,7 @@
 
 using namespace neutrino::tiled::tmx;
 
-static void test_props (const map &the_map) {
+static void test_props (const map& the_map) {
   static const std::map<std::string, property_t> props = {
       {"BigInteger", test::to_prop ((int64_t) 999999999)},
       {"EmptyProperty", test::to_prop (std::string{})},
@@ -39,26 +39,26 @@ TEST_CASE("test4/js_example.json properties")
   test_props (the_map);
 }
 
-static void test_anim (const map &the_map) {
+static void test_anim (const map& the_map) {
   REQUIRE(the_map.tile_sets ().size () == 2);
-  const auto &ts = the_map.tile_sets ()[1];
+  const auto& ts = the_map.tile_sets ()[1];
   REQUIRE(ts.first_gid () == 49);
 
   REQUIRE(ts.get_image ());
   REQUIRE(ts.get_image ()->width () == 96);
   REQUIRE(ts.get_image ()->height () == 32);
 
-  const auto *tl = ts.get_tile (0);
+  const auto* tl = ts.get_tile (0);
   REQUIRE(tl);
 
-  const auto *objects_layer = tl->objects ();
+  const auto* objects_layer = tl->objects ();
   REQUIRE(objects_layer);
 
-  const auto &objects = objects_layer->objects ();
+  const auto& objects = objects_layer->objects ();
 
   REQUIRE(!objects.empty ());
 
-  const auto *obj = std::get_if<object> (&objects[0]);
+  const auto* obj = std::get_if<object> (&objects[0]);
   REQUIRE(obj);
   REQUIRE(obj->width () == 3.875);
   REQUIRE(obj->height () == 8);
@@ -66,7 +66,7 @@ static void test_anim (const map &the_map) {
   REQUIRE(obj->origin ()[0] == 14);
   REQUIRE(obj->origin ()[1] == 16.875);
 
-  const auto &anm = tl->get_animation ();
+  const auto& anm = tl->get_animation ();
   REQUIRE(anm.frames ().size () == 4);
   REQUIRE(anm.frames ()[0].duration () == std::chrono::milliseconds{200});
   REQUIRE(anm.frames ()[0].id () == 0);
@@ -85,10 +85,10 @@ TEST_CASE("test4/js_example.json animation json objects")
   test_anim (the_map);
 }
 
-static void test_group (const map &the_map) {
+static void test_group (const map& the_map) {
   REQUIRE(the_map.layers ().size () == 9);
-  for (const auto &v : the_map.layers ()) {
-    const auto *tl = std::get_if<tile_layer> (&v);
+  for (const auto& v : the_map.layers ()) {
+    const auto* tl = std::get_if<tile_layer> (&v);
     if (tl && tl->id () == 2) {
       REQUIRE(tl->name () == "Testing Child Tile Layer");
 

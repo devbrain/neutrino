@@ -43,7 +43,7 @@ typedef struct GXV_mort_subtable_type1_StateOptRec_ {
   FT_UShort substitutionTable_length;
 
 } GXV_mort_subtable_type1_StateOptRec,
-    *GXV_mort_subtable_type1_StateOptRecData;
+    * GXV_mort_subtable_type1_StateOptRecData;
 
 #define GXV_MORT_SUBTABLE_TYPE1_HEADER_SIZE \
           ( GXV_STATETABLE_HEADER_SIZE + 2 )
@@ -66,9 +66,9 @@ gxv_mort_subtable_type1_subtable_setup (FT_UShort table_size,
                                         FT_UShort classTable,
                                         FT_UShort stateArray,
                                         FT_UShort entryTable,
-                                        FT_UShort *classTable_length_p,
-                                        FT_UShort *stateArray_length_p,
-                                        FT_UShort *entryTable_length_p,
+                                        FT_UShort* classTable_length_p,
+                                        FT_UShort* stateArray_length_p,
+                                        FT_UShort* entryTable_length_p,
                                         GXV_Validator gxvalid) {
   FT_UShort o[4];
   FT_UShort * l[4];
@@ -92,7 +92,7 @@ gxv_mort_subtable_type1_subtable_setup (FT_UShort table_size,
 static void
 gxv_mort_subtable_type1_offset_to_subst_validate (
     FT_Short wordOffset,
-    const FT_String *tag,
+    const FT_String* tag,
     FT_Byte state,
     GXV_Validator gxvalid) {
   FT_UShort substTable;
@@ -102,11 +102,11 @@ gxv_mort_subtable_type1_offset_to_subst_validate (
   FT_UNUSED (state);
 
   substTable =
-      ((GXV_mort_subtable_type1_StateOptRec *)
+      ((GXV_mort_subtable_type1_StateOptRec*)
           (gxvalid->statetable.optdata))->substitutionTable;
   substTable_limit =
       (FT_UShort) (substTable +
-                   ((GXV_mort_subtable_type1_StateOptRec *)
+                   ((GXV_mort_subtable_type1_StateOptRec*)
                        (gxvalid->statetable.optdata))->substitutionTable_length);
 
   gxvalid->min_gid = (FT_UShort) ((substTable - wordOffset * 2) / 2);
@@ -169,7 +169,7 @@ gxv_mort_subtable_type1_substTable_validate (FT_Bytes table,
                                              GXV_Validator gxvalid) {
   FT_Bytes p = table;
   FT_UShort num_gids = (FT_UShort) (
-      ((GXV_mort_subtable_type1_StateOptRec *)
+      ((GXV_mort_subtable_type1_StateOptRec*)
           (gxvalid->statetable.optdata))->substitutionTable_length / 2);
   FT_UShort i;
 

@@ -40,6 +40,7 @@ struct hb_cache_t {
     void init () {
       clear ();
     }
+
     void fini () {
     }
 
@@ -48,7 +49,7 @@ struct hb_cache_t {
         values[i].set_relaxed (-1);
     }
 
-    bool get (unsigned int key, unsigned int *value) const {
+    bool get (unsigned int key, unsigned int* value) const {
       unsigned int k = key & ((1u << cache_bits) - 1);
       unsigned int v = values[k].get_relaxed ();
       if ((key_bits + value_bits - cache_bits == 8 * sizeof (hb_atomic_int_t) && v == (unsigned int) -1) ||

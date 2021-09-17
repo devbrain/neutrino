@@ -30,7 +30,7 @@ TEST_CASE("test simple json map")
   REQUIRE(the_map.width () == 16);
 
   REQUIRE(the_map.tile_sets ().size () == 1);
-  const auto &ts = the_map.tile_sets ()[0];
+  const auto& ts = the_map.tile_sets ()[0];
   REQUIRE(ts.first_gid () == 1);
   REQUIRE(ts.name () == "demo-tileset");
 
@@ -48,7 +48,7 @@ TEST_CASE("test simple json map")
   REQUIRE(img->height () == 96);
 
   REQUIRE(the_map.layers ().size () == 1);
-  const auto *tl = std::get_if<tile_layer> (&the_map.layers ()[0]);
+  const auto* tl = std::get_if<tile_layer> (&the_map.layers ()[0]);
   REQUIRE(tl);
   REQUIRE(tl->width () == 16);
   REQUIRE(tl->height () == 16);

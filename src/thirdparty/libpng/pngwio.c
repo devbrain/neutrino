@@ -41,6 +41,7 @@ png_write_data (png_structrp png_ptr, png_const_bytep data, size_t length) {
 }
 
 #ifdef PNG_STDIO_SUPPORTED
+
 /* This is the function that does the actual writing of data.  If you are
  * not writing to a standard C stream, you should create a replacement
  * write_data function and use it at run time with png_set_write_fn(), rather
@@ -58,6 +59,7 @@ png_default_write_data (png_structp png_ptr, png_bytep data, size_t length) {
   if (check != length)
     png_error (png_ptr, "Write Error");
 }
+
 #endif
 
 /* This function is called to output any data pending writing (normally
@@ -65,6 +67,7 @@ png_default_write_data (png_structp png_ptr, png_bytep data, size_t length) {
  * writing in any buffers.
  */
 #ifdef PNG_WRITE_FLUSH_SUPPORTED
+
 void /* PRIVATE */
 png_flush (png_structrp png_ptr) {
   if (png_ptr->output_flush_fn != NULL)
@@ -72,6 +75,7 @@ png_flush (png_structrp png_ptr) {
 }
 
 #  ifdef PNG_STDIO_SUPPORTED
+
 void PNGCBAPI
 png_default_flush (png_structp png_ptr) {
   png_FILE_p io_ptr;
@@ -82,6 +86,7 @@ png_default_flush (png_structp png_ptr) {
   io_ptr = png_voidcast(png_FILE_p, (png_ptr->io_ptr));
   fflush (io_ptr);
 }
+
 #  endif
 #endif
 
@@ -159,4 +164,5 @@ png_set_write_fn (png_structrp png_ptr, png_voidp io_ptr,
   }
 #endif
 }
+
 #endif /* WRITE */

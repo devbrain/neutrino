@@ -65,8 +65,8 @@
 
 ulg width, height;
 int bit_depth, color_type, channels;
-uch *image_data = NULL;
-FILE *saved_infile;
+uch* image_data = NULL;
+FILE* saved_infile;
 
 void readpng_version_info () {
   fprintf (stderr, "   Compiled without libpng, zlib or PBMPLUS/NetPBM.\n");
@@ -74,7 +74,7 @@ void readpng_version_info () {
 
 /* return value = 0 for success, 1 for bad sig, 2 for bad IHDR, 4 for no mem */
 
-int readpng_init (FILE *infile, ulg *pWidth, ulg *pHeight) {
+int readpng_init (FILE* infile, ulg* pWidth, ulg* pHeight) {
   static uch ppmline[256];
   int maxval;
 
@@ -125,13 +125,13 @@ int readpng_init (FILE *infile, ulg *pWidth, ulg *pHeight) {
 /* returns 0 if succeeds, 1 if fails due to no bKGD chunk, 2 if libpng error;
  * scales values to 8-bit if necessary */
 
-int readpng_get_bgcolor (uch *red, uch *green, uch *blue) {
+int readpng_get_bgcolor (uch* red, uch* green, uch* blue) {
   return 1;
 }
 
 /* display_exponent == LUT_exponent * CRT_exponent */
 
-uch *readpng_get_image (double display_exponent, int *pChannels, ulg *pRowbytes) {
+uch* readpng_get_image (double display_exponent, int* pChannels, ulg* pRowbytes) {
   ulg rowbytes;
 
 
@@ -153,7 +153,7 @@ uch *readpng_get_image (double display_exponent, int *pChannels, ulg *pRowbytes)
     return NULL;
   }
 
-  if ((image_data = (uch *) malloc (rowbytes * height)) == NULL) {
+  if ((image_data = (uch*) malloc (rowbytes * height)) == NULL) {
     return NULL;
   }
 

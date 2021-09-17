@@ -29,11 +29,11 @@
 
 static int
 png_have_vsx (png_structp png_ptr) {
-  FILE *f;
+  FILE* f;
 
-  const char *string = "altivec supported";
+  const char* string = "altivec supported";
   char input[MAXLINE];
-  char *token = NULL;
+  char* token = NULL;
 
   PNG_UNUSED (png_ptr)
 

@@ -82,7 +82,7 @@ static clock_t g_time = 0;
 /**
  * Hash the d-byte value pointed to by p and mod 2^f into the frequency vector
  */
-static size_t FASTCOVER_hashPtrToIndex (const void *p, U32 f, unsigned d) {
+static size_t FASTCOVER_hashPtrToIndex (const void* p, U32 f, unsigned d) {
   if (d == 6) {
     return ZSTD_hash6Ptr (p, f);
   }
@@ -115,14 +115,14 @@ static const FASTCOVER_accel_t FASTCOVER_defaultAccelParameters[FASTCOVER_MAX_AC
 * Context
 ***************************************/
 typedef struct {
-  const BYTE *samples;
-  size_t *offsets;
-  const size_t *samplesSizes;
+  const BYTE* samples;
+  size_t* offsets;
+  const size_t* samplesSizes;
   size_t nbSamples;
   size_t nbTrainSamples;
   size_t nbTestSamples;
   size_t nbDmers;
-  U32 *freqs;
+  U32* freqs;
   unsigned d;
   unsigned f;
   FASTCOVER_accel_t accelParams;
@@ -143,10 +143,10 @@ typedef struct {
  *
  * Once the dmer with hash value d is in the dictionary we set F(d) = 0.
  */
-static COVER_segment_t FASTCOVER_selectSegment (const FASTCOVER_ctx_t *ctx,
-                                                U32 *freqs, U32 begin, U32 end,
+static COVER_segment_t FASTCOVER_selectSegment (const FASTCOVER_ctx_t* ctx,
+                                                U32* freqs, U32 begin, U32 end,
                                                 ZDICT_cover_params_t parameters,
-                                                U16 *segmentFreqs) {
+                                                U16* segmentFreqs) {
   /* Constants */
   const U32 k = parameters.k;
   const U32 d = parameters.d;
@@ -253,7 +253,7 @@ static int FASTCOVER_checkParameters (ZDICT_cover_params_t parameters,
  * Clean up a context initialized with `FASTCOVER_ctx_init()`.
  */
 static void
-FASTCOVER_ctx_destroy (FASTCOVER_ctx_t *ctx) {
+FASTCOVER_ctx_destroy (FASTCOVER_ctx_t* ctx) {
   if (!ctx)
     return;
 
@@ -268,7 +268,7 @@ FASTCOVER_ctx_destroy (FASTCOVER_ctx_t *ctx) {
  * Calculate for frequency of hash value of each dmer in ctx->samples
  */
 static void
-FASTCOVER_computeFrequency (U32 *freqs, const FASTCOVER_ctx_t *ctx) {
+FASTCOVER_computeFrequency (U32* freqs, const FASTCOVER_ctx_t* ctx) {
   const unsigned f = ctx->f;
   const unsigned d = ctx->d;
   const unsigned skip = ctx->accelParams.skip;
@@ -295,12 +295,12 @@ FASTCOVER_computeFrequency (U32 *freqs, const FASTCOVER_ctx_t *ctx) {
  * The context must be destroyed with `FASTCOVER_ctx_destroy()`.
  */
 static size_t
-FASTCOVER_ctx_init (FASTCOVER_ctx_t *ctx,
-                    const void *samplesBuffer,
-                    const size_t *samplesSizes, unsigned nbSamples,
+FASTCOVER_ctx_init (FASTCOVER_ctx_t* ctx,
+                    const void* samplesBuffer,
+                    const size_t* samplesSizes, unsigned nbSamples,
                     unsigned d, double splitPoint, unsigned f,
                     FASTCOVER_accel_t accelParams) {
-  const BYTE *const samples = (const BYTE *) samplesBuffer;
+  const BYTE* const samples = (const BYTE*) samplesBuffer;
   const size_t totalSamplesSize = COVER_sum (samplesSizes, nbSamples);
   /* Split samples into testing and training sets */
   const unsigned nbTrainSamples = splitPoint < 1.0 ? (unsigned) ((double) nbSamples * splitPoint) : nbSamples;
@@ -347,7 +347,7 @@ FASTCOVER_ctx_init (FASTCOVER_ctx_t *ctx,
   ctx->accelParams = accelParams;
 
   /* The offsets of each file */
-  ctx->offsets = (size_t *) calloc ((nbSamples + 1), sizeof (size_t));
+  ctx->offsets = (size_t*) calloc ((nbSamples + 1), sizeof (size_t));
   if (ctx->offsets == NULL) {
     DISPLAYLEVEL(1, "Failed to allocate scratch buffers \n");
     FASTCOVER_ctx_destroy (ctx);
@@ -365,7 +365,7 @@ FASTCOVER_ctx_init (FASTCOVER_ctx_t *ctx,
   }
 
   /* Initialize frequency array of size 2^f */
-  ctx->freqs = (U32 *) calloc (((U64) 1 << f), sizeof (U32));
+  ctx->freqs = (U32*) calloc (((U64) 1 << f), sizeof (U32));
   if (ctx->freqs == NULL) {
     DISPLAYLEVEL(1, "Failed to allocate frequency table \n");
     FASTCOVER_ctx_destroy (ctx);
@@ -382,12 +382,12 @@ FASTCOVER_ctx_init (FASTCOVER_ctx_t *ctx,
  * Given the prepared context build the dictionary.
  */
 static size_t
-FASTCOVER_buildDictionary (const FASTCOVER_ctx_t *ctx,
-                           U32 *freqs,
-                           void *dictBuffer, size_t dictBufferCapacity,
+FASTCOVER_buildDictionary (const FASTCOVER_ctx_t* ctx,
+                           U32* freqs,
+                           void* dictBuffer, size_t dictBufferCapacity,
                            ZDICT_cover_params_t parameters,
-                           U16 *segmentFreqs) {
-  BYTE *const dict = (BYTE *) dictBuffer;
+                           U16* segmentFreqs) {
+  BYTE* const dict = (BYTE*) dictBuffer;
   size_t tail = dictBufferCapacity;
   /* Divide the data into epochs. We will select one segment from each epoch. */
   const COVER_epoch_info_t epochs = COVER_computeEpochs (
@@ -442,8 +442,8 @@ FASTCOVER_buildDictionary (const FASTCOVER_ctx_t *ctx,
  * Parameters for FASTCOVER_tryParameters().
  */
 typedef struct FASTCOVER_tryParameters_data_s {
-  const FASTCOVER_ctx_t *ctx;
-  COVER_best_t *best;
+  const FASTCOVER_ctx_t* ctx;
+  COVER_best_t* best;
   size_t dictBufferCapacity;
   ZDICT_cover_params_t parameters;
 } FASTCOVER_tryParameters_data_t;
@@ -453,19 +453,19 @@ typedef struct FASTCOVER_tryParameters_data_s {
  * This function is thread safe if zstd is compiled with multithreaded support.
  * It takes its parameters as an *OWNING* opaque pointer to support threading.
  */
-static void FASTCOVER_tryParameters (void *opaque) {
+static void FASTCOVER_tryParameters (void* opaque) {
   /* Save parameters as local variables */
-  FASTCOVER_tryParameters_data_t *const data = (FASTCOVER_tryParameters_data_t *) opaque;
-  const FASTCOVER_ctx_t *const ctx = data->ctx;
+  FASTCOVER_tryParameters_data_t* const data = (FASTCOVER_tryParameters_data_t*) opaque;
+  const FASTCOVER_ctx_t* const ctx = data->ctx;
   const ZDICT_cover_params_t parameters = data->parameters;
   size_t dictBufferCapacity = data->dictBufferCapacity;
   size_t totalCompressedSize = ERROR(GENERIC);
   /* Initialize array to keep track of frequency of dmer within activeSegment */
-  U16 *segmentFreqs = (U16 *) calloc (((U64) 1 << ctx->f), sizeof (U16));
+  U16* segmentFreqs = (U16*) calloc (((U64) 1 << ctx->f), sizeof (U16));
   /* Allocate space for hash table, dict, and freqs */
-  BYTE *const dict = (BYTE *) malloc (dictBufferCapacity);
+  BYTE* const dict = (BYTE*) malloc (dictBufferCapacity);
   COVER_dictSelection_t selection = COVER_dictSelectionError (ERROR(GENERIC));
-  U32 *freqs = (U32 *) malloc (((U64) 1 << ctx->f) * sizeof (U32));
+  U32* freqs = (U32*) malloc (((U64) 1 << ctx->f) * sizeof (U32));
   if (!segmentFreqs || !dict || !freqs) {
     DISPLAYLEVEL(1, "Failed to allocate buffers: out of memory\n");
     goto _cleanup;
@@ -498,7 +498,7 @@ static void FASTCOVER_tryParameters (void *opaque) {
 
 static void
 FASTCOVER_convertToCoverParams (ZDICT_fastCover_params_t fastCoverParams,
-                                ZDICT_cover_params_t *coverParams) {
+                                ZDICT_cover_params_t* coverParams) {
   coverParams->k = fastCoverParams.k;
   coverParams->d = fastCoverParams.d;
   coverParams->steps = fastCoverParams.steps;
@@ -510,7 +510,7 @@ FASTCOVER_convertToCoverParams (ZDICT_fastCover_params_t fastCoverParams,
 
 static void
 FASTCOVER_convertToFastCoverParams (ZDICT_cover_params_t coverParams,
-                                    ZDICT_fastCover_params_t *fastCoverParams,
+                                    ZDICT_fastCover_params_t* fastCoverParams,
                                     unsigned f, unsigned accel) {
   fastCoverParams->k = coverParams.k;
   fastCoverParams->d = coverParams.d;
@@ -524,11 +524,11 @@ FASTCOVER_convertToFastCoverParams (ZDICT_cover_params_t coverParams,
 }
 
 ZDICTLIB_API size_t
-ZDICT_trainFromBuffer_fastCover (void *dictBuffer, size_t dictBufferCapacity,
-                                 const void *samplesBuffer,
-                                 const size_t *samplesSizes, unsigned nbSamples,
+ZDICT_trainFromBuffer_fastCover (void* dictBuffer, size_t dictBufferCapacity,
+                                 const void* samplesBuffer,
+                                 const size_t* samplesSizes, unsigned nbSamples,
                                  ZDICT_fastCover_params_t parameters) {
-  BYTE *const dict = (BYTE *) dictBuffer;
+  BYTE* const dict = (BYTE*) dictBuffer;
   FASTCOVER_ctx_t ctx;
   ZDICT_cover_params_t coverParams;
   FASTCOVER_accel_t accelParams;
@@ -573,7 +573,7 @@ ZDICT_trainFromBuffer_fastCover (void *dictBuffer, size_t dictBufferCapacity,
   DISPLAYLEVEL(2, "Building dictionary\n");
   {
     /* Initialize array to keep track of frequency of dmer within activeSegment */
-    U16 *segmentFreqs = (U16 *) calloc (((U64) 1 << parameters.f), sizeof (U16));
+    U16* segmentFreqs = (U16*) calloc (((U64) 1 << parameters.f), sizeof (U16));
     const size_t tail = FASTCOVER_buildDictionary (&ctx, ctx.freqs, dictBuffer,
                                                    dictBufferCapacity, coverParams, segmentFreqs);
     const unsigned nbFinalizeSamples = (unsigned) (ctx.nbTrainSamples * ctx.accelParams.finalize / 100);
@@ -592,10 +592,10 @@ ZDICT_trainFromBuffer_fastCover (void *dictBuffer, size_t dictBufferCapacity,
 
 ZDICTLIB_API size_t
 ZDICT_optimizeTrainFromBuffer_fastCover (
-    void *dictBuffer, size_t dictBufferCapacity,
-    const void *samplesBuffer,
-    const size_t *samplesSizes, unsigned nbSamples,
-    ZDICT_fastCover_params_t *parameters) {
+    void* dictBuffer, size_t dictBufferCapacity,
+    const void* samplesBuffer,
+    const size_t* samplesSizes, unsigned nbSamples,
+    ZDICT_fastCover_params_t* parameters) {
   ZDICT_cover_params_t coverParams;
   FASTCOVER_accel_t accelParams;
   /* constants */
@@ -619,7 +619,7 @@ ZDICT_optimizeTrainFromBuffer_fastCover (
   unsigned d;
   unsigned k;
   COVER_best_t best;
-  POOL_ctx *pool = NULL;
+  POOL_ctx* pool = NULL;
   int warned = 0;
   /* Checks */
   if (splitPoint <= 0 || splitPoint > 1) {
@@ -679,7 +679,7 @@ ZDICT_optimizeTrainFromBuffer_fastCover (
     /* Loop through k reusing the same context */
     for (k = kMinK; k <= kMaxK; k += kStepSize) {
       /* Prepare the arguments */
-      FASTCOVER_tryParameters_data_t *data = (FASTCOVER_tryParameters_data_t *) malloc (
+      FASTCOVER_tryParameters_data_t* data = (FASTCOVER_tryParameters_data_t*) malloc (
           sizeof (FASTCOVER_tryParameters_data_t));
       LOCALDISPLAYLEVEL(displayLevel, 3, "k=%u\n", k);
       if (!data) {

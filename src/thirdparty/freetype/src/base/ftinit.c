@@ -66,7 +66,7 @@
 #define FT_USE_MODULE(type, x)  (const FT_Module_Class*)&(x),
 
 static
-const FT_Module_Class *const ft_default_modules[] =
+const FT_Module_Class* const ft_default_modules[] =
     {
 #include FT_CONFIG_MODULES_H
         0
@@ -78,13 +78,13 @@ const FT_Module_Class *const ft_default_modules[] =
 FT_EXPORT_DEF(void)
 FT_Add_Default_Modules (FT_Library library) {
   FT_Error error;
-  const FT_Module_Class *const *cur;
+  const FT_Module_Class* const* cur;
 
 
   /* GCC 4.6 warns the type difference:
    *   FT_Module_Class** != const FT_Module_Class* const*
    */
-  cur = (const FT_Module_Class *const *) ft_default_modules;
+  cur = (const FT_Module_Class* const*) ft_default_modules;
 
   /* test for valid `library' delayed to FT_Add_Module() */
   while (*cur) {
@@ -106,9 +106,9 @@ FT_Add_Default_Modules (FT_Library library) {
 
 FT_EXPORT_DEF(void)
 FT_Set_Default_Properties (FT_Library library) {
-  const char *env;
-  const char *p;
-  const char *q;
+  const char* env;
+  const char* p;
+  const char* q;
 
   char module_name[MAX_LENGTH + 1];
   char property_name[MAX_LENGTH + 1];
@@ -186,7 +186,7 @@ FT_Set_Default_Properties( FT_Library  library )
 /* documentation is in freetype.h */
 
 FT_EXPORT_DEF(FT_Error)
-FT_Init_FreeType (FT_Library *alibrary) {
+FT_Init_FreeType (FT_Library* alibrary) {
   FT_Error error;
   FT_Memory memory;
 

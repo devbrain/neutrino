@@ -46,11 +46,11 @@ typedef struct {
      * This is NULL if Stream Flags have not been set for
      * this Stream with lzma_index_stream_flags().
      */
-    const lzma_stream_flags *flags;
+    const lzma_stream_flags* flags;
 
-    const void *reserved_ptr1;
-    const void *reserved_ptr2;
-    const void *reserved_ptr3;
+    const void* reserved_ptr1;
+    const void* reserved_ptr2;
+    const void* reserved_ptr3;
 
     /**
      * \brief       Stream number in the lzma_index
@@ -199,10 +199,10 @@ typedef struct {
     lzma_vli reserved_vli3;
     lzma_vli reserved_vli4;
 
-    const void *reserved_ptr1;
-    const void *reserved_ptr2;
-    const void *reserved_ptr3;
-    const void *reserved_ptr4;
+    const void* reserved_ptr1;
+    const void* reserved_ptr2;
+    const void* reserved_ptr3;
+    const void* reserved_ptr4;
   } block;
 
   /*
@@ -211,7 +211,7 @@ typedef struct {
    * touch these in any way.
    */
   union {
-    const void *p;
+    const void* p;
     size_t s;
     lzma_vli v;
   } internal[6];
@@ -288,7 +288,7 @@ extern LZMA_API(uint64_t) lzma_index_memusage (
  * This is a shorthand for lzma_index_memusage(lzma_index_stream_count(i),
  * lzma_index_block_count(i)).
  */
-extern LZMA_API(uint64_t) lzma_index_memused (const lzma_index *i)
+extern LZMA_API(uint64_t) lzma_index_memused (const lzma_index* i)
 lzma_nothrow;
 
 /**
@@ -297,7 +297,7 @@ lzma_nothrow;
  * \return      On success, a pointer to an empty initialized lzma_index is
  *              returned. If allocation fails, NULL is returned.
  */
-extern LZMA_API(lzma_index *)lzma_index_init (const lzma_allocator *allocator)
+extern LZMA_API(lzma_index *) lzma_index_init (const lzma_allocator* allocator)
 lzma_nothrow;
 
 /**
@@ -306,7 +306,7 @@ lzma_nothrow;
  * If i is NULL, this does nothing.
  */
 extern LZMA_API(void) lzma_index_end (
-    lzma_index *i, const lzma_allocator *allocator) lzma_nothrow;
+    lzma_index* i, const lzma_allocator* allocator) lzma_nothrow;
 
 /**
  * \brief       Add a new Block to lzma_index
@@ -333,7 +333,7 @@ extern LZMA_API(void) lzma_index_end (
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_index_append (
-    lzma_index *i, const lzma_allocator *allocator,
+    lzma_index* i, const lzma_allocator* allocator,
     lzma_vli unpadded_size, lzma_vli uncompressed_size)
 lzma_nothrow lzma_attr_warn_unused_result;
 
@@ -354,7 +354,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_index_stream_flags (
-    lzma_index *i, const lzma_stream_flags *stream_flags)
+    lzma_index* i, const lzma_stream_flags* stream_flags)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -367,7 +367,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *
  * The bitmask is 1 << check_id, e.g. CRC32 is 1 << 1 and SHA-256 is 1 << 10.
  */
-extern LZMA_API(uint32_t) lzma_index_checks (const lzma_index *i)
+extern LZMA_API(uint32_t) lzma_index_checks (const lzma_index* i)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -384,13 +384,13 @@ lzma_nothrow lzma_attr_pure;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_index_stream_padding (
-    lzma_index *i, lzma_vli stream_padding)
+    lzma_index* i, lzma_vli stream_padding)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
  * \brief       Get the number of Streams
  */
-extern LZMA_API(lzma_vli) lzma_index_stream_count (const lzma_index *i)
+extern LZMA_API(lzma_vli) lzma_index_stream_count (const lzma_index* i)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -399,7 +399,7 @@ lzma_nothrow lzma_attr_pure;
  * This returns the total number of Blocks in lzma_index. To get number
  * of Blocks in individual Streams, use lzma_index_iter.
  */
-extern LZMA_API(lzma_vli) lzma_index_block_count (const lzma_index *i)
+extern LZMA_API(lzma_vli) lzma_index_block_count (const lzma_index* i)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -407,7 +407,7 @@ lzma_nothrow lzma_attr_pure;
  *
  * This is needed to verify the Backward Size field in the Stream Footer.
  */
-extern LZMA_API(lzma_vli) lzma_index_size (const lzma_index *i)
+extern LZMA_API(lzma_vli) lzma_index_size (const lzma_index* i)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -417,7 +417,7 @@ lzma_nothrow lzma_attr_pure;
  * were in a single Stream. This is useful if you are going to combine
  * Blocks from multiple Streams into a single new Stream.
  */
-extern LZMA_API(lzma_vli) lzma_index_stream_size (const lzma_index *i)
+extern LZMA_API(lzma_vli) lzma_index_stream_size (const lzma_index* i)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -426,7 +426,7 @@ lzma_nothrow lzma_attr_pure;
  * This doesn't include the Stream Header, Stream Footer, Stream Padding,
  * or Index fields.
  */
-extern LZMA_API(lzma_vli) lzma_index_total_size (const lzma_index *i)
+extern LZMA_API(lzma_vli) lzma_index_total_size (const lzma_index* i)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -437,13 +437,13 @@ lzma_nothrow lzma_attr_pure;
  * If multiple lzma_indexes have been combined, this includes also the headers
  * of each separate Stream and the possible Stream Padding fields.
  */
-extern LZMA_API(lzma_vli) lzma_index_file_size (const lzma_index *i)
+extern LZMA_API(lzma_vli) lzma_index_file_size (const lzma_index* i)
 lzma_nothrow lzma_attr_pure;
 
 /**
  * \brief       Get the uncompressed size of the file
  */
-extern LZMA_API(lzma_vli) lzma_index_uncompressed_size (const lzma_index *i)
+extern LZMA_API(lzma_vli) lzma_index_uncompressed_size (const lzma_index* i)
 lzma_nothrow lzma_attr_pure;
 
 /**
@@ -466,7 +466,7 @@ lzma_nothrow lzma_attr_pure;
  * to easily restart reading at some particular position.
  */
 extern LZMA_API(void) lzma_index_iter_init (
-    lzma_index_iter *iter, const lzma_index *i) lzma_nothrow;
+    lzma_index_iter* iter, const lzma_index* i) lzma_nothrow;
 
 /**
  * \brief       Rewind the iterator
@@ -474,7 +474,7 @@ extern LZMA_API(void) lzma_index_iter_init (
  * Rewind the iterator so that next call to lzma_index_iter_next() will
  * return the first Block or Stream.
  */
-extern LZMA_API(void) lzma_index_iter_rewind (lzma_index_iter *iter)
+extern LZMA_API(void) lzma_index_iter_rewind (lzma_index_iter* iter)
 lzma_nothrow;
 
 /**
@@ -491,7 +491,7 @@ lzma_nothrow;
  *              value, *iter is not modified and this function returns true.
  */
 extern LZMA_API(lzma_bool) lzma_index_iter_next (
-    lzma_index_iter *iter, lzma_index_iter_mode mode)
+    lzma_index_iter* iter, lzma_index_iter_mode mode)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -518,7 +518,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  * is not modified, and this function returns true.
  */
 extern LZMA_API(lzma_bool) lzma_index_iter_locate (
-    lzma_index_iter *iter, lzma_vli target) lzma_nothrow;
+    lzma_index_iter* iter, lzma_vli target) lzma_nothrow;
 
 /**
  * \brief       Concatenate lzma_indexes
@@ -541,8 +541,8 @@ extern LZMA_API(lzma_bool) lzma_index_iter_locate (
  *              - LZMA_MEM_ERROR
  *              - LZMA_PROG_ERROR
  */
-extern LZMA_API(lzma_ret) lzma_index_cat (lzma_index *dest, lzma_index *src,
-                                          const lzma_allocator *allocator)
+extern LZMA_API(lzma_ret) lzma_index_cat (lzma_index* dest, lzma_index* src,
+                                          const lzma_allocator* allocator)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -550,8 +550,8 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *
  * \return      A copy of the lzma_index, or NULL if memory allocation failed.
  */
-extern LZMA_API(lzma_index *)lzma_index_dup (
-    const lzma_index *i, const lzma_allocator *allocator)
+extern LZMA_API(lzma_index *) lzma_index_dup (
+    const lzma_index* i, const lzma_allocator* allocator)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -568,7 +568,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              - LZMA_PROG_ERROR
  */
 extern LZMA_API(lzma_ret) lzma_index_encoder (
-    lzma_stream *strm, const lzma_index *i)
+    lzma_stream* strm, const lzma_index* i)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -600,7 +600,7 @@ lzma_nothrow lzma_attr_warn_unused_result;
  *              initialization function.
  */
 extern LZMA_API(lzma_ret) lzma_index_decoder (
-    lzma_stream *strm, lzma_index **i, uint64_t memlimit)
+    lzma_stream* strm, lzma_index** i, uint64_t memlimit)
 lzma_nothrow lzma_attr_warn_unused_result;
 
 /**
@@ -622,8 +622,8 @@ lzma_nothrow lzma_attr_warn_unused_result;
  * \note        This function doesn't take allocator argument since all
  *              the internal data is allocated on stack.
  */
-extern LZMA_API(lzma_ret) lzma_index_buffer_encode (const lzma_index *i,
-                                                    uint8_t *out, size_t *out_pos, size_t out_size) lzma_nothrow;
+extern LZMA_API(lzma_ret) lzma_index_buffer_encode (const lzma_index* i,
+                                                    uint8_t* out, size_t* out_pos, size_t out_size) lzma_nothrow;
 
 /**
  * \brief       Single-call .xz Index decoder
@@ -652,7 +652,7 @@ extern LZMA_API(lzma_ret) lzma_index_buffer_encode (const lzma_index *i,
  *              - LZMA_DATA_ERROR
  *              - LZMA_PROG_ERROR
  */
-extern LZMA_API(lzma_ret) lzma_index_buffer_decode (lzma_index **i,
-                                                    uint64_t *memlimit, const lzma_allocator *allocator,
-                                                    const uint8_t *in, size_t *in_pos, size_t in_size)
+extern LZMA_API(lzma_ret) lzma_index_buffer_decode (lzma_index** i,
+                                                    uint64_t* memlimit, const lzma_allocator* allocator,
+                                                    const uint8_t* in, size_t* in_pos, size_t in_size)
 lzma_nothrow;

@@ -38,7 +38,7 @@ FT_BEGIN_HEADER
 /*************************************************************************/
 
 /* handle to a validation object */
-typedef struct FT_ValidatorRec_ volatile *FT_Validator;
+typedef struct FT_ValidatorRec_ volatile* FT_Validator;
 
 /**************************************************************************
  *
@@ -84,8 +84,8 @@ typedef enum FT_ValidationLevel_ {
 typedef struct FT_ValidatorRec_ {
   ft_jmp_buf jump_buffer; /* used for exception handling      */
 
-  const FT_Byte *base;        /* address of table in memory       */
-  const FT_Byte *limit;       /* `base' + sizeof(table) in memory */
+  const FT_Byte* base;        /* address of table in memory       */
+  const FT_Byte* limit;       /* `base' + sizeof(table) in memory */
   FT_ValidationLevel level;       /* validation level                 */
   FT_Error error;       /* error returned. 0 means success  */
 
@@ -99,8 +99,8 @@ typedef struct FT_ValidatorRec_ {
 
 FT_BASE(void)
 ft_validator_init (FT_Validator valid,
-                   const FT_Byte *base,
-                   const FT_Byte *limit,
+                   const FT_Byte* base,
+                   const FT_Byte* limit,
                    FT_ValidationLevel level);
 
 /* Do not use this. It's broken and will cause your validator to crash */

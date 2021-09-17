@@ -289,40 +289,40 @@ typedef struct hb_unicode_funcs_t hb_unicode_funcs_t;
 /*
  * just give me the best implementation you've got there.
  */
-HB_EXTERN hb_unicode_funcs_t *
+HB_EXTERN hb_unicode_funcs_t*
 hb_unicode_funcs_get_default (void);
 
-HB_EXTERN hb_unicode_funcs_t *
-hb_unicode_funcs_create (hb_unicode_funcs_t *parent);
+HB_EXTERN hb_unicode_funcs_t*
+hb_unicode_funcs_create (hb_unicode_funcs_t* parent);
 
-HB_EXTERN hb_unicode_funcs_t *
+HB_EXTERN hb_unicode_funcs_t*
 hb_unicode_funcs_get_empty (void);
 
-HB_EXTERN hb_unicode_funcs_t *
-hb_unicode_funcs_reference (hb_unicode_funcs_t *ufuncs);
+HB_EXTERN hb_unicode_funcs_t*
+hb_unicode_funcs_reference (hb_unicode_funcs_t* ufuncs);
 
 HB_EXTERN void
-hb_unicode_funcs_destroy (hb_unicode_funcs_t *ufuncs);
+hb_unicode_funcs_destroy (hb_unicode_funcs_t* ufuncs);
 
 HB_EXTERN hb_bool_t
-hb_unicode_funcs_set_user_data (hb_unicode_funcs_t *ufuncs,
-                                hb_user_data_key_t *key,
-                                void *data,
+hb_unicode_funcs_set_user_data (hb_unicode_funcs_t* ufuncs,
+                                hb_user_data_key_t* key,
+                                void* data,
                                 hb_destroy_func_t destroy,
                                 hb_bool_t replace);
 
-HB_EXTERN void *
-hb_unicode_funcs_get_user_data (hb_unicode_funcs_t *ufuncs,
-                                hb_user_data_key_t *key);
+HB_EXTERN void*
+hb_unicode_funcs_get_user_data (hb_unicode_funcs_t* ufuncs,
+                                hb_user_data_key_t* key);
 
 HB_EXTERN void
-hb_unicode_funcs_make_immutable (hb_unicode_funcs_t *ufuncs);
+hb_unicode_funcs_make_immutable (hb_unicode_funcs_t* ufuncs);
 
 HB_EXTERN hb_bool_t
-hb_unicode_funcs_is_immutable (hb_unicode_funcs_t *ufuncs);
+hb_unicode_funcs_is_immutable (hb_unicode_funcs_t* ufuncs);
 
-HB_EXTERN hb_unicode_funcs_t *
-hb_unicode_funcs_get_parent (hb_unicode_funcs_t *ufuncs);
+HB_EXTERN hb_unicode_funcs_t*
+hb_unicode_funcs_get_parent (hb_unicode_funcs_t* ufuncs);
 
 
 /*
@@ -345,9 +345,9 @@ hb_unicode_funcs_get_parent (hb_unicode_funcs_t *ufuncs);
  * Return value: The #hb_unicode_combining_class_t of @unicode
  * 
  **/
-typedef hb_unicode_combining_class_t    (*hb_unicode_combining_class_func_t) (hb_unicode_funcs_t *ufuncs,
-                                                                              hb_codepoint_t unicode,
-                                                                              void *user_data);
+typedef hb_unicode_combining_class_t    (* hb_unicode_combining_class_func_t) (hb_unicode_funcs_t* ufuncs,
+                                                                               hb_codepoint_t unicode,
+                                                                               void* user_data);
 
 /**
  * hb_unicode_general_category_func_t:
@@ -363,9 +363,9 @@ typedef hb_unicode_combining_class_t    (*hb_unicode_combining_class_func_t) (hb
  * Return value: The #hb_unicode_general_category_t of @unicode
  *
  **/
-typedef hb_unicode_general_category_t    (*hb_unicode_general_category_func_t) (hb_unicode_funcs_t *ufuncs,
-                                                                                hb_codepoint_t unicode,
-                                                                                void *user_data);
+typedef hb_unicode_general_category_t    (* hb_unicode_general_category_func_t) (hb_unicode_funcs_t* ufuncs,
+                                                                                 hb_codepoint_t unicode,
+                                                                                 void* user_data);
 
 /**
  * hb_unicode_mirroring_func_t:
@@ -385,9 +385,9 @@ typedef hb_unicode_general_category_t    (*hb_unicode_general_category_func_t) (
  * Return value: The #hb_codepoint_t of the Mirroring Glyph for @unicode
  *
  **/
-typedef hb_codepoint_t            (*hb_unicode_mirroring_func_t) (hb_unicode_funcs_t *ufuncs,
-                                                                  hb_codepoint_t unicode,
-                                                                  void *user_data);
+typedef hb_codepoint_t            (* hb_unicode_mirroring_func_t) (hb_unicode_funcs_t* ufuncs,
+                                                                   hb_codepoint_t unicode,
+                                                                   void* user_data);
 
 /**
  * hb_unicode_script_func_t:
@@ -403,9 +403,9 @@ typedef hb_codepoint_t            (*hb_unicode_mirroring_func_t) (hb_unicode_fun
  * Return value: The #hb_script_t of @unicode
  * 
  **/
-typedef hb_script_t            (*hb_unicode_script_func_t) (hb_unicode_funcs_t *ufuncs,
-                                                            hb_codepoint_t unicode,
-                                                            void *user_data);
+typedef hb_script_t            (* hb_unicode_script_func_t) (hb_unicode_funcs_t* ufuncs,
+                                                             hb_codepoint_t unicode,
+                                                             void* user_data);
 
 /**
  * hb_unicode_compose_func_t:
@@ -426,11 +426,11 @@ typedef hb_script_t            (*hb_unicode_script_func_t) (hb_unicode_funcs_t *
  * Return value: %true is @a,@b composed, %false otherwise
  *
  **/
-typedef hb_bool_t            (*hb_unicode_compose_func_t) (hb_unicode_funcs_t *ufuncs,
-                                                           hb_codepoint_t a,
-                                                           hb_codepoint_t b,
-                                                           hb_codepoint_t *ab,
-                                                           void *user_data);
+typedef hb_bool_t            (* hb_unicode_compose_func_t) (hb_unicode_funcs_t* ufuncs,
+                                                            hb_codepoint_t a,
+                                                            hb_codepoint_t b,
+                                                            hb_codepoint_t* ab,
+                                                            void* user_data);
 
 /**
  * hb_unicode_decompose_func_t:
@@ -450,11 +450,11 @@ typedef hb_bool_t            (*hb_unicode_compose_func_t) (hb_unicode_funcs_t *u
  * Return value: %true if @ab decomposed, %false otherwise
  *
  **/
-typedef hb_bool_t            (*hb_unicode_decompose_func_t) (hb_unicode_funcs_t *ufuncs,
-                                                             hb_codepoint_t ab,
-                                                             hb_codepoint_t *a,
-                                                             hb_codepoint_t *b,
-                                                             void *user_data);
+typedef hb_bool_t            (* hb_unicode_decompose_func_t) (hb_unicode_funcs_t* ufuncs,
+                                                              hb_codepoint_t ab,
+                                                              hb_codepoint_t* a,
+                                                              hb_codepoint_t* b,
+                                                              void* user_data);
 
 /* func setters */
 
@@ -470,9 +470,9 @@ typedef hb_bool_t            (*hb_unicode_decompose_func_t) (hb_unicode_funcs_t 
  * Since: 0.9.2
  **/
 HB_EXTERN void
-hb_unicode_funcs_set_combining_class_func (hb_unicode_funcs_t *ufuncs,
+hb_unicode_funcs_set_combining_class_func (hb_unicode_funcs_t* ufuncs,
                                            hb_unicode_combining_class_func_t func,
-                                           void *user_data, hb_destroy_func_t destroy);
+                                           void* user_data, hb_destroy_func_t destroy);
 
 /**
  * hb_unicode_funcs_set_general_category_func:
@@ -486,9 +486,9 @@ hb_unicode_funcs_set_combining_class_func (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 HB_EXTERN void
-hb_unicode_funcs_set_general_category_func (hb_unicode_funcs_t *ufuncs,
+hb_unicode_funcs_set_general_category_func (hb_unicode_funcs_t* ufuncs,
                                             hb_unicode_general_category_func_t func,
-                                            void *user_data, hb_destroy_func_t destroy);
+                                            void* user_data, hb_destroy_func_t destroy);
 
 /**
  * hb_unicode_funcs_set_mirroring_func:
@@ -502,9 +502,9 @@ hb_unicode_funcs_set_general_category_func (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 HB_EXTERN void
-hb_unicode_funcs_set_mirroring_func (hb_unicode_funcs_t *ufuncs,
+hb_unicode_funcs_set_mirroring_func (hb_unicode_funcs_t* ufuncs,
                                      hb_unicode_mirroring_func_t func,
-                                     void *user_data, hb_destroy_func_t destroy);
+                                     void* user_data, hb_destroy_func_t destroy);
 
 /**
  * hb_unicode_funcs_set_script_func:
@@ -518,9 +518,9 @@ hb_unicode_funcs_set_mirroring_func (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 HB_EXTERN void
-hb_unicode_funcs_set_script_func (hb_unicode_funcs_t *ufuncs,
+hb_unicode_funcs_set_script_func (hb_unicode_funcs_t* ufuncs,
                                   hb_unicode_script_func_t func,
-                                  void *user_data, hb_destroy_func_t destroy);
+                                  void* user_data, hb_destroy_func_t destroy);
 
 /**
  * hb_unicode_funcs_set_compose_func:
@@ -534,9 +534,9 @@ hb_unicode_funcs_set_script_func (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 HB_EXTERN void
-hb_unicode_funcs_set_compose_func (hb_unicode_funcs_t *ufuncs,
+hb_unicode_funcs_set_compose_func (hb_unicode_funcs_t* ufuncs,
                                    hb_unicode_compose_func_t func,
-                                   void *user_data, hb_destroy_func_t destroy);
+                                   void* user_data, hb_destroy_func_t destroy);
 
 /**
  * hb_unicode_funcs_set_decompose_func:
@@ -550,9 +550,9 @@ hb_unicode_funcs_set_compose_func (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 HB_EXTERN void
-hb_unicode_funcs_set_decompose_func (hb_unicode_funcs_t *ufuncs,
+hb_unicode_funcs_set_decompose_func (hb_unicode_funcs_t* ufuncs,
                                      hb_unicode_decompose_func_t func,
-                                     void *user_data, hb_destroy_func_t destroy);
+                                     void* user_data, hb_destroy_func_t destroy);
 
 /* accessors */
 
@@ -569,7 +569,7 @@ hb_unicode_funcs_set_decompose_func (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 HB_EXTERN hb_unicode_combining_class_t
-hb_unicode_combining_class (hb_unicode_funcs_t *ufuncs,
+hb_unicode_combining_class (hb_unicode_funcs_t* ufuncs,
                             hb_codepoint_t unicode);
 
 /**
@@ -585,7 +585,7 @@ hb_unicode_combining_class (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 HB_EXTERN hb_unicode_general_category_t
-hb_unicode_general_category (hb_unicode_funcs_t *ufuncs,
+hb_unicode_general_category (hb_unicode_funcs_t* ufuncs,
                              hb_codepoint_t unicode);
 
 /**
@@ -601,7 +601,7 @@ hb_unicode_general_category (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 HB_EXTERN hb_codepoint_t
-hb_unicode_mirroring (hb_unicode_funcs_t *ufuncs,
+hb_unicode_mirroring (hb_unicode_funcs_t* ufuncs,
                       hb_codepoint_t unicode);
 
 /**
@@ -617,20 +617,20 @@ hb_unicode_mirroring (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 HB_EXTERN hb_script_t
-hb_unicode_script (hb_unicode_funcs_t *ufuncs,
+hb_unicode_script (hb_unicode_funcs_t* ufuncs,
                    hb_codepoint_t unicode);
 
 HB_EXTERN hb_bool_t
-hb_unicode_compose (hb_unicode_funcs_t *ufuncs,
+hb_unicode_compose (hb_unicode_funcs_t* ufuncs,
                     hb_codepoint_t a,
                     hb_codepoint_t b,
-                    hb_codepoint_t *ab);
+                    hb_codepoint_t* ab);
 
 HB_EXTERN hb_bool_t
-hb_unicode_decompose (hb_unicode_funcs_t *ufuncs,
+hb_unicode_decompose (hb_unicode_funcs_t* ufuncs,
                       hb_codepoint_t ab,
-                      hb_codepoint_t *a,
-                      hb_codepoint_t *b);
+                      hb_codepoint_t* a,
+                      hb_codepoint_t* b);
 
 HB_END_DECLS
 

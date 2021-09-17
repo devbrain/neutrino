@@ -28,15 +28,13 @@
 
 #include "hb-ot-shape-complex-syllabic.hh"
 
-
 void
-hb_syllabic_insert_dotted_circles (hb_font_t *font,
-				   hb_buffer_t *buffer,
-				   unsigned int broken_syllable_type,
-				   unsigned int dottedcircle_category,
-				   int repha_category,
-				   int dottedcircle_position)
-{
+hb_syllabic_insert_dotted_circles (hb_font_t* font,
+                                   hb_buffer_t* buffer,
+                                   unsigned int broken_syllable_type,
+                                   unsigned int dottedcircle_category,
+                                   int repha_category,
+                                   int dottedcircle_position) {
   if (unlikely (buffer->flags & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
     return;
 
@@ -44,16 +42,14 @@ hb_syllabic_insert_dotted_circles (hb_font_t *font,
    * TODO Use a buffer scratch flag to remove the loop. */
   bool has_broken_syllables = false;
   unsigned int count = buffer->len;
-  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_info_t* info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
-    if ((info[i].syllable() & 0x0F) == broken_syllable_type)
-    {
+    if ((info[i].syllable() & 0x0F) == broken_syllable_type) {
       has_broken_syllables = true;
       break;
     }
   if (likely (!has_broken_syllables))
     return;
-
 
   hb_codepoint_t dottedcircle_glyph;
   if (!font->get_nominal_glyph (0x25CCu, &dottedcircle_glyph))
@@ -70,25 +66,22 @@ hb_syllabic_insert_dotted_circles (hb_font_t *font,
 
   buffer->idx = 0;
   unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len && buffer->successful)
-  {
-    unsigned int syllable = buffer->cur().syllable();
-    if (unlikely (last_syllable != syllable && (syllable & 0x0F) == broken_syllable_type))
-    {
+  while (buffer->idx < buffer->len && buffer->successful) {
+    unsigned int syllable = buffer->cur ().syllable();
+    if (unlikely (last_syllable != syllable && (syllable & 0x0F) == broken_syllable_type)) {
       last_syllable = syllable;
 
       hb_glyph_info_t ginfo = dottedcircle;
-      ginfo.cluster = buffer->cur().cluster;
-      ginfo.mask = buffer->cur().mask;
-      ginfo.syllable() = buffer->cur().syllable();
+      ginfo.cluster = buffer->cur ().cluster;
+      ginfo.mask = buffer->cur ().mask;
+      ginfo.syllable() = buffer->cur ().syllable();
 
       /* Insert dottedcircle after possible Repha. */
-      if (repha_category != -1)
-      {
-	while (buffer->idx < buffer->len && buffer->successful &&
-	       last_syllable == buffer->cur().syllable() &&
-	       buffer->cur().complex_var_u8_category() == (unsigned) repha_category)
-	  (void) buffer->next_glyph ();
+      if (repha_category != -1) {
+        while (buffer->idx < buffer->len && buffer->successful &&
+               last_syllable == buffer->cur ().syllable() &&
+               buffer->cur ().complex_var_u8_category() == (unsigned) repha_category)
+          (void) buffer->next_glyph ();
       }
 
       (void) buffer->output_info (ginfo);
@@ -98,6 +91,5 @@ hb_syllabic_insert_dotted_circles (hb_font_t *font,
   }
   buffer->swap_buffers ();
 }
-
 
 #endif

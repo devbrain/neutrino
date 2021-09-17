@@ -32,26 +32,31 @@
 #include "hb-ot-layout-common.hh"
 
 template <typename T>
-struct array_iter_t : hb_iter_with_fallback_t<array_iter_t<T>, T &> {
+struct array_iter_t : hb_iter_with_fallback_t<array_iter_t<T>, T&> {
     array_iter_t (hb_array_t<T> arr_)
         : arr (arr_) {
     }
 
-    typedef T &__item_t__;
+    typedef T& __item_t__;
     static constexpr bool is_random_access_iterator = true;
-    T &__item_at__ (unsigned i) const {
+
+    T& __item_at__ (unsigned i) const {
       return arr[i];
     }
+
     void __forward__ (unsigned n) {
       arr += n;
     }
+
     void __rewind__ (unsigned n) {
       arr -= n;
     }
+
     unsigned __len__ () const {
       return arr.length;
     }
-    bool operator!= (const array_iter_t &o) {
+
+    bool operator != (const array_iter_t& o) {
       return arr != o.arr;
     }
 
@@ -66,12 +71,15 @@ struct some_array_t {
     }
 
     typedef array_iter_t<T> iter_t;
+
     array_iter_t<T> iter () {
       return array_iter_t<T> (arr);
     }
+
     operator array_iter_t<T> () {
       return iter ();
     }
+
     operator hb_iter_t<array_iter_t<T>> () {
       return iter ();
     }
@@ -119,7 +127,7 @@ test_iterator (Iter it) {
 template <typename Iterable,
     hb_requires (hb_is_iterable (Iterable))>
 static void
-test_iterable (const Iterable &lst = Null (Iterable)) {
+test_iterable (const Iterable& lst = Null (Iterable)) {
   for (auto _ : lst)
     (void) _;
 
@@ -128,7 +136,7 @@ test_iterable (const Iterable &lst = Null (Iterable)) {
 }
 
 int
-main (int argc, char **argv) {
+main (int argc, char** argv) {
   const int src[10] = {};
   int dst[20];
   hb_vector_t<int> v;
@@ -155,11 +163,11 @@ main (int argc, char **argv) {
   st << 1 << 15 << 43;
   test_iterable (st);
   hb_sorted_array_t<int> sa;
-  (void) static_cast<hb_iter_t<hb_sorted_array_t<int>, hb_sorted_array_t<int>::item_t> &> (sa);
-  (void) static_cast<hb_iter_t<hb_sorted_array_t<int>, hb_sorted_array_t<int>::__item_t__> &> (sa);
-  (void) static_cast<hb_iter_t<hb_sorted_array_t<int>, int &> &>(sa);
-  (void) static_cast<hb_iter_t<hb_sorted_array_t<int>> &>(sa);
-  (void) static_cast<hb_iter_t<hb_array_t<int>, int &> &> (sa);
+  (void) static_cast<hb_iter_t<hb_sorted_array_t<int>, hb_sorted_array_t<int>::item_t>&> (sa);
+  (void) static_cast<hb_iter_t<hb_sorted_array_t<int>, hb_sorted_array_t<int>::__item_t__>&> (sa);
+  (void) static_cast<hb_iter_t<hb_sorted_array_t<int>, int&>&>(sa);
+  (void) static_cast<hb_iter_t<hb_sorted_array_t<int>>&>(sa);
+  (void) static_cast<hb_iter_t<hb_array_t<int>, int&>&> (sa);
   test_iterable (sa);
 
   test_iterable<hb_array_t<int>> ();
@@ -233,16 +241,16 @@ main (int argc, char **argv) {
 
   unsigned int temp1 = 10;
   unsigned int temp2 = 0;
-  hb_map_t *result =
+  hb_map_t* result =
       +hb_iter (src)
-      | hb_map ([&] (int i) -> hb_set_t * {
-        hb_set_t *set = hb_set_create ();
+      | hb_map ([&] (int i) -> hb_set_t* {
+        hb_set_t* set = hb_set_create ();
         for (unsigned int i = 0; i < temp1; ++i)
           hb_set_add (set, i);
         temp1++;
         return set;
       })
-      | hb_reduce ([&] (hb_map_t *acc, hb_set_t *value) -> hb_map_t * {
+      | hb_reduce ([&] (hb_map_t* acc, hb_set_t* value) -> hb_map_t* {
         hb_map_set (acc, temp2++, hb_set_get_population (value));
         /* This is not a memory managed language, take care! */
         hb_set_destroy (value);

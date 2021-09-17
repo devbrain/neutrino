@@ -82,8 +82,8 @@ typedef struct CF2_Matrix_ {
 
 /* these typedefs are needed by more than one header file */
 /* and gcc compiler doesn't allow redefinition            */
-typedef struct CF2_FontRec_ CF2_FontRec, *CF2_Font;
-typedef struct CF2_HintRec_ CF2_HintRec, *CF2_Hint;
+typedef struct CF2_FontRec_ CF2_FontRec, * CF2_Font;
+typedef struct CF2_HintRec_ CF2_HintRec, * CF2_Hint;
 
 
 /* A common structure for all callback parameters.                       */
@@ -102,16 +102,16 @@ typedef struct CF2_CallbackParamsRec_ {
 
   CF2_Int op;
 
-} CF2_CallbackParamsRec, *CF2_CallbackParams;
+} CF2_CallbackParamsRec, * CF2_CallbackParams;
 
 /* forward reference */
 typedef struct CF2_OutlineCallbacksRec_ CF2_OutlineCallbacksRec,
-    *CF2_OutlineCallbacks;
+    * CF2_OutlineCallbacks;
 
 /* callback function pointers */
 typedef void
-(*CF2_Callback_Type) (CF2_OutlineCallbacks callbacks,
-                      const CF2_CallbackParams params);
+(* CF2_Callback_Type) (CF2_OutlineCallbacks callbacks,
+                       const CF2_CallbackParams params);
 
 struct CF2_OutlineCallbacksRec_ {
   CF2_Callback_Type moveTo;
@@ -122,7 +122,7 @@ struct CF2_OutlineCallbacksRec_ {
   CF2_Int windingMomentum;    /* for winding order detection */
 
   FT_Memory memory;
-  FT_Error *error;
+  FT_Error* error;
 };
 
 

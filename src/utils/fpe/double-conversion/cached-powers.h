@@ -45,8 +45,8 @@ namespace double_conversion {
     // [min_exponent; max_exponent] (boundaries included).
     void GetCachedPowerForBinaryExponentRange (int min_exponent,
                                                int max_exponent,
-                                               DiyFp *power,
-                                               int *decimal_exponent);
+                                               DiyFp* power,
+                                               int* decimal_exponent);
 
     // Returns a cached power of ten x ~= 10^k such that
     //   k <= decimal_exponent < k + kCachedPowersDecimalDistance.
@@ -54,8 +54,8 @@ namespace double_conversion {
     //   kMinDecimalExponent <= requested_exponent, and
     //   requested_exponent < kMaxDecimalExponent + kDecimalExponentDistance.
     void GetCachedPowerForDecimalExponent (int requested_exponent,
-                                           DiyFp *power,
-                                           int *found_exponent);
+                                           DiyFp* power,
+                                           int* found_exponent);
 
   }  // namespace PowersOfTenCache
 
