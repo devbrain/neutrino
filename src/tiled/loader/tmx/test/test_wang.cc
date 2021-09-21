@@ -10,11 +10,11 @@
 using namespace neutrino::tiled::tmx;
 
 static void test_wang (const map& the_map) {
-  REQUIRE(the_map.orientation () == orientation_t::STAGGERED);
-  REQUIRE(the_map.render_order () == render_order_t::RIGHT_DOWN);
+  REQUIRE(the_map.orientation () == neutrino::tiled::orientation_t::STAGGERED);
+  REQUIRE(the_map.render_order () == neutrino::tiled::render_order_t::RIGHT_DOWN);
   REQUIRE(the_map.infinite ());
-  REQUIRE(the_map.stagger_axis () == stagger_axis_t::Y);
-  REQUIRE(the_map.stagger_index () == stagger_index_t::ODD);
+  REQUIRE(the_map.stagger_axis () == neutrino::tiled::stagger_axis_t::Y);
+  REQUIRE(the_map.stagger_index () == neutrino::tiled::stagger_index_t::ODD);
   REQUIRE(the_map.tile_sets ().size () == 1);
 
   const auto& ts = the_map.tile_sets ()[0];

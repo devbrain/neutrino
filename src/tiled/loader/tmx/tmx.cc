@@ -7,8 +7,13 @@
 
 #include <neutrino/tiled/loader/tmx.hh>
 #include <neutrino/tiled/world/world.hh>
-#include <neutrino/tiled/world/builder/texture_atlas_builder.hh>
 
+#include <neutrino/tiled/world/builder/texture_atlas_builder.hh>
+#include <neutrino/tiled/world/builder/layers_builder.hh>
+#include <neutrino/tiled/world/builder/world_builder.hh>
+
+
+#include <neutrino/utils/override.hh>
 #include <neutrino/utils/exception.hh>
 #include <utility>
 
@@ -83,6 +88,26 @@ namespace neutrino::tiled::tmx {
     return {std::move(gid_map), std::move(tiles_builder_info)};
   }
   // ==================================================================================================
+  static tiles_layer transform_layer(const tile_layer& tl) {
+    layers_builder lb(tl.width(), tl.height());
+
+    const auto& cells = tl.cells();
+    if (cells.size() < tl.width()*tl.height()) {
+      RAISE_EX("Corrupted cells array found while parsing layer id", tl.id());
+    }
+    for (int y=0; y<tl.height(); y++) {
+      for (int x=0; x<tl.width(); x++) {
+        auto idx = y*tl.width() + x;
+        const auto& c = tl.cells() [idx];
+        auto id = c.gid();
+        if (id) {
+          lb.add_tile (x,y,texture_id_t{0},tile_id_t{id},flip_t::NONE);
+        }
+      }
+    }
+    return lb.build();
+  }
+  // ==================================================================================================
   static map load_map (const char* data, std::size_t length, path_resolver_t resolver) {
     auto doc_type = reader::guess_document_type (data, length);
     switch (doc_type) {
@@ -126,6 +151,37 @@ namespace neutrino::tiled::tmx {
     for (const auto& [gid, idx] : gid_map) {
       ts_bilder << std::move(tiles_builder_info[idx]);
     }
+
+    world_builder wb;
+
+    auto icolor = raw.background_color();
+
+    wb
+    .orientation (raw.orientation())
+    .width (raw.width())
+    .height (raw.height())
+    .tile_width (raw.tile_width())
+    .tile_height (raw.tile_height())
+    .bg_color ({icolor.r, icolor.g, icolor.b, icolor.a})
+    .render_order (raw.render_order())
+    .hex_side_length (raw.hex_side_length())
+    .stagger_axis (raw.stagger_axis())
+    .stagger_index (raw.stagger_index())
+    .infinite (raw.infinite());
+
+    for (const auto& wl : raw.layers()) {
+      std::visit(
+          utils::overload ([&wb](const tile_layer& tl){
+              wb.add (transform_layer (tl));
+            },
+          [](const auto&) {
+            RAISE_EX("NOT supported yet");
+          }
+          ),
+          wl
+          );
+    }
+
     return nullptr;
   }
 }

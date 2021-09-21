@@ -9,6 +9,7 @@ my_add_library_static(tiled
         ${PROJECT_INCLUDE}/neutrino/tiled/world/builder/texture_atlas_builder.hh
         world/builder/texture_atlas_builder.cc
 
+        ${PROJECT_INCLUDE}/neutrino/tiled/world/world_props.hh
         ${PROJECT_INCLUDE}/neutrino/tiled/world/world.hh
         world/world.cc
         ${PROJECT_INCLUDE}/neutrino/tiled/world/builder/world_builder.hh
