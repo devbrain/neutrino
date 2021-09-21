@@ -24,8 +24,8 @@
 namespace neutrino::tiled {
   d_DECLARE_TILED_TYPE_ORDERED(std::size_t, texture_id_t);
   d_DECLARE_TILED_TYPE_ORDERED(std::size_t, layer_id_t);
-  d_DECLARE_TILED_TYPE(std::size_t, sprite_id_t);
-  d_DECLARE_TILED_TYPE(std::size_t, bound_sprite_id_t);
+  d_DECLARE_TILED_TYPE(std::size_t, tile_id_t);
+
 }
 
 #endif

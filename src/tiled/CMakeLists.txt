@@ -2,28 +2,24 @@ my_add_library_static(tiled
         SOURCES
 
         ${PROJECT_INCLUDE}/neutrino/tiled/world/types.hh
-        ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_sheet_builder.hh
-        world/tile_sheet_builder.cc
-        ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_sheet.hh
-        world/tile_sheet.cc
+        ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_description.hh
+
         ${PROJECT_INCLUDE}/neutrino/tiled/world/texture_atlas.hh
         world/texture_atlas.cc
-        #world/tile_sheet_impl.hh
-
-        #${PROJECT_INCLUDE}/neutrino/tiled/world/tile_sheet_manager.hh
-        #world/tile_sheet_manager.cc
-
-        ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_description.hh
+        ${PROJECT_INCLUDE}/neutrino/tiled/world/builder/texture_atlas_builder.hh
+        world/builder/texture_atlas_builder.cc
 
         ${PROJECT_INCLUDE}/neutrino/tiled/world/world.hh
         world/world.cc
+        ${PROJECT_INCLUDE}/neutrino/tiled/world/builder/world_builder.hh
+        world/builder/world_builder.cc
 
-        #${PROJECT_INCLUDE}/neutrino/tiled/world/world_renderer.hh
-        #world/world_renderer.cc
+        ${PROJECT_INCLUDE}/neutrino/tiled/world/layer.hh
+        world/layer.cc
+        ${PROJECT_INCLUDE}/neutrino/tiled/world/builder/layers_builder.hh
+        world/builder/layers_builder.cc
 
-        #${PROJECT_INCLUDE}/neutrino/tiled/world/camera.hh
-        #world/camera.cc
-
+        # TMX Loader
         ${PROJECT_INCLUDE}/neutrino/tiled/loader/tmx.hh
         ${PROJECT_INCLUDE}/neutrino/tiled/loader/path_resolver.hh
         loader/tmx/tmx.cc
@@ -69,17 +65,11 @@ my_add_library_static(tiled
         loader/tmx/parse_data.hh
         loader/tmx/csv/parser.hpp
 
-        ${PROJECT_INCLUDE}/neutrino/tiled/window.hh
-        window.cc
-
-        ${PROJECT_INCLUDE}/neutrino/tiled/video.hh
-        video.cc
-
         DEPENDS_PUBLIC
-        neutrino::engine
+            neutrino::engine
         DEPENDS_PRIVATE
-        thirdparty::pugixml
-        thirdparty::json
+            thirdparty::pugixml
+            thirdparty::json
         )
 include(bin2c)
 
@@ -141,4 +131,4 @@ target_link_libraries(neutrino_tiled_with_tests
 target_include_directories(neutrino_tiled_with_tests
         PUBLIC ${PROJECT_INCLUDE} ${PROJECT_CONFIG_INCLUDE}
         PRIVATE ${PROJECT_INCLUDE_PRIVATE} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/loader/tmx/test/data/
-        )
+)
