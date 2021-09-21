@@ -34,3 +34,4 @@ target_include_directories(drimgui PUBLIC ${imgui_SOURCE_DIR})
 target_link_libraries(drimgui thirdparty::sdl2)
 
 add_library(thirdparty::imgui ALIAS drimgui)
+set_target_properties(drimgui PROPERTIES FOLDER "ThirdParty")
