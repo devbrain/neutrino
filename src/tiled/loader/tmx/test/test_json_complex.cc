@@ -49,8 +49,8 @@ TEST_CASE("Parse a Map from Tiled's documentation")
   REQUIRE(the_map.width () == 4);
   REQUIRE(the_map.height () == 4);
 
-  REQUIRE(the_map.orientation () == orientation_t::ORTHOGONAL);
-  REQUIRE(the_map.render_order () == render_order_t::RIGHT_DOWN);
+  REQUIRE(the_map.orientation () == neutrino::tiled::orientation_t::ORTHOGONAL);
+  REQUIRE(the_map.render_order () == neutrino::tiled::render_order_t::RIGHT_DOWN);
   REQUIRE(the_map.tile_width () == 32);
   REQUIRE(the_map.tile_height () == 32);
 

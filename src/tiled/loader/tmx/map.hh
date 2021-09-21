@@ -13,7 +13,9 @@
 #include "tile_set.hh"
 #include "reader.hh"
 #include "color.hh"
-#include "neutrino/tiled/loader/path_resolver.hh"
+#include <neutrino/tiled/loader/path_resolver.hh>
+#include <neutrino/tiled/world/world_props.hh>
+
 #include "tile_layer.hh"
 #include "object_layer.hh"
 #include "image_layer.hh"
@@ -22,43 +24,6 @@
 namespace neutrino::tiled::tmx {
 
   using layer_t = std::variant<image_layer, tile_layer>;
-
-  /**
- * @brief the orientation of the map.
- */
-  enum class orientation_t {
-      UNKNOWN,    /**< Unknown orientation */
-      ORTHOGONAL, /**< Orthogonal orientation */
-      ISOMETRIC,  /**< Isometric orientation */
-      STAGGERED,  /**< Staggered orientation */
-      HEXAGONAL,  /**< Hexagonal orientation */
-  };
-
-  /**
-   * @brief Stagger index of the hexagonal map.
-   */
-  enum class stagger_index_t {
-      ODD,
-      EVEN,
-  };
-
-  /**
-   * @brief Stagger axis of the hexagonal map.
-   */
-  enum class stagger_axis_t {
-      X,
-      Y,
-  };
-
-  /**
-   * @brief the render order of the tiles.
-   */
-  enum class render_order_t {
-      RIGHT_DOWN, /**< Right down order */
-      RIGHT_UP,   /**< Right up order */
-      LEFT_DOWN,  /**< Left down order */
-      LEFT_UP,    /**< Left up order */
-  };
 
   class map : public component {
     public:
@@ -71,8 +36,8 @@ namespace neutrino::tiled::tmx {
            unsigned tilewidth, unsigned tileheight, const colori& bgcolor, render_order_t renderOrder,
            unsigned hexSideLength, stagger_axis_t axis, stagger_index_t index, bool infinite)
           : m_version (std::move (version)), m_orientation (orientation), m_width (width), m_height (height),
-            m_tilewidth (tilewidth), m_tileheight (tileheight), m_bgcolor (bgcolor), m_renderOrder (renderOrder),
-            m_hexSideLength (hexSideLength), m_axis (axis), m_index (index), m_infinite (infinite) {
+            m_tilewidth (tilewidth), m_tileheight (tileheight), m_bgcolor (bgcolor), m_render_order (renderOrder),
+            m_hex_side_length (hexSideLength), m_axis (axis), m_index (index), m_infinite (infinite) {
       }
 
       [[nodiscard]] const std::string& version () const noexcept {
@@ -104,11 +69,11 @@ namespace neutrino::tiled::tmx {
       }
 
       [[nodiscard]] render_order_t render_order () const noexcept {
-        return m_renderOrder;
+        return m_render_order;
       }
 
       [[nodiscard]] unsigned hex_side_length () const noexcept {
-        return m_hexSideLength;
+        return m_hex_side_length;
       }
 
       [[nodiscard]] stagger_axis_t stagger_axis () const noexcept {
@@ -170,9 +135,9 @@ namespace neutrino::tiled::tmx {
 
       const colori m_bgcolor;
 
-      const render_order_t m_renderOrder;
+      const render_order_t m_render_order;
 
-      const unsigned m_hexSideLength;
+      const unsigned m_hex_side_length;
       const stagger_axis_t m_axis;
       const stagger_index_t m_index;
 

@@ -22,8 +22,8 @@ TEST_CASE("test simple json map")
 {
   auto the_map = test::load_map (simple_map, simple_map_length);
   REQUIRE(!the_map.infinite ());
-  REQUIRE(the_map.orientation () == neutrino::tiled::tmx::orientation_t::ORTHOGONAL);
-  REQUIRE(the_map.render_order () == neutrino::tiled::tmx::render_order_t::LEFT_DOWN);
+  REQUIRE(the_map.orientation () == neutrino::tiled::orientation_t::ORTHOGONAL);
+  REQUIRE(the_map.render_order () == neutrino::tiled::render_order_t::LEFT_DOWN);
   REQUIRE(the_map.tile_height () == 16);
   REQUIRE(the_map.tile_width () == 16);
   REQUIRE(the_map.height () == 16);
