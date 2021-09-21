@@ -23,4 +23,4 @@ target_include_directories(lexical_demo
         )
 
 
-
+set_target_properties(lexical_demo PROPERTIES FOLDER "Demos")
