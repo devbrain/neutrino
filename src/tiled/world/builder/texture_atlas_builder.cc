@@ -2,7 +2,7 @@
 // Created by igor on 27/08/2021.
 //
 
-#include <neutrino/tiled/world/tile_sheet_builder.hh>
+#include <neutrino/tiled/world/builder/texture_atlas_builder.hh>
 
 #include <neutrino/hal/video/surface.hh>
 #include <neutrino/utils/exception.hh>
@@ -125,16 +125,16 @@ namespace neutrino::tiled {
     return m_data;
   }
 
-  tile_sheet_builder::tile_sheet_builder (std::vector<tile_sheet_info> info)
+  texture_atlas_builder::texture_atlas_builder (std::vector<tile_sheet_info> info)
       : m_info (std::move (info)) {
   }
 
-  void tile_sheet_builder::add (tile_sheet_info&& inf) {
+  void texture_atlas_builder::add (tile_sheet_info&& inf) {
     m_info.push_back (std::move (inf));
   }
 
-  std::vector<texture_id_t> tile_sheet_builder::build (texture_atlas& out, hal::renderer& renderer,
-                                  std::function<hal::surface (const std::string&)> loader) const {
+  std::vector<texture_id_t> texture_atlas_builder::build (texture_atlas& out, hal::renderer& renderer,
+                                                          std::function<hal::surface (const std::string&)> loader) const {
     std::vector<texture_id_t> texture_ids;
     texture_ids.reserve (m_info.size());
 
@@ -181,7 +181,7 @@ namespace neutrino::tiled {
     return texture_ids;
   }
 
-  tile_sheet_builder& operator << (tile_sheet_builder& builder, tile_sheet_info&& inf) {
+  texture_atlas_builder& operator << (texture_atlas_builder& builder, tile_sheet_info&& inf) {
     builder.add (std::move (inf));
     return builder;
   }

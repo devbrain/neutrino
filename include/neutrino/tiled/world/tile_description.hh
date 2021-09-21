@@ -7,7 +7,7 @@
 
 #include <cstdint>
 #include <vector>
-#include <variant>
+#include <optional>
 #include <neutrino/tiled/world/types.hh>
 
 namespace neutrino::tiled {
@@ -18,40 +18,15 @@ namespace neutrino::tiled {
   };
 
   struct tile_description {
-    tile_sheet_id_t tile_sheet_id;
-    std::size_t tile_id;
-    flip_t m_flip;
-    double rotate_radians;
+    tile_description(texture_id_t atexture_id, tile_id_t atile_id, flip_t aflip)
+    : texture_id(atexture_id), tile_id(atile_id), flip(aflip) {}
+
+    texture_id_t    texture_id;
+    tile_id_t       tile_id;
+    flip_t          flip;
   };
 
-  struct empty_tile {
-  };
-
-  using tile_t = std::variant<empty_tile, tile_description>;
-
-  struct sprite {
-    std::vector<tile_description> frames;
-  };
-
-  // all tiles in the layer should be of the same dimension
-  struct tiles_layer {
-    int w; // width in tiles
-    int h; // height in tiles
-    int tile_width;
-    int tile_height;
-    std::vector<tile_t> tiles;
-  };
-
-  struct image_layer {
-    int w;
-    int h;
-    int tile_width;
-    int tile_height;
-    tile_description image;
-  };
-
-  using layer = std::variant<tiles_layer, image_layer>;
-
+  using tile_t = std::optional<tile_description>;
 }
 
 #endif

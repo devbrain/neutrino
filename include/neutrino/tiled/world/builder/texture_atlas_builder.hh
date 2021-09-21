@@ -2,8 +2,8 @@
 // Created by igor on 27/08/2021.
 //
 
-#ifndef INCLUDE_NEUTRINO_TILED_WORLD_TILE_SHEET_BUILDER_HH
-#define INCLUDE_NEUTRINO_TILED_WORLD_TILE_SHEET_BUILDER_HH
+#ifndef INCLUDE_NEUTRINO_TILED_WORLD_TEXTURE_ATLAS_BUILDER_HH
+#define INCLUDE_NEUTRINO_TILED_WORLD_TEXTURE_ATLAS_BUILDER_HH
 
 #include <optional>
 #include <functional>
@@ -106,14 +106,14 @@ namespace neutrino::tiled {
       std::size_t m_num_tiles;
   };
 
-  class tile_sheet_builder {
+  class texture_atlas_builder {
     public:
-      tile_sheet_builder() = default;
+      texture_atlas_builder() = default;
 
-      tile_sheet_builder(tile_sheet_builder&&) = default;
-      tile_sheet_builder& operator = (tile_sheet_builder&&) = default;
+      texture_atlas_builder(texture_atlas_builder&&) = default;
+      texture_atlas_builder& operator = (texture_atlas_builder&&) = default;
 
-      explicit tile_sheet_builder(std::vector<tile_sheet_info> info);
+      explicit texture_atlas_builder(std::vector<tile_sheet_info> info);
 
       void add(tile_sheet_info&& inf);
 
@@ -129,7 +129,7 @@ namespace neutrino::tiled {
       std::vector<tile_sheet_info> m_info;
   };
 
-  tile_sheet_builder& operator << (tile_sheet_builder& builder, tile_sheet_info&& inf);
+  texture_atlas_builder& operator << (texture_atlas_builder& builder, tile_sheet_info&& inf);
 }
 
 #endif //INCLUDE_NEUTRINO_TILED_WORLD_TILE_SHEET_BUILDER__HH

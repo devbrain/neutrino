@@ -3,8 +3,9 @@
 //
 
 #include <neutrino/tiled/world/world.hh>
-#include <neutrino/utils/override.hh>
 
 namespace neutrino::tiled {
+  world::world () {
 
+  }
 }

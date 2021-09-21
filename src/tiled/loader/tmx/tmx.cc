@@ -7,7 +7,7 @@
 
 #include <neutrino/tiled/loader/tmx.hh>
 #include <neutrino/tiled/world/world.hh>
-#include <neutrino/tiled/world/tile_sheet_builder.hh>
+#include <neutrino/tiled/world/builder/texture_atlas_builder.hh>
 
 #include <neutrino/utils/exception.hh>
 #include <utility>
@@ -121,7 +121,7 @@ namespace neutrino::tiled::tmx {
     auto raw = load_map (text, size, std::move (resolver));
 
     auto [gid_map, tiles_builder_info] = create_tilesheet_info (raw);
-    tile_sheet_builder ts_bilder;
+    texture_atlas_builder ts_bilder;
 
     for (const auto& [gid, idx] : gid_map) {
       ts_bilder << std::move(tiles_builder_info[idx]);

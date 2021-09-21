@@ -63,4 +63,4 @@ src/thirdparty/freetype/src/truetype/Jamfile
 src/thirdparty/freetype/src/type1/Jamfile
 src/thirdparty/freetype/src/type42/Jamfile
 src/thirdparty/freetype/src/winfonts/Jamfile
-fetched_content/*
+fetched_content
