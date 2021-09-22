@@ -1,11 +1,13 @@
 my_add_library_static(tiled
         SOURCES
+        ${PROJECT_INCLUDE}/neutrino/tiled/world_renderer.hh
+        world_renderer.cc
 
         ${PROJECT_INCLUDE}/neutrino/tiled/world/types.hh
         ${PROJECT_INCLUDE}/neutrino/tiled/world/tile_description.hh
 
-        ${PROJECT_INCLUDE}/neutrino/tiled/world/texture_atlas.hh
-        world/texture_atlas.cc
+        ${PROJECT_INCLUDE}/neutrino/tiled/texture_atlas.hh
+        texture_atlas.cc
         ${PROJECT_INCLUDE}/neutrino/tiled/world/builder/texture_atlas_builder.hh
         world/builder/texture_atlas_builder.cc
 

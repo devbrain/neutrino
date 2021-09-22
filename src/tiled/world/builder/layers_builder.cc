@@ -6,10 +6,16 @@
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::tiled {
-  layers_builder::layers_builder(int width, int height)
+  layers_builder::layers_builder(unsigned int width, unsigned int height)
   : m_width(width), m_height(height) {}
 
-  layers_builder& layers_builder::add_tile(int x, int y, texture_id_t texture_id, tile_id_t tile_id, flip_t flip) {
+  layers_builder& layers_builder::add_tile(unsigned int x, unsigned int y, texture_id_t texture_id, tile_id_t tile_id, flip_t flip) {
+    if (x >= m_width) {
+      RAISE_EX("X coordinate is out of range", x, ">", m_width);
+    }
+    if (y >= m_height) {
+      RAISE_EX("Y coordinate is out of range", y, ">", m_height);
+    }
     m_tiles.emplace_back (x, y, tile_description(texture_id, tile_id, flip));
     return *this;
   }

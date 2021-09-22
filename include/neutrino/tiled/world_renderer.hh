@@ -11,9 +11,9 @@ namespace neutrino {
   }
 
   namespace tiled {
-    class video {
+    class world_renderer {
       public:
-        explicit video (hal::renderer& renderer);
+        explicit world_renderer (hal::renderer& renderer);
       private:
         hal::renderer& m_renderer;
     };

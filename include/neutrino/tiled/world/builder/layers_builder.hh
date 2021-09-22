@@ -10,15 +10,15 @@
 namespace neutrino::tiled {
   class layers_builder {
     public:
-      layers_builder(int width, int height);
-      layers_builder& add_tile(int x, int y, texture_id_t texture_id, tile_id_t tile_id, flip_t flip);
+      layers_builder(unsigned int width, unsigned int height);
+      layers_builder& add_tile(unsigned int x, unsigned int y, texture_id_t texture_id, tile_id_t tile_id, flip_t flip);
 
-      tiles_layer build() const;
+      [[nodiscard]] tiles_layer build() const;
     private:
-      int m_width;
-      int m_height;
+      unsigned int m_width;
+      unsigned int m_height;
       // x,y,tile_description
-      using tile_info = std::tuple<int, int, tile_description>;
+      using tile_info = std::tuple<unsigned int, unsigned int, tile_description>;
       std::vector<tile_info> m_tiles;
   };
 }

@@ -118,12 +118,12 @@ namespace neutrino::tiled::tmx {
         return m_parallax_y;
       }
 
-      [[nodiscard]] int width () const noexcept {
-        return m_width;
+      [[nodiscard]] unsigned int width () const noexcept {
+        return (unsigned int)m_width;
       }
 
-      [[nodiscard]] int height () const noexcept {
-        return m_height;
+      [[nodiscard]] unsigned int height () const noexcept {
+        return (unsigned int)m_height;
       }
 
     private:

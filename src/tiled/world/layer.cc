@@ -6,14 +6,11 @@
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::tiled {
-  tiles_layer::tiles_layer(int width, int height)
+  tiles_layer::tiles_layer(unsigned int width,unsigned  int height)
   : m_width(width), m_height(height), m_tiles(width*height) {
-    if (width<0 || height<0) {
-      RAISE_EX("Negative dimensions: (", width, ",", height, ")");
-    }
   }
 
-  const tile_t& tiles_layer::at(int x, int y) const {
+  const tile_t& tiles_layer::at(unsigned int x, unsigned int y) const {
     try {
       return m_tiles[get_index (x, y)];
     } catch (exception& e) {
@@ -21,7 +18,7 @@ namespace neutrino::tiled {
     }
   }
 
-  tile_t& tiles_layer::at(int x, int y) {
+  tile_t& tiles_layer::at(unsigned int x, unsigned int y) {
     try {
       return m_tiles[get_index (x, y)];
     }catch (exception& e) {
@@ -29,18 +26,15 @@ namespace neutrino::tiled {
     }
   }
 
-  int tiles_layer::width() const noexcept {
+  unsigned int tiles_layer::width() const noexcept {
     return m_width;
   }
 
-  int tiles_layer::height() const noexcept {
+  unsigned int tiles_layer::height() const noexcept {
     return m_height;
   }
 
-  std::size_t tiles_layer::get_index(int x, int y) const {
-    if (x<0 || y<0) {
-      RAISE_EX("Negative coordinates: (", x, ",", y, ")");
-    }
+  std::size_t tiles_layer::get_index(unsigned int x, unsigned int y) const {
     if (x > m_width) {
       RAISE_EX("x coordinate is out of the layer bounds ", x , ">", m_width);
     }

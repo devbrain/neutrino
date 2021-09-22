@@ -8,14 +8,16 @@
 #include <cstdint>
 #include <vector>
 #include <optional>
+#include <bitflags/bitflags.hpp>
 #include <neutrino/tiled/world/types.hh>
 
 namespace neutrino::tiled {
-  enum class flip_t {
-      NONE,
-      HORIZONTAL,
-      VERTICAL
-  };
+  BEGIN_RAW_BITFLAGS(flip_t)
+    RAW_FLAG(HORIZONTAL)
+    RAW_FLAG(VERTICAL)
+    RAW_FLAG(DIAGONAL)
+  END_RAW_BITFLAGS(flip_t)
+
 
   struct tile_description {
     tile_description(texture_id_t atexture_id, tile_id_t atile_id, flip_t aflip)

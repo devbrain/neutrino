@@ -14,7 +14,7 @@
 
 #include <neutrino/math/rect.hh>
 #include <neutrino/hal/video/color.hh>
-#include <neutrino/tiled/world/texture_atlas.hh>
+#include <neutrino/tiled/texture_atlas.hh>
 
 namespace neutrino::tiled {
   namespace detail {
@@ -122,9 +122,8 @@ namespace neutrino::tiled {
        * @param out texture atlas to populate
        * @param renderer SDL renderer
        * @param loader functor to load images by string
-       * @return ids of the created textures
        */
-      std::vector<texture_id_t> build(texture_atlas& out, hal::renderer& renderer, std::function<hal::surface(const std::string&)> loader) const;
+      texture_atlas build(hal::renderer& renderer, std::function<hal::surface(const std::string&)> loader) const;
     private:
       std::vector<tile_sheet_info> m_info;
   };
