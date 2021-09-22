@@ -7,10 +7,10 @@
 #include "map/map_city.h"
 #include "map/city.h"
 
-int main (int argc, char* argv[]) {
+int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   using namespace neutrino::tiled;
   std::istringstream is;
   std::istringstream iss (std::string((char*)map_city, map_city_length));
 
-  tmx::load (iss, [] (const std::string&) { return std::string{}; });
+  auto [world, atlas_builder] = tmx::load (iss, [] (const std::string&) { return std::string{}; });
 }

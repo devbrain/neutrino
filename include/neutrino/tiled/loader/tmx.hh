@@ -7,15 +7,17 @@
 
 #include <filesystem>
 #include <iosfwd>
-#include <memory>
+#include <tuple>
+
 
 #include <neutrino/tiled/loader/path_resolver.hh>
 #include <neutrino/tiled/world/world.hh>
+#include <neutrino/tiled/world/builder/texture_atlas_builder.hh>
 
 namespace neutrino::tiled::tmx {
-  std::unique_ptr<world> load (const char* text, std::size_t size, path_resolver_t resolver);
-  std::unique_ptr<world> load (std::istream& is, path_resolver_t resolver);
-  std::unique_ptr<world> load (std::filesystem::path& path, path_resolver_t resolver);
+  std::tuple<world, texture_atlas_builder> load (const char* text, std::size_t size, path_resolver_t resolver);
+  std::tuple<world, texture_atlas_builder> load (std::istream& is, path_resolver_t resolver);
+  std::tuple<world, texture_atlas_builder> load (std::filesystem::path& path, path_resolver_t resolver);
 }
 
 #endif

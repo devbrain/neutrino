@@ -133,12 +133,11 @@ namespace neutrino::tiled {
     m_info.push_back (std::move (inf));
   }
 
-  std::vector<texture_id_t> texture_atlas_builder::build (texture_atlas& out, hal::renderer& renderer,
-                                                          std::function<hal::surface (const std::string&)> loader) const {
-    std::vector<texture_id_t> texture_ids;
-    texture_ids.reserve (m_info.size());
+    texture_atlas texture_atlas_builder::build (hal::renderer& renderer,
+                                              std::function<hal::surface (const std::string&)> loader) const {
 
-    for (const auto& inf : m_info) {
+      texture_atlas out;
+      for (const auto& inf : m_info) {
       const auto& img_source = inf.image_source ();
       std::optional<hal::color> transparent_color;
       hal::surface surface;
@@ -176,9 +175,9 @@ namespace neutrino::tiled {
       for (std::size_t tile_id = 0; tile_id < inf.num_tiles(); tile_id++) {
         coords.push_back (get_coords (tile_id, w, h, inf));
       }
-      texture_ids.push_back (out.add (std::move(texture), std::move (coords)));
+      out.add (std::move(texture), std::move (coords));
     }
-    return texture_ids;
+    return out;
   }
 
   texture_atlas_builder& operator << (texture_atlas_builder& builder, tile_sheet_info&& inf) {

@@ -26,33 +26,33 @@ namespace neutrino::tiled {
        * @param y - y coordinate of the tile
        * @return
        */
-      [[nodiscard]] const tile_t& at(int x, int y) const;
+      [[nodiscard]] const tile_t& at(unsigned int x, unsigned int y) const;
 
       /**
        * width in tiles
        * @return width in tiles
        */
-      [[nodiscard]] int width() const noexcept;
+      [[nodiscard]] unsigned int width() const noexcept;
 
       /**
        * height in tiles
        * @return height in tiles
        */
-      [[nodiscard]] int height() const noexcept;
+      [[nodiscard]] unsigned int height() const noexcept;
     private:
       /**
        * Constructor
        * @param width width in tiles
        * @param height height in tiles
        */
-      tiles_layer(int width, int height);
+      tiles_layer(unsigned int width, unsigned int height);
 
-      [[nodiscard]] tile_t& at(int x, int y);
+      [[nodiscard]] tile_t& at(unsigned int x, unsigned int y);
     private:
-      [[nodiscard]] std::size_t get_index(int x, int y) const;
+      [[nodiscard]] std::size_t get_index(unsigned int x, unsigned int y) const;
     private:
-      int m_width;
-      int m_height;
+      unsigned int m_width;
+      unsigned int m_height;
       std::vector<tile_t> m_tiles;
   };
 } // ns neutrino::tiled
