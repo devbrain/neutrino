@@ -112,6 +112,8 @@ my_add_library_static(utils
 
         thirdparty/whereami.c
         thirdparty/whereami.h
+        thirdparty/inih.c
+        thirdparty/inih.h
 
         ${PROJECT_INCLUDE}/neutrino/utils/byte_order.hh
         ${PROJECT_INCLUDE}/neutrino/utils/override.hh
@@ -121,9 +123,16 @@ my_add_library_static(utils
 
         ${PROJECT_INCLUDE}/neutrino/utils/observer.hh
         observer.cc
+
+        ${PROJECT_INCLUDE}/neutrino/utils/fsm/fsm.hh
+        ${PROJECT_INCLUDE}/neutrino/utils/fsm/actions.hh
+        ${PROJECT_INCLUDE}/neutrino/utils/fsm/action_traits.hh
+
+        ${PROJECT_INCLUDE}/neutrino/utils/ini/config.hh
+
         DEPENDS_PUBLIC
-        thirdparty::zlib
-        thirdparty::zstd
+            thirdparty::zlib
+            thirdparty::zstd
         )
 
 target_compile_definitions(neutrino_utils PRIVATE

@@ -16,8 +16,13 @@ namespace neutrino::engine {
     std::unique_ptr<application_monitor> monitor;
 
   };
-  // ----------------------------------------------------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------------------------------
+  application::application()
+      : m_pimpl (spimpl::make_unique_impl<impl> (nullptr)) {
+    scene_manager::instance ().attach (this);
 
+  }
+  // ------------------------------------------------------------------------------------------------------------------
   application::application (std::unique_ptr<application_monitor> monitor)
       : m_pimpl (spimpl::make_unique_impl<impl> (std::move (monitor))) {
     scene_manager::instance ().attach (this);

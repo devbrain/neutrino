@@ -3,11 +3,14 @@
 //
 
 #include <sstream>
+#include <neutrino/engine/application.hh>
 #include <neutrino/tiled/loader/tmx.hh>
 #include "map/map_city.h"
 #include "map/city.h"
 
 int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
+  neutrino::engine::application app (nullptr);
+
   using namespace neutrino::tiled;
   std::istringstream is;
   std::istringstream iss (std::string((char*)map_city, map_city_length));

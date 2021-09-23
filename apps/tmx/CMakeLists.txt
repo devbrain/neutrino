@@ -19,4 +19,4 @@ my_add_executable(load_tmx
         FOLDER Demos
         )
 
-target_link_libraries(load_tmx neutrino::tiled thirdparty::sdl2-main)
+target_link_libraries(load_tmx PRIVATE neutrino::engine neutrino::tiled thirdparty::sdl2-main)
