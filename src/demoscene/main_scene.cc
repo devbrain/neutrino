@@ -60,12 +60,10 @@ namespace neutrino::demoscene {
           }
         }
       }
-
     }
   }
 
   void main_scene::on_pointer_input ([[maybe_unused]] const engine::events::pointer& ev) {
-
   }
 
   void main_scene::show_fps () {

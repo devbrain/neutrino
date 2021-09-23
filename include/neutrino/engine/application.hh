@@ -15,6 +15,7 @@
 namespace neutrino::engine {
   class application : public hal::application, public utils::observer<events::quit> {
     public:
+      application();
       explicit application (std::unique_ptr<application_monitor> monitor);
 
       void on_event (const events::quit&) override;
