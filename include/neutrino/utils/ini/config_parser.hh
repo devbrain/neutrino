@@ -13,6 +13,7 @@
 #include <sstream>
 #include <type_traits>
 #include <string_view>
+#include <optional>
 
 #include <boost/pfr.hpp>
 #include <nlohmann/json.hpp>
