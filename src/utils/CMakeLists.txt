@@ -129,10 +129,17 @@ my_add_library_static(utils
         ${PROJECT_INCLUDE}/neutrino/utils/fsm/action_traits.hh
 
         ${PROJECT_INCLUDE}/neutrino/utils/ini/config.hh
+        ${PROJECT_INCLUDE}/neutrino/utils/ini/config_parser.hh
+        ini/ini_parser.cc
 
         DEPENDS_PUBLIC
+            thirdparty::pfr
+            thirdparty::json
+        DEPENDS_PRIVATE
             thirdparty::zlib
             thirdparty::zstd
+            thirdparty::ryml
+
         )
 
 target_compile_definitions(neutrino_utils PRIVATE

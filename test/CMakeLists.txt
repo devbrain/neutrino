@@ -19,6 +19,7 @@ my_add_executable(unittest
         utils/io/zlib_test.cc
         utils/test_fsm.cc
         utils/test_fsm_complex.cc
+        utils/test_ini.cc
 
 
 
