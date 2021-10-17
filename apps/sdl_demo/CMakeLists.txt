@@ -4,9 +4,20 @@ macro(add_demo name)
     my_add_executable(${name}
             SOURCES
             ${name}.cc
+            demoscene.hh
             FOLDER Demos
             )
     target_link_libraries(${name} neutrino::demoscene thirdparty::sdl2-main)
+endmacro()
+
+macro(add_demo_kernel name)
+    my_add_executable(${name}
+            SOURCES
+            ${name}.cc
+            demoscene.hh
+            FOLDER Demos
+            )
+    target_link_libraries(${name} neutrino::kernel thirdparty::sdl2-main)
 endmacro()
 
 macro(add_demo_gen name gen)
@@ -22,7 +33,7 @@ macro(add_demo_gen name gen)
     target_link_libraries(${name} neutrino::demoscene thirdparty::sdl2-main)
 endmacro()
 
-add_demo(fire)
-add_demo(plasma)
-add_demo(blob)
-#add_demo_gen(bobs data/eye.png)
+add_demo_kernel(fire)
+add_demo_kernel(stars)
+add_demo_kernel(plasma)
+add_demo_kernel(blob)

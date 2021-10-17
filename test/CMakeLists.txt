@@ -31,7 +31,7 @@ my_add_executable(unittest
 target_link_libraries(unittest
         PRIVATE
 
-        neutrino::engine
+        neutrino::kernel
         neutrino::utils
         neutrino::tiled
         thirdparty::doctest

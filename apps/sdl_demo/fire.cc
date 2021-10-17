@@ -2,8 +2,7 @@
 // Created by igor on 06/06/2021.
 //
 
-#include <neutrino/demoscene/demoscene.hh>
-#include <neutrino/engine/application.hh>
+#include "demoscene.hh"
 #include <vector>
 
 #define SCREEN_WIDTH 480
@@ -11,15 +10,17 @@
 
 using namespace neutrino;
 
-struct fire_app : public demoscene::scene {
+struct fire_app : public kernel::system {
   public:
-    fire_app ()
-        : demoscene::scene (SCREEN_WIDTH, SCREEN_HEIGHT),
+    fire_app (kernel::vga256& screen)
+        : vga(screen),
           fire (SCREEN_WIDTH * SCREEN_HEIGHT) {
-
+      init();
     }
 
-    void effect (demoscene::vga& vga) override {
+    void update ([[maybe_unused]] std::chrono::milliseconds ms) override {}
+
+    void present () override {
 
       int j = SCREEN_WIDTH * (SCREEN_HEIGHT - 1);
       for (int i = 0; i < SCREEN_WIDTH - 1; i++) {
@@ -82,7 +83,7 @@ struct fire_app : public demoscene::scene {
       }
     }
 
-    void init (demoscene::vga& vga) override {
+    void init () {
       auto& colors = vga.palette ();
       /* create a suitable fire palette, this is crucial for a good effect */
       /* black to blue, blue to red, red to yellow, yellow to white*/
@@ -119,16 +120,13 @@ struct fire_app : public demoscene::scene {
     }
 
   private:
+    kernel::vga256& vga;
     std::vector<uint8_t> fire;
 };
 
 int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
-  neutrino::engine::application app (nullptr);
-
-  fire_app window;
-  window.show ();
-  app.run (30);
+  kernel::demo_effect::run<fire_app>(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return 0;
 }

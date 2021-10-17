@@ -8,6 +8,20 @@ if (OPENGL_FOUND)
     message(STATUS "OPENGL found")
 endif ()
 
+set(FONT_DATA
+        IBM_PC_V1_8x8.bin
+        IBM_VGA_8x14.bin
+        IBM_VGA_8x16.bin
+)
+
+include(bin2c)
+set(GENERATED_FONT_HEADERS)
+foreach (FILE ${FONT_DATA})
+    set(PATH "video/fonts/${FILE}")
+    bin2c(${PATH} generated)
+    list(APPEND GENERATED_FONT_HEADERS ${generated})
+endforeach ()
+
 my_add_library_static(hal
         SOURCES
 
@@ -95,6 +109,10 @@ my_add_library_static(hal
         sdl/events/events_dispatcher.hh
         sdl/palette.hh
         sdl/window.hh
+
+        ${GENERATED_FONT_HEADERS}
+        ${PROJECT_INCLUDE}/neutrino/hal/video/fonts/rom_fonts.hh
+        video/fonts/rom_fonts.cc
 
         DEPENDS_PUBLIC
         neutrino::math

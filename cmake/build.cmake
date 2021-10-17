@@ -129,7 +129,7 @@ macro(my_add_library_static LIBNAME)
 	add_library(neutrino::${LIBNAME} ALIAS ${_lib})
 	target_include_directories(${_lib}
 			PUBLIC  ${PROJECT_INCLUDE} ${PROJECT_CONFIG_INCLUDE}
-			PRIVATE ${PROJECT_INCLUDE_PRIVATE}
+			PRIVATE ${PROJECT_INCLUDE_PRIVATE} ${CMAKE_CURRENT_BINARY_DIR}
 			)
 	if(MSVC)
 		target_compile_options(${_lib} PRIVATE /W4)

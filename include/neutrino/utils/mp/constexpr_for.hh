@@ -15,6 +15,11 @@ namespace neutrino::mp {
       constexpr_for<Start + Inc, End, Inc> (f);
     }
   }
+
+  template<typename What, typename ... Args>
+  struct is_present {
+    static constexpr bool value {(std::is_same_v<What, Args> || ...)};
+  };
 }
 
 #endif

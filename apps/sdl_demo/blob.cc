@@ -2,8 +2,7 @@
 // Created by igor on 25/06/2021.
 //
 
-#include <neutrino/engine/application.hh>
-#include <neutrino/demoscene/demoscene.hh>
+#include "demoscene.hh"
 #include <glm/ext/vector_int2.hpp>
 #include <cmath>
 
@@ -16,10 +15,10 @@
 
 using namespace neutrino;
 
-struct blob_window : public demoscene::scene {
+struct blob_window : public kernel::system {
   public:
-    blob_window ()
-        : demoscene::scene (SCREEN_WIDTH, SCREEN_HEIGHT) {
+    blob_window (kernel::vga256& screen)
+        : vga(screen) {
       int i, j;
       uint32_t distance_squared;
       float fraction;
@@ -41,9 +40,13 @@ struct blob_window : public demoscene::scene {
       for (i = 0; i < NUMBER_OF_BLOBS; i++) {
         init_blob (blobs + i);
       }
+
+      init();
     }
 
-    void effect (demoscene::vga& vga) override {
+    void update ([[maybe_unused]] std::chrono::milliseconds ms) override {}
+
+    void present () override {
       uint32_t start;
       int i, j;
       uint8_t k;
@@ -76,7 +79,7 @@ struct blob_window : public demoscene::scene {
 
     }
 
-    void init (demoscene::vga& vga) override {
+    void init () {
       auto& colors = vga.palette ();
       for (int i = 0; i < 256; ++i) {
         colors[i].r = i;
@@ -95,12 +98,12 @@ struct blob_window : public demoscene::scene {
 
     uint8_t blob[BLOB_DRADIUS][BLOB_DRADIUS];
     vec2 blobs[NUMBER_OF_BLOBS];
+
+    kernel::vga256& vga;
 };
 
 int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
-  engine::application app (nullptr);
-  blob_window w;
-  w.show ();
-  app.run (30);
+
+  kernel::demo_effect::run<blob_window>(SCREEN_WIDTH, SCREEN_HEIGHT);
   return 0;
 }

@@ -7,9 +7,7 @@
 
 #include <string_view>
 #include <neutrino/utils/macros.hh>
-/**
- *
- */
+
 namespace neutrino::utils::detail {
   struct config_var {};
   struct config_section {};
