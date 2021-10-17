@@ -69,7 +69,7 @@ my_add_library_static(tiled
         loader/tmx/csv/parser.hpp
 
         DEPENDS_PUBLIC
-            neutrino::engine
+            neutrino::kernel
         DEPENDS_PRIVATE
             thirdparty::pugixml
             thirdparty::json

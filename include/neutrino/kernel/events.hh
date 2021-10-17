@@ -2,12 +2,12 @@
 // Created by igor on 03/07/2021.
 //
 
-#ifndef NEUTRINO_EVENTS_HH
-#define NEUTRINO_EVENTS_HH
+#ifndef NEUTRINO_KERNEL_EVENTS_HH
+#define NEUTRINO_KERNEL_EVENTS_HH
 
 #include <neutrino/hal/events/events.hh>
 
-namespace neutrino::engine::events {
+namespace neutrino::kernel::events {
   using current_fps = hal::events::current_fps;
   using key_mod_t = hal::events::key_mod_t;
   using scan_code_t = hal::events::scan_code_t;
