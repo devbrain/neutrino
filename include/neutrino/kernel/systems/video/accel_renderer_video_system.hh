@@ -11,10 +11,14 @@
 namespace neutrino::kernel {
   class accel_renderer_video_system : public video_system {
     protected:
+      [[nodiscard]] hal::renderer& get_renderer();
       virtual hal::texture create_primary_texture () = 0;
-      void init(hal::window_2d& w) override;
+
+      void init(hal::window& w) override;
       void present() override;
+      void clear() override;
     protected:
+      hal::renderer m_renderer;
       hal::texture m_texture;
   };
 }

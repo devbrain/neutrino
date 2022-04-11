@@ -10,26 +10,21 @@
 #include <neutrino/hal/video/window.hh>
 
 namespace neutrino::kernel {
-  class systems_manager;
+  template <typename Base>
   class main_window;
 
   class video_system {
-      friend class systems_manager;
-      friend class main_window;
+      template <typename> friend class main_window;
     public:
       virtual ~video_system();
-      void clear();
+      virtual void clear() = 0;
       virtual void update() = 0;
       virtual void present() = 0;
     protected:
-      [[nodiscard]] hal::renderer& get_renderer();
-
       [[nodiscard]] int width () const noexcept;
       [[nodiscard]] int height () const noexcept;
-      virtual void init(hal::window_2d& w);
-
+      virtual void init(hal::window& w) = 0;
     private:
-      hal::renderer m_renderer;
       int m_width {};
       int m_height {};
   };

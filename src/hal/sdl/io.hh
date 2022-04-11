@@ -30,7 +30,7 @@ namespace neutrino::sdl {
       io (FILE* fp, bool auto_close);
 
       io (object <SDL_RWops>&& other);
-      io& operator = (object <SDL_RWops>&& other);
+      io& operator = (object <SDL_RWops>&& other) noexcept;
 
       /*
        * ptr - a pointer to a buffer to read data into
@@ -211,7 +211,7 @@ namespace neutrino::sdl {
 
   // --------------------------------------------------------------------------------------
   inline
-  io& io::operator = (object <SDL_RWops>&& other) {
+  io& io::operator = (object <SDL_RWops>&& other) noexcept {
     if (this != &other) {
       object<SDL_RWops>::operator = (std::move (other));
     }

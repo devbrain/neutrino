@@ -54,45 +54,45 @@ namespace neutrino::hal::events {
 
   // -----------------------------------------------------------------------------------
   pointer map_event (const sdl::events::mouse_button& m) {
-    return pointer (m.mouse_id, map_pointer_button (m.button), m.pressed, coords_t{m.x, m.y});
+    return {m.mouse_id, map_pointer_button (m.button), m.pressed, coords_t{m.x, m.y}};
   }
 
   pointer map_event (const sdl::events::mouse_motion& m) {
-    return pointer (m.mouse_id,
+    return {m.mouse_id,
                     map_pointer_button (m.button),
                     false,
                     coords_t{m.x, m.y},
                     coords_t{m.xrel, m.yrel}
-    );
+    };
   }
 
   pointer map_event (const sdl::events::mouse_wheel& m) {
-    return pointer (m.mouse_id,
+    return {m.mouse_id,
                     pointer_button_t::WHEEL,
                     true,
                     coords_t{m.x, m.y}
-    );
+    };
   }
 
   pointer map_event (const sdl::events::touch_device_button& m) {
-    return pointer (map_pointer_button (m.button),
+    return {map_pointer_button (m.button),
                     false,
                     coords_t{m.x, m.y}
-    );
+    };
   }
 
   pointer map_event (const sdl::events::touch_device_motion& m) {
-    return pointer (map_pointer_button (m.button),
+    return {map_pointer_button (m.button),
                     false,
                     coords_t{m.x, m.y},
                     coords_t{m.xrel, m.yrel}
-    );
+    };
   }
 
   pointer map_event (const sdl::events::touch_device_wheel& m) {
-    return pointer (pointer_button_t::WHEEL,
+    return {pointer_button_t::WHEEL,
                     true,
                     coords_t{m.x, m.y}
-    );
+    };
   }
 }

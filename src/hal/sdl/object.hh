@@ -50,7 +50,7 @@ namespace neutrino::sdl {
       object& operator = (const object&) = delete;
 
       object (object&& other) noexcept;
-      object& operator = (object&& other) noexcept;
+      virtual object& operator = (object&& other) noexcept;
 
       virtual ~object () noexcept;
 

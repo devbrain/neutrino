@@ -10,8 +10,9 @@ my_add_library_static(kernel
         system.cc
         systems_manager.cc
         systems_manager.hh
-        main_window.cc
+
         main_window.hh
+        main_window.cc
 
         ${PROJECT_INCLUDE}/neutrino/kernel/systems/base_input_system.hh
         ${PROJECT_INCLUDE}/neutrino/kernel/systems/input_system.hh
@@ -29,10 +30,18 @@ my_add_library_static(kernel
         systems/video/vga256/vga256.cc
 
         ${PROJECT_INCLUDE}/neutrino/kernel/systems/video/opengl_video_system.hh
+        systems/video/opengl_video_system.cc
 
+        ${PROJECT_INCLUDE}/neutrino/kernel/systems/video/video2d/video2d.hh
+        systems/video/video2d/video2d.cc
 
+        ${PROJECT_INCLUDE}/neutrino/kernel/gui/gui.hh
+        gui/gui.cc
+        ${PROJECT_INCLUDE}/neutrino/kernel/gui/window.hh
+        gui/window.cc
 
         DEPENDS_PUBLIC
+            thirdparty::drimgui
             neutrino::hal
             neutrino::utils
         )

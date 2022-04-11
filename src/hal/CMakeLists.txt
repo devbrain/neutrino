@@ -49,6 +49,9 @@ my_add_library_static(hal
         application.cc
         ${PROJECT_INCLUDE}/neutrino/hal/application.hh
 
+        ${PROJECT_INCLUDE}/neutrino/hal/sdl_event_hook.hh
+        sdl_event_hook.cc
+
         system.cc
         ${PROJECT_INCLUDE}/neutrino/hal/system.hh
 

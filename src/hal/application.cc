@@ -57,12 +57,13 @@ namespace neutrino::hal {
   events_broker& application::broker () {
     return m_pimpl->m_message_broker;
   }
-
   // -------------------------------------------------------------------------------
   void application::setup () {
-
   }
-
+  // -------------------------------------------------------------------------------
+  void application::add_hook(std::unique_ptr<sdl_event_hook> hook) {
+    m_pimpl->m_input_publisher.add_hook (std::move (hook));
+  }
   // -------------------------------------------------------------------------------
   void application::run (int desired_fps) {
     this->setup ();

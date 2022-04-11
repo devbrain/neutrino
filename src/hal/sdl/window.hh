@@ -58,8 +58,8 @@ namespace neutrino::sdl {
           typename std::enable_if<(std::is_same_v<flags_t, Args> && ...), int>::type = 0>
       window (const std::string& title, int x, int y, int w, int h, Args...args);
 
-      window (object <SDL_Window>&& other);
-      window& operator = (object <SDL_Window>&& other);
+      explicit window (object <SDL_Window>&& other);
+      window& operator = (object <SDL_Window>&& other) noexcept;
 
       [[nodiscard]] uint32_t id () const;
 
@@ -166,7 +166,7 @@ namespace neutrino::sdl {
 
   // --------------------------------------------------------------------------------------------
   inline
-  window& window::operator = (object <SDL_Window>&& other) {
+  window& window::operator = (object <SDL_Window>&& other) noexcept {
     object<SDL_Window>::operator = (std::move (other));
     return *this;
   }

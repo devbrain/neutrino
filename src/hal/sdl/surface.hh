@@ -29,10 +29,10 @@ namespace neutrino::sdl {
   class surface : public object<SDL_Surface> {
     public:
       surface ();
-      surface (object<SDL_Surface>&& other);
-      surface (surface&& other);
-      surface (const object<SDL_Window>& other);
-      surface& operator = (object<SDL_Surface>&& other);
+      explicit surface (object<SDL_Surface>&& other);
+      surface (surface&& other) noexcept ;
+      explicit surface (const object<SDL_Window>& other);
+      surface& operator = (object<SDL_Surface>&& other) noexcept;
       surface& operator = (surface&& other) noexcept;
 
       surface& operator = (const surface& other) = delete;
@@ -210,7 +210,7 @@ namespace neutrino::sdl {
 
   // ----------------------------------------------------------------------------------------------
   inline
-  surface::surface (surface&& other)
+  surface::surface (surface&& other) noexcept
       : object<SDL_Surface> (nullptr, false) {
     other.swap (*this);
   }
@@ -231,7 +231,7 @@ namespace neutrino::sdl {
 
   // ----------------------------------------------------------------------------------------------
   inline
-  surface& surface::operator = (object<SDL_Surface>&& other) {
+  surface& surface::operator = (object<SDL_Surface>&& other) noexcept {
     object<SDL_Surface>::operator = (std::move (other));
     return *this;
   }
@@ -247,25 +247,25 @@ namespace neutrino::sdl {
   // ----------------------------------------------------------------------------------------------
   inline
   surface surface::make_8bit (unsigned width, unsigned height) {
-    return surface (width, height, pixel_format::make_8bit ());
+    return {width, height, pixel_format::make_8bit ()};
   }
 
   // ----------------------------------------------------------------------------------------------
   inline
   surface surface::make_rgba_32bit (unsigned width, unsigned height) {
-    return surface (width, height, pixel_format::make_rgba_32bit ());
+    return {width, height, pixel_format::make_rgba_32bit ()};
   }
 
   // ----------------------------------------------------------------------------------------------
   inline
   surface surface::from_bmp (const std::string& path) {
-    return surface (object<SDL_Surface> (SAFE_SDL_CALL(SDL_LoadBMP_RW, SDL_RWFromFile (path.c_str (), "rb"), 1), true));
+    return surface(object<SDL_Surface> (SAFE_SDL_CALL(SDL_LoadBMP_RW, SDL_RWFromFile (path.c_str (), "rb"), 1), true));
   }
 
   // ----------------------------------------------------------------------------------------------
   inline
   surface surface::from_bmp (io& stream) {
-    return surface (object<SDL_Surface> (SAFE_SDL_CALL(SDL_LoadBMP_RW, stream.handle (), 0), true));
+    return surface(object<SDL_Surface> (SAFE_SDL_CALL(SDL_LoadBMP_RW, stream.handle (), 0), true));
   }
 
   // ----------------------------------------------------------------------------------------------
