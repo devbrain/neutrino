@@ -49,7 +49,7 @@ namespace neutrino::hal {
       explicit renderer (const window& w);
       explicit renderer (const surface& s);
 
-      operator bool () const;
+      explicit operator bool () const;
 
       [[nodiscard]] blend_mode blend () const;
       void blend (blend_mode bm);
@@ -86,11 +86,11 @@ namespace neutrino::hal {
       void read_pixels (const pixel_format& fmt, void* dst, std::size_t pitch) const;
       void read_pixels (const math::rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const;
 
-      std::optional<texture> target () const;
+      [[nodiscard]] std::optional<texture> target () const;
       void target (texture& t);
       void restore_default_target ();
 
-      std::pair<unsigned, unsigned> output_size () const;
+      [[nodiscard]] std::pair<unsigned, unsigned> output_size () const;
 
       void clear ();
 

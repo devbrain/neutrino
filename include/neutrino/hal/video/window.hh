@@ -139,6 +139,7 @@ namespace neutrino::hal {
       window_opengl ();
       explicit window_opengl (window_flags_t flags);
     private:
+      void clear () override;
       void present () override;
   };
 

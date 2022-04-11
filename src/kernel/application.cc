@@ -3,6 +3,7 @@
 //
 
 #include <neutrino/kernel/application.hh>
+#include <neutrino/kernel/systems/video/video_system.hh>
 #include <neutrino/utils/exception.hh>
 
 #include "systems_manager.hh"
@@ -12,20 +13,31 @@ namespace neutrino::kernel {
 
   static application* s_instance = nullptr;
 
+  using main_window_2d = main_window<hal::window_2d>;
+  using main_window_opengl = main_window<hal::window_opengl>;
+
+
+
   struct application::impl {
-    impl() : m_paused(false) {};
+    impl() :
+    m_main_window(window_factory(std::nullopt, get_systems_manager()->get_video_system())),
+    m_paused(false) {};
 
     explicit impl(hal::window_flags_t flags)
-    : m_main_window(flags) {}
+    : m_main_window(window_factory(flags, get_systems_manager()->get_video_system())),
+    m_paused(false) {}
 
     void init() {
       init_video();
     }
 
     void init_video() {
-      m_main_window.set_up (get_systems_manager()->get_video_system());
+      set_up_system(m_main_window.get(), get_systems_manager()->get_video_system());
     }
-    main_window m_main_window;
+
+
+
+    std::unique_ptr<hal::window> m_main_window;
     bool m_paused;
   };
 
@@ -85,28 +97,28 @@ namespace neutrino::kernel {
 
   void application::show (int w, int h) {
     m_pimpl = spimpl::make_unique_impl<impl>();
-    m_pimpl->m_main_window.open (w, h);
+    m_pimpl->m_main_window->open (w, h);
     m_pimpl->init();
   }
 
   void application::show (int w, int h, hal::window_flags_t flags) {
     m_pimpl = spimpl::make_unique_impl<impl>(flags);
-    m_pimpl->m_main_window.open (w, h);
+    m_pimpl->m_main_window->open (w, h);
     m_pimpl->init();
   }
 
   void application::show (int w, int h, int x, int y, hal::window_flags_t flags) {
     m_pimpl = spimpl::make_unique_impl<impl>(flags);
-    m_pimpl->m_main_window.open (w, h, x, y);
+    m_pimpl->m_main_window->open (w, h, x, y);
     m_pimpl->init();
   }
 
   void application::toggle_full_screen () {
-    m_pimpl->m_main_window.toggle_fullscreen();
+    m_pimpl->m_main_window->toggle_fullscreen();
   }
 
   void application::set_title (const std::string& title) {
-    m_pimpl->m_main_window.title (title);
+    m_pimpl->m_main_window->title (title);
   }
 
   void application::post_init () {

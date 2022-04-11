@@ -34,8 +34,8 @@ namespace neutrino::sdl {
       explicit renderer (const object<SDL_Window>& w, Args...flags);
       explicit renderer (const object<SDL_Surface>& s);
 
-      renderer (object<SDL_Renderer>&& other);
-      renderer& operator = (object<SDL_Renderer>&& other);
+      explicit renderer (object<SDL_Renderer>&& other);
+      renderer& operator = (object<SDL_Renderer>&& other) noexcept;
 
       [[nodiscard]] blend_mode blend () const;
       void blend (blend_mode bm);
@@ -72,11 +72,11 @@ namespace neutrino::sdl {
       void read_pixels (const pixel_format& fmt, void* dst, std::size_t pitch) const;
       void read_pixels (const rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const;
 
-      std::optional<texture> target () const;
+      [[nodiscard]] std::optional<texture> target () const;
       void target (texture& t);
       void restore_default_target ();
 
-      std::pair<unsigned, unsigned> output_size () const;
+      [[nodiscard]] std::pair<unsigned, unsigned> output_size () const;
 
       void clear ();
 
@@ -134,7 +134,7 @@ namespace neutrino::sdl {
 
   // ----------------------------------------------------------------------------------------------------------------
   inline
-  renderer& renderer::operator = (object<SDL_Renderer>&& other) {
+  renderer& renderer::operator = (object<SDL_Renderer>&& other) noexcept {
     object<SDL_Renderer>::operator = (std::move (other));
     return *this;
   }
@@ -282,7 +282,7 @@ namespace neutrino::sdl {
   std::optional<texture> renderer::target () const {
     SDL_Texture* t = SDL_GetRenderTarget (const_handle ());
     if (t) {
-      return texture (std::move (object<SDL_Texture> (t, false)));
+      return texture (object<SDL_Texture> (t, false));
     }
     return std::nullopt;
   }

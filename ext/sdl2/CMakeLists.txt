@@ -1,9 +1,10 @@
 set(SDL_STATIC_ENABLED_BY_DEFAULT ON CACHE INTERNAL "")
 set(SDL_SHARED_ENABLED_BY_DEFAULT OFF CACHE INTERNAL "")
+set(SDL_WAYLAND OFF CACHE INTERNAL "")
 
 fetchcontent_declare(
         SDL2
-        URL https://www.libsdl.org/release/SDL2-2.0.14.zip
+        URL https://www.libsdl.org/release/SDL2-2.0.20.zip
 )
 
 fetchcontent_makeavailable(SDL2)

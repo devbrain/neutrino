@@ -35,10 +35,10 @@ namespace neutrino::hal {
       texture (const renderer& r, const pixel_format& format, unsigned w, unsigned h, access flags);
       texture (const renderer& r, const surface& s);
 
-      operator bool () const;
+      explicit operator bool () const;
 
       // returns: pixel format, texture_access, w, h
-      std::tuple<pixel_format, access, unsigned, unsigned> query () const;
+      [[nodiscard]] std::tuple<pixel_format, access, unsigned, unsigned> query () const;
 
       [[nodiscard]] uint8_t alpha () const;
       void alpha (uint8_t a);

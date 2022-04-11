@@ -1,36 +1,44 @@
 //
-// Created by igor on 09/10/2021.
+// Created by igor on 18/10/2021.
 //
 
 #include "main_window.hh"
-#include "systems_manager.hh"
+#include <neutrino/utils/exception.hh>
 
 namespace neutrino::kernel {
-  void main_window::on_input_focus_changed (bool keyboard_focus, bool mouse_focus) {
-    get_systems_manager()->on_input_focus_changed (keyboard_focus, mouse_focus);
+  std::unique_ptr<hal::window> window_factory(std::optional<hal::window_flags_t> flags, video_system* sys) {
+    if (dynamic_cast<accel_renderer_video_system*>(sys)) {
+      if (flags) {
+        return std::make_unique<main_window<hal::window_2d>>(*flags);
+      } else {
+        return std::make_unique<main_window<hal::window_2d>>();
+      }
+    } else if (dynamic_cast<opengl_video_system*>(sys)) {
+      if (flags) {
+        return std::make_unique<main_window<hal::window_opengl>>(*flags);
+      } else {
+        return std::make_unique<main_window<hal::window_opengl>>();
+      }
+    } else {
+      RAISE_EX("Unkown video system");
+    }
   }
 
-  void main_window::on_visibility_change (bool is_visible) {
-    get_systems_manager()->on_visibility_change (is_visible);
-  }
-
-  void main_window::on_keyboard_input (const events::keyboard& ev) {
-    get_systems_manager()->on_keyboard_input (ev);
-  }
-
-  void main_window::on_pointer_input (const events::pointer& ev) {
-    get_systems_manager()->on_pointer_input (ev);
-  }
-
-  void main_window::on_window_invalidate () {
-    // TODO
-  }
-
-  main_window::main_window (hal::window_flags_t flags)
-      : window_2d (flags) {
-  }
-
-  void main_window::set_up(video_system* sys) {
-    sys->init (*this);
+  void set_up_system(hal::window* win, video_system* sys) {
+    if (dynamic_cast<accel_renderer_video_system*>(sys)) {
+      if (auto* w = dynamic_cast<main_window<hal::window_2d>*>(win); w) {
+        w->set_up (sys);
+      } else {
+        RAISE_EX("window_2d is expected here");
+      }
+    } else if (dynamic_cast<opengl_video_system*>(sys)) {
+      if (auto* w = dynamic_cast<main_window<hal::window_opengl>*>(win); w) {
+        w->set_up (sys);
+      } else {
+        RAISE_EX("window_opengl is expected here");
+      }
+    } else {
+      RAISE_EX("Unkown video system");
+    }
   }
 }

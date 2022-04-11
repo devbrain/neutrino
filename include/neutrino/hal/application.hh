@@ -11,6 +11,7 @@
 #include <neutrino/utils/spimpl.h>
 #include <neutrino/hal/events/events.hh>
 #include <neutrino/hal/events/events_broker.hh>
+#include <neutrino/hal/sdl_event_hook.hh>
 
 namespace neutrino::hal {
   namespace detail {
@@ -26,6 +27,8 @@ namespace neutrino::hal {
       ~application () override;
       void run (int fps);
       void quit ();
+
+      void add_hook(std::unique_ptr<sdl_event_hook> hook);
 
       events_broker& broker ();
     protected:

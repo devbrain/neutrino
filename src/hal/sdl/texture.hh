@@ -30,11 +30,11 @@ namespace neutrino::sdl {
 
       texture (const object <SDL_Renderer>& r, const object <SDL_Surface>& s);
 
-      texture (object <SDL_Texture>&& other);
-      texture& operator = (object <SDL_Texture>&& other);
+      explicit texture (object <SDL_Texture>&& other);
+      texture& operator = (object <SDL_Texture>&& other) noexcept;
 
       // returns: pixel format, texture_access, w, h
-      std::tuple<pixel_format, access, unsigned, unsigned> query () const;
+      [[nodiscard]] std::tuple<pixel_format, access, unsigned, unsigned> query () const;
 
       [[nodiscard]] uint8_t alpha () const;
       void alpha (uint8_t a);
@@ -100,7 +100,7 @@ namespace neutrino::sdl {
 
   // ---------------------------------------------------------------------------------------------------------------
   inline
-  texture& texture::operator = (object <SDL_Texture>&& other) {
+  texture& texture::operator = (object <SDL_Texture>&& other) noexcept {
     object<SDL_Texture>::operator = (std::move (other));
     return *this;
   }
