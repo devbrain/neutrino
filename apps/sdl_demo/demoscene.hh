@@ -45,7 +45,7 @@ namespace neutrino::kernel {
             : input_def (ctrl){
           when_pressed (kernel::events::scan_code_t::ESCAPE, events::quit{});
           when_pressed (kernel::events::scan_code_t::RETURN, kernel::events::key_mod_t::ALT, events::full_screen{});
-          when_pressed (kernel::events::scan_code_t::SPACE, events::pause{});
+          when_pressed (kernel::events::scan_code_t::SPACE , events::pause{});
         }
     };
   } // ns detail

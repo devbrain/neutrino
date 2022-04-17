@@ -83,6 +83,11 @@ namespace neutrino::kernel {
     hal::application::render();
   }
 
+  void application::setup () {
+    hal::application::setup();
+    get_systems_manager()->setup();
+  }
+
   void application::add_system(std::unique_ptr<base_input_system> input_sys) {
     get_systems_manager()->add (std::move(input_sys));
   }

@@ -32,6 +32,7 @@ namespace neutrino::kernel {
       void on_paused(bool paused);
       void update(std::chrono::milliseconds ms);
       void present();
+      void setup();
 
       base_input_system* get_input_system();
       video_system* get_video_system();

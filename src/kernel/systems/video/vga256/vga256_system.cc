@@ -10,6 +10,11 @@ namespace neutrino::kernel {
   vga256_system::vga256_system(const vga256& model)
   : m_model(model), m_render_w(0), m_render_h(0) {}
 
+  void vga256_system::init(hal::window& w) {
+    accel_renderer_video_system::init (w);
+    m_texture = create_primary_texture();
+  }
+
   hal::texture vga256_system::create_primary_texture () {
     m_render_w = std::min(m_model.width(), width());
     m_render_h = std::min(m_model.height(), height());
@@ -34,5 +39,9 @@ namespace neutrino::kernel {
       }
     }
     m_texture.unlock ();
+  }
+
+  void vga256_system::present() {
+    get_renderer().copy (m_texture);
   }
 }

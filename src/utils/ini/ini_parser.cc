@@ -104,7 +104,7 @@ namespace neutrino::utils {
     nlohmann::json load_from_yaml (const std::string& input) {
       try {
         ryml::csubstr in{input.c_str (), input.size ()};
-        auto tree = ryml::parse (in);
+        auto tree = ryml::parse_in_arena(in);
         const ryml::NodeRef stream = tree.rootref();
         auto is_stream = stream.is_stream();
         if (!is_stream) {

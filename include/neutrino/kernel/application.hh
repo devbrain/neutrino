@@ -50,6 +50,7 @@ namespace neutrino::kernel {
       void clear () override;
       void update (std::chrono::milliseconds ms) override;
       void render () override;
+      void setup () override;
 
       void post_init();
     private:

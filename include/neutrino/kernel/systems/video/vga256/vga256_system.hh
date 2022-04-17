@@ -6,7 +6,7 @@
 #define INCLUDE_NEUTRINO_KERNEL_SYSTEMS_VIDEO_VGA256_VGA256_SYSTEM_HH
 
 #include <neutrino/kernel/systems/video/accel_renderer_video_system.hh>
-
+#include <neutrino/hal/video/texture.hh>
 namespace neutrino::kernel {
   class vga256;
 
@@ -14,12 +14,16 @@ namespace neutrino::kernel {
     public:
       explicit vga256_system(const vga256& model);
     private:
-      hal::texture create_primary_texture () override;
+      void init(hal::window& w) override;
+      hal::texture create_primary_texture ();
       void update() override;
+      void present() override;
     private:
+
       const vga256& m_model;
       int m_render_w;
       int m_render_h;
+      hal::texture m_texture;
   };
 }
 

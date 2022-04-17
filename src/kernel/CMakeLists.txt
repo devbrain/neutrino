@@ -7,6 +7,7 @@ my_add_library_static(kernel
         ${PROJECT_INCLUDE}/neutrino/kernel/events.hh
 
         ${PROJECT_INCLUDE}/neutrino/kernel/system.hh
+        ${PROJECT_INCLUDE}/neutrino/kernel/controller.hh
         system.cc
         systems_manager.cc
         systems_manager.hh

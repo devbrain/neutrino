@@ -15,14 +15,13 @@ namespace neutrino::kernel {
     if (auto* win = dynamic_cast<hal::window_2d*>(&w); win) {
       m_renderer = win->get_renderer ();
       m_renderer.logical_size (width (), height ());
-      m_texture = create_primary_texture ();
     } else {
       RAISE_EX("Accelerated2d video system should be created from window_2d");
     }
   }
 
   void accel_renderer_video_system::present() {
-    get_renderer().copy (m_texture);
+    m_renderer.present();
   }
 
   hal::renderer& accel_renderer_video_system::get_renderer() {
@@ -30,7 +29,10 @@ namespace neutrino::kernel {
   }
 
   void accel_renderer_video_system::clear () {
+    auto color = m_renderer.active_color();
+    m_renderer.active_color({0,0,0});
     m_renderer.clear ();
+    m_renderer.active_color(color);
   }
 }
 

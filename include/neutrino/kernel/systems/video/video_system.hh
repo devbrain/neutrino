@@ -20,7 +20,6 @@ namespace neutrino::kernel {
       virtual void clear() = 0;
       virtual void update() = 0;
       virtual void present() = 0;
-    protected:
       [[nodiscard]] int width () const noexcept;
       [[nodiscard]] int height () const noexcept;
       virtual void init(hal::window& w) = 0;

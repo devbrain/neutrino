@@ -7,14 +7,23 @@
 
 #include <neutrino/kernel/systems/video/accel_renderer_video_system.hh>
 #include <neutrino/hal/video/pixel_format.hh>
+#include <neutrino/hal/video/texture.hh>
 #include <neutrino/math/rect.hh>
 #include <neutrino/math/point.hh>
 
 namespace neutrino::kernel {
   class video2d_system : public accel_renderer_video_system {
     public:
-      explicit video2d_system(hal::pixel_format texture_format = hal::pixel_format::make_rgba_32bit());
-    protected:
+      using flip_t = hal::renderer::flip;
+      using blend_mode_t = hal::blend_mode;
+    public:
+
+      [[nodiscard]] blend_mode_t blend () const;
+      void blend (blend_mode_t bm);
+
+      [[nodiscard]] hal::color active_color () const;
+      void active_color (const hal::color& c);
+
       void point (int x, int y);
       void point (const math::point2d& p);
 
@@ -65,10 +74,16 @@ namespace neutrino::kernel {
       void pie_filled (int x, int y, int rad, float start_angle, float end_angle);
       void pie_filled (const math::point2d& p, int rad, float start_angle, float end_angle);
 
-    private:
-      hal::texture create_primary_texture () override;
-    private:
-      hal::pixel_format m_texture_format;
+      void copy (const hal::texture& t, flip_t flip = flip_t::NONE);
+      void copy (const hal::texture& t, const math::rect& srcrect, flip_t flip = flip_t::NONE);
+      void copy (const hal::texture& t, const math::rect& srcrect, const math::rect& dstrect, flip_t flip = flip_t::NONE);
+      void copy (const hal::texture& t, const math::rect& srcrect, const math::rect& dstrect, double angle,
+            flip_t flip = flip_t::NONE);
+
+      void copy (const hal::texture& t, const math::rect& srcrect, const math::rect& dstrect, double angle,
+                 const math::point2d& pt, flip_t flip);
+    protected:
+      void update() override;
   };
 }
 

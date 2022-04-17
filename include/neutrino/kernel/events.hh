@@ -15,10 +15,9 @@ namespace neutrino::kernel::events {
   using keyboard = hal::events::keyboard;
   using pointer = hal::events::pointer;
 
-  struct full_screen {
-  };
-  struct quit {
-  };
+  struct full_screen {};
+  struct quit {};
+  struct pause {};
 }
 
 #endif //NEUTRINO_EVENTS_HH

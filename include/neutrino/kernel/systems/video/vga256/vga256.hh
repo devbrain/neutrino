@@ -35,7 +35,7 @@ namespace neutrino::kernel {
 
       void cls ();
 
-      std::unique_ptr<video_system> create_system() const;
+      [[nodiscard]] std::unique_ptr<video_system> create_system() const;
     private:
       int m_width;
       int m_height;

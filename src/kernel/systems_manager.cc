@@ -79,6 +79,12 @@ namespace neutrino::kernel {
     m_video_system->present();
   }
 
+  void systems_manager::setup() {
+    for (auto& sys :m_systems) {
+      sys->setup();
+    }
+  }
+
   static systems_manager* s_instance = nullptr;
 
   systems_manager* get_systems_manager() {
