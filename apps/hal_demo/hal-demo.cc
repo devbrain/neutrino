@@ -5,7 +5,12 @@
 #include <neutrino/kernel/application.hh>
 
 class app : public neutrino::application {
+  public:
+    app () : m_renderer (nullptr), x(100), y (100) {
 
+    }
+
+  private:
     [[nodiscard]] neutrino::application_description describe() const noexcept override{
       neutrino::main_window_description d(320, 200);
       return {d, 60};
@@ -27,14 +32,20 @@ class app : public neutrino::application {
       if (events()["EXIT"]) {
         this->close();
       }
+      if (auto m = events()[neutrino::pointer_button_t::LEFT]) {
+        x = m->x;
+        y = m->y;
+      }
     }
 
     void draw_frame() override {
       m_renderer->active_color({0xFF,0,0,0xFF});
-      m_renderer->aa_circle (100, 100, 20);
+      m_renderer->aa_circle (x, y, 20);
     }
 
     neutrino::hal::renderer* m_renderer;
+    int x;
+    int y;
 };
 
 int main(int argc, char* argv[]) {

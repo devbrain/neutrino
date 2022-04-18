@@ -49,52 +49,59 @@ namespace neutrino::hal::events {
 
   using coords_t = neutrino::math::point2d;
 
-  enum class pointer_button_t {
-      LEFT,
-      RIGHT,
-      MIDDLE,
-      X1,
-      X2,
-      WHEEL
+  BEGIN_BITFLAGS(pointer_button_t)
+    FLAG(LEFT)
+    FLAG(RIGHT)
+    FLAG(MIDDLE)
+    FLAG(X1)
+    FLAG(X2)
+    FLAG(WHEEL)
+    FLAG(NONE)
+  END_BITFLAGS(pointer_button_t)
+
+  enum class pointer_state_t {
+    PRESSED,
+    RELEASED,
+    MOTION
   };
 
   // Aggregates mouse and touch events
   struct pointer {
     std::optional<uint32_t> device_id;
     pointer_button_t button;
-    bool pressed;
+    pointer_state_t  state;
     coords_t point;
     std::optional<coords_t> relative_motion;
 
-    pointer (uint32_t mouse_device_id, pointer_button_t pointer_button, bool is_pressed,
+    pointer (uint32_t mouse_device_id, pointer_button_t pointer_button, pointer_state_t ps,
              coords_t point_coord, coords_t relative_motion_coord)
         : device_id (mouse_device_id),
           button (pointer_button),
-          pressed (is_pressed),
+          state (ps),
           point (point_coord),
           relative_motion (relative_motion_coord) {
     }
 
-    pointer (pointer_button_t pointer_button, bool is_pressed,
+    pointer (pointer_button_t pointer_button, pointer_state_t ps,
              coords_t point_coord, coords_t relative_motion_coord)
         : button (pointer_button),
-          pressed (is_pressed),
+          state(ps),
           point (point_coord),
           relative_motion (relative_motion_coord) {
     }
 
-    pointer (uint32_t mouse_device_id, pointer_button_t pointer_button, bool is_pressed,
+    pointer (uint32_t mouse_device_id, pointer_button_t pointer_button, pointer_state_t ps,
              coords_t point_coord)
         : device_id (mouse_device_id),
           button (pointer_button),
-          pressed (is_pressed),
+          state(ps),
           point (point_coord) {
     }
 
-    pointer (pointer_button_t pointer_button, bool is_pressed,
+    pointer (pointer_button_t pointer_button, pointer_state_t ps,
              coords_t point_coord)
         : button (pointer_button),
-          pressed (is_pressed),
+          state(ps),
           point (point_coord) {
     }
   };

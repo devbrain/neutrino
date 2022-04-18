@@ -17,10 +17,18 @@ namespace neutrino {
 
       std::unordered_set<uint32_t> tmp_events;
       m_events.swap (tmp_events);
+
+      m_pointer_event = std::nullopt;
+    }
+
+    mouse_t get_mouse() const {
+      mouse_data m{m_pointer_event->button, m_pointer_event->state, m_pointer_event->point[0], m_pointer_event->point[1]};
+      return m;
     }
 
     std::unordered_set<kbd_actions, kbd_actions_hash> m_keys;
     std::unordered_set<uint32_t> m_events;
+    std::optional<hal::events::pointer> m_pointer_event;
   };
 
   events_holder::events_holder () {
@@ -59,5 +67,69 @@ namespace neutrino {
 
   void events_holder::set(bool is_pressed, key_mod_t mod, scan_code_t btn) {
     m_pimpl->m_keys.insert(kbd_actions(is_pressed, mod, btn));
+  }
+
+  void events_holder::set (const hal::events::pointer& ev) {
+    m_pimpl->m_pointer_event = ev;
+  }
+
+  mouse_t events_holder::operator [] (pointer_state_t x) const {
+    if (!m_pimpl->m_pointer_event) {
+      return {};
+    }
+    if (m_pimpl->m_pointer_event->state == x) {
+      return m_pimpl->get_mouse();
+    }
+    return {};
+  }
+
+  mouse_t events_holder::operator [] (pointer_button_t x) const {
+    if (!m_pimpl->m_pointer_event) {
+      return {};
+    }
+    if (m_pimpl->m_pointer_event->button == x) {
+      return m_pimpl->get_mouse();
+    }
+    return {};
+  }
+
+  mouse_t events_holder::pressed (pointer_button_t btn) const {
+    if (!m_pimpl->m_pointer_event) {
+      return {};
+    }
+    if (m_pimpl->m_pointer_event->state == pointer_state_t::PRESSED && m_pimpl->m_pointer_event->button == btn) {
+      return m_pimpl->get_mouse();
+    }
+    return {};
+  }
+
+  mouse_t events_holder::moved (pointer_button_t btn) const {
+    if (!m_pimpl->m_pointer_event) {
+      return {};
+    }
+    if (m_pimpl->m_pointer_event->state == pointer_state_t::MOTION && m_pimpl->m_pointer_event->button == btn) {
+      return m_pimpl->get_mouse();
+    }
+    return {};
+  }
+
+  mouse_t events_holder::moved () const {
+    if (!m_pimpl->m_pointer_event) {
+      return {};
+    }
+    if (m_pimpl->m_pointer_event->state == pointer_state_t::MOTION) {
+      return m_pimpl->get_mouse();
+    }
+    return {};
+  }
+
+  mouse_t events_holder::released (pointer_button_t btn) const {
+    if (!m_pimpl->m_pointer_event) {
+      return {};
+    }
+    if (m_pimpl->m_pointer_event->state == pointer_state_t::RELEASED && m_pimpl->m_pointer_event->button == btn) {
+      return m_pimpl->get_mouse();
+    }
+    return {};
   }
 }

@@ -52,15 +52,34 @@ namespace neutrino::hal::events {
     }
   }
 
+  static pointer_button_t map_pointer_button (uint32_t x) {
+    pointer_button_t ret = pointer_button_t::NONE;
+    if (x & SDL_BUTTON_LMASK) {
+      ret |= pointer_button_t::LEFT;
+    }
+    if (x & SDL_BUTTON_RMASK) {
+      ret |= pointer_button_t::RIGHT;
+    }
+    if (x & SDL_BUTTON_MMASK) {
+      ret |= pointer_button_t::MIDDLE;
+    }
+    if (x & SDL_BUTTON_X1MASK) {
+      ret |= pointer_button_t::X1;
+    }
+    if (x & SDL_BUTTON_X2MASK) {
+      ret |= pointer_button_t::X2;
+    }
+    return ret;
+  }
   // -----------------------------------------------------------------------------------
   pointer map_event (const sdl::events::mouse_button& m) {
-    return {m.mouse_id, map_pointer_button (m.button), m.pressed, coords_t{m.x, m.y}};
+    return {m.mouse_id, map_pointer_button (m.button), m.pressed ? pointer_state_t::PRESSED : pointer_state_t::RELEASED, coords_t{m.x, m.y}};
   }
 
   pointer map_event (const sdl::events::mouse_motion& m) {
     return {m.mouse_id,
-                    map_pointer_button (m.button),
-                    false,
+            map_pointer_button (m.state),
+                    pointer_state_t::MOTION,
                     coords_t{m.x, m.y},
                     coords_t{m.xrel, m.yrel}
     };
@@ -69,21 +88,21 @@ namespace neutrino::hal::events {
   pointer map_event (const sdl::events::mouse_wheel& m) {
     return {m.mouse_id,
                     pointer_button_t::WHEEL,
-                    true,
+                    pointer_state_t::PRESSED,
                     coords_t{m.x, m.y}
     };
   }
 
   pointer map_event (const sdl::events::touch_device_button& m) {
     return {map_pointer_button (m.button),
-                    false,
+                    pointer_state_t::PRESSED,
                     coords_t{m.x, m.y}
     };
   }
 
   pointer map_event (const sdl::events::touch_device_motion& m) {
     return {map_pointer_button (m.button),
-                    false,
+            pointer_state_t::MOTION,
                     coords_t{m.x, m.y},
                     coords_t{m.xrel, m.yrel}
     };
@@ -91,7 +110,7 @@ namespace neutrino::hal::events {
 
   pointer map_event (const sdl::events::touch_device_wheel& m) {
     return {pointer_button_t::WHEEL,
-                    true,
+            pointer_state_t::PRESSED,
                     coords_t{m.x, m.y}
     };
   }

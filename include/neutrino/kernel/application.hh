@@ -11,6 +11,7 @@
 #include <neutrino/kernel/application_description.hh>
 #include <neutrino/kernel/hdi/events.hh>
 #include <neutrino/kernel/hdi/input_config.hh>
+#include <neutrino/kernel/hdi/pointer_config.hh>
 
 namespace neutrino {
   class main_window;
@@ -24,6 +25,8 @@ namespace neutrino {
       void execute();
     protected:
       input_config_base& input_config();
+      pointer_config_base& mouse_config();
+
       events_holder& events();
     protected:
       [[nodiscard]] virtual application_description describe() const noexcept = 0;

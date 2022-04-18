@@ -5,6 +5,7 @@
 #include <neutrino/kernel/application.hh>
 #include "main_window.hh"
 #include "hdi/kbd_mapper.hh"
+#include "hdi/pointer_mapper.hh"
 
 namespace neutrino {
   struct application::impl {
@@ -13,7 +14,8 @@ namespace neutrino {
           paused(false),
           renderer (nullptr),
           m_events(),
-          m_kbd_mapper (m_events) {
+          m_kbd_mapper (m_events),
+          m_pointer_mapper (m_events) {
     }
 
     ~impl() = default;
@@ -24,6 +26,7 @@ namespace neutrino {
 
     events_holder m_events;
     kbd_mapper m_kbd_mapper;
+    pointer_mapper m_pointer_mapper;
   };
 
   neutrino::application::application () {
@@ -98,7 +101,7 @@ namespace neutrino {
   }
 
   void neutrino::application::on_pointer_input (const hal::events::pointer& ev) {
-    // todo
+    m_pimpl->m_pointer_mapper.handle_event (ev);
   }
 
   void application::do_draw_frame () {
@@ -132,5 +135,9 @@ namespace neutrino {
 
   events_holder& application::events() {
     return m_pimpl->m_events;
+  }
+
+  pointer_config_base& application::mouse_config() {
+    return m_pimpl->m_pointer_mapper;
   }
 }

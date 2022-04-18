@@ -160,7 +160,7 @@ namespace neutrino::sdl::events {
   struct mouse_motion : public detail::window_event {
     public:
       mouse_id_t mouse_id;
-      mousebutton button;
+      uint32_t state;
       int x;
       int y;
       int xrel;
@@ -169,7 +169,7 @@ namespace neutrino::sdl::events {
       explicit mouse_motion (const SDL_MouseMotionEvent& e)
           : detail::window_event (e.windowID),
             mouse_id (static_cast <mouse_id_t> (e.which)),
-            button (static_cast <mousebutton> (e.state)),
+            state (e.state),
             x (e.x),
             y (e.y),
             xrel (e.xrel),

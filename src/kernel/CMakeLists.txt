@@ -18,6 +18,10 @@ my_add_library_static(kernel
         hdi/kbd_mapper.hh
         ${PROJECT_INCLUDE}/neutrino/kernel/hdi/input_config.hh
         hdi/input_config.cc
+        ${PROJECT_INCLUDE}/neutrino/kernel/hdi/pointer_config.hh
+        hdi/pointer_config.cc
+        hdi/pointer_mapper.cc
+        hdi/pointer_mapper.hh
 
         DEPENDS_PUBLIC
             neutrino::hal
