@@ -119,41 +119,6 @@ namespace neutrino::hal {
     protected:
       spimpl::unique_impl_ptr<detail::window> m_pimpl;
   };
-
-  // =====================================================================================
-  class window_2d : public window {
-    public:
-      window_2d ();
-      explicit window_2d (window_flags_t flags);
-
-      [[nodiscard]] renderer get_renderer () const;
-    private:
-      void clear () override;
-      void present () override;
-  };
-
-#if defined(NEUTRINO_HAS_OPENGL)
-
-  class window_opengl : public window {
-    public:
-      window_opengl ();
-      explicit window_opengl (window_flags_t flags);
-    private:
-      void clear () override;
-      void present () override;
-  };
-
-#endif
-
-#if defined(NEUTRINO_HAS_VULKAN)
-
-  class window_vulkan : public window {
-    public:
-      window_vulkan ();
-      explicit window_vulkan (window_flags_t flags);
-  };
-
-#endif
 }
 
 #endif

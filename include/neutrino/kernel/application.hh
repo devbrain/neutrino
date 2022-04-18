@@ -6,63 +6,88 @@
 #define INCLUDE_NEUTRINO_KERNEL_APPLICATION_HH
 
 #include <memory>
-#include <string>
-
-#include <neutrino/kernel/events.hh>
-#include <neutrino/kernel/system.hh>
-#include <neutrino/kernel/systems/base_input_system.hh>
-#include <neutrino/kernel/systems/video/video_system.hh>
-
 #include <neutrino/hal/application.hh>
-#include <neutrino/utils/spimpl.h>
+#include <neutrino/hal/video/renderer.hh>
+#include <neutrino/kernel/application_description.hh>
+#include <neutrino/kernel/hdi/events.hh>
+#include <neutrino/kernel/hdi/input_config.hh>
 
-namespace neutrino::kernel {
+namespace neutrino {
+  class main_window;
+
   class application : public hal::application {
+      friend class main_window;
     public:
-      template <typename ... System>
-      application(std::unique_ptr<base_input_system> input_sys,
-                  std::unique_ptr<video_system> video_sys,
-                  std::unique_ptr<System> ... sys) {
-        add_system (std::move(input_sys));
-        add_system (std::move(video_sys));
-        ((this->add_system (std::move(sys))), ...);
-        post_init();
-      }
-
+      application();
       ~application() override;
 
-      void show (int w, int h);
-      void show (int w, int h, hal::window_flags_t flags);
-      void show (int w, int h, int x, int y, hal::window_flags_t flags);
+      void execute();
+    protected:
+      input_config_base& input_config();
+      events_holder& events();
+    protected:
+      [[nodiscard]] virtual application_description describe() const noexcept = 0;
+      /**
+       * This method is called before entering the game loop and after video initialization
+       */
+      virtual void init(hal::renderer& renderer) = 0;
 
-      void toggle_full_screen();
-      void set_title(const std::string& title);
+      /**
+       * This method is called every frame
+       * @param ms time passed since last frame
+       */
+      virtual void update_logic(std::chrono::milliseconds ms) = 0;
 
-      void pause(bool v);
-      [[nodiscard]] bool paused() const noexcept;
-    private:
+      virtual void draw_frame() = 0;
+
+      /**
+       * This method is called before application is exiting and while video is still active
+       */
+      virtual void on_exit();
+
+    protected:
+      // Event handlers
       void on_terminating () override;
       void on_low_memory () override;
       void on_will_enter_background () override;
       void on_in_background () override;
       void on_in_foreground () override;
 
-      void clear () override;
-      void update (std::chrono::milliseconds ms) override;
-      void render () override;
-      void setup () override;
+      virtual void on_window_resized (unsigned new_w, unsigned new_h);
+      /**
+       * This method is called when entering to the paused state
+       */
+      virtual void on_paused();
 
-      void post_init();
+      /**
+       * This method is called when exiting from the paused state
+       */
+      virtual void on_resumed();
+    protected:
+      // Commands
+      /**
+       * Closes application
+       */
+      void close();
+
+      /**
+       * Toggle fullscreen
+       */
+      void toggle_fullscreen();
+
+      /**
+       * Pause game loop
+       */
+      void set_paused(bool v);
+      [[nodiscard]] bool is_paused() const noexcept;
     private:
-      static void add_system(std::unique_ptr<base_input_system> input_sys);
-      static void add_system(std::unique_ptr<video_system> video_sys);
-      [[maybe_unused]] static
-      void add_system(std::unique_ptr<system> sys);
+      void update (std::chrono::milliseconds ms) override;
+      void on_keyboard_input (const hal::events::keyboard& ev);
+      void on_pointer_input (const hal::events::pointer& ev);
+      void do_draw_frame();
     private:
       struct impl;
-      spimpl::unique_impl_ptr<impl> m_pimpl;
+      std::unique_ptr<impl> m_pimpl;
   };
-
-  application* get_application();
 }
 #endif //INCLUDE_NEUTRINO_KERNEL_APPLICATION_HH

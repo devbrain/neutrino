@@ -12,11 +12,7 @@
 
 namespace neutrino::hal::detail {
   struct window {
-    ~window () {
-      // workaround for strange out of order destruction
-      sdl_renderer.destroy ();
-      sdl_window.destroy ();
-    }
+    ~window () = default;
 
     sdl::window::flags_t kind_flag;
     std::optional<window_flags_t> flags;
@@ -37,7 +33,6 @@ namespace neutrino::hal::detail {
     bool keyboard_focus;
 
     sdl::window sdl_window;
-    sdl::renderer sdl_renderer;
 
     template <typename Flag>
     sdl::window::flags_t get_flag (Flag f, sdl::window::flags_t x) {

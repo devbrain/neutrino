@@ -14,7 +14,7 @@
 #	error Unsupported compiler.
 #endif
 
-namespace detail {
+namespace neutrino::utils::detail {
   constexpr uint32_t crc32 (std::string_view str) {
     constexpr unsigned int crc_table[256] = {
         0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -68,5 +68,5 @@ namespace detail {
   }
 } // ns detail
 template <typename T>
-inline constexpr auto type_hash_v = detail::crc32 (type_name<T>::value);
+inline constexpr auto type_hash_v = neutrino::utils::detail::crc32 (type_name<T>::value);
 #endif

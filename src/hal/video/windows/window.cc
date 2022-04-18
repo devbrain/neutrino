@@ -83,17 +83,14 @@ namespace neutrino::hal {
 
     m_pimpl->width = w;
     m_pimpl->height = h;
-    m_pimpl->sdl_renderer = sdl::renderer (m_pimpl->sdl_window);
     windows_manager::instance ().attach (m_pimpl->sdl_window, this);
 
     after_window_opened ();
   }
-
   // ----------------------------------------------------------------------------------------------------
   void window::after_window_opened () {
 
   }
-
   // ----------------------------------------------------------------------------------------------------
   void window::focus () noexcept {
     if (m_pimpl->visible) {
@@ -229,8 +226,8 @@ namespace neutrino::hal {
   void window::_window_resized (int w, int h) {
     m_pimpl->width = w;
     m_pimpl->height = h;
-    on_window_invalidate ();
     on_window_resized (w, h);
+    on_window_invalidate ();
     present ();
   }
 
@@ -279,66 +276,5 @@ namespace neutrino::hal {
 
   // ----------------------------------------------------------------------------------------------------
   void window::on_window_resized ([[maybe_unused]] int w, [[maybe_unused]]  int h) {
-
-  }
-  // ====================================================================================================
-#if defined(NEUTRINO_HAS_OPENGL)
-
-  window_opengl::window_opengl ()
-      : window (window::window_kind_t::OPENGL) {
-  }
-
-  // ----------------------------------------------------------------------------------------------------
-  window_opengl::window_opengl (window_flags_t flags)
-      : window (window::window_kind_t::OPENGL, flags) {
-  }
-
-  // ----------------------------------------------------------------------------------------------------
-  void window_opengl::clear () {
-
-  }
-  // ----------------------------------------------------------------------------------------------------
-  void window_opengl::present () {
-    m_pimpl->sdl_window.swap_opengl_window ();
-  }
-  // ----------------------------------------------------------------------------------------------------
-#endif
-#if defined(NEUTRINO_HAS_VULKAN)
-
-  window_vulkan::window_vulkan ()
-      : window (window::window_kind_t::VULKAN) {
-  }
-
-  // ----------------------------------------------------------------------------------------------------
-  window_vulkan::window_vulkan (window_flags_t flags)
-      : window (window::window_kind_t::VULKAN, flags) {
-  }
-  // ----------------------------------------------------------------------------------------------------
-#endif
-
-  window_2d::window_2d ()
-      : window (window::window_kind_t::SIMPLE) {
-
-  }
-
-  // ----------------------------------------------------------------------------------------------------
-  window_2d::window_2d (window_flags_t flags)
-      : window (window::window_kind_t::SIMPLE, flags) {
-
-  }
-
-  // ----------------------------------------------------------------------------------------------------
-  renderer window_2d::get_renderer () const {
-    return renderer (std::make_unique<detail::renderer_impl> (sdl::object<SDL_Renderer> (m_pimpl->sdl_renderer.const_handle (), false)));
-  }
-
-  // ----------------------------------------------------------------------------------------------------
-  void window_2d::clear () {
-    m_pimpl->sdl_renderer.clear ();
-  }
-
-  // ----------------------------------------------------------------------------------------------------
-  void window_2d::present () {
-    m_pimpl->sdl_renderer.present ();
   }
 }
