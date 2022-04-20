@@ -27,6 +27,8 @@ namespace neutrino::hal {
       virtual ~image_loader ();
       virtual surface load (std::istream& is) = 0;
       virtual bool test (std::istream& is) const = 0;
+
+      static void init();
     protected:
       static surface create (std::unique_ptr<detail::surface_impl>&& impl);
   };

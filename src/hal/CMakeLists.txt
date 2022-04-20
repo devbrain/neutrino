@@ -76,6 +76,7 @@ my_add_library_static(hal
         video/thirdparty/SDL_ttf.h
         video/thirdparty/SDL_ttf.c
         video/stb_image_loader.cc
+        video/stb_image_loader.hh
         ios_rwops.hh
 
         video/thirdparty/gfx/SDL2_gfxPrimitives.c

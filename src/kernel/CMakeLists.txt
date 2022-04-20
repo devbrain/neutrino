@@ -23,6 +23,13 @@ my_add_library_static(kernel
         hdi/pointer_mapper.cc
         hdi/pointer_mapper.hh
 
+        ${PROJECT_INCLUDE}/neutrino/kernel/gfx/tilesheet_info.hh
+        gfx/tilesheet_info.cc
+        ${PROJECT_INCLUDE}/neutrino/kernel/gfx/tilesheet.hh
+        gfx/tilesheet.cc
+        ${PROJECT_INCLUDE}/neutrino/kernel/gfx/grid_image.hh
+        gfx/grid_image.cc
+
         DEPENDS_PUBLIC
             neutrino::hal
             neutrino::utils

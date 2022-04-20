@@ -8,6 +8,7 @@
 
 #include <neutrino/hal/video/image_loader.hh>
 #include <neutrino/utils/exception.hh>
+#include "stb_image_loader.hh"
 
 namespace neutrino::hal {
 
@@ -51,5 +52,9 @@ namespace neutrino::hal {
       is.seekg (offs);
     }
     RAISE_EX("Failed to load image");
+  }
+
+  void image_loader::init () {
+    detail::register_stb_loaders();
   }
 }

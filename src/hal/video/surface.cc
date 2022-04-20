@@ -140,6 +140,11 @@ namespace neutrino::hal {
     return m_pimpl->surface.pixels_data ();
   }
 
+  std::tuple<unsigned, unsigned> surface::dimensions() const noexcept {
+    const auto* s = m_pimpl->surface.handle();
+    return {static_cast<unsigned> (s->w), static_cast<unsigned> (s->h)};
+  }
+
   void surface::fill (const math::rect& r, uint32_t c) {
     m_pimpl->surface.fill (cast (r), c);
   }

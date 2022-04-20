@@ -3,6 +3,9 @@
 //
 
 #include <neutrino/kernel/application.hh>
+#include <neutrino/kernel/gfx/grid_image.hh>
+#include <neutrino/utils/io/memory_stream_buf.hh>
+#include "assets/foo.h"
 
 class app : public neutrino::application {
   public:
@@ -22,6 +25,14 @@ class app : public neutrino::application {
       m_renderer = &renderer;
 
       input_config().when_pressed (neutrino::scan_code_t::ESCAPE, "EXIT");
+
+      // Load resources
+      neutrino::utils::io::memory_input_stream is((const char*)foo, sizeof (foo));
+      neutrino::gfx::tile_sheet_info ti(64, 255, 0, 0, 0,0, 4);
+      neutrino::gfx::grid_image src(
+            is,
+            ti
+          );
     }
 
     /**

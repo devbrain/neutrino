@@ -139,18 +139,20 @@ namespace neutrino::hal {
 
       // returns pixels, pitch, w, h
       [[nodiscard]] std::tuple<void*, std::size_t, unsigned, unsigned> pixels_data () const;
+      [[nodiscard]] std::tuple<unsigned, unsigned> dimensions() const noexcept;
 
       void fill (const math::rect& r, uint32_t c);
       void fill (const math::rect& r, const color& c);
       void fill (uint32_t c);
       void fill (const color& c);
 
-      surface convert (const pixel_format& fmt) const;
+      [[nodiscard]] surface convert (const pixel_format& fmt) const;
 
       [[nodiscard]] pixel_format get_pixel_format () const;
       [[nodiscard]] uint32_t map_color (const color& c);
 
-      surface roto_zoom (double angle, double zoomx, double zoomy, bool smooth);
+
+      [[nodiscard]] surface roto_zoom (double angle, double zoomx, double zoomy, bool smooth);
 
     private:
       surface (std::unique_ptr<detail::surface_impl>&& impl);
