@@ -33,6 +33,7 @@ class app : public neutrino::application {
             is,
             ti
           );
+      int x = 0;
     }
 
     /**

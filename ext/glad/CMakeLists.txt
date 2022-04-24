@@ -2,6 +2,7 @@ fetchcontent_declare(
         glad
         GIT_REPOSITORY https://github.com/Dav1dde/glad.git
         GIT_TAG master
+        UPDATE_COMMAND ""
 )
 
 fetchcontent_makeavailable(glad)

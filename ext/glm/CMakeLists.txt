@@ -1,6 +1,7 @@
 fetchcontent_declare(
         GLM
         GIT_REPOSITORY "https://github.com/g-truc/glm.git"
+        UPDATE_COMMAND ""
 )
 fetchcontent_makeavailable(GLM)
 add_library(thirdparty::glm ALIAS glm)

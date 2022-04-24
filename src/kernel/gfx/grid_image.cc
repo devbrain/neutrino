@@ -22,12 +22,12 @@ namespace neutrino::gfx {
 
       unsigned tu = id % width;
       unsigned tv = id / width;
-      ENFORCE(tv < height);
+      //ENFORCE(tv <= height);
 
       unsigned du = margin + tu * spacing + offset_x;
       unsigned dv = margin + tv * spacing + offset_y;
-      ENFORCE(((tu + 1) * tilewidth + du) <= canvas_w);
-      ENFORCE(((tv + 1) * tileheight + dv) <= canvas_h);
+      //ENFORCE(((tu + 1) * tilewidth + du) <= canvas_w);
+      //ENFORCE(((tv + 1) * tileheight + dv) <= canvas_h);
 
       return {(int) (tu * tilewidth + du), (int) (tv * tileheight + dv), (int) tilewidth, (int) tileheight};
     }

@@ -5,6 +5,7 @@ fetchcontent_declare(
         GIT_REPOSITORY "https://github.com/biojppm/rapidyaml.git"
         GIT_TAG master     # or a particular branch, tag or commit
         GIT_SHALLOW FALSE  # ensure submodules are checked out
+        UPDATE_COMMAND ""
 )
 fetchcontent_makeavailable(RYAML)
 

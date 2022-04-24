@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <istream>
+#include <ios>
 #include <fstream>
 
 #include <neutrino/hal/video/image_loader.hh>
@@ -42,14 +43,14 @@ namespace neutrino::hal {
     auto offs = is.tellg ();
     for (auto* loader : detail::loaders_registry ()) {
       if (loader->test (is)) {
-        is.seekg (offs);
+        is.seekg (offs, std::ios::beg);
         auto s = loader->load (is);
         if (!s) {
           RAISE_EX("Failed to load image");
         }
         return s;
       }
-      is.seekg (offs);
+      is.seekg (offs, std::ios::beg);
     }
     RAISE_EX("Failed to load image");
   }

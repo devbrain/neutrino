@@ -2,6 +2,7 @@ fetchcontent_declare(
         imgui
         GIT_REPOSITORY "https://github.com/ocornut/imgui.git"
         GIT_TAG master
+        UPDATE_COMMAND ""
 )
 
 fetchcontent_makeavailable(imgui)

@@ -5,6 +5,7 @@ remove_all_warnings()
 fetchcontent_declare(
         RE2C
         URL https://github.com/skvadrik/re2c/archive/refs/tags/2.2.zip
+        UPDATE_COMMAND ""
 )
 
 fetchcontent_makeavailable(RE2C)
