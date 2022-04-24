@@ -11,7 +11,7 @@
 namespace neutrino::utils::io {
   class libz_stream : public z_stream, public compression_stream {
     public:
-      libz_stream(bool is_input, int level = Z_DEFAULT_COMPRESSION);
+      libz_stream(bool is_input, bool is_gzip, int level = Z_DEFAULT_COMPRESSION);
       ~libz_stream();
 
       int decompress(const int flags = Z_NO_FLUSH) override;

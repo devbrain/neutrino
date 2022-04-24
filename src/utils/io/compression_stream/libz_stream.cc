@@ -36,7 +36,7 @@ namespace neutrino::utils::io {
 
 #define THROW RAISE_EX("zlib error:", error2string (m_ret), " : ", this->msg);
 
-  libz_stream::libz_stream (bool is_input, int level)
+  libz_stream::libz_stream (bool is_input, bool is_gzip, int level)
       : m_is_input (is_input) {
     this->zalloc = Z_NULL;
     this->zfree = Z_NULL;
@@ -47,7 +47,7 @@ namespace neutrino::utils::io {
       m_ret = inflateInit2(this, 15 + 32);
     }
     else {
-      m_ret = deflateInit2(this, level, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY);
+      m_ret = deflateInit2(this, level, Z_DEFLATED, 15 + (is_gzip ? 16 : 0), 8, Z_DEFAULT_STRATEGY);
     }
     if (m_ret != Z_OK) {
       THROW;
