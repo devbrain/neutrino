@@ -6,6 +6,7 @@
 #include <neutrino/utils/exception.hh>
 
 #include "libz_stream.hh"
+#include "bzip_stream.hh"
 
 
 namespace neutrino::utils::io {
@@ -22,6 +23,8 @@ namespace neutrino::utils::io {
         return std::make_unique<libz_compressor>(libz_kind_t::RAW, level);
       case compression_type_t::ZSTD:
         return std::make_unique<libz_compressor>(libz_kind_t::ZSTD, level);
+      case compression_type_t::BZ2:
+        return std::make_unique<bzip_compressor>(level);
       default:
         RAISE_EX("Should not be here");
     }
@@ -37,6 +40,8 @@ namespace neutrino::utils::io {
         return std::make_unique<libz_decompressor>(libz_kind_t::RAW);
       case compression_type_t::ZSTD:
         return std::make_unique<libz_decompressor>(libz_kind_t::ZSTD);
+      case compression_type_t::BZ2:
+        return std::make_unique<bzip_decompressor>();
       default:
         RAISE_EX("Should not be here");
     }

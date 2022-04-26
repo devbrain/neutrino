@@ -5,32 +5,47 @@
 #ifndef SRC_UTILS_IO_COMPRESSION_STREAM_BZIP_STREAM_HH
 #define SRC_UTILS_IO_COMPRESSION_STREAM_BZIP_STREAM_HH
 
-#include <thirdparty/bzip2/bzlib.h>
+
 #include <utils/io/compression_stream/compression_stream.hh>
+#include <neutrino/utils/spimpl.h>
 
 namespace neutrino::utils::io {
-  class bzip_stream : public bz_stream, public compression_stream {
+  namespace detail {
+    struct bzip_impl;
+  }
+
+
+  class bzip_stream {
     public:
-      bzip_stream(bool is_input, int level = 9, int wf = 30);
+      bzip_stream();
       ~bzip_stream();
 
-      int decompress(flush_mode_t flags) override;
-      int compress(flush_mode_t flags) override;
-      bool stream_end() const override;
-      bool done() const override;
+      [[nodiscard]] const uint8_t* next_in() const;
+      [[nodiscard]] std::size_t avail_in() const;
+      [[nodiscard]] uint8_t* next_out() const;
+      [[nodiscard]] std::size_t avail_out() const;
 
-      const uint8_t* next_in() const override;
-      long avail_in() const override;
-      uint8_t* next_out() const override;
-      long avail_out() const override;
+      void set_next_in(const unsigned char* in);
+      void set_avail_in(std::size_t in);
+      void set_next_out(const uint8_t* in);
+      void set_avail_out(std::size_t in);
+    protected:
+      spimpl::unique_impl_ptr<detail::bzip_impl> m_pimpl;
+  };
 
-      void set_next_in(const unsigned char* in) override;
-      void set_avail_in(const long in) override;
-      void set_next_out(const uint8_t* in) override;
-      void set_avail_out(const long in) override;
-    private:
-      bool m_is_input;
-      int ret;
+  class bzip_compressor : public compression_stream_impl<bzip_stream> {
+    public:
+      explicit bzip_compressor(compression_level_t level);
+      status_t compress(flush_mode_t flags) override;
+      void finalize() override;
+  };
+
+  class bzip_decompressor : public decompression_stream_impl<bzip_stream> {
+    public:
+      bzip_decompressor();
+      status_t decompress(flush_mode_t flags) override;
+      void finalize() override;
+      void reset() override;
   };
 }
 

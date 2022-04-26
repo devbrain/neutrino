@@ -59,10 +59,8 @@ my_add_library_static(utils
         io/compression_stream/zstd_wrapper.c
         io/compression_stream/libz_stream.cc
         io/compression_stream/libz_stream.hh
-        #io/compression_stream/zstd_stream.cc
-        #io/compression_stream/zstd_stream.hh
-        #io/compression_stream/bzip_stream.cc
-        #io/compression_stream/bzip_stream.hh
+        io/compression_stream/bzip_stream.cc
+        io/compression_stream/bzip_stream.hh
         #io/compression_stream/lzma_stream.cc
         #io/compression_stream/lzma_stream.hh
 
