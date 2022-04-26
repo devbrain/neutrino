@@ -53,16 +53,16 @@ namespace neutrino::tiled::tmx {
         std::vector<char> res;
         if (!compression.empty ()) {
 
-          auto type = utils::io::inflating_stream_buf::STREAM_ZLIB;
+          auto type = utils::io::compression_type_t::ZLIB;
           switch (switcher (compression.c_str ())) {
             case "gzip"_case:
-              type = utils::io::inflating_stream_buf::STREAM_GZIP;
+              type = utils::io::compression_type_t::GZIP;
               break;
             case "zlib"_case:
-              type = utils::io::inflating_stream_buf::STREAM_ZLIB;
+              type = utils::io::compression_type_t::ZLIB;
               break;
             case "zstd"_case:
-              type = utils::io::inflating_stream_buf::STREAM_ZSTD;
+              type = utils::io::compression_type_t::ZSTD;
               break;
             default:
               RAISE_EX("Unsupported compression type ", compression);

@@ -52,7 +52,7 @@ namespace neutrino::utils::io {
       basic_buffered_stream_buf (const basic_buffered_stream_buf&) = delete;
       basic_buffered_stream_buf& operator = (const basic_buffered_stream_buf&) = delete;
 
-      virtual int_type overflow (int_type c) {
+      int_type overflow (int_type c) override {
         if (!(_mode & IOS::out))
           return char_traits::eof ();
 
@@ -66,7 +66,7 @@ namespace neutrino::utils::io {
         return c;
       }
 
-      virtual int_type underflow () {
+      int_type underflow () override {
         if (!(_mode & IOS::in))
           return char_traits::eof ();
 
@@ -89,7 +89,7 @@ namespace neutrino::utils::io {
         return char_traits::to_int_type (*this->gptr ());
       }
 
-      virtual int sync () {
+      int sync () override {
         if (this->pptr () && this->pptr () > this->pbase ()) {
           if (flushBuffer () == -1)
             return -1;

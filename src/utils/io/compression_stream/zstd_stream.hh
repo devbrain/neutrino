@@ -12,6 +12,7 @@
 
 namespace neutrino::utils::io {
   class zstd_stream : public compression_stream {
+    public:
       zstd_stream (bool is_input = true, int level = ZSTD_defaultCLevel ());
       ~zstd_stream () override;
 

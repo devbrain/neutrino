@@ -14,8 +14,8 @@ namespace neutrino::utils::io {
       lzma_compression_stream(bool isinput, int level = 2, int flags = 0);
       ~lzma_compression_stream();
 
-      int decompress(const int flags) override;
-      int compress(const int flags = LZMA_RUN) override;
+      int decompress(flush_mode_t flags) override;
+      int compress(flush_mode_t flags  /*LZMA_RUN*/) override;
       bool stream_end() const override;
       bool done() const override;
 

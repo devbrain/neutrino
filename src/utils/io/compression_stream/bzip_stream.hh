@@ -14,8 +14,8 @@ namespace neutrino::utils::io {
       bzip_stream(bool is_input, int level = 9, int wf = 30);
       ~bzip_stream();
 
-      int decompress(const int flags) override;
-      int compress(const int flags) override;
+      int decompress(flush_mode_t flags) override;
+      int compress(flush_mode_t flags) override;
       bool stream_end() const override;
       bool done() const override;
 

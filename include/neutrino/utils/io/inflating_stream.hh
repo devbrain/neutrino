@@ -8,6 +8,7 @@
 #include <ostream>
 #include <istream>
 #include <neutrino/utils/io/buffered_stream_buf.hh>
+#include <neutrino/utils/io/compression_type.hh>
 #include <neutrino/utils/spimpl.h>
 
 namespace neutrino::utils::io {
@@ -18,34 +19,13 @@ namespace neutrino::utils::io {
   /// proper completion of decompression.
   class inflating_stream_buf : public buffered_stream_buf {
     public:
-      enum type_t {
-        STREAM_ZLIB, /// Expect a zlib header, use Adler-32 checksum.
-        STREAM_GZIP, /// Expect a gzip header, use CRC-32 checksum.
-        STREAM_ZIP,   /// STREAM_ZIP is handled as STREAM_ZLIB, except that we do not check the ADLER32 value (must be checked by caller)
-        STREAM_ZSTD
-      };
-
       /// Creates an InflatingStreamBuf for expanding the compressed data read from
       /// the give input stream.
-      inflating_stream_buf (std::istream& istr, type_t type);
-
-      /// Creates an InflatingStreamBuf for expanding the compressed data read from
-      /// the given input stream.
-      ///
-      /// Please refer to the zlib documentation of inflateInit2() for a description
-      /// of the windowBits parameter.
-      inflating_stream_buf (std::istream& istr, int windowBits);
+      inflating_stream_buf (std::istream& istr, compression_type_t type);
 
       /// Creates an InflatingStreamBuf for expanding the compressed data passed through
       /// and forwarding it to the given output stream.
-      inflating_stream_buf (std::ostream& ostr, type_t type);
-
-      /// Creates an InflatingStreamBuf for expanding the compressed data passed through
-      /// and forwarding it to the given output stream.
-      ///
-      /// Please refer to the zlib documentation of inflateInit2() for a description
-      /// of the windowBits parameter.
-      inflating_stream_buf (std::ostream& ostr, int windowBits);
+      inflating_stream_buf (std::ostream& ostr, compression_type_t type);
 
       ~inflating_stream_buf () override;
 
@@ -75,26 +55,13 @@ namespace neutrino::utils::io {
       /// Creates an InflatingIOS for expanding the compressed data passed through
       /// and forwarding it to the given output stream.
       explicit inflating_ios (std::ostream& ostr,
-                              inflating_stream_buf::type_t type = inflating_stream_buf::STREAM_ZLIB);
+                              compression_type_t type = compression_type_t::ZLIB);
 
-      /// Creates an InflatingIOS for expanding the compressed data passed through
-      /// and forwarding it to the given output stream.
-      ///
-      /// Please refer to the zlib documentation of inflateInit2() for a description
-      /// of the windowBits parameter.
-      inflating_ios (std::ostream& ostr, int windowBits);
 
       /// Creates an InflatingIOS for expanding the compressed data read from
       /// the given input stream.
       explicit inflating_ios (std::istream& istr,
-                              inflating_stream_buf::type_t type = inflating_stream_buf::STREAM_ZLIB);
-
-      /// Creates an InflatingIOS for expanding the compressed data read from
-      /// the given input stream.
-      ///
-      /// Please refer to the zlib documentation of inflateInit2() for a description
-      /// of the windowBits parameter.
-      inflating_ios (std::istream& istr, int windowBits);
+                              compression_type_t type = compression_type_t::ZLIB);
 
       /// Destroys the InflatingIOS.
       ~inflating_ios () override;
@@ -116,14 +83,9 @@ namespace neutrino::utils::io {
       /// Creates an InflatingOutputStream for expanding the compressed data passed through
       /// and forwarding it to the given output stream.
       explicit inflating_output_stream (std::ostream& ostr,
-                                        inflating_stream_buf::type_t type = inflating_stream_buf::STREAM_ZLIB);
+                                        compression_type_t type = compression_type_t::ZLIB);
 
-      /// Creates an InflatingOutputStream for expanding the compressed data passed through
-      /// and forwarding it to the given output stream.
-      ///
-      /// Please refer to the zlib documentation of inflateInit2() for a description
-      /// of the windowBits parameter.
-      inflating_output_stream (std::ostream& ostr, int windowBits);
+
 
       ~inflating_output_stream () override;
 
@@ -150,14 +112,8 @@ namespace neutrino::utils::io {
       /// Creates an InflatingInputStream for expanding the compressed data read from
       /// the given input stream.
       explicit inflating_input_stream (std::istream& istr,
-                                       inflating_stream_buf::type_t type = inflating_stream_buf::STREAM_ZLIB);
+                                       compression_type_t type = compression_type_t::ZLIB);
 
-      /// Creates an InflatingInputStream for expanding the compressed data read from
-      /// the given input stream.
-      ///
-      /// Please refer to the zlib documentation of inflateInit2() for a description
-      /// of the windowBits parameter.
-      inflating_input_stream (std::istream& istr, int windowBits);
 
       ~inflating_input_stream () override;
 

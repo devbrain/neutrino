@@ -107,7 +107,7 @@ namespace neutrino::utils {
       }
 
       [[nodiscard]] std::string to_string () const {
-        return std::string (m_value);
+        return std::string (m_value.data(), m_value.size());
       }
 
     protected:

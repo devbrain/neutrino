@@ -50,6 +50,7 @@ my_add_library_static(utils
         io/deflating_stream.cc
         ${PROJECT_INCLUDE}/neutrino/utils/io/inflating_stream.hh
         io/inflating_stream.cc
+        ${PROJECT_INCLUDE}/neutrino/utils/io/compression_type.hh
         ${PROJECT_INCLUDE}/neutrino/utils/io/stream_copier.hh
         io/stream_copier.cc
         io/compression_stream/compression_stream.cc
@@ -58,12 +59,12 @@ my_add_library_static(utils
         io/compression_stream/zstd_wrapper.c
         io/compression_stream/libz_stream.cc
         io/compression_stream/libz_stream.hh
-        io/compression_stream/zstd_stream.cc
-        io/compression_stream/zstd_stream.hh
-        io/compression_stream/bzip_stream.cc
-        io/compression_stream/bzip_stream.hh
-        io/compression_stream/lzma_stream.cc
-        io/compression_stream/lzma_stream.hh
+        #io/compression_stream/zstd_stream.cc
+        #io/compression_stream/zstd_stream.hh
+        #io/compression_stream/bzip_stream.cc
+        #io/compression_stream/bzip_stream.hh
+        #io/compression_stream/lzma_stream.cc
+        #io/compression_stream/lzma_stream.hh
 
 
         strings/ascii.cc

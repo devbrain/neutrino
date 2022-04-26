@@ -75,7 +75,7 @@ namespace neutrino::utils::io {
     }
   }
 
-  int bzip_stream::decompress (const int flags) {
+  int bzip_stream::decompress ([[maybe_unused]] flush_mode_t flags) {
     ret = BZ2_bzDecompress (this);
     if (ret != BZ_OK && ret != BZ_STREAM_END) {
       THROW;
@@ -83,7 +83,7 @@ namespace neutrino::utils::io {
     return ret;
   }
 
-  int bzip_stream::compress (const int flags) {
+  int bzip_stream::compress ([[maybe_unused]] flush_mode_t flags) {
     ret = BZ2_bzCompress (this, flags);
     if (!ret) {
       THROW;

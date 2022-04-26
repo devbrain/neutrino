@@ -3,9 +3,9 @@
 //
 
 #include "libz_stream.hh"
+#include "zstd_wrapper.h"
 #include <neutrino/utils/exception.hh>
 #include <sstream>
-#include <string>
 
 namespace neutrino::utils::io {
 
@@ -34,89 +34,197 @@ namespace neutrino::utils::io {
     return os.str ();
   }
 
-#define THROW RAISE_EX("zlib error:", error2string (m_ret), " : ", this->msg);
+  namespace detail {
+    struct libz_impl : public z_stream {
+      libz_impl() : z_stream_s() {
+        next_in = nullptr;
+        avail_in = 0;
+        total_in = 0;
+        next_out = nullptr;
+        avail_out = 0;
+        total_out = 0;
+        msg = nullptr;
+        state = nullptr;
+        zalloc = Z_NULL;
+        zfree = Z_NULL;
+        opaque = Z_NULL;
+        data_type = 0;
+        adler = 0;
+        reserved = 0;
+        is_zstd = false;
+      }
 
-  libz_stream::libz_stream (bool is_input, bool is_gzip, int level)
-      : m_is_input (is_input) {
-    this->zalloc = Z_NULL;
-    this->zfree = Z_NULL;
-    this->opaque = Z_NULL;
-    if (is_input) {
-      z_stream::avail_in = 0;
-      z_stream::next_in = Z_NULL;
-      m_ret = inflateInit2(this, 15 + 32);
-    }
-    else {
-      m_ret = deflateInit2(this, level, Z_DEFLATED, 15 + (is_gzip ? 16 : 0), 8, Z_DEFAULT_STRATEGY);
-    }
-    if (m_ret != Z_OK) {
-      THROW;
-    }
+      bool is_zstd;
+    };
   }
 
-  libz_stream::~libz_stream () {
-    if (m_is_input) {
-      inflateEnd (this);
-    }
-    else {
-      deflateEnd (this);
-    }
+#define THROW(RC) RAISE_EX("zlib error:", error2string (RC), " : ", this->m_pimpl->msg);
+
+  libz_stream::libz_stream ()
+  : m_pimpl (spimpl::make_unique_impl<detail::libz_impl>()) {
   }
 
-  int libz_stream::decompress (const int flags) {
-    m_ret = inflate (this, flags);
-    if (m_ret != Z_OK && m_ret != Z_STREAM_END) {
-      THROW;
-    }
-    return m_ret;
-  }
+  libz_stream::~libz_stream () = default;
 
-  int libz_stream::compress (const int flags) {
-    m_ret = deflate (this, flags);
-    if (m_ret != Z_OK && m_ret != Z_STREAM_END && m_ret != Z_BUF_ERROR) {
-      THROW;
-    }
-    return m_ret;
-  }
-
-  bool libz_stream::stream_end () const {
-    return m_ret == Z_STREAM_END;
-  }
-
-  bool libz_stream::done () const {
-    return (this->m_ret == Z_BUF_ERROR || this->stream_end ());
-  }
 
   const uint8_t* libz_stream::next_in () const {
-    return z_stream::next_in;
+    return m_pimpl->next_in;
   }
 
-  long libz_stream::avail_in () const {
-    return z_stream::avail_in;
+  std::size_t libz_stream::avail_in () const {
+    return m_pimpl->avail_in;
   }
 
   uint8_t* libz_stream::next_out () const {
-    return z_stream::next_out;
+    return m_pimpl->next_out;
 
   }
 
-  long libz_stream::avail_out () const {
-    return z_stream::avail_out;
+  std::size_t libz_stream::avail_out () const {
+    return m_pimpl->avail_out;
   }
 
   void libz_stream::set_next_in (const unsigned char* in) {
-    z_stream::next_in = (unsigned char*) in;
+    m_pimpl->next_in = (unsigned char*) in;
   }
 
-  void libz_stream::set_avail_in (const long in) {
-    z_stream::avail_in = in;
+  void libz_stream::set_avail_in (std::size_t in) {
+    m_pimpl->avail_in = in;
   }
 
   void libz_stream::set_next_out (const uint8_t* in) {
-    z_stream::next_out = const_cast<Bytef*>(in);
+    m_pimpl->next_out = const_cast<Bytef*>(in);
   }
 
-  void libz_stream::set_avail_out (const long in) {
-    z_stream::avail_out = in;
+  void libz_stream::set_avail_out (std::size_t in) {
+    m_pimpl->avail_out = in;
+  }
+
+  libz_compressor::libz_compressor(libz_kind_t kind, compression_level_t level) {
+    int c_level = -1;
+    switch (level) {
+      case compression_level_t::BEST:
+        c_level = 9;
+        break;
+      case compression_level_t::FAST:
+        c_level = 1;
+        break;
+      case compression_level_t::NORMAL:
+        c_level = Z_DEFAULT_COMPRESSION;
+    }
+    int rc = Z_OK;
+    switch (kind) {
+      case libz_kind_t::ZSTD:
+        m_pimpl->is_zstd = true;
+        rc = zstd_deflate_init (m_pimpl.get(), c_level, "", Z_DEFAULT_STRATEGY);
+        break;
+      case libz_kind_t::GZIP:
+        rc = deflateInit2(m_pimpl.get(), c_level, Z_DEFLATED, 15+16, 9, Z_DEFAULT_STRATEGY);
+        break;
+      case libz_kind_t::RAW:
+        rc = deflateInit2(m_pimpl.get(), c_level, Z_DEFLATED, -15, 9, Z_DEFAULT_STRATEGY);
+        break;
+      case libz_kind_t::ZLIB:
+        rc = deflateInit2(m_pimpl.get(), c_level, Z_DEFLATED, 15, 9, Z_DEFAULT_STRATEGY);
+        break;
+    }
+    if (rc != Z_OK) {
+      THROW(rc)
+    }
+  }
+
+  static int convert_flush_mode(compression_stream::flush_mode_t flags) {
+    switch (flags) {
+      case compression_stream::flush_mode_t::FINISH:
+        return Z_FINISH;
+      case compression_stream::flush_mode_t::FULL_FLUSH:
+        return Z_FULL_FLUSH;
+      case compression_stream::flush_mode_t::NO_FLUSH:
+        return Z_NO_FLUSH;
+      case compression_stream::flush_mode_t::PARTIAL_FLUSH:
+        return Z_PARTIAL_FLUSH;
+      case compression_stream::flush_mode_t::SYNC_FLUSH:
+        return Z_SYNC_FLUSH;
+    }
+    RAISE_EX("Should not be here");
+  }
+
+  libz_compressor::status_t libz_compressor::compress(flush_mode_t flags) {
+    int flush = convert_flush_mode (flags);
+    int rc = m_pimpl->is_zstd ?
+             zstd_deflate (m_pimpl.get(), flush) : deflate (m_pimpl.get(), flush);
+    if (rc == Z_OK) {
+      return libz_compressor::OK;
+    }
+    if (rc == Z_STREAM_END) {
+      return libz_compressor::STREAM_END;
+    }
+    THROW(rc);
+  }
+
+  void libz_compressor::finalize() {
+    if (m_pimpl->is_zstd) {
+      zstd_deflate_end (m_pimpl.get());
+    } else {
+      deflateEnd (m_pimpl.get());
+    }
+  }
+
+  libz_decompressor::libz_decompressor(libz_kind_t kind) {
+    int rc = Z_OK;
+    switch (kind) {
+      case libz_kind_t::ZSTD:
+        m_pimpl->is_zstd = true;
+        rc = zstd_inflate_init (m_pimpl.get(), "", 0);
+        break;
+      case libz_kind_t::GZIP:
+        rc = inflateInit2(m_pimpl.get(), 15+16);
+        break;
+      case libz_kind_t::RAW:
+        rc = inflateInit2(m_pimpl.get(), -15);
+        break;
+      case libz_kind_t::ZLIB:
+        rc = inflateInit2(m_pimpl.get(), 15);
+        break;
+    }
+    if (rc != Z_OK) {
+      THROW(rc)
+    }
+  }
+
+  libz_decompressor::status_t libz_decompressor::decompress(flush_mode_t flags) {
+    int flush = convert_flush_mode (flags);
+    int rc = m_pimpl->is_zstd ?
+             zstd_inflate(m_pimpl.get(), flush) : inflate(m_pimpl.get(), flush);
+    if (rc == Z_OK) {
+      return libz_compressor::OK;
+    }
+    if (rc == Z_STREAM_END) {
+      return libz_compressor::STREAM_END;
+    }
+    if (rc == Z_DATA_ERROR) {
+      return libz_compressor::DATA_ERROR;
+    }
+    THROW(rc);
+  }
+
+  void libz_decompressor::finalize() {
+    if (m_pimpl->is_zstd) {
+      zstd_inflate_end (m_pimpl.get());
+    } else {
+      inflateEnd (m_pimpl.get());
+    }
+  }
+
+  void libz_decompressor::reset() {
+    int rc = Z_OK;
+    if (m_pimpl->is_zstd) {
+      rc = zstd_inflate_reset(m_pimpl.get());
+    } else {
+      rc = inflateReset (m_pimpl.get());
+    }
+    if (rc != Z_OK) {
+      THROW(rc);
+    }
   }
 }

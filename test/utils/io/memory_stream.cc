@@ -15,9 +15,7 @@ TEST_SUITE ("memory stream")
     {
         const char* data = "This is a test";
         memory_input_stream istr1(data, 14);
-        auto ptr = istr1.tellg();
-        istr1.seekg (0, std::ios::end);
-        auto p2 = istr1.tellg();
+
         int c = istr1.get();
         REQUIRE (c == 'T');
         c = istr1.get();
