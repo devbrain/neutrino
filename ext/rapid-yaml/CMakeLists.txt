@@ -10,5 +10,6 @@ fetchcontent_declare(
 fetchcontent_makeavailable(RYAML)
 
 set_target_properties(ryml PROPERTIES FOLDER "ThirdParty")
+#set_target_properties(ryml-unistall PROPERTIES FOLDER "ThirdParty")
 add_library(thirdparty::ryml ALIAS ryml)
-
+set_thirdparty(ryml)
