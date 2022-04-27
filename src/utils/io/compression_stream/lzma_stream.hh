@@ -5,32 +5,46 @@
 #ifndef SRC_UTILS_IO_COMPRESSION_STREAM_LZMA_STREAM_HH
 #define SRC_UTILS_IO_COMPRESSION_STREAM_LZMA_STREAM_HH
 
-#include "thirdparty/liblzma/src/liblzma/api/lzma.h"
+
 #include <utils/io/compression_stream/compression_stream.hh>
+#include <neutrino/utils/spimpl.h>
 
 namespace neutrino::utils::io {
-  class lzma_compression_stream : public lzma_stream, public compression_stream {
+  namespace detail {
+    struct lzma_impl;
+  }
+  class liblzma_stream {
     public:
-      lzma_compression_stream(bool isinput, int level = 2, int flags = 0);
-      ~lzma_compression_stream();
+    public:
+      liblzma_stream();
+      ~liblzma_stream();
 
-      int decompress(flush_mode_t flags) override;
-      int compress(flush_mode_t flags  /*LZMA_RUN*/) override;
-      bool stream_end() const override;
-      bool done() const override;
+      [[nodiscard]] const uint8_t* next_in() const;
+      [[nodiscard]] std::size_t avail_in() const;
+      [[nodiscard]] uint8_t* next_out() const;
+      [[nodiscard]] std::size_t avail_out() const;
 
-      const uint8_t* next_in() const override;
-      long avail_in() const override;
-      uint8_t* next_out() const override;
-      long avail_out() const override;
+      void set_next_in(const unsigned char* in);
+      void set_avail_in(std::size_t in);
+      void set_next_out(const uint8_t* in);
+      void set_avail_out(std::size_t in);
+    protected:
+      spimpl::unique_impl_ptr<detail::lzma_impl> m_pimpl;
+  };
 
-      void set_next_in(const unsigned char* in) override;
-      void set_avail_in(const long in) override;
-      void set_next_out(const uint8_t* in) override;
-      void set_avail_out(const long in) override;
-    private:
-      bool is_input;
-      lzma_ret ret;
+  class lzma_compressor : public compression_stream_impl<liblzma_stream> {
+    public:
+      explicit lzma_compressor(compression_level_t level);
+      status_t compress(flush_mode_t flags) override;
+      void finalize() override;
+  };
+
+  class lzma_decompressor : public decompression_stream_impl<liblzma_stream> {
+    public:
+      lzma_decompressor();
+      status_t decompress(flush_mode_t flags) override;
+      void finalize() override;
+      void reset() override;
   };
 }
 

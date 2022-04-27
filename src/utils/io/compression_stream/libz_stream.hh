@@ -15,8 +15,6 @@ namespace neutrino::utils::io {
 
   class libz_stream {
     public:
-
-    public:
       libz_stream();
       ~libz_stream();
 
