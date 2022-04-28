@@ -6,20 +6,21 @@
 #include "scancode_mapper.hh"
 
 namespace neutrino::hal::events {
-#define d_TEST_KEY_MODE(SDL_F, F1)                  \
-    if (x & (uint16_t)sdl::keymod::SDL_F) {         \
-        return key_mod_t::SDL_F | key_mod_t::F1;    \
+
+#define d_TEST_KEY_MODE(SDL_F)                \
+    if (x & (uint16_t)sdl::keymod::SDL_F) {   \
+        return key_mod_t::SDL_F ;             \
     }
 
   static key_mod_t map_key_mode (uint16_t x) {
-    d_TEST_KEY_MODE(LALT, ALT)
-    d_TEST_KEY_MODE(RALT, ALT)
-    d_TEST_KEY_MODE(LCTRL, CTRL)
-    d_TEST_KEY_MODE(RCTRL, CTRL)
-    d_TEST_KEY_MODE(LSHIFT, SHIFT)
-    d_TEST_KEY_MODE(RSHIFT, SHIFT)
-    d_TEST_KEY_MODE(LGUI, GUI)
-    d_TEST_KEY_MODE(RGUI, GUI)
+    d_TEST_KEY_MODE(LALT)
+    d_TEST_KEY_MODE(RALT)
+    d_TEST_KEY_MODE(LCTRL)
+    d_TEST_KEY_MODE(RCTRL)
+    d_TEST_KEY_MODE(LSHIFT)
+    d_TEST_KEY_MODE(RSHIFT)
+    d_TEST_KEY_MODE(LGUI)
+    d_TEST_KEY_MODE(RGUI)
 
     if (x & (uint16_t) sdl::keymod::MODE) {
       return key_mod_t::MODE;

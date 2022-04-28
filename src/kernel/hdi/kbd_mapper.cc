@@ -12,7 +12,21 @@ namespace neutrino {
   }
 
   void kbd_mapper::when_pressed(key_mod_t mod, scan_code_t code, std::string_view event) {
-    m_data.insert (std::make_pair(kbd_actions(true, mod, code), std::string(event)));
+    if (mod == key_mod_t::ALT) {
+      m_data.insert (std::make_pair(kbd_actions(true, key_mod_t::LALT, code), std::string(event)));
+      m_data.insert (std::make_pair(kbd_actions(true, key_mod_t::RALT, code), std::string(event)));
+    } else if (mod == key_mod_t::CTRL) {
+      m_data.insert (std::make_pair (kbd_actions (true, key_mod_t::LCTRL, code), std::string (event)));
+      m_data.insert (std::make_pair (kbd_actions (true, key_mod_t::RCTRL, code), std::string (event)));
+    } if (mod == key_mod_t::SHIFT) {
+      m_data.insert (std::make_pair (kbd_actions (true, key_mod_t::LSHIFT, code), std::string (event)));
+      m_data.insert (std::make_pair (kbd_actions (true, key_mod_t::RSHIFT, code), std::string (event)));
+    } if (mod == key_mod_t::GUI) {
+      m_data.insert (std::make_pair (kbd_actions (true, key_mod_t::LGUI, code), std::string (event)));
+      m_data.insert (std::make_pair (kbd_actions (true, key_mod_t::RGUI, code), std::string (event)));
+    } else {
+      m_data.insert (std::make_pair (kbd_actions (true, mod, code), std::string (event)));
+    }
   }
 
   void kbd_mapper::when_pressed(scan_code_t code, std::string_view event) {
@@ -29,12 +43,6 @@ namespace neutrino {
 
   void kbd_mapper::handle_event(const hal::events::keyboard& ev) {
     kbd_actions a(ev);
-
-    if (ev.pressed && (ev.mod & hal::events::key_mod_t ::LALT) && (ev.code == hal::events::scan_code_t::F) ) {
-      std::cout << ev.pressed << ":"
-                << neutrino::hal::events::s11n<key_mod_t>::to_string (ev.mod) << ":"
-                << neutrino::hal::events::s11n<scan_code_t>::to_string (ev.code) << std::endl;
-    }
 
     auto itr = m_data.find (a);
     if (itr != m_data.end()) {

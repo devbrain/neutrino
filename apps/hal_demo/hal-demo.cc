@@ -24,8 +24,9 @@ class app : public neutrino::application {
     void init(neutrino::hal::renderer& renderer) override{
       m_renderer = &renderer;
 
+      input_config().when_pressed (neutrino::key_mod_t::ALT, neutrino::scan_code_t::F, "FULLSCREEN");
       input_config().when_pressed (neutrino::scan_code_t::ESCAPE, "EXIT");
-      input_config().when_pressed (neutrino::key_mod_t::LALT, neutrino::scan_code_t::F, "FULLSCREEN");
+
 
       // Load resources
       neutrino::utils::io::memory_input_stream is((const char*)foo, sizeof (foo));

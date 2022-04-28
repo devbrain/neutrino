@@ -67,15 +67,6 @@ namespace neutrino {
 
   void events_holder::set(bool is_pressed, key_mod_t mod, scan_code_t btn) {
     m_pimpl->m_keys.insert(kbd_actions(is_pressed, mod, btn));
-    if (mod & key_mod_t::ALT) {
-      m_pimpl->m_keys.insert(kbd_actions(is_pressed, key_mod_t::ALT, btn));
-    }
-    if (mod & key_mod_t::SHIFT) {
-      m_pimpl->m_keys.insert(kbd_actions(is_pressed, key_mod_t::SHIFT, btn));
-    }
-    if (mod & key_mod_t::CTRL) {
-      m_pimpl->m_keys.insert(kbd_actions(is_pressed, key_mod_t::CTRL, btn));
-    }
   }
 
   void events_holder::set (const hal::events::pointer& ev) {
