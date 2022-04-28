@@ -21,16 +21,10 @@ namespace neutrino::hal::events {
     d_TEST_KEY_MODE(RSHIFT)
     d_TEST_KEY_MODE(LGUI)
     d_TEST_KEY_MODE(RGUI)
+    d_TEST_KEY_MODE(MODE)
+    d_TEST_KEY_MODE(NUM)
+    d_TEST_KEY_MODE(CAPS)
 
-    if (x & (uint16_t) sdl::keymod::MODE) {
-      return key_mod_t::MODE;
-    }
-    if (x & (uint16_t) sdl::keymod::NUM) {
-      return key_mod_t::NUM;
-    }
-    if (x & (uint16_t) sdl::keymod::CAPS) {
-      return key_mod_t::CAPS;
-    }
     return key_mod_t::NONE;
   }
 
