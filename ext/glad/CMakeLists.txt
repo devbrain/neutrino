@@ -9,3 +9,5 @@ fetchcontent_makeavailable(glad)
 
 
 add_library(thirdparty::glad ALIAS glad)
+set_thirdparty(glad)
+set_thirdparty(glad-generate-files)

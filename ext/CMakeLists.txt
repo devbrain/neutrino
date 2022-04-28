@@ -1,4 +1,5 @@
 include(FetchContent)
+include(folders)
 
 set(FETCHCONTENT_QUIET off)
 get_filename_component(fc_base "../fetched_content" REALPATH BASE_DIR "${CMAKE_BINARY_DIR}")
@@ -12,6 +13,6 @@ add_subdirectory(doctest)
 add_subdirectory(bitflags)
 add_subdirectory(nlohmann)
 add_subdirectory(dr_imgui)
-add_subdirectory(re2c)
+#add_subdirectory(re2c)
 add_subdirectory(pfr)
 add_subdirectory(glad)
