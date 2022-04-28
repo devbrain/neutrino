@@ -107,8 +107,13 @@ namespace neutrino::hal {
     m_pimpl->renderer.integer_scaling (enabled);
   }
 
-  std::pair<unsigned, unsigned> renderer::logical_size () const {
-    return m_pimpl->renderer.logical_size ();
+  math::dimension_t renderer::logical_size () const {
+    auto [w,h] = m_pimpl->renderer.logical_size ();
+    return {w,h};
+  }
+
+  void renderer::logical_size (math::dimension_t d) {
+    m_pimpl->renderer.logical_size (d[0], d[1]);
   }
 
   void renderer::logical_size (unsigned x, unsigned y) {

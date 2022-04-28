@@ -27,8 +27,11 @@ namespace neutrino {
       void on_pointer_input (const hal::events::pointer& ev) override;
     private:
       void after_window_opened () override;
+      void on_full_screen(bool is_fullscreen) override;
       void clear () override;
       void present () override;
+    private:
+      void update_renderer();
     private:
       const main_window_description  m_descr;
       application* m_owner;

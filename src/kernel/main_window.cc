@@ -8,7 +8,7 @@
 namespace neutrino {
 
   static hal::window_flags_t get_flags(const main_window_description& d) {
-    hal::window_flags_t f = hal::window_flags_t ::MAXIMIZED;
+    hal::window_flags_t f = hal::window_flags_t::NONE;
     if (d.fullscreen()) {
       f |= hal::window_flags_t::FULLSCREEN;
     }
@@ -35,6 +35,7 @@ namespace neutrino {
 
   void main_window::on_window_resized (int w, int h) {
     window::on_window_resized (w, h);
+    update_renderer();
     m_owner->on_window_resized (static_cast<unsigned int>(w), static_cast<unsigned int>(h));
   }
 
@@ -62,8 +63,22 @@ namespace neutrino {
     m_owner->on_pointer_input (ev);
   }
 
+  void main_window::update_renderer() {
+    if (m_renderer) {
+      const auto [w,h] = this->dimensions();
+      math::rect vp(0,0, w, h);
+      m_renderer->viewport (vp);
+      m_renderer->logical_size (w, h);
+    }
+  }
+
   void main_window::after_window_opened () {
     m_renderer = std::make_unique<hal::renderer>(*this);
+    update_renderer();
+  }
+
+  void main_window::on_full_screen([[maybe_unused]] bool is_fullscreen) {
+    update_renderer();
   }
 
   void main_window::clear () {

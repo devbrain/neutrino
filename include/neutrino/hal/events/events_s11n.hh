@@ -6,6 +6,7 @@
 #define NEUTRINO_HAL_EVENTS_EVENTS_S11N_HH
 
 #include <string>
+
 #include <neutrino/hal/events/events.hh>
 
 namespace neutrino::hal::events {
@@ -29,6 +30,8 @@ namespace neutrino::hal::events {
     static const char* to_string (const pointer_button_t& x);
     static pointer_button_t from_string (const std::string& x);
   };
+
+
 }
 
 #endif

@@ -4,7 +4,7 @@ set(SDL_WAYLAND OFF CACHE INTERNAL "")
 
 fetchcontent_declare(
         SDL2
-        URL https://www.libsdl.org/release/SDL2-2.0.20.zip
+        URL https://www.libsdl.org/release/SDL2-2.0.22.zip
         UPDATE_COMMAND ""
 )
 

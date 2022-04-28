@@ -29,6 +29,7 @@ namespace neutrino::hal {
     FLAG(MAXIMIZED)
     FLAG(FULLSCREEN)
     FLAG(FOCUSED)
+    FLAG(NONE)
   END_BITFLAGS(window_flags_t)
 
   class surface;
@@ -84,6 +85,8 @@ namespace neutrino::hal {
       [[nodiscard]] handle_t id () const noexcept;
     protected:
       virtual void after_window_opened ();
+
+      virtual void on_full_screen(bool is_full_screen);
 
       virtual void on_window_close ();
       virtual void on_window_resized (int w, int h);

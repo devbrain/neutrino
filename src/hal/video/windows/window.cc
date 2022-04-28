@@ -43,7 +43,6 @@ namespace neutrino::hal {
       m_pimpl->visible = !(*flags & window_flags_t::MINIMIZED);
     }
     else {
-
     }
     m_pimpl->mouse_focus = true;
     m_pimpl->keyboard_focus = true;
@@ -87,10 +86,12 @@ namespace neutrino::hal {
 
     after_window_opened ();
   }
+
   // ----------------------------------------------------------------------------------------------------
   void window::after_window_opened () {
 
   }
+
   // ----------------------------------------------------------------------------------------------------
   void window::focus () noexcept {
     if (m_pimpl->visible) {
@@ -101,7 +102,7 @@ namespace neutrino::hal {
 
   // ----------------------------------------------------------------------------------------------------
   void window::toggle_fullscreen () {
-    if (m_pimpl->windowed) {
+    if (!m_pimpl->windowed) {
       SDL_SetWindowFullscreen (m_pimpl->sdl_window.handle (), 0);
       m_pimpl->sdl_window.position (m_pimpl->before_fullscreen_x, m_pimpl->before_fullscreen_y);
       SDL_ShowCursor (1);
@@ -111,8 +112,12 @@ namespace neutrino::hal {
       SDL_SetWindowFullscreen (m_pimpl->sdl_window.handle (), SDL_WINDOW_FULLSCREEN_DESKTOP);
     }
     m_pimpl->windowed = !m_pimpl->windowed;
+    on_full_screen (!m_pimpl->windowed);
   }
+  // ----------------------------------------------------------------------------------------------------
+  void window::on_full_screen([[maybe_unused]] bool is_full_screen) {
 
+  }
   // ----------------------------------------------------------------------------------------------------
   std::string window::title () const {
     return m_pimpl->sdl_window.title ();

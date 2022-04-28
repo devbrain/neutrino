@@ -3,6 +3,7 @@
 //
 
 #include "kbd_mapper.hh"
+#include <iostream>
 #include <neutrino/hal/events/events_s11n.hh>
 
 namespace neutrino {
@@ -28,6 +29,13 @@ namespace neutrino {
 
   void kbd_mapper::handle_event(const hal::events::keyboard& ev) {
     kbd_actions a(ev);
+
+    if (ev.pressed && (ev.mod & hal::events::key_mod_t ::LALT) && (ev.code == hal::events::scan_code_t::F) ) {
+      std::cout << ev.pressed << ":"
+                << neutrino::hal::events::s11n<key_mod_t>::to_string (ev.mod) << ":"
+                << neutrino::hal::events::s11n<scan_code_t>::to_string (ev.code) << std::endl;
+    }
+
     auto itr = m_data.find (a);
     if (itr != m_data.end()) {
       m_events.set (std::string_view (itr->second.c_str(), itr->second.size()));

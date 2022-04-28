@@ -9,13 +9,13 @@
 
 class app : public neutrino::application {
   public:
-    app () : m_renderer (nullptr), x(100), y (100) {
-
+    app () : m_renderer (nullptr), frame_num (0), frame_duration(0) {
     }
 
   private:
     [[nodiscard]] neutrino::application_description describe() const noexcept override{
-      neutrino::main_window_description d(320, 200);
+      neutrino::main_window_description d(640, 480);
+      d.resizable (true);
       return {d, 60};
     }
     /**
@@ -25,6 +25,7 @@ class app : public neutrino::application {
       m_renderer = &renderer;
 
       input_config().when_pressed (neutrino::scan_code_t::ESCAPE, "EXIT");
+      input_config().when_pressed (neutrino::key_mod_t::LALT, neutrino::scan_code_t::F, "FULLSCREEN");
 
       // Load resources
       neutrino::utils::io::memory_input_stream is((const char*)foo, sizeof (foo));
@@ -33,7 +34,8 @@ class app : public neutrino::application {
             is,
             ti
           );
-      int x = 0;
+      clips = src.positions();
+      texture = src.create_texture (renderer);
     }
 
     /**
@@ -44,20 +46,39 @@ class app : public neutrino::application {
       if (events()["EXIT"]) {
         this->close();
       }
-      if (auto m = events()[neutrino::pointer_button_t::LEFT]) {
-        x = m->x;
-        y = m->y;
+      if (events()["FULLSCREEN"]) {
+        this->toggle_fullscreen();
+      }
+
+      frame_duration += ms;
+      if (frame_duration > std::chrono::milliseconds(100)) {
+        frame_num++;
+        frame_duration = std::chrono::milliseconds(0);
+      }
+      if (frame_num >= clips.size()) {
+        frame_num = 0;
       }
     }
 
     void draw_frame() override {
       m_renderer->active_color({0xFF,0,0,0xFF});
-      m_renderer->aa_circle (x, y, 20);
+      auto src = clips[frame_num];
+      auto w = m_renderer->logical_size();
+
+      m_renderer->line (0,0, w[0], w[1]);
+      m_renderer->line (w[0],0, 0, w[1]);
+
+      auto half = (w - src.dims)/2;
+      neutrino::math::rect dst(half[0], half[1], src.dims[0], src.dims[1]);
+      m_renderer->copy (texture, src, dst);
     }
 
     neutrino::hal::renderer* m_renderer;
-    int x;
-    int y;
+
+    std::vector<neutrino::math::rect> clips;
+    neutrino::hal::texture texture;
+    unsigned int frame_num;
+    std::chrono::milliseconds frame_duration;
 };
 
 int main(int argc, char* argv[]) {
