@@ -23,6 +23,7 @@ my_add_library_static(utils
         ${PROJECT_INCLUDE}/neutrino/utils/mp/constexpr_for.hh
         ${PROJECT_INCLUDE}/neutrino/utils/mp/introspection.hh
 
+        ${PROJECT_INCLUDE}/neutrino/utils/any.hh
         ${PROJECT_INCLUDE}/neutrino/utils/pp_for_each.h
         ${PROJECT_INCLUDE}/neutrino/utils/macros.hh
         ${PROJECT_INCLUDE}/neutrino/utils/exception.hh

@@ -24,13 +24,15 @@ my_add_executable(unittest
 
 
         engine/test_observer_subject.cc
+        engine/test_sparse_set.cc
+        engine/test_ecs_registry.cc
         #engine/test_message_broker.cc
         $<TARGET_OBJECTS:neutrino_tiled_with_tests>
         )
 
 target_link_libraries(unittest
         PRIVATE
-
+        neutrino::kernel
         neutrino::hal
         neutrino::utils
         neutrino::tiled

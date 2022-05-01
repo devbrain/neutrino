@@ -3,8 +3,6 @@ my_add_library_headers(math
         ${PROJECT_INCLUDE}/neutrino/math/point.hh
         ${PROJECT_INCLUDE}/neutrino/math/rect.hh
         ${PROJECT_INCLUDE}/neutrino/math/traits.hh
-        ${PROJECT_INCLUDE}/neutrino/math/Box.h
-        ${PROJECT_INCLUDE}/neutrino/math/Vector2.h
         ${PROJECT_INCLUDE}/neutrino/math/quad_tree.hh
         DEPENDS
         thirdparty::glm

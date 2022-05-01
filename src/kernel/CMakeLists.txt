@@ -23,6 +23,11 @@ my_add_library_static(kernel
         hdi/pointer_mapper.cc
         hdi/pointer_mapper.hh
 
+        ${PROJECT_INCLUDE}/neutrino/kernel/ecs/sparse_set.hh
+        ${PROJECT_INCLUDE}/neutrino/kernel/ecs/sparse_map.hh
+        ${PROJECT_INCLUDE}/neutrino/kernel/ecs/registry.hh
+        ecs/registry.cc
+
         ${PROJECT_INCLUDE}/neutrino/kernel/gfx/tilesheet_info.hh
         gfx/tilesheet_info.cc
         ${PROJECT_INCLUDE}/neutrino/kernel/gfx/tilesheet.hh

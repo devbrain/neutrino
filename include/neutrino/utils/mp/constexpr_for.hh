@@ -20,6 +20,12 @@ namespace neutrino::mp {
   struct is_present {
     static constexpr bool value {(std::is_same_v<What, Args> || ...)};
   };
+
+  template <typename... Ts, typename F>
+  constexpr void for_types(F&& f)
+  {
+    (f.template operator()<const Ts*>((const Ts*) nullptr), ...);
+  }
 }
 
 #endif
