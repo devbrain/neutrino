@@ -2,6 +2,7 @@ include(bin2c)
 
 set(ASSETS
         assets/foo.png
+        assets/faces.png
 )
 
 set(GENERATED_HEADERS)

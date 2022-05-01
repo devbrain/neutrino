@@ -6,8 +6,11 @@
 #include <neutrino/kernel/gfx/grid_image.hh>
 #include <neutrino/utils/io/memory_stream_buf.hh>
 #include "assets/foo.h"
+#include "assets/faces.h"
 
 class app : public neutrino::application {
+    static constexpr auto EV_EXIT = "exit";
+    static constexpr auto EV_FULLSCREEN = "fullscreen";
   public:
     app () : m_renderer (nullptr), frame_num (0), frame_duration(0) {
     }
@@ -21,22 +24,26 @@ class app : public neutrino::application {
     /**
      * This method is called before entering the game loop and after video initialization
      */
+
     void init(neutrino::hal::renderer& renderer) override{
       m_renderer = &renderer;
 
-      input_config().when_pressed (neutrino::key_mod_t::ALT, neutrino::scan_code_t::F, "FULLSCREEN");
-      input_config().when_pressed (neutrino::scan_code_t::ESCAPE, "EXIT");
+      input_config().when_pressed (neutrino::key_mod_t::ALT, neutrino::scan_code_t::RETURN, EV_FULLSCREEN);
+      input_config().when_pressed (neutrino::scan_code_t::ESCAPE, EV_EXIT);
 
 
       // Load resources
-      neutrino::utils::io::memory_input_stream is((const char*)foo, sizeof (foo));
-      neutrino::gfx::tile_sheet_info ti(64, 255, 0, 0, 0,0, 4);
+      neutrino::utils::io::memory_input_stream is((const char*)faces, sizeof (faces));
+      neutrino::gfx::tile_sheet_info ti(64, 64, 0, 0, 0, 0, 4);
+
+      neutrino::hal::color keycolor(0xFF, 0x00, 0xFF);
+
       neutrino::gfx::grid_image src(
             is,
             ti
           );
       clips = src.positions();
-      texture = src.create_texture (renderer);
+      texture = src.create_texture (renderer, keycolor);
     }
 
     /**
@@ -44,10 +51,10 @@ class app : public neutrino::application {
      * @param ms time passed since last frame
      */
     void update_logic(std::chrono::milliseconds ms) override {
-      if (events()["EXIT"]) {
+      if (events()[EV_EXIT]) {
         this->close();
       }
-      if (events()["FULLSCREEN"]) {
+      if (events()[EV_FULLSCREEN]) {
         this->toggle_fullscreen();
       }
 

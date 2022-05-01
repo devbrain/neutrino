@@ -20,7 +20,7 @@ my_add_executable(unittest
         utils/test_fsm.cc
         utils/test_fsm_complex.cc
         utils/test_ini.cc
-
+        utils/math/test_quad_tree.cc
 
 
         engine/test_observer_subject.cc
