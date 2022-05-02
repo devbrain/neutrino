@@ -132,7 +132,7 @@ macro(my_add_library_static LIBNAME)
 			PRIVATE ${PROJECT_INCLUDE_PRIVATE} ${CMAKE_CURRENT_BINARY_DIR}
 			)
 	if(MSVC)
-		target_compile_options(${_lib} PRIVATE /W4)
+		target_compile_options(${_lib} PRIVATE /W4 /wd5105)
 	else()
 		target_compile_options(${_lib} PRIVATE -Wall -Wextra -pedantic)
 	endif()
