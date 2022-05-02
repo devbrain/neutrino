@@ -12,73 +12,17 @@
 
 #include <neutrino/kernel/ecs/sparse_map.hh>
 #include <neutrino/kernel/ecs/sparse_set.hh>
+#include <neutrino/kernel/ecs/id_factory.hh>
 #include <neutrino/utils/exception.hh>
 #include <neutrino/utils/mp/constexpr_for.hh>
 
+
 namespace neutrino::ecs {
-
-  using id_t = std::size_t;
-
   namespace detail {
     using any_t = std::any;
     using component_val_t = std::tuple<id_t, any_t>;
     using entity_to_component = sparse_map<id_t, component_val_t>;
     using components_map_t = std::vector<entity_to_component>;
-
-    template <class ... Components>
-    class view_base {
-      protected:
-        explicit view_base (detail::components_map_t& components);
-      public:
-        class iterator {
-            friend class view_base<Components...>;
-          public:
-            using value_type = id_t;
-            using pointer = value_type* ;
-            using const_pointer = const value_type *;
-            using reference = value_type & ;
-            using const_reference = const value_type &;
-            using iterator_category = std::random_access_iterator_tag;
-            using size_type = std::size_t;
-            using difference_type = std::ptrdiff_t;
-
-            const_reference operator*() const noexcept;
-            const_pointer operator->() const noexcept { return &(operator*()); }
-
-            bool operator==(const iterator& other);
-            bool operator!=(const iterator& other) { return !(*this == other); }
-
-            iterator& operator++();
-
-            iterator();
-            iterator(const iterator&) = default;
-            iterator& operator = (const iterator&) = default;
-          private:
-            iterator(const view_base<Components...>* owner, entity_to_component::iterator itr, bool advance);
-
-          private:
-            const view_base<Components...>* m_owner;
-            entity_to_component::iterator m_cursor;
-        };
-        friend class iterator;
-      public:
-        iterator begin() const {
-          return iterator(this, m_start, true);
-        }
-
-        iterator end() const {
-          return iterator(this, m_end, false);
-        }
-
-      protected:
-        detail::components_map_t& m_components;
-        std::size_t m_index;
-        entity_to_component::iterator m_start;
-        entity_to_component::iterator m_end;
-      private:
-        [[nodiscard]] bool exists_in_all(id_t entity_id) const;
-    };
-
   }
 
   class registry {
@@ -88,6 +32,8 @@ namespace neutrino::ecs {
 
       registry (const registry&) = delete;
       registry& operator = (const registry&) = delete;
+
+      [[nodiscard]] id_t create_id() const;
 
       template <typename Component>
       void attach_component (id_t entity_id, Component obj);
@@ -108,40 +54,77 @@ namespace neutrino::ecs {
 
       [[nodiscard]] bool exists (id_t entity_id) const;
 
-      template <class ... Components>
-      class view : public detail::view_base<Components...> {
-          friend class registry;
+      void clear();
 
-        private:
+      template <class ... Components>
+      class view {
+          friend class registry;
+        protected:
           explicit view (detail::components_map_t& components);
         public:
-      };
+          class iterator {
+              friend class view<Components...>;
+            public:
+              using value_type = id_t;
+              using pointer = value_type* ;
+              using const_pointer = const value_type *;
+              using reference = value_type & ;
+              using const_reference = const value_type &;
+              using iterator_category = std::random_access_iterator_tag;
+              using size_type = std::size_t;
+              using difference_type = std::ptrdiff_t;
 
-      template <class ... Components>
-      class const_view : public detail::view_base<Components...> {
-          friend class registry;
+              const_reference operator*() const noexcept;
+              const_pointer operator->() const noexcept { return &(operator*()); }
 
-        private:
-          explicit const_view (const detail::components_map_t& components);
+              bool operator==(const iterator& other);
+              bool operator!=(const iterator& other) { return !(*this == other); }
+
+              iterator operator++();
+
+              iterator();
+              iterator(const iterator&) = default;
+              iterator& operator = (const iterator&) = default;
+            private:
+              iterator(const view<Components...>* owner,
+                       detail::entity_to_component::iterator itr, bool advance);
+
+            private:
+              const view<Components...>* m_owner;
+              detail::entity_to_component::iterator m_cursor;
+          };
+          friend class iterator;
         public:
+          iterator begin() const {
+            return iterator(this, m_start, true);
+          }
+
+          iterator end() const {
+            return iterator(this, m_end, false);
+          }
+
+        protected:
+          detail::components_map_t& m_components;
+          std::size_t m_index;
+          detail::entity_to_component::iterator m_start;
+          detail::entity_to_component::iterator m_end;
+        private:
+          [[nodiscard]] bool exists_in_all(id_t entity_id) const;
       };
 
       template <class ... Components>
-      view<Components...> query () {
-        return view<Components...> (m_components);
-      }
+      view<Components...> query () const;
+
+      template <class ... Components, typename F>
+      void for_each (F&& f);
 
       template <class ... Components>
-      const_view<Components...> query () const {
-        return view<Components...> (m_components);
-      }
-
+      void erase();
     private:
       std::pmr::memory_resource* m_allocator;
       detail::components_map_t m_components;
       sparse_set<id_t> m_entities;
-    private:
-
+      mutable id_factory  m_id_factory;
   };
 
   // ============================================================================
@@ -209,10 +192,29 @@ namespace neutrino::ecs {
     return std::any_cast<const Component&> (std::get<1> (m_components[component_index].get (entity_id)));
   }
 
+  template <class ... Components>
+  registry::view<Components...> registry::query () const {
+    return view<Components...> (const_cast<detail::components_map_t&>(m_components));
+  }
+
+  template <class ... Components, typename F>
+  void registry::for_each (F&& f) {
+    auto v = query<Components...>();
+    for (auto id : v) {
+      f.template operator()(id);
+    }
+  }
+
+  template <class ... Components>
+  void registry::erase() {
+    for_each<Components...>([this](auto id) {
+      this->delete_entity (id);
+    });
+  }
   // ======================================================================================================
-  namespace detail {
+
     template <class ... Components>
-    view_base<Components...>::view_base (detail::components_map_t& components)
+    registry::view<Components...>::view (detail::components_map_t& components)
         : m_components (components),
           m_index (0) {
       if (m_components.empty ()) {
@@ -225,7 +227,7 @@ namespace neutrino::ecs {
         using t = std::remove_pointer_t<cpt>;
         using pt = std::remove_const_t<t>;
 
-        const auto component_index = get_component_id<pt> ();
+        const auto component_index = detail::get_component_id<pt> ();
         ENFORCE(component_index < m_components.size ());
         if (m_components[component_index].size () < smallest) {
           smallest = m_components[component_index].size ();
@@ -237,7 +239,7 @@ namespace neutrino::ecs {
     }
 
     template <class ... Components>
-    bool view_base<Components...>::exists_in_all(id_t entity_id) const {
+    bool registry::view<Components...>::exists_in_all(id_t entity_id) const {
       bool found = true;
       mp::for_types<Components...> ([this, &found, entity_id] (auto type_ptr) {
         if (found) {
@@ -245,7 +247,7 @@ namespace neutrino::ecs {
           using t = std::remove_pointer_t<cpt>;
           using pt = std::remove_const_t<t>;
 
-          const auto component_index = get_component_id<pt> ();
+          const auto component_index = detail::get_component_id<pt> ();
           ENFORCE(component_index < m_components.size ());
           if (component_index != m_index) {
             if (!m_components[component_index].exists (entity_id)) {
@@ -259,20 +261,24 @@ namespace neutrino::ecs {
 
 
     template <class ... Components>
-    typename view_base<Components...>::iterator::const_reference view_base<Components...>::iterator::operator*() const noexcept {
+    typename registry::view<Components...>::iterator::const_reference
+    registry::view<Components...>::iterator::operator*() const noexcept {
       return std::get<0>(m_cursor.operator*());
     }
 
 
     template <class ... Components>
-    bool view_base<Components...>::iterator::operator==(const view_base<Components...>::iterator& other) {
+    bool registry::view<Components...>::iterator::operator==(const registry::view<Components...>::iterator& other) {
       return (m_cursor == other.m_cursor);
     }
 
 
     template <class ... Components>
-    typename view_base<Components...>::iterator& view_base<Components...>::iterator::operator++() {
-
+    typename registry::view<Components...>::iterator registry::view<Components...>::iterator::operator++() {
+      auto curr = m_cursor;
+      if (m_cursor != m_owner->m_end) {
+        m_cursor++;
+      }
       while (m_cursor != m_owner->m_end) {
         auto key = std::get<0>(*m_cursor);
         if (!m_owner->exists_in_all (key)) {
@@ -281,21 +287,24 @@ namespace neutrino::ecs {
           break;
         }
       }
-      return *this;
+      iterator ret(m_owner, curr, false);
+      return ret;
     }
 
     template <class ... Components>
-    view_base<Components...>::iterator::iterator()
+    registry::view<Components...>::iterator::iterator()
     : m_owner(nullptr),
       m_cursor() {
 
     }
 
     template <class ... Components>
-    view_base<Components...>::iterator::iterator(const view_base<Components...>* owner, entity_to_component::iterator itr, bool advance)
+    registry::view<Components...>::iterator::iterator(const registry::view<Components...>* owner,
+                                                      detail::entity_to_component::iterator itr,
+                                                      bool advance)
     : m_owner(owner),
       m_cursor(itr) {
-        /*
+
         if (advance) {
           while (m_cursor != m_owner->m_end) {
             auto key = std::get<0> (*m_cursor);
@@ -307,22 +316,7 @@ namespace neutrino::ecs {
             }
           }
         }
-         */
     }
-  }
-
-  // ======================================================================================================
-  template <class ... Components>
-  registry::view<Components...>::view (detail::components_map_t& components)
-      : detail::view_base<Components...> (components) {
-
-  }
-
-  template <class ... Components>
-  registry::const_view<Components...>::const_view (const detail::components_map_t& components)
-      : detail::view_base<Components...> (const_cast<detail::components_map_t&>(components)) {
-
-  }
 }
 
 #endif //INCLUDE_NEUTRINO_KERNEL_ECS_REGISTRY_HH

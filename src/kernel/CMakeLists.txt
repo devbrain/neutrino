@@ -26,7 +26,9 @@ my_add_library_static(kernel
         ${PROJECT_INCLUDE}/neutrino/kernel/ecs/sparse_set.hh
         ${PROJECT_INCLUDE}/neutrino/kernel/ecs/sparse_map.hh
         ${PROJECT_INCLUDE}/neutrino/kernel/ecs/registry.hh
+        ${PROJECT_INCLUDE}/neutrino/kernel/ecs/id_factory.hh
         ecs/registry.cc
+        ecs/id_factory.cc
 
         ${PROJECT_INCLUDE}/neutrino/kernel/gfx/tilesheet_info.hh
         gfx/tilesheet_info.cc

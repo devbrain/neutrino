@@ -3,7 +3,6 @@
 //
 
 #include <doctest/doctest.h>
-#include <iostream>
 #include <neutrino/kernel/ecs/registry.hh>
 
 namespace {
@@ -13,6 +12,10 @@ namespace {
 
   struct B {
     int x, y;
+  };
+
+  struct C {
+    int x, y, z;
   };
 }
 
@@ -73,10 +76,42 @@ TEST_SUITE("test ecs registry") {
     auto v = reg.query<A, B>();
 
     for (const auto id : v) {
-      std::cout << id << std::endl;
+      REQUIRE((id == 0 || id == 1));
     }
-    REQUIRE(true);
+
+    auto v2 = reg.query<A>();
+    for (const auto id : v2) {
+      REQUIRE((id == 0 || id == 1 || id == 2));
+    }
+  }
+
+  TEST_CASE("test query for_each") {
+    neutrino::ecs::registry reg;
+
+    auto e0 = reg.create_id();
+    reg.attach_component (e0, A{10});
+    reg.attach_component (e0, B{1, 2});
+
+    auto e1 = reg.create_id();
+    reg.attach_component (e1, A{11});
+    reg.attach_component (e1, B{3, 4});
+
+    auto e2 = reg.create_id();
+    reg.attach_component (e2, A{11});
+    reg.attach_component (e2, B{3, 4});
+    reg.attach_component (e2, C{3, 4, 5});
 
 
+    reg.for_each<A,C>([=](auto id) {
+      REQUIRE((id == e0 || id == e2));
+    });
+
+    reg.erase<C>();
+    reg.for_each<A>([=](auto id) {
+      REQUIRE((id == e0 || id == e1));
+    });
+
+    auto v = reg.query<C>();
+    REQUIRE((v.begin() == v.end()));
   }
 }

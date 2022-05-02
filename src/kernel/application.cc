@@ -27,6 +27,7 @@ namespace neutrino {
     events_holder m_events;
     kbd_mapper m_kbd_mapper;
     pointer_mapper m_pointer_mapper;
+    ecs::registry m_registry;
   };
 
   neutrino::application::application () {
@@ -139,5 +140,17 @@ namespace neutrino {
 
   pointer_config_base& application::mouse_config() {
     return m_pimpl->m_pointer_mapper;
+  }
+
+  ecs::id_t application::create_entity() const {
+    return m_pimpl->m_registry.create_id();
+  }
+
+  ecs::registry& application::registry() {
+    return m_pimpl->m_registry;
+  }
+
+  const ecs::registry& application::registry() const {
+    return m_pimpl->m_registry;
   }
 }

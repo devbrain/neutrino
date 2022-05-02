@@ -12,6 +12,7 @@
 #include <neutrino/kernel/hdi/events.hh>
 #include <neutrino/kernel/hdi/input_config.hh>
 #include <neutrino/kernel/hdi/pointer_config.hh>
+#include <neutrino/kernel/ecs/registry.hh>
 
 namespace neutrino {
   class main_window;
@@ -28,6 +29,11 @@ namespace neutrino {
       pointer_config_base& mouse_config();
 
       events_holder& events();
+
+      [[nodiscard]] ecs::id_t create_entity() const;
+      [[nodiscard]] ecs::registry& registry();
+      [[nodiscard]] const ecs::registry& registry() const;
+
     protected:
       [[nodiscard]] virtual application_description describe() const noexcept = 0;
       /**
