@@ -5,5 +5,5 @@ my_add_library_headers(math
         ${PROJECT_INCLUDE}/neutrino/math/traits.hh
         ${PROJECT_INCLUDE}/neutrino/math/quad_tree.hh
         DEPENDS
-        thirdparty::glm
+            thirdparty::glm
         )

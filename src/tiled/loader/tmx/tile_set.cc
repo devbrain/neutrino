@@ -28,7 +28,7 @@ namespace neutrino::tiled::tmx {
     }
   }
 
-  math::rect tile_set::get_coords (unsigned id, math::dimension_t size) const noexcept {
+  math::rect tile_set::get_coords (unsigned id, math::dimension2di_t size) const noexcept {
     unsigned width = (size[0] - 2 * m_margin + m_spacing) / (m_tilewidth + m_spacing); // number of tiles
     unsigned height = (size[1] - 2 * m_margin + m_spacing) / (m_tileheight + m_spacing); // number of tiles
 

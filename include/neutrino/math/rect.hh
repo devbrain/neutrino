@@ -8,12 +8,13 @@
 #include <neutrino/math/point.hh>
 
 namespace neutrino::math {
-  using dimension_t = detail::vector_traits<int>::vector;
+  using dimension2di_t = detail::vector_traits<int>::vector2d;
+  using dimension2df_t = detail::vector_traits<float>::vector2d;
 
   template <typename T>
   struct box2d {
     using scalar_t = typename detail::vector_traits<T>::scalar;
-    using point_t = typename detail::vector_traits<T>::vector;
+    using point_t = typename detail::vector_traits<T>::vector2d;
 
     box2d (scalar_t x, scalar_t y, scalar_t w, scalar_t h)
         : point{x, y}, dims{w, h} {
@@ -29,49 +30,49 @@ namespace neutrino::math {
         : point{corner}, dims{wh} {
     }
 
-    constexpr T left() const noexcept
+    [[nodiscard]] constexpr T left() const noexcept
     {
       return point.x;
     }
 
-    constexpr T right() const noexcept
+    [[nodiscard]] constexpr T right() const noexcept
     {
       return point.x + dims.x;
     }
 
-    constexpr T bottom() const noexcept
+    [[nodiscard]] constexpr T bottom() const noexcept
     {
       return point.y + dims.y;
     }
 
-    constexpr T top() const noexcept
+    [[nodiscard]] constexpr T top() const noexcept
     {
       return point.y;
     }
 
 
-    constexpr point_t top_left() const noexcept
+    [[nodiscard]] constexpr point_t top_left() const noexcept
     {
       return point;
     }
 
-    constexpr point_t center() const noexcept
+    [[nodiscard]] constexpr point_t center() const noexcept
     {
       return point + (dims / static_cast<T>(2));
     }
 
-    constexpr point_t size() const noexcept
+    [[nodiscard]] constexpr point_t size() const noexcept
     {
       return dims;
     }
 
-    constexpr bool contains(const box2d<T>& box) const noexcept
+    [[nodiscard]] constexpr bool contains(const box2d<T>& box) const noexcept
     {
       return left() <= box.left() && box.right() <= right() &&
              top() <= box.top() && box.bottom() <= bottom();
     }
 
-    constexpr bool intersects(const box2d<T>& box) const noexcept
+    [[nodiscard]] constexpr bool intersects(const box2d<T>& box) const noexcept
     {
       return !(left() >= box.right() || right() <= box.left() ||
                top() >= box.bottom() || bottom() <= box.top());
@@ -80,6 +81,13 @@ namespace neutrino::math {
     point_t point;
     point_t dims;
   };
+
+
+  template  <typename TO, typename FROM>
+  box2d<TO> convert(const box2d<FROM>& v) {
+    return box2d<TO>(static_cast<TO>(v.point[0]), static_cast<TO>(v.point[1]),
+                     static_cast<TO>(v.dims[0]), static_cast<TO>(v.dims[1]));
+  }
 
   using rect = box2d<int>;
 }

@@ -39,5 +39,6 @@ my_add_library_static(kernel
 
         DEPENDS_PUBLIC
             neutrino::hal
+            neutrino::math
             neutrino::utils
         )

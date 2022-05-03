@@ -5,6 +5,9 @@
 #include <doctest/doctest.h>
 #include <neutrino/math/quad_tree.hh>
 
+DOCTEST_GCC_SUPPRESS_WARNING("-Wunused-function")
+
+
 using namespace neutrino::math;
 
 namespace {

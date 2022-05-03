@@ -107,12 +107,12 @@ namespace neutrino::hal {
     m_pimpl->renderer.integer_scaling (enabled);
   }
 
-  math::dimension_t renderer::logical_size () const {
+  math::dimension2di_t renderer::logical_size () const {
     auto [w,h] = m_pimpl->renderer.logical_size ();
     return {w,h};
   }
 
-  void renderer::logical_size (math::dimension_t d) {
+  void renderer::logical_size (math::dimension2di_t d) {
     m_pimpl->renderer.logical_size (d[0], d[1]);
   }
 

@@ -143,7 +143,7 @@ namespace neutrino::tiled::tmx {
 
       [[nodiscard]] const tile* get_tile (unsigned id) const noexcept;
 
-      [[nodiscard]] math::rect get_coords (unsigned id, math::dimension_t size) const noexcept;
+      [[nodiscard]] math::rect get_coords (unsigned id, math::dimension2di_t size) const noexcept;
 
       [[nodiscard]] unsigned columns () const noexcept {
         return m_columns;

@@ -14,13 +14,13 @@ namespace neutrino::math::detail {
 
   template <>
   struct vector_traits<float> {
-    using vector = glm::vec2;
+    using vector2d = glm::vec2;
     using scalar = float;
   };
 
   template <>
   struct vector_traits<int> {
-    using vector = glm::ivec2;
+    using vector2d = glm::ivec2;
     using scalar = int;
   };
 }

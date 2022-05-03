@@ -10,10 +10,10 @@
 namespace neutrino::hal {
   struct color {
     color ()
-        : r (0), g (0), b (0), a (0) {
+        : r (0), g (0), b (0), a (0xFF) {
     }
 
-    color (uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_ = 0)
+    color (uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_ = 0xFF)
         : r (r_), g (g_), b (b_), a (a_) {
     }
 

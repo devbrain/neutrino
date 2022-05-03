@@ -65,8 +65,8 @@ namespace neutrino::hal {
       [[nodiscard]] bool integer_scaling () const;
       void integer_scaling (bool enabled);
 
-      [[nodiscard]] math::dimension_t logical_size () const;
-      void logical_size (math::dimension_t r);
+      [[nodiscard]] math::dimension2di_t logical_size () const;
+      void logical_size (math::dimension2di_t r);
       void logical_size (unsigned w, unsigned h);
 
       [[nodiscard]] std::pair<float, float> scaling () const;
