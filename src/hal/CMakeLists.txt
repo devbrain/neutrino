@@ -59,6 +59,10 @@ my_add_library_static(hal
         ${PROJECT_INCLUDE}/neutrino/hal/video/surface.hh
         video/surface_impl.hh
 
+        video/palette.cc
+        ${PROJECT_INCLUDE}/neutrino/hal/video/palette.hh
+        video/palette_impl.hh
+
         video/pixel_format.cc
         ${PROJECT_INCLUDE}/neutrino/hal/video/pixel_format.hh
 
@@ -71,12 +75,47 @@ my_add_library_static(hal
         video/thirdparty/SDL_stbimage.h
         video/thirdparty/stb_image.h
         video/thirdparty/stb_image.c
+        video/thirdparty/stb_image_write.h
+        video/thirdparty/stb_image_write.c
         video/thirdparty/SDL_lbm.h
         video/thirdparty/SDL_pcx.h
         video/thirdparty/SDL_ttf.h
         video/thirdparty/SDL_ttf.c
         video/stb_image_loader.cc
         video/stb_image_loader.hh
+        video/image_writer.cc
+        video/image_writer.hh
+
+        video/thirdparty/pngpp/color.hpp
+        video/thirdparty/pngpp/config.hpp
+        video/thirdparty/pngpp/consumer.hpp
+        video/thirdparty/pngpp/convert_color_space.hpp
+        video/thirdparty/pngpp/end_info.hpp
+        video/thirdparty/pngpp/error.hpp
+        video/thirdparty/pngpp/ga_pixel.hpp
+        video/thirdparty/pngpp/generator.hpp
+        video/thirdparty/pngpp/gray_pixel.hpp
+        video/thirdparty/pngpp/image.hpp
+        video/thirdparty/pngpp/image_info.hpp
+        video/thirdparty/pngpp/index_pixel.hpp
+        video/thirdparty/pngpp/info_base.hpp
+        video/thirdparty/pngpp/info.hpp
+        video/thirdparty/pngpp/io_base.hpp
+        video/thirdparty/pngpp/packed_pixel.hpp
+        video/thirdparty/pngpp/palette.hpp
+        video/thirdparty/pngpp/pixel_buffer.hpp
+        video/thirdparty/pngpp/pixel_traits.hpp
+        video/thirdparty/pngpp/png.hpp
+        video/thirdparty/pngpp/reader.hpp
+        video/thirdparty/pngpp/require_color_space.hpp
+        video/thirdparty/pngpp/rgba_pixel.hpp
+        video/thirdparty/pngpp/rgb_pixel.hpp
+        video/thirdparty/pngpp/solid_pixel_buffer.hpp
+        video/thirdparty/pngpp/streaming_base.hpp
+        video/thirdparty/pngpp/tRNS.hpp
+        video/thirdparty/pngpp/types.hpp
+        video/thirdparty/pngpp/writer.hpp
+
         ios_rwops.hh
 
         video/thirdparty/gfx/SDL2_gfxPrimitives.c
@@ -123,6 +162,7 @@ my_add_library_static(hal
         thirdparty::glm
         thirdparty::bitflags
         thirdparty::freetype
+        thirdparty::png
         thirdparty::sdl2
         ${VULKAN_LIBS}
         )

@@ -146,6 +146,7 @@ namespace neutrino::sdl {
             return 0;
           };
         }
+        // std::size_t write (const void* ptr, std::size_t size, std::size_t maxnum)
         if constexpr (detail::rwops::has_write<RWImpl, size_t (const void*, size_t, size_t)>::value) {
           ret->write = [] (SDL_RWops* ctx, const void* buff, size_t s, size_t n) -> size_t {
             _dENFORCE_TYPE_RWOPS(0);

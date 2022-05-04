@@ -8,7 +8,7 @@
 namespace neutrino::utils::io {
   binary_reader::binary_reader (std::istream& istr, stream_byte_order byteOrder)
       : m_istr (istr) {
-#if !TE_IS_LITTLE_ENDIAN
+#if !NEUTRINO_IS_LITTLE_ENDIAN
     m_flip_bytes = (byteOrder == LITTLE_ENDIAN_BYTE_ORDER);
 #else
     m_flip_bytes = (byteOrder == BIG_ENDIAN_BYTE_ORDER);

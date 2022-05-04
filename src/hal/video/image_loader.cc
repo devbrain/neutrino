@@ -14,6 +14,7 @@
 namespace neutrino::hal {
 
   namespace detail {
+
     std::vector<image_loader*>& loaders_registry () {
       static std::vector<image_loader*> loaders;
       return loaders;
@@ -21,6 +22,7 @@ namespace neutrino::hal {
   }
 
   image_loader::image_loader () {
+
     detail::loaders_registry ().push_back (this);
   }
 
@@ -40,6 +42,7 @@ namespace neutrino::hal {
 
   // -------------------------------------------------------------------------
   surface load (std::istream& is) {
+    detail::register_stb_loaders();
     auto offs = is.tellg ();
     for (auto* loader : detail::loaders_registry ()) {
       if (loader->test (is)) {

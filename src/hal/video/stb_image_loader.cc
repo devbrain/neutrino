@@ -107,9 +107,13 @@ namespace neutrino::hal::detail {
 
 
   void register_stb_loaders() {
-    NEUTRINO_REGISTER_IMAGE_LOADER(lbm_loader);
-    NEUTRINO_REGISTER_IMAGE_LOADER(pcx_loader);
-    NEUTRINO_REGISTER_IMAGE_LOADER(stbi_image_loader);
+    static bool initialized = false;
+    if (!initialized) {
+      NEUTRINO_REGISTER_IMAGE_LOADER(lbm_loader);
+      NEUTRINO_REGISTER_IMAGE_LOADER(pcx_loader);
+      NEUTRINO_REGISTER_IMAGE_LOADER(stbi_image_loader);
+      initialized = true;
+    }
   }
 }
 

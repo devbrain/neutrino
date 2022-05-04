@@ -60,7 +60,7 @@ namespace neutrino::hal {
           : m_stream (os) {
       }
 
-      uint64_t seek (int offset, sdl::whence whence) {
+      int64_t seek (int offset, sdl::whence whence) {
         if (whence == sdl::whence::SET) {
           m_stream->seekp (offset, std::ios::beg);
         }
@@ -75,7 +75,7 @@ namespace neutrino::hal {
           }
         }
 
-        return m_stream->fail () ? (uint64_t) -1 : (uint64_t) m_stream->tellp ();
+        return m_stream->fail () ?  -1 : (int64_t) m_stream->tellp ();
       }
 
       std::size_t write (const void* ptr, std::size_t size, std::size_t maxnum) {
@@ -85,7 +85,7 @@ namespace neutrino::hal {
 
         m_stream->write ((char*) ptr, size * maxnum);
 
-        return m_stream->bad () ? (uint64_t) -1 : (uint64_t) m_stream->tellp () / size;
+        return m_stream->bad () ? (uint64_t) -1 : size*maxnum;
       }
 
       uint64_t tell () {

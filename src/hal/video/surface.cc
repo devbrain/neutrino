@@ -5,8 +5,11 @@
 #include <neutrino/hal/video/surface.hh>
 #include <neutrino/hal/video/window.hh>
 #include "surface_impl.hh"
+#include "palette_impl.hh"
 #include "hal/video/windows/window_impl.hh"
+#include "hal/video/image_writer.hh"
 #include "hal/cast.hh"
+
 
 #define SDL2_ROTOZOOM_SCOPE extern "C"
 #include "hal/video/thirdparty/gfx/SDL2_rotozoom.h"
@@ -28,11 +31,38 @@ namespace neutrino::hal {
   }
 
   surface surface::make_rgba (unsigned width, unsigned height) {
-    return surface (width, height, pixel_format::make_rgba_32bit ());
+    return {width, height, pixel_format::make_rgba_32bit ()};
   }
 
   surface surface::make_8bit (unsigned width, unsigned height) {
-    return surface (width, height, pixel_format::make_8bit ());
+    return {width, height, pixel_format::make_8bit ()};
+  }
+
+  void surface::save_bmp(std::ostream& os) const {
+    if (!write_bmp (os, m_pimpl->surface.handle())) {
+      RAISE_EX("Failed to save BMP");
+    }
+  }
+  void surface::save_jpg(std::ostream& os) const {
+    if (!write_jpg (os, m_pimpl->surface.handle())) {
+      RAISE_EX("Failed to save JPG");
+    }
+  }
+
+  void surface::save_png(std::ostream& os) const {
+    if (!write_png (os, m_pimpl->surface.handle())) {
+      RAISE_EX("Failed to save PNG");
+    }
+  }
+  void surface::save_tga(std::ostream& os) const {
+    if (!write_tga (os, m_pimpl->surface.handle())) {
+      RAISE_EX("Failed to save TGA");
+    }
+  }
+  void surface::save(const std::filesystem::path& ofile) const {
+    if (!write_image(ofile, m_pimpl->surface.handle())) {
+      RAISE_EX("Failed to save ", ofile);
+    }
   }
 
   pixel_format surface::format () const {
@@ -162,7 +192,15 @@ namespace neutrino::hal {
   }
 
   surface surface::convert (const pixel_format& fmt) const {
-    return surface (std::make_unique<detail::surface_impl> (m_pimpl->surface.convert (sdl::pixel_format (fmt.value ()))));
+    return {std::make_unique<detail::surface_impl> (m_pimpl->surface.convert (sdl::pixel_format (fmt.value ())))};
+  }
+
+  void surface::set_palette(const palette& pal) {
+    m_pimpl->surface.set_palette (pal.m_pimpl->palette);
+  }
+
+  palette surface::get_palette() const {
+    return {std::make_unique<detail::palette_impl>(m_pimpl->surface.get_palette())};
   }
 
   pixel_format surface::get_pixel_format () const {
@@ -176,6 +214,6 @@ namespace neutrino::hal {
   surface surface::roto_zoom (double angle, double zoomx, double zoomy, bool smooth) {
     SDL_Surface* s = rotozoomSurfaceXY (m_pimpl->surface.handle (), M_PI * angle / 180, zoomx, zoomy, smooth ? 1 : 0);
     auto ptr = std::make_unique<detail::surface_impl> (sdl::object<SDL_Surface> (s, true));
-    return surface (std::move (ptr));
+    return {std::move (ptr)};
   }
 }

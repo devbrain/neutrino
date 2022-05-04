@@ -2,6 +2,7 @@
 add_subdirectory(tools)
 add_subdirectory(hal_demo)
 add_subdirectory(pong)
+add_subdirectory(brix)
 #add_subdirectory(tmx)
 #add_subdirectory(lexical)
 #add_subdirectory(imgui)

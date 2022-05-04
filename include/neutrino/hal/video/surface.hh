@@ -7,11 +7,14 @@
 
 #include <optional>
 #include <tuple>
+#include <filesystem>
+#include <ostream>
 
 #include <neutrino/utils/spimpl.h>
 #include <neutrino/hal/video/pixel_format.hh>
 #include <neutrino/hal/video/blend_mode.hh>
 #include <neutrino/hal/video/color.hh>
+#include <neutrino/hal/video/palette.hh>
 #include <neutrino/math/point.hh>
 #include <neutrino/math/rect.hh>
 
@@ -22,20 +25,14 @@ namespace neutrino::hal {
   }
 
   class window;
-
   class renderer;
-
   class image_loader;
-
   class texture;
 
   class surface final {
       friend class image_loader;
-
       friend class renderer;
-
       friend class texture;
-
     public:
       surface () = default;
 
@@ -45,8 +42,15 @@ namespace neutrino::hal {
       static surface make_rgba (unsigned width, unsigned height);
       static surface make_8bit (unsigned width, unsigned height);
 
-      pixel_format format () const;
-      operator bool () const;
+      void save_bmp(std::ostream& os) const;
+      void save_jpg(std::ostream& os) const;
+      void save_png(std::ostream& os) const;
+      void save_tga(std::ostream& os) const;
+      void save(const std::filesystem::path& ofile) const;
+
+
+      [[nodiscard]] pixel_format format () const;
+      explicit operator bool () const;
 
       void lock () noexcept;
       void unlock () noexcept;
@@ -154,6 +158,9 @@ namespace neutrino::hal {
 
       [[nodiscard]] surface roto_zoom (double angle, double zoomx, double zoomy, bool smooth);
 
+
+      void set_palette(const palette& pal);
+      [[nodiscard]] palette get_palette() const;
     private:
       surface (std::unique_ptr<detail::surface_impl>&& impl);
     private:
