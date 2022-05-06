@@ -116,6 +116,28 @@ my_add_library_static(hal
         video/thirdparty/pngpp/types.hpp
         video/thirdparty/pngpp/writer.hpp
 
+        video/thirdparty/libamivideo/amivideotypes.h
+        video/thirdparty/libamivideo/palette.c
+        video/thirdparty/libamivideo/palette.h
+        video/thirdparty/libamivideo/screen.c
+        video/thirdparty/libamivideo/screen.h
+        video/thirdparty/libamivideo/viewportmode.c
+        video/thirdparty/libamivideo/viewportmode.h
+        video/amiga/iff/fourcc.cc
+        video/amiga/iff/fourcc.hh
+        video/amiga/iff/iff_events.cc
+        video/amiga/iff/iff_events.hh
+        video/amiga/iff/iff_parser.hh
+        video/amiga/iff/ea/ea.hh
+        video/amiga/iff/ea/ea_events.cc
+        video/amiga/iff/ea/ea_events.hh
+        video/amiga/amiga_chunks.cc
+        video/amiga/amiga_chunks.hh
+        video/amiga/amiga_image.cc
+        video/amiga/amiga_image.hh
+        video/amiga/lbm.cc
+        video/amiga/lbm.hh
+
         ios_rwops.hh
 
         video/thirdparty/gfx/SDL2_gfxPrimitives.c
@@ -158,6 +180,7 @@ my_add_library_static(hal
         video/fonts/rom_fonts.cc
 
         DEPENDS_PUBLIC
+        neutrino::utils
         neutrino::math
         thirdparty::glm
         thirdparty::bitflags

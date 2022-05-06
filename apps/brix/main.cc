@@ -5,6 +5,7 @@
 #include <iostream>
 #include "rc/bi_loader.hh"
 #include "rc/game_assets.hh"
+#include <neutrino/hal/video/image_loader.hh>
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   try {

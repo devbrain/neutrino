@@ -5,6 +5,7 @@
 #include <neutrino/hal/video/image_loader.hh>
 #include <hal/video/surface_impl.hh>
 #include "hal/ios_rwops.hh"
+#include "hal/video/amiga/lbm.hh"
 #include "stb_image_loader.hh"
 
 #if defined(__GNUC__) || defined(__GNUG__)
@@ -97,14 +98,17 @@ namespace neutrino::hal::detail {
 
 
 
-  class lbm_loader : public sdl_image_loader {
+  class lbm_loader : public image_loader {
     public:
-      lbm_loader ()
-          : sdl_image_loader (IMG_LoadLBM_RW, IMG_isLBM) {
+
+      surface load (std::istream& is) override {
+        return load_lbm (is);
+      }
+
+      bool test (std::istream& is) const override {
+        return is_lbm (is);
       }
   };
-
-
 
   void register_stb_loaders() {
     static bool initialized = false;

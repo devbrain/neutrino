@@ -33,10 +33,12 @@ namespace neutrino::hal {
   surface image_loader::create (std::unique_ptr<detail::surface_impl>&& impl) {
     return surface (std::move (impl));
   }
-
   // -------------------------------------------------------------------------
   surface load (const std::filesystem::path& path) {
     std::ifstream is (path, std::ios::in | std::ios::binary);
+    if (!is) {
+      RAISE_EX("Failed to open file ", path);
+    }
     return load (is);
   }
 

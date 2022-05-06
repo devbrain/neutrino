@@ -86,7 +86,7 @@ std::tuple<neutrino::hal::surface, std::vector<neutrino::math::rect>> load_tiles
     num_tiles++;
   }
   auto s = neutrino::hal::surface::make_rgba (16, 16 * num_tiles);
-  //s.set_palette (pal);
+
   union {
     uint8_t* rgba;
     void* pixels;
@@ -134,12 +134,12 @@ static std::array<uint8_t, 8> sand{42, 42, 43, 43,
                                    44, 44, 45, 45};
 
 // --------------------------------------------------------------------------------------------------------------------
-#if 0
-static std::tuple<sdl::surface, sdl::rect> draw_glyph (uint8_t font_data[64][8],
+
+static std::tuple<neutrino::hal::surface, neutrino::math::rect> draw_glyph (uint8_t font_data[64][8],
                                                        int glyph_num,
                                                        const std::array<uint8_t, 8>& colors,
-                                                       const sdl::palette& pal) {
-  sdl::surface s (8, 8, sdl::pixel_format::make_rgba_32bit ());
+                                                       const neutrino::hal::palette& pal) {
+  auto s = neutrino::hal::surface::make_rgba (8,8);
 
   uint8_t mask = 1;
 
@@ -165,22 +165,23 @@ static std::tuple<sdl::surface, sdl::rect> draw_glyph (uint8_t font_data[64][8],
     }
     row += pitch;
   }
-  return std::make_tuple (std::move (s), sdl::rect{0, 0, 8, 8});
+  return std::make_tuple (std::move (s), neutrino::math::rect{0, 0, 8, 8});
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template <typename F>
-static void load_fonts (sdl::io&& io, const sdl::palette& pal, const std::array<uint8_t, 8>& schema, F func) {
-  uint8_t font_data[64][8] = {0};
-  if (1 != io.read (font_data, sizeof (font_data), 1)) {
-    RAISE_EX("Failed to read font data");
-  }
+static void load_fonts (std::istream *is, const neutrino::hal::palette& pal, const std::array<uint8_t, 8>& schema, F func) {
+  uint8_t font_data[64][8] = {{0}};
+  neutrino::utils::io::binary_reader io (*is, neutrino::utils::io::binary_reader::LITTLE_ENDIAN_BYTE_ORDER);
+  io.read_raw ((char*)font_data, sizeof (font_data));
+  ENFORCE(io.good());
+
   for (int i = 0; i < 64; i++) {
     func (draw_glyph (font_data, i, schema, pal));
   }
 }
 // --------------------------------------------------------------------------------------------------------------------
-
+#if 0
 #define MAX_LEVEL_NUM 112
 
 static problem_descr desc[MAX_LEVEL_NUM] = {

@@ -161,6 +161,8 @@ namespace neutrino::hal {
 
       void set_palette(const palette& pal);
       [[nodiscard]] palette get_palette() const;
+      void put_pixel(int x, int y, uint32_t pixel);
+      [[nodiscard]] uint32_t get_pixel(int x, int y) const;
     private:
       surface (std::unique_ptr<detail::surface_impl>&& impl);
     private:

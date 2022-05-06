@@ -115,6 +115,7 @@ namespace neutrino::hal {
   }
 
   bool write_jpg (std::ostream& os, const SDL_Surface* s) {
+
     return
         stbi_write_jpg_to_func (ostream_write_func, &os, s->w, s->h, s->format->BytesPerPixel, s->pixels, 90)
         > 0
