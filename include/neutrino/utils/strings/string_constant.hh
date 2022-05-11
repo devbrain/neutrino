@@ -61,6 +61,8 @@ namespace neutrino::utils {
 // Inspired heavily by a class described in a presentation by Scott Schurr
 // at Boostcon:
 // https://github.com/boostcon/cppnow_presentations_2012/blob/master/wed/schurr_cpp11_tools_for_class_authors.pdf
+
+
   template <std::size_t N>
   class string_constant {
     public:
@@ -68,7 +70,8 @@ namespace neutrino::utils {
       // parameter packs directly into the constructor
       template <typename... Characters>
       constexpr explicit string_constant (Characters... characters)
-          : m_value{characters..., '\0'} {
+          : m_value{characters..., '\0'},
+            m_hash(hasher (m_value)) {
       }
 
       // Copy constructor
@@ -76,12 +79,14 @@ namespace neutrino::utils {
       constexpr
       explicit string_constant (const string_constant<N>& rhs,
                                 [[maybe_unused]] std::index_sequence<Indexes...> dummy = string_constant<sizeof...(Indexes)>::g_indexes)
-          : m_value{rhs[Indexes]..., '\0'} {
+          : m_value{rhs[Indexes]..., '\0'},
+            m_hash(hasher (m_value)) {
       }
 
       template <std::size_t X, std::size_t... Indexes>
       constexpr string_constant (const string_constant<X>& rhs, [[maybe_unused]] std::index_sequence<Indexes...> dummy)
-          : m_value{rhs[Indexes]..., '\0'} {
+          : m_value{rhs[Indexes]..., '\0'},
+            m_hash(hasher (m_value)) {
       }
 
       template <std::size_t... Indexes>
@@ -98,6 +103,10 @@ namespace neutrino::utils {
         return index < N ? m_value[index] : throw std::out_of_range ("Index out of range");
       }
 
+      [[nodiscard]] constexpr unsigned long long hash () const {
+        return m_hash;
+      }
+
       [[nodiscard]] constexpr const char* c_str () const {
         return m_value.data ();
       }
@@ -112,8 +121,22 @@ namespace neutrino::utils {
 
     protected:
       const std::array<char, N + 1> m_value;
+      const unsigned long long m_hash;
 
       static constexpr auto g_indexes = typename std::make_index_sequence<N>{};
+    private:
+      static constexpr unsigned long long hasher(const std::array<char, N + 1>& str) {
+        unsigned long long hash = 0;
+        for (auto s : str) {
+          hash += s;
+          hash += (hash << 10);
+          hash ^= (hash >> 6);
+        }
+        hash += (hash << 3);
+        hash ^= (hash >> 11);
+        hash += (hash << 15);
+        return hash;
+      }
   };
 
 // Specialize the length_of trait for the StringConstant class

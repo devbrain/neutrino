@@ -9,16 +9,14 @@ namespace neutrino::utils::io {
   binary_writer::binary_writer (std::ostream& ostr, stream_byte_order_t byteOrder)
       :
       _ostr (ostr) {
-#if !TE_IS_LITTLE_ENDIAN
+#if !NEUTRINO_IS_LITTLE_ENDIAN
     _flipBytes = (byteOrder == LITTLE_ENDIAN_BYTE_ORDER);
 #else
     _flipBytes = (byteOrder == BIG_ENDIAN_BYTE_ORDER);
 #endif
   }
 
-  binary_writer::~binary_writer () {
-
-  }
+  binary_writer::~binary_writer () = default;
 
   binary_writer& binary_writer::operator << (bool value) {
     _ostr.write ((const char*) &value, sizeof (value));

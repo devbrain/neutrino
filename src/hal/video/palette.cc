@@ -34,6 +34,10 @@ namespace neutrino::hal {
     m_pimpl->palette[n] = sdl::color {c.r, c.g, c.b, c.a};
   }
 
+  void palette::set(std::size_t n, uint8_t r, uint8_t g, uint8_t b) {
+    m_pimpl->palette[n] = sdl::color {r, g, b, 0xFF};
+  }
+
   palette::palette (std::unique_ptr<detail::palette_impl>&& impl)
   : m_pimpl(std::move(impl)) {
   }

@@ -51,6 +51,10 @@ namespace neutrino::hal {
 
       explicit operator bool () const;
 
+      friend void swap(renderer& lhs, renderer& rhs) {
+        std::swap(lhs.m_pimpl, rhs.m_pimpl);
+      }
+
       [[nodiscard]] blend_mode blend () const;
       void blend (blend_mode bm);
 

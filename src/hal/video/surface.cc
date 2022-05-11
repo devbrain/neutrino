@@ -70,6 +70,9 @@ namespace neutrino::hal {
   }
 
   surface::operator bool () const {
+    if (!m_pimpl) {
+      return false;
+    }
     return m_pimpl->surface.const_handle () != nullptr;
   }
 

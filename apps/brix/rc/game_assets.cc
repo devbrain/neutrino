@@ -170,7 +170,7 @@ static std::tuple<neutrino::hal::surface, neutrino::math::rect> draw_glyph (uint
 
 // --------------------------------------------------------------------------------------------------------------------
 template <typename F>
-static void load_fonts (std::istream *is, const neutrino::hal::palette& pal, const std::array<uint8_t, 8>& schema, F func) {
+static void do_load_fonts (std::istream *is, const neutrino::hal::palette& pal, const std::array<uint8_t, 8>& schema, F func) {
   uint8_t font_data[64][8] = {{0}};
   neutrino::utils::io::binary_reader io (*is, neutrino::utils::io::binary_reader::LITTLE_ENDIAN_BYTE_ORDER);
   io.read_raw ((char*)font_data, sizeof (font_data));
@@ -179,6 +179,32 @@ static void load_fonts (std::istream *is, const neutrino::hal::palette& pal, con
   for (int i = 0; i < 64; i++) {
     func (draw_glyph (font_data, i, schema, pal));
   }
+}
+
+std::vector<neutrino::hal::surface> load_fonts(std::istream* is, const neutrino::hal::palette& main_pal) {
+  std::vector<std::array<uint8_t, 8>*> pals = {
+    &white,
+    &grey,
+    &ice,
+    &fire,
+    &swamp,
+    &sand
+  };
+  std::vector<neutrino::hal::surface> ret;
+  for (const auto pal : pals) {
+    neutrino::hal::surface s = neutrino::hal::surface::make_rgba (8, 64*8);
+    neutrino::math::point2d dst(0,0);
+    auto pos = is->tellg();
+    do_load_fonts (is, main_pal, *pal, [&s, &dst](const auto& dt){
+      const auto& glyph = std::get<0>(dt);
+      const auto& r =  std::get<1>(dt);
+      glyph.blit (r, s, dst);
+      dst.y += r.dims[1];
+    });
+    is->seekg (pos, std::ios::beg);
+    ret.emplace_back (std::move(s));
+  }
+  return ret;
 }
 // --------------------------------------------------------------------------------------------------------------------
 #if 0

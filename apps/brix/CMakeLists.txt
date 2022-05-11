@@ -8,6 +8,8 @@ my_add_executable(brix
         rc/native_bi_data.inc
         rc/resource_loader.hh
         rc/resource_type.hh
+        rc/rc.cc
+        rc/rc.hh
 
         main.cc
         FOLDER Demos

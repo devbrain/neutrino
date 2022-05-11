@@ -35,6 +35,5 @@ target_link_libraries(unittest
         neutrino::kernel
         neutrino::hal
         neutrino::utils
-        neutrino::tiled
         thirdparty::doctest
         )

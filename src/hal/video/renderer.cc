@@ -64,6 +64,9 @@ namespace neutrino::hal {
   }
 
   renderer::operator bool () const {
+    if (!m_pimpl) {
+      return false;
+    }
     return m_pimpl->renderer.const_handle () != nullptr;
   }
 

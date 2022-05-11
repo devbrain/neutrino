@@ -52,6 +52,10 @@ namespace neutrino::hal {
       [[nodiscard]] pixel_format format () const;
       explicit operator bool () const;
 
+      friend void swap(surface& lhs, surface& rhs) {
+        std::swap(lhs.m_pimpl, rhs.m_pimpl);
+      }
+
       void lock () noexcept;
       void unlock () noexcept;
       [[nodiscard]] bool must_lock () const noexcept;

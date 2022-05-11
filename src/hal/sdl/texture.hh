@@ -31,7 +31,7 @@ namespace neutrino::sdl {
       texture (const object <SDL_Renderer>& r, const object <SDL_Surface>& s);
 
       explicit texture (object <SDL_Texture>&& other);
-      texture& operator = (object <SDL_Texture>&& other) noexcept;
+      texture& operator = (object <SDL_Texture>&& other) noexcept override;
 
       // returns: pixel format, texture_access, w, h
       [[nodiscard]] std::tuple<pixel_format, access, unsigned, unsigned> query () const;

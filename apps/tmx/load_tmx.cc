@@ -4,76 +4,117 @@
 
 #include <sstream>
 #include <neutrino/kernel/application.hh>
-#include <neutrino/kernel/controller.hh>
-#include <neutrino/kernel/systems/input_system.hh>
-#include <neutrino/kernel/systems/video/video2d/video2d.hh>
-#include <neutrino/utils/observer.hh>
-#include <neutrino/utils/exception.hh>
-#include <neutrino/tiled/loader/tmx.hh>
+#include <neutrino/kernel/rc/world/world.hh>
+#include <neutrino/kernel/gfx/world_renderer.hh>
+
 #include "map/map_city.h"
 #include "map/city.h"
 
-namespace neutrino::apogee {
+class app : public neutrino::application {
+    static constexpr auto EV_EXIT = "exit";
+    static constexpr auto EV_FULLSCREEN = "fullscreen";
+    static constexpr auto EV_LEFT = "left";
+    static constexpr auto EV_RIGHT = "right";
+    static constexpr auto EV_UP = "up";
+    static constexpr auto EV_DOWN = "down";
 
-  class controller : public kernel::controller<> {
-  };
+  public:
+    app () : m_renderer (nullptr) {
+      using namespace neutrino::kernel;
 
-  using input_def = kernel::input_system<kernel::events::quit, kernel::events::full_screen, kernel::events::pause>;
-  class input : public input_def {
-    public:
-      explicit input(controller& ctrl)
-          : input_def (ctrl){
-        when_pressed (kernel::events::scan_code_t::ESCAPE, kernel::events::quit{});
-        when_pressed (kernel::events::scan_code_t::RETURN, kernel::events::key_mod_t::ALT, kernel::events::full_screen{});
-        when_pressed (kernel::events::scan_code_t::SPACE , kernel::events::pause{});
+      std::istringstream is;
+      std::istringstream iss (std::string((char*)map_city, map_city_length));
+
+      m_world = world::from_tmx(iss, [] (const std::string& name) {
+        return std::string{(const char*)city, city_length};
+      }, m_atlas);
+    }
+
+  private:
+    [[nodiscard]] neutrino::application_description describe() const noexcept override{
+      neutrino::main_window_description d(800, 800);
+
+      d.resizable (true);
+      return {d, 60};
+    }
+
+    void init(neutrino::hal::renderer& renderer) override{
+      m_renderer = &renderer;
+
+      input_config().when_pressed (neutrino::key_mod_t::ALT, neutrino::scan_code_t::RETURN, EV_FULLSCREEN);
+      input_config().when_pressed (neutrino::scan_code_t::ESCAPE, EV_EXIT);
+      input_config().when_pressed (neutrino::scan_code_t::LEFT, EV_LEFT);
+      input_config().when_pressed (neutrino::scan_code_t::RIGHT, EV_RIGHT);
+      input_config().when_pressed (neutrino::scan_code_t::UP, EV_UP);
+      input_config().when_pressed (neutrino::scan_code_t::DOWN, EV_DOWN);
+
+      m_atlas.convert_images (renderer);
+
+      m_world_renderer[0].set (&m_world);
+      m_world_renderer[0].set (&m_atlas);
+      m_window[0].dimensions ({320,320});
+      m_window[0].screen_pos({10,10});
+      m_window[0].world_pos({0,0});
+
+      m_world_renderer[1].set (&m_world);
+      m_world_renderer[1].set (&m_atlas);
+      m_window[1].dimensions ({100,100});
+      m_window[1].screen_pos({400,400});
+      m_window[1].world_pos({0,0});
+    }
+
+    void update_logic(std::chrono::milliseconds ms) override {
+      if (events()[EV_EXIT]) {
+        this->close();
       }
-  };
-
-  class world_manager : public kernel::system {
-    public:
-      world_manager(int w, int h)
-      : m_video (nullptr),
-        m_width (w),
-        m_height (h) {
+      if (events()[EV_FULLSCREEN]) {
+        this->toggle_fullscreen();
       }
-
-      void update([[maybe_unused]] std::chrono::milliseconds ms) override {
-
+      if (events()[EV_RIGHT]) {
+        m_window[1].add_world_pos (1, 0);
       }
-
-      void present() override {
-        m_video->active_color (hal::color (0xFF, 0xFF, 0xFF));
-        m_video->line(0, 0, m_width, m_height);
-        //m_video->active_color (hal::color (0x0, 0x0, 0x0));
+      if (events()[EV_LEFT]) {
+        m_window[1].add_world_pos (-1, 0);
       }
-
-      void setup() override {
-        kernel::system::setup();
-        m_video = dynamic_cast<neutrino::kernel::video2d_system*>(m_systems.m_video);
+      if (events()[EV_UP]) {
+        m_window[1].add_world_pos (0, -1);
       }
-    private:
-      neutrino::kernel::video2d_system* m_video;
-      int m_width;
-      int m_height;
-  };
-}
+      if (events()[EV_DOWN]) {
+        m_window[1].add_world_pos (0, 1);
+      }
+      for (auto & i : m_world_renderer) {
+        i.update (ms);
+      }
+    }
+
+    void draw_frame() override {
+      for (int i=0; i<2; i++) {
+        m_world_renderer[i].draw (m_window[i], *m_renderer);
+      }
+      neutrino::math::rect w(m_window[0].screen_pos()+m_window[1].world_pos(), m_window[1].dimensions());
+      m_renderer->active_color({0xFF, 0x0, 0x0, 0xFF});
+      m_renderer->rectangle (w);
+
+      neutrino::math::rect w2(m_window[1].screen_pos(), m_window[1].dimensions());
+      m_renderer->active_color({0xFF, 0x0FF, 0xFF, 0xFF});
+      m_renderer->rectangle (w2);
+    }
+
+    neutrino::hal::renderer* m_renderer;
+    neutrino::kernel::texture_atlas m_atlas;
+    neutrino::kernel::world  m_world;
+
+    neutrino::kernel::world_renderer m_world_renderer[2];
+    neutrino::kernel::world_window m_window[2];
+
+
+};
 
 int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
-  using namespace neutrino::tiled;
-  std::istringstream is;
-  std::istringstream iss (std::string((char*)map_city, map_city_length));
 
-  auto [world, atlas_builder] = tmx::load (iss, [] (const std::string&) { return std::string{}; });
+  app a;
+  a.execute();
 
-  neutrino::apogee::controller the_controller;
-  neutrino::kernel::video2d_system video;
-  int w = 640;
-  int h = 480;
-  int desired_fps = 60;
-  neutrino::kernel::application app (std::make_unique<neutrino::apogee::input> (the_controller),
-                           std::make_unique<neutrino::kernel::video2d_system>(),
-                           std::make_unique<neutrino::apogee::world_manager> (w, h));
-  app.show (w, h);
-  app.run (desired_fps);
+  return 0;
 
 }

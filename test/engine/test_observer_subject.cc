@@ -84,7 +84,7 @@ TEST_SUITE("observer/subject") {
         int x = 0;
 
         neutrino::utils::publisher<int> subj;
-        subj.attach([&x](const int & a){x = a;});
+        subj.attach([&x](const int & a) noexcept {x = a;});
         subj.attach(f);
 
         subj.notify(5);

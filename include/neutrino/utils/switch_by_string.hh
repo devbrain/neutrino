@@ -7,6 +7,8 @@
 
 // https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
 
+#include <neutrino/utils/strings/string_constant.hh>
+
 constexpr inline auto switcher (const char* s) {
   unsigned long long hash{}, c{};
   for (auto p = s; *p; ++p, ++c) {

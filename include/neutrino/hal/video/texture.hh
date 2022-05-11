@@ -68,6 +68,10 @@ namespace neutrino::hal {
 
       [[nodiscard]] uint32_t map_rgba (const color& c) const;
       [[nodiscard]] uint32_t map_rgb (const color& c) const;
+
+      friend void swap(texture& lhs, texture& rhs) {
+        std::swap(lhs.m_pimpl, rhs.m_pimpl);
+      }
     private:
       explicit texture (std::unique_ptr<detail::texture_impl>&& t);
     private:

@@ -3,7 +3,7 @@
 //
 
 #include <neutrino/kernel/application.hh>
-#include <neutrino/kernel/gfx/grid_image.hh>
+
 #include <neutrino/utils/io/memory_stream_buf.hh>
 #include "assets/foo.h"
 #include "assets/faces.h"

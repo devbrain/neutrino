@@ -45,6 +45,9 @@ namespace neutrino::hal {
   }
 
   texture::operator bool () const {
+    if (!m_pimpl) {
+      return false;
+    }
     return m_pimpl->texture.handle () != nullptr;
   }
 

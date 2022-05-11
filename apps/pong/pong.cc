@@ -65,7 +65,7 @@ class app : public neutrino::application {
     void update_physics(std::chrono::milliseconds ms) {
       auto cols = m_quad_tree->find_all_intersections();
       if (!cols.empty()) {
-        for (const auto [e1, e2] : cols) {
+        for (const auto& [e1, e2] : cols) {
           auto& p1 = registry().get_component<phys_component>(e1);
           p1.speed = -p1.speed;
           auto& p2 = registry().get_component<phys_component>(e2);

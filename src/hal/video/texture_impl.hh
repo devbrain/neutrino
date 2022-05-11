@@ -17,7 +17,7 @@ namespace neutrino::hal::detail {
     }
 
     template <typename ... Args>
-    texture_impl (Args&& ... args)
+    explicit texture_impl (Args&& ... args)
         : texture (std::forward<Args> (args)...),
           format (sdl::object<SDL_PixelFormat> (SDL_AllocFormat (get_format (texture)), true)) {
     }

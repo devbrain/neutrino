@@ -14,12 +14,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     auto s = load_backdrop (pic1_ios.get ());
     s.save ("pic1.png");
 
-    auto pal_ios = loader->load (resource_t::PALETTE);
-    auto pal = load_palette (pal_ios.get());
 
-    auto tl_ios = loader->load (resource_t::BLOCKS);
-    auto [tls, rects] = load_tiles (tl_ios.get(), pal);
-    tls.save ("blocks.png");
 
   } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;

@@ -27,7 +27,16 @@ namespace neutrino::hal {
       [[nodiscard]] color operator [] (std::size_t n) const;
       [[nodiscard]] color get (std::size_t n) const;
       void set(std::size_t n, color c);
+      void set(std::size_t n, uint8_t r, uint8_t g, uint8_t b);
 
+      friend void swap(palette& lhs, palette& rhs) {
+        std::swap(lhs.m_pimpl, rhs.m_pimpl);
+      }
+
+      explicit operator bool() const
+      {
+        return !(m_pimpl == nullptr);
+      }
     private:
       palette (std::unique_ptr<detail::palette_impl>&& impl);
     private:

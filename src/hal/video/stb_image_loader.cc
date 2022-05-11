@@ -106,7 +106,11 @@ namespace neutrino::hal::detail {
       }
 
       bool test (std::istream& is) const override {
-        return is_lbm (is);
+        try {
+          return is_lbm (is);
+        } catch (...) {
+          return false;
+        }
       }
   };
 

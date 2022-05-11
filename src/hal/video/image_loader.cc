@@ -3,7 +3,6 @@
 //
 
 #include <vector>
-#include <istream>
 #include <ios>
 #include <fstream>
 
@@ -31,7 +30,7 @@ namespace neutrino::hal {
 
   // -------------------------------------------------------------------------
   surface image_loader::create (std::unique_ptr<detail::surface_impl>&& impl) {
-    return surface (std::move (impl));
+    return {std::move (impl)};
   }
   // -------------------------------------------------------------------------
   surface load (const std::filesystem::path& path) {
