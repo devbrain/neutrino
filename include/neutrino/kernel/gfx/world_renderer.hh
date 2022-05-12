@@ -41,6 +41,8 @@ namespace neutrino::kernel {
       math::dimension2di_t m_dimensions;
   };
 
+
+
   class world_renderer {
     public:
       world_renderer();
@@ -53,6 +55,8 @@ namespace neutrino::kernel {
       world* m_world;
       const texture_atlas* m_atlas;
   };
+
+
 }
 
 #endif //INCLUDE_NEUTRINO_KERNEL_GFX_WORLD_RENDERER_HH

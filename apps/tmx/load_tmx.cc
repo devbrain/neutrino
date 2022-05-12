@@ -3,6 +3,7 @@
 //
 
 #include <sstream>
+#include <iostream>
 #include <neutrino/kernel/application.hh>
 #include <neutrino/kernel/rc/world/world.hh>
 #include <neutrino/kernel/gfx/world_renderer.hh>
@@ -60,7 +61,7 @@ class app : public neutrino::application {
       m_world_renderer[1].set (&m_atlas);
       m_window[1].dimensions ({100,100});
       m_window[1].screen_pos({400,400});
-      m_window[1].world_pos({0,0});
+      m_window[1].world_pos({0,4});
     }
 
     void update_logic(std::chrono::milliseconds ms) override {
@@ -81,10 +82,13 @@ class app : public neutrino::application {
       }
       if (events()[EV_DOWN]) {
         m_window[1].add_world_pos (0, 1);
+     //   std::cout << m_window[1].world_pos ().y << std::endl;
       }
       for (auto & i : m_world_renderer) {
         i.update (ms);
       }
+
+
     }
 
     void draw_frame() override {

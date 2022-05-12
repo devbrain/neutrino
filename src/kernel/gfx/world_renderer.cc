@@ -120,95 +120,43 @@ namespace neutrino::kernel {
     // TODO
   }
 
+  class world_tiles_translator {
+    public:
+      explicit world_tiles_translator (const world* w);
+      world_tiles_translator(unsigned tile_width, unsigned tile_height, unsigned width_in_tiles, unsigned height_in_tiles);
 
+      void evaluate (int world_pos_x, int world_pos_y, int window_width, int window_height);
+      void evaluate (const world_window& w);
 
-  struct world_coords {
-    world_coords(const world* w, const world_window& window) {
-      tl_w = w->tile_width();
-      tl_h = w->tile_height();
+      [[nodiscard]] int top_left_tile_x() const;
+      [[nodiscard]] int top_left_tile_y() const;
+      [[nodiscard]] int bottom_right_tile_x() const;
+      [[nodiscard]] int bottom_right_tile_y() const;
 
-      int tiles_in_window_w = window.dimensions().x / tl_w;
-      if (window.dimensions().x % tl_w) {
-        tiles_in_window_w++;
-      }
-      if (tiles_in_window_w > w->width()) {
-        tiles_in_window_w = w->width();
-      }
+      [[nodiscard]] int up_pixels_start() const;
+      [[nodiscard]] int left_pixels_start() const;
+      [[nodiscard]] int bottom_pixels_end() const;
+      [[nodiscard]] int right_pixels_end() const;
 
-      int tiles_in_window_h = window.dimensions().y / tl_h;
-      if (window.dimensions().y % tl_h) {
-        tiles_in_window_h++;
-      }
-      if (tiles_in_window_h > w->height()) {
-        tiles_in_window_h = w->height();
-      }
+      [[nodiscard]] int tile_width() const;
+      [[nodiscard]] int tile_height() const;
 
+      void adjust(int tx, int ty, math::rect& r) const;
+    private:
+      int m_tile_width;
+      int m_tile_height;
+      int m_world_width;
+      int m_world_height;
 
-      top_left_tile_x = window.world_pos().x / tl_w;
-      if (top_left_tile_x + tiles_in_window_w >= w->width()) {
-        top_left_tile_x = w->width() - tiles_in_window_w;
-        left_offset_px = 0;
-      } else {
-        left_offset_px = window.world_pos ().x % tl_w;
-      }
+      int m_top_left_tile_x;
+      int m_top_left_tile_y;
+      int m_bottom_right_tile_x;
+      int m_bottom_right_tile_y;
 
-      top_left_tile_y = window.world_pos().y / tl_h;
-      if (top_left_tile_y + tiles_in_window_h >= w->height()) {
-        top_left_tile_y = w->height() - tiles_in_window_h;
-        top_offset_px = 0;
-      } else {
-        top_offset_px = window.world_pos ().y % tl_h;
-      }
-
-      auto bottom = window.world_pos() + window.dimensions();
-
-      bottom_right_tile_x = bottom.x / tl_w;
-      if (bottom_right_tile_x >= w->width()) {
-        bottom_right_tile_x = w->width() - 1;
-        right_offset_px = 0;
-      } else {
-        right_offset_px = window.dimensions ().x % tl_w;
-      }
-
-      bottom_right_tile_y = bottom.y / tl_h;
-      if (bottom_right_tile_y >= w->height()) {
-        bottom_right_tile_y = w->height() - 1;
-        bottom_offset_px = 0;
-      } else {
-        bottom_offset_px = window.dimensions ().y % tl_h;
-      }
-    }
-
-    void adjust(math::rect& rect, int x, int y) {
-      if (x == top_left_tile_x) {
-        rect.point.x += left_offset_px;
-        rect.dims.x -= left_offset_px;
-      } else if (x == bottom_right_tile_y) {
-        rect.dims.x = right_offset_px;
-      }
-
-      if (y == top_left_tile_y) {
-        rect.point.y += top_offset_px;
-        rect.dims.y -= top_offset_px;
-      } else if (y == bottom_right_tile_y) {
-        rect.dims.y = bottom_offset_px;
-      }
-    }
-
-    int tl_w;
-    int tl_h;
-
-    int top_left_tile_x;
-    int left_offset_px;
-
-    int top_left_tile_y;
-    int top_offset_px;
-
-    int bottom_right_tile_x;
-    int right_offset_px;
-
-    int bottom_right_tile_y;
-    int bottom_offset_px;
+      int m_up_pixels_start;
+      int m_left_pixels_start;
+      int m_bottom_pixels_end;
+      int m_right_pixels_end;
   };
 
   void world_renderer::draw(const world_window& window, hal::renderer& renderer) {
@@ -216,7 +164,8 @@ namespace neutrino::kernel {
       return;
     }
 
-    world_coords wc(m_world, window);
+    //world_coords wc(m_world, window);
+
 
     for (const auto& layer : m_world->layers()) {
       std::visit(
@@ -235,33 +184,151 @@ namespace neutrino::kernel {
                       tdi.src.dims = window.dimensions();
                       m_atlas->draw(renderer, tdi, window.screen_pos());
                 },
-                [this, &window, &renderer, &wc](const tiles_layer& tlayer) {
+                [this, &window, &renderer](const tiles_layer& tlayer) {
+                  world_tiles_translator wc(m_world);
+                  wc.evaluate (window);
                   auto screen_pos = window.screen_pos();
                   auto start_x = screen_pos.x;
                   auto h = 0;
-                  for (int y = wc.top_left_tile_y; y <= wc.bottom_right_tile_y; y++) {
-                    for (int x = wc.top_left_tile_x; x <= wc.bottom_right_tile_x; x++) {
+                  for (int y = wc.top_left_tile_y(); y <= wc.bottom_right_tile_y(); y++) {
+                    for (int x = wc.top_left_tile_x(); x <= wc.bottom_right_tile_x(); x++) {
                       auto tlid = tlayer.get (x, y);
                       if (tlid.valid()) {
                         auto tdi = m_atlas->tile_rectangle (tlid);
-                        wc.adjust (tdi.src, x, y);
+                        wc.adjust (x, y, tdi.src);
                         m_atlas->draw (renderer, tdi, screen_pos);
                         h = std::max (tdi.src.dims.y, h);
                         screen_pos.x += tdi.src.dims.x;
                       } else {
-                        math::rect src(0,0, wc.tl_w, wc.tl_h);
-                        wc.adjust (src, x, y);
+                        math::rect src(0, 0, wc.tile_width(), wc.tile_height());
+                        wc.adjust (x, y, src);
                         h = std::max (src.dims.y, h);
                         screen_pos.x += src.dims.x;
                       }
                     }
                     screen_pos.x = start_x;
                     screen_pos.y += h;
+                    h = 0;
                   }
                 }
               ),
           layer
           );
     }
+  }
+
+  world_tiles_translator::world_tiles_translator (const world* w)
+  : world_tiles_translator(w->tile_width(), w->tile_height(), w->width(), w->height()) {
+  }
+
+  world_tiles_translator::world_tiles_translator(unsigned tile_width, unsigned tile_height,
+                                                 unsigned width_in_tiles, unsigned height_in_tiles)
+                                                 :m_tile_width(static_cast<int>(tile_width)),
+                                                  m_tile_height(static_cast<int>(tile_height)),
+                                                  m_world_width(static_cast<int>(width_in_tiles)),
+                                                  m_world_height(static_cast<int>(height_in_tiles))
+                                                 {
+  }
+
+  static int clamp(int v, int m, int M) {
+    if (v < m) {
+      return m;
+    }
+    if (v > M) {
+      return M;
+    }
+    return v;
+  }
+
+  void world_tiles_translator::evaluate (const world_window& w) {
+      auto wp = w.world_pos();
+      auto d = w.dimensions();
+    evaluate (wp[0], wp[1], d[0], d[1]);
+  }
+
+  void world_tiles_translator::evaluate (int world_pos_x, int world_pos_y, int window_width, int window_height) {
+    auto wtx = clamp (world_pos_x, 0, m_world_width*m_tile_width - window_width);
+    auto wty = clamp (world_pos_y, 0, m_world_height*m_tile_height - window_height);
+
+    auto wbx = wtx + window_width;
+    auto wby = wty + window_height;
+
+    m_top_left_tile_x = wtx / m_tile_width;
+    m_left_pixels_start = wtx % m_tile_width;
+
+    m_top_left_tile_y = wty / m_tile_height;
+    m_up_pixels_start = wty % m_tile_height;
+
+    m_bottom_right_tile_x = wbx / m_tile_width;
+    m_right_pixels_end = wbx % m_tile_width;
+
+    if (m_right_pixels_end == 0) {
+      m_bottom_right_tile_x--;
+      m_right_pixels_end = m_tile_width;
+    }
+
+    m_bottom_right_tile_y = wby / m_tile_height;
+    m_bottom_pixels_end = wby % m_tile_height;
+    if (m_bottom_pixels_end == 0) {
+      m_bottom_right_tile_y --;
+      m_bottom_pixels_end = m_tile_height;
+    }
+
+  }
+
+  void world_tiles_translator::adjust(int tx, int ty, math::rect& r) const {
+    if (tx == m_top_left_tile_x) {
+      r.point.x += m_left_pixels_start;
+      r.dims.x -= m_left_pixels_start;
+    } else if (tx == m_bottom_right_tile_x) {
+      r.dims.x = m_right_pixels_end;
+    }
+
+    if (ty == m_top_left_tile_y) {
+      r.point.y += m_up_pixels_start;
+      r.dims.y -= m_up_pixels_start;
+    } else if (ty == m_bottom_right_tile_y) {
+      r.dims.y = m_bottom_pixels_end;
+    }
+  }
+
+  int world_tiles_translator::top_left_tile_x() const {
+    return m_top_left_tile_x;
+  }
+
+  int world_tiles_translator::top_left_tile_y() const {
+    return m_top_left_tile_y;
+  }
+
+  int world_tiles_translator::bottom_right_tile_x() const {
+    return m_bottom_right_tile_x;
+  }
+
+  int world_tiles_translator::bottom_right_tile_y() const {
+    return m_bottom_right_tile_y;
+  }
+
+  int world_tiles_translator::up_pixels_start() const {
+    return m_up_pixels_start;
+  }
+
+  int world_tiles_translator::left_pixels_start() const {
+    return m_left_pixels_start;
+  }
+
+  int world_tiles_translator::bottom_pixels_end() const {
+    return m_bottom_pixels_end;
+  }
+
+  int world_tiles_translator::right_pixels_end() const {
+    return m_right_pixels_end;
+  }
+
+  int world_tiles_translator::tile_width() const {
+    return m_tile_width;
+  }
+
+  int world_tiles_translator::tile_height() const {
+    return m_tile_height;
   }
 }
