@@ -16,7 +16,7 @@
 namespace neutrino::kernel {
 
   struct tile_data {
-    tile_id_t tile_id;
+    std::pair<atlas_id_t, cell_id_t> tile_id;
     math::rect src;
   };
 
@@ -40,17 +40,11 @@ namespace neutrino::kernel {
       [[nodiscard]] bool is_tilesheet(atlas_id_t atlas_id) const noexcept;
       [[nodiscard]] cell_id_t num_of_tiles(atlas_id_t atlas_id) const noexcept;
       [[nodiscard]] tile_data  tile_rectangle(atlas_id_t atlas_id, cell_id_t tile_id) const noexcept;
-      [[nodiscard]] tile_data  tile_rectangle(tile_id_t tile) const noexcept;
       void draw(hal::renderer& renderer, const tile_data& tile, const math::point2d& dst_top_left) const;
     private:
       struct impl;
       spimpl::unique_impl_ptr<impl> m_pimpl;
   };
-
-  inline
-  tile_data texture_atlas::tile_rectangle(tile_id_t tile) const noexcept {
-    return tile_rectangle (tile.atlas_id, tile.cell_id);
-  }
 }
 
 #endif //INCLUDE_NEUTRINO_KERNEL_GFX_TEXTURE_ATLAS_HH

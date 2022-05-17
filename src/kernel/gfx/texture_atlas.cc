@@ -81,11 +81,11 @@ namespace neutrino::kernel {
   }
 
   tile_data  texture_atlas::tile_rectangle(atlas_id_t atlas_id, cell_id_t tile_id) const noexcept {
-    return {tile_id_t(atlas_id, tile_id),
+    return {std::make_pair(atlas_id, tile_id),
                      m_pimpl->m_atlas[atlas_id.value_of()].tile_rectangle (tile_id.value_of())};
   }
 
   void texture_atlas::draw(hal::renderer& renderer, const tile_data& tile, const math::point2d& dst_top_left) const {
-    m_pimpl->m_atlas[tile.tile_id.atlas_id.value_of()].draw (renderer, tile.src, dst_top_left);
+    m_pimpl->m_atlas[tile.tile_id.first.value_of()].draw (renderer, tile.src, dst_top_left);
   }
 }

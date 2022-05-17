@@ -11,25 +11,20 @@ namespace neutrino::kernel {
     m_layer.resize (width*height);
   }
 
+  void tiles_layer::set(std::size_t x, std::size_t y, tile_handle th) {
+    m_layer[m_width*y + x] = th;
+  }
+
   void tiles_layer::set(std::size_t x, std::size_t y, atlas_id_t atlas_id, cell_id_t cell_id) {
-    tile_rep tl;
-    if (!is_invalid (atlas_id) && !is_invalid (cell_id)) {
-      tl.x[0] = static_cast<uint16_t>(cell_id.value_of());
-      tl.x[1] = static_cast<uint16_t>(atlas_id.value_of());
-    }
-    m_layer[m_width*y + x] = tl;
+    set(x, y ,tile_handle(atlas_id, cell_id));
   }
 
   void tiles_layer::set_empty(std::size_t x, std::size_t y) {
-    m_layer[m_width*y + x] = tile_rep();
+    m_layer[m_width*y + x] = {};
   }
 
-  tile_id_t tiles_layer::get(std::size_t x, std::size_t y) const {
-    auto tl = m_layer[m_width*y + x];
-    if (tl.id == std::numeric_limits<uint32_t>::max()) {
-      return {};
-    }
-    return {atlas_id_t(tl.x[1]), cell_id_t(tl.x[0])};
+  tile_handle tiles_layer::get(std::size_t x, std::size_t y) const {
+    return m_layer[m_width*y + x];
   }
 
   std::size_t tiles_layer::width() const noexcept {

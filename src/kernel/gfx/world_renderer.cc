@@ -3,6 +3,7 @@
 //
 #include <algorithm>
 #include <neutrino/kernel/gfx/world_renderer.hh>
+#include <neutrino/kernel/gfx/grid.hh>
 #include <neutrino/utils/override.hh>
 #include <neutrino/utils/exception.hh>
 
@@ -106,61 +107,77 @@ namespace neutrino::kernel {
   }
 
   world_renderer::world_renderer()
-  : m_world(nullptr), m_atlas(nullptr) {}
+  : m_world(nullptr), m_assets(nullptr) {}
 
   void world_renderer::set(world* w) {
     m_world = w;
+    init_animation_state();
+  }
+  void world_renderer::set(world* w, const gfx_assets* atlas) {
+    m_world = w;
+    m_assets = atlas;
+    init_animation_state();
   }
 
-  void world_renderer::set(const texture_atlas* atlas) {
-    m_atlas = atlas;
-  }
 
   void world_renderer::update (std::chrono::milliseconds ms) {
-    // TODO
+    m_animation_state.update (ms);
   }
 
-  class world_tiles_translator {
-    public:
-      explicit world_tiles_translator (const world* w);
-      world_tiles_translator(unsigned tile_width, unsigned tile_height, unsigned width_in_tiles, unsigned height_in_tiles);
+  void world_renderer::init_animation_state() {
+    ENFORCE(m_assets != nullptr);
+    for (auto& layer : m_world->layers()) {
+      std::visit(
+          utils::overload (
+              [this](tiles_layer& tlayer) {
+                for (std::size_t y=0; y<tlayer.height(); y++) {
+                  for (std::size_t x=0; x<tlayer.width(); x++) {
+                    auto th = tlayer.get (x, y);
+                    if (th.empty()) {
+                      continue;
+                    }
+                    if (th.is_animation()) {
+                      auto aseq_id = static_cast<animation_seq_id_t>(th);
+                      th = m_animation_state.add (m_assets->animation_sequences.get(aseq_id));
+                      tlayer.set(x, y, th);
+                    }
+                  }
+                }
+              },
+              [](auto&) {}),
+              layer);
+    }
+  }
 
-      void evaluate (int world_pos_x, int world_pos_y, int window_width, int window_height);
-      void evaluate (const world_window& w);
-
-      [[nodiscard]] int top_left_tile_x() const;
-      [[nodiscard]] int top_left_tile_y() const;
-      [[nodiscard]] int bottom_right_tile_x() const;
-      [[nodiscard]] int bottom_right_tile_y() const;
-
-      [[nodiscard]] int up_pixels_start() const;
-      [[nodiscard]] int left_pixels_start() const;
-      [[nodiscard]] int bottom_pixels_end() const;
-      [[nodiscard]] int right_pixels_end() const;
-
-      [[nodiscard]] int tile_width() const;
-      [[nodiscard]] int tile_height() const;
-
-      void adjust(int tx, int ty, math::rect& r) const;
-    private:
-      int m_tile_width;
-      int m_tile_height;
-      int m_world_width;
-      int m_world_height;
-
-      int m_top_left_tile_x;
-      int m_top_left_tile_y;
-      int m_bottom_right_tile_x;
-      int m_bottom_right_tile_y;
-
-      int m_up_pixels_start;
-      int m_left_pixels_start;
-      int m_bottom_pixels_end;
-      int m_right_pixels_end;
-  };
+  std::tuple<atlas_id_t, cell_id_t, bool, bool> world_renderer::get_tile_data(tile_handle th) {
+      ENFORCE(th);
+      if (th.is_animation()) {
+        auto state_id = static_cast<animation_state_id_t>(th);
+        auto [handle, kind] = m_animation_state.frame (state_id);
+        if (handle) {
+          return {static_cast<atlas_id_t>(handle),
+                  static_cast<cell_id_t>(handle),
+                  handle.is_hflipped(),
+                  handle.is_vflipped()
+                  };
+        } else {
+          return {make_invalid<atlas_id_t>(),
+                  make_invalid<cell_id_t>(),
+                  false,
+                  false
+          };
+        }
+      } else {
+        return {static_cast<atlas_id_t>(th),
+                static_cast<cell_id_t>(th),
+                th.is_hflipped(),
+                th.is_vflipped()
+        };
+      }
+  }
 
   void world_renderer::draw(const world_window& window, hal::renderer& renderer) {
-    if (!m_world || !m_atlas) {
+    if (!m_world || !m_assets) {
       return;
     }
 
@@ -179,13 +196,15 @@ namespace neutrino::kernel {
                 },
                 [this, &window, &renderer](const image_layer& img) {
                       auto tlid = img.tile_id();
-                      ENFORCE(!m_atlas->is_tilesheet (tlid.atlas_id));
-                      auto tdi = m_atlas->tile_rectangle (tlid);
+                      auto atlas_id = static_cast<atlas_id_t>(tlid);
+                      ENFORCE(!m_assets->textures.is_tilesheet (atlas_id));
+                      auto cell_id = static_cast<cell_id_t>(tlid);
+                      auto tdi = m_assets->textures.tile_rectangle (atlas_id, cell_id);
                       tdi.src.dims = window.dimensions();
-                      m_atlas->draw(renderer, tdi, window.screen_pos());
+                      m_assets->textures.draw(renderer, tdi, window.screen_pos());
                 },
                 [this, &window, &renderer](const tiles_layer& tlayer) {
-                  world_tiles_translator wc(m_world);
+                  grid wc(m_world);
                   wc.evaluate (window);
                   auto screen_pos = window.screen_pos();
                   auto start_x = screen_pos.x;
@@ -193,13 +212,20 @@ namespace neutrino::kernel {
                   for (int y = wc.top_left_tile_y(); y <= wc.bottom_right_tile_y(); y++) {
                     for (int x = wc.top_left_tile_x(); x <= wc.bottom_right_tile_x(); x++) {
                       auto tlid = tlayer.get (x, y);
-                      if (tlid.valid()) {
-                        auto tdi = m_atlas->tile_rectangle (tlid);
-                        wc.adjust (x, y, tdi.src);
-                        m_atlas->draw (renderer, tdi, screen_pos);
-                        h = std::max (tdi.src.dims.y, h);
-                        screen_pos.x += tdi.src.dims.x;
-                      } else {
+                      bool is_empty = !tlid;
+                      if (tlid) {
+                        const auto [atlas_id, cell_id, hflip, vflip] = get_tile_data (tlid);
+                        if (is_invalid (atlas_id)) {
+                          is_empty = true;
+                        } else {
+                          auto tdi = m_assets->textures.tile_rectangle (atlas_id, cell_id);
+                          wc.adjust (x, y, tdi.src);
+                          m_assets->textures.draw (renderer, tdi, screen_pos);
+                          h = std::max (tdi.src.dims.y, h);
+                          screen_pos.x += tdi.src.dims.x;
+                        }
+                      }
+                      if (is_empty){
                         math::rect src(0, 0, wc.tile_width(), wc.tile_height());
                         wc.adjust (x, y, src);
                         h = std::max (src.dims.y, h);
@@ -217,118 +243,5 @@ namespace neutrino::kernel {
     }
   }
 
-  world_tiles_translator::world_tiles_translator (const world* w)
-  : world_tiles_translator(w->tile_width(), w->tile_height(), w->width(), w->height()) {
-  }
 
-  world_tiles_translator::world_tiles_translator(unsigned tile_width, unsigned tile_height,
-                                                 unsigned width_in_tiles, unsigned height_in_tiles)
-                                                 :m_tile_width(static_cast<int>(tile_width)),
-                                                  m_tile_height(static_cast<int>(tile_height)),
-                                                  m_world_width(static_cast<int>(width_in_tiles)),
-                                                  m_world_height(static_cast<int>(height_in_tiles))
-                                                 {
-  }
-
-  static int clamp(int v, int m, int M) {
-    if (v < m) {
-      return m;
-    }
-    if (v > M) {
-      return M;
-    }
-    return v;
-  }
-
-  void world_tiles_translator::evaluate (const world_window& w) {
-      auto wp = w.world_pos();
-      auto d = w.dimensions();
-    evaluate (wp[0], wp[1], d[0], d[1]);
-  }
-
-  void world_tiles_translator::evaluate (int world_pos_x, int world_pos_y, int window_width, int window_height) {
-    auto wtx = clamp (world_pos_x, 0, m_world_width*m_tile_width - window_width);
-    auto wty = clamp (world_pos_y, 0, m_world_height*m_tile_height - window_height);
-
-    auto wbx = wtx + window_width;
-    auto wby = wty + window_height;
-
-    m_top_left_tile_x = wtx / m_tile_width;
-    m_left_pixels_start = wtx % m_tile_width;
-
-    m_top_left_tile_y = wty / m_tile_height;
-    m_up_pixels_start = wty % m_tile_height;
-
-    m_bottom_right_tile_x = wbx / m_tile_width;
-    m_right_pixels_end = wbx % m_tile_width;
-
-    if (m_right_pixels_end == 0) {
-      m_bottom_right_tile_x--;
-      m_right_pixels_end = m_tile_width;
-    }
-
-    m_bottom_right_tile_y = wby / m_tile_height;
-    m_bottom_pixels_end = wby % m_tile_height;
-    if (m_bottom_pixels_end == 0) {
-      m_bottom_right_tile_y --;
-      m_bottom_pixels_end = m_tile_height;
-    }
-
-  }
-
-  void world_tiles_translator::adjust(int tx, int ty, math::rect& r) const {
-    if (tx == m_top_left_tile_x) {
-      r.point.x += m_left_pixels_start;
-      r.dims.x -= m_left_pixels_start;
-    } else if (tx == m_bottom_right_tile_x) {
-      r.dims.x = m_right_pixels_end;
-    }
-
-    if (ty == m_top_left_tile_y) {
-      r.point.y += m_up_pixels_start;
-      r.dims.y -= m_up_pixels_start;
-    } else if (ty == m_bottom_right_tile_y) {
-      r.dims.y = m_bottom_pixels_end;
-    }
-  }
-
-  int world_tiles_translator::top_left_tile_x() const {
-    return m_top_left_tile_x;
-  }
-
-  int world_tiles_translator::top_left_tile_y() const {
-    return m_top_left_tile_y;
-  }
-
-  int world_tiles_translator::bottom_right_tile_x() const {
-    return m_bottom_right_tile_x;
-  }
-
-  int world_tiles_translator::bottom_right_tile_y() const {
-    return m_bottom_right_tile_y;
-  }
-
-  int world_tiles_translator::up_pixels_start() const {
-    return m_up_pixels_start;
-  }
-
-  int world_tiles_translator::left_pixels_start() const {
-    return m_left_pixels_start;
-  }
-
-  int world_tiles_translator::bottom_pixels_end() const {
-    return m_bottom_pixels_end;
-  }
-
-  int world_tiles_translator::right_pixels_end() const {
-    return m_right_pixels_end;
-  }
-
-  int world_tiles_translator::tile_width() const {
-    return m_tile_width;
-  }
-
-  int world_tiles_translator::tile_height() const {
-    return m_tile_height;
-  }
 }

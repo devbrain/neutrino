@@ -96,9 +96,11 @@ namespace neutrino::kernel {
   }
 
   using gid_map_t = std::map<unsigned int, std::tuple<atlas_id_t, std::size_t>>;
+  using ani_map_t = std::map<unsigned int, std::tuple<animation_seq_id_t, unsigned int, const std::vector<tmx::frame>*>>;
 
-  static gid_map_t build_atlas(const tmx::map& map, const path_resolver_t& resolver, texture_atlas& atlas) {
+  static std::tuple<gid_map_t, ani_map_t> build_atlas(const tmx::map& map, const path_resolver_t& resolver, gfx_assets& atlas) {
     gid_map_t gid_map;
+    ani_map_t ani_map;
 
     for (const auto& ts : map.tile_sets()) {
       if (!ts.has_image()) {
@@ -123,14 +125,25 @@ namespace neutrino::kernel {
       tilesheet_info ti (ts.tile_width(), ts.tile_height(), ts.spacing(), ts.margin(), ts.offset_x(), ts.offset_y(), ts.tile_count());
       lazy_tilesheet_info lti(*ts_img->width(), *ts_img->height(), ti);
       lazy_tilesheet lazy_ts = make_tilesheet (lazy_loader_fn, lti);
-      auto id = atlas.add (lazy_ts);
+      auto id = atlas.textures.add (lazy_ts);
       gid_map.insert (std::make_pair (ts.first_gid(), std::make_tuple (id, ts.tile_count())));
+      for (const auto& tli : ts) {
+        if (tli.has_image()) {
+          RAISE_EX("Error in tileset ", ts.name(), " : tile images are not supported");
+        }
+        const auto& tla = tli.get_animation();
+        const auto tile_id = tli.id();
+        if (!tla.frames().empty()) {
+          auto asq = atlas.animation_sequences.create (animation_description::CIRCULAR);
+          ani_map.insert(std::make_pair(ts.first_gid() + tile_id, std::make_tuple (asq.key(), ts.first_gid(), &tla.frames())));
+        }
+      }
     }
 
-    return gid_map;
+    return {gid_map, ani_map};
   }
 
-  static tile_id_t lookup_gid(unsigned int gid, const gid_map_t& gid_map) {
+  static std::pair<atlas_id_t, cell_id_t> lookup_gid(unsigned int gid, const gid_map_t& gid_map) {
     for (const auto& [k, v] : gid_map) {
       auto sz = std::get<1>(v);
       if ( gid >=k && gid < k + sz) {
@@ -139,10 +152,13 @@ namespace neutrino::kernel {
         return {atlas_id, cell_id};
       }
     }
-    return {};
+    return {make_invalid<atlas_id_t>(), make_invalid<cell_id_t>()};
   }
 
-  static tiles_layer create_tiles_layer(const tmx::tile_layer& tlayer, const gid_map_t& gid_map) {
+  static tiles_layer create_tiles_layer(const tmx::tile_layer& tlayer,
+                                        const std::tuple<gid_map_t, ani_map_t>& mapping,
+                                        animation_description& ani_descr) {
+    const auto& [gid_map, ani_map] = mapping;
     tiles_layer res(tlayer.width(), tlayer.height());
     if (tlayer.parallax_x() > 1 || tlayer.parallax_y() > 1) {
       RAISE_EX("Paralax is not supported yet");
@@ -159,23 +175,42 @@ namespace neutrino::kernel {
     std::size_t x = 0;
     std::size_t y = 0;
     for (const auto c : tlayer.cells()) {
-      if (c.diag_flipped() || c.hor_flipped() || c.vert_flipped()) {
-        RAISE_EX("Flipped cells are not supported yet");
+      auto ani_itr = ani_map.find (c.gid ());
+      if (ani_itr != ani_map.end ()) {
+        const auto [ani_seq_id, ts_gid, frames] = ani_itr->second;
+        ENFORCE(frames != nullptr);
+        ENFORCE(ani_descr.exists (ani_seq_id));
+        auto ani_seq = ani_descr.get (ani_seq_id);
+        for (const auto& frame : *frames) {
+          auto gid = ts_gid + frame.id();
+          auto delay = frame.duration();
+          auto tl = lookup_gid (gid, gid_map);
+          ani_seq.add (tile_handle (tl.first, tl.second), delay);
+        }
+        res.set (x, y, tile_handle (ani_seq_id));
       }
-      auto tl = lookup_gid (c.gid(), gid_map);
-      res.set(x, y, tl.atlas_id, tl.cell_id);
-      x++;
-      if (x >= tlayer.width()) {
-        x = 0;
-        y++;
+      else {
+        if (c.diag_flipped ()) {
+          RAISE_EX("Flipped cells are not supported yet");
+        }
+        bool h_flipped = c.hor_flipped ();
+        bool v_flipped = c.vert_flipped ();
+
+        auto tl = lookup_gid (c.gid (), gid_map);
+        res.set (x, y, tile_handle (tl.first, tl.second, h_flipped, v_flipped));
+        x++;
+        if (x >= tlayer.width ()) {
+          x = 0;
+          y++;
+        }
       }
     }
     return res;
   }
 
-  world world::from_tmx(const tmx::map& map, const path_resolver_t& resolver, texture_atlas& atlas) {
+  world world::from_tmx(const tmx::map& map, const path_resolver_t& resolver, gfx_assets& assets) {
     world w (map.width(), map.height(), map.tile_width(), map.tile_height());
-    auto gid_map = build_atlas (map, resolver, atlas);
+    auto mappings = build_atlas (map, resolver, assets);
 
     for (const auto& layer : map.layers()) {
       std::visit (
@@ -183,8 +218,8 @@ namespace neutrino::kernel {
               [](const tmx::image_layer& img_layer) {
                 RAISE_EX("Image layer is not supported");
                 },
-              [&w, &gid_map](const tmx::tile_layer& tile_layer) {
-                w.m_layers.push_back (create_tiles_layer (tile_layer, gid_map));
+              [&w, &mappings, &assets](const tmx::tile_layer& tile_layer) {
+                w.m_layers.push_back (create_tiles_layer (tile_layer, mappings, assets.animation_sequences));
               }
               ),
               layer
@@ -194,16 +229,16 @@ namespace neutrino::kernel {
     return w;
   }
 
-  world world::from_tmx(std::istream& is, const path_resolver_t& resolver, texture_atlas& atlas) {
-    return from_tmx (load_tmx (is, resolver), resolver, atlas);
+  world world::from_tmx(std::istream& is, const path_resolver_t& resolver, gfx_assets& assets) {
+    return from_tmx (load_tmx (is, resolver), resolver, assets);
   }
 
-  world world::from_tmx(const std::filesystem::path& path, const path_resolver_t& resolver, texture_atlas& atlas) {
+  world world::from_tmx(const std::filesystem::path& path, const path_resolver_t& resolver, gfx_assets& assets) {
     std::ifstream ifs(path, std::ios::binary | std::ios::in);
     if (!ifs) {
       RAISE_EX("Failed to open file ", path);
     }
-    return from_tmx(ifs, resolver, atlas);
+    return from_tmx(ifs, resolver, assets);
   }
 
 }

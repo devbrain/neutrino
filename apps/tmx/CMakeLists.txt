@@ -3,6 +3,8 @@ include(bin2c)
 set(MAPS
         map/map_city.tmx
         map/city.png
+        map/demo.tmx
+        map/tileset.png
         )
 
 set(GENERATED_HEADERS)

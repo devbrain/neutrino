@@ -6,15 +6,16 @@
 #define INCLUDE_NEUTRINO_KERNEL_RC_WORLD_IMAGE_LAYER_HH
 
 #include <neutrino/kernel/rc/types.hh>
+#include <neutrino/kernel/rc/tile_handle.hh>
 
 namespace neutrino::kernel {
   class image_layer {
     public:
-      explicit image_layer(tile_id_t tid);
+      explicit image_layer(tile_handle tid);
 
-      [[nodiscard]] tile_id_t tile_id() const noexcept;
+      [[nodiscard]] tile_handle tile_id() const noexcept;
     private:
-      tile_id_t m_image;
+      tile_handle m_image;
   };
 }
 

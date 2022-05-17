@@ -10,6 +10,8 @@
 
 #include "map/map_city.h"
 #include "map/city.h"
+#include "map/demo.h"
+#include "map/tileset.h"
 
 class app : public neutrino::application {
     static constexpr auto EV_EXIT = "exit";
@@ -24,10 +26,13 @@ class app : public neutrino::application {
       using namespace neutrino::kernel;
 
       std::istringstream is;
-      std::istringstream iss (std::string((char*)map_city, map_city_length));
+      std::istringstream iss (std::string((char*)demo, demo_length));
 
       m_world = world::from_tmx(iss, [] (const std::string& name) {
-        return std::string{(const char*)city, city_length};
+        if (name == "city.png") {
+          return std::string{(const char*) city, city_length};
+        }
+        return std::string{(const char*) tileset, tileset_length};
       }, m_atlas);
     }
 
@@ -49,19 +54,19 @@ class app : public neutrino::application {
       input_config().when_pressed (neutrino::scan_code_t::UP, EV_UP);
       input_config().when_pressed (neutrino::scan_code_t::DOWN, EV_DOWN);
 
-      m_atlas.convert_images (renderer);
+      m_atlas.textures.convert_images (renderer);
 
-      m_world_renderer[0].set (&m_world);
-      m_world_renderer[0].set (&m_atlas);
-      m_window[0].dimensions ({320,320});
+
+      m_world_renderer[0].set (&m_world, &m_atlas);
+      m_window[0].dimensions ({15*64,320});
       m_window[0].screen_pos({10,10});
       m_window[0].world_pos({0,0});
 
-      m_world_renderer[1].set (&m_world);
-      m_world_renderer[1].set (&m_atlas);
+
+      m_world_renderer[1].set (&m_world, &m_atlas);
       m_window[1].dimensions ({100,100});
       m_window[1].screen_pos({400,400});
-      m_window[1].world_pos({0,4});
+      m_window[1].world_pos({300,100});
     }
 
     void update_logic(std::chrono::milliseconds ms) override {
@@ -105,7 +110,7 @@ class app : public neutrino::application {
     }
 
     neutrino::hal::renderer* m_renderer;
-    neutrino::kernel::texture_atlas m_atlas;
+    neutrino::kernel::gfx_assets m_atlas;
     neutrino::kernel::world  m_world;
 
     neutrino::kernel::world_renderer m_world_renderer[2];

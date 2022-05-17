@@ -9,7 +9,8 @@
 
 #include <neutrino/math/rect.hh>
 #include <neutrino/kernel/rc/world/world.hh>
-#include <neutrino/kernel/gfx/texture_atlas.hh>
+#include <neutrino/kernel/gfx/gfx_assets.hh>
+#include <neutrino/kernel/gfx/animation_state.hh>
 
 
 namespace neutrino::kernel {
@@ -48,12 +49,17 @@ namespace neutrino::kernel {
       world_renderer();
 
       void set(world* w);
-      void set(const texture_atlas* atlas);
+      void set(world* w, const gfx_assets* atlas);
       void update (std::chrono::milliseconds ms);
       void draw(const world_window& window, hal::renderer& renderer);
     private:
+      void init_animation_state();
+      // atlas, cell, hflip, vflip
+      [[nodiscard]] std::tuple<atlas_id_t, cell_id_t, bool, bool> get_tile_data(tile_handle th);
+    private:
       world* m_world;
-      const texture_atlas* m_atlas;
+      const gfx_assets* m_assets;
+      animation_state m_animation_state;
   };
 
 

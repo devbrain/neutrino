@@ -3,12 +3,15 @@
 //
 
 #include <neutrino/kernel/rc/world/image_layer.hh>
+#include <neutrino/utils/exception.hh>
 
 namespace neutrino::kernel {
-  image_layer::image_layer(tile_id_t tid)
-  : m_image (tid) {}
+  image_layer::image_layer(tile_handle tid)
+  : m_image (tid) {
+    ENFORCE(tid);
+  }
 
-  tile_id_t image_layer::tile_id() const noexcept {
+  tile_handle image_layer::tile_id() const noexcept {
     return m_image;
   }
 }

@@ -15,7 +15,7 @@
 #include <neutrino/kernel/rc/world/tiles_layer.hh>
 #include <neutrino/kernel/rc/world/object.hh>
 #include <neutrino/kernel/rc/path_resolver.hh>
-#include <neutrino/kernel/gfx/texture_atlas.hh>
+#include <neutrino/kernel/gfx/gfx_assets.hh>
 
 
 namespace neutrino::kernel {
@@ -32,8 +32,8 @@ namespace neutrino::kernel {
 
       world() = default;
 
-      static world from_tmx(std::istream& is, const path_resolver_t& resolver, texture_atlas& atlas);
-      static world from_tmx(const std::filesystem::path& path, const path_resolver_t& resolver, texture_atlas& atlas);
+      static world from_tmx(std::istream& is, const path_resolver_t& resolver, gfx_assets& accets);
+      static world from_tmx(const std::filesystem::path& path, const path_resolver_t& resolver, gfx_assets& assets);
 
       world(std::size_t width, std::size_t height, std::size_t tile_width, std::size_t tile_height);
 
@@ -52,7 +52,7 @@ namespace neutrino::kernel {
       [[nodiscard]] std::size_t tile_width() const noexcept;
       [[nodiscard]] std::size_t tile_height() const noexcept;
     private:
-      static world from_tmx(const tmx::map& map, const path_resolver_t& resolver, texture_atlas& atlas);
+      static world from_tmx(const tmx::map& map, const path_resolver_t& resolver, gfx_assets& assets);
     private:
       std::size_t m_width;
       std::size_t m_height;

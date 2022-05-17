@@ -101,7 +101,7 @@ namespace neutrino::kernel {
                                                                                  std::get<1>(d));
   }
 
-  ///
+
   inline
   lazy_tilesheet make_tilesheet(image_loader_t img, tilesheet_rects td) {
     return std::make_tuple<image_loader_t, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(img), std::move(td));

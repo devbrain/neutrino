@@ -6,13 +6,14 @@
 #define INCLUDE_NEUTRINO_KERNEL_RC_TYPES_HH
 
 #include <limits>
+#include <cstdint>
 #include <neutrino/utils/strong_type.hpp>
 
 namespace neutrino::kernel {
   using atlas_id_t = strong::type<std::size_t, struct atlas_id_tag, strong::ordered, strong::equality>;
   using cell_id_t  = strong::type<std::size_t, struct tile_id_tag, strong::ordered, strong::equality>;
-
-
+  using animation_seq_id_t = strong::type<uint16_t, struct animation_seq_tag, strong::ordered, strong::equality>;
+  using animation_state_id_t = strong::type<uint16_t, struct animation_state_tag, strong::ordered, strong::equality>;
 
   namespace detail {
     template <typename T>
@@ -42,23 +43,6 @@ namespace neutrino::kernel {
       return x == make_invalid<T> ();
   }
 
-  struct tile_id_t {
-    tile_id_t()
-    : atlas_id(make_invalid<atlas_id_t>()),
-      cell_id(make_invalid<cell_id_t>()) {}
-
-    tile_id_t(atlas_id_t a, const cell_id_t c)
-    : atlas_id(a),
-    cell_id(c) {}
-
-    atlas_id_t atlas_id;
-    cell_id_t  cell_id;
-
-    [[nodiscard]] bool valid() const noexcept {
-      return !is_invalid (atlas_id) && !is_invalid (cell_id);
-    }
-
-  };
 }
 
 #endif //INCLUDE_NEUTRINO_KERNEL_RC_TYPES_HH
