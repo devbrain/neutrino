@@ -5,6 +5,10 @@ set(MAPS
         map/city.png
         map/demo.tmx
         map/tileset.png
+        map/formosa.tmx
+        map/moon_overlay.png
+        map/overworld.png
+        map/tiles.png
         )
 
 set(GENERATED_HEADERS)

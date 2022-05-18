@@ -11,7 +11,6 @@
  * cells flip
  */
 
-
 #include <fstream>
 #include <map>
 #include <neutrino/utils/exception.hh>
@@ -113,6 +112,7 @@ namespace neutrino::kernel {
       if (!ts_img->width() || !ts_img->height()) {
         RAISE_EX("Image without dimensions is not supported");
       }
+
       auto name = ts_img->source();
       auto lazy_loader_fn = [resolver, name]() -> image {
         std::string input = resolver(name);
@@ -172,11 +172,12 @@ namespace neutrino::kernel {
       return tile_handle (ani_seq_id);
     }
     else {
-      if (c.diag_flipped ()) {
-        RAISE_EX("Flipped cells are not supported yet");
-      }
       bool h_flipped = c.hor_flipped ();
       bool v_flipped = c.vert_flipped ();
+      if (c.diag_flipped ()) {
+        h_flipped = true;
+        v_flipped = true;
+      }
 
       auto tl = lookup_gid (c.gid (), gid_map);
       return {tl.first, tl.second, h_flipped, v_flipped};
@@ -186,7 +187,7 @@ namespace neutrino::kernel {
   static tiles_layer create_tiles_layer(const tmx::tile_layer& tlayer,
                                         const std::tuple<gid_map_t, ani_map_t>& mapping,
                                         animation_description& ani_descr) {
-    const auto& [gid_map, ani_map] = mapping;
+
     tiles_layer res(tlayer.width(), tlayer.height());
     if (tlayer.parallax_x() > 1 || tlayer.parallax_y() > 1) {
       RAISE_EX("Paralax is not supported yet");
@@ -220,8 +221,23 @@ namespace neutrino::kernel {
     for (const auto& layer : map.layers()) {
       std::visit (
           utils::overload(
-              [](const tmx::image_layer& img_layer) {
-                RAISE_EX("Image layer is not supported");
+              [&w, &resolver, &assets](const tmx::image_layer& img_layer) {
+                const auto* image_data = img_layer.get_image();
+                ENFORCE(image_data != nullptr);
+                auto tint = img_layer.tint();
+                auto offset_x = img_layer.offset_x();
+                auto offset_y = img_layer.offset_y();
+                auto name = image_data->source();
+
+                auto lazy_loader_fn = [resolver, name, tint, offset_x, offset_y]() -> image {
+                  std::string input = resolver(name);
+                  utils::io::memory_input_stream is(input.c_str(), input.size());
+                  return load_image (is);
+                };
+
+                auto atlas_id = assets.textures.add (lazy_loader_fn);
+                image_layer img_l(tile_handle(atlas_id, cell_id_t(0)));
+                w.m_layers.push_back (img_l);
                 },
               [&w, &mappings, &assets](const tmx::tile_layer& tile_layer) {
                 w.m_layers.push_back (create_tiles_layer (tile_layer, mappings, assets.animation_sequences));
@@ -244,5 +260,4 @@ namespace neutrino::kernel {
     }
     return from_tmx(ifs, resolver, assets);
   }
-
 }

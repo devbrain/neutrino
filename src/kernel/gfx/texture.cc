@@ -65,7 +65,7 @@ namespace neutrino::kernel {
   }
 
   bool texture::is_tilesheet () const noexcept {
-    return std::get_if<math::rect> (&m_descr) == nullptr || std::get_if<std::monostate> (&m_descr) == nullptr;
+    return std::get_if<tilesheet_rects> (&m_descr) != nullptr;
   }
 
   std::size_t texture::num_tiles () const noexcept {
@@ -80,7 +80,9 @@ namespace neutrino::kernel {
       return ti->at (id);
     }
     ENFORCE(id == 0);
-    return *std::get_if<math::rect> (&m_descr);
+    const math::rect* r = std::get_if<math::rect> (&m_descr);
+    ENFORCE(r != nullptr);
+    return *r;
   }
 
   void texture::draw (hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left) const {
@@ -103,7 +105,6 @@ namespace neutrino::kernel {
         }
         hal::texture new_texture(renderer, img);
         swap(new_texture, m_texture);
-
       }
     }
   }

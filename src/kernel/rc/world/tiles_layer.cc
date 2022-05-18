@@ -12,10 +12,18 @@ namespace neutrino::kernel {
   }
 
   void tiles_layer::set(std::size_t x, std::size_t y, tile_handle th) {
+    /*
+    if (static_cast<atlas_id_t>(th).value_of() == 65) {
+      int zopa = 0;
+    }
+     */
     m_layer[m_width*y + x] = th;
   }
 
   void tiles_layer::set(std::size_t x, std::size_t y, atlas_id_t atlas_id, cell_id_t cell_id) {
+    if (atlas_id.value_of() == 65) {
+      int zopa = 0;
+    }
     set(x, y ,tile_handle(atlas_id, cell_id));
   }
 

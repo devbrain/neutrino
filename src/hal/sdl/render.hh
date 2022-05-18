@@ -23,7 +23,8 @@ namespace neutrino::sdl {
       enum class flip : uint32_t {
           NONE = SDL_FLIP_NONE,
           HORIZONTAL = SDL_FLIP_HORIZONTAL,
-          VERTICAL = SDL_FLIP_VERTICAL
+          VERTICAL = SDL_FLIP_VERTICAL,
+          DIAGONAL = SDL_FLIP_VERTICAL | SDL_FLIP_HORIZONTAL
       };
 
     public:

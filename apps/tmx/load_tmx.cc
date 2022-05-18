@@ -12,6 +12,10 @@
 #include "map/city.h"
 #include "map/demo.h"
 #include "map/tileset.h"
+#include "map/formosa.h"
+#include "map/overworld.h"
+#include "map/moon_overlay.h"
+#include "map/tiles.h"
 
 class app : public neutrino::application {
     static constexpr auto EV_EXIT = "exit";
@@ -26,13 +30,21 @@ class app : public neutrino::application {
       using namespace neutrino::kernel;
 
       std::istringstream is;
-      std::istringstream iss (std::string((char*)demo, demo_length));
+      std::istringstream iss (std::string((char*)formosa, formosa_length));
 
       m_world = world::from_tmx(iss, [] (const std::string& name) {
         if (name == "city.png") {
           return std::string{(const char*) city, city_length};
+        } else if (name == "overworld.png") {
+          return std::string{(const char*) overworld, overworld_length};
+        } else if (name == "tiles.png") {
+          return std::string{(const char*) tiles, tiles_length};
+        } else if (name == "moon_overlay.png") {
+          return std::string{(const char*) moon_overlay, moon_overlay_length};
+        }else if (name == "tileset.png") {
+          return std::string{(const char*) tileset, tileset_length};
         }
-        return std::string{(const char*) tileset, tileset_length};
+        ENFORCE(false);
       }, m_atlas);
     }
 

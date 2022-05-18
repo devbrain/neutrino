@@ -24,13 +24,13 @@ namespace neutrino::kernel {
     return rc;
   }
 
-  atlas_id_t texture_atlas::add(lazy_tilesheet& ts) {
+  atlas_id_t texture_atlas::add(const lazy_tilesheet& ts) {
     atlas_id_t rc{m_pimpl->m_atlas.size()};
     m_pimpl->m_atlas.emplace_back (ts);
     return rc;
   }
 
-  atlas_id_t texture_atlas::add(image_loader_t& loader) {
+  atlas_id_t texture_atlas::add(const image_loader_t& loader) {
     atlas_id_t rc{m_pimpl->m_atlas.size()};
     m_pimpl->m_atlas.emplace_back (loader);
     return rc;
@@ -48,13 +48,13 @@ namespace neutrino::kernel {
     swap (new_texture, old_texture);
   }
 
-  void texture_atlas::replace(atlas_id_t atlas_id, lazy_tilesheet& lt) {
+  void texture_atlas::replace(atlas_id_t atlas_id, const lazy_tilesheet& lt) {
     texture new_texture(lt);
     texture& old_texture = m_pimpl->m_atlas[atlas_id.value_of()];
     swap (new_texture, old_texture);
   }
 
-  void texture_atlas::replace(atlas_id_t atlas_id, image_loader_t& img_ldr) {
+  void texture_atlas::replace(atlas_id_t atlas_id, const image_loader_t& img_ldr) {
     texture new_texture(img_ldr);
     texture& old_texture = m_pimpl->m_atlas[atlas_id.value_of()];
     swap (new_texture, old_texture);

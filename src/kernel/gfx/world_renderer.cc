@@ -204,6 +204,7 @@ namespace neutrino::kernel {
                       m_assets->textures.draw(renderer, tdi, window.screen_pos());
                 },
                 [this, &window, &renderer](const tiles_layer& tlayer) {
+
                   grid wc(m_world);
                   wc.evaluate (window);
                   auto screen_pos = window.screen_pos();
@@ -236,12 +237,11 @@ namespace neutrino::kernel {
                     screen_pos.y += h;
                     h = 0;
                   }
+
                 }
               ),
           layer
           );
     }
   }
-
-
 }

@@ -46,7 +46,7 @@ namespace neutrino::kernel::tmx {
     auto[name, opacity, visible, id] = layer::parse (elt);
 
     int offsetx = default_offset_x, offsety = default_offset_y;
-    colori tint;
+    colori tint(255,255,255,255);
 
     if (elt.has_attribute ("offsetx")) {
       offsetx = elt.get_int_attribute ("offsetx");

@@ -40,7 +40,8 @@ namespace neutrino::hal {
       enum class flip {
           NONE,
           HORIZONTAL,
-          VERTICAL
+          VERTICAL,
+          DIAGONAL
       };
     public:
       renderer () = default;

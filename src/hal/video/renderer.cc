@@ -23,6 +23,8 @@ namespace neutrino {
         return sdl::renderer::flip::VERTICAL;
       case hal::renderer::flip::HORIZONTAL:
         return sdl::renderer::flip::HORIZONTAL;
+      case hal::renderer::flip::DIAGONAL:
+        return sdl::renderer::flip::DIAGONAL;
       default:
         RAISE_EX("Should not be here");
     }
