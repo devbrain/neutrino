@@ -81,6 +81,12 @@ namespace neutrino::kernel {
     }
   }
 
+  math::rect grid::empty(int tx, int ty) const {
+    math::rect src(0, 0, m_tile_width, m_tile_height);
+    adjust (tx, ty, src);
+    return src;
+  }
+
   int grid::top_left_tile_x() const {
     return m_top_left_tile_x;
   }

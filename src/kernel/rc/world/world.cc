@@ -4,7 +4,6 @@
 /**
  * TODO:
  * transparent images
- * image layers
  * tile layer paralax
  * tile layer offset
  * tile layer tint
@@ -243,7 +242,27 @@ namespace neutrino::kernel {
                 auto lazy_loader_fn = [resolver, name, tint, offset_x, offset_y]() -> image {
                   std::string input = resolver(name);
                   utils::io::memory_input_stream is(input.c_str(), input.size());
-                  return load_image (is);
+                  auto s = load_image (is);
+                  if (offset_x > 0 || offset_y > 0) {
+                    auto [w, h] = s.dimensions();
+                    ENFORCE(offset_x < (int)w && offset_y < (int)h);
+                    hal::surface s2(w-offset_x, h-offset_y, s.get_pixel_format());
+                    math::rect src_rect(offset_x, offset_y, (int)(w-offset_x), (int)(h-offset_y));
+                    math::rect dst_rect(0, 0, (int)(w-offset_x), (int)(h-offset_y));
+                    if (tint != tmx::colori(255, 255, 255, 255)) {
+                      s.color_mod (tint.r, tint.b, tint.b);
+                    }
+                    s.blit (src_rect, s2, dst_rect);
+                    return s2;
+                  }
+                  if (tint != tmx::colori(255, 255, 255, 255)) {
+                    s.color_mod (tint.r, tint.b, tint.b);
+                    auto [w, h] = s.dimensions();
+                    hal::surface s2(w, h, s.get_pixel_format());
+                    s.blit (s2);
+                    return s2;
+                  }
+                  return s;
                 };
 
                 auto atlas_id = assets.textures.add (lazy_loader_fn);

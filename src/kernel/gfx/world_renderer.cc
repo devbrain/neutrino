@@ -181,9 +181,6 @@ namespace neutrino::kernel {
       return;
     }
 
-    //world_coords wc(m_world, window);
-
-
     for (const auto& layer : m_world->layers()) {
       std::visit(
           utils::overload (
@@ -200,6 +197,27 @@ namespace neutrino::kernel {
                       ENFORCE(!m_assets->textures.is_tilesheet (atlas_id));
                       auto cell_id = static_cast<cell_id_t>(tlid);
                       auto tdi = m_assets->textures.tile_rectangle (atlas_id, cell_id);
+                      grid wc(m_world);
+                      wc.evaluate (window);
+                      auto screen_pos = window.screen_pos();
+                      auto start_x = screen_pos.x;
+                      auto tw = (int)m_world->tile_width();
+                      auto th = (int)m_world->tile_height();
+                      int h = 0;
+                      for (int y = wc.top_left_tile_y(); y <= wc.bottom_right_tile_y(); y++) {
+                        for (int x = wc.top_left_tile_x (); x <= wc.bottom_right_tile_x (); x++) {
+                            tdi.src.point = screen_pos;
+                            tdi.src.dims.x = tw;
+                            tdi.src.dims.y = th;
+                            wc.adjust (x, y, tdi.src);
+                            m_assets->textures.draw (renderer, tdi, screen_pos);
+                            screen_pos.x += tdi.src.dims.x;
+                            h = std::max (tdi.src.dims.y, h);
+                        }
+                        screen_pos.x = start_x;
+                        screen_pos.y += h;
+                      }
+                      tdi.src.point = window.world_pos();
                       tdi.src.dims = window.dimensions();
                       m_assets->textures.draw(renderer, tdi, window.screen_pos());
                 },
@@ -228,10 +246,9 @@ namespace neutrino::kernel {
                         }
                       }
                       if (is_empty){
-                        math::rect src(0, 0, wc.tile_width(), wc.tile_height());
-                        wc.adjust (x, y, src);
-                        h = std::max (src.dims.y, h);
-                        screen_pos.x += src.dims.x;
+                        auto d = wc.empty (x, y);
+                        h = std::max (d.dims.y, h);
+                        screen_pos.x += d.dims.x;
                       }
                     }
                     screen_pos.x = start_x;

@@ -33,6 +33,7 @@ namespace neutrino::kernel {
       [[nodiscard]] int tile_height() const;
 
       void adjust(int tx, int ty, math::rect& r) const;
+      math::rect empty(int tx, int ty) const;
     private:
       int m_tile_width;
       int m_tile_height;
