@@ -68,17 +68,18 @@ class app : public neutrino::application {
 
       m_atlas.textures.convert_images (renderer);
 
+      auto [wpx, wpy] = m_world.dimensions_in_pixels();
 
       m_world_renderer[0].set (&m_world, &m_atlas);
-      m_window[0].dimensions ({15*64,320});
+      m_window[0].dimensions ({(int)wpx,(int)wpy});
       m_window[0].screen_pos({10,10});
       m_window[0].world_pos({0,0});
 
 
       m_world_renderer[1].set (&m_world, &m_atlas);
-      m_window[1].dimensions ({100,100});
+      m_window[1].dimensions ({(int)wpx/2,(int)wpy/2});
       m_window[1].screen_pos({400,400});
-      m_window[1].world_pos({300,100});
+      m_window[1].world_pos({0,0});
     }
 
     void update_logic(std::chrono::milliseconds ms) override {

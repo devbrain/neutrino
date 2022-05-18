@@ -88,4 +88,8 @@ namespace neutrino::kernel {
   void texture_atlas::draw(hal::renderer& renderer, const tile_data& tile, const math::point2d& dst_top_left) const {
     m_pimpl->m_atlas[tile.tile_id.first.value_of()].draw (renderer, tile.src, dst_top_left);
   }
+
+  void texture_atlas::draw(hal::renderer& renderer, const tile_data& tile, const math::point2d& dst_top_left, bool h_flip, bool v_flip) const {
+    m_pimpl->m_atlas[tile.tile_id.first.value_of()].draw (renderer, tile.src, dst_top_left, h_flip, v_flip);
+  }
 }

@@ -51,6 +51,8 @@ namespace neutrino::kernel {
       [[nodiscard]] std::size_t height() const noexcept;
       [[nodiscard]] std::size_t tile_width() const noexcept;
       [[nodiscard]] std::size_t tile_height() const noexcept;
+
+      [[nodiscard]] std::tuple<std::size_t, std::size_t> dimensions_in_pixels() const;
     private:
       static world from_tmx(const tmx::map& map, const path_resolver_t& resolver, gfx_assets& assets);
     private:

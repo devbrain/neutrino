@@ -221,6 +221,7 @@ namespace neutrino::kernel {
                         } else {
                           auto tdi = m_assets->textures.tile_rectangle (atlas_id, cell_id);
                           wc.adjust (x, y, tdi.src);
+
                           m_assets->textures.draw (renderer, tdi, screen_pos);
                           h = std::max (tdi.src.dims.y, h);
                           screen_pos.x += tdi.src.dims.x;

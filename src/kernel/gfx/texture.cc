@@ -90,6 +90,22 @@ namespace neutrino::kernel {
     renderer.copy (m_texture, src_rect, dst_rect);
   }
 
+  void texture::draw(hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left, bool v_flip, bool h_flip) const {
+      hal::renderer::flip flip = hal::renderer::flip::NONE;
+      if (v_flip && h_flip) {
+        flip = hal::renderer::flip::DIAGONAL;
+      } else {
+        if (v_flip) {
+          flip = hal::renderer::flip::VERTICAL;
+        }
+        if (h_flip) {
+          flip = hal::renderer::flip::HORIZONTAL;
+        }
+      }
+    math::rect dst_rect{dst_top_left, src_rect.dims};
+    renderer.copy (m_texture, src_rect, dst_rect, flip);
+  }
+
   void texture::convert(hal::renderer& renderer) {
     if (!m_texture) {
       if (m_image_loader) {

@@ -77,6 +77,10 @@ namespace neutrino::kernel {
     return m_tile_height;
   }
 
+  std::tuple<std::size_t, std::size_t> world::dimensions_in_pixels() const {
+    return std::make_tuple (m_width*m_tile_width, m_height*m_tile_height);
+  }
+
   static tmx::map load_tmx(std::istream& is, path_resolver_t resolver) {
     using namespace tmx;
     std::istreambuf_iterator<char> eos;
@@ -217,7 +221,14 @@ namespace neutrino::kernel {
   world world::from_tmx(const tmx::map& map, const path_resolver_t& resolver, gfx_assets& assets) {
     world w (map.width(), map.height(), map.tile_width(), map.tile_height());
     auto mappings = build_atlas (map, resolver, assets);
-
+    if (map.background_color() != tmx::colori()) {
+      color c;
+      c.r = map.background_color().r;
+      c.g = map.background_color().g;
+      c.b = map.background_color().b;
+      c.a = map.background_color().a;
+      w.m_layers.push_back (c);
+    }
     for (const auto& layer : map.layers()) {
       std::visit (
           utils::overload(
