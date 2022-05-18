@@ -120,8 +120,6 @@ namespace neutrino::kernel {
         return load_image (is);
       };
 
-
-
       tilesheet_info ti (ts.tile_width(), ts.tile_height(), ts.spacing(), ts.margin(), ts.offset_x(), ts.offset_y(), ts.tile_count());
       lazy_tilesheet_info lti(*ts_img->width(), *ts_img->height(), ti);
       lazy_tilesheet lazy_ts = make_tilesheet (lazy_loader_fn, lti);
@@ -155,6 +153,36 @@ namespace neutrino::kernel {
     return {make_invalid<atlas_id_t>(), make_invalid<cell_id_t>()};
   }
 
+  static tile_handle create_tile(const tmx::cell& c,
+                                 const std::tuple<gid_map_t, ani_map_t>& mapping,
+                                 animation_description& ani_descr) {
+    const auto& [gid_map, ani_map] = mapping;
+    auto ani_itr = ani_map.find (c.gid ());
+    if (ani_itr != ani_map.end ()) {
+      const auto [ani_seq_id, ts_gid, frames] = ani_itr->second;
+      ENFORCE(frames != nullptr);
+      ENFORCE(ani_descr.exists (ani_seq_id));
+      auto ani_seq = ani_descr.get (ani_seq_id);
+      for (const auto& frame : *frames) {
+        auto gid = ts_gid + frame.id();
+        auto delay = frame.duration();
+        auto tl = lookup_gid (gid, gid_map);
+        ani_seq.add (tile_handle (tl.first, tl.second), delay);
+      }
+      return tile_handle (ani_seq_id);
+    }
+    else {
+      if (c.diag_flipped ()) {
+        RAISE_EX("Flipped cells are not supported yet");
+      }
+      bool h_flipped = c.hor_flipped ();
+      bool v_flipped = c.vert_flipped ();
+
+      auto tl = lookup_gid (c.gid (), gid_map);
+      return {tl.first, tl.second, h_flipped, v_flipped};
+    }
+  }
+
   static tiles_layer create_tiles_layer(const tmx::tile_layer& tlayer,
                                         const std::tuple<gid_map_t, ani_map_t>& mapping,
                                         animation_description& ani_descr) {
@@ -175,34 +203,11 @@ namespace neutrino::kernel {
     std::size_t x = 0;
     std::size_t y = 0;
     for (const auto c : tlayer.cells()) {
-      auto ani_itr = ani_map.find (c.gid ());
-      if (ani_itr != ani_map.end ()) {
-        const auto [ani_seq_id, ts_gid, frames] = ani_itr->second;
-        ENFORCE(frames != nullptr);
-        ENFORCE(ani_descr.exists (ani_seq_id));
-        auto ani_seq = ani_descr.get (ani_seq_id);
-        for (const auto& frame : *frames) {
-          auto gid = ts_gid + frame.id();
-          auto delay = frame.duration();
-          auto tl = lookup_gid (gid, gid_map);
-          ani_seq.add (tile_handle (tl.first, tl.second), delay);
-        }
-        res.set (x, y, tile_handle (ani_seq_id));
-      }
-      else {
-        if (c.diag_flipped ()) {
-          RAISE_EX("Flipped cells are not supported yet");
-        }
-        bool h_flipped = c.hor_flipped ();
-        bool v_flipped = c.vert_flipped ();
-
-        auto tl = lookup_gid (c.gid (), gid_map);
-        res.set (x, y, tile_handle (tl.first, tl.second, h_flipped, v_flipped));
-        x++;
-        if (x >= tlayer.width ()) {
-          x = 0;
-          y++;
-        }
+      res.set (x, y, create_tile (c, mapping, ani_descr));
+      x++;
+      if (x >= tlayer.width ()) {
+        x = 0;
+        y++;
       }
     }
     return res;
@@ -225,7 +230,6 @@ namespace neutrino::kernel {
               layer
           );
     }
-
     return w;
   }
 

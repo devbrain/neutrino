@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <ostream>
 #include <neutrino/kernel/rc/types.hh>
 #include <neutrino/utils/exception.hh>
 
@@ -71,8 +72,6 @@ namespace neutrino::kernel {
     tile_handle()
         : id(std::numeric_limits<uint32_t>::max()) {}
 
-
-
     [[nodiscard]] bool is_flipped() const {
       return (x[0] & FLIP_MASK) == FLIP_MASK;
     }
@@ -123,6 +122,19 @@ namespace neutrino::kernel {
       return !empty();
     }
   };
+
+  inline
+  std::ostream& operator << (std::ostream& os, const tile_handle& th) {
+    bool empty = th.empty();
+    bool ani = th.is_animation();
+    bool hf = th.is_hflipped();
+    bool vf = th.is_vflipped();
+    os << "E:" << empty <<",A:" << ani << ",H:" << hf << ",V:" << vf << ":" <<
+                                                                            (th.x[0] & tile_handle::ATLAS_MASK)
+                                                                            << ","
+                                                                            <<th.x[1];
+    return os;
+  }
 }
 
 #endif //INCLUDE_NEUTRINO_KERNEL_RC_WORLD_TILE_HANDLE_HH
