@@ -4,6 +4,8 @@
 
 #include <sstream>
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 #include <neutrino/kernel/application.hh>
 #include <neutrino/kernel/rc/world/world.hh>
 #include <neutrino/kernel/gfx/world_renderer.hh>
@@ -26,26 +28,41 @@ class app : public neutrino::application {
     static constexpr auto EV_DOWN = "down";
 
   public:
-    app () : m_renderer (nullptr) {
+    explicit app (const std::string& path) : m_renderer (nullptr) {
       using namespace neutrino::kernel;
+      if (path.empty()) {
+        std::istringstream is;
+        std::istringstream iss (std::string((char*)formosa, formosa_length));
 
-      std::istringstream is;
-      std::istringstream iss (std::string((char*)formosa, formosa_length));
+        m_world = world::from_tmx (iss, [] (const std::string& name) {
+          if (name == "city.png") {
+            return std::string{(const char*) city, city_length};
+          }
+          else if (name == "overworld.png") {
+            return std::string{(const char*) overworld, overworld_length};
+          }
+          else if (name == "tiles.png") {
+            return std::string{(const char*) tiles, tiles_length};
+          }
+          else if (name == "moon_overlay.png") {
+            return std::string{(const char*) moon_overlay, moon_overlay_length};
+          }
+          else if (name == "tileset.png") {
+            return std::string{(const char*) tileset, tileset_length};
+          }
+          ENFORCE(false);
+        }, m_atlas);
+      } else {
+        std::filesystem::path p = path;
+        auto dir = p.parent_path();
+        std::ifstream ifs(p, std::ios::binary);
+        m_world = world::from_tmx (ifs, [dir](const std::string& name) -> std::string {
+          std::ifstream t(dir/name);
+          return std::string ((std::istreambuf_iterator<char>(t)),
+                          std::istreambuf_iterator<char>());
 
-      m_world = world::from_tmx(iss, [] (const std::string& name) {
-        if (name == "city.png") {
-          return std::string{(const char*) city, city_length};
-        } else if (name == "overworld.png") {
-          return std::string{(const char*) overworld, overworld_length};
-        } else if (name == "tiles.png") {
-          return std::string{(const char*) tiles, tiles_length};
-        } else if (name == "moon_overlay.png") {
-          return std::string{(const char*) moon_overlay, moon_overlay_length};
-        }else if (name == "tileset.png") {
-          return std::string{(const char*) tileset, tileset_length};
-        }
-        ENFORCE(false);
-      }, m_atlas);
+        }, m_atlas);
+      }
     }
 
   private:
@@ -133,8 +150,11 @@ class app : public neutrino::application {
 };
 
 int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
-
-  app a;
+  std::string path = "";
+  if (argc > 1) {
+    path = argv[1];
+  }
+  app a (path);
   a.execute();
 
   return 0;

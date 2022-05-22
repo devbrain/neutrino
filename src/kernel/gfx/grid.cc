@@ -79,6 +79,7 @@ namespace neutrino::kernel {
     } else if (ty == m_bottom_right_tile_y) {
       r.dims.y = m_bottom_pixels_end;
     }
+
   }
 
   math::rect grid::empty(int tx, int ty) const {

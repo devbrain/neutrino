@@ -23,8 +23,6 @@ namespace neutrino {
         return sdl::renderer::flip::VERTICAL;
       case hal::renderer::flip::HORIZONTAL:
         return sdl::renderer::flip::HORIZONTAL;
-      case hal::renderer::flip::DIAGONAL:
-        return sdl::renderer::flip::DIAGONAL;
       default:
         RAISE_EX("Should not be here");
     }
@@ -147,6 +145,10 @@ namespace neutrino::hal {
 
   void renderer::read_pixels (const pixel_format& fmt, void* dst, std::size_t pitch) const {
     m_pimpl->renderer.read_pixels (sdl::pixel_format (fmt.value ()), dst, pitch);
+  }
+
+  pixel_format renderer::get_pixel_format() const {
+    return pixel_format(m_pimpl->renderer.get_pixel_format().value());
   }
 
   void renderer::read_pixels (const math::rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const {
@@ -384,6 +386,23 @@ namespace neutrino::hal {
   void renderer::pie_filled (const math::point2d& p, int rad, float start_angle, float end_angle) {
     pie_filled (p[0], p[1], rad, start_angle, end_angle);
   }
+  // ---------------------------------------------------------------------------
+  clip_area::clip_area(renderer& rend, const math::rect& region)
+  : r(rend) {
+     if (r.clipping_enabled()) {
+       old = r.clip();
+     }
+     r.clip(region);
+  }
+
+  clip_area::~clip_area() {
+    if (old) {
+      r.clip(*old);
+    } else {
+      r.disable_clippping();
+    }
+  }
+
 
 #if defined(_MSC_VER)
 #pragma warning ( pop )

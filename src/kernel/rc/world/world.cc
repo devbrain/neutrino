@@ -11,6 +11,7 @@
  */
 
 #include <fstream>
+#include <iostream>
 #include <map>
 #include <neutrino/utils/exception.hh>
 #include <neutrino/utils/override.hh>
@@ -177,13 +178,10 @@ namespace neutrino::kernel {
     else {
       bool h_flipped = c.hor_flipped ();
       bool v_flipped = c.vert_flipped ();
-      if (c.diag_flipped ()) {
-        h_flipped = true;
-        v_flipped = true;
-      }
+      bool d_flipped = c.diag_flipped ();
 
       auto tl = lookup_gid (c.gid (), gid_map);
-      return {tl.first, tl.second, h_flipped, v_flipped};
+      return {tl.first, tl.second, h_flipped, v_flipped, d_flipped};
     }
   }
 
@@ -207,11 +205,16 @@ namespace neutrino::kernel {
     std::size_t x = 0;
     std::size_t y = 0;
     for (const auto c : tlayer.cells()) {
-      res.set (x, y, create_tile (c, mapping, ani_descr));
+      auto th = create_tile (c, mapping, ani_descr);
+
+      //std::cout << "[" << th.is_hflipped() << th.is_vflipped() << th.is_dflipped() << "]";
+
+      res.set (x, y, th);
       x++;
       if (x >= tlayer.width ()) {
         x = 0;
         y++;
+      //  std::cout << std::endl;
       }
     }
     return res;

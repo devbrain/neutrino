@@ -23,8 +23,7 @@ namespace neutrino::sdl {
       enum class flip : uint32_t {
           NONE = SDL_FLIP_NONE,
           HORIZONTAL = SDL_FLIP_HORIZONTAL,
-          VERTICAL = SDL_FLIP_VERTICAL,
-          DIAGONAL = SDL_FLIP_VERTICAL | SDL_FLIP_HORIZONTAL
+          VERTICAL = SDL_FLIP_VERTICAL
       };
 
     public:
@@ -72,6 +71,7 @@ namespace neutrino::sdl {
        */
       void read_pixels (const pixel_format& fmt, void* dst, std::size_t pitch) const;
       void read_pixels (const rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const;
+      pixel_format get_pixel_format() const;
 
       [[nodiscard]] std::optional<texture> target () const;
       void target (texture& t);
@@ -266,6 +266,22 @@ namespace neutrino::sdl {
     );
   }
 
+  // ----------------------------------------------------------------------------------------------------------------
+  inline
+  pixel_format renderer::get_pixel_format() const {
+    auto window = SDL_RenderGetWindow(const_handle());
+    if (window) {
+      return pixel_format (SDL_GetWindowPixelFormat (window));
+    } else {
+      uint32_t format;
+      auto t = target();
+      if (t) {
+        SAFE_SDL_CALL(SDL_QueryTexture, t->const_handle (), &format, nullptr, nullptr, nullptr);
+        return pixel_format(format);
+      }
+      RAISE_EX("Can not determine pixel format");
+    }
+  }
   // ----------------------------------------------------------------------------------------------------------------
   inline
   void renderer::read_pixels (const rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const {

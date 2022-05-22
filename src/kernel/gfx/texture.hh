@@ -10,7 +10,7 @@
 #include <neutrino/hal/video/texture.hh>
 #include <neutrino/hal/video/renderer.hh>
 #include <neutrino/kernel/rc/tilesheet_description.hh>
-
+#include <neutrino/kernel/rc/types.hh>
 
 namespace neutrino::kernel {
   class texture {
@@ -24,7 +24,11 @@ namespace neutrino::kernel {
       [[nodiscard]] std::size_t num_tiles() const noexcept;
       [[nodiscard]] math::rect  tile_rectangle(std::size_t id) const noexcept;
       void draw(hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left) const;
-      void draw(hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left, bool v_flip, bool h_flip) const;
+      void draw(hal::renderer& renderer,
+                const math::rect& src_rect,
+                const math::point2d& dst_top_left,
+                const math::rect& original_dims,
+                const rotation_info& ri) const;
 
       friend void swap(texture& rhs, texture& lhs) {
         std::swap(rhs.m_descr, lhs.m_descr);
@@ -39,6 +43,8 @@ namespace neutrino::kernel {
       hal::texture   m_texture;
       image_loader_t m_image_loader;
       std::optional<std::pair<unsigned, unsigned>> m_expected_dims;
+      mutable hal::texture m_temp;
+      mutable math::dimension2di_t m_temp_dims;
     private:
       static descr_t dims(const image_loader_t&);
       static descr_t dims(const lazy_tilesheet& lazy_ts);

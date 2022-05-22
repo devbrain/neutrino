@@ -11,12 +11,12 @@
 
 namespace neutrino::hal {
   class surface;
-
+  class renderer;
   class texture;
 
   class pixel_format {
       friend class surface;
-
+      friend class renderer;
       friend class texture;
 
     public:

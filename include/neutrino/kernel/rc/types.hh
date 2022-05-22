@@ -43,6 +43,24 @@ namespace neutrino::kernel {
       return x == make_invalid<T> ();
   }
 
+  struct rotation_info {
+    rotation_info ()
+    : hflip(false), vflip(false), degree(0) {
+
+    }
+
+    rotation_info(bool h, bool v, int d)
+        : hflip(h), vflip(v), degree(d) {
+    }
+
+    [[nodiscard]] bool empty() const {
+      return !hflip && !vflip && (degree == 0);
+    }
+
+    bool hflip;
+    bool vflip;
+    int  degree; // clockwise
+  };
 }
 
 #endif //INCLUDE_NEUTRINO_KERNEL_RC_TYPES_HH

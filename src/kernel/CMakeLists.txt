@@ -139,6 +139,7 @@ set(TEST_DATA
         json/simple_map.json
         wang/isometric_staggered_grass_and_water.tmx
         wang/js_isometric_staggered_grass_and_water.json
+        flip/test.tmx
         )
 
 set(GENERATED_HEADERS)

@@ -149,7 +149,7 @@ namespace neutrino::kernel {
     }
   }
 
-  std::tuple<atlas_id_t, cell_id_t, bool, bool> world_renderer::get_tile_data(tile_handle th) {
+  std::tuple<atlas_id_t, cell_id_t, rotation_info> world_renderer::get_tile_data(tile_handle th) {
       ENFORCE(th);
       if (th.is_animation()) {
         auto state_id = static_cast<animation_state_id_t>(th);
@@ -157,21 +157,18 @@ namespace neutrino::kernel {
         if (handle) {
           return {static_cast<atlas_id_t>(handle),
                   static_cast<cell_id_t>(handle),
-                  handle.is_hflipped(),
-                  handle.is_vflipped()
+                  handle.rotation()
                   };
         } else {
           return {make_invalid<atlas_id_t>(),
                   make_invalid<cell_id_t>(),
-                  false,
-                  false
+                  rotation_info()
           };
         }
       } else {
         return {static_cast<atlas_id_t>(th),
                 static_cast<cell_id_t>(th),
-                th.is_hflipped(),
-                th.is_vflipped()
+                th.rotation()
         };
       }
   }
@@ -180,6 +177,7 @@ namespace neutrino::kernel {
     if (!m_world || !m_assets) {
       return;
     }
+    hal::clip_area ca(renderer, math::rect(window.screen_pos(), window.dimensions()));
 
     for (const auto& layer : m_world->layers()) {
       std::visit(
@@ -233,14 +231,14 @@ namespace neutrino::kernel {
                       auto tlid = tlayer.get (x, y);
                       bool is_empty = !tlid;
                       if (tlid) {
-                        const auto [atlas_id, cell_id, hflip, vflip] = get_tile_data (tlid);
+                        const auto [atlas_id, cell_id, rot] = get_tile_data (tlid);
                         if (is_invalid (atlas_id)) {
                           is_empty = true;
                         } else {
                           auto tdi = m_assets->textures.tile_rectangle (atlas_id, cell_id);
                           wc.adjust (x, y, tdi.src);
 
-                          m_assets->textures.draw (renderer, tdi, screen_pos);
+                          m_assets->textures.draw (renderer, tdi, screen_pos, rot);
                           h = std::max (tdi.src.dims.y, h);
                           screen_pos.x += tdi.src.dims.x;
                         }

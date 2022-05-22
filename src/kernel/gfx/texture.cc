@@ -3,6 +3,7 @@
 //
 
 #include "texture.hh"
+#include <neutrino/hal/video/target_texture.hh>
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::kernel {
@@ -90,20 +91,56 @@ namespace neutrino::kernel {
     renderer.copy (m_texture, src_rect, dst_rect);
   }
 
-  void texture::draw(hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left, bool v_flip, bool h_flip) const {
-      hal::renderer::flip flip = hal::renderer::flip::NONE;
-      if (v_flip && h_flip) {
-        flip = hal::renderer::flip::DIAGONAL;
-      } else {
-        if (v_flip) {
+  static math::dimension2di_t eval_transormr_dims(const math::dimension2di_t& orig, const rotation_info& ri) {
+    if (ri.degree == 0) {
+      if (ri.hflip) {
+        return orig;
+      } else if (ri.vflip) {
+        return orig;
+      }
+    } else {
+      if (ri.degree == 90) {
+        return {orig[1], orig[0]};
+      } else if (ri.degree == 180) {
+        return orig;
+      } else if (ri.degree == 270) {
+        return {orig[1], orig[0]};
+      }
+    }
+    RAISE_EX("unknown rotation");
+  }
+
+  void texture::draw(hal::renderer& renderer, const math::rect& src_rect,
+                     const math::point2d& dst_top_left,
+                     const math::rect& original_dims,
+                     const rotation_info& ri) const {
+    math::rect dst_rect{dst_top_left, src_rect.dims};
+    if (ri.empty()) {
+      renderer.copy (m_texture, src_rect, dst_rect);
+    } else {
+      auto new_dims = eval_transormr_dims (original_dims.dims, ri);
+      if (new_dims != m_temp_dims) {
+        hal::texture new_tex(renderer, renderer.get_pixel_format(), new_dims.x, new_dims.y, hal::texture::access::TARGET);
+        swap(m_temp, new_tex);
+        m_temp_dims = new_dims;
+      }
+
+      {
+        hal::use_texture tt (renderer, m_temp);
+        renderer.clear();
+        math::rect dst(0,0, m_temp_dims.x, m_temp_dims.y);
+        auto flip = hal::renderer::flip::NONE;
+        if (ri.hflip) {
+          flip = hal::renderer::flip::HORIZONTAL;
+        } else if (ri.vflip) {
           flip = hal::renderer::flip::VERTICAL;
         }
-        if (h_flip) {
-          flip = hal::renderer::flip::HORIZONTAL;
-        }
+        renderer.copy (m_texture, original_dims, dst, ri.degree, flip);
       }
-    math::rect dst_rect{dst_top_left, src_rect.dims};
-    renderer.copy (m_texture, src_rect, dst_rect, flip);
+      auto corrected_pos = src_rect.point - original_dims.point;
+      math::rect s(corrected_pos.x, corrected_pos.y, original_dims.dims.x, original_dims.dims.y);
+      renderer.copy (m_temp, s, dst_rect);
+    }
   }
 
   void texture::convert(hal::renderer& renderer) {

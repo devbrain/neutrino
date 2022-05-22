@@ -55,7 +55,7 @@ namespace neutrino::kernel {
     private:
       void init_animation_state();
       // atlas, cell, hflip, vflip
-      [[nodiscard]] std::tuple<atlas_id_t, cell_id_t, bool, bool> get_tile_data(tile_handle th);
+      [[nodiscard]] std::tuple<atlas_id_t, cell_id_t, rotation_info> get_tile_data(tile_handle th);
     private:
       world* m_world;
       const gfx_assets* m_assets;

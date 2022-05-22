@@ -80,7 +80,7 @@ namespace neutrino::kernel {
     return cell_id_t {m_pimpl->m_atlas[atlas_id.value_of()].num_tiles()};
   }
 
-  tile_data  texture_atlas::tile_rectangle(atlas_id_t atlas_id, cell_id_t tile_id) const noexcept {
+  tile_data texture_atlas::tile_rectangle(atlas_id_t atlas_id, cell_id_t tile_id) const noexcept {
     return {std::make_pair(atlas_id, tile_id),
                      m_pimpl->m_atlas[atlas_id.value_of()].tile_rectangle (tile_id.value_of())};
   }
@@ -89,7 +89,9 @@ namespace neutrino::kernel {
     m_pimpl->m_atlas[tile.tile_id.first.value_of()].draw (renderer, tile.src, dst_top_left);
   }
 
-  void texture_atlas::draw(hal::renderer& renderer, const tile_data& tile, const math::point2d& dst_top_left, bool h_flip, bool v_flip) const {
-    m_pimpl->m_atlas[tile.tile_id.first.value_of()].draw (renderer, tile.src, dst_top_left, h_flip, v_flip);
+  void texture_atlas::draw(hal::renderer& renderer, const tile_data& tile, const math::point2d& dst_top_left, const rotation_info& ri) const {
+    auto [atlas_id, cell_id] = tile.tile_id;
+    auto original = m_pimpl->m_atlas[atlas_id.value_of()].tile_rectangle (cell_id.value_of());
+    m_pimpl->m_atlas[tile.tile_id.first.value_of()].draw (renderer, tile.src, dst_top_left, original, ri);
   }
 }

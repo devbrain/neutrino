@@ -20,17 +20,19 @@ namespace neutrino::kernel {
     // |F|E|D|C|B|A|9|8|7|6|5|4|3|2|1|0|
     // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     //  ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^
-    //  | | | | Animation Counter     |
-    //  | | | \ Atlas ID             /
-    //  | | +-- Flip Vert
-    //  | + --- Flip Horizontal
-    //  + ----- Animation sequence
+    //  | | | |  | Animation Counter  |
+    //  | | | |  \ Atlas ID           /
+    //  | | | + - Flip Diag
+    //  | | +---- Flip Vert
+    //  | + ----- Flip Horizontal
+    //  + ------- Animation sequence
 
-    constexpr static uint16_t ATLAS_MASK     = 0b0001111111111111;
     constexpr static uint16_t ANIMATION_MASK = 0b1000000000000000;
     constexpr static uint16_t HFLIP_MASK     = 0b0100000000000000;
     constexpr static uint16_t VFLIP_MASK     = 0b0010000000000000;
-    constexpr static uint16_t FLIP_MASK      = HFLIP_MASK | VFLIP_MASK;
+    constexpr static uint16_t DFLIP_MASK     = 0b0001000000000000;
+    constexpr static uint16_t ATLAS_MASK     = 0b0000111111111111;
+    constexpr static uint16_t FLIP_MASK      = DFLIP_MASK | HFLIP_MASK | VFLIP_MASK;
 
     tile_handle(atlas_id_t atlas_id, cell_id_t cell_id)
     : id(std::numeric_limits<uint32_t>::max())
@@ -43,7 +45,7 @@ namespace neutrino::kernel {
       }
     }
 
-    tile_handle(atlas_id_t atlas_id, cell_id_t cell_id, bool flip_v, bool flip_h)
+    tile_handle(atlas_id_t atlas_id, cell_id_t cell_id, bool flip_h, bool flip_v, bool flip_d)
         : id(std::numeric_limits<uint32_t>::max())
     {
       if (!is_invalid (atlas_id) && !is_invalid (cell_id)) {
@@ -54,6 +56,9 @@ namespace neutrino::kernel {
         }
         if (flip_h) {
           x[0] = x[0] | HFLIP_MASK;
+        }
+        if (flip_d) {
+          x[0] = x[0] | DFLIP_MASK;
         }
         x[1] = static_cast<uint16_t> (cell_id.value_of ());
         ENFORCE(x[1] == cell_id.value_of());
@@ -72,6 +77,43 @@ namespace neutrino::kernel {
     tile_handle()
         : id(std::numeric_limits<uint32_t>::max()) {}
 
+    [[nodiscard]] rotation_info rotation() const {
+      const auto h = is_hflipped();
+      const auto v = is_vflipped();
+      const auto d = is_dflipped();
+
+      if (h) {
+        if (v) {
+          if (d) {
+            return {false, true, 270};
+          } else {
+            return {false, false, 180};
+          }
+        } else {
+          if (d) {
+            return {false, false, 90};
+          } else {
+            return {true, false, 0};
+          }
+        }
+      } else {
+        if (v) {
+          if (d) {
+            return {false, false, 270};
+          } else {
+            return {false, true, 0};
+          }
+        } else {
+          if (d) {
+            return {false, true, 90};
+          } else {
+            return {};
+          }
+        }
+      }
+      RAISE_EX("Should not be here");
+    }
+
     [[nodiscard]] bool is_flipped() const {
       return (x[0] & FLIP_MASK) == FLIP_MASK;
     }
@@ -82,6 +124,10 @@ namespace neutrino::kernel {
 
     [[nodiscard]] bool is_vflipped() const {
       return (x[0] & VFLIP_MASK) == VFLIP_MASK;
+    }
+
+    [[nodiscard]] bool is_dflipped() const {
+      return (x[0] & DFLIP_MASK) == DFLIP_MASK;
     }
 
     [[nodiscard]] bool is_animation() const {

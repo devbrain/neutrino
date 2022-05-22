@@ -40,8 +40,7 @@ namespace neutrino::hal {
       enum class flip {
           NONE,
           HORIZONTAL,
-          VERTICAL,
-          DIAGONAL
+          VERTICAL
       };
     public:
       renderer () = default;
@@ -91,6 +90,7 @@ namespace neutrino::hal {
        */
       void read_pixels (const pixel_format& fmt, void* dst, std::size_t pitch) const;
       void read_pixels (const math::rect& area, const pixel_format& fmt, void* dst, std::size_t pitch) const;
+      pixel_format get_pixel_format() const;
 
       [[nodiscard]] std::optional<texture> target () const;
       void target (texture& t);
@@ -164,6 +164,15 @@ namespace neutrino::hal {
     private:
       renderer (std::unique_ptr<detail::renderer_impl> impl);
       spimpl::unique_impl_ptr<detail::renderer_impl> m_pimpl;
+  };
+
+
+  struct clip_area {
+    clip_area(renderer& rend, const math::rect& region);
+    ~clip_area();
+
+    renderer& r;
+    std::optional<math::rect> old;
   };
 }
 
