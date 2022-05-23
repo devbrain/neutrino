@@ -149,27 +149,18 @@ namespace neutrino::kernel {
     }
   }
 
-  std::tuple<atlas_id_t, cell_id_t, rotation_info> world_renderer::get_tile_data(tile_handle th) {
+  tile_handle world_renderer::get_tile_data(tile_handle th) {
       ENFORCE(th);
       if (th.is_animation()) {
         auto state_id = static_cast<animation_state_id_t>(th);
         auto [handle, kind] = m_animation_state.frame (state_id);
         if (handle) {
-          return {static_cast<atlas_id_t>(handle),
-                  static_cast<cell_id_t>(handle),
-                  handle.rotation()
-                  };
+          return handle;
         } else {
-          return {make_invalid<atlas_id_t>(),
-                  make_invalid<cell_id_t>(),
-                  rotation_info()
-          };
+          return {};
         }
       } else {
-        return {static_cast<atlas_id_t>(th),
-                static_cast<cell_id_t>(th),
-                th.rotation()
-        };
+        return th;
       }
   }
 
@@ -193,8 +184,7 @@ namespace neutrino::kernel {
                       auto tlid = img.tile_id();
                       auto atlas_id = static_cast<atlas_id_t>(tlid);
                       ENFORCE(!m_assets->textures.is_tilesheet (atlas_id));
-                      auto cell_id = static_cast<cell_id_t>(tlid);
-                      auto tdi = m_assets->textures.tile_rectangle (atlas_id, cell_id);
+                      auto src = m_assets->textures.tile_rectangle (tlid);
                       grid wc(m_world);
                       wc.evaluate (window);
                       auto screen_pos = window.screen_pos();
@@ -204,23 +194,19 @@ namespace neutrino::kernel {
                       int h = 0;
                       for (int y = wc.top_left_tile_y(); y <= wc.bottom_right_tile_y(); y++) {
                         for (int x = wc.top_left_tile_x (); x <= wc.bottom_right_tile_x (); x++) {
-                            tdi.src.point = screen_pos;
-                            tdi.src.dims.x = tw;
-                            tdi.src.dims.y = th;
-                            wc.adjust (x, y, tdi.src);
-                            m_assets->textures.draw (renderer, tdi, screen_pos);
-                            screen_pos.x += tdi.src.dims.x;
-                            h = std::max (tdi.src.dims.y, h);
+                            src.point = screen_pos;
+                            src.dims.x = tw;
+                            src.dims.y = th;
+                            wc.adjust (x, y, src);
+                            m_assets->textures.draw (renderer, tlid, src, screen_pos);
+                            screen_pos.x += src.dims.x;
+                            h = std::max (src.dims.y, h);
                         }
                         screen_pos.x = start_x;
                         screen_pos.y += h;
                       }
-                      tdi.src.point = window.world_pos();
-                      tdi.src.dims = window.dimensions();
-                      m_assets->textures.draw(renderer, tdi, window.screen_pos());
                 },
                 [this, &window, &renderer](const tiles_layer& tlayer) {
-
                   grid wc(m_world);
                   wc.evaluate (window);
                   auto screen_pos = window.screen_pos();
@@ -228,22 +214,15 @@ namespace neutrino::kernel {
                   auto h = 0;
                   for (int y = wc.top_left_tile_y(); y <= wc.bottom_right_tile_y(); y++) {
                     for (int x = wc.top_left_tile_x(); x <= wc.bottom_right_tile_x(); x++) {
-                      auto tlid = tlayer.get (x, y);
-                      bool is_empty = !tlid;
+                      auto tlid = get_tile_data (tlayer.get (x, y));
                       if (tlid) {
-                        const auto [atlas_id, cell_id, rot] = get_tile_data (tlid);
-                        if (is_invalid (atlas_id)) {
-                          is_empty = true;
-                        } else {
-                          auto tdi = m_assets->textures.tile_rectangle (atlas_id, cell_id);
-                          wc.adjust (x, y, tdi.src);
-
-                          m_assets->textures.draw (renderer, tdi, screen_pos, rot);
-                          h = std::max (tdi.src.dims.y, h);
-                          screen_pos.x += tdi.src.dims.x;
-                        }
-                      }
-                      if (is_empty){
+                          auto src = m_assets->textures.tile_rectangle (tlid);
+                          wc.adjust (x, y, src);
+                          //m_assets->textures.draw (renderer, tlid, src, screen_pos, tlid.rotation());
+                          m_assets->textures.draw (renderer, tlid, src, screen_pos);
+                          h = std::max (src.dims.y, h);
+                          screen_pos.x += src.dims.x;
+                      } else {
                         auto d = wc.empty (x, y);
                         h = std::max (d.dims.y, h);
                         screen_pos.x += d.dims.x;
@@ -253,7 +232,6 @@ namespace neutrino::kernel {
                     screen_pos.y += h;
                     h = 0;
                   }
-
                 }
               ),
           layer

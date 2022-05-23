@@ -10,6 +10,7 @@
 #include <ostream>
 #include <neutrino/kernel/rc/types.hh>
 #include <neutrino/utils/exception.hh>
+#include <neutrino/utils/bit_ops.hh>
 
 namespace neutrino::kernel {
   union tile_handle {
@@ -33,6 +34,8 @@ namespace neutrino::kernel {
     constexpr static uint16_t DFLIP_MASK     = 0b0001000000000000;
     constexpr static uint16_t ATLAS_MASK     = 0b0000111111111111;
     constexpr static uint16_t FLIP_MASK      = DFLIP_MASK | HFLIP_MASK | VFLIP_MASK;
+
+    static_assert (neutrino::utils::popcount (FLIP_MASK) + neutrino::utils::popcount (ATLAS_MASK) + 1 == 16);
 
     tile_handle(atlas_id_t atlas_id, cell_id_t cell_id)
     : id(std::numeric_limits<uint32_t>::max())
@@ -166,6 +169,18 @@ namespace neutrino::kernel {
 
     explicit operator bool () const {
       return !empty();
+    }
+
+    friend bool operator < (const tile_handle& a, const tile_handle& b) {
+      return a.id < b.id;
+    }
+
+    friend bool operator == (const tile_handle& a, const tile_handle& b) {
+      return a.id == b.id;
+    }
+
+    friend bool operator != (const tile_handle& a, const tile_handle& b) {
+      return a.id != b.id;
     }
   };
 

@@ -119,4 +119,10 @@ namespace neutrino::hal {
   uint32_t texture::map_rgb (const color& c) const {
     return SDL_MapRGB (m_pimpl->format.const_handle (), c.r, c.g, c.b);
   }
+
+  math::dimension2di_t texture::dimensions() const {
+    unsigned w,h;
+    std::tie(std::ignore, std::ignore, w, h) = m_pimpl->texture.query();
+    return {(int)w, (int)h};
+  }
 }

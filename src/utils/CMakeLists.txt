@@ -135,6 +135,8 @@ my_add_library_static(utils
         ${PROJECT_INCLUDE}/neutrino/utils/ini/config_parser.hh
         ini/ini_parser.cc
 
+        ${PROJECT_INCLUDE}/neutrino/utils/bit_ops.hh
+
         DEPENDS_PUBLIC
             thirdparty::pfr
             thirdparty::json

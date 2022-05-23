@@ -30,8 +30,8 @@ my_add_library_static(kernel
         ecs/registry.cc
         ecs/id_factory.cc
 
-        gfx/texture.cc
-        gfx/texture.hh
+        gfx/tiled_image.cc
+        gfx/tiled_image.hh
         ${PROJECT_INCLUDE}/neutrino/kernel/gfx/texture_atlas.hh
         gfx/texture_atlas.cc
         ${PROJECT_INCLUDE}/neutrino/kernel/gfx/world_renderer.hh

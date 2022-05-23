@@ -2,17 +2,19 @@
 // Created by igor on 07/05/2022.
 //
 
-#include "texture.hh"
+#include <iostream>
+#include "tiled_image.hh"
 #include <neutrino/hal/video/target_texture.hh>
+#include <neutrino/kernel/gfx/grid.hh>
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::kernel {
 
-  texture::descr_t texture::dims (const image_loader_t&) {
+  tiled_image::descr_t tiled_image::eval_dimension_properties (const image_loader_t&) {
     return std::monostate{};
   }
 
-  texture::descr_t texture::dims (const lazy_tilesheet& lazy_ts) {
+  tiled_image::descr_t tiled_image::eval_dimension_properties (const lazy_tilesheet& lazy_ts) {
     const auto& td = std::get<1>(lazy_ts);
     if (const auto* ti = std::get_if<lazy_tilesheet_info> (&td)) {
       return get_tilesheet_coords (ti->image_width(), ti->image_height(), ti->info());
@@ -22,12 +24,12 @@ namespace neutrino::kernel {
     }
   }
 
-  texture::descr_t texture::dims (const image& img) {
+  tiled_image::descr_t tiled_image::eval_dimension_properties (const image& img) {
     auto [w, h] = img.dimensions ();
     return math::rect{0, 0, (int) w, (int) h};
   }
 
-  texture::descr_t texture::dims (const tilesheet& ts) {
+  tiled_image::descr_t tiled_image::eval_dimension_properties (const tilesheet& ts) {
     const auto& [s, td] = ts;
     if (const auto* ti = std::get_if<tilesheet_info> (&td)) {
       return get_tilesheet_coords (s, *ti);
@@ -37,14 +39,19 @@ namespace neutrino::kernel {
     }
   }
 
-  texture::texture (const image_loader_t& img_loader)
-      : m_descr (dims (img_loader)),
-        m_image_loader (img_loader) {
-
+  tiled_image::descr_t tiled_image::eval_dimension_properties(const math::dimension2di_t& canvas_dims) {
+    tilesheet_rects result;
+    result.emplace_back (0,0, canvas_dims.x, canvas_dims.y);
+    return result;
   }
 
-  texture::texture (const lazy_tilesheet& lazy_ts)
-    : m_descr (dims (lazy_ts)),
+  tiled_image::tiled_image (const image_loader_t& img_loader)
+      : m_descr (eval_dimension_properties (img_loader)),
+        m_image_loader (img_loader) {
+  }
+
+  tiled_image::tiled_image (const lazy_tilesheet& lazy_ts)
+    : m_descr (eval_dimension_properties (lazy_ts)),
       m_image_loader (std::get<0>(lazy_ts)) {
       const auto& td = std::get<1>(lazy_ts);
       if (const auto* ti = std::get_if<lazy_tilesheet_info> (&td)) {
@@ -52,31 +59,35 @@ namespace neutrino::kernel {
       }
   }
 
-
-
-  texture::texture (hal::renderer& renderer, const image& img)
-      : m_descr (dims (img)),
+  tiled_image::tiled_image (hal::renderer& renderer, const image& img)
+      : m_descr (eval_dimension_properties (img)),
         m_texture (renderer, img) {
 
   }
 
-  texture::texture (hal::renderer& renderer, const tilesheet& ts)
-      : m_descr (dims (ts)),
+  tiled_image::tiled_image (hal::renderer& renderer, const tilesheet& ts)
+      : m_descr (eval_dimension_properties (ts)),
         m_texture (renderer, std::get<0> (ts)) {
   }
 
-  bool texture::is_tilesheet () const noexcept {
+  tiled_image::tiled_image(hal::renderer& renderer, const math::dimension2di_t& canvas_dims)
+  : m_descr (eval_dimension_properties (canvas_dims)),
+    m_texture (renderer, renderer.get_pixel_format(), canvas_dims.x, canvas_dims.y, hal::texture::access::TARGET){
+
+  }
+
+  bool tiled_image::is_tilesheet () const noexcept {
     return std::get_if<tilesheet_rects> (&m_descr) != nullptr;
   }
 
-  std::size_t texture::num_tiles () const noexcept {
+  std::size_t tiled_image::num_tiles () const noexcept {
     if (const auto* ti = std::get_if<tilesheet_rects> (&m_descr)) {
       return ti->size ();
     }
     return 1;
   }
 
-  math::rect texture::tile_rectangle (std::size_t id) const noexcept {
+  math::rect tiled_image::tile_rectangle (std::size_t id) const noexcept {
     if (const auto* ti = std::get_if<tilesheet_rects> (&m_descr)) {
       return ti->at (id);
     }
@@ -86,39 +97,21 @@ namespace neutrino::kernel {
     return *r;
   }
 
-  void texture::draw (hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left) const {
+  void tiled_image::draw (hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left) const {
     math::rect dst_rect{dst_top_left, src_rect.dims};
     renderer.copy (m_texture, src_rect, dst_rect);
   }
 
-  static math::dimension2di_t eval_transormr_dims(const math::dimension2di_t& orig, const rotation_info& ri) {
-    if (ri.degree == 0) {
-      if (ri.hflip) {
-        return orig;
-      } else if (ri.vflip) {
-        return orig;
-      }
-    } else {
-      if (ri.degree == 90) {
-        return {orig[1], orig[0]};
-      } else if (ri.degree == 180) {
-        return orig;
-      } else if (ri.degree == 270) {
-        return {orig[1], orig[0]};
-      }
-    }
-    RAISE_EX("unknown rotation");
-  }
-
-  void texture::draw(hal::renderer& renderer, const math::rect& src_rect,
-                     const math::point2d& dst_top_left,
-                     const math::rect& original_dims,
-                     const rotation_info& ri) const {
+  void tiled_image::draw(hal::renderer& renderer,
+                         const math::rect& src_rect,
+                         const math::point2d& dst_top_left,
+                         const math::rect& original_dims,
+                         const rotation_info& ri) const {
     math::rect dst_rect{dst_top_left, src_rect.dims};
     if (ri.empty()) {
       renderer.copy (m_texture, src_rect, dst_rect);
     } else {
-      auto new_dims = eval_transormr_dims (original_dims.dims, ri);
+      auto new_dims = grid::eval_transormed_dims (original_dims.dims, ri);
       if (new_dims != m_temp_dims) {
         hal::texture new_tex(renderer, renderer.get_pixel_format(), new_dims.x, new_dims.y, hal::texture::access::TARGET);
         swap(m_temp, new_tex);
@@ -138,12 +131,13 @@ namespace neutrino::kernel {
         renderer.copy (m_texture, original_dims, dst, ri.degree, flip);
       }
       auto corrected_pos = src_rect.point - original_dims.point;
-      math::rect s(corrected_pos.x, corrected_pos.y, original_dims.dims.x, original_dims.dims.y);
+
+      math::rect s(corrected_pos.x, corrected_pos.y, src_rect.dims.x, src_rect.dims.y);
       renderer.copy (m_temp, s, dst_rect);
     }
   }
 
-  void texture::convert(hal::renderer& renderer) {
+  void tiled_image::convert(hal::renderer& renderer) {
     if (!m_texture) {
       if (m_image_loader) {
         auto img = m_image_loader();
@@ -154,7 +148,7 @@ namespace neutrino::kernel {
           ENFORCE(expected_height == actual_height);
         }
         if (std::get_if<std::monostate>(&m_descr)) {
-          m_descr = dims(img);
+          m_descr = eval_dimension_properties (img);
         }
         hal::texture new_texture(renderer, img);
         swap(new_texture, m_texture);

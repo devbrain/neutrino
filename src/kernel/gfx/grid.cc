@@ -127,4 +127,24 @@ namespace neutrino::kernel {
   int grid::tile_height() const {
     return m_tile_height;
   }
+
+  math::dimension2di_t grid::eval_transormed_dims(const math::dimension2di_t& orig,
+                                                  const rotation_info& ri) {
+    if (ri.degree == 0) {
+      if (ri.hflip) {
+        return orig;
+      } else if (ri.vflip) {
+        return orig;
+      }
+    } else {
+      if (ri.degree == 90) {
+        return {orig[1], orig[0]};
+      } else if (ri.degree == 180) {
+        return orig;
+      } else if (ri.degree == 270) {
+        return {orig[1], orig[0]};
+      }
+    }
+    RAISE_EX("unknown rotation");
+  }
 }

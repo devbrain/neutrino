@@ -6,6 +6,7 @@
 #define INCLUDE_NEUTRINO_KERNEL_GFX_GRID_HH
 
 #include <neutrino/math/rect.hh>
+#include <neutrino/kernel/rc/tile_handle.hh>
 
 namespace neutrino::kernel {
   class world;
@@ -33,7 +34,9 @@ namespace neutrino::kernel {
       [[nodiscard]] int tile_height() const;
 
       void adjust(int tx, int ty, math::rect& r) const;
-      math::rect empty(int tx, int ty) const;
+      [[nodiscard]] math::rect empty(int tx, int ty) const;
+      [[nodiscard]] static math::dimension2di_t eval_transormed_dims(const math::dimension2di_t& orig,
+                                                                     const rotation_info& ri);
     private:
       int m_tile_width;
       int m_tile_height;

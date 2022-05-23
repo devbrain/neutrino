@@ -195,9 +195,9 @@ std::vector<neutrino::hal::surface> load_fonts(std::istream* is, const neutrino:
     neutrino::hal::surface s = neutrino::hal::surface::make_rgba (8, 64*8);
     neutrino::math::point2d dst(0,0);
     auto pos = is->tellg();
-    do_load_fonts (is, main_pal, *pal, [&s, &dst](const auto& dt){
-      const auto& glyph = std::get<0>(dt);
-      const auto& r =  std::get<1>(dt);
+    do_load_fonts (is, main_pal, *pal, [&s, &dst] (const auto& dt) {
+      const auto& glyph = std::get<0> (dt);
+      const auto& r = std::get<1> (dt);
       glyph.blit (r, s, dst);
       dst.y += r.dims[1];
     });

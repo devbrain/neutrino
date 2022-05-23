@@ -72,6 +72,8 @@ namespace neutrino::hal {
       friend void swap(texture& lhs, texture& rhs) {
         std::swap(lhs.m_pimpl, rhs.m_pimpl);
       }
+
+      [[nodiscard]] math::dimension2di_t dimensions() const;
     private:
       explicit texture (std::unique_ptr<detail::texture_impl>&& t);
     private:
