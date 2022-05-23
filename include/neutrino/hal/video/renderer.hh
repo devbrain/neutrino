@@ -167,13 +167,7 @@ namespace neutrino::hal {
   };
 
 
-  struct clip_area {
-    clip_area(renderer& rend, const math::rect& region);
-    ~clip_area();
 
-    renderer& r;
-    std::optional<math::rect> old;
-  };
 }
 
 #endif

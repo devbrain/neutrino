@@ -387,21 +387,7 @@ namespace neutrino::hal {
     pie_filled (p[0], p[1], rad, start_angle, end_angle);
   }
   // ---------------------------------------------------------------------------
-  clip_area::clip_area(renderer& rend, const math::rect& region)
-  : r(rend) {
-     if (r.clipping_enabled()) {
-       old = r.clip();
-     }
-     r.clip(region);
-  }
 
-  clip_area::~clip_area() {
-    if (old) {
-      r.clip(*old);
-    } else {
-      r.disable_clippping();
-    }
-  }
 
 
 #if defined(_MSC_VER)

@@ -3,6 +3,7 @@
 //
 #include <algorithm>
 #include <neutrino/kernel/gfx/world_renderer.hh>
+#include <neutrino/hal/video/renderer_utils.hh>
 #include <neutrino/kernel/gfx/grid.hh>
 #include <neutrino/utils/override.hh>
 #include <neutrino/utils/exception.hh>
@@ -150,7 +151,9 @@ namespace neutrino::kernel {
   }
 
   tile_handle world_renderer::get_tile_data(tile_handle th) {
-      ENFORCE(th);
+      if (!th) {
+        return th;
+      }
       if (th.is_animation()) {
         auto state_id = static_cast<animation_state_id_t>(th);
         auto [handle, kind] = m_animation_state.frame (state_id);

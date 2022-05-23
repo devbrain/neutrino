@@ -7,7 +7,7 @@
 #include <map>
 #include <neutrino/kernel/gfx/texture_atlas.hh>
 #include <neutrino/kernel/gfx/grid.hh>
-#include <neutrino/hal/video/target_texture.hh>
+#include <neutrino/hal/video/renderer_utils.hh>
 #include "tiled_image.hh"
 
 namespace neutrino::kernel {
@@ -41,6 +41,7 @@ namespace neutrino::kernel {
         else if (ri.vflip) {
           flip = hal::renderer::flip::VERTICAL;
         }
+        r.blend (hal::blend_mode::BLEND);
         r.copy (m_atlas.at (atlas_id.value_of ()).texture (), original, dst, ri.degree, flip);
         return &itr->second;
       }
@@ -115,9 +116,6 @@ namespace neutrino::kernel {
     return m_pimpl->m_atlas[atlas_id.value_of ()].is_tilesheet ();
   }
 
-  cell_id_t texture_atlas::num_of_tiles (atlas_id_t atlas_id) const noexcept {
-    return cell_id_t{m_pimpl->m_atlas[atlas_id.value_of ()].num_tiles ()};
-  }
 
   math::rect texture_atlas::tile_rectangle (const tile_handle& th) const noexcept {
     auto atlas_id = static_cast<atlas_id_t >(th);
@@ -134,16 +132,7 @@ namespace neutrino::kernel {
 
   void texture_atlas::draw (hal::renderer& renderer, const tile_handle& tile, const math::rect& src,
                             const math::point2d& dst_top_left) const {
-    auto atlas_id = static_cast<atlas_id_t>(tile);
     m_pimpl->get_atlas (renderer, tile)->draw (renderer, src, dst_top_left);
-    //m_pimpl->m_atlas[atlas_id.value_of ()].draw (renderer, src, dst_top_left);
   }
 
-  void texture_atlas::draw (hal::renderer& renderer, const tile_handle& tile, const math::rect& src,
-                            const math::point2d& dst_top_left, const rotation_info& ri) const {
-    auto atlas_id = static_cast<atlas_id_t>(tile);
-    auto cell_id = static_cast<cell_id_t>(tile);
-    auto original = m_pimpl->m_atlas[atlas_id.value_of ()].tile_rectangle (cell_id.value_of ());
-    m_pimpl->m_atlas[atlas_id.value_of ()].draw (renderer, src, dst_top_left, original, ri);
-  }
 }

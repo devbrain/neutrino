@@ -4,8 +4,7 @@
 
 #include <iostream>
 #include "tiled_image.hh"
-#include <neutrino/hal/video/target_texture.hh>
-#include <neutrino/kernel/gfx/grid.hh>
+#include <neutrino/hal/video/renderer_utils.hh>
 #include <neutrino/utils/exception.hh>
 
 namespace neutrino::kernel {
@@ -73,7 +72,8 @@ namespace neutrino::kernel {
   tiled_image::tiled_image(hal::renderer& renderer, const math::dimension2di_t& canvas_dims)
   : m_descr (eval_dimension_properties (canvas_dims)),
     m_texture (renderer, renderer.get_pixel_format(), canvas_dims.x, canvas_dims.y, hal::texture::access::TARGET){
-
+    hal::use_color uc(renderer, 0,0,0,0);
+    m_texture.blend (hal::blend_mode::BLEND);
   }
 
   bool tiled_image::is_tilesheet () const noexcept {
@@ -99,42 +99,10 @@ namespace neutrino::kernel {
 
   void tiled_image::draw (hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left) const {
     math::rect dst_rect{dst_top_left, src_rect.dims};
+    auto b = renderer.blend();
+    renderer.blend (hal::blend_mode::BLEND);
     renderer.copy (m_texture, src_rect, dst_rect);
-  }
-
-  void tiled_image::draw(hal::renderer& renderer,
-                         const math::rect& src_rect,
-                         const math::point2d& dst_top_left,
-                         const math::rect& original_dims,
-                         const rotation_info& ri) const {
-    math::rect dst_rect{dst_top_left, src_rect.dims};
-    if (ri.empty()) {
-      renderer.copy (m_texture, src_rect, dst_rect);
-    } else {
-      auto new_dims = grid::eval_transormed_dims (original_dims.dims, ri);
-      if (new_dims != m_temp_dims) {
-        hal::texture new_tex(renderer, renderer.get_pixel_format(), new_dims.x, new_dims.y, hal::texture::access::TARGET);
-        swap(m_temp, new_tex);
-        m_temp_dims = new_dims;
-      }
-
-      {
-        hal::use_texture tt (renderer, m_temp);
-        renderer.clear();
-        math::rect dst(0,0, m_temp_dims.x, m_temp_dims.y);
-        auto flip = hal::renderer::flip::NONE;
-        if (ri.hflip) {
-          flip = hal::renderer::flip::HORIZONTAL;
-        } else if (ri.vflip) {
-          flip = hal::renderer::flip::VERTICAL;
-        }
-        renderer.copy (m_texture, original_dims, dst, ri.degree, flip);
-      }
-      auto corrected_pos = src_rect.point - original_dims.point;
-
-      math::rect s(corrected_pos.x, corrected_pos.y, src_rect.dims.x, src_rect.dims.y);
-      renderer.copy (m_temp, s, dst_rect);
-    }
+    renderer.blend(b);
   }
 
   void tiled_image::convert(hal::renderer& renderer) {
@@ -152,6 +120,7 @@ namespace neutrino::kernel {
         }
         hal::texture new_texture(renderer, img);
         swap(new_texture, m_texture);
+        m_texture.blend (hal::blend_mode::BLEND);
       }
     }
   }

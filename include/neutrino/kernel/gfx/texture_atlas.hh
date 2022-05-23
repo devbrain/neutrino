@@ -35,10 +35,8 @@ namespace neutrino::kernel {
       void convert_images(hal::renderer& renderer);
 
       [[nodiscard]] bool is_tilesheet(atlas_id_t atlas_id) const noexcept;
-      [[nodiscard]] cell_id_t num_of_tiles(atlas_id_t atlas_id) const noexcept;
       [[nodiscard]] math::rect tile_rectangle(const tile_handle& th) const noexcept;
       void draw(hal::renderer& renderer, const tile_handle& tile, const math::rect& src, const math::point2d& dst_top_left) const;
-      void draw(hal::renderer& renderer, const tile_handle& tile, const math::rect& src, const math::point2d& dst_top_left, const rotation_info& ri) const;
     private:
       struct impl;
       spimpl::unique_impl_ptr<impl> m_pimpl;

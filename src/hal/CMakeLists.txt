@@ -151,8 +151,8 @@ my_add_library_static(hal
         video/texture_impl.hh
         ${PROJECT_INCLUDE}/neutrino/hal/video/texture.hh
 
-        ${PROJECT_INCLUDE}/neutrino/hal/video/target_texture.hh
-        video/target_texture.cc
+        ${PROJECT_INCLUDE}/neutrino/hal/video/renderer_utils.hh
+        video/renderer_utils.cc
 
         video/renderer.cc
         video/renderer_impl.hh

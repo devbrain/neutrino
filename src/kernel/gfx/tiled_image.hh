@@ -28,11 +28,6 @@ namespace neutrino::kernel {
       [[nodiscard]] std::size_t num_tiles() const noexcept;
       [[nodiscard]] math::rect  tile_rectangle(std::size_t id) const noexcept;
       void draw(hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left) const;
-      void draw(hal::renderer& renderer,
-                const math::rect& src_rect,
-                const math::point2d& dst_top_left,
-                const math::rect& original_dims,
-                const rotation_info& ri) const;
 
       friend void swap(tiled_image& rhs, tiled_image& lhs) {
         std::swap(rhs.m_descr, lhs.m_descr);

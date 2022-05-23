@@ -118,7 +118,7 @@ namespace neutrino::kernel {
     }
 
     [[nodiscard]] bool is_flipped() const {
-      return (x[0] & FLIP_MASK) == FLIP_MASK;
+      return (x[0] & FLIP_MASK);
     }
 
     [[nodiscard]] bool is_hflipped() const {

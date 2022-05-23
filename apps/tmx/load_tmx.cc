@@ -19,6 +19,8 @@
 #include "map/moon_overlay.h"
 #include "map/tiles.h"
 
+// /home/igor/proj/ares/test/test.tmx
+
 class app : public neutrino::application {
     static constexpr auto EV_EXIT = "exit";
     static constexpr auto EV_FULLSCREEN = "fullscreen";
