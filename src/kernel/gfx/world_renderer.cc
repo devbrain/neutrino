@@ -150,7 +150,8 @@ namespace neutrino::kernel {
     }
   }
 
-  tile_handle world_renderer::get_tile_data(tile_handle th) {
+  tile_handle world_renderer::get_tile_data(const tiles_layer& tlayer, int x, int y) {
+      auto th = tlayer.get (x, y);
       if (!th) {
         return th;
       }
@@ -217,11 +218,10 @@ namespace neutrino::kernel {
                   auto h = 0;
                   for (int y = wc.top_left_tile_y(); y <= wc.bottom_right_tile_y(); y++) {
                     for (int x = wc.top_left_tile_x(); x <= wc.bottom_right_tile_x(); x++) {
-                      auto tlid = get_tile_data (tlayer.get (x, y));
+                      auto tlid = get_tile_data (tlayer, x, y);
                       if (tlid) {
                           auto src = m_assets->textures.tile_rectangle (tlid);
                           wc.adjust (x, y, src);
-                          //m_assets->textures.draw (renderer, tlid, src, screen_pos, tlid.rotation());
                           m_assets->textures.draw (renderer, tlid, src, screen_pos);
                           h = std::max (src.dims.y, h);
                           screen_pos.x += src.dims.x;

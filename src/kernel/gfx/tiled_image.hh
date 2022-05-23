@@ -26,7 +26,7 @@ namespace neutrino::kernel {
 
       [[nodiscard]] bool is_tilesheet() const noexcept;
       [[nodiscard]] std::size_t num_tiles() const noexcept;
-      [[nodiscard]] math::rect  tile_rectangle(std::size_t id) const noexcept;
+      [[nodiscard]] math::rect  tile_rectangle(cell_id_t id) const noexcept;
       void draw(hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left) const;
 
       friend void swap(tiled_image& rhs, tiled_image& lhs) {

@@ -54,7 +54,7 @@ namespace neutrino::kernel {
       void draw(const world_window& window, hal::renderer& renderer);
     private:
       void init_animation_state();
-       [[nodiscard]] tile_handle get_tile_data(tile_handle th);
+       [[nodiscard]] tile_handle get_tile_data(const tiles_layer& tlayer, int x, int y);
     private:
       world* m_world;
       const gfx_assets* m_assets;

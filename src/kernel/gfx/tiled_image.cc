@@ -87,7 +87,8 @@ namespace neutrino::kernel {
     return 1;
   }
 
-  math::rect tiled_image::tile_rectangle (std::size_t id) const noexcept {
+  math::rect tiled_image::tile_rectangle (cell_id_t cell) const noexcept {
+    const auto id = cell.value_of();
     if (const auto* ti = std::get_if<tilesheet_rects> (&m_descr)) {
       return ti->at (id);
     }

@@ -26,7 +26,7 @@ namespace neutrino::kernel {
         }
         const auto ri = ti.rotation ();
         auto cell_id = static_cast<cell_id_t>(ti);
-        auto original = m_atlas[atlas_id.value_of ()].tile_rectangle (cell_id.value_of ());
+        auto original = m_atlas[atlas_id.value_of ()].tile_rectangle (cell_id);
         auto new_dims = grid::eval_transormed_dims (original.dims, ri);
         itr = m_transformed.insert (std::make_pair (ti, tiled_image (r, new_dims))).first;
 
@@ -121,16 +121,18 @@ namespace neutrino::kernel {
     auto atlas_id = static_cast<atlas_id_t >(th);
     auto tile_id = static_cast<cell_id_t>(th);
     if (!th.is_flipped ()) {
-      return m_pimpl->m_atlas[atlas_id.value_of ()].tile_rectangle (tile_id.value_of ());
+      return m_pimpl->m_atlas[atlas_id.value_of ()].tile_rectangle (tile_id);
     }
     else {
-      auto original = m_pimpl->m_atlas[atlas_id.value_of ()].tile_rectangle (tile_id.value_of ());
+      auto original = m_pimpl->m_atlas[atlas_id.value_of ()].tile_rectangle (tile_id);
       auto new_dims = grid::eval_transormed_dims (original.dims, th.rotation ());
       return {0, 0, new_dims.x, new_dims.y};
     }
   }
 
-  void texture_atlas::draw (hal::renderer& renderer, const tile_handle& tile, const math::rect& src,
+  void texture_atlas::draw (hal::renderer& renderer,
+                            const tile_handle& tile,
+                            const math::rect& src,
                             const math::point2d& dst_top_left) const {
     m_pimpl->get_atlas (renderer, tile)->draw (renderer, src, dst_top_left);
   }
