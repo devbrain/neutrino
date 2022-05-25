@@ -22,7 +22,7 @@ namespace neutrino::kernel {
       tiled_image(hal::renderer& renderer, const image& img);
       tiled_image(hal::renderer& renderer, const tilesheet& ts);
 
-      tiled_image(hal::renderer& renderer, const math::dimension2di_t& dims);
+      tiled_image(hal::renderer& renderer, const hal::pixel_format& format, const math::dimension2di_t& dims);
 
       [[nodiscard]] bool is_tilesheet() const noexcept;
       [[nodiscard]] std::size_t num_tiles() const noexcept;
@@ -37,7 +37,7 @@ namespace neutrino::kernel {
 
       void convert(hal::renderer& renderer);
 
-      const hal::texture& texture() const {
+      [[nodiscard]] const hal::texture& texture() const {
         return m_texture;
       }
 
@@ -50,10 +50,6 @@ namespace neutrino::kernel {
       hal::texture   m_texture;
       image_loader_t m_image_loader;
       std::optional<std::pair<unsigned, unsigned>> m_expected_dims;
-
-      mutable hal::texture m_temp;
-      mutable math::dimension2di_t m_temp_dims;
-
     private:
       static descr_t eval_dimension_properties(const image_loader_t&);
       static descr_t eval_dimension_properties(const lazy_tilesheet& lazy_ts);

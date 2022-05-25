@@ -198,7 +198,7 @@ namespace neutrino::kernel {
                       int h = 0;
                       for (int y = wc.top_left_tile_y(); y <= wc.bottom_right_tile_y(); y++) {
                         for (int x = wc.top_left_tile_x (); x <= wc.bottom_right_tile_x (); x++) {
-                            src.point = screen_pos;
+                            src.point = {x*tw, y*th};
                             src.dims.x = tw;
                             src.dims.y = th;
                             wc.adjust (x, y, src);

@@ -74,6 +74,7 @@ namespace neutrino::hal {
       }
 
       [[nodiscard]] math::dimension2di_t dimensions() const;
+      [[nodiscard]] pixel_format get_pixel_format() const;
     private:
       explicit texture (std::unique_ptr<detail::texture_impl>&& t);
     private:

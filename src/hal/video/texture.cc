@@ -125,4 +125,8 @@ namespace neutrino::hal {
     std::tie(std::ignore, std::ignore, w, h) = m_pimpl->texture.query();
     return {(int)w, (int)h};
   }
+
+  [[nodiscard]] pixel_format texture::get_pixel_format() const {
+     return std::get<0>(query());
+  }
 }

@@ -69,10 +69,9 @@ namespace neutrino::kernel {
         m_texture (renderer, std::get<0> (ts)) {
   }
 
-  tiled_image::tiled_image(hal::renderer& renderer, const math::dimension2di_t& canvas_dims)
+  tiled_image::tiled_image(hal::renderer& renderer, const hal::pixel_format& format, const math::dimension2di_t& canvas_dims)
   : m_descr (eval_dimension_properties (canvas_dims)),
-    m_texture (renderer, renderer.get_pixel_format(), canvas_dims.x, canvas_dims.y, hal::texture::access::TARGET){
-    hal::use_color uc(renderer, 0,0,0,0);
+    m_texture (renderer, format, canvas_dims.x, canvas_dims.y, hal::texture::access::TARGET){
     m_texture.blend (hal::blend_mode::BLEND);
   }
 
@@ -100,10 +99,7 @@ namespace neutrino::kernel {
 
   void tiled_image::draw (hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left) const {
     math::rect dst_rect{dst_top_left, src_rect.dims};
-    auto b = renderer.blend();
-    renderer.blend (hal::blend_mode::BLEND);
     renderer.copy (m_texture, src_rect, dst_rect);
-    renderer.blend(b);
   }
 
   void tiled_image::convert(hal::renderer& renderer) {
@@ -121,7 +117,6 @@ namespace neutrino::kernel {
         }
         hal::texture new_texture(renderer, img);
         swap(new_texture, m_texture);
-        m_texture.blend (hal::blend_mode::BLEND);
       }
     }
   }

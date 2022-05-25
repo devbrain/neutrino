@@ -98,7 +98,7 @@ class app : public neutrino::application {
       m_world_renderer[1].set (&m_world, &m_atlas);
       m_window[1].dimensions ({(int)wpx/2,(int)wpy/2});
       m_window[1].screen_pos({400,400});
-      m_window[1].world_pos({0,0});
+      m_window[1].world_pos({0,(int)wpy/2});
     }
 
     void update_logic(std::chrono::milliseconds ms) override {
@@ -124,8 +124,6 @@ class app : public neutrino::application {
       for (auto & i : m_world_renderer) {
         i.update (ms);
       }
-
-
     }
 
     void draw_frame() override {
