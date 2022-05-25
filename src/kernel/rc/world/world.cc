@@ -96,6 +96,9 @@ namespace neutrino::kernel {
         RAISE_EX("Unknown document type");
     }
   }
+  /*
+   * TMX BUILDER
+   */
 
   using gid_map_t = std::map<unsigned int, std::tuple<atlas_id_t, std::size_t>>;
   using ani_map_t = std::map<unsigned int, std::tuple<animation_seq_id_t, unsigned int, const std::vector<tmx::frame>*>>;
