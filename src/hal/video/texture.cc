@@ -129,4 +129,8 @@ namespace neutrino::hal {
   [[nodiscard]] pixel_format texture::get_pixel_format() const {
      return std::get<0>(query());
   }
+
+  void texture::swap (texture& other) noexcept {
+    std::swap(m_pimpl, other.m_pimpl);
+  }
 }

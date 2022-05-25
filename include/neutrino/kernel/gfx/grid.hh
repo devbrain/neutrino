@@ -14,6 +14,7 @@ namespace neutrino::kernel {
 
   class grid {
     public:
+      grid();
       explicit grid (const world* w);
       grid(unsigned tile_width, unsigned tile_height, unsigned width_in_tiles, unsigned height_in_tiles);
 

@@ -6,6 +6,10 @@
 #include <neutrino/kernel/gfx/world_renderer.hh>
 
 namespace neutrino::kernel {
+  grid::grid()
+  : grid(0, 0, 0, 0) {
+  }
+
   grid::grid (const world* w)
       : grid(w->tile_width(), w->tile_height(), w->width(), w->height()) {
   }
@@ -83,7 +87,7 @@ namespace neutrino::kernel {
   }
 
   math::rect grid::empty(int tx, int ty) const {
-    math::rect src(0, 0, m_tile_width, m_tile_height);
+    math::rect src(tx * m_tile_width, ty * m_tile_height, m_tile_width, m_tile_height);
     adjust (tx, ty, src);
     return src;
   }

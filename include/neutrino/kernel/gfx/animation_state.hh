@@ -20,6 +20,7 @@ namespace neutrino::kernel {
 
       void update (std::chrono::milliseconds ms);
       [[nodiscard]] std::tuple<tile_handle, animation_description::kind_t> frame(animation_state_id_t index) const;
+      void clear ();
     private:
       struct animation_entry {
         explicit animation_entry(animation_description::const_sequence sq);

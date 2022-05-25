@@ -36,6 +36,8 @@ my_add_library_static(kernel
         gfx/texture_atlas.cc
         ${PROJECT_INCLUDE}/neutrino/kernel/gfx/world_renderer.hh
         gfx/world_renderer.cc
+        ${PROJECT_INCLUDE}/neutrino/kernel/gfx/world_window.hh
+        gfx/world_window.cc
         ${PROJECT_INCLUDE}/neutrino/kernel/gfx/grid.hh
         gfx/grid.cc
         ${PROJECT_INCLUDE}/neutrino/kernel/gfx/gfx_assets.hh
@@ -52,6 +54,8 @@ my_add_library_static(kernel
         rc/world/object.cc
         ${PROJECT_INCLUDE}/neutrino/kernel/rc/world/image_layer.hh
         rc/world/image_layer.cc
+        ${PROJECT_INCLUDE}/neutrino/kernel/rc/world/color_layer.hh
+        rc/world/color_layer.cc
         ${PROJECT_INCLUDE}/neutrino/kernel/rc/world/tiles_layer.hh
         rc/world/tiles_layer.cc
         ${PROJECT_INCLUDE}/neutrino/kernel/rc/world/world.hh

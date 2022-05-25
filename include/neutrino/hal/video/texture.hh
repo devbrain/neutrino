@@ -69,9 +69,7 @@ namespace neutrino::hal {
       [[nodiscard]] uint32_t map_rgba (const color& c) const;
       [[nodiscard]] uint32_t map_rgb (const color& c) const;
 
-      friend void swap(texture& lhs, texture& rhs) {
-        std::swap(lhs.m_pimpl, rhs.m_pimpl);
-      }
+      void swap(texture& other) noexcept;
 
       [[nodiscard]] math::dimension2di_t dimensions() const;
       [[nodiscard]] pixel_format get_pixel_format() const;
@@ -80,6 +78,14 @@ namespace neutrino::hal {
     private:
       spimpl::unique_impl_ptr<detail::texture_impl> m_pimpl;
   };
+}
+
+namespace std {
+  template<>
+  inline
+  void swap(neutrino::hal::texture& lhs, neutrino::hal::texture& rhs) noexcept {
+    lhs.swap (rhs);
+  }
 }
 
 #endif

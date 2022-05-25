@@ -29,11 +29,7 @@ namespace neutrino::kernel {
       [[nodiscard]] math::rect  tile_rectangle(cell_id_t id) const noexcept;
       void draw(hal::renderer& renderer, const math::rect& src_rect, const math::point2d& dst_top_left) const;
 
-      friend void swap(tiled_image& rhs, tiled_image& lhs) {
-        std::swap(rhs.m_descr, lhs.m_descr);
-        std::swap (rhs.m_image_loader, lhs.m_image_loader);
-        swap(rhs.m_texture, lhs.m_texture);
-      }
+      void swap(tiled_image& other) noexcept;
 
       void convert(hal::renderer& renderer);
 
@@ -57,6 +53,14 @@ namespace neutrino::kernel {
       static descr_t eval_dimension_properties(const tilesheet& ts);
       static descr_t eval_dimension_properties(const math::dimension2di_t& canvas_dims);
   };
+}
+
+namespace std {
+  template<>
+  inline
+  void swap(neutrino::kernel::tiled_image& rhs, neutrino::kernel::tiled_image& lhs) noexcept {
+    rhs.swap (lhs);
+  }
 }
 
 #endif //SRC_KERNEL_GFX_TILED_IMAGE_HH

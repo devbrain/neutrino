@@ -12,6 +12,7 @@
 
 #include <neutrino/kernel/rc/image.hh>
 #include <neutrino/kernel/rc/world/image_layer.hh>
+#include <neutrino/kernel/rc/world/color_layer.hh>
 #include <neutrino/kernel/rc/world/tiles_layer.hh>
 #include <neutrino/kernel/rc/world/object.hh>
 #include <neutrino/kernel/rc/path_resolver.hh>
@@ -25,7 +26,7 @@ namespace neutrino::kernel {
 
   class world {
     public:
-      using layer_t = std::variant<image_layer, tiles_layer, color>;
+      using layer_t = std::variant<image_layer, tiles_layer, color_layer>;
       using layers_t = std::vector<layer_t>;
       using objects_t = std::vector<object>;
     public:

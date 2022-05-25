@@ -7,7 +7,6 @@
  * tile layer paralax
  * tile layer offset
  * tile layer tint
- * cells flip
  */
 
 #include <fstream>
@@ -207,14 +206,11 @@ namespace neutrino::kernel {
     for (const auto c : tlayer.cells()) {
       auto th = create_tile (c, mapping, ani_descr);
 
-      //std::cout << "[" << th.is_hflipped() << th.is_vflipped() << th.is_dflipped() << "]";
-
       res.set (x, y, th);
       x++;
       if (x >= tlayer.width ()) {
         x = 0;
         y++;
-      //  std::cout << std::endl;
       }
     }
     return res;
@@ -229,7 +225,8 @@ namespace neutrino::kernel {
       c.g = map.background_color().g;
       c.b = map.background_color().b;
       c.a = map.background_color().a;
-      w.m_layers.push_back (c);
+      auto atlas_id = assets.textures.add(c);
+      w.m_layers.push_back (color_layer{tile_handle(atlas_id, cell_id_t(0))});
     }
     for (const auto& layer : map.layers()) {
       std::visit (

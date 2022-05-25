@@ -7,60 +7,27 @@
 
 #include <chrono>
 
-#include <neutrino/math/rect.hh>
 #include <neutrino/kernel/rc/world/world.hh>
 #include <neutrino/kernel/gfx/gfx_assets.hh>
-#include <neutrino/kernel/gfx/animation_state.hh>
-
+#include <neutrino/kernel/gfx/world_window.hh>
+#include <neutrino/utils/spimpl.h>
 
 namespace neutrino::kernel {
-  class world_window {
-    public:
-      world_window() = default;
-      world_window(math::point2d screen_pos, math::dimension2di_t dimensions);
-      world_window(math::point2d screen_pos, math::point2d world_pos, math::dimension2di_t dimensions);
-
-      void screen_pos(math::point2d pos) noexcept;
-      [[nodiscard]] math::point2d screen_pos() const noexcept;
-      void add_screen_pos(math::point2d pos) noexcept;
-      void add_screen_pos(int dx, int dy) noexcept;
-
-      void world_pos(math::point2d pos) noexcept;
-      [[nodiscard]] math::point2d world_pos() const noexcept;
-      void add_world_pos(math::point2d pos) noexcept;
-      void add_world_pos(int dx, int dy) noexcept;
-
-      void dimensions(math::dimension2di_t dims) noexcept;
-      [[nodiscard]] math::dimension2di_t dimensions() const noexcept;
-      void add_dimensions(math::dimension2di_t dims) noexcept;
-      void add_dimensions(int dx, int dy) noexcept;
-
-      void clip(const math::dimension2di_t& screen_dims, const math::dimension2di_t& world_dims);
-    private:
-      math::point2d m_screen_top_left;
-      math::point2d m_world_top_left;
-      math::dimension2di_t m_dimensions;
-  };
-
-
 
   class world_renderer {
     public:
       world_renderer();
+      ~world_renderer();
 
       void set(world* w);
       void set(world* w, const gfx_assets* atlas);
       void update (std::chrono::milliseconds ms);
       void draw(const world_window& window, hal::renderer& renderer);
-    private:
-      void init_animation_state();
-       [[nodiscard]] tile_handle get_tile_data(const tiles_layer& tlayer, int x, int y);
-    private:
-      world* m_world;
-      const gfx_assets* m_assets;
-      animation_state m_animation_state;
-  };
 
+    private:
+      struct impl;
+      spimpl::unique_impl_ptr<impl> m_pimpl;
+  };
 
 }
 

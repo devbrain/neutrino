@@ -24,14 +24,16 @@ namespace neutrino::kernel {
 
       [[nodiscard]] atlas_id_t add(hal::renderer& renderer, const image& img);
       [[nodiscard]] atlas_id_t add(hal::renderer& renderer, const tilesheet& ts);
-
       [[nodiscard]] atlas_id_t add(const lazy_tilesheet& ts);
       [[nodiscard]] atlas_id_t add(const image_loader_t& loader);
+      [[nodiscard]] atlas_id_t add(const color& bgcolor);
 
       void replace(atlas_id_t atlas_id, hal::renderer& renderer, const image& img);
       void replace(atlas_id_t atlas_id, hal::renderer& renderer, const tilesheet & img);
       void replace(atlas_id_t atlas_id, const lazy_tilesheet& lt);
       void replace(atlas_id_t atlas_id, const image_loader_t& img_ldr);
+      void replace(atlas_id_t atlas_id, const color& bg_color);
+
       void convert_images(hal::renderer& renderer);
 
       [[nodiscard]] bool is_tilesheet(atlas_id_t atlas_id) const noexcept;

@@ -15,6 +15,10 @@ namespace neutrino::kernel {
     return animation_state_id_t (m_entries.size()-1);
   }
 
+  void animation_state::clear () {
+    m_entries.clear();
+  }
+
   void animation_state::update (std::chrono::milliseconds ms) {
     for (auto& e : m_entries) {
       auto time_in_frame = e.current_time + ms;

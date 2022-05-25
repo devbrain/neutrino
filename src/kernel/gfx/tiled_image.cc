@@ -116,8 +116,14 @@ namespace neutrino::kernel {
           m_descr = eval_dimension_properties (img);
         }
         hal::texture new_texture(renderer, img);
-        swap(new_texture, m_texture);
+        std::swap(new_texture, m_texture);
       }
     }
+  }
+
+  void tiled_image::swap (tiled_image& other) noexcept {
+    std::swap(m_descr, other.m_descr);
+    std::swap (m_image_loader, other.m_image_loader);
+    std::swap(m_texture, other.m_texture);
   }
 }
