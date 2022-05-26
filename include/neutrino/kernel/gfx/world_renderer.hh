@@ -7,8 +7,7 @@
 
 #include <chrono>
 
-#include <neutrino/kernel/rc/world/world.hh>
-#include <neutrino/kernel/gfx/gfx_assets.hh>
+#include <neutrino/assets/tiles/world/world.hh>
 #include <neutrino/kernel/gfx/world_window.hh>
 #include <neutrino/utils/spimpl.h>
 
@@ -19,8 +18,8 @@ namespace neutrino::kernel {
       world_renderer();
       ~world_renderer();
 
-      void set(world* w);
-      void set(world* w, const gfx_assets* atlas);
+      void set(assets::world* w);
+      void set(assets::world* w, const assets::world_assets* atlas);
       void update (std::chrono::milliseconds ms);
       void draw(const world_window& window, hal::renderer& renderer);
 

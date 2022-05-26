@@ -3,37 +3,38 @@
 //
 #include <algorithm>
 #include <neutrino/kernel/gfx/world_renderer.hh>
-#include <neutrino/kernel/gfx/animation_state.hh>
 #include <neutrino/kernel/gfx/grid.hh>
 #include <neutrino/hal/video/renderer_utils.hh>
 #include <neutrino/utils/override.hh>
 #include <neutrino/utils/exception.hh>
 
+#include "animation_state.hh"
+#include "texture_atlas.hh"
+
 namespace neutrino::kernel {
 
   struct world_renderer::impl {
     impl ()
-        : m_world (nullptr), m_assets (nullptr) {
+        : m_world (nullptr) {
     }
 
-    void init_animation_state ();
-    [[nodiscard]] std::tuple<tile_handle, math::rect> get_tile_data (const tiles_layer& tlayer, int x, int y) const;
-    [[nodiscard]] std::tuple<tile_handle, math::rect> get_tile_data (const image_layer& ilayer, int x, int y) const;
-    [[nodiscard]] std::tuple<tile_handle, math::rect> get_tile_data (const color_layer& clayer, int x, int y) const;
+    void init_animation_state (const assets::animation_description& ad);
+    [[nodiscard]] std::tuple<assets::tile_handle, math::rect> get_tile_data (const assets::tiles_layer& tlayer, int x, int y) const;
+    [[nodiscard]] std::tuple<assets::tile_handle, math::rect> get_tile_data (const assets::image_layer& ilayer, int x, int y) const;
+    [[nodiscard]] std::tuple<assets::tile_handle, math::rect> get_tile_data (const assets::color_layer& clayer, int x, int y) const;
 
-    world* m_world;
-    const gfx_assets* m_assets;
+    assets::world* m_world;
+    texture_atlas m_assets;
     animation_state m_animation_state;
     grid m_grid;
   };
 
-  void world_renderer::impl::init_animation_state () {
-    ENFORCE(m_assets != nullptr);
+  void world_renderer::impl::init_animation_state (const assets::animation_description& ad) {
     m_animation_state.clear();
     for (auto& layer: m_world->layers ()) {
       std::visit (
           utils::overload (
-              [this] (tiles_layer& tlayer) {
+              [this, &ad] (assets::tiles_layer& tlayer) {
                 for (std::size_t y = 0; y < tlayer.height (); y++) {
                   for (std::size_t x = 0; x < tlayer.width (); x++) {
                     auto th = tlayer.get (x, y);
@@ -41,8 +42,8 @@ namespace neutrino::kernel {
                       continue;
                     }
                     if (th.is_animation ()) {
-                      auto aseq_id = static_cast<animation_seq_id_t>(th);
-                      th = m_animation_state.add (m_assets->animation_sequences.get (aseq_id));
+                      auto aseq_id = static_cast<assets::animation_seq_id_t>(th);
+                      th = m_animation_state.add (ad.get (aseq_id));
                       tlayer.set (x, y, th);
                     }
                   }
@@ -53,12 +54,12 @@ namespace neutrino::kernel {
     }
   }
 
-  std::tuple<tile_handle, math::rect> world_renderer::impl::get_tile_data (const tiles_layer& tlayer, int x, int y) const {
+  std::tuple<assets::tile_handle, math::rect> world_renderer::impl::get_tile_data (const assets::tiles_layer& tlayer, int x, int y) const {
     auto th = tlayer.get (x, y);
-    tile_handle rc;
+    assets::tile_handle rc;
     if (th) {
       if (th.is_animation ()) {
-        auto state_id = static_cast<animation_state_id_t>(th);
+        auto state_id = static_cast<assets::animation_state_id_t>(th);
         auto [handle, kind] = m_animation_state.frame (state_id);
         if (handle) {
           rc = handle;
@@ -69,22 +70,22 @@ namespace neutrino::kernel {
       }
     }
     if (rc) {
-      auto src = m_assets->textures.tile_rectangle (rc);
+      auto src = m_assets.tile_rectangle (rc);
       m_grid.adjust (x, y, src);
       return {rc, src};
     }
     return {rc, m_grid.empty (x, y)};
   }
 
-  std::tuple<tile_handle, math::rect> world_renderer::impl::get_tile_data (const image_layer& ilayer, int x, int y) const {
+  std::tuple<assets::tile_handle, math::rect> world_renderer::impl::get_tile_data (const assets::image_layer& ilayer, int x, int y) const {
     auto tlid = ilayer.tile_id ();
-    auto atlas_id = static_cast<atlas_id_t>(tlid);
-    ENFORCE(!m_assets->textures.is_tilesheet (atlas_id));
+    auto atlas_id = static_cast<assets::atlas_id_t>(tlid);
+    ENFORCE(!m_assets.is_tilesheet (atlas_id));
     auto src = m_grid.empty (x, y);
     return {tlid, src};
   }
 
-  std::tuple<tile_handle, math::rect> world_renderer::impl::get_tile_data (const color_layer& clayer, int x, int y) const {
+  std::tuple<assets::tile_handle, math::rect> world_renderer::impl::get_tile_data (const assets::color_layer& clayer, int x, int y) const {
     auto tlid = clayer.tile_id ();
     auto src = m_grid.empty (x, y);
     return {tlid, src};
@@ -96,17 +97,17 @@ namespace neutrino::kernel {
 
   world_renderer::~world_renderer () = default;
 
-  void world_renderer::set (world* w) {
+  void world_renderer::set (assets::world* w) {
     m_pimpl->m_world = w;
     m_pimpl->m_grid = grid(w);
-    m_pimpl->init_animation_state ();
+    //m_pimpl->init_animation_state ();
   }
 
-  void world_renderer::set (world* w, const gfx_assets* atlas) {
+  void world_renderer::set (assets::world* w, const assets::world_assets* atlas) {
     m_pimpl->m_world = w;
     m_pimpl->m_grid = grid(w);
-    m_pimpl->m_assets = atlas;
-    m_pimpl->init_animation_state ();
+    m_pimpl->m_assets.assign (atlas->images);
+    m_pimpl->init_animation_state (atlas->animation_sequences);
   }
 
   void world_renderer::update (std::chrono::milliseconds ms) {
@@ -114,9 +115,10 @@ namespace neutrino::kernel {
   }
 
   void world_renderer::draw (const world_window& window, hal::renderer& renderer) {
-    if (!m_pimpl->m_world || !m_pimpl->m_assets) {
+    if (!m_pimpl->m_world) {
       return;
     }
+    m_pimpl->m_assets.convert_images (renderer);
     hal::clip_area ca (renderer, math::rect (window.screen_pos (), window.dimensions ()));
 
     for (const auto& layer: m_pimpl->m_world->layers ()) {
@@ -131,7 +133,7 @@ namespace neutrino::kernel {
                 for (int y = m_pimpl->m_grid.top_left_tile_y (); y <= m_pimpl->m_grid.bottom_right_tile_y (); y++) {
                   for (int x = m_pimpl->m_grid.top_left_tile_x (); x <= m_pimpl->m_grid.bottom_right_tile_x (); x++) {
                     auto [tlid, src] = m_pimpl->get_tile_data (tlayer, x, y);
-                    m_pimpl->m_assets->textures.draw (renderer, tlid, src, screen_pos);
+                    m_pimpl->m_assets.draw (renderer, tlid, src, screen_pos);
                     h = std::max (src.dims.y, h);
                     screen_pos.x += src.dims.x;
                   }

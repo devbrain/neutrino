@@ -10,7 +10,7 @@ namespace neutrino::kernel {
   : grid(0, 0, 0, 0) {
   }
 
-  grid::grid (const world* w)
+  grid::grid (const assets::world* w)
       : grid(w->tile_width(), w->tile_height(), w->width(), w->height()) {
   }
 
@@ -133,7 +133,7 @@ namespace neutrino::kernel {
   }
 
   math::dimension2di_t grid::eval_transormed_dims(const math::dimension2di_t& orig,
-                                                  const rotation_info& ri) {
+                                                  const assets::rotation_info& ri) {
     if (ri.degree == 0) {
       if (ri.hflip) {
         return orig;

@@ -10,7 +10,7 @@
 #include "hal/input_publisher.hh"
 #include "hal/video/windows/windows_manager.hh"
 #include "hal/message_broker.hh"
-#include <neutrino/hal/video/image_loader.hh>
+#include "assets/image/image_loader.hh"
 
 namespace neutrino::hal {
   namespace {
@@ -31,7 +31,6 @@ namespace neutrino::hal {
     impl ()
         : m_quit_flag (false) {
       s_message_broker = &m_message_broker;
-      image_loader::init();
     }
 
     std::atomic<bool> m_quit_flag;

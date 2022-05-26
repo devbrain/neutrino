@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <fstream>
 #include <neutrino/kernel/application.hh>
-#include <neutrino/kernel/rc/world/world.hh>
+#include <neutrino/assets/tiles/world/world.hh>
 #include <neutrino/kernel/gfx/world_renderer.hh>
 
 #include "map/map_city.h"
@@ -36,7 +36,7 @@ class app : public neutrino::application {
         std::istringstream is;
         std::istringstream iss (std::string((char*)formosa, formosa_length));
 
-        m_world = world::from_tmx (iss, [] (const std::string& name) {
+        m_world = neutrino::assets::world::from_tmx (iss, [] (const std::string& name) {
           if (name == "city.png") {
             return std::string{(const char*) city, city_length};
           }
@@ -58,7 +58,7 @@ class app : public neutrino::application {
         std::filesystem::path p = path;
         auto dir = p.parent_path();
         std::ifstream ifs(p, std::ios::binary);
-        m_world = world::from_tmx (ifs, [dir](const std::string& name) -> std::string {
+        m_world = neutrino::assets::world::from_tmx (ifs, [dir](const std::string& name) -> std::string {
           std::ifstream t(dir/name);
           return std::string ((std::istreambuf_iterator<char>(t)),
                           std::istreambuf_iterator<char>());
@@ -85,7 +85,7 @@ class app : public neutrino::application {
       input_config().when_pressed (neutrino::scan_code_t::UP, EV_UP);
       input_config().when_pressed (neutrino::scan_code_t::DOWN, EV_DOWN);
 
-      m_atlas.textures.convert_images (renderer);
+      //m_atlas.textures.convert_images (renderer);
 
       auto [wpx, wpy] = m_world.dimensions_in_pixels();
 
@@ -140,8 +140,8 @@ class app : public neutrino::application {
     }
 
     neutrino::hal::renderer* m_renderer;
-    neutrino::kernel::gfx_assets m_atlas;
-    neutrino::kernel::world  m_world;
+    neutrino::assets::world_assets m_atlas;
+    neutrino::assets::world  m_world;
 
     neutrino::kernel::world_renderer m_world_renderer[2];
     neutrino::kernel::world_window m_window[2];

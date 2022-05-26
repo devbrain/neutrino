@@ -18,6 +18,8 @@
 #include <neutrino/math/point.hh>
 #include <neutrino/math/rect.hh>
 
+struct SDL_Surface;
+
 namespace neutrino::hal {
 
   namespace detail {
@@ -26,28 +28,20 @@ namespace neutrino::hal {
 
   class window;
   class renderer;
-  class image_loader;
+
   class texture;
 
   class surface final {
-      friend class image_loader;
       friend class renderer;
       friend class texture;
     public:
       surface () = default;
 
-      surface (const window& w);
+      explicit surface (const window& w);
       surface (unsigned width, unsigned height, pixel_format format);
 
       static surface make_rgba (unsigned width, unsigned height);
       static surface make_8bit (unsigned width, unsigned height);
-
-      void save_bmp(std::ostream& os) const;
-      void save_jpg(std::ostream& os) const;
-      void save_png(std::ostream& os) const;
-      void save_tga(std::ostream& os) const;
-      void save(const std::filesystem::path& ofile) const;
-
 
       [[nodiscard]] pixel_format format () const;
       explicit operator bool () const;
@@ -167,11 +161,28 @@ namespace neutrino::hal {
       [[nodiscard]] palette get_palette() const;
       void put_pixel(int x, int y, uint32_t pixel);
       [[nodiscard]] uint32_t get_pixel(int x, int y) const;
+
+      void swap(surface& other);
+      explicit surface(SDL_Surface* s);
+      const SDL_Surface* native() const;
+      SDL_Surface* native();
+
     private:
-      surface (std::unique_ptr<detail::surface_impl>&& impl);
+      explicit surface (std::unique_ptr<detail::surface_impl>&& impl);
     private:
       spimpl::unique_impl_ptr<detail::surface_impl> m_pimpl;
+    private:
+
+
   };
+}
+
+namespace std {
+  template <>
+  inline
+  void swap(neutrino::hal::surface& lhs, neutrino::hal::surface& rhs) noexcept {
+    lhs.swap (rhs);
+  }
 }
 
 #endif

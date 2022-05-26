@@ -28,13 +28,13 @@ my_add_executable(unittest
         engine/test_ecs_registry.cc
 
         $<TARGET_OBJECTS:neutrino_tiled_with_tests>
-        $<TARGET_OBJECTS:extractor_mz_with_tests>
+        $<TARGET_OBJECTS:assets_mz_with_tests>
         )
 
 target_link_libraries(unittest
         PRIVATE
-        neutrino::extractor
         neutrino::kernel
+        neutrino::assets
         neutrino::hal
         neutrino::utils
         thirdparty::doctest
