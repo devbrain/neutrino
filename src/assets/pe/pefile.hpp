@@ -4,10 +4,9 @@
 #include <cstdint>
 #include <vector>
 #include <iosfwd>
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
-
-#include "shm.hpp"
+#include <mio/mmap.hpp>
 #include "istream_wrapper.hpp"
 
 namespace pefile
@@ -269,7 +268,7 @@ namespace pefile
 			std::size_t size() const;
 			const char* data() const;
 		private:
-			std::unique_ptr <bsw::memory_mapped_file::read_only_mmf> m_mmf;
+			std::unique_ptr <mio::mmap_source> m_mmf;
 			const char* m_data;
 			std::size_t m_size;
 		};

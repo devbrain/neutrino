@@ -81,6 +81,9 @@ my_add_library_static(utils
         strings/string_tokenizer.cc
         ${PROJECT_INCLUDE}/neutrino/utils/strings/string_tokenizer.hh
 
+        ${PROJECT_INCLUDE}/neutrino/utils/strings/wchar.hh
+        strings/wchar.cc
+
         ${PROJECT_INCLUDE}/neutrino/utils/strings/string_constant.hh
         ${PROJECT_INCLUDE}/neutrino/utils/strings/string_utils.hh
 
@@ -136,6 +139,15 @@ my_add_library_static(utils
         ini/ini_parser.cc
 
         ${PROJECT_INCLUDE}/neutrino/utils/bit_ops.hh
+
+        thirdparty/utf8.h
+        thirdparty/utf8/checked.h
+        thirdparty/utf8/core.h
+        thirdparty/utf8/cpp11.h
+        thirdparty/utf8/cpp17.h
+        thirdparty/utf8/unchecked.h
+
+
 
         DEPENDS_PUBLIC
             thirdparty::pfr

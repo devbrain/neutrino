@@ -1,12 +1,12 @@
 #include "rs_version.hpp"
-#include "wchar.hpp"
+#include <neutrino/utils/strings/wchar.hh>
 
 namespace pefile
 {
 	// ------------------------------------------------------------------
 	void version_c::_bind(const std::wstring& k, const std::wstring& b)
 	{
-		m_kv_map[bsw::wstring_to_utf8(k)] = bsw::wstring_to_utf8(b);
+		m_kv_map[neutrino::utils::wstring_to_utf8(k)] = neutrino::utils::wstring_to_utf8(b);
 	}
 	// ------------------------------------------------------------------
 	uint32_t version_c::operator [] (fields_t f) const

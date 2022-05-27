@@ -1,5 +1,5 @@
 #include "rs_message_table.hpp"
-#include "wchar.hpp"
+#include <neutrino/utils/strings/wchar.hh>
 
 namespace pefile
 {
@@ -109,7 +109,7 @@ namespace pefile
 				}
 				else
 				{
-					out.m_messages[id] = bsw::utf8_to_wstring(text.data());
+					out.m_messages[id] = neutrino::utils::utf8_to_wstring(text.data());
 					id++;
 				}
 			}

@@ -2,7 +2,9 @@
 #include <stdexcept>
 #include <iostream>
 #include <ctime>
-#include <math.h>
+#include <cmath>
+
+#include <neutrino/utils/strings/wchar.hh>
 
 #include "pefile.hpp"
 #include "abstract_reporter.hpp"
@@ -14,16 +16,16 @@ namespace pefile
 		// ----------------------------------------------------------------------------
 		file_container_c::file_container_c(const std::string& path)
 		{
-			m_mmf = std::make_unique <bsw::memory_mapped_file::read_only_mmf>(path.c_str());
+			m_mmf = std::make_unique <mio::mmap_source>(path.c_str());
 			m_data = m_mmf->data();
-			m_size = m_mmf->file_size();
+			m_size = m_mmf->size();
 		}
 		// ----------------------------------------------------------------------------
 		file_container_c::file_container_c(const std::wstring& path)
 		{
-			m_mmf = std::make_unique <bsw::memory_mapped_file::read_only_mmf>(path.c_str());
+			m_mmf = std::make_unique <mio::mmap_source>(neutrino::utils::wstring_to_utf8 (path));
 			m_data = m_mmf->data();
-			m_size = m_mmf->file_size();
+			m_size = m_mmf->size();
 		}
 		// ----------------------------------------------------------------------------
 		file_container_c::file_container_c(const char* fdata, std::size_t fsize)
@@ -581,7 +583,7 @@ namespace pefile
 			u4 aligned_pointer = section.PointerToRawData  & ~0x1ff;
 			
 			auto endPoint = _get_read_size(section) + aligned_pointer;
-			offset = std::max(offset, endPoint);
+			offset = std::max(offset, (std::size_t)endPoint);
 		}
 		if (offset > file_size()) 
 		{

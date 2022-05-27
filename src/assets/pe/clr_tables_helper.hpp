@@ -1,7 +1,7 @@
 #ifndef __PEFILE_CLR_TABLES_HELPER_HPP__
 #define __PEFILE_CLR_TABLES_HELPER_HPP__
 
-#include "type_list.hpp"
+#include <neutrino/utils/mp/typelist.hh>
 #include "istream_wrapper.hpp"
 
 namespace pefile
@@ -65,7 +65,7 @@ namespace pefile
 
 
 		template <typename H>
-		struct tuple_type_cnv <typelist::tlist<H>>
+		struct tuple_type_cnv <neutrino::mp::type_list<H>>
 		{
 			using type = typename tuple_type_cnv<typename H::type>::type;
 		};
@@ -85,11 +85,11 @@ namespace pefile
 		};
 
 		template <typename Head, typename ...Tail>
-		struct tuple_type_cnv <typelist::tlist<Head, Tail...>>
+		struct tuple_type_cnv <neutrino::mp::type_list<Head, Tail...>>
 		{
 			using A = typename tuple_type_cnv<typename Head::type>::type;
 			using type = typename append_to_type_seq <A,
-				typename tuple_type_cnv<typelist::tlist<Tail...>>::type>::type;
+				typename tuple_type_cnv<neutrino::mp::type_list<Tail...>>::type>::type;
 		};
 		// ======================================================================
 		template <typename T>
@@ -128,7 +128,7 @@ namespace pefile
 		template <typename ROW, typename INSTANCE, std::size_t INDEX>
 		struct elem_reader
 		{
-			using input_type = typename typelist::tlist_type_at <INDEX, ROW>::type;
+			using input_type = neutrino::mp::type_list_at_t <INDEX, ROW>;
 			static void read(INSTANCE& instance, uint8_t StreamOffsetSize, bsw::istream_wrapper_c& is)
 			{
 				auto x = reader_impl<typename input_type::type>::read(StreamOffsetSize, is.rd_ptr());
@@ -149,7 +149,7 @@ namespace pefile
 		template <typename ROW, typename INSTANCE, std::size_t INDEX>
 		struct inst_reader_impl <ROW, INSTANCE, INDEX, false>
 		{
-			static void read(INSTANCE& instance, uint8_t StreamOffsetSize, bsw::istream_wrapper_c& is)
+			static void read([[maybe_unused]] INSTANCE& instance, [[maybe_unused]] uint8_t StreamOffsetSize, [[maybe_unused]] bsw::istream_wrapper_c& is)
 			{
 			}
 		};
@@ -173,7 +173,7 @@ namespace pefile
 		};
 
 		template <typename T>
-		struct memory_size_impl<typelist::tlist<T>>
+		struct memory_size_impl<neutrino::mp::type_list<T>>
 		{
 			static size_t eval(uint8_t StreamOffsetSize)
 			{
@@ -182,12 +182,12 @@ namespace pefile
 		};
 
 		template <typename H, typename... Ts>
-		struct memory_size_impl <typelist::tlist<H, Ts...>>
+		struct memory_size_impl <neutrino::mp::type_list<H, Ts...>>
 		{
 			static size_t eval(uint8_t StreamOffsetSize)
 			{
 				return memory_size_impl<typename H::type>::eval(StreamOffsetSize) +
-					memory_size_impl<typelist::tlist<Ts...>>::eval(StreamOffsetSize);
+					memory_size_impl<neutrino::mp::type_list<Ts...>>::eval(StreamOffsetSize);
 			}
 		};
 
@@ -213,19 +213,19 @@ namespace pefile
 	struct select_type_by_id;
 
 	template <uint16_t ECMA_ID, typename Head>
-	struct select_type_by_id <ECMA_ID, typelist::tlist<Head>>
+	struct select_type_by_id <ECMA_ID, neutrino::mp::type_list<Head>>
 	{
 		using value = typename std::conditional <ECMA_ID == Head::ECMA_ID,
 				Head,
-				typelist::NullType>::type;
+				neutrino::mp::null_type>::type;
 	};
 
 	template <uint16_t ECMA_ID, typename Head, typename... Tail>
-	struct select_type_by_id <ECMA_ID, typelist::tlist<Head, Tail...>>
+	struct select_type_by_id <ECMA_ID, neutrino::mp::type_list<Head, Tail...>>
 	{
 		using value = typename std::conditional <ECMA_ID == Head::ECMA_ID,
 				Head,
-				typename select_type_by_id<ECMA_ID, typelist::tlist<Tail...>>::value>::type;
+				typename select_type_by_id<ECMA_ID, neutrino::mp::type_list<Tail...>>::value>::type;
 	};
 
 	template <typename T>
@@ -238,9 +238,9 @@ namespace pefile
 	};
 
 	template <>
-	struct generic_memory_size<typelist::NullType>
+	struct generic_memory_size<neutrino::mp::null_type>
 	{
-		static std::size_t eval(uint8_t StreamOffsetSize)
+		static std::size_t eval([[maybe_unused]] uint8_t StreamOffsetSize)
 		{
 			return 0;
 		}
@@ -265,7 +265,7 @@ namespace pefile
 	template <typename Ts>
 	struct memory_size_at_impl<Ts, 0>
 	{
-		static std::size_t visit(size_t idx, uint8_t StreamOffsetSize) { return 0; }
+		static std::size_t visit([[maybe_unused]] size_t idx, [[maybe_unused]] uint8_t StreamOffsetSize) { return 0; }
 	};
 
 	template <typename Ts>
@@ -278,7 +278,7 @@ namespace pefile
 #define CLR_TABLES_SYSTEM_BEGIN(PFX)				\
 	struct PFX										\
 	{												\
-		typedef typelist::tlist<>	
+		typedef neutrino::mp::type_list<>	
 
 #define CLR_TABLE_DEF_BEGIN(NAME, IDVAL)			\
 	CONCATENATE (tables_pre_, NAME);				\
@@ -288,7 +288,7 @@ namespace pefile
 		static constexpr const char* name () {		\
 			return STRINGIZE(NAME);					\
 		}											\
-		typedef typelist::tlist<>
+		typedef neutrino::mp::type_list<>
 
 #define CLR_ROW(TYPE, NAME)									\
 	CONCATENATE (rows_pre_, NAME);							\
@@ -304,13 +304,13 @@ namespace pefile
 			return CONCATENATE (rows_pre_, NAME)::size ();	\
 		}													\
 	};														\
-	typedef typelist::tlist_push_back <NAME, CONCATENATE(rows_pre_, NAME)>::type
+	typedef neutrino::mp::type_list_append_t <NAME, CONCATENATE(rows_pre_, NAME)>
 
 #define CLR_TABLE_DEF_END(NAME)									\
 	TABLE_ROWS;													\
 	typedef detail::tuple_type_cnv<TABLE_ROWS>::type instance;	\
 	};															\
-	typedef typelist::tlist_push_back <NAME, CONCATENATE(tables_pre_, NAME)>::type
+	typedef neutrino::mp::type_list_append_t <NAME, CONCATENATE(tables_pre_, NAME)>
 
 #define CLR_TABLES_SYSTEM_END									\
 	TABLES;														\

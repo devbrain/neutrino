@@ -4,7 +4,7 @@
 
 #include "pefile.hpp"
 #include "resource_directory.hpp"
-#include "wchar.hpp"
+#include <neutrino/utils/strings/wchar.hh>
 
 namespace pefile
 {
@@ -96,7 +96,7 @@ namespace pefile
 		}
 		else
 		{
-			os << bsw::wstring_to_utf8(a.name());
+			os << neutrino::utils::wstring_to_utf8(a.name());
 		}
 		return os;
 	}

@@ -6,10 +6,10 @@
 #include "clr_tables.hpp"
 #include "clr_res.hpp"
 #include "istream_wrapper.hpp"
-#include "wchar.hpp"
+#include <neutrino/utils/strings/wchar.hh>
 
 
-static unsigned count_bits(uint64_t value)
+[[maybe_unused]] static unsigned count_bits(uint64_t value)
 {
 	unsigned int count = 0;
 	while (value > 0) 
@@ -175,7 +175,7 @@ namespace pefile
 			auto rows = std::get<1>(v);
 			if (table_id != CLR::ManifestResource::ECMA_ID)
 			{
-				auto offset = is.rd_ptr() - file.file_data();
+              [[maybe_unused]] auto offset = is.rd_ptr() - file.file_data();
 				auto row_size = memory_size_at<CLR::TABLES>(table_id, metadata_header.HeapOffsetsizes);
 				is.advance(row_size*rows);
 			}
@@ -215,7 +215,7 @@ namespace pefile
 			throw std::logic_error("No CLR/Resources section found");
 		}
 		auto md_off = file.translate_rva(pos.VirtualAddress);
-		const char* file_data = file.file_data();
+        [[maybe_unused]] const char* file_data = file.file_data();
 		const std::size_t file_size = file.file_size();
 	 	if (md_off + offset>= file_size)
 		{
@@ -235,7 +235,7 @@ namespace pefile
 
 		using resource_description_t = std::tuple <uint32_t, int, std::string>;
 		std::vector<resource_description_t> resources;
-		uint32_t data_offs = res.pDataSection - res.pBaseAddress;
+        [[maybe_unused]] uint32_t data_offs = res.pDataSection - res.pBaseAddress;
 		for (unsigned x = 0; x < res.NumberOfResources; x++)
 		{
 			uint32_t Offset = 0;
@@ -259,7 +259,7 @@ namespace pefile
 							}
 						}
 					}
-					resource_description_t rd(Offset, TypeIndex, bsw::wstring_to_utf8(res_name));
+					resource_description_t rd(Offset, TypeIndex, neutrino::utils::wstring_to_utf8(res_name));
 					resources.push_back(rd);
 				}
 			}

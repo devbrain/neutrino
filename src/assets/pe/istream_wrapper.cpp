@@ -1,7 +1,7 @@
 #include <sstream>
 #include <vector>
 #include "istream_wrapper.hpp"
-#include "wchar.hpp"
+#include <neutrino/utils/strings/wchar.hh>
 
 namespace bsw
 {
@@ -209,7 +209,7 @@ namespace bsw
 			if (a != e && a != (e ^ 0x20))
 			{
 				std::ostringstream os;
-				os << __FUNCTION__ << " expected " << bsw::wstring_to_utf8 (s) << " actual " << bsw::wstring_to_utf8 (d.data ());
+				os << __FUNCTION__ << " expected " << neutrino::utils::wstring_to_utf8 (s) << " actual " << neutrino::utils::wstring_to_utf8 (d.data ());
 				throw std::runtime_error(os.str());
 			}
 		}
