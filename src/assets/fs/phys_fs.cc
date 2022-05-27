@@ -8,6 +8,7 @@
 
 #include <neutrino/assets/fs/phys_fs.hh>
 #include <neutrino/utils/exception.hh>
+#include <neutrino/utils/strings/string_utils.hh>
 
 namespace neutrino::assets {
   namespace {
@@ -36,7 +37,7 @@ namespace neutrino::assets {
 
     struct ci_compare {
       bool operator () (const std::string& a, const std::string& b) const noexcept {
-        return ::strcasecmp (a.c_str (), b.c_str ()) < 0;
+        return neutrino::utils::icompare(a, b) < 0;
       }
     };
 
