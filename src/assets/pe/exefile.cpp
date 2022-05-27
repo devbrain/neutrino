@@ -64,20 +64,20 @@ namespace pefile
 	void exe_file_c::_load()
 	{
 		const auto& coff = m_pefile->coff_header();
-		if (coff.Machine != COFF_HEADER::IMAGE_FILE_MACHINE_I386	 && coff.Machine != COFF_HEADER::IMAGE_FILE_MACHINE_AMD64)
+		if (coff.Machine != COFF_HEADER::PE_IMAGE_FILE_MACHINE_I386	 && coff.Machine != COFF_HEADER::PE_IMAGE_FILE_MACHINE_AMD64)
 		{
 			std::ostringstream os;
-			os << "Unsupported architecture " << static_cast <COFF_HEADER::IMAGE_FILE_MACHINE>(coff.Machine);
+			os << "Unsupported architecture " << static_cast <COFF_HEADER::PE_IMAGE_FILE_MACHINE>(coff.Machine);
 			throw std::logic_error(os.str());
 		}
-		if ((coff.Characteristics & COFF_HEADER::IMAGE_FILE_EXECUTABLE_IMAGE) != COFF_HEADER::IMAGE_FILE_EXECUTABLE_IMAGE)
+		if ((coff.Characteristics & COFF_HEADER::PE_IMAGE_FILE_EXECUTABLE_IMAGE) != COFF_HEADER::PE_IMAGE_FILE_EXECUTABLE_IMAGE)
 		{
 			throw std::logic_error("Corrupted image");
 		}
 
 		const auto& optional = m_pefile->optional_header();
 		m_is_64_bit = optional.Is64Bit;
-		m_is_gui = (optional.Subsystem == OPTIONAL_HEADER::IMAGE_SUBSYSTEM_WINDOWS_GUI);
+		m_is_gui = (optional.Subsystem == OPTIONAL_HEADER::PE_IMAGE_SUBSYSTEM_WINDOWS_GUI);
 		
 		build_resources(*m_pefile.get(), m_resource_directory);
 		m_entry_point = m_pefile->translate_rva(optional.AddressOfEntryPoint);

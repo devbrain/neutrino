@@ -19,65 +19,65 @@ namespace pefile
 	
 	struct COFF_HEADER
 	{
-		enum IMAGE_FILE_MACHINE
+		enum PE_IMAGE_FILE_MACHINE
 		{
-			IMAGE_FILE_MACHINE_UNKNOWN   = 0x0,    // The contents of this field are assumed to be applicable to any machine type
-			IMAGE_FILE_MACHINE_AM33      = 0x1d3,  // Matsushita AM33
-			IMAGE_FILE_MACHINE_AMD64     = 0x8664, // x64
-			IMAGE_FILE_MACHINE_ARM	     = 0x1c0,  // ARM little endian
-			IMAGE_FILE_MACHINE_ARMNT     = 0x1c4,  // ARM Thumb - 2 little endian
-			IMAGE_FILE_MACHINE_EBC	     = 0xebc,  // EFI byte code
-			IMAGE_FILE_MACHINE_I386	     = 0x14c,  // Intel 386 or later processors and compatible processors
-			IMAGE_FILE_MACHINE_IA64	     = 0x200,  // Intel Itanium processor family
-			IMAGE_FILE_MACHINE_M32R	     = 0x9041, // Mitsubishi M32R little endian
-			IMAGE_FILE_MACHINE_MIPS16    = 0x266,  // MIPS16
-			IMAGE_FILE_MACHINE_MIPSFPU   = 0x366,  // MIPS with FPU
-			IMAGE_FILE_MACHINE_MIPSFPU16 = 0x466,  // MIPS16 with FPU
-			IMAGE_FILE_MACHINE_POWERPC	 = 0x1f0,  // Power PC little endian
-			IMAGE_FILE_MACHINE_POWERPCFP = 0x1f1,  // Power PC with floating point support
-			IMAGE_FILE_MACHINE_R4000     = 0x166,  // MIPS little endian
-			IMAGE_FILE_MACHINE_RISCV32	 = 0x5032, // RISC - V 32 - bit address space
-			IMAGE_FILE_MACHINE_RISCV64	 = 0x5064, // RISC - V 64 - bit address space
-			IMAGE_FILE_MACHINE_RISCV128	 = 0x5128, // RISC - V 128 - bit address space
-			IMAGE_FILE_MACHINE_SH3	     = 0x1a2,  // Hitachi SH3
-			IMAGE_FILE_MACHINE_SH3DSP    = 0x1a3,  // Hitachi SH3 DSP
-			IMAGE_FILE_MACHINE_SH4       = 0x1a6,  // Hitachi SH4
-			IMAGE_FILE_MACHINE_SH5       = 0x1a8,  // Hitachi SH5
-			IMAGE_FILE_MACHINE_THUMB     = 0x1c2,  // Thumb
-			IMAGE_FILE_MACHINE_WCEMIPSV2 = 0x169   // MIPS little - endian WCE v2
+			PE_IMAGE_FILE_MACHINE_UNKNOWN   = 0x0,    // The contents of this field are assumed to be applicable to any machine type
+			PE_IMAGE_FILE_MACHINE_AM33      = 0x1d3,  // Matsushita AM33
+			PE_IMAGE_FILE_MACHINE_AMD64     = 0x8664, // x64
+			PE_IMAGE_FILE_MACHINE_ARM	     = 0x1c0,  // ARM little endian
+			PE_IMAGE_FILE_MACHINE_ARMNT     = 0x1c4,  // ARM Thumb - 2 little endian
+			PE_IMAGE_FILE_MACHINE_EBC	     = 0xebc,  // EFI byte code
+			PE_IMAGE_FILE_MACHINE_I386	     = 0x14c,  // Intel 386 or later processors and compatible processors
+			PE_IMAGE_FILE_MACHINE_IA64	     = 0x200,  // Intel Itanium processor family
+			PE_IMAGE_FILE_MACHINE_M32R	     = 0x9041, // Mitsubishi M32R little endian
+			PE_IMAGE_FILE_MACHINE_MIPS16    = 0x266,  // MIPS16
+			PE_IMAGE_FILE_MACHINE_MIPSFPU   = 0x366,  // MIPS with FPU
+			PE_IMAGE_FILE_MACHINE_MIPSFPU16 = 0x466,  // MIPS16 with FPU
+			PE_IMAGE_FILE_MACHINE_POWERPC	 = 0x1f0,  // Power PC little endian
+			PE_IMAGE_FILE_MACHINE_POWERPCFP = 0x1f1,  // Power PC with floating point support
+			PE_IMAGE_FILE_MACHINE_R4000     = 0x166,  // MIPS little endian
+			PE_IMAGE_FILE_MACHINE_RISCV32	 = 0x5032, // RISC - V 32 - bit address space
+			PE_IMAGE_FILE_MACHINE_RISCV64	 = 0x5064, // RISC - V 64 - bit address space
+			PE_IMAGE_FILE_MACHINE_RISCV128	 = 0x5128, // RISC - V 128 - bit address space
+			PE_IMAGE_FILE_MACHINE_SH3	     = 0x1a2,  // Hitachi SH3
+			PE_IMAGE_FILE_MACHINE_SH3DSP    = 0x1a3,  // Hitachi SH3 DSP
+			PE_IMAGE_FILE_MACHINE_SH4       = 0x1a6,  // Hitachi SH4
+			PE_IMAGE_FILE_MACHINE_SH5       = 0x1a8,  // Hitachi SH5
+			PE_IMAGE_FILE_MACHINE_THUMB     = 0x1c2,  // Thumb
+			PE_IMAGE_FILE_MACHINE_WCEMIPSV2 = 0x169   // MIPS little - endian WCE v2
 		};
-		u2	Machine;              // The number that identifies the type of target machine. see enum IMAGE_FILE_MACHINE
+		u2	Machine;              // The number that identifies the type of target machine. see enum PE_IMAGE_FILE_MACHINE
 		u2	NumberOfSections;     // The number of sections. This indicates the size of the section table, which immediately follows the headers.
 		u4	TimeDateStamp;        // The low 32 bits of the number of seconds since 00:00 January 1, 1970 (a C run-time time_t value), that indicates when the file was created.
 		u4	PointerToSymbolTable; // The file offset of the COFF symbol table, or zero if no COFF symbol table is present. This value should be zero for an image because COFF debugging information is deprecated.
 		u4	NumberOfSymbols;      // The number of entries in the symbol table. This data can be used to locate the string table, which immediately follows the symbol table. This value should be zero for an image because COFF debugging information is deprecated.
 		u2	SizeOfOptionalHeader; // The size of the optional header, which is required for executable files but not for object files. This value should be zero for an object file. For a description of the header format
-		u2	Characteristics;      // The flags that indicate the attributes of the file. enum IMAGE_FILE_CHARACTERISTICS
+		u2	Characteristics;      // The flags that indicate the attributes of the file. enum PE_IMAGE_FILE_CHARACTERISTICS
 
-		enum IMAGE_FILE_CHARACTERISTICS
+		enum PE_IMAGE_FILE_CHARACTERISTICS
 		{
-			IMAGE_FILE_RELOCS_STRIPPED	       = 0x0001, //	Image only, Windows CE, and Microsoft Windows�NT� and later.This indicates that the file does not contain base relocations and must therefore be loaded at its preferred base address.If the base address is not available, the loader reports an error.The default behavior of the linker is to strip base relocations from executable(EXE) files.
-			IMAGE_FILE_EXECUTABLE_IMAGE	       = 0x0002, //	Image only.This indicates that the image file is valid and can be run.If this flag is not set, it indicates a linker error.
-			IMAGE_FILE_LINE_NUMS_STRIPPED      = 0x0004, //	COFF line numbers have been removed.This flag is deprecated and should be zero.
-			IMAGE_FILE_LOCAL_SYMS_STRIPPED	   = 0x0008, //	COFF symbol table entries for local symbols have been removed.This flag is deprecated and should be zero.
-			IMAGE_FILE_AGGRESSIVE_WS_TRIM      = 0x0010, //	Obsolete.Aggressively trim working set.This flag is deprecated for Windows 2000 and later and must be zero.
-			IMAGE_FILE_LARGE_ADDRESS_AWARE     = 0x0020, //	Application can handle > 2GB addresses.
-			IMAGE_FILE_RESERVED                = 0x0040, //	This flag is reserved for future use.
-			IMAGE_FILE_BYTES_REVERSED_LO       = 0x0080, //	Little endian : the least significant bit(LSB) precedes the most significant bit(MSB) in memory.This flag is deprecated and should be zero.
-			IMAGE_FILE_32BIT_MACHINE           = 0x0100, //	Machine is based on a 32 - bit - word architecture.
-			IMAGE_FILE_DEBUG_STRIPPED          = 0x0200, //	Debugging information is removed from the image file.
-			IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP = 0x0400, //	If the image is on removable media, fully load it and copy it to the swap file.
-			IMAGE_FILE_NET_RUN_FROM_SWAP       = 0x0800, //	If the image is on network media, fully load it and copy it to the swap file.
-			IMAGE_FILE_SYSTEM                  = 0x1000, //	The image file is a system file, not a user program.
-			IMAGE_FILE_DLL                     = 0x2000, //	The image file is a dynamic - link library(DLL).Such files are considered executable files for almost all purposes, although they cannot be directly run.
-			IMAGE_FILE_UP_SYSTEM_ONLY          = 0x4000, //	The file should be run only on a uniprocessor machine.
-			IMAGE_FILE_BYTES_REVERSED_HI       = 0x8000  //	Big endian : the MSB precedes the LSB in memory.This flag is deprecated and should be zero.
+			PE_IMAGE_FILE_RELOCS_STRIPPED	       = 0x0001, //	Image only, Windows CE, and Microsoft Windows�NT� and later.This indicates that the file does not contain base relocations and must therefore be loaded at its preferred base address.If the base address is not available, the loader reports an error.The default behavior of the linker is to strip base relocations from executable(EXE) files.
+			PE_IMAGE_FILE_EXECUTABLE_IMAGE	       = 0x0002, //	Image only.This indicates that the image file is valid and can be run.If this flag is not set, it indicates a linker error.
+			PE_IMAGE_FILE_LINE_NUMS_STRIPPED      = 0x0004, //	COFF line numbers have been removed.This flag is deprecated and should be zero.
+			PE_IMAGE_FILE_LOCAL_SYMS_STRIPPED	   = 0x0008, //	COFF symbol table entries for local symbols have been removed.This flag is deprecated and should be zero.
+			PE_IMAGE_FILE_AGGRESSIVE_WS_TRIM      = 0x0010, //	Obsolete.Aggressively trim working set.This flag is deprecated for Windows 2000 and later and must be zero.
+			PE_IMAGE_FILE_LARGE_ADDRESS_AWARE     = 0x0020, //	Application can handle > 2GB addresses.
+			PE_IMAGE_FILE_RESERVED                = 0x0040, //	This flag is reserved for future use.
+			PE_IMAGE_FILE_BYTES_REVERSED_LO       = 0x0080, //	Little endian : the least significant bit(LSB) precedes the most significant bit(MSB) in memory.This flag is deprecated and should be zero.
+			PE_IMAGE_FILE_32BIT_MACHINE           = 0x0100, //	Machine is based on a 32 - bit - word architecture.
+			PE_IMAGE_FILE_DEBUG_STRIPPED          = 0x0200, //	Debugging information is removed from the image file.
+			PE_IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP = 0x0400, //	If the image is on removable media, fully load it and copy it to the swap file.
+			PE_IMAGE_FILE_NET_RUN_FROM_SWAP       = 0x0800, //	If the image is on network media, fully load it and copy it to the swap file.
+			PE_IMAGE_FILE_SYSTEM                  = 0x1000, //	The image file is a system file, not a user program.
+			PE_IMAGE_FILE_DLL                     = 0x2000, //	The image file is a dynamic - link library(DLL).Such files are considered executable files for almost all purposes, although they cannot be directly run.
+			PE_IMAGE_FILE_UP_SYSTEM_ONLY          = 0x4000, //	The file should be run only on a uniprocessor machine.
+			PE_IMAGE_FILE_BYTES_REVERSED_HI       = 0x8000  //	Big endian : the MSB precedes the LSB in memory.This flag is deprecated and should be zero.
 		};
 	};
 	static_assert (sizeof(COFF_HEADER) == 20, "COFF_HEADER size should be 20 bytes");
 
-	std::ostream& operator << (std::ostream& os, COFF_HEADER::IMAGE_FILE_MACHINE v);
-	std::ostream& operator << (std::ostream& os, COFF_HEADER::IMAGE_FILE_CHARACTERISTICS v);
+	std::ostream& operator << (std::ostream& os, COFF_HEADER::PE_IMAGE_FILE_MACHINE v);
+	std::ostream& operator << (std::ostream& os, COFF_HEADER::PE_IMAGE_FILE_CHARACTERISTICS v);
 	std::ostream& operator << (std::ostream& os, const COFF_HEADER& v);
 	// =========================================================
 	struct DATA_DIRECTORY
@@ -123,38 +123,38 @@ namespace pefile
 
 		std::vector <DATA_DIRECTORY>  DataDirectory;
 
-		enum IMAGE_SUBSYSTEM
+		enum PE_IMAGE_SUBSYSTEM
 		{
-			IMAGE_SUBSYSTEM_UNKNOWN = 0, // An unknown subsystem
-			IMAGE_SUBSYSTEM_NATIVE = 1, // Device drivers and native Windows processes
-			IMAGE_SUBSYSTEM_WINDOWS_GUI = 2, // The Windows graphical user interface(GUI) subsystem
-			IMAGE_SUBSYSTEM_WINDOWS_CUI = 3, // The Windows character subsystem
-			IMAGE_SUBSYSTEM_POSIX_CUI = 7, // The Posix character subsystem
-			IMAGE_SUBSYSTEM_WINDOWS_CE_GUI = 9, // Windows CE
-			IMAGE_SUBSYSTEM_EFI_APPLICATION = 10, // An Extensible Firmware Interface(EFI) application
-			IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER = 11, // An EFI driver with boot services
-			IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER = 12, // An EFI driver with run - time services
-			IMAGE_SUBSYSTEM_EFI_ROM = 13, // An EFI ROM image
-			IMAGE_SUBSYSTEM_XBOX = 14  // XBOX
+			PE_IMAGE_SUBSYSTEM_UNKNOWN = 0, // An unknown subsystem
+			PE_IMAGE_SUBSYSTEM_NATIVE = 1, // Device drivers and native Windows processes
+			PE_IMAGE_SUBSYSTEM_WINDOWS_GUI = 2, // The Windows graphical user interface(GUI) subsystem
+			PE_IMAGE_SUBSYSTEM_WINDOWS_CUI = 3, // The Windows character subsystem
+			PE_IMAGE_SUBSYSTEM_POSIX_CUI = 7, // The Posix character subsystem
+			PE_IMAGE_SUBSYSTEM_WINDOWS_CE_GUI = 9, // Windows CE
+			PE_IMAGE_SUBSYSTEM_EFI_APPLICATION = 10, // An Extensible Firmware Interface(EFI) application
+			PE_IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER = 11, // An EFI driver with boot services
+			PE_IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER = 12, // An EFI driver with run - time services
+			PE_IMAGE_SUBSYSTEM_EFI_ROM = 13, // An EFI ROM image
+			PE_IMAGE_SUBSYSTEM_XBOX = 14  // XBOX
 		};
 
-		enum IMAGE_DLLCHARACTERISTICS
+		enum PE_IMAGE_DLLCHARACTERISTICS
 		{
-			IMAGE_DLLCHARACTERISTICS_RESERVED1 = 0x0001, //	Reserved, must be zero.
-			IMAGE_DLLCHARACTERISTICS_RESERVED2 = 0x0002, //	Reserved, must be zero.
-			IMAGE_DLLCHARACTERISTICS_RESERVED3 = 0x0004, //	Reserved, must be zero.
-			IMAGE_DLLCHARACTERISTICS_RESERVED4 = 0x0008, //	Reserved, must be zero.
-			IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA = 0x0020, //	Image can handle a high entropy 64 - bit virtual address space.
-			IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE = 0x0040, //	DLL can be relocated at load time.
-			IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY = 0x0080, //	Code Integrity checks are enforced.
-			IMAGE_DLLCHARACTERISTICS_NX_COMPAT = 0x0100, //	Image is NX compatible.
-			IMAGE_DLLCHARACTERISTICS_NO_ISOLATION = 0x0200, //	Isolation aware, but do not isolate the image.
-			IMAGE_DLLCHARACTERISTICS_NO_SEH = 0x0400, //	Does not use structured exception(SE) handling.No SE handler may be called in this image.
-			IMAGE_DLLCHARACTERISTICS_NO_BIND = 0x0800, //	Do not bind the image.
-			IMAGE_DLLCHARACTERISTICS_APPCONTAINER = 0x1000, //	Image must execute in an AppContainer.
-			IMAGE_DLLCHARACTERISTICS_WDM_DRIVER = 0x2000, //	A WDM driver.
-			IMAGE_DLLCHARACTERISTICS_GUARD_CF = 0x4000, //	Image supports Control Flow Guard.
-			IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE = 0x8000  //	Terminal Server aware.
+			PE_IMAGE_DLLCHARACTERISTICS_RESERVED1 = 0x0001, //	Reserved, must be zero.
+			PE_IMAGE_DLLCHARACTERISTICS_RESERVED2 = 0x0002, //	Reserved, must be zero.
+			PE_IMAGE_DLLCHARACTERISTICS_RESERVED3 = 0x0004, //	Reserved, must be zero.
+			PE_IMAGE_DLLCHARACTERISTICS_RESERVED4 = 0x0008, //	Reserved, must be zero.
+			PE_IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA = 0x0020, //	Image can handle a high entropy 64 - bit virtual address space.
+			PE_IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE = 0x0040, //	DLL can be relocated at load time.
+			PE_IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY = 0x0080, //	Code Integrity checks are enforced.
+			PE_IMAGE_DLLCHARACTERISTICS_NX_COMPAT = 0x0100, //	Image is NX compatible.
+			PE_IMAGE_DLLCHARACTERISTICS_NO_ISOLATION = 0x0200, //	Isolation aware, but do not isolate the image.
+			PE_IMAGE_DLLCHARACTERISTICS_NO_SEH = 0x0400, //	Does not use structured exception(SE) handling.No SE handler may be called in this image.
+			PE_IMAGE_DLLCHARACTERISTICS_NO_BIND = 0x0800, //	Do not bind the image.
+			PE_IMAGE_DLLCHARACTERISTICS_APPCONTAINER = 0x1000, //	Image must execute in an AppContainer.
+			PE_IMAGE_DLLCHARACTERISTICS_WDM_DRIVER = 0x2000, //	A WDM driver.
+			PE_IMAGE_DLLCHARACTERISTICS_GUARD_CF = 0x4000, //	Image supports Control Flow Guard.
+			PE_IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE = 0x8000  //	Terminal Server aware.
 		};
 	};
 
@@ -193,37 +193,37 @@ namespace pefile
 
 		enum CHARACTERISITICS
 		{
-			IMAGE_SCN_TYPE_NO_PAD            = 0x00000008, //	The section should not be padded to the next boundary.This flag is obsolete and is replaced by IMAGE_SCN_ALIGN_1BYTES.This is valid only for object files.
-			IMAGE_SCN_CNT_CODE	             = 0x00000020, //	The section contains executable code.
-			IMAGE_SCN_CNT_INITIALIZED_DATA   = 0x00000040, //	The section contains initialized data.
-			IMAGE_SCN_CNT_UNINITIALIZED_DATA = 0x00000080, //	The section contains uninitialized data.
-			IMAGE_SCN_LNK_OTHER	             = 0x00000100, //	Reserved for future use.
-			IMAGE_SCN_LNK_INFO	             = 0x00000200, //	The section contains comments or other information.The.drectve section has this type.This is valid for object files only.
-			IMAGE_SCN_LNK_REMOVE             = 0x00000800, //	The section will not become part of the image.This is valid only for object files.
-			IMAGE_SCN_LNK_COMDAT             = 0x00001000, //	The section contains COMDAT data.For more information, see section 5.5.6, �COMDAT Sections(Object Only).� This is valid only for object files.
-			IMAGE_SCN_GPREL	                 = 0x00008000, //	The section contains data referenced through the global pointer(GP).
-			IMAGE_SCN_ALIGN_1BYTES           = 0x00100000, //	Align data on a 1 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_2BYTES           = 0x00200000, //	Align data on a 2 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_4BYTES           = 0x00300000, //	Align data on a 4 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_8BYTES           = 0x00400000, //	Align data on an 8 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_16BYTES          = 0x00500000, //	Align data on a 16 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_32BYTES	         = 0x00600000, //	Align data on a 32 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_64BYTES	         = 0x00700000, //	Align data on a 64 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_128BYTES         = 0x00800000, //	Align data on a 128 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_256BYTES         = 0x00900000, //	Align data on a 256 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_512BYTES         = 0x00A00000, //	Align data on a 512 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_1024BYTES        = 0x00B00000, //	Align data on a 1024 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_2048BYTES        = 0x00C00000, //	Align data on a 2048 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_4096BYTES        = 0x00D00000, //	Align data on a 4096 - byte boundary.Valid only for object files.
-			IMAGE_SCN_ALIGN_8192BYTES        = 0x00E00000, //	Align data on an 8192 - byte boundary.Valid only for object files.
-			IMAGE_SCN_LNK_NRELOC_OVFL        = 0x01000000, //	The section contains extended relocations.
-			IMAGE_SCN_MEM_DISCARDABLE        = 0x02000000, //	The section can be discarded as needed.
-			IMAGE_SCN_MEM_NOT_CACHED         = 0x04000000, //	The section cannot be cached.
-			IMAGE_SCN_MEM_NOT_PAGED          = 0x08000000, //	The section is not pageable.
-			IMAGE_SCN_MEM_SHARED             = 0x10000000, //	The section can be shared in memory.
-			IMAGE_SCN_MEM_EXECUTE            = 0x20000000, //	The section can be executed as code.
-			IMAGE_SCN_MEM_READ               = 0x40000000, //	The section can be read.
-			IMAGE_SCN_MEM_WRITE	             = 0x80000000  //	The section can be written to.
+			PE_IMAGE_SCN_TYPE_NO_PAD            = 0x00000008, //	The section should not be padded to the next boundary.This flag is obsolete and is replaced by PE_IMAGE_SCN_ALIGN_1BYTES.This is valid only for object files.
+			PE_IMAGE_SCN_CNT_CODE	             = 0x00000020, //	The section contains executable code.
+			PE_IMAGE_SCN_CNT_INITIALIZED_DATA   = 0x00000040, //	The section contains initialized data.
+			PE_IMAGE_SCN_CNT_UNINITIALIZED_DATA = 0x00000080, //	The section contains uninitialized data.
+			PE_IMAGE_SCN_LNK_OTHER	             = 0x00000100, //	Reserved for future use.
+			PE_IMAGE_SCN_LNK_INFO	             = 0x00000200, //	The section contains comments or other information.The.drectve section has this type.This is valid for object files only.
+			PE_IMAGE_SCN_LNK_REMOVE             = 0x00000800, //	The section will not become part of the image.This is valid only for object files.
+			PE_IMAGE_SCN_LNK_COMDAT             = 0x00001000, //	The section contains COMDAT data.For more information, see section 5.5.6, �COMDAT Sections(Object Only).� This is valid only for object files.
+			PE_IMAGE_SCN_GPREL	                 = 0x00008000, //	The section contains data referenced through the global pointer(GP).
+			PE_IMAGE_SCN_ALIGN_1BYTES           = 0x00100000, //	Align data on a 1 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_2BYTES           = 0x00200000, //	Align data on a 2 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_4BYTES           = 0x00300000, //	Align data on a 4 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_8BYTES           = 0x00400000, //	Align data on an 8 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_16BYTES          = 0x00500000, //	Align data on a 16 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_32BYTES	         = 0x00600000, //	Align data on a 32 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_64BYTES	         = 0x00700000, //	Align data on a 64 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_128BYTES         = 0x00800000, //	Align data on a 128 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_256BYTES         = 0x00900000, //	Align data on a 256 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_512BYTES         = 0x00A00000, //	Align data on a 512 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_1024BYTES        = 0x00B00000, //	Align data on a 1024 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_2048BYTES        = 0x00C00000, //	Align data on a 2048 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_4096BYTES        = 0x00D00000, //	Align data on a 4096 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_ALIGN_8192BYTES        = 0x00E00000, //	Align data on an 8192 - byte boundary.Valid only for object files.
+			PE_IMAGE_SCN_LNK_NRELOC_OVFL        = 0x01000000, //	The section contains extended relocations.
+			PE_IMAGE_SCN_MEM_DISCARDABLE        = 0x02000000, //	The section can be discarded as needed.
+			PE_IMAGE_SCN_MEM_NOT_CACHED         = 0x04000000, //	The section cannot be cached.
+			PE_IMAGE_SCN_MEM_NOT_PAGED          = 0x08000000, //	The section is not pageable.
+			PE_IMAGE_SCN_MEM_SHARED             = 0x10000000, //	The section can be shared in memory.
+			PE_IMAGE_SCN_MEM_EXECUTE            = 0x20000000, //	The section can be executed as code.
+			PE_IMAGE_SCN_MEM_READ               = 0x40000000, //	The section can be read.
+			PE_IMAGE_SCN_MEM_WRITE	             = 0x80000000  //	The section can be written to.
 		};
 	};
 	static_assert (sizeof(SECTION) == 40, "SECTION size should be 40 bytes");
@@ -251,8 +251,8 @@ namespace pefile
 		Reserved     = 15
 	};
 
-	std::ostream& operator << (std::ostream& os, OPTIONAL_HEADER::IMAGE_SUBSYSTEM v);
-	std::ostream& operator << (std::ostream& os, OPTIONAL_HEADER::IMAGE_DLLCHARACTERISTICS v);
+	std::ostream& operator << (std::ostream& os, OPTIONAL_HEADER::PE_IMAGE_SUBSYSTEM v);
+	std::ostream& operator << (std::ostream& os, OPTIONAL_HEADER::PE_IMAGE_DLLCHARACTERISTICS v);
 	std::ostream& operator << (std::ostream& os, const OPTIONAL_HEADER& v);
 	
 	// =========================================================
