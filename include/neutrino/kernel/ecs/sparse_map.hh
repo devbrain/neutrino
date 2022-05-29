@@ -123,16 +123,65 @@ namespace neutrino::ecs
         bool erase(const key_type& k) noexcept;
 
         void clear();
+        /*
         iterator begin() noexcept;
         iterator end() noexcept;
-
+        
         const_iterator cbegin() noexcept;
         const_iterator cend() noexcept;
         reverse_iterator rbegin() noexcept;
         reverse_iterator rend() noexcept;
         const_reverse_iterator crbegin() noexcept;
         const_reverse_iterator crend() noexcept;
-
+        */
+        // ----------------------------------------------------------------------------------------
+        
+        iterator begin() noexcept
+        {
+            return iterator(*this, 0);
+        }
+        // ----------------------------------------------------------------------------------------
+   
+        iterator end() noexcept
+        {
+            return iterator(*this, members);
+        }
+        // ----------------------------------------------------------------------------------------
+        
+        const_iterator cbegin() noexcept
+        {
+            return iterator(*this, 0);
+        }
+        // ----------------------------------------------------------------------------------------
+        
+        const_iterator cend() noexcept
+        {
+            return iterator(*this, members);
+        }
+        // ----------------------------------------------------------------------------------------
+        
+        reverse_iterator rbegin() noexcept
+        {
+            return reverse_iterator(begin());
+        }
+        // ----------------------------------------------------------------------------------------
+        
+        reverse_iterator rend() noexcept
+        {
+            return reverse_iterator(end());
+        }
+        // ----------------------------------------------------------------------------------------
+        
+        const_reverse_iterator crbegin() noexcept
+        {
+            return const_reverse_iterator(cbegin());
+        }
+        // ----------------------------------------------------------------------------------------
+        
+        const_reverse_iterator crend() noexcept
+        {
+            return const_reverse_iterator(cend());
+        }
     private:
         std::pmr::polymorphic_allocator<value_type> allocator;
         std::pmr::vector<key_type> sparse;
@@ -297,54 +346,7 @@ namespace neutrino::ecs
         }
         return false;
     }
-    // ----------------------------------------------------------------------------------------
-    template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::iterator sparse_map<Entity,Component>::begin() noexcept
-    {
-        return iterator(*this, 0);
-    }
-    // ----------------------------------------------------------------------------------------
-    template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::iterator sparse_map<Entity,Component>::end() noexcept
-    {
-        return iterator(*this, members);
-    }
-    // ----------------------------------------------------------------------------------------
-    template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::const_iterator sparse_map<Entity,Component>::cbegin() noexcept
-    {
-        return iterator(*this, 0);
-    }
-    // ----------------------------------------------------------------------------------------
-    template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::const_iterator sparse_map<Entity,Component>::cend() noexcept
-    {
-        return iterator(*this, members);
-    }
-    // ----------------------------------------------------------------------------------------
-    template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::reverse_iterator sparse_map<Entity,Component>::rbegin() noexcept
-    {
-        return reverse_iterator (begin());
-    }
-    // ----------------------------------------------------------------------------------------
-    template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::reverse_iterator sparse_map<Entity,Component>::rend() noexcept
-    {
-        return reverse_iterator (end());
-    }
-    // ----------------------------------------------------------------------------------------
-    template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::const_reverse_iterator sparse_map<Entity,Component>::crbegin() noexcept
-    {
-        return const_reverse_iterator (cbegin());
-    }
-    // ----------------------------------------------------------------------------------------
-    template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::const_reverse_iterator sparse_map<Entity,Component>::crend() noexcept
-    {
-        return const_reverse_iterator (cend());
-    }
+    
     // ========================================================================================
     template <typename Entity, typename Component>
     typename sparse_map<Entity,Component>::iterator::reference sparse_map<Entity,Component>::iterator::operator*() noexcept

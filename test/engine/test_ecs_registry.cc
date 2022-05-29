@@ -107,7 +107,7 @@ TEST_SUITE("test ecs registry") {
     });
 
     reg.erase<C>();
-    reg.for_each<A>([=](id_t id) {
+    reg.for_each<A>([=](neutrino::ecs::id_t id) {
       REQUIRE((id == e0 || id == e1));
     });
 
