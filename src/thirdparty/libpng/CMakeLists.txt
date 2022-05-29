@@ -551,7 +551,11 @@ if (PNG_STATIC)
     endif ()
     target_link_libraries(png_static PUBLIC thirdparty::zlib ${M_LIBRARY})
     add_library(thirdparty::png ALIAS png_static)
-    target_include_directories(png_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(png_static 
+            PUBLIC 
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_BINARY_DIR}
+            )
 endif ()
 
 

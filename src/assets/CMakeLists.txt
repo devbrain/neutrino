@@ -207,7 +207,9 @@ my_add_library_static(assets
         DEPENDS_PRIVATE
             thirdparty::pugixml
             thirdparty::json
+            thirdparty::png
             thirdparty::mio
+
 )
 add_library(assets_mz_with_tests OBJECT
             explode/mz/test/explode_test.cc
