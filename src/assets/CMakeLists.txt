@@ -163,40 +163,40 @@ my_add_library_static(assets
 
 
             pe/abstract_reporter.cpp
-pe/abstract_reporter.hpp
-pe/clr.cpp
-pe/clr.hpp
-pe/clr_res.cpp
-pe/clr_res.hpp
-pe/clr_tables_helper.hpp
-pe/clr_tables.hpp
-pe/exefile.cpp
-pe/exefile.hpp
-pe/imports_parser.cpp
-pe/imports_parser.hpp
-pe/istream_wrapper.cpp
-pe/istream_wrapper.hpp
-pe/macros.h
-pe/pe_drv.cpp
-pe/pefile.cpp
-pe/pefile.hpp
-pe/predef.h
-pe/resource_builder.cpp
-pe/resource_builder.hpp
-pe/resource_directory.cpp
-pe/resource_directory.hpp
-pe/rs_dialog.cpp
-pe/rs_dialog.hpp
-pe/rs_icon_group.cpp
-pe/rs_icon_group.hpp
-pe/rs_manifest.cpp
-pe/rs_manifest.hpp
-pe/rs_message_table.cpp
-pe/rs_message_table.hpp
-pe/rs_string_table.cpp
-pe/rs_string_table.hpp
-pe/rs_version.cpp
-pe/rs_version.hpp
+            pe/abstract_reporter.hpp
+            pe/clr.cpp
+            pe/clr.hpp
+            pe/clr_res.cpp
+            pe/clr_res.hpp
+            pe/clr_tables_helper.hpp
+            pe/clr_tables.hpp
+            pe/exefile.cpp
+            pe/exefile.hpp
+            pe/imports_parser.cpp
+            pe/imports_parser.hpp
+            pe/istream_wrapper.cpp
+            pe/istream_wrapper.hpp
+            pe/macros.h
+            pe/pe_drv.cpp
+            pe/pefile.cpp
+            pe/pefile.hpp
+            pe/predef.h
+            pe/resource_builder.cpp
+            pe/resource_builder.hpp
+            pe/resource_directory.cpp
+            pe/resource_directory.hpp
+            pe/rs_dialog.cpp
+            pe/rs_dialog.hpp
+            pe/rs_icon_group.cpp
+            pe/rs_icon_group.hpp
+            pe/rs_manifest.cpp
+            pe/rs_manifest.hpp
+            pe/rs_message_table.cpp
+            pe/rs_message_table.hpp
+            pe/rs_string_table.cpp
+            pe/rs_string_table.hpp
+            pe/rs_version.cpp
+            pe/rs_version.hpp
 
         DEPENDS_PUBLIC
             neutrino::hal
@@ -205,7 +205,9 @@ pe/rs_version.hpp
         DEPENDS_PRIVATE
             thirdparty::pugixml
             thirdparty::json
+            thirdparty::png
             thirdparty::mio
+
 )
 add_library(assets_mz_with_tests OBJECT
             explode/mz/test/explode_test.cc
