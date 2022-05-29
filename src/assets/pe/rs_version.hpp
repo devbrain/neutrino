@@ -7,11 +7,11 @@
 #include <stdint.h>
 
 #include "resource_directory.hpp"
-#include "pefile.hpp"
+//#include "pefile.hpp"
 
 namespace pefile
 {
-	
+	class file_c;
 	class version_c
 	{
 	public:

@@ -74,6 +74,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${COMMANDS_FOLDER})
 
 # ========================================================================
+
+if (MSVC)
+    add_compile_options(/wd5105)
+endif()
+
+
+# ========================================================================
 add_subdirectory(ext)
 add_subdirectory(src)
 

@@ -4,7 +4,6 @@
 
 #include <fstream>
 #include <map>
-#include <cstring>
 
 #include <neutrino/assets/fs/phys_fs.hh>
 #include <neutrino/utils/exception.hh>
@@ -37,7 +36,7 @@ namespace neutrino::assets {
 
     struct ci_compare {
       bool operator () (const std::string& a, const std::string& b) const noexcept {
-        return neutrino::utils::icompare(a, b) < 0;
+        return neutrino::utils::icompare (a, b) < 0;
       }
     };
 

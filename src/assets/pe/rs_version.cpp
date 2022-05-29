@@ -1,4 +1,6 @@
 #include "rs_version.hpp"
+#include "istream_wrapper.hpp"
+#include "pefile.hpp"
 #include <neutrino/utils/strings/wchar.hh>
 
 namespace pefile

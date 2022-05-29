@@ -475,7 +475,7 @@ namespace formats::image::amiga {
                       this->body = e.data;
                     },
                     [this] (const bitplanes& e) {
-                        this->body = e.data;
+                      this->body = e.data;
                     },
                     // --------------------------------------------------------
                     [] (const std::monostate&) {}

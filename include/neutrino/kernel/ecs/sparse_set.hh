@@ -136,7 +136,7 @@ namespace neutrino::ecs {
 
       // return false if v exists
       bool erase (const value_type& v) noexcept;
-
+      /*
       iterator begin () noexcept;
       iterator end () noexcept;
 
@@ -146,6 +146,54 @@ namespace neutrino::ecs {
       reverse_iterator rend () noexcept;
       const_reverse_iterator crbegin () noexcept;
       const_reverse_iterator crend () noexcept;
+      */
+
+      
+      iterator begin() noexcept {
+          return iterator(*this, 0);
+      }
+
+      // ----------------------------------------------------------------------------------------
+      
+      iterator end() noexcept {
+          return iterator(*this, members);
+      }
+
+      // ----------------------------------------------------------------------------------------
+      
+      const_iterator cbegin() noexcept {
+          return iterator(*this, 0);
+      }
+
+      // ----------------------------------------------------------------------------------------
+      
+      const_iterator cend() noexcept {
+          return iterator(*this, members);
+      }
+
+      // ----------------------------------------------------------------------------------------
+      
+      reverse_iterator rbegin() noexcept {
+          return reverse_iterator(begin());
+      }
+
+      // ----------------------------------------------------------------------------------------
+      
+      reverse_iterator rend() noexcept {
+          return reverse_iterator(end());
+      }
+
+      // ----------------------------------------------------------------------------------------
+      
+      const_reverse_iterator crbegin() noexcept {
+          return const_reverse_iterator(cbegin());
+      }
+
+      // ----------------------------------------------------------------------------------------
+      
+      const_reverse_iterator crend() noexcept {
+          return const_reverse_iterator(cend());
+      }
 
       void clear ();
     private:
@@ -275,52 +323,7 @@ namespace neutrino::ecs {
   }
 
   // ----------------------------------------------------------------------------------------
-  template <typename Entity>
-  typename sparse_set<Entity>::iterator sparse_set<Entity>::begin () noexcept {
-    return iterator (*this, 0);
-  }
-
-  // ----------------------------------------------------------------------------------------
-  template <typename Entity>
-  typename sparse_set<Entity>::iterator sparse_set<Entity>::end () noexcept {
-    return iterator (*this, members);
-  }
-
-  // ----------------------------------------------------------------------------------------
-  template <typename Entity>
-  typename sparse_set<Entity>::const_iterator sparse_set<Entity>::cbegin () noexcept {
-    return iterator (*this, 0);
-  }
-
-  // ----------------------------------------------------------------------------------------
-  template <typename Entity>
-  typename sparse_set<Entity>::const_iterator sparse_set<Entity>::cend () noexcept {
-    return iterator (*this, members);
-  }
-
-  // ----------------------------------------------------------------------------------------
-  template <typename Entity>
-  typename sparse_set<Entity>::reverse_iterator sparse_set<Entity>::rbegin () noexcept {
-    return reverse_iterator (begin ());
-  }
-
-  // ----------------------------------------------------------------------------------------
-  template <typename Entity>
-  typename sparse_set<Entity>::reverse_iterator sparse_set<Entity>::rend () noexcept {
-    return reverse_iterator (end ());
-  }
-
-  // ----------------------------------------------------------------------------------------
-  template <typename Entity>
-  typename sparse_set<Entity>::const_reverse_iterator sparse_set<Entity>::crbegin () noexcept {
-    return const_reverse_iterator (cbegin ());
-  }
-
-  // ----------------------------------------------------------------------------------------
-  template <typename Entity>
-  typename sparse_set<Entity>::const_reverse_iterator sparse_set<Entity>::crend () noexcept {
-    return const_reverse_iterator (cend ());
-  }
+  
 
   // ========================================================================================
   template <typename Entity>
