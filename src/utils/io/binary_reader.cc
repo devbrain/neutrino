@@ -79,7 +79,7 @@ namespace neutrino::utils::io {
     }
     else {
       if (m_flip_bytes) {
-        value = (long) byte_order::flip_bytes ((long) value);
+        value = (long) byte_order::flip_bytes ((uint32_t) value);
       }
     }
     return *this;
