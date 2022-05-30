@@ -61,7 +61,6 @@ namespace neutrino::kernel {
   tiled_image::tiled_image (hal::renderer& renderer, const hal::surface& img)
       : m_descr (eval_dimension_properties (img)),
         m_texture (renderer, img) {
-
   }
 
   tiled_image::tiled_image (hal::renderer& renderer, const assets::tilesheet& ts)

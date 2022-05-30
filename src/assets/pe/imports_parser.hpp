@@ -13,8 +13,9 @@ namespace pefile
 		import_entry_s(int ord);
 		import_entry_s(const std::string& nm);
 
+      int ordinal;
 		std::string name;
-		int ordinal;
+
 	};
 
 	std::ostream& operator << (std::ostream& os, const import_entry_s& x);

@@ -48,6 +48,7 @@ namespace neutrino::sdl {
       void save_bmp (const std::string& path) const;
       void save_bmp (io& stream) const;
 
+      surface clone() const;
       void lock () noexcept;
       void unlock () noexcept;
       [[nodiscard]] bool must_lock () const noexcept;
@@ -267,7 +268,10 @@ namespace neutrino::sdl {
   surface surface::from_bmp (io& stream) {
     return surface(object<SDL_Surface> (SAFE_SDL_CALL(SDL_LoadBMP_RW, stream.handle (), 0), true));
   }
-
+  inline
+  surface surface::clone() const {
+    return surface(object<SDL_Surface> (SAFE_SDL_CALL(SDL_ConvertSurface, const_cast<SDL_Surface *>(handle ()), handle()->format, SDL_SWSURFACE), true));
+  }
   // ----------------------------------------------------------------------------------------------
   inline
   void surface::save_bmp (const std::string& path) const {

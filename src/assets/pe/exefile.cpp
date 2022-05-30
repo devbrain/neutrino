@@ -124,7 +124,7 @@ namespace pefile
 		std::vector <resource_name_c> out;
 		auto ni = m_resource_directory.names_begin();
 		auto end = m_resource_directory.names_end();
-		bool found = false;
+
 		for (auto i = ni; i != end; ++i)
 		{
 			out.push_back(*i);

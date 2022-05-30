@@ -5,11 +5,12 @@
 #ifndef APPS_BRIX_RC_RC_HH
 #define APPS_BRIX_RC_RC_HH
 
-#include "neutrino/assets/tiles/tilesheet_description.hh"
+#include "neutrino/assets/tiles/world/world_assets.hh"
 #include "rc/resource_loader.hh"
 
-std::vector<neutrino::kernel::tilesheet> load_fonts(resource_loader* loader);
-neutrino::kernel::tilesheet load_blocks(resource_loader* loader);
+
+neutrino::assets::world_assets load_graphics(resource_loader* loader);
+
 
 
 

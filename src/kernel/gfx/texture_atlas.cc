@@ -186,6 +186,15 @@ namespace neutrino::kernel {
       assets::atlas_id_t atlas_id = i->first;
       const auto& val = i->second;
       std::visit(utils::overload(
+          [this, atlas_id](const hal::surface& x) {
+//TODO
+#warning To be completed
+
+          },
+          [this, atlas_id](const assets::tilesheet& x) {
+// TODO
+#warning To be completed
+          },
           [this, atlas_id](const auto& x) {
             set(atlas_id, x);
           }

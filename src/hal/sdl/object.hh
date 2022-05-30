@@ -26,19 +26,13 @@ namespace neutrino::sdl {
                 }                                       \
             }
 
-    d_SDL_DELETER_TRAITS (SDL_Surface, SDL_FreeSurface);
-
+    d_SDL_DELETER_TRAITS (SDL_Surface    , SDL_FreeSurface);
     d_SDL_DELETER_TRAITS (SDL_PixelFormat, SDL_FreeFormat);
-
-    d_SDL_DELETER_TRAITS (SDL_Window, SDL_DestroyWindow);
-
-    d_SDL_DELETER_TRAITS (SDL_Texture, SDL_DestroyTexture);
-
-    d_SDL_DELETER_TRAITS (SDL_Renderer, SDL_DestroyRenderer);
-
-    d_SDL_DELETER_TRAITS (SDL_Palette, SDL_FreePalette);
-
-    d_SDL_DELETER_TRAITS (SDL_RWops, SDL_FreeRW);
+    d_SDL_DELETER_TRAITS (SDL_Window     , SDL_DestroyWindow);
+    d_SDL_DELETER_TRAITS (SDL_Texture    , SDL_DestroyTexture);
+    d_SDL_DELETER_TRAITS (SDL_Renderer   , SDL_DestroyRenderer);
+    d_SDL_DELETER_TRAITS (SDL_Palette    , SDL_FreePalette);
+    d_SDL_DELETER_TRAITS (SDL_RWops      , SDL_FreeRW);
   } // ns detail
 
   template <class SDLOBJECT>
@@ -50,7 +44,7 @@ namespace neutrino::sdl {
       object& operator = (const object&) = delete;
 
       object (object&& other) noexcept;
-      virtual object& operator = (object&& other) noexcept;
+      object& operator = (object&& other) noexcept;
 
       virtual ~object () noexcept;
 

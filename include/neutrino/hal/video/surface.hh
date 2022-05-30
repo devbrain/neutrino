@@ -40,15 +40,19 @@ namespace neutrino::hal {
       explicit surface (const window& w);
       surface (unsigned width, unsigned height, pixel_format format);
 
+      surface (surface&& other) noexcept ;
+      surface& operator = (surface&& other) noexcept;
+
+      surface& operator = (const surface& other) = delete;
+      surface (const surface& other) = delete;
+
       static surface make_rgba (unsigned width, unsigned height);
       static surface make_8bit (unsigned width, unsigned height);
 
       [[nodiscard]] pixel_format format () const;
       explicit operator bool () const;
 
-      friend void swap(surface& lhs, surface& rhs) {
-        std::swap(lhs.m_pimpl, rhs.m_pimpl);
-      }
+      [[nodiscard]] surface clone() const;
 
       void lock () noexcept;
       void unlock () noexcept;
@@ -164,8 +168,8 @@ namespace neutrino::hal {
 
       void swap(surface& other);
       explicit surface(SDL_Surface* s);
-      const SDL_Surface* native() const;
-      SDL_Surface* native();
+      [[nodiscard]] const SDL_Surface* native() const;
+      [[nodiscard]] SDL_Surface* native();
 
     private:
       explicit surface (std::unique_ptr<detail::surface_impl>&& impl);

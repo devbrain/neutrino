@@ -40,7 +40,7 @@ namespace pefile
 		if (MagicNumber != RESOURCES_MAGIC_NUMBER)
 			return FALSE;
 
-		DWORD NumberOfReaderTypes;
+		[[maybe_unused]] DWORD NumberOfReaderTypes;
 
 		NumberOfReaderTypes = *(DWORD *)ptr;
 		ptr += sizeof(DWORD);

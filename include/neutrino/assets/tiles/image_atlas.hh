@@ -15,13 +15,15 @@
 namespace neutrino::assets {
   class image_atlas {
     public:
-      using entry_t = std::variant<lazy_tilesheet, image, color>;
+      using entry_t = std::variant<lazy_tilesheet, image, color, hal::surface, assets::tilesheet>;
       using map_t = std::map<atlas_id_t, entry_t>;
       using iterator_t = map_t::const_iterator;
     public:
       [[nodiscard]] atlas_id_t add(lazy_tilesheet ts);
       [[nodiscard]] atlas_id_t add(image loader);
       [[nodiscard]] atlas_id_t add(color bgcolor);
+      [[nodiscard]] atlas_id_t add(hal::surface img);
+      [[nodiscard]] atlas_id_t add(assets::tilesheet ts);
 
       [[nodiscard]] iterator_t begin() const;
       [[nodiscard]] iterator_t end() const;

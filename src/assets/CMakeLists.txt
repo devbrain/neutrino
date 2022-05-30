@@ -5,7 +5,15 @@ my_add_library_static(assets
             fs/abstract_fs.cc
             ${PROJECT_INCLUDE}/neutrino/assets/fs/phys_fs.hh
             fs/phys_fs.cc
-
+            ${PROJECT_INCLUDE}/neutrino/assets/fs/vfs.hh
+            fs/vfs.cc
+            # Resources ------------------------------------------------------------
+            ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_holder.hh
+            resources/resource_holder.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_name.hh
+            ${PROJECT_INCLUDE}/neutrino/assets/resources/unique_resource.hh
+            ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_id.hh
+            resources/resource_id.cc
             # Image ------------------------------------------------------------
             ${PROJECT_INCLUDE}/neutrino/assets/image/color.hh
             ${PROJECT_INCLUDE}/neutrino/assets/image/image.hh
@@ -204,6 +212,7 @@ my_add_library_static(assets
             neutrino::hal
             neutrino::math
             neutrino::utils
+            thirdparty::string_id
         DEPENDS_PRIVATE
             thirdparty::pugixml
             thirdparty::json

@@ -4,6 +4,7 @@
 #include <functional>
 #include <queue>
 #include <cstdlib>
+#include <utility>
 
 namespace {
   using queue_t = std::queue<std::function<void ()>>;
@@ -42,7 +43,7 @@ namespace neutrino {
   inline
   void register_at_exit (std::function<void ()> callback) {
     static queue_init static_initializer;
-    static_initializer.add (callback);
+    static_initializer.add (std::move(callback));
   }
 
   template <typename T>

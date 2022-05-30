@@ -12,7 +12,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     std::unique_ptr<resource_loader> loader = std::make_unique<bi_loader> ();
     auto pic1_ios = loader->load (resource_t::PIC1);
     auto s = load_backdrop (pic1_ios.get ());
-    s.save ("pic1.png");
+    //s.save ("pic1.png");
 
 
 

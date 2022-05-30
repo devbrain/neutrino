@@ -23,6 +23,18 @@ namespace neutrino::assets {
     return v;
   }
 
+  atlas_id_t image_atlas::add(hal::surface img) {
+    auto v = atlas_id_t (m_map.size());
+    m_map.insert (std::make_pair(v, std::move(img)));
+    return v;
+  }
+
+  atlas_id_t image_atlas::add(assets::tilesheet ts) {
+    auto v = atlas_id_t (m_map.size());
+    m_map.insert (std::make_pair(v, std::move(ts)));
+    return v;
+  }
+
   image_atlas::iterator_t image_atlas::begin() const {
     return m_map.begin();
   }

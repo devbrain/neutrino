@@ -19,6 +19,7 @@ namespace neutrino::kernel {
     public:
       explicit tiled_image(const assets::image& img_loader);
       explicit tiled_image(const assets::lazy_tilesheet& lazy_ts);
+
       tiled_image(hal::renderer& renderer, const hal::surface& img);
       tiled_image(hal::renderer& renderer, const assets::tilesheet& ts);
 

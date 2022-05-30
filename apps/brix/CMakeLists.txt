@@ -15,4 +15,4 @@ my_add_executable(brix
         FOLDER Demos
         )
 
-target_link_libraries(brix neutrino::kernel thirdparty::sdl2-main)
+target_link_libraries(brix neutrino::kernel neutrino::assets thirdparty::sdl2-main)

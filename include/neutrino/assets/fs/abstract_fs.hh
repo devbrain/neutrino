@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <variant>
+#include <optional>
 #include <functional>
 
 namespace neutrino::assets {
@@ -26,9 +27,8 @@ namespace neutrino::assets {
 
   class abstract_directory : public abstract_fs_entry {
     public:
-      using entry_t = std::variant<std::monostate,
-          std::shared_ptr<abstract_directory>,
-          std::shared_ptr<abstract_file>>;
+      using entry_t = std::optional<std::variant<std::shared_ptr<abstract_directory>,
+          std::shared_ptr<abstract_file>>>;
     public:
       [[nodiscard]] virtual bool exists(const std::string& name) const = 0;
       [[nodiscard]] virtual entry_t load(const std::string& name) = 0;

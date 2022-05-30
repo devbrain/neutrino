@@ -20,12 +20,15 @@ my_add_executable(unittest
         utils/test_fsm.cc
         utils/test_fsm_complex.cc
         utils/test_ini.cc
+        utils/test_id.cc
         utils/math/test_quad_tree.cc
 
 
         engine/test_observer_subject.cc
         engine/test_sparse_set.cc
         engine/test_ecs_registry.cc
+
+        assets/test_unique_resource.cc
 
         $<TARGET_OBJECTS:neutrino_tiled_with_tests>
         $<TARGET_OBJECTS:assets_mz_with_tests>

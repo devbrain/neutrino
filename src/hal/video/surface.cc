@@ -7,7 +7,6 @@
 #include "surface_impl.hh"
 #include "palette_impl.hh"
 #include "hal/video/windows/window_impl.hh"
-#include "assets/image/image_writer.hh"
 #include "hal/cast.hh"
 
 
@@ -30,7 +29,21 @@ namespace neutrino::hal {
 
   surface::surface (unsigned width, unsigned height, pixel_format format)
       : m_pimpl (spimpl::make_unique_impl<detail::surface_impl> (width, height, sdl::pixel_format (format.value ()))) {
+  }
 
+  surface::surface (surface&& other) noexcept
+      : m_pimpl (spimpl::make_unique_impl<detail::surface_impl> (std::move(other.m_pimpl->surface))) {
+  }
+
+  surface& surface::operator = (surface&& other) noexcept {
+    m_pimpl->surface = (std::move (other.m_pimpl->surface));
+    return *this;
+  }
+
+  surface surface::clone() const {
+    auto s = m_pimpl->surface.clone();
+    auto impl = std::make_unique<detail::surface_impl>(std::move(s));
+    return surface(std::move(impl));
   }
 
   surface surface::make_rgba (unsigned width, unsigned height) {

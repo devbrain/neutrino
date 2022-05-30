@@ -4,6 +4,7 @@
 
 #include <array>
 #include <neutrino/hal/video/surface.hh>
+
 #include <neutrino/utils/io/binary_reader.hh>
 #include <neutrino/utils/exception.hh>
 
@@ -72,7 +73,7 @@ neutrino::hal::surface load_backdrop (std::istream* is) {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-std::tuple<neutrino::hal::surface, std::vector<neutrino::math::rect>> load_tiles (std::istream* is,
+std::tuple<neutrino::hal::surface, neutrino::assets::tilesheet_info> load_tiles (std::istream* is,
                                                                                   const neutrino::hal::palette& pal) {
   std::vector<uint8_t> tiles;
   std::size_t num_tiles = 0;
@@ -112,7 +113,8 @@ std::tuple<neutrino::hal::surface, std::vector<neutrino::math::rect>> load_tiles
       row += pitch;
     }
   }
-  return std::make_tuple (std::move (s), rects);
+  neutrino::assets::tilesheet_info ti(16, 16, 0, 0, 0, 0, num_tiles);
+  return std::make_tuple (std::move (s), ti);
 }
 
 static std::array<uint8_t, 8> white{15, 15, 15, 15,

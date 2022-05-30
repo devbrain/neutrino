@@ -23,7 +23,6 @@ my_add_library_static(utils
         ${PROJECT_INCLUDE}/neutrino/utils/mp/constexpr_for.hh
         ${PROJECT_INCLUDE}/neutrino/utils/mp/introspection.hh
 
-        ${PROJECT_INCLUDE}/neutrino/utils/any.hh
         ${PROJECT_INCLUDE}/neutrino/utils/pp_for_each.h
         ${PROJECT_INCLUDE}/neutrino/utils/macros.hh
         ${PROJECT_INCLUDE}/neutrino/utils/exception.hh
@@ -80,6 +79,7 @@ my_add_library_static(utils
 
         strings/string_tokenizer.cc
         ${PROJECT_INCLUDE}/neutrino/utils/strings/string_tokenizer.hh
+        ${PROJECT_INCLUDE}/neutrino/utils/strings/string_hash.hh
 
         ${PROJECT_INCLUDE}/neutrino/utils/strings/wchar.hh
         strings/wchar.cc
@@ -147,6 +147,7 @@ my_add_library_static(utils
         thirdparty/utf8/cpp17.h
         thirdparty/utf8/unchecked.h
 
+        ${PROJECT_INCLUDE}/neutrino/utils/id.hh
 
 
         DEPENDS_PUBLIC

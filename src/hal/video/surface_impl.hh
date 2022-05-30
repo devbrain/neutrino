@@ -14,7 +14,6 @@ namespace neutrino::hal::detail {
     template <typename ... Args>
     explicit surface_impl (Args&& ... args)
         : surface (std::forward<Args> (args)...) {
-
     }
 
     sdl::surface surface;
