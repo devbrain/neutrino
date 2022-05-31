@@ -8,12 +8,15 @@ my_add_library_static(assets
             ${PROJECT_INCLUDE}/neutrino/assets/fs/vfs.hh
             fs/vfs.cc
             # Resources ------------------------------------------------------------
-            ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_holder.hh
-            resources/resource_holder.cc
-            ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_name.hh
-            ${PROJECT_INCLUDE}/neutrino/assets/resources/unique_resource.hh
             ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_id.hh
             resources/resource_id.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/resources/resource.hh
+            resources/resource.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_storage.hh
+            ${PROJECT_INCLUDE}/neutrino/assets/resources/image_resource.hh
+            resources/image_resource.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/resources/texture_resource.hh
+            resources/texture_resource.cc
             # Image ------------------------------------------------------------
             ${PROJECT_INCLUDE}/neutrino/assets/image/color.hh
             ${PROJECT_INCLUDE}/neutrino/assets/image/image.hh

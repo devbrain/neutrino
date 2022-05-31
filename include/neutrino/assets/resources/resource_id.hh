@@ -10,10 +10,6 @@
 #include "string_id.hpp"
 
 namespace neutrino::assets {
-  namespace detail {
-    foonathan::string_id::basic_database& get_database();
-  }
-
   class resource_id {
     public:
       using hash_t = foonathan::string_id::hash_type;
@@ -25,7 +21,7 @@ namespace neutrino::assets {
       template <std::size_t N>
       inline
       explicit constexpr resource_id(const char(& value)[N])
-          : m_id (value, detail::get_database())
+          : m_id (value, get_database())
       {
       }
 
@@ -34,6 +30,12 @@ namespace neutrino::assets {
 
       [[nodiscard]] hash_t hash() const noexcept;
       [[nodiscard]] std::string name() const noexcept;
+
+      [[nodiscard]] bool empty() const noexcept;
+
+      explicit operator bool () const {
+        return !empty();
+      }
 
       friend bool operator==(const resource_id& a, const resource_id& b) noexcept
       {
@@ -44,7 +46,8 @@ namespace neutrino::assets {
       {
         return !(a == b);
       }
-
+    private:
+      static foonathan::string_id::basic_database& get_database();
     private:
       foonathan::string_id::string_id m_id;
   };
