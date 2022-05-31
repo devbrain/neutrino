@@ -47,7 +47,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 #define strerror_r(errno,buf,len) strerror_s(buf,len,errno)
 #endif
 
@@ -109,7 +109,7 @@ namespace png
             return std::string(buf);
 #else
             /* GNU variant can return a pointer to static buffer instead of buf */
-#if defined(_MSC_VER)
+#if defined(_WIN32)
             strerror_r(errnum, buf, ERRBUF_SIZE);
             return std::string(buf);
 #else
