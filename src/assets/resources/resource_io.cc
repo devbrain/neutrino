@@ -2,7 +2,7 @@
 // Created by igor on 31/05/2022.
 //
 
-#include <neutrino/assets/resources/resource.hh>
+#include <neutrino/assets/resources/resource_io.hh>
 
 namespace neutrino::assets {
   resource_processing_context::~resource_processing_context() = default;

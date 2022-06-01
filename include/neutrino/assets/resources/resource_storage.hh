@@ -6,6 +6,7 @@
 #define INCLUDE_NEUTRINO_ASSETS_RESOURCES_RESOURCE_STORAGE_HH
 
 #include <unordered_map>
+#include <atomic>
 #include <memory>
 #include <neutrino/assets/resources/resource_id.hh>
 #include <neutrino/utils/exception.hh>
@@ -25,25 +26,60 @@ namespace neutrino::assets::detail {
         m_map.insert (std::make_pair (id, std::move(data)));
       }
 
-      std::shared_ptr<T> get(const resource_id& id) const {
+       void inc (const resource_id& id) const {
         auto itr = m_map.find (id);
         if (itr == m_map.end()) {
-          return nullptr;
+          return;
         }
-        return itr->second;
+        return itr->second.inc();
       }
 
       void release(const resource_id& id) {
         auto itr = m_map.find (id);
         if (itr != m_map.end()) {
-          itr->second.reset();
-          if (itr->second.use_count() <= 0) {
+          if (itr->second.dec()) {
             m_map.erase (itr);
           }
         }
       }
+
+      [[nodiscard]] bool exists (const resource_id& id) const {
+        return m_map.find (id) != m_map.end();
+      }
+
+      T* data(const resource_id& id) {
+        auto itr = m_map.find (id);
+        if (itr != m_map.end()) {
+          return itr->second.data.get();
+        }
+        return nullptr;
+      }
+
+      const T* data(const resource_id& id) const {
+        auto itr = m_map.find (id);
+        if (itr != m_map.end()) {
+          return itr->second.data.get();
+        }
+        return nullptr;
+      }
     private:
-      std::unordered_map<resource_id, std::shared_ptr<T>> m_map;
+      struct ref_counter {
+        explicit ref_counter (std::unique_ptr<T> v)
+        : data(std::move(v)), count(1) {
+        }
+
+        void inc() const {
+          count++;
+        }
+        bool dec() const {
+          count--;
+          return (count == 0);
+        }
+        std::unique_ptr<T> data;
+        mutable std::atomic<size_t> count;
+      };
+    private:
+      std::unordered_map<resource_id, ref_counter> m_map;
   };
 }
 

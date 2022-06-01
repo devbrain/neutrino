@@ -11,7 +11,8 @@ my_add_library_static(assets
             ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_id.hh
             resources/resource_id.cc
             ${PROJECT_INCLUDE}/neutrino/assets/resources/resource.hh
-            resources/resource.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_io.hh
+            resources/resource_io.cc
             ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_storage.hh
             ${PROJECT_INCLUDE}/neutrino/assets/resources/image_resource.hh
             resources/image_resource.cc

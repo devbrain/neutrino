@@ -7,15 +7,17 @@
 
 #include <istream>
 #include <neutrino/hal/video/surface.hh>
-#include <neutrino/assets/resources/resource.hh>
+#include <neutrino/assets/resources/resource_io.hh>
 
 namespace neutrino::assets {
-  class image_resource : public resource<hal::surface, std::istream &> {
-    public:
-      image_resource(const resource_id& id, resource_processing_context* ctx);
-    protected:
+  class image_resource_reader : public resource_reader<hal::surface, std::istream &> {
+    private:
       std::unique_ptr<hal::surface> do_load(std::istream& is) override;
-      void do_save(std::ostream& os, const hal::surface& data) override;
+  };
+
+  class image_resource_writer : public resource_writer<hal::surface> {
+    private:
+      void do_save(std::ostream& os, const hal::surface& v) override;
   };
 }
 

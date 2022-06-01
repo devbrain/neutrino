@@ -8,46 +8,57 @@
 #include <memory>
 #include <iosfwd>
 
-#include <neutrino/utils/mp/type_name/type_name.hpp>
 #include <neutrino/assets/resources/resource_id.hh>
 #include <neutrino/assets/resources/resource_storage.hh>
+#include <neutrino/utils/exception.hh>
 
 namespace neutrino::assets {
 
-  class resource_processing_context {
-    public:
-      virtual ~resource_processing_context();
-      virtual void on_load_begin(const resource_id& id);
-      virtual void on_load_end(const resource_id& id);
-      virtual void on_load_failure(const resource_id& id);
-
-      virtual void on_save_begin(const resource_id& id);
-      virtual void on_save_end(const resource_id& id);
-      virtual void on_save_failure(const resource_id& id);
-  };
-
   template <typename T, typename ... Args>
+  class resource_reader;
+
+  template <typename T>
   class resource {
+      template <typename, typename...>
+      friend class resource_reader;
     public:
-      resource(const resource_id& id, resource_processing_context* ctx);
+      resource();
+      resource(const resource& other);
+      resource& operator = (const resource& other);
 
-      virtual ~resource();
+      resource(resource&& other) noexcept;
+      resource& operator = (resource&& other) noexcept;
 
-      void load(Args&&...args);
-      void save(std::ostream& os) const;
+      ~resource();
 
       T* get();
+      T* operator -> ();
+
       const T* get() const;
+      const T* operator -> () const;
 
-      resource_id id() const noexcept;
+      [[nodiscard]] resource_id id() const noexcept;
 
-      static std::shared_ptr<T> get(const resource_id& id);
-    protected:
-      virtual std::unique_ptr<T> do_load(Args... args) = 0;
-      virtual void do_save(std::ostream& os, const T& data);
+      static resource<T> get(const resource_id& id);
+
+      static resource<T> get(const std::string& name) {
+        return get(resource_id(name));
+      }
+
+      static resource<T> get(const char* name) {
+        return get(resource_id(name));
+      }
+
+      template <std::size_t N>
+      inline
+      static resource<T> get(const char(& value)[N]) {
+        return get(resource_id(value));
+      }
+    private:
+      resource(const resource_id& id, std::unique_ptr<T> data);
+      explicit resource(const resource_id& id);
     private:
       resource_id                          m_id;
-      mutable resource_processing_context* m_ctx;
       static detail::resource_storage<T>   m_storage;
   };
 }
@@ -57,86 +68,96 @@ namespace neutrino::assets {
 // ------------------------------------------------------------------------------
 
 namespace neutrino::assets {
-  template <typename T, typename ... Args>
-  detail::resource_storage<T> resource<T, Args...>::m_storage;
+  template <typename T>
+  detail::resource_storage<T> resource<T>::m_storage;
 
-  template <typename T, typename ... Args>
-  resource<T, Args...>::resource(const resource_id& id, resource_processing_context* ctx)
-  : m_id(id), m_ctx(ctx) {
+  template <typename T>
+  resource<T>::resource () = default;
 
+  template <typename T>
+  resource<T>::resource(const resource_id& id)
+  : m_id(id) {
+    m_storage.inc(m_id);
   }
 
-  template <typename T, typename ... Args>
-  resource<T, Args...>::~resource() {
+  template <typename T>
+  resource<T>::resource(const resource_id& id, std::unique_ptr<T> data)
+  : m_id(id) {
+    ENFORCE(id);
+    m_storage.bind (id, std::move(data));
+  }
+
+  template <typename T>
+  resource <T>::resource(const resource& other)
+  : m_id(other.m_id) {
+    if (m_id) {
+      m_storage.inc(m_id);
+    }
+  }
+
+
+  template <typename T>
+  resource<T>& resource <T>::operator = (const resource& other) {
+    if (this != & other) {
+      m_storage.release (m_id);
+      m_id = other.m_id;
+      m_storage.inc (m_id);
+    }
+    return *this;
+  }
+
+  template <typename T>
+  resource <T>::resource(resource&& other) noexcept
+      : m_id (other.m_id) {
+    other.m_id = {};
+  }
+
+  template <typename T>
+  resource<T>& resource<T>::operator = (resource&& other) noexcept {
+    if (this != &other) {
+      m_id = other.m_id;
+      other.m_id = {};
+    }
+    return *this;
+  }
+
+  template <typename T>
+  resource<T>::~resource() {
     m_storage.release (m_id);
   }
 
-  template <typename T, typename ... Args>
-  void resource<T, Args...>::load(Args&&...args) {
-    if (m_ctx) {
-      m_ctx->on_load_begin (m_id);
-    }
-    try {
-      m_storage.bind (m_id, this->do_load (std::forward<Args&&>(args)...));
-    } catch (...) {
-      if (m_ctx) {
-        m_ctx->on_load_failure (m_id);
-        throw;
-      }
-    }
-    if (m_ctx) {
-      m_ctx->on_load_end (m_id);
-    }
+
+  template <typename T>
+  T* resource<T>::get() {
+    return m_storage.data (m_id);
   }
 
-  template <typename T, typename ... Args>
-  void resource<T, Args...>::save(std::ostream& os) const {
-    auto* obj = this->get();
-    if (!obj) {
-      if (m_ctx) {
-        m_ctx->on_save_failure(m_id);
-      }
-      return;
-    }
-    if (m_ctx) {
-      m_ctx->on_save_begin (m_id);
-    }
-    try {
-      this->do_save (os, *obj);
-    } catch (...) {
-      if (m_ctx) {
-        m_ctx->on_save_failure(m_id);
-      }
-      throw ;
-    }
-    if (m_ctx) {
-      m_ctx->on_save_end(m_id);
-    }
+  template <typename T>
+  T* resource<T>::operator -> () {
+    return get();
   }
 
-  template <typename T, typename ... Args>
-  void resource<T, Args...>::do_save([[maybe_unused]] std::ostream& os, [[maybe_unused]] const T& data) {
-    RAISE_EX("Saving of resource type ", type_name_v<T>, " is not implemented");
+  template <typename T>
+  const T* resource<T>::get() const {
+    return m_storage.data (m_id);
   }
 
-  template <typename T, typename ... Args>
-  T* resource<T, Args...>::get() {
-    return m_storage.get (m_id).get();
+  template <typename T>
+  const T* resource<T>::operator -> () const {
+    return get();
   }
 
-  template <typename T, typename ... Args>
-  const T* resource<T, Args...>::get() const {
-    return m_storage.get (m_id).get();
-  }
-
-  template <typename T, typename ... Args>
-  resource_id resource<T, Args...>::id() const noexcept {
+  template <typename T>
+  resource_id resource<T>::id() const noexcept {
     return m_id;
   }
 
-  template <typename T, typename ... Args>
-  std::shared_ptr<T> resource<T, Args...>::get(const resource_id& id) {
-    return m_storage.get (id);
+  template <typename T>
+  resource<T> resource<T>::get(const resource_id& id) {
+    if (!m_storage.exists (id)) {
+      RAISE_EX("Can not find resource ", id);
+    }
+    return resource<T>(id);
   }
 }
 
