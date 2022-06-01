@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <memory>
 
+#define MIO_BASIC_MMAP_IMPL
 #include <mio/mmap.hpp>
 #include "istream_wrapper.hpp"
 

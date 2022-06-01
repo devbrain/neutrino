@@ -1079,3 +1079,7 @@ namespace pefile
 		return os;
 	}
 } // ns pefile
+
+
+#undef MIO_BASIC_MMAP_IMPL
+#include "detail/mmap.ipp"
