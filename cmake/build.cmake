@@ -60,6 +60,7 @@ function(my_add_executable EXENAME)
   		target_compile_options(${EXENAME} PRIVATE /W4)
     else()
   		target_compile_options(${EXENAME} PRIVATE -Wall -Wextra -pedantic -Werror=return-type )
+			  
 	endif()
 	if (NEUTRINO_BUILD_TEST)
 		target_compile_definitions(${EXENAME} PRIVATE NEUTRINO_BUILD_TEST)
