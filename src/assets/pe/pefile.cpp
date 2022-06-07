@@ -1050,4 +1050,3 @@ namespace pefile
 } // ns pefile
 
 
-

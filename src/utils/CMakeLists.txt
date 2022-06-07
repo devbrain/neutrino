@@ -113,6 +113,9 @@ my_add_library_static(utils
         ${PROJECT_INCLUDE}/neutrino/utils/fpe/fpe_windows.hh
 
 
+        console.cc
+        ${PROJECT_INCLUDE}/neutrino/utils/console.hh
+
         whereami.cc
         ${PROJECT_INCLUDE}/neutrino/utils/whereami.hh
 
