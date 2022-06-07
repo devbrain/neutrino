@@ -418,7 +418,8 @@ namespace formats::image::amiga {
     try {
       SDL_ILBM_attachImageToScreen (this, &screen);
       std::unique_ptr<Surface> surface (createSurfaceFromScreen (&screen, this));
-      out = surface->convert ();
+      auto cnv = surface->convert ();
+      std::swap (out, cnv);
       rc = true;
     }
     catch (std::exception&) {

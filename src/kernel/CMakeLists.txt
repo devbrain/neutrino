@@ -44,6 +44,23 @@ my_add_library_static(kernel
         gfx/animation_state.hh
         gfx/animation_state.cc
 
+        ${PROJECT_INCLUDE}/neutrino/kernel/system/audio_system.hh
+        ${PROJECT_INCLUDE}/neutrino/kernel/system/video_system.hh
+        system/video_system.cc
+        ${PROJECT_INCLUDE}/neutrino/kernel/system/context.hh
+        system/context.cc
+
+
+        ${PROJECT_INCLUDE}/neutrino/kernel/scene/basic_scene.hh
+        scene/basic_scene.cc
+        ${PROJECT_INCLUDE}/neutrino/kernel/scene/scene_manager.hh
+        scene/scene_manager.cc
+        ${PROJECT_INCLUDE}/neutrino/kernel/scene/scene.hh
+        scene/scene.cc
+
+        ${PROJECT_INCLUDE}/neutrino/kernel/components/physical_component.hh
+        ${PROJECT_INCLUDE}/neutrino/kernel/components/coldet_component.hh
+
         DEPENDS_PUBLIC
             neutrino::assets
             neutrino::hal

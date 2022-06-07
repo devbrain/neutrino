@@ -7,28 +7,32 @@
 
 #include <memory>
 #include <neutrino/hal/application.hh>
-#include <neutrino/hal/video/renderer.hh>
 #include <neutrino/kernel/application_description.hh>
 #include <neutrino/kernel/hdi/events.hh>
 #include <neutrino/kernel/hdi/input_config.hh>
 #include <neutrino/kernel/hdi/pointer_config.hh>
 #include <neutrino/kernel/ecs/registry.hh>
+#include <neutrino/kernel/system/context.hh>
 
 namespace neutrino {
   class main_window;
-
+  namespace kernel {
+    class scene_manager;
+  }
   class application : public hal::application {
       friend class main_window;
+      friend class kernel::scene_manager;
     public:
       application();
       ~application() override;
 
       void execute();
+
     protected:
       input_config_base& input_config();
       pointer_config_base& mouse_config();
-
       events_holder& events();
+      kernel::scene_manager& manager();
 
       [[nodiscard]] ecs::id_t create_entity() const;
       [[nodiscard]] ecs::registry& registry();
@@ -39,15 +43,15 @@ namespace neutrino {
       /**
        * This method is called before entering the game loop and after video initialization
        */
-      virtual void init(hal::renderer& renderer) = 0;
+      virtual void init(kernel::context& ctx) = 0;
 
       /**
        * This method is called every frame
        * @param ms time passed since last frame
        */
-      virtual void update_logic(std::chrono::milliseconds ms) = 0;
+      virtual void update_logic(std::chrono::milliseconds ms);
 
-      virtual void draw_frame() = 0;
+      virtual void draw_frame();
 
       /**
        * This method is called before application is exiting and while video is still active
@@ -72,7 +76,7 @@ namespace neutrino {
        * This method is called when exiting from the paused state
        */
       virtual void on_resumed();
-    protected:
+    public:
       // Commands
       /**
        * Closes application

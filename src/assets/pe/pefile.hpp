@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <memory>
 
-#define MIO_BASIC_MMAP_IMPL
+
 #include <mio/mmap.hpp>
 #include "istream_wrapper.hpp"
 
@@ -164,8 +164,8 @@ namespace pefile
 	public:
 		SECTION_NAME();
 		explicit SECTION_NAME(u8 a);
-		std::string to_string() const;
-		u8 qword() const;
+		[[nodiscard]] std::string to_string() const;
+		[[nodiscard]] u8 qword() const;
 	private:
 		union
 		{
@@ -261,14 +261,14 @@ namespace pefile
 	// =========================================================
 	namespace detail
 	{
-		class file_container_c
+		class file_container
 		{
 		public:
-			file_container_c(const std::string& path);
-			file_container_c(const std::wstring& path);
-			file_container_c(const char* fdata, std::size_t fsize);
-			std::size_t size() const;
-			const char* data() const;
+			explicit file_container(const std::string& path);
+			explicit file_container(const std::wstring& path);
+			file_container(const char* fdata, std::size_t fsize);
+			[[nodiscard]] std::size_t size() const;
+			[[nodiscard]] const char* data() const;
 		private:
 			std::unique_ptr <mio::mmap_source> m_mmf;
 			const char* m_data;
@@ -285,31 +285,31 @@ namespace pefile
 		file_c(const std::wstring& path, abstract_reporter_c& reporter);
 		file_c(const char* fdata, std::size_t fsize, abstract_reporter_c& reporter);
 		~file_c();
-		const COFF_HEADER& coff_header() const;
-		const OPTIONAL_HEADER& optional_header() const;
-		const section_t&       sections() const;
+		[[nodiscard]] const COFF_HEADER& coff_header() const;
+		[[nodiscard]] const OPTIONAL_HEADER& optional_header() const;
+		[[nodiscard]] const section_t&       sections() const;
 
-		const char* read_section(const SECTION& s) const;
+		[[nodiscard]] const char* read_section(const SECTION& s) const;
 
-		uint32_t translate_rva(uint32_t rva) const;
-		bool checksum() const;
-		float entropy() const;
-		float entropy(const SECTION& section) const;
+		[[nodiscard]] uint32_t translate_rva(uint32_t rva) const;
+		[[nodiscard]] bool checksum() const;
+		[[nodiscard]] float entropy() const;
+		[[nodiscard]] float entropy(const SECTION& section) const;
 
-		const char* file_data() const;
-		std::size_t file_size() const;
+		[[nodiscard]] const char* file_data() const;
+		[[nodiscard]] std::size_t file_size() const;
 
-		std::size_t overlay_offset() const;
+		[[nodiscard]] std::size_t overlay_offset() const;
 	private:
 		void _load_headers(bsw::istream_wrapper_c& stream, abstract_reporter_c& reporter);
 		void _check_coff_header(abstract_reporter_c& reporter);
 		void _check_optional_header(abstract_reporter_c& reporter);
 		void _load_sections(bsw::istream_wrapper_c& stream, abstract_reporter_c& reporter);
-		u4 _get_read_size(const SECTION& s) const;
+		[[nodiscard]] u4 _get_read_size(const SECTION& s) const;
 	private:
 		void _load(abstract_reporter_c& reporter);
 	private:
-		detail::file_container_c m_mmf;
+		detail::file_container m_mmf;
 
 		const COFF_HEADER* m_coff_header;
 		OPTIONAL_HEADER    m_optional_header;

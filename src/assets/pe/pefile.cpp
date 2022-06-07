@@ -9,42 +9,39 @@
 #include "pefile.hpp"
 #include "abstract_reporter.hpp"
 
-namespace pefile
-{
-	namespace detail
+namespace pefile::detail
 	{
 		// ----------------------------------------------------------------------------
-		file_container_c::file_container_c(const std::string& path)
+		file_container::file_container(const std::string& path)
 		{
 			m_mmf = std::make_unique <mio::mmap_source>(path.c_str());
 			m_data = m_mmf->data();
 			m_size = m_mmf->size();
 		}
 		// ----------------------------------------------------------------------------
-		file_container_c::file_container_c(const std::wstring& path)
+		file_container::file_container(const std::wstring& path)
 		{
 			m_mmf = std::make_unique <mio::mmap_source>(neutrino::utils::wstring_to_utf8 (path));
 			m_data = m_mmf->data();
 			m_size = m_mmf->size();
 		}
 		// ----------------------------------------------------------------------------
-		file_container_c::file_container_c(const char* fdata, std::size_t fsize)
+		file_container::file_container(const char* fdata, std::size_t fsize)
 		{
 			m_data = fdata;
 			m_size = fsize;
 		}
 		// ----------------------------------------------------------------------------
-		std::size_t file_container_c::size() const
+		std::size_t file_container::size() const
 		{
 			return m_size;
 		}
 		// ----------------------------------------------------------------------------
-		const char* file_container_c::data() const
+		const char* file_container::data() const
 		{
 			return m_data;
 		}
 	}
-}
 
 static bool isPowerOfTwo(unsigned int x)
 {
@@ -60,7 +57,7 @@ static bool isPowerOfTwo(unsigned int x)
 		x == 2147483648);
 }
 // ------------------------------------------------------------------------------
-uint16_t ChkSum(uint16_t oldChk, const uint16_t * ptr, std::size_t len)
+static uint16_t ChkSum(uint16_t oldChk, const uint16_t * ptr, std::size_t len)
 {
 	uint32_t c = oldChk;
 	while (len)
@@ -88,12 +85,12 @@ static float CalculateEntropy(const char *pData, std::size_t nDataSize)
 		bytes[(unsigned char)pData[i]] += 1;
 	}
 
-	for (int j = 0; j<256; j++)
+	for (float byte : bytes)
 	{
-		temp = bytes[j] / (float)nDataSize;
-		if (temp)
+		temp = byte / (float)nDataSize;
+		if (temp > 0)
 		{
-			fEntropy += (-logf(temp))*bytes[j];
+			fEntropy += (-logf(temp))*byte;
 		}
 	}
 
@@ -442,7 +439,7 @@ namespace pefile
 	}
 	// ----------------------------------------------------------------------------
 	file_c::file_c(const std::string& path, abstract_reporter_c& reporter)
-		: m_mmf(path.c_str()),
+		: m_mmf(path),
 		m_coff_header(nullptr)
 	{
 		_load(reporter);
@@ -527,37 +524,9 @@ namespace pefile
 	float file_c::entropy() const
 	{
 		return  CalculateEntropy(m_mmf.data(), static_cast<std::size_t>(m_mmf.size()));
-#if 0
-		float e = 0;
-		float total = 0;
-		for (const auto& sec : m_sections)
-		{
-			const uint32_t offs = sec.PointerToRawData;
-			if (offs == 0)
-			{
-				continue;
-			}
-			const uint32_t size = sec.SizeOfRawData;
-			if (size == 0)
-			{
-				continue;
-			}
-
-			auto es = CalculateEntropy(m_mmf.data() + offs, size) * (float)size;
-			total = total + size;
-			e = e + es;
-		}
-
-		auto E = e / total;
-
-		return E;
-#endif
 	}
 	// -------------------------------------------------------------
-	file_c::~file_c()
-	{
-
-	}
+	file_c::~file_c() = default;
 	// --------------------------------------------------------------
 	const char* file_c::file_data() const
 	{
@@ -644,14 +613,14 @@ namespace pefile
 
 		if (pe_kind == PE_IMAGE_OPTIONAL_HEADER_PE32)
 		{
-			const OPTIONAL_HEADER_32* header32 = bsw::load_struct<OPTIONAL_HEADER_32>(is);
+			const auto* header32 = bsw::load_struct<OPTIONAL_HEADER_32>(is);
 			assign(m_optional_header, header32);
 		}
 		else
 		{
 			if (pe_kind == PE_IMAGE_OPTIONAL_HEADER_PE32_PLUS)
 			{
-				const OPTIONAL_HEADER_64* header64 = bsw::load_struct<OPTIONAL_HEADER_64>(is);
+				const auto* header64 = bsw::load_struct<OPTIONAL_HEADER_64>(is);
 				assign(m_optional_header, header64);
 			}
 			else
@@ -662,9 +631,9 @@ namespace pefile
 		}
 		m_optional_header.DataDirectory.resize(m_optional_header.NumberOfRvaAndSizes);
 
-		for (u2 i = 0; i < m_optional_header.DataDirectory.size(); i++)
+		for (auto & i : m_optional_header.DataDirectory)
 		{
-			is >> m_optional_header.DataDirectory[i];
+			is >> i;
 		}
 		auto optional_header_end = is.current_pos();
 		auto optional_header_len = optional_header_end - optional_header_begin;
@@ -1081,5 +1050,4 @@ namespace pefile
 } // ns pefile
 
 
-#undef MIO_BASIC_MMAP_IMPL
-#include "detail/mmap.ipp"
+

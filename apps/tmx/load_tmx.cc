@@ -75,8 +75,8 @@ class app : public neutrino::application {
       return {d, 60};
     }
 
-    void init(neutrino::hal::renderer& renderer) override{
-      m_renderer = &renderer;
+    void init(neutrino::kernel::context& ctx) override{
+      m_renderer = &ctx.video().renderer();
 
       input_config().when_pressed (neutrino::key_mod_t::ALT, neutrino::scan_code_t::RETURN, EV_FULLSCREEN);
       input_config().when_pressed (neutrino::scan_code_t::ESCAPE, EV_EXIT);
@@ -145,12 +145,10 @@ class app : public neutrino::application {
 
     neutrino::kernel::world_renderer m_world_renderer[2];
     neutrino::kernel::world_window m_window[2];
-
-
 };
 
 int main ([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
-  std::string path = "";
+  std::string path;
   if (argc > 1) {
     path = argv[1];
   }
