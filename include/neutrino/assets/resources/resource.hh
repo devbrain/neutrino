@@ -83,7 +83,7 @@ namespace neutrino::assets {
   template <typename T>
   resource<T>::resource(const resource_id& id, std::unique_ptr<T> data)
   : m_id(id) {
-    ENFORCE(id);
+    ENFORCE(id); //-V1044
     m_storage.bind (id, std::move(data));
   }
 

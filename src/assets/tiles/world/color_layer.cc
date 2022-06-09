@@ -8,7 +8,7 @@
 namespace neutrino::assets {
   color_layer::color_layer(tile_handle tid)
   : m_color (tid) {
-    ENFORCE(tid);
+    ENFORCE(tid); //-V1044
   }
 
   tile_handle color_layer::tile_id() const noexcept {

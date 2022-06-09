@@ -46,11 +46,11 @@ namespace neutrino::ecs
 
             iterator operator++(int);
 
-            iterator& operator++();
+            iterator operator++();
 
-            iterator& operator--(int);
+            iterator operator--(int);
 
-            iterator& operator--();
+            iterator operator--();
 
             bool operator<(iterator b) const noexcept {
                 auto n = (b - *this);
@@ -415,14 +415,14 @@ namespace neutrino::ecs
     }
     // ----------------------------------------------------------------------------------------
     template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::iterator& sparse_map<Entity,Component>::iterator::operator++()
+    typename sparse_map<Entity,Component>::iterator sparse_map<Entity,Component>::iterator::operator++()
     {
         cursor ++;
         return *this;
     }
     // ----------------------------------------------------------------------------------------
     template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::iterator& sparse_map<Entity,Component>::iterator::operator--(int n)
+    typename sparse_map<Entity,Component>::iterator sparse_map<Entity,Component>::iterator::operator--(int n)
     {
         auto temp = *this;
         if (n)
@@ -435,7 +435,7 @@ namespace neutrino::ecs
     }
     // ----------------------------------------------------------------------------------------
     template <typename Entity, typename Component>
-    typename sparse_map<Entity,Component>::iterator& sparse_map<Entity,Component>::iterator::operator--()
+    typename sparse_map<Entity,Component>::iterator sparse_map<Entity,Component>::iterator::operator--()
     {
         cursor --;
         return *this;

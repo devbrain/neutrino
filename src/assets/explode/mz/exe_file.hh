@@ -31,7 +31,7 @@ namespace formats::explode::mz
             MAX_HEADER_VAL              // 0xE
         };
         exe_file();
-        const uint16_t& operator[](header_t hv) const;
+        const uint16_t& operator[](header_t hv) const; //-V302
     protected:
         uint16_t m_header[MAX_HEADER_VAL];
     };
@@ -79,7 +79,7 @@ namespace formats::explode::mz
         output_exe_file();
         virtual ~output_exe_file();
 
-        uint16_t& operator[](header_t hv);
+        uint16_t& operator[](header_t hv); //-V302
 
         rellocations_t& rellocations();
         const rellocations_t& rellocations() const;

@@ -34,12 +34,12 @@ namespace neutrino::assets::tmx {
 
     unsigned tu = id % width;
     unsigned tv = id / width;
-    ENFORCE(tv < height);
+    ENFORCE(tv < height); //-V1044
 
     unsigned du = m_margin + tu * m_spacing + m_x;
     unsigned dv = m_margin + tv * m_spacing + m_y;
-    ENFORCE((int) ((tu + 1) * m_tilewidth + du) <= size[0]);
-    ENFORCE((int) ((tv + 1) * m_tileheight + dv) <= size[1]);
+    ENFORCE((int) ((tu + 1) * m_tilewidth + du) <= size[0]); //-V1044
+    ENFORCE((int) ((tv + 1) * m_tileheight + dv) <= size[1]); //-V1044
 
     return {(int) (tu * m_tilewidth + du), (int) (tv * m_tileheight + dv), (int) m_tilewidth, (int) m_tileheight};
   }

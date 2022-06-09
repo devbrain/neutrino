@@ -80,7 +80,7 @@ main (int argc, char* argv[]) {
   buf = (char*) malloc (file_size);
   assert(buf);
 
-  fread (buf, file_size, 1, f_input);
+  fread (buf, file_size, 1, f_input); //-V575
   fclose (f_input);
 
 #ifdef USE_BZ2

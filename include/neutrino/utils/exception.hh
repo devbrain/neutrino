@@ -98,7 +98,7 @@ namespace neutrino {
         m_source (source),
         m_line (line),
         m_text (_create (false, function, source, line, std::forward<Args> (args)...)),
-        m_chain (std::make_unique<exception> (std::move (cause))) {
+        m_chain (std::make_unique<exception> (std::move (cause))) { //-V1067
   }
 
   // --------------------------------------------------------------------------------------------------------

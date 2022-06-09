@@ -8,7 +8,7 @@
 namespace neutrino::assets {
   image_layer::image_layer(tile_handle tid)
   : m_image (tid) {
-    ENFORCE(tid);
+    ENFORCE(tid); //-V1044
   }
 
   tile_handle image_layer::tile_id() const noexcept {

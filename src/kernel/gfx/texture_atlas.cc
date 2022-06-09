@@ -224,7 +224,7 @@ namespace neutrino::kernel {
 
 
   math::rect texture_atlas::tile_rectangle (const assets::tile_handle& th) const noexcept {
-    ENFORCE(th);
+    ENFORCE(th); //-V1044
     auto atlas_id = static_cast<assets::atlas_id_t >(th);
     if (const auto* tl = std::get_if<tiled_image>(&m_pimpl->m_atlas[atlas_id.value_of ()])) {
       auto tile_id = static_cast<assets::cell_id_t>(th);

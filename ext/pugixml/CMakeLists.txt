@@ -1,3 +1,4 @@
+set(BUILD_SHARED_LIBS CACHE INTERNAL "OFF")
 fetchcontent_declare(
         PUGIXML
         GIT_REPOSITORY "https://github.com/zeux/pugixml.git"

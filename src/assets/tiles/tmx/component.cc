@@ -68,7 +68,7 @@ namespace neutrino::assets::tmx {
     if (const auto* json_rdr = dynamic_cast<const json_reader*>(&elt); json_rdr) {
       elt.parse_many_elements ("properties", [&obj] (const reader& e) {
         std::string name = e.get_string_attribute ("name");
-        ENFORCE(!name.empty ());
+        ENFORCE(!name.empty ()); //-V1044
         std::string value = e.get_string_attribute ("value", "");
         std::string type = e.get_string_attribute ("type", "string");
         if (type != "string") {
@@ -83,7 +83,7 @@ namespace neutrino::assets::tmx {
       elt.parse_one_element ("properties", [&obj] (const reader& e) {
         e.parse_many_elements ("property", [&obj] (const reader& inner) {
           std::string name = inner.get_string_attribute ("name");
-          ENFORCE(!name.empty ());
+          ENFORCE(!name.empty ()); //-V1044
           std::string value = inner.get_string_attribute ("value", "");
 
           if (const auto* xml_rdr = dynamic_cast<const xml_reader*>(&inner); xml_rdr && value.empty ()) {

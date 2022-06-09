@@ -90,9 +90,9 @@ namespace neutrino::kernel {
     if (const auto* ti = std::get_if<assets::tilesheet_rects> (&m_descr)) {
       return ti->at (id);
     }
-    ENFORCE(id == 0);
+    ENFORCE(id == 0); //-V1044
     const math::rect* r = std::get_if<math::rect> (&m_descr);
-    ENFORCE(r != nullptr);
+    ENFORCE(r != nullptr); //-V1044
     return *r;
   }
 
@@ -108,8 +108,8 @@ namespace neutrino::kernel {
         if (m_expected_dims) {
           auto [expected_width, expected_height] = *m_expected_dims;
           auto [actual_width, actual_height] = img.dimensions();
-          ENFORCE(expected_width == actual_width);
-          ENFORCE(expected_height == actual_height);
+          ENFORCE(expected_width == actual_width); //-V1044
+          ENFORCE(expected_height == actual_height); //-V1044
         }
         if (std::get_if<std::monostate>(&m_descr)) {
           m_descr = eval_dimension_properties (img);

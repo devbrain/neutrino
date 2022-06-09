@@ -166,7 +166,7 @@ namespace neutrino::assets {
     auto ani_itr = ani_map.find (c.gid ());
     if (ani_itr != ani_map.end ()) {
       const auto [ani_seq_id, ts_gid, frames] = ani_itr->second;
-      ENFORCE(frames != nullptr);
+      ENFORCE(frames != nullptr); //-V1044
       ENFORCE(ani_descr.exists (ani_seq_id));
       auto ani_seq = ani_descr.get (ani_seq_id);
       for (const auto& frame : *frames) {
@@ -236,7 +236,7 @@ namespace neutrino::assets {
           utils::overload(
               [&w, &resolver, &assets](const tmx::image_layer& img_layer) {
                 const auto* image_data = img_layer.get_image();
-                ENFORCE(image_data != nullptr);
+                ENFORCE(image_data != nullptr); //-V1044
                 auto tint = img_layer.tint();
                 auto offset_x = img_layer.offset_x();
                 auto offset_y = img_layer.offset_y();

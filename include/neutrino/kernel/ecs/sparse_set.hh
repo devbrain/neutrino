@@ -55,13 +55,13 @@ namespace neutrino::ecs {
           difference_type operator - (iterator n) const noexcept;
           iterator& operator -= (difference_type n) noexcept;
 
-          iterator& operator ++ (int);
+          iterator operator ++ (int);
 
-          iterator& operator ++ ();
+          iterator operator ++ ();
 
-          iterator& operator -- (int);
+          iterator operator -- (int);
 
-          iterator& operator -- ();
+          iterator operator -- ();
 
           bool operator < (iterator b) const noexcept {
             auto n = (b - *this);
@@ -377,7 +377,7 @@ namespace neutrino::ecs {
 
   // ----------------------------------------------------------------------------------------
   template <typename Entity>
-  typename sparse_set<Entity>::iterator& sparse_set<Entity>::iterator::operator ++ (int n) {
+  typename sparse_set<Entity>::iterator sparse_set<Entity>::iterator::operator ++ (int n) {
     auto temp = *this;
     if (n) {
       cursor += n;
@@ -390,14 +390,14 @@ namespace neutrino::ecs {
 
   // ----------------------------------------------------------------------------------------
   template <typename Entity>
-  typename sparse_set<Entity>::iterator& sparse_set<Entity>::iterator::operator ++ () {
+  typename sparse_set<Entity>::iterator sparse_set<Entity>::iterator::operator ++ () {
     cursor++;
     return *this;
   }
 
   // ----------------------------------------------------------------------------------------
   template <typename Entity>
-  typename sparse_set<Entity>::iterator& sparse_set<Entity>::iterator::operator -- (int n) {
+  typename sparse_set<Entity>::iterator sparse_set<Entity>::iterator::operator -- (int n) {
     auto temp = *this;
     if (n) {
       cursor -= n;
@@ -410,7 +410,7 @@ namespace neutrino::ecs {
 
   // ----------------------------------------------------------------------------------------
   template <typename Entity>
-  typename sparse_set<Entity>::iterator& sparse_set<Entity>::iterator::operator -- () {
+  typename sparse_set<Entity>::iterator sparse_set<Entity>::iterator::operator -- () {
     cursor--;
     return *this;
   }

@@ -28,7 +28,7 @@ namespace neutrino::assets::tmx {
           utils::overload (
               [&result] (const data_buff_t& buff) {
                 const auto sz = buff.size ();
-                ENFORCE(sz % 4 == 0);
+                ENFORCE(sz % 4 == 0); //-V1044
                 for (std::size_t i = 0; i < sz; i += 4) {
                   union {
                     uint8_t* bytes;
