@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <vector>
 #include <istream>
+#include <array>
 
 #include <neutrino/utils/io/memory_stream_buf.hh>
 #include <neutrino/neutrino_config.h>
@@ -54,6 +55,26 @@ namespace neutrino::utils::io {
 
       binary_reader& operator >> (std::vector<char>& value);
       binary_reader& operator >> (std::vector<unsigned char>& value);
+
+      template <class T, std::size_t N>
+      binary_reader& operator >> (std::array<T, N>& value) {
+        for (std::size_t i=0; i<N; i++) {
+          *this >> value[i];
+        }
+        return *this;
+      }
+
+      template <std::size_t N>
+      binary_reader& operator >> (std::array<char, N>& value) {
+        this->read_raw (value.data(), N);
+        return *this;
+      }
+
+      template <std::size_t N>
+      binary_reader& operator >> (std::array<unsigned char, N>& value) {
+        this->read_raw (value.data(), N);
+        return *this;
+      }
 
       void read_raw (std::streamsize length, std::string& value);
       /// Reads length bytes of raw data into value.

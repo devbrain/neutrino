@@ -45,6 +45,8 @@ namespace neutrino::assets {
       void set(int x, int y);
       void clear(int x, int y);
       [[nodiscard]] bool get(int x, int y) const;
+
+      static bool overlap(const bitmask& a, const bitmask& b, int xoffs, int yoffs);
     private:
       int m_w;
       int m_h;
