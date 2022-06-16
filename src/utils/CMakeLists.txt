@@ -149,6 +149,7 @@ my_add_library_static(utils
         thirdparty/utf8/unchecked.h
 
         ${PROJECT_INCLUDE}/neutrino/utils/id.hh
+        ${PROJECT_INCLUDE}/neutrino/utils/builtin.h
 
 
         DEPENDS_PUBLIC

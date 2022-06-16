@@ -48,6 +48,7 @@ namespace neutrino::assets {
 
       static bool overlap(const bitmask& a, const bitmask& b, int xoffs, int yoffs);
     private:
+
       int m_w;
       int m_h;
       std::vector<word_t> m_data;

@@ -4,4 +4,4 @@ my_add_executable(fon
         FOLDER Demos
         )
 
-target_link_libraries(fon neutrino::assets neutrino::hal)
+target_link_libraries(fon neutrino::assets neutrino::hal thirdparty::doctest)
