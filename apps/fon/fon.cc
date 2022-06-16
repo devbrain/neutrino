@@ -173,7 +173,9 @@ class bitmask {
 
     void set (int x, int y) {
       auto [word_num, bit_pos] = coords (x, y, m_w);
-      m_data[word_num] |= (bitmask_traits_t::unit << bit_pos);
+      auto m = bitmask_traits_t::unit << (BitsInWord - bit_pos);
+      //m_data[word_num] |= (bitmask_traits_t::unit << bit_pos);
+      m_data[word_num] |= m;
     }
 
     void set (int y, const char* line) {
@@ -186,12 +188,35 @@ class bitmask {
 
     void clear (int x, int y) {
       auto [word_num, bit_pos] = coords (x, y, m_w);
-      m_data[word_num] &= ~(bitmask_traits_t::unit << bit_pos);
+      auto m = bitmask_traits_t::unit << (BitsInWord - bit_pos);
+      //m_data[word_num] &= ~(bitmask_traits_t::unit << bit_pos);
+      m_data[word_num] &= ~m;
     }
 
     [[nodiscard]] bool get (int x, int y) const {
       auto [word_num, bit_pos] = coords (x, y, m_w);
-      return (m_data[word_num] & (bitmask_traits_t::unit << bit_pos)) != 0;
+      auto m = bitmask_traits_t::unit << (BitsInWord - bit_pos);
+      return (m_data[word_num] & m) == m;
+    }
+
+    void reverse() {
+      for (auto& x : m_data) {
+        x = reverse_bits(x);
+      }
+    }
+
+  private:
+    template <class T>
+    static T reverse_bits(T n) {
+      short bits = sizeof(n) * 8;
+      T mask = ~T(0); // equivalent to uint32_t mask = 0b11111111111111111111111111111111;
+
+      while (bits >>= 1) {
+        mask ^= mask << (bits); // will convert mask to 0b00000000000000001111111111111111;
+        n = (n & ~mask) >> bits | (n & mask) << bits; // divide and conquer
+      }
+
+      return n;
     }
 
   private:
@@ -237,28 +262,29 @@ class shift_register {
         : m_data (start),
           m_bit_pos (bit_pos),
           m_xpos (xpos),
-          m_row_width (row_width) {
+          m_start(xpos),
+          m_row_end (xpos + row_width) {
+
     }
 
     word_t shift () {
-      ENFORCE(m_xpos < m_row_width);
+      ENFORCE(m_xpos < m_row_end);
       constexpr auto bits = detail::bitmask_traits<BitsInWord>::bits_in_word;
       constexpr auto& mask = detail::bitmask_traits<BitsInWord>::mask;
-      int need_bits = std::min (m_row_width - m_xpos, bits);
+      int need_bits = std::min (m_row_end - m_xpos, bits);
 
       int bits_in_this_word = bits - m_bit_pos;
       word_t xa = *m_data;
 
       if (bits_in_this_word == need_bits) {
         m_data++;
+        xa = xa << m_bit_pos;
         m_xpos += need_bits;
         return xa;
       }
       else {
         if (bits_in_this_word > need_bits) {
-        //  print_bits<BitsInWord>(xa);
-        //  print_bits<BitsInWord>(mask[bits - (m_bit_pos + need_bits)]);
-
+          ENFORCE(bits - (m_bit_pos + need_bits) >= 0);
           xa = (xa & mask[bits - (m_bit_pos + need_bits)]) << m_bit_pos;
           m_xpos += need_bits;
           return xa;
@@ -267,31 +293,32 @@ class shift_register {
           xa = xa << m_bit_pos;
           m_xpos += (bits - m_bit_pos);
           m_data++;
-          if (m_xpos + m_bit_pos <= m_row_width) {
-            word_t ya = (*m_data & mask[m_bit_pos]) >> (bits - m_bit_pos);
+          if (m_xpos + m_bit_pos <= m_row_end) {
+            ENFORCE(bits - m_bit_pos >= 0);
+            word_t ya = (*m_data & mask[bits - m_bit_pos]) >> (bits - m_bit_pos);
             m_xpos += m_bit_pos;
             return xa | ya;
           }
           else {
-            int take = m_row_width - m_xpos;
+            int take = m_row_end - m_xpos;
             word_t ya = (*m_data & mask[m_bit_pos]) >> (take - m_bit_pos);
-            m_xpos = m_row_width;
+            m_xpos = m_row_end;
             return xa | ya;
           }
         }
       }
     }
 
-    [[nodiscard]] int get_x_pos () const {
-      return m_xpos;
+    [[nodiscard]] int has_bits () const {
+      return m_xpos - m_start;
     }
 
   private:
     const word_t* m_data;
     int m_bit_pos;
     int m_xpos;
-    int m_row_width;
-
+    int m_start;
+    int m_row_end;
 };
 
 template <int BitsInWord>
@@ -306,23 +333,33 @@ template <int BitsInWord>
 
   int rc = 0;
   for (int r = 0; r < h; r++) {
+    int row_n = 0;
     auto [a_word_num, a_word_bit] = bitmask<BitsInWord>::coords (xoffset, yoffset + r, a.m_w);
     auto [b_word_num, b_word_bit] = bitmask<BitsInWord>::coords (0, r, b.m_w);
-    shift_register<BitsInWord> sra (a_data + a_word_num, a_word_bit, xoffset, a.m_w);
-    shift_register<BitsInWord> srb (b_data + b_word_num, b_word_bit, 0, b.m_w);
-    std::cout << "(" << xoffset << "," << yoffset + r << ") " << a_word_num << "," << a_word_bit << std::endl
-              << "(" << 0 << "," << r << ") " << b_word_num << "," << b_word_bit << std::endl;
-    int x_pos = 0;
-    while (x_pos < w_bits) {
+
+    shift_register<BitsInWord> sra (a_data + a_word_num, a_word_bit, xoffset, w_bits);
+    shift_register<BitsInWord> srb (b_data + b_word_num, b_word_bit, 0, w_bits);
+    /*
+    std::cout << "sa = shift_register<8> (a.data () + " << a_word_num << "," << a_word_bit << ", " << xoffset << ", " << w_bits << ");"
+    << std::endl
+    << "sb = shift_register<8> (b.data () + " << b_word_num << "," << b_word_bit << ", " << 0 << ", " << w_bits << ");"
+    << std::endl;
+*/
+
+    int has_bits = 0;
+    while (has_bits < w_bits) {
       auto x = sra.shift ();
       auto y = srb.shift ();
+/*
       std::cout << "a "; print_bits<BitsInWord>(x);
       std::cout << "b "; print_bits<BitsInWord>(y);
+  */
       auto n = psnip_builtin_popcount(x & y);
-      x_pos = srb.get_x_pos ();
+      has_bits = srb.has_bits ();
       rc += n;
+      row_n += n;
     }
-    //  std::cout << "R " << (yoffset + r) << " = " << row << std::endl;
+   // std::cout << "R " << (yoffset + r) << " = " << row_n << std::endl;
   }
   return rc;
 }
@@ -331,95 +368,242 @@ template <int BitsInWord>
 [[nodiscard]] int
 naive_overlap_area (const bitmask<BitsInWord>& a, const bitmask<BitsInWord>& b, int xoffset, int yoffset) {
   int rc = 0;
-  for (int y = yoffset; y < a.height (); y++) {
+  int w = std::min(a.width() - xoffset, b.width());
+  int h = std::min(a.height() - yoffset, b.height());
+
+  for (int y = 0; y < h; y++) {
     int row = 0;
-    for (int x = xoffset; x < a.width (); x++) {
-      int xb = x - xoffset;
-      int yb = y - yoffset;
-      if (xb < b.width () && yb < b.height ()) {
-        if (a.get (x, y) && b.get (xb, yb)) {
-          row++;
-          rc++;
-        }
+    std::string arow = "";
+    std::string brow = "";
+    for (int x = 0; x < w; x++) {
+      int xa = x + xoffset;
+      int ya = y + yoffset;
+      if (a.get (xa, ya)) {
+        arow += "1";
+      } else {
+        arow += "0";
+      }
+      if (b.get (x, y)) {
+        brow += "1";
+      } else {
+        brow += "0";
       }
     }
-    // std::cout << "r " << (yoffset + y) << " = " << row << std::endl;
+    for (int x = 0; x < w; x++) {
+      int xa = x + xoffset;
+      int ya = y + yoffset;
+        if (a.get (xa, ya) && b.get (x, y)) {
+          row++;
+          rc++;
+      }
+    }
+ //   std::cout << "r' " << (yoffset + y) << " = " << row
+  //  << std::endl << "ar = " << arow << std::endl << "br = " << brow << std::endl;
   }
   return rc;
 }
 
-TEST_SUITE("bitmap shift register") {
-  TEST_CASE("test shift register #1") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
+static bitmask<8> create_a() {
+  bitmask<8> a (9, 9);
+  a.set (1, 0);
+  a.set (4, 0);
+  a.set (1, 1);
+  a.set (6, 1);
+  a.set (8, 1);
+  a.set (1, 2);
+  a.set (2, 2);
+  a.set (2, 3);
+  a.set (3, 3);
+  a.set (4, 3);
+  a.set (7, 3);
+  a.set (1, 4);
+  a.set (3, 4);
+  a.set (6, 4);
+  a.set (0, 5);
+  a.set (2, 5);
+  a.set (6, 5);
+  a.set (7, 5);
+  a.set (8, 5);
+  a.set (1, 6);
+  a.set (4, 6);
+  a.set (8, 6);
+  a.set (3, 7);
+  a.set (5, 7);
+  a.set (6, 7);
+  a.set (7, 7);
+  a.set (1, 8);
+  a.set (2, 8);
+  a.set (4, 8);
+  a.set (7, 8);
+  return a;
+}
 
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+static bitmask<8> create_b() {
+  bitmask<8> b (9, 9);
+  b.set (1, 0);
+  b.set (2, 0);
+  b.set (4, 0);
+  b.set (5, 1);
+  b.set (6, 1);
+  b.set (1, 2);
+  b.set (2, 2);
+  b.set (3, 2);
+  b.set (5, 2);
+  b.set (7, 2);
+  b.set (3, 3);
+  b.set (7, 3);
+  b.set (8, 3);
+  b.set (1, 4);
+  b.set (2, 4);
+  b.set (5, 4);
+  b.set (7, 4);
+  b.set (1, 5);
+  b.set (4, 5);
+  b.set (5, 5);
+  b.set (6, 5);
+  b.set (8, 5);
+  b.set (1, 6);
+  b.set (3, 6);
+  b.set (4, 6);
+  b.set (5, 6);
+  b.set (0, 7);
+  b.set (3, 7);
+  b.set (6, 7);
+  b.set (7, 7);
+  b.set (4, 8);
+  b.set (5, 8);
+  b.set (6, 8);
+  b.set (7, 8);
+  return b;
+}
+
+TEST_SUITE("bitmap shift register") {
+  TEST_CASE("test shift register #11") {
+    auto a = create_a();
+    auto b = create_b();
+    a.reverse();
+    b.reverse();
+
+
+
+    auto sa = shift_register<8> (a.data () + 8,5, 6, 3);
+    auto sb = shift_register<8> (b.data () + 0,0, 0, 3);
+    REQUIRE(sa.shift() == 0b01000000);
+    REQUIRE(sb.shift() == 0b00000000);
+    REQUIRE(sb.has_bits() == 3);
+    REQUIRE(sa.has_bits() == 3);
+
+    sa = shift_register<8> (a.data () + 9,6, 6, 3);
+    sb = shift_register<8> (b.data () + 1,1, 0, 3);
+
+    REQUIRE(sa.shift() == 0b11000000);
+    REQUIRE(sb.shift() == 0b11000000);
+    REQUIRE(sb.has_bits() == 3);
+    REQUIRE(sa.has_bits() == 3);
+  }
+
+#if 0
+  TEST_CASE("test shift register #10") {
+    auto a = create_a();
+    auto b = create_b();
+    a.reverse();
+    b.reverse();
+
+    a.print_words();
+    std::cout << std::endl;
+    b.print_words();
+    std::cout << std::endl;
+
+    auto sa = shift_register<8> (a.data () + 0,1, 1, 8);
+    auto sb = shift_register<8> (b.data () + 0,0, 0, 8);
+
+    REQUIRE(sa.shift() == 0b00010010);
+    REQUIRE(sb.shift() == 0b00001011);
+    REQUIRE(sb.has_bits() == 8);
+    REQUIRE(sa.has_bits() == 8);
+
+    sa = shift_register<8> (a.data () + 1,2, 1, 8);
+    sb = shift_register<8> (b.data () + 1,1, 0, 8);
+    REQUIRE(sa.shift() == 0b00010000);
+    REQUIRE(sb.shift() == 0b10000001);
+    REQUIRE(sb.has_bits() == 8);
+    REQUIRE(sa.has_bits() == 8);
+
+    sa = shift_register<8> (a.data () + 2,3, 1, 8);
+    sb = shift_register<8> (b.data () + 2,2, 0, 8);
+    REQUIRE(sa.shift() == 0b11010111);
+    // a                    11010111
+    // b                    11100001
+    REQUIRE(sb.shift() == 0b11100001);
+    REQUIRE(sb.has_bits() == 8);
+    REQUIRE(sa.has_bits() == 8);
+
+    sa = shift_register<8> (a.data () + 3,4, 1, 8);
+    sb = shift_register<8> (b.data () + 3,3, 0, 8);
+    REQUIRE(sa.shift() == 0b00001010);
+    // a                    00001010
+    // b                    00010011
+    REQUIRE(sb.shift() == 0b00010011);
+    REQUIRE(sb.has_bits() == 8);
+    REQUIRE(sa.has_bits() == 8);
+
+    sa = shift_register<8> (a.data () + 4,5, 1, 8);
+    sb = shift_register<8> (b.data () + 4,4, 0, 8);
+    REQUIRE(sa.shift() == 0b10010100);
+    // a                    10010100
+    // b                    11000100
+    REQUIRE(sb.shift() == 0b11000100);
+    REQUIRE(sb.has_bits() == 8);
+    REQUIRE(sa.has_bits() == 8);
+
+
+    sa = shift_register<8> (a.data () + 5,6, 1, 8);
+    sb = shift_register<8> (b.data () + 5,5, 0, 8);
+    REQUIRE(sa.shift() == 0b00101110);
+    // a                    00101110
+    // b                    01010101
+    REQUIRE(sb.shift() == 0b01010101);
+    REQUIRE(sb.has_bits() == 8);
+    REQUIRE(sa.has_bits() == 8);
+
+    sa = shift_register<8> (a.data () + 6,7, 1, 8);
+    sb = shift_register<8> (b.data () + 6,6, 0, 8);
+    REQUIRE(sa.shift() == 0b00100010);
+    // a                    00100010
+    // b                    10100011
+    REQUIRE(sb.shift() == 0b10100011);
+    REQUIRE(sb.has_bits() == 8);
+    REQUIRE(sa.has_bits() == 8);
+
+    sa = shift_register<8> (a.data () + 8,0, 1, 8);
+    sb = shift_register<8> (b.data () + 7,7, 0, 8);
+    REQUIRE(sa.shift() == 0b01110100);
+    // a                    01110100
+    // b                    00110010
+    REQUIRE(sb.shift() == 0b00110010);
+    REQUIRE(sb.has_bits() == 8);
+    REQUIRE(sa.has_bits() == 8);
+
+    sa = shift_register<8> (a.data () + 9,1, 1, 8);
+    sb = shift_register<8> (b.data () + 9,0, 0, 8);
+    REQUIRE(sa.shift() == 0b00101100);
+    // a                    00101100
+    // b                    11110000
+    REQUIRE(sb.shift() == 0b11110000);
+    REQUIRE(sb.has_bits() == 8);
+    REQUIRE(sa.has_bits() == 8);
+  }
+
+  TEST_CASE("test shift register #1") {
+    auto a = create_a();
+    auto b = create_b();
+
+    a.reverse();
+    b.reverse();
 
     shift_register<8> sa (a.data (), 0, 0, 9);
     shift_register<8> sb (b.data (), 0, 0, 9);
+
 
     REQUIRE (sa.shift () == 0b00010010);
     REQUIRE (sb.shift () == 0b00010110);
@@ -434,140 +618,159 @@ TEST_SUITE("bitmap shift register") {
     REQUIRE(sa.shift () == 0b00000000);
     REQUIRE(sb.shift () == 0b00000000);
 
-    sa = shift_register<8> (a.data () + 2, 1, 0, 9);
-    sb = shift_register<8> (b.data () + 2, 1, 0, 9);
+    sa = shift_register<8> (a.data () + 2, 2, 0, 9);
+    sb = shift_register<8> (b.data () + 2, 2, 0, 9);
 
-    REQUIRE(sa.shift () == 0b00110101);
-    REQUIRE(sb.shift () == 0b01110000);
-    REQUIRE(sa.shift () == 0b10000000);
-    REQUIRE(sb.shift () == 0b10000000);
-
-    sa = shift_register<8> (a.data () + 3, 1, 0, 9);
-    sb = shift_register<8> (b.data () + 3, 1, 0, 9);
-
-    REQUIRE(sa.shift () == 0b11000001);
-    REQUIRE(sb.shift () == 0b10000100);
-    REQUIRE(sa.shift () == 0b00000000);
-    REQUIRE(sb.shift () == 0b10000000);
-
-    sa = shift_register<8> (a.data () + 4, 1, 0, 9);
-    sb = shift_register<8> (b.data () + 4, 1, 0, 9);
-
-    REQUIRE(sa.shift () == 0b01001001);
-    REQUIRE(sb.shift () == 0b11011000);
-    REQUIRE(sa.shift () == 0b00000000);
-    REQUIRE(sb.shift () == 0b10000000);
-
-    sa = shift_register<8> (a.data () + 5, 1, 0, 9);
-    sb = shift_register<8> (b.data () + 5, 1, 0, 9);
-
-    REQUIRE(sa.shift () == 0b01001001);
-    REQUIRE(sb.shift () == 0b10010101);
-    REQUIRE(sa.shift () == 0b00000000);
-    REQUIRE(sb.shift () == 0b00000000);
-
-    sa = shift_register<8> (a.data () + 6, 1, 0, 9);
-    sb = shift_register<8> (b.data () + 6, 1, 0, 9);
-
-    REQUIRE(sa.shift () == 0b01110000);
-    REQUIRE(sb.shift () == 0b01011101);
+    REQUIRE(sa.shift () == 0b01101011);
+    REQUIRE(sb.shift () == 0b11100001);
     REQUIRE(sa.shift () == 0b10000000);
     REQUIRE(sb.shift () == 0b00000000);
 
-    sa = shift_register<8> (a.data () + 7, 1, 0, 9);
-    sb = shift_register<8> (b.data () + 7, 1, 0, 9);
+    sa = shift_register<8> (a.data () + 3, 3, 0, 9);
+    sb = shift_register<8> (b.data () + 3, 3, 0, 9);
 
-    REQUIRE(sa.shift () == 0b10001000);
-    REQUIRE(sb.shift () == 0b00011100);
-    REQUIRE(sa.shift () == 0b10000000);
-    REQUIRE(sb.shift () == 0b10000000);
+    REQUIRE(sa.shift () == 0b00000101);
+    REQUIRE(sb.shift () == 0b00010011);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b00000000);
 
-    sa = shift_register<8> (a.data () + 8, 1, 0, 9);
-    sb = shift_register<8> (b.data () + 8, 1, 0, 9);
+    sa = shift_register<8> (a.data () + 4, 4, 0, 9);
+    sb = shift_register<8> (b.data () + 4, 4, 0, 9);
 
-    REQUIRE(sa.shift () == 0b11101001);
-    REQUIRE(sb.shift () == 0b11001001);
+    REQUIRE(sa.shift () == 0b01001010);
+    REQUIRE(sb.shift () == 0b11000100);
     REQUIRE(sa.shift () == 0b00000000);
     REQUIRE(sb.shift () == 0b10000000);
 
-    sa = shift_register<8> (a.data () + 9, 1, 0, 9);
-    sb = shift_register<8> (b.data () + 9, 1, 0, 9);
+    sa = shift_register<8> (a.data () + 5, 5, 0, 9);
+    sb = shift_register<8> (b.data () + 5, 5, 0, 9);
 
-    REQUIRE(sa.shift () == 0b00101100);
-    REQUIRE(sb.shift () == 0b11100000);
+    REQUIRE(sa.shift () == 0b10010111);
+    REQUIRE(sb.shift () == 0b01010101);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b10000000);
+
+    sa = shift_register<8> (a.data () + 6, 6, 0, 9);
+    sb = shift_register<8> (b.data () + 6, 6, 0, 9);
+
+    REQUIRE(sa.shift () == 0b00010001);
+    REQUIRE(sb.shift () == 0b10100011);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b10000000);
+
+    sa = shift_register<8> (a.data () + 7, 7, 0, 9);
+    sb = shift_register<8> (b.data () + 7, 7, 0, 9);
+
+    REQUIRE(sa.shift () == 0b00111010);
+    REQUIRE(sb.shift () == 0b00110010);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b00000000);
+
+    sa = shift_register<8> (a.data () + 9, 0, 0, 9);
+    sb = shift_register<8> (b.data () + 9, 0, 0, 9);
+
+    REQUIRE(sa.shift () == 0b10010110);
+    REQUIRE(sb.shift () == 0b11110000);
     REQUIRE(sa.shift () == 0b00000000);
     REQUIRE(sb.shift () == 0b00000000);
 
   }
 
   TEST_CASE("test shift register #2") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
 
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    a.reverse();
+    b.reverse();
+
+    shift_register<8> sa (a.data (), 0, 0, 9);
+    shift_register<8> sb (b.data (), 0, 0, 9);
+
+    REQUIRE (sa.shift () == 0b00010010);
+    REQUIRE (sb.shift () == 0b00010110);
+    REQUIRE (sa.shift () == 0b10000000);
+    REQUIRE (sb.shift () == 0b10000000);
+
+    sa = shift_register<8> (a.data () + 1, 1, 0, 9);
+    sb = shift_register<8> (b.data () + 1, 1, 0, 9);
+
+    REQUIRE(sa.shift () == 0b00001000);
+    REQUIRE(sb.shift () == 0b10000001);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b00000000);
+
+    sa = shift_register<8> (a.data () + 2, 1, 0, 9);
+    sb = shift_register<8> (b.data () + 2, 1, 0, 9);
+
+    REQUIRE(sa.shift () == 0b00110101);
+    REQUIRE(sb.shift () == 0b01110000);
+    REQUIRE(sa.shift () == 0b10000000);
+    REQUIRE(sb.shift () == 0b10000000);
+
+    sa = shift_register<8> (a.data () + 3, 1, 0, 9);
+    sb = shift_register<8> (b.data () + 3, 1, 0, 9);
+
+    REQUIRE(sa.shift () == 0b11000001);
+    REQUIRE(sb.shift () == 0b10000100);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b10000000);
+
+    sa = shift_register<8> (a.data () + 4, 1, 0, 9);
+    sb = shift_register<8> (b.data () + 4, 1, 0, 9);
+
+    REQUIRE(sa.shift () == 0b01001001);
+    REQUIRE(sb.shift () == 0b11011000);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b10000000);
+
+    sa = shift_register<8> (a.data () + 5, 1, 0, 9);
+    sb = shift_register<8> (b.data () + 5, 1, 0, 9);
+
+    REQUIRE(sa.shift () == 0b01001001);
+    REQUIRE(sb.shift () == 0b10010101);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b00000000);
+
+    sa = shift_register<8> (a.data () + 6, 1, 0, 9);
+    sb = shift_register<8> (b.data () + 6, 1, 0, 9);
+
+    REQUIRE(sa.shift () == 0b01110000);
+    REQUIRE(sb.shift () == 0b01011101);
+    REQUIRE(sa.shift () == 0b10000000);
+    REQUIRE(sb.shift () == 0b00000000);
+
+    sa = shift_register<8> (a.data () + 7, 1, 0, 9);
+    sb = shift_register<8> (b.data () + 7, 1, 0, 9);
+
+    REQUIRE(sa.shift () == 0b10001000);
+    REQUIRE(sb.shift () == 0b00011100);
+    REQUIRE(sa.shift () == 0b10000000);
+    REQUIRE(sb.shift () == 0b10000000);
+
+    sa = shift_register<8> (a.data () + 8, 1, 0, 9);
+    sb = shift_register<8> (b.data () + 8, 1, 0, 9);
+
+    REQUIRE(sa.shift () == 0b11101001);
+    REQUIRE(sb.shift () == 0b11001001);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b10000000);
+
+    sa = shift_register<8> (a.data () + 9, 1, 0, 9);
+    sb = shift_register<8> (b.data () + 9, 1, 0, 9);
+
+    REQUIRE(sa.shift () == 0b00101100);
+    REQUIRE(sb.shift () == 0b11100000);
+    REQUIRE(sa.shift () == 0b00000000);
+    REQUIRE(sb.shift () == 0b00000000);
+
+  }
+
+  TEST_CASE("test shift register #3") {
+    auto a = create_a();
+    auto b = create_b();
+
+    a.reverse();
+    b.reverse();
 
     shift_register<8> sa (a.data (), 0, 0, 9);
     shift_register<8> sb (b.data (), 0, 0, 9);
@@ -628,730 +831,101 @@ TEST_SUITE("bitmap shift register") {
     REQUIRE(sa.shift () == 0b00101100);
     REQUIRE(sb.shift () == 0b11100000);
   }
+#endif
 }
 
-
+#if 1
 TEST_SUITE("bitmap") {
 
   TEST_CASE("test overlap #1") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
-    a.print_words();
-    std::cout << std::endl;
-    b.print_words();
-    std::cout << std::endl;
+    auto a = create_a();
+    auto b = create_b();
+
     int rc_n = naive_overlap_area (a, b, 0, 0);
     int rc_o = overlap_area (a, b, 0, 0);
     REQUIRE(rc_n == rc_o);
   }
-#if 0
+
   TEST_CASE("test overlap #2") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+
     int rc_n = naive_overlap_area (a, b, 1, 0);
+
     int rc_o = overlap_area (a, b, 1, 0);
     REQUIRE(rc_n == rc_o);
   }
-
+#if 1
   TEST_CASE("test overlap #3") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+
     int rc_n = naive_overlap_area (a, b, 2, 0);
     int rc_o = overlap_area (a, b, 2, 0);
     REQUIRE(rc_n == rc_o);
   }
 
   TEST_CASE("test overlap #4") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+
+
     int rc_n = naive_overlap_area (a, b, 3, 0);
     int rc_o = overlap_area (a, b, 3, 0);
     REQUIRE(rc_n == rc_o);
   }
 
   TEST_CASE("test overlap #5") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+
     int rc_n = naive_overlap_area (a, b, 4, 0);
     int rc_o = overlap_area (a, b, 4, 0);
     REQUIRE(rc_n == rc_o);
   }
 
   TEST_CASE("test overlap #6") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+
     int rc_n = naive_overlap_area (a, b, 5, 0);
     int rc_o = overlap_area (a, b, 5, 0);
     REQUIRE(rc_n == rc_o);
   }
 
   TEST_CASE("test overlap #7") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+
+
     int rc_n = naive_overlap_area (a, b, 6, 0);
     int rc_o = overlap_area (a, b, 6, 0);
     REQUIRE(rc_n == rc_o);
   }
 
   TEST_CASE("test overlap #8") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+
+
     int rc_n = naive_overlap_area (a, b, 7, 0);
     int rc_o = overlap_area (a, b, 7, 0);
     REQUIRE(rc_n == rc_o);
   }
 
   TEST_CASE("test overlap #9") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+
     int rc_n = naive_overlap_area (a, b, 0, 1);
     int rc_o = overlap_area (a, b, 0, 1);
     REQUIRE(rc_n == rc_o);
   }
 
   TEST_CASE("test overlap #10") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+
     int rc_n = naive_overlap_area (a, b, 1, 1);
     int rc_o = overlap_area (a, b, 1, 1);
     REQUIRE(rc_n == rc_o);
@@ -4670,72 +4244,9 @@ TEST_SUITE("bitmap") {
   }
 
   TEST_CASE("test overlap #57") {
-    bitmask<8> a (9, 9);
-    a.set (1, 0);
-    a.set (4, 0);
-    a.set (1, 1);
-    a.set (6, 1);
-    a.set (8, 1);
-    a.set (1, 2);
-    a.set (2, 2);
-    a.set (2, 3);
-    a.set (3, 3);
-    a.set (4, 3);
-    a.set (7, 3);
-    a.set (1, 4);
-    a.set (3, 4);
-    a.set (6, 4);
-    a.set (0, 5);
-    a.set (2, 5);
-    a.set (6, 5);
-    a.set (7, 5);
-    a.set (8, 5);
-    a.set (1, 6);
-    a.set (4, 6);
-    a.set (8, 6);
-    a.set (3, 7);
-    a.set (5, 7);
-    a.set (6, 7);
-    a.set (7, 7);
-    a.set (1, 8);
-    a.set (2, 8);
-    a.set (4, 8);
-    a.set (7, 8);
-    bitmask<8> b (9, 9);
-    b.set (1, 0);
-    b.set (2, 0);
-    b.set (4, 0);
-    b.set (5, 1);
-    b.set (6, 1);
-    b.set (1, 2);
-    b.set (2, 2);
-    b.set (3, 2);
-    b.set (5, 2);
-    b.set (7, 2);
-    b.set (3, 3);
-    b.set (7, 3);
-    b.set (8, 3);
-    b.set (1, 4);
-    b.set (2, 4);
-    b.set (5, 4);
-    b.set (7, 4);
-    b.set (1, 5);
-    b.set (4, 5);
-    b.set (5, 5);
-    b.set (6, 5);
-    b.set (8, 5);
-    b.set (1, 6);
-    b.set (3, 6);
-    b.set (4, 6);
-    b.set (5, 6);
-    b.set (0, 7);
-    b.set (3, 7);
-    b.set (6, 7);
-    b.set (7, 7);
-    b.set (4, 8);
-    b.set (5, 8);
-    b.set (6, 8);
-    b.set (7, 8);
+    auto a = create_a();
+    auto b = create_b();
+    std::cout << "================" << std::endl;
     int rc_n = naive_overlap_area (a, b, 6, 7);
     int rc_o = overlap_area (a, b, 6, 7);
     REQUIRE(rc_n == rc_o);
@@ -4772,7 +4283,7 @@ TEST_SUITE("bitmap") {
   }
 */
 }
-
+#endif
 #if 0
                                                                                                                         int main(int argc, char* argv[]) {
   /*
