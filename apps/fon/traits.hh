@@ -12,14 +12,6 @@ namespace detail {
   template <int BitsInWord>
   struct bitmask_traits;
 
-  template <>
-  struct bitmask_traits<64> {
-    using word_t = uint64_t;
-    static constexpr auto bits_in_word = 64;
-    static constexpr auto exp = 6;
-    static constexpr word_t unit = 1;
-    static constexpr word_t zero = 0;
-  };
 
   template <>
   struct bitmask_traits<32> {
@@ -28,7 +20,41 @@ namespace detail {
     static constexpr auto exp = 5;
     static constexpr word_t unit = 1;
     static constexpr word_t zero = 0;
-
+    static constexpr std::array<word_t, 33> mask = {
+        0b00000000000000000000000000000000,
+        0b10000000000000000000000000000000,
+        0b11000000000000000000000000000000,
+        0b11100000000000000000000000000000,
+        0b11110000000000000000000000000000,
+        0b11111000000000000000000000000000,
+        0b11111100000000000000000000000000,
+        0b11111110000000000000000000000000,
+        0b11111111000000000000000000000000,
+        0b11111111100000000000000000000000,
+        0b11111111110000000000000000000000,
+        0b11111111111000000000000000000000,
+        0b11111111111100000000000000000000,
+        0b11111111111110000000000000000000,
+        0b11111111111111000000000000000000,
+        0b11111111111111100000000000000000,
+        0b11111111111111110000000000000000,
+        0b11111111111111111000000000000000,
+        0b11111111111111111100000000000000,
+        0b11111111111111111110000000000000,
+        0b11111111111111111111000000000000,
+        0b11111111111111111111100000000000,
+        0b11111111111111111111110000000000,
+        0b11111111111111111111111000000000,
+        0b11111111111111111111111100000000,
+        0b11111111111111111111111110000000,
+        0b11111111111111111111111111000000,
+        0b11111111111111111111111111100000,
+        0b11111111111111111111111111110000,
+        0b11111111111111111111111111111000,
+        0b11111111111111111111111111111100,
+        0b11111111111111111111111111111110,
+        0b11111111111111111111111111111111
+    };
   };
 
   template <>
@@ -38,6 +64,26 @@ namespace detail {
     static constexpr auto exp = 4;
     static constexpr word_t unit = 1;
     static constexpr word_t zero = 0;
+    static constexpr std::array<word_t, 17> mask = {
+        0b0000000000000000,
+        0b1000000000000000,
+        0b1100000000000000,
+        0b1110000000000000,
+        0b1111000000000000,
+        0b1111100000000000,
+        0b1111110000000000,
+        0b1111111000000000,
+        0b1111111100000000,
+        0b1111111110000000,
+        0b1111111111000000,
+        0b1111111111100000,
+        0b1111111111110000,
+        0b1111111111111000,
+        0b1111111111111100,
+        0b1111111111111110,
+        0b1111111111111111
+    };
+
   };
 
   template <>
@@ -47,20 +93,8 @@ namespace detail {
     static constexpr auto exp = 3;
     static constexpr word_t unit = 1;
     static constexpr word_t zero = 0;
-    static constexpr std::array<word_t, 8> mask = {
-        0b00000000,
-        0b10000000,
-        0b11000000,
-        0b11100000,
-        0b11110000,
-        0b11111000,
-        0b11111100,
-        0b11111110,
-    };
 
-
-
-    static constexpr std::array<word_t, 9> take_filter = {
+    static constexpr std::array<word_t, 9> mask = {
         0b00000000, //0
         0b10000000, //1
         0b11000000, //2
@@ -73,9 +107,9 @@ namespace detail {
     };
 
     template <class T>
-    static T reverse_bits(T n) {
+    static T reverse_bits (T n) {
       short bits = bits_in_word;
-      T m = ~T(0); // equivalent to uint32_t mask = 0b11111111111111111111111111111111;
+      T m = ~T (0); // equivalent to uint32_t mask = 0b11111111111111111111111111111111;
 
       while (bits >>= 1) {
         m ^= m << (bits); // will convert mask to 0b00000000000000001111111111111111;
@@ -103,13 +137,12 @@ void print_bits (typename detail::bitmask_traits<BitsInWord>::word_t w) {
 }
 
 template <typename T>
-std::string binary(T n) {
-  auto bits = (short)(sizeof (n)*8);
+std::string binary (T n) {
+  auto bits = (short) (sizeof (n) * 8);
   std::string s;
-  for (short k = (bits - 1) ; k >= 0 ; k--)
-	{
-	  s += (n & (1 << k)) ? "1" : "0";
-	}
+  for (short k = (bits - 1); k >= 0; k--) {
+    s += (n & (1 << k)) ? "1" : "0";
+  }
   return s;
 }
 

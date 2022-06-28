@@ -6,6 +6,7 @@
 #define APPS_FON_BM_HH
 
 #include <vector>
+#include <algorithm>
 #include <random>
 #include <iostream>
 #include <neutrino/utils/builtin.h>
@@ -200,17 +201,21 @@ class shift_register {
         : m_data (start),
           m_bit_pos (bit_pos),
           m_xpos (xpos),
-          m_start(xpos),
+          m_consumed(0),
           m_row_width (row_width) {
     }
 
     word_t shift () {
 
       constexpr auto bits = detail::bitmask_traits<BitsInWord>::bits_in_word;
-      constexpr auto& mask = detail::bitmask_traits<BitsInWord>::take_filter;
+      constexpr auto& mask = detail::bitmask_traits<BitsInWord>::mask;
 
       int need_bits = std::min (m_row_width, bits);
       int bits_in_this_word = 1 + m_bit_pos;
+
+      m_consumed += need_bits;
+      m_xpos += need_bits;
+      m_row_width -= need_bits;
 
       word_t xa = *m_data;
       int shift = bits - 1 - m_bit_pos;
@@ -218,42 +223,48 @@ class shift_register {
       if (bits_in_this_word == need_bits) {
         m_data++;
         xa = xa << shift;
-        m_xpos += need_bits;
-        m_row_width -= need_bits;
         return xa;
       }
       else {
         if (bits_in_this_word > need_bits) {
           xa = (xa << shift) & mask[need_bits];
-          m_xpos += need_bits;
-          m_row_width -= need_bits;
           return xa;
         }
         else {
-          xa = xa << shift;
+
+          xa <<= shift;
+
           m_data++;
-          auto shift2 = (bits - shift);
+          int shift2 = (bits - shift);
+
           word_t ya = (*m_data  >> shift2);
+
           word_t w = xa | ya;
+
           word_t m = mask[need_bits];
-          m_xpos += need_bits;
-          m_row_width -= need_bits;
+
           return w & m;
         }
       }
     }
 
     [[nodiscard]] int has_bits () const {
-      return m_xpos - m_start;
+      return m_consumed;
     }
 
+    [[nodiscard]] int get_x_pos() const {
+      return m_xpos;
+    }
 
+    [[nodiscard]] int get_bit_pos() const {
+      return m_bit_pos;
+    }
 
   private:
     const word_t* m_data;
     int m_bit_pos;
     int m_xpos;
-    int m_start;
+    int m_consumed;
     int m_row_width;
 };
 
@@ -277,12 +288,14 @@ template <int BitsInWord>
     shift_register<BitsInWord> srb (b_data + b_word_num, b_word_bit, 0, w_bits);
 
     int has_bits = 0;
+
     while (has_bits < w_bits) {
       auto x = sra.shift ();
       auto y = srb.shift ();
+
       typename detail::bitmask_traits<BitsInWord>::word_t w = x & y;
       auto n = psnip_builtin_popcount(w);
-      has_bits += srb.has_bits ();
+      has_bits = srb.has_bits ();
       rc += n;
       row_n += n;
     }
@@ -295,8 +308,10 @@ template <int BitsInWord>
 [[nodiscard]] int
 naive_overlap_area (const bitmask<BitsInWord>& a, const bitmask<BitsInWord>& b, int xoffset, int yoffset) {
   int rc = 0;
-  int w = std::min(a.width() - xoffset, b.width());
-  int h = std::min(a.height() - yoffset, b.height());
+
+  auto w = std::min (b.width(), a.width() - xoffset);
+  auto h = std::min (b.height(), a.height() - yoffset);
+
 
   for (int y = 0; y < h; y++) {
     int row = 0;
@@ -316,6 +331,7 @@ naive_overlap_area (const bitmask<BitsInWord>& a, const bitmask<BitsInWord>& b, 
         brow += "0";
       }
     }
+
     for (int x = 0; x < w; x++) {
       int xa = x + xoffset;
       int ya = y + yoffset;
