@@ -29,6 +29,11 @@ my_add_executable(unittest
         engine/test_ecs_registry.cc
 
         assets/test_unique_resource.cc
+        assets/bitmask/bitmask_test_utils.hh
+        assets/bitmask/bitmask_test_utils.cc
+        assets/bitmask/bitmask_test_getter_setter.cc
+        assets/bitmask/bitmask_test_sr.cc
+        assets/bitmask/bitmask_test_overlap.cc
 
         $<TARGET_OBJECTS:neutrino_tiled_with_tests>
         $<TARGET_OBJECTS:assets_mz_with_tests>

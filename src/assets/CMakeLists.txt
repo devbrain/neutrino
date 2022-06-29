@@ -24,8 +24,11 @@ my_add_library_static(assets
             image/image.cc
             ${PROJECT_INCLUDE}/neutrino/assets/image/image_io.hh
             image/image_io.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/image/bitmask/bitmask_algo.hh
+            ${PROJECT_INCLUDE}/neutrino/assets/image/bitmask/bitmask_traits.hh
+            ${PROJECT_INCLUDE}/neutrino/assets/image/bitmask/bitmask_impl.hh
             ${PROJECT_INCLUDE}/neutrino/assets/image/bitmask.hh
-            image/bitmask.cc
+
 
             image/image_loader.cc
             image/image_loader.hh
