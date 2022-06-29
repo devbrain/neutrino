@@ -17,90 +17,26 @@
 namespace neutrino::assets::impl {
 
   template <int BitsInWord> class bitmask;
+
   template <int BitsInWord>
   [[nodiscard]] int overlap_area (const bitmask<BitsInWord>& a, const bitmask<BitsInWord>& b, int xoffset, int yoffset);
+
+  template <int BitsInWord>
+  [[nodiscard]] bool overlaps (const bitmask<BitsInWord>& a, const bitmask<BitsInWord>& b, int xoffset, int yoffset);
 
   template <int BitsInWord>
   class bitmask {
       template <int N>
       friend int overlap_area (const bitmask<N>& a, const bitmask<N>& b, int xoffset, int yoffset);
+
+      template <int N>
+      friend bool overlaps (const bitmask<N>& a, const bitmask<N>& b, int xoffset, int yoffset);
     public:
       using bitmask_traits_t = detail::bitmask_traits<BitsInWord>;
       using word_t = typename bitmask_traits_t::word_t;
       static constexpr auto bits_in_word = BitsInWord;
     public:
-#if defined(DOCTEST_LIBRARY_INCLUDED)
-      static bitmask<BitsInWord> create_random (int w, int h) {
-        bitmask<BitsInWord> bm (w, h);
-        std::random_device random_device;
-        std::mt19937 random_engine (random_device ());
-        std::uniform_int_distribution<int> d (1, 100);
-        for (int y = 0; y < h; y++) {
-          for (int x = 0; x < w; x++) {
-            if (d (random_engine) < 50) {
-              bm.set (x, y);
-            }
-          }
-        }
-        return bm;
-      }
 
-      void debug (const char* name) {
-        std::cout << "bitmask<" << BitsInWord << "> " << name << "(" << m_w << ", " << m_h << ");" << std::endl;
-        for (int y = 0; y < m_h; y++) {
-          for (int x = 0; x < m_w; x++) {
-            if (get (x, y)) {
-              std::cout << name << ".set(" << x << "," << y << ");" << std::endl;
-            }
-          }
-        }
-      }
-
-
-
-      const word_t* data () const {
-        return m_data.data ();
-      }
-
-      void print_words () const {
-        int w = 0;
-        int tx = 0;
-        for (const auto& x: m_data) {
-          std::cout << " w(" << w << ") ";
-          w++;
-          for (auto i = BitsInWord - 1; i >= 0; i--) {
-            word_t mask = 1 << i;
-            if (x & mask) {
-              std::cout << 1;
-            }
-            else {
-              std::cout << 0;
-            }
-            tx++;
-            if (tx == m_w * m_h) {
-              std::cout << "|";
-            }
-          }
-        }
-      }
-      std::tuple<word_t, int> get_row_word(int x_start, int y) {
-        word_t w = detail::bitmask_traits<BitsInWord>::zero;
-        int num = 0;
-        int n = bitmask_traits_t::bits_in_word;
-        for (int x = x_start; x<m_w; x++) {
-          int px = x - x_start;
-          auto [wr, b] = coords (px, 0, n);
-          if (wr == 0) {
-            if (get (x, y)) {
-              word_t m = bitmask_traits_t::unit << b;
-              w |= m;
-            }
-            num++;
-          }
-        }
-        return {w, num};
-      }
-#endif
       bitmask (int w, int h)
           : m_w (w), m_h (h), m_data (get_size (w, h), 0) {
       }
@@ -171,6 +107,75 @@ namespace neutrino::assets::impl {
       int m_w;
       int m_h;
       std::vector<word_t> m_data;
+#if defined(DOCTEST_LIBRARY_INCLUDED)
+    public:
+      static bitmask<BitsInWord> create_random (int w, int h) {
+        bitmask<BitsInWord> bm (w, h);
+        std::random_device random_device;
+        std::mt19937 random_engine (random_device ());
+        std::uniform_int_distribution<word_t> d (0, std::numeric_limits<word_t>::max());
+        for (auto& w : bm.m_data) {
+          w = d(random_engine);
+        }
+        return bm;
+      }
+
+      void debug (const char* name) {
+        std::cout << "bitmask<" << BitsInWord << "> " << name << "(" << m_w << ", " << m_h << ");" << std::endl;
+        for (int y = 0; y < m_h; y++) {
+          for (int x = 0; x < m_w; x++) {
+            if (get (x, y)) {
+              std::cout << name << ".set(" << x << "," << y << ");" << std::endl;
+            }
+          }
+        }
+      }
+
+
+
+      const word_t* data () const {
+        return m_data.data ();
+      }
+
+      void print_words () const {
+        int w = 0;
+        int tx = 0;
+        for (const auto& x: m_data) {
+          std::cout << " w(" << w << ") ";
+          w++;
+          for (auto i = BitsInWord - 1; i >= 0; i--) {
+            word_t mask = 1 << i;
+            if (x & mask) {
+              std::cout << 1;
+            }
+            else {
+              std::cout << 0;
+            }
+            tx++;
+            if (tx == m_w * m_h) {
+              std::cout << "|";
+            }
+          }
+        }
+      }
+      std::tuple<word_t, int> get_row_word(int x_start, int y) {
+        word_t w = detail::bitmask_traits<BitsInWord>::zero;
+        int num = 0;
+        int n = bitmask_traits_t::bits_in_word;
+        for (int x = x_start; x<m_w; x++) {
+          int px = x - x_start;
+          auto [wr, b] = coords (px, 0, n);
+          if (wr == 0) {
+            if (get (x, y)) {
+              word_t m = bitmask_traits_t::unit << b;
+              w |= m;
+            }
+            num++;
+          }
+        }
+        return {w, num};
+      }
+#endif
 
   };
 }

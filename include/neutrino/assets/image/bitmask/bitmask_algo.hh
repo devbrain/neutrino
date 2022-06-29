@@ -80,7 +80,8 @@ namespace neutrino::assets {
   }
   namespace impl {
     template <int BitsInWord>
-    [[nodiscard]] int overlap_area (const bitmask<BitsInWord>& a, const bitmask<BitsInWord>& b, int xoffset, int yoffset) {
+    [[nodiscard]] int
+    overlap_area (const bitmask<BitsInWord>& a, const bitmask<BitsInWord>& b, int xoffset, int yoffset) {
 
       auto w_bits = std::min (b.m_w, a.m_w - xoffset);
 
@@ -91,7 +92,7 @@ namespace neutrino::assets {
 
       int rc = 0;
       for (int r = 0; r < h; r++) {
-        int row_n = 0;
+
         auto [a_word_num, a_word_bit] = bitmask<BitsInWord>::coords (xoffset, yoffset + r, a.m_w);
         auto [b_word_num, b_word_bit] = bitmask<BitsInWord>::coords (0, r, b.m_w);
 
@@ -108,14 +109,47 @@ namespace neutrino::assets {
           auto n = psnip_builtin_popcount(w);
           has_bits = srb.has_bits ();
           rc += n;
-          row_n += n;
         }
 
       }
       return rc;
     }
-  }
-}
 
+    template <int BitsInWord>
+    [[nodiscard]] bool overlaps (const bitmask<BitsInWord>& a, const bitmask<BitsInWord>& b, int xoffset, int yoffset) {
+
+      auto w_bits = std::min (b.m_w, a.m_w - xoffset);
+
+      auto h = std::min (b.m_h, a.m_h - yoffset);
+
+      const auto* a_data = a.m_data.data ();
+      const auto* b_data = b.m_data.data ();
+
+      for (int r = 0; r < h; r++) {
+        auto [a_word_num, a_word_bit] = bitmask<BitsInWord>::coords (xoffset, yoffset + r, a.m_w);
+        auto [b_word_num, b_word_bit] = bitmask<BitsInWord>::coords (0, r, b.m_w);
+
+        detail::shift_register<BitsInWord> sra (a_data + a_word_num, a_word_bit, xoffset, w_bits);
+        detail::shift_register<BitsInWord> srb (b_data + b_word_num, b_word_bit, 0, w_bits);
+
+        int has_bits = 0;
+
+        while (has_bits < w_bits) {
+          auto x = sra.shift ();
+          auto y = srb.shift ();
+
+          typename detail::bitmask_traits<BitsInWord>::word_t w = x & y;
+          if (w) {
+            return true;
+          }
+          has_bits = srb.has_bits ();
+        }
+
+      }
+      return false;
+    }
+  }
+
+}
 
 #endif //INCLUDE_NEUTRINO_ASSETS_IMAGE_BITMASK_BITMASK_ALGO_HH
