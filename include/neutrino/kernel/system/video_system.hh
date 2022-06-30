@@ -7,6 +7,7 @@
 
 #include <neutrino/hal/video/renderer.hh>
 #include <neutrino/math/rect.hh>
+#include <neutrino/assets/resources/resource.hh>
 
 namespace neutrino {
   class application;
@@ -16,6 +17,8 @@ namespace neutrino {
       public:
         [[nodiscard]] hal::renderer& renderer () const;
         [[nodiscard]] math::dimension2di_t dimensions () const;
+
+        void clear();
       private:
         video_system (hal::renderer& r, math::dimension2di_t d);
       private:

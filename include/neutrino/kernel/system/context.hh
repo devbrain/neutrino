@@ -21,7 +21,6 @@ namespace neutrino {
         template <class ... Args>
         explicit context (Args&& ... args)
             : data (std::make_tuple (std::forward<Args> (args)...)) {
-
         }
 
       private:

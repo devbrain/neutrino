@@ -17,5 +17,10 @@ namespace neutrino::kernel {
     return m_dims;
   }
 
+  void video_system::clear() {
+    m_renderer->clear();
+  }
+
+
 
 }

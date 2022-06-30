@@ -2,7 +2,7 @@ set(mio.tests OFF CACHE INTERNAL "")
 
 fetchcontent_declare(
         MIO
-        GIT_REPOSITORY https://github.com/mandreyel/mio.git
+        GIT_REPOSITORY https://github.com/devbrain/mio.git
         UPDATE_COMMAND ""
 )
 

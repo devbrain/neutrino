@@ -17,8 +17,6 @@ namespace neutrino::assets {
   using palette = hal::palette;
 
 
-
-
   using atlas_id_t = strong::type<std::size_t, struct atlas_id_tag, strong::ordered, strong::equality>;
   using cell_id_t  = strong::type<std::size_t, struct tile_id_tag, strong::ordered, strong::equality>;
   using animation_seq_id_t = strong::type<uint16_t, struct animation_seq_tag, strong::ordered, strong::equality>;

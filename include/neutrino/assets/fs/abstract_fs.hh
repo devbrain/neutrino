@@ -10,7 +10,9 @@
 #include <memory>
 #include <variant>
 #include <optional>
+#include <type_traits>
 #include <functional>
+#include <neutrino/utils/exception.hh>
 
 namespace neutrino::assets {
 
@@ -34,6 +36,79 @@ namespace neutrino::assets {
       [[nodiscard]] virtual entry_t load(const std::string& name) = 0;
       virtual void visit(std::function<void(const entry_t&)> visitor) = 0;
   };
+
+  inline
+  bool exists(const abstract_directory::entry_t& e) {
+    return e.has_value();
+  }
+
+  inline
+  bool is_dir(const abstract_directory::entry_t& e) {
+    return exists (e) && std::get_if<0>(&e.value()) != nullptr;
+  }
+
+  inline
+  bool is_file(const abstract_directory::entry_t& e) {
+    return exists (e) && std::get_if<1>(&e.value()) != nullptr;
+  }
+
+  template <typename T>
+  inline
+  const T& fs_cast(const abstract_directory::entry_t& e) {
+
+    static_assert (std::is_same_v<T,abstract_directory> || std::is_same_v<T, abstract_file>);
+
+    if (!e.has_value()) {
+      RAISE_EX("FS entry does not exists");
+    }
+    if constexpr (std::is_same_v<T,abstract_directory>) {
+      if (const auto* v =  std::get_if<0>(&e.value())) {
+        if (v->get()) {
+          return *v->get();
+        }
+        RAISE_EX("FS Directory entry is corrupted");
+      }
+    } else {
+      if constexpr (std::is_same_v<T, abstract_file>) {
+        if (const auto* v = std::get_if<1> (&e.value ())) {
+          if (v->get ()) {
+            return *v->get ();
+          }
+          RAISE_EX("FS File entry is corrupted");
+        }
+      }
+    }
+    RAISE_EX("Should not be here");
+  }
+
+  template <typename T>
+  inline
+  T& fs_cast(abstract_directory::entry_t& e) {
+
+    static_assert (std::is_same_v<T,abstract_directory> || std::is_same_v<T, abstract_file>);
+
+    if (!e.has_value()) {
+      RAISE_EX("FS entry does not exists");
+    }
+    if constexpr (std::is_same_v<T,abstract_directory>) {
+      if (auto* v =  std::get_if<0>(&e.value())) {
+        if (v->get()) {
+          return *v->get();
+        }
+        RAISE_EX("FS Directory entry is corrupted");
+      }
+    } else {
+      if constexpr (std::is_same_v<T, abstract_file>) {
+        if (auto* v = std::get_if<1> (&e.value ())) {
+          if (v->get ()) {
+            return *v->get ();
+          }
+          RAISE_EX("FS File entry is corrupted");
+        }
+      }
+    }
+    RAISE_EX("Should not be here");
+  }
 
   class abstract_fs {
     public:
