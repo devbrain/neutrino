@@ -88,7 +88,7 @@ namespace pefile
 	};
 	static_assert (sizeof(DATA_DIRECTORY) == 8, "DATA_DIRECTORY size should be 8 bytes");
 	// =========================================================
-	struct OPTIONAL_HEADER
+	struct PE_OPTIONAL_HEADER
 	{
 		bool Is64Bit;
 		u1	MajorLinkerVersion;      //	The linker major version number.
@@ -252,9 +252,9 @@ namespace pefile
 		Reserved     = 15
 	};
 
-	std::ostream& operator << (std::ostream& os, OPTIONAL_HEADER::PE_IMAGE_SUBSYSTEM v);
-	std::ostream& operator << (std::ostream& os, OPTIONAL_HEADER::PE_IMAGE_DLLCHARACTERISTICS v);
-	std::ostream& operator << (std::ostream& os, const OPTIONAL_HEADER& v);
+	std::ostream& operator << (std::ostream& os, PE_OPTIONAL_HEADER::PE_IMAGE_SUBSYSTEM v);
+	std::ostream& operator << (std::ostream& os, PE_OPTIONAL_HEADER::PE_IMAGE_DLLCHARACTERISTICS v);
+	std::ostream& operator << (std::ostream& os, const PE_OPTIONAL_HEADER& v);
 	
 	// =========================================================
 	class abstract_reporter_c;
@@ -286,7 +286,7 @@ namespace pefile
 		file_c(const char* fdata, std::size_t fsize, abstract_reporter_c& reporter);
 		~file_c();
 		[[nodiscard]] const COFF_HEADER& coff_header() const;
-		[[nodiscard]] const OPTIONAL_HEADER& optional_header() const;
+		[[nodiscard]] const PE_OPTIONAL_HEADER& optional_header() const;
 		[[nodiscard]] const section_t&       sections() const;
 
 		[[nodiscard]] const char* read_section(const SECTION& s) const;
@@ -312,7 +312,7 @@ namespace pefile
 		detail::file_container m_mmf;
 
 		const COFF_HEADER* m_coff_header;
-		OPTIONAL_HEADER    m_optional_header;
+		PE_OPTIONAL_HEADER    m_optional_header;
 		section_t          m_sections;
 	};
 } // ns pefile

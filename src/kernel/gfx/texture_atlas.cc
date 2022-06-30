@@ -188,12 +188,15 @@ namespace neutrino::kernel {
       std::visit(utils::overload(
           [this, atlas_id](const hal::surface& x) {
 //TODO
+#if !defined(_MSC_VER)
 #warning To be completed
-
+#endif
           },
           [this, atlas_id](const assets::tilesheet& x) {
 // TODO
+#if !defined(_MSC_VER)
 #warning To be completed
+#endif
           },
           [this, atlas_id](const auto& x) {
             set(atlas_id, x);

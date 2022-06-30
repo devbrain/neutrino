@@ -52,7 +52,7 @@ namespace pefile
 		std::vector<SECTION> sections() const;
 		float entropy(const SECTION& s) const;
 		const char* read_section(const SECTION& s) const;
-		const OPTIONAL_HEADER& optional_header() const;
+		const PE_OPTIONAL_HEADER& optional_header() const;
 
 		clr_c load_clr();
 

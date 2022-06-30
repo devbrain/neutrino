@@ -77,7 +77,7 @@ namespace pefile
 
 		const auto& optional = m_pefile->optional_header();
 		m_is_64_bit = optional.Is64Bit;
-		m_is_gui = (optional.Subsystem == OPTIONAL_HEADER::PE_IMAGE_SUBSYSTEM_WINDOWS_GUI);
+		m_is_gui = (optional.Subsystem == PE_OPTIONAL_HEADER::PE_IMAGE_SUBSYSTEM_WINDOWS_GUI);
 		
 		build_resources(*m_pefile.get(), m_resource_directory);
 		m_entry_point = m_pefile->translate_rva(optional.AddressOfEntryPoint);
@@ -147,7 +147,7 @@ namespace pefile
 		return m_pefile->read_section(s);
 	}
 	// ---------------------------------------------------------------------------
-	const OPTIONAL_HEADER& exe_file_c::optional_header() const
+	const PE_OPTIONAL_HEADER& exe_file_c::optional_header() const
 	{
 		return m_pefile->optional_header();
 	}
