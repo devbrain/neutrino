@@ -10,7 +10,7 @@
 #include <tuple>
 #include <cstdint>
 
-#include "neutrino/assets/tiles/types.hh"
+#include "neutrino/assets/types.hh"
 #include "neutrino/assets/tiles/animation_description.hh"
 
 namespace neutrino::kernel {

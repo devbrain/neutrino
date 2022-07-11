@@ -9,8 +9,8 @@
 #include <tuple>
 #include <variant>
 #include <functional>
-#include <neutrino/math/rect.hh>
-#include <neutrino/assets/image/image.hh>
+#include "neutrino/math/rect.hh"
+#include "neutrino/assets/image/image.hh"
 
 namespace neutrino::assets {
   using tilesheet_rects = std::vector<math::rect>;

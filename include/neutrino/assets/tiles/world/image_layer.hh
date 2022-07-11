@@ -5,7 +5,7 @@
 #ifndef INCLUDE_NEUTRINO_ASSETS_TILES_WORLD_IMAGE_LAYER_HH
 #define INCLUDE_NEUTRINO_ASSETS_TILES_WORLD_IMAGE_LAYER_HH
 
-#include <neutrino/assets/tiles/types.hh>
+#include "neutrino/assets/types.hh"
 #include <neutrino/assets/tiles/tile_handle.hh>
 
 namespace neutrino::assets {

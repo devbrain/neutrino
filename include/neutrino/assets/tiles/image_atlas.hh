@@ -8,13 +8,15 @@
 #include <map>
 #include <variant>
 
-#include <neutrino/assets/tiles/tilesheet_description.hh>
-#include <neutrino/assets/tiles/types.hh>
+#include "neutrino/assets/tilesheet_description.hh"
+#include "neutrino/assets/types.hh"
 #include <neutrino/assets/tiles/tile_handle.hh>
 
 namespace neutrino::assets {
   class image_atlas {
     public:
+      // color
+      // hal::surface
       using entry_t = std::variant<lazy_tilesheet, image, color, hal::surface, assets::tilesheet>;
       using map_t = std::map<atlas_id_t, entry_t>;
       using iterator_t = map_t::const_iterator;

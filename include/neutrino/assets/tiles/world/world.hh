@@ -17,7 +17,6 @@
 #include <neutrino/assets/tiles/path_resolver.hh>
 #include <neutrino/assets/tiles/world/world_assets.hh>
 
-
 namespace neutrino::assets {
   namespace tmx {
     class map;
@@ -62,6 +61,7 @@ namespace neutrino::assets {
       std::size_t m_tile_height;
       layers_t m_layers;
       objects_t m_objects;
+
   };
 }
 

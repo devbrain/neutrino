@@ -7,15 +7,10 @@
 
 #include <limits>
 #include <cstdint>
-#include "neutrino/utils/strong_type.hpp"
-#include <neutrino/hal/video/surface.hh>
-#include <neutrino/hal/video/palette.hh>
+#include <neutrino/utils/strong_type.hpp>
+#include <neutrino/assets/image/color.hh>
 
 namespace neutrino::assets {
-
-  using color   = hal::color;
-  using palette = hal::palette;
-
 
   using atlas_id_t = strong::type<std::size_t, struct atlas_id_tag, strong::ordered, strong::equality>;
   using cell_id_t  = strong::type<std::size_t, struct tile_id_tag, strong::ordered, strong::equality>;

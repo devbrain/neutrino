@@ -15,6 +15,8 @@ namespace neutrino::assets {
     private:
       std::unique_ptr<hal::texture> do_load(hal::renderer& r, const resource_id& image_id) override;
   };
+
+  using texture_resource = resource<hal::texture>;
 }
 
 

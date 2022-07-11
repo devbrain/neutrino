@@ -11,8 +11,8 @@
 
 #include <neutrino/hal/video/texture.hh>
 #include <neutrino/hal/video/renderer.hh>
-#include "neutrino/assets/tiles/tilesheet_description.hh"
-#include "neutrino/assets/tiles/types.hh"
+#include "neutrino/assets/tilesheet_description.hh"
+#include "neutrino/assets/types.hh"
 
 namespace neutrino::kernel {
   class tiled_image {

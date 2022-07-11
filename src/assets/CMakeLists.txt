@@ -1,5 +1,14 @@
 my_add_library_static(assets
         SOURCES
+            # Resources ------------------------------------------------------------
+            ${PROJECT_INCLUDE}/neutrino/assets/image_resource.hh
+            image_resource.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/texture_resource.hh
+            texture_resource.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/tilesheet_resource.hh
+            ${PROJECT_INCLUDE}/neutrino/assets/tilesheet_description.hh
+            tilesheet_description.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/types.hh
             # FS ------------------------------------------------------------
             ${PROJECT_INCLUDE}/neutrino/assets/fs/abstract_fs.hh
             fs/abstract_fs.cc
@@ -7,17 +16,14 @@ my_add_library_static(assets
             fs/phys_fs.cc
             ${PROJECT_INCLUDE}/neutrino/assets/fs/vfs.hh
             fs/vfs.cc
-            # Resources ------------------------------------------------------------
+            # Resources Subsystem ------------------------------------------------------------
             ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_id.hh
             resources/resource_id.cc
             ${PROJECT_INCLUDE}/neutrino/assets/resources/resource.hh
             ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_io.hh
             resources/resource_io.cc
             ${PROJECT_INCLUDE}/neutrino/assets/resources/resource_storage.hh
-            ${PROJECT_INCLUDE}/neutrino/assets/resources/image_resource.hh
-            resources/image_resource.cc
-            ${PROJECT_INCLUDE}/neutrino/assets/resources/texture_resource.hh
-            resources/texture_resource.cc
+
             # Image ------------------------------------------------------------
             ${PROJECT_INCLUDE}/neutrino/assets/image/color.hh
             ${PROJECT_INCLUDE}/neutrino/assets/image/image.hh
@@ -115,9 +121,8 @@ my_add_library_static(assets
             explode/mz/unpklite.hh
 
             # TILES -----------------------------------------------------------------
-            ${PROJECT_INCLUDE}/neutrino/assets/tiles/types.hh
-            ${PROJECT_INCLUDE}/neutrino/assets/tiles/tilesheet_description.hh
-            tiles/tilesheet_description.cc
+
+
             ${PROJECT_INCLUDE}/neutrino/assets/tiles/world/object.hh
             tiles/world/object.cc
             ${PROJECT_INCLUDE}/neutrino/assets/tiles/world/image_layer.hh
@@ -128,6 +133,8 @@ my_add_library_static(assets
             tiles/world/tiles_layer.cc
             ${PROJECT_INCLUDE}/neutrino/assets/tiles/world/world.hh
             tiles/world/world.cc
+            tiles/world/tmx_image_loader.cc
+            tiles/world/tmx_image_loader.hh
             ${PROJECT_INCLUDE}/neutrino/assets/tiles/tile_handle.hh
             ${PROJECT_INCLUDE}/neutrino/assets/tiles/animation_description.hh
             tiles/animation_description.cc

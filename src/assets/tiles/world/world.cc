@@ -22,6 +22,7 @@
 #include "assets/tiles/tmx/map.hh"
 #include "assets/tiles/tmx/json_reader.hh"
 #include "assets/tiles/tmx/xml_reader.hh"
+#include "tmx_image_loader.hh"
 
 namespace neutrino::assets {
   world::world (std::size_t width, std::size_t height, std::size_t tile_width,
@@ -218,7 +219,7 @@ namespace neutrino::assets {
     }
     return res;
   }
-
+  // -----------------------------------------------------------------------------------------------------
   world world::from_tmx(const tmx::map& map, const path_resolver_t& resolver, world_assets& assets) {
     world w (map.width(), map.height(), map.tile_width(), map.tile_height());
     auto mappings = build_atlas (map, resolver, assets);
@@ -242,33 +243,10 @@ namespace neutrino::assets {
                 auto offset_y = img_layer.offset_y();
                 auto name = image_data->source();
 
-                auto lazy_loader_fn = [resolver, name, tint, offset_x, offset_y]() -> hal::surface {
-                  std::string input = resolver(name);
-                  utils::io::memory_input_stream is(input.c_str(), static_cast<std::streamsize>(input.size()));
-                  auto s = load_image (is);
-                  if (offset_x > 0 || offset_y > 0) {
-                    auto [w, h] = s.dimensions();
-                    ENFORCE(offset_x < (int)w && offset_y < (int)h);
-                    hal::surface s2(w-offset_x, h-offset_y, s.get_pixel_format());
-                    math::rect src_rect(offset_x, offset_y, (int)(w-offset_x), (int)(h-offset_y));
-                    math::rect dst_rect(0, 0, (int)(w-offset_x), (int)(h-offset_y));
-                    if (tint != tmx::colori(255, 255, 255, 255)) {
-                      s.color_mod (tint.r, tint.b, tint.b);
-                    }
-                    s.blit (src_rect, s2, dst_rect);
-                    return s2;
-                  }
-                  if (tint != tmx::colori(255, 255, 255, 255)) {
-                    s.color_mod (tint.r, tint.b, tint.b);
-                    auto [w, h] = s.dimensions();
-                    hal::surface s2(w, h, s.get_pixel_format());
-                    s.blit (s2);
-                    return s2;
-                  }
-                  return s;
-                };
+                tmx_image_loader ldr;
+                ldr.load (resolver, name, tint, offset_x, offset_y, name, nullptr);
 
-                auto atlas_id = assets.images.add (image(lazy_loader_fn));
+                auto atlas_id = assets.images.add (ldr.load (resolver, name, tint, offset_x, offset_y, name, nullptr));
                 image_layer img_l(tile_handle(atlas_id, cell_id_t(0)));
                 w.m_layers.push_back (img_l);
                 },
@@ -281,6 +259,8 @@ namespace neutrino::assets {
     }
     return w;
   }
+
+
 
   world world::from_tmx(std::istream& is, const path_resolver_t& resolver, world_assets& assets) {
     return from_tmx (load_tmx (is, resolver), resolver, assets);

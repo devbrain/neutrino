@@ -7,7 +7,7 @@
 
 
 #include <neutrino/assets/tiles/image_atlas.hh>
-#include <neutrino/assets/tiles/types.hh>
+#include "neutrino/assets/types.hh"
 #include <neutrino/assets/tiles/tile_handle.hh>
 #include <neutrino/utils/spimpl.h>
 

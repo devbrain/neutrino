@@ -6,8 +6,8 @@
 #define INCLUDE_NEUTRINO_ASSETS_RESOURCES_IMAGE_RESOURCE_HH
 
 #include <istream>
-#include <neutrino/hal/video/surface.hh>
-#include <neutrino/assets/resources/resource_io.hh>
+#include "neutrino/hal/video/surface.hh"
+#include "neutrino/assets/resources/resource_io.hh"
 
 namespace neutrino::assets {
   class image_resource_reader : public resource_reader<hal::surface, std::istream &> {
@@ -19,6 +19,8 @@ namespace neutrino::assets {
     private:
       void do_save(std::ostream& os, const hal::surface& v) override;
   };
+
+  using image_resource_t = resource<hal::surface>;
 }
 
 

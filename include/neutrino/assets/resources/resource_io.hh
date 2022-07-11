@@ -88,21 +88,21 @@ namespace neutrino::assets {
         return resource<T>::m_storage.exists(id);
       }
 
-      resource<T> load(Args&&... args, const std::string& id, resource_processing_context* ctx = nullptr) {
+      resource<T> load(Args... args, const std::string& id, resource_processing_context* ctx = nullptr) {
           return load(std::forward<Args>(args)..., resource_id(id), ctx);
       }
 
-      resource<T> load(Args&&... args, const char* id, resource_processing_context* ctx = nullptr) {
+      resource<T> load(Args... args, const char* id, resource_processing_context* ctx = nullptr) {
         return load(std::forward<Args>(args)..., resource_id(id), ctx);
       }
 
       template <std::size_t N>
       inline
-      resource<T> load(Args&&... args, const char(& id)[N], resource_processing_context* ctx = nullptr) {
+      resource<T> load(Args... args, const char(& id)[N], resource_processing_context* ctx = nullptr) {
         return load(std::forward<Args>(args)..., resource_id(id), ctx);
       }
 
-      resource<T> load(Args&&... args, const resource_id& id, resource_processing_context* ctx = nullptr) {
+      resource<T> load(Args... args, const resource_id& id, resource_processing_context* ctx = nullptr) {
         if (ctx) {
           ctx->on_load_begin (id);
         }

@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <limits>
 #include <ostream>
-#include <neutrino/assets/tiles/types.hh>
+#include "neutrino/assets/types.hh"
 #include <neutrino/utils/exception.hh>
 #include <neutrino/utils/bit_ops.hh>
 

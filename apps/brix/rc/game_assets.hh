@@ -10,7 +10,7 @@
 
 #include <neutrino/hal/video/palette.hh>
 #include <neutrino/hal/video/surface.hh>
-#include <neutrino/assets/tiles/tilesheet_description.hh>
+#include "neutrino/assets/tilesheet_description.hh"
 #include <neutrino/math/rect.hh>
 #include "rc/resource_loader.hh"
 #include "rc/map.hh"

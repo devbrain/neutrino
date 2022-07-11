@@ -2,8 +2,8 @@
 // Created by igor on 31/05/2022.
 //
 
-#include <neutrino/assets/resources/image_resource.hh>
-#include <neutrino/assets/image/image_io.hh>
+#include "neutrino/assets/image_resource.hh"
+#include "neutrino/assets/image/image_io.hh"
 
 namespace neutrino::assets {
   std::unique_ptr<hal::surface> image_resource_reader::do_load(std::istream& is) {
