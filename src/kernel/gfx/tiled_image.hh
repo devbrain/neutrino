@@ -17,7 +17,7 @@
 namespace neutrino::kernel {
   class tiled_image {
     public:
-      explicit tiled_image(const assets::image& img_loader);
+      explicit tiled_image(const assets::lazy_image_loader& img_loader);
       explicit tiled_image(const assets::lazy_tilesheet& lazy_ts);
 
       tiled_image(hal::renderer& renderer, const hal::surface& img);
@@ -45,10 +45,10 @@ namespace neutrino::kernel {
       using descr_t = std::variant<std::monostate, math::rect, assets::tilesheet_rects>;
       descr_t        m_descr;
       hal::texture   m_texture;
-      assets::image  m_image_loader;
+      assets::lazy_image_loader  m_image_loader;
       std::optional<std::pair<unsigned, unsigned>> m_expected_dims;
     private:
-      static descr_t eval_dimension_properties(const assets::image&);
+      static descr_t eval_dimension_properties(const assets::lazy_image_loader&);
       static descr_t eval_dimension_properties(const assets::lazy_tilesheet& lazy_ts);
       static descr_t eval_dimension_properties(const hal::surface& img);
       static descr_t eval_dimension_properties(const assets::tilesheet& ts);

@@ -9,7 +9,7 @@
 
 namespace neutrino::kernel {
 
-  tiled_image::descr_t tiled_image::eval_dimension_properties (const assets::image&) {
+  tiled_image::descr_t tiled_image::eval_dimension_properties (const assets::lazy_image_loader&) {
     return std::monostate{};
   }
 
@@ -44,7 +44,7 @@ namespace neutrino::kernel {
     return result;
   }
 
-  tiled_image::tiled_image (const assets::image& img_loader)
+  tiled_image::tiled_image (const assets::lazy_image_loader& img_loader)
       : m_descr (eval_dimension_properties (img_loader)),
         m_image_loader (img_loader) {
   }

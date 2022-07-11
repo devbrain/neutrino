@@ -86,7 +86,7 @@ namespace neutrino::assets {
     return get_tilesheet_coords (w, h, inf);
   }
 
-  tilesheet_rects get_tilesheet_coords(const image& ts_image, const tilesheet_info& inf) {
+  tilesheet_rects get_tilesheet_coords(const lazy_image_loader& ts_image, const tilesheet_info& inf) {
     auto dims = ts_image.dimensions();
     ENFORCE(dims); //-V1044
     return get_tilesheet_coords (dims->x, dims->y, inf);

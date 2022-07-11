@@ -20,8 +20,8 @@ my_add_library_static(assets
             resources/texture_resource.cc
             # Image ------------------------------------------------------------
             ${PROJECT_INCLUDE}/neutrino/assets/image/color.hh
-            ${PROJECT_INCLUDE}/neutrino/assets/image/image.hh
-            image/image.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/image/lazy_image_loader.hh
+            image/lazy_image_loader.cc
             ${PROJECT_INCLUDE}/neutrino/assets/image/image_io.hh
             image/image_io.cc
             ${PROJECT_INCLUDE}/neutrino/assets/image/bitmask/bitmask_algo.hh

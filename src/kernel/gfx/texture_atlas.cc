@@ -36,7 +36,7 @@ namespace neutrino::kernel {
         }
     }
 
-    const tiled_image* get_tile_sheet (hal::renderer& r, assets::tile_handle ti) const {
+    const tiled_image* get_tile_sheet (hal::renderer& renderer, assets::tile_handle ti) const {
       auto atlas_id = static_cast<assets::atlas_id_t>(ti);
       if (ti.is_flipped ()) {
         auto itr = m_transformed.find (ti);
@@ -49,9 +49,9 @@ namespace neutrino::kernel {
         const auto& parent_texture = parent.texture();
         auto original = parent.tile_rectangle (cell_id);
         auto new_dims = grid::eval_transormed_dims (original.dims, ri);
-        itr = m_transformed.insert (std::make_pair (ti, tiled_image (r, parent_texture.get_pixel_format(), new_dims))).first;
+        itr = m_transformed.insert (std::make_pair (ti, tiled_image (renderer, parent_texture.get_pixel_format(), new_dims))).first;
 
-        hal::use_texture tt (r, itr->second.texture ());
+        hal::use_texture tt (renderer, itr->second.texture ());
 
         math::rect dst (0, 0, new_dims.x, new_dims.y);
         auto flip = hal::renderer::flip::NONE;
@@ -61,7 +61,7 @@ namespace neutrino::kernel {
         else if (ri.vflip) {
           flip = hal::renderer::flip::VERTICAL;
         }
-        r.copy (parent_texture, original, dst, ri.degree, flip);
+        renderer.copy (parent_texture, original, dst, ri.degree, flip);
         return &itr->second;
       }
       else {
@@ -107,7 +107,7 @@ namespace neutrino::kernel {
     return rc;
   }
 
-  assets::atlas_id_t texture_atlas::add (const assets::image& loader) {
+  assets::atlas_id_t texture_atlas::add (const assets::lazy_image_loader& loader) {
     assets::atlas_id_t rc{m_pimpl->m_atlas.size ()};
     m_pimpl->m_atlas.emplace_back (tiled_image{loader});
     m_pimpl->m_convert_needed = true;
@@ -139,7 +139,7 @@ namespace neutrino::kernel {
     m_pimpl->m_convert_needed = true;
   }
 
-  void texture_atlas::replace (assets::atlas_id_t atlas_id, const assets::image& img_ldr) {
+  void texture_atlas::replace (assets::atlas_id_t atlas_id, const assets::lazy_image_loader& img_ldr) {
     source_image_t si {tiled_image(img_ldr)};
     std::swap(si, m_pimpl->m_atlas[atlas_id.value_of ()]);
     m_pimpl->remove_flipped (atlas_id);
@@ -157,6 +157,7 @@ namespace neutrino::kernel {
     m_pimpl->set (atlas_id, std::move(si));
     m_pimpl->remove_flipped (atlas_id);
   }
+
   void texture_atlas::set(assets::atlas_id_t atlas_id, hal::renderer& renderer, const assets::tilesheet & img) {
     source_image_t si {tiled_image(renderer, img)};
     m_pimpl->set (atlas_id, std::move(si));
@@ -168,7 +169,7 @@ namespace neutrino::kernel {
     m_pimpl->remove_flipped (atlas_id);
     m_pimpl->m_convert_needed = true;
   }
-  void texture_atlas::set(assets::atlas_id_t atlas_id, const assets::image& img_ldr) {
+  void texture_atlas::set(assets::atlas_id_t atlas_id, const assets::lazy_image_loader& img_ldr) {
     source_image_t si {tiled_image(img_ldr)};
     m_pimpl->set (atlas_id, std::move(si));
     m_pimpl->remove_flipped (atlas_id);

@@ -2,8 +2,8 @@
 // Created by igor on 26/05/2022.
 //
 
-#ifndef INCLUDE_NEUTRINO_ASSETS_IMAGE_IMAGE_HH
-#define INCLUDE_NEUTRINO_ASSETS_IMAGE_IMAGE_HH
+#ifndef INCLUDE_NEUTRINO_ASSETS_IMAGE_LAZY_IMAGE_LOADER_HH
+#define INCLUDE_NEUTRINO_ASSETS_IMAGE_LAZY_IMAGE_LOADER_HH
 
 #include <functional>
 #include <optional>
@@ -12,13 +12,13 @@
 #include <neutrino/math/rect.hh>
 
 namespace neutrino::assets {
-  class image {
+  class lazy_image_loader {
     public:
       using loader_t = std::function<hal::surface()>;
     public:
-      image() = default;
-      explicit image (loader_t ldr);
-      image (loader_t ldr, math::dimension2di_t dims);
+      lazy_image_loader() = default;
+      explicit lazy_image_loader (loader_t ldr);
+      lazy_image_loader (loader_t ldr, math::dimension2di_t dims);
 
       [[nodiscard]] hal::surface load() const;
       [[nodiscard]] std::optional<math::dimension2di_t> dimensions () const;
@@ -31,4 +31,4 @@ namespace neutrino::assets {
   };
 }
 
-#endif //INCLUDE_NEUTRINO_ASSETS_IMAGE_IMAGE_HH
+#endif //INCLUDE_NEUTRINO_ASSETS_IMAGE_LAZY_IMAGE_LOADER_HH

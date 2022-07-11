@@ -11,7 +11,7 @@ namespace neutrino::assets {
     return v;
   }
 
-  atlas_id_t image_atlas::add(image loader) {
+  atlas_id_t image_atlas::add(lazy_image_loader loader) {
     auto v = atlas_id_t (m_map.size());
     m_map.insert (std::make_pair(v, std::move(loader)));
     return v;

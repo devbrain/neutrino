@@ -10,7 +10,7 @@
 #include <variant>
 #include <functional>
 #include <neutrino/math/rect.hh>
-#include <neutrino/assets/image/image.hh>
+#include "neutrino/assets/image/lazy_image_loader.hh"
 
 namespace neutrino::assets {
   using tilesheet_rects = std::vector<math::rect>;
@@ -45,11 +45,11 @@ namespace neutrino::assets {
 
   math::rect get_tilesheet_coords (unsigned id, unsigned canvas_w, unsigned canvas_h, const tilesheet_info& inf);
   math::rect get_tilesheet_coords (unsigned id, const hal::surface& ts_image, const tilesheet_info& inf);
-  math::rect get_tilesheet_coords (unsigned id, const image& ts_image, const tilesheet_info& inf);
+  math::rect get_tilesheet_coords (unsigned id, const lazy_image_loader& ts_image, const tilesheet_info& inf);
 
   tilesheet_rects get_tilesheet_coords(unsigned canvas_w, unsigned canvas_h, const tilesheet_info& inf);
   tilesheet_rects get_tilesheet_coords(const hal::surface& ts_image, const tilesheet_info& inf);
-  tilesheet_rects get_tilesheet_coords(const image& ts_image, const tilesheet_info& inf);
+  tilesheet_rects get_tilesheet_coords(const lazy_image_loader& ts_image, const tilesheet_info& inf);
 
 
   using tilesheet = std::tuple<hal::surface, std::variant<tilesheet_rects, tilesheet_info>>;
@@ -68,7 +68,7 @@ namespace neutrino::assets {
       tilesheet_info m_info;
   };
 
-  using lazy_tilesheet = std::tuple<image, std::variant<tilesheet_rects, lazy_tilesheet_info>>;
+  using lazy_tilesheet = std::tuple<lazy_image_loader, std::variant<tilesheet_rects, lazy_tilesheet_info>>;
 
   inline
   tilesheet make_tilesheet(hal::surface img, tilesheet_rects td) {
@@ -106,36 +106,36 @@ namespace neutrino::assets {
 
 
   inline
-  lazy_tilesheet make_tilesheet(image img, tilesheet_rects td) {
-    return std::make_tuple<image, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(img), std::move(td));
+  lazy_tilesheet make_tilesheet(lazy_image_loader img, tilesheet_rects td) {
+    return std::make_tuple<lazy_image_loader, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(img), std::move(td));
   }
 
   inline
-  lazy_tilesheet make_tilesheet(std::tuple<image, tilesheet_rects> d) {
-    return std::make_tuple<image, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(std::get<0>(d)),
+  lazy_tilesheet make_tilesheet(std::tuple<lazy_image_loader, tilesheet_rects> d) {
+    return std::make_tuple<lazy_image_loader, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(std::get<0>(d)),
                                                                                  std::move(std::get<1>(d)));
   }
 
   inline
-  lazy_tilesheet make_tilesheet(std::pair<image, tilesheet_rects> d) {
-    return std::make_tuple<image, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(std::get<0>(d)),
+  lazy_tilesheet make_tilesheet(std::pair<lazy_image_loader, tilesheet_rects> d) {
+    return std::make_tuple<lazy_image_loader, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(std::get<0>(d)),
                                                                                  std::move(std::get<1>(d)));
   }
 
   inline
-  lazy_tilesheet make_tilesheet(image img, lazy_tilesheet_info tdi) {
-    return std::make_tuple<image, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(img), tdi);
+  lazy_tilesheet make_tilesheet(lazy_image_loader img, lazy_tilesheet_info tdi) {
+    return std::make_tuple<lazy_image_loader, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(img), tdi);
   }
 
   inline
-  lazy_tilesheet make_tilesheet(std::tuple<image,lazy_tilesheet_info> d) {
-    return std::make_tuple<image, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(std::get<0>(d)),
+  lazy_tilesheet make_tilesheet(std::tuple<lazy_image_loader,lazy_tilesheet_info> d) {
+    return std::make_tuple<lazy_image_loader, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(std::get<0>(d)),
                                                                                  std::get<1>(d));
   }
 
   inline
-  lazy_tilesheet make_tilesheet(std::pair<image,lazy_tilesheet_info> d) {
-    return std::make_tuple<image, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(std::get<0>(d)),
+  lazy_tilesheet make_tilesheet(std::pair<lazy_image_loader,lazy_tilesheet_info> d) {
+    return std::make_tuple<lazy_image_loader, std::variant<tilesheet_rects, lazy_tilesheet_info>>(std::move(std::get<0>(d)),
                                                                                      std::get<1>(d));
   }
 }
