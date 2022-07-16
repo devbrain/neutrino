@@ -5,6 +5,7 @@
 #ifndef INCLUDE_NEUTRINO_ASSETS_RESOURCES_RESOURCE_ID_HH
 #define INCLUDE_NEUTRINO_ASSETS_RESOURCES_RESOURCE_ID_HH
 
+#include <utility>
 #include <string>
 #include <iosfwd>
 #include "string_id.hpp"
@@ -46,6 +47,8 @@ namespace neutrino::assets {
       {
         return !(a == b);
       }
+
+      void swap(resource_id& other) noexcept;
     private:
       static foonathan::string_id::basic_database& get_database();
     private:
@@ -57,6 +60,14 @@ namespace neutrino::assets {
 
 namespace std
 {
+
+  template<>
+  inline
+  void swap(neutrino::assets::resource_id& rhs, neutrino::assets::resource_id& lhs) noexcept {
+    rhs.swap (lhs);
+  }
+
+
   template <>
   struct hash<neutrino::assets::resource_id>
   {

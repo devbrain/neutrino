@@ -11,6 +11,7 @@
 #include <neutrino/assets/tiles/tile_handle.hh>
 #include <neutrino/utils/spimpl.h>
 
+
 #include <neutrino/hal/video/renderer.hh>
 #include <neutrino/math/rect.hh>
 
@@ -29,22 +30,13 @@ namespace neutrino::kernel {
       [[nodiscard]] math::rect tile_rectangle(const assets::tile_handle& th) const noexcept;
       void draw(hal::renderer& renderer, const assets::tile_handle& tile, const math::rect& src, const math::point2d& dst_top_left) const;
     private:
-      [[nodiscard]] assets::atlas_id_t add(hal::renderer& renderer, const hal::surface& img);
-      [[nodiscard]] assets::atlas_id_t add(hal::renderer& renderer, const assets::tilesheet& ts);
-      [[nodiscard]] assets::atlas_id_t add(const assets::lazy_tilesheet& ts);
-      [[nodiscard]] assets::atlas_id_t add(const assets::lazy_image_loader& loader);
+      [[nodiscard]] assets::atlas_id_t add(assets::resource_id rid);
       [[nodiscard]] assets::atlas_id_t add(const assets::color& bgcolor);
     private:
-      void replace(assets::atlas_id_t atlas_id, hal::renderer& renderer, const hal::surface& img);
-      void replace(assets::atlas_id_t atlas_id, hal::renderer& renderer, const assets::tilesheet & img);
-      void replace(assets::atlas_id_t atlas_id, const assets::lazy_tilesheet& lt);
-      void replace(assets::atlas_id_t atlas_id, const assets::lazy_image_loader& img_ldr);
+      void replace(assets::atlas_id_t atlas_id, assets::resource_id rid);
       void replace(assets::atlas_id_t atlas_id, const assets::color& bg_color);
 
-      void set(assets::atlas_id_t atlas_id, hal::renderer& renderer, const hal::surface& img);
-      void set(assets::atlas_id_t atlas_id, hal::renderer& renderer, const assets::tilesheet & img);
-      void set(assets::atlas_id_t atlas_id, const assets::lazy_tilesheet& lt);
-      void set(assets::atlas_id_t atlas_id, const assets::lazy_image_loader& img_ldr);
+      void set(assets::atlas_id_t atlas_id, assets::resource_id rid);
       void set(assets::atlas_id_t atlas_id, const assets::color& bg_color);
     private:
       struct impl;

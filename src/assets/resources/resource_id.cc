@@ -39,6 +39,10 @@ namespace neutrino::assets {
     return (m_id == EMPTY_ID);
   }
 
+  void resource_id::swap(resource_id& other) noexcept {
+    std::swap(m_id, other.m_id);
+  }
+
   std::ostream& operator << (std::ostream& os, const resource_id& rid) {
     os << rid.hash() << ":" << rid.name();
     return os;

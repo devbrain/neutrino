@@ -5,23 +5,22 @@
 #ifndef SRC_KERNEL_GFX_TILED_IMAGE_HH
 #define SRC_KERNEL_GFX_TILED_IMAGE_HH
 
+#include <utility>
 #include <variant>
 #include <optional>
+
 
 
 #include <neutrino/hal/video/texture.hh>
 #include <neutrino/hal/video/renderer.hh>
 #include "neutrino/assets/tiles/tilesheet_description.hh"
+#include "neutrino/assets/resources/resource_id.hh"
 #include "neutrino/assets/tiles/types.hh"
 
 namespace neutrino::kernel {
   class tiled_image {
     public:
-      explicit tiled_image(const assets::lazy_image_loader& img_loader);
-      explicit tiled_image(const assets::lazy_tilesheet& lazy_ts);
-
-      tiled_image(hal::renderer& renderer, const hal::surface& img);
-      tiled_image(hal::renderer& renderer, const assets::tilesheet& ts);
+      explicit tiled_image(assets::resource_id rid);
 
       tiled_image(hal::renderer& renderer, const hal::pixel_format& format, const math::dimension2di_t& dims);
 
@@ -34,34 +33,26 @@ namespace neutrino::kernel {
 
       void convert(hal::renderer& renderer);
 
-      [[nodiscard]] const hal::texture& texture() const {
-        return m_texture;
-      }
+      [[nodiscard]] const hal::texture& texture() const;
+      hal::texture& texture();
+    private:
+      assets::resource_id     m_rid;
+      assets::tilesheet_rects m_rects;
+      bool                    m_is_image;
+      hal::texture            m_texture;
 
-      hal::texture& texture() {
-        return m_texture;
-      }
-    private:
-      using descr_t = std::variant<std::monostate, math::rect, assets::tilesheet_rects>;
-      descr_t        m_descr;
-      hal::texture   m_texture;
-      assets::lazy_image_loader  m_image_loader;
-      std::optional<std::pair<unsigned, unsigned>> m_expected_dims;
-    private:
-      static descr_t eval_dimension_properties(const assets::lazy_image_loader&);
-      static descr_t eval_dimension_properties(const assets::lazy_tilesheet& lazy_ts);
-      static descr_t eval_dimension_properties(const hal::surface& img);
-      static descr_t eval_dimension_properties(const assets::tilesheet& ts);
-      static descr_t eval_dimension_properties(const math::dimension2di_t& canvas_dims);
+
   };
 }
 
 namespace std {
+
   template<>
   inline
   void swap(neutrino::kernel::tiled_image& rhs, neutrino::kernel::tiled_image& lhs) noexcept {
     rhs.swap (lhs);
   }
+
 }
 
 #endif //SRC_KERNEL_GFX_TILED_IMAGE_HH

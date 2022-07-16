@@ -118,6 +118,8 @@ my_add_library_static(assets
             ${PROJECT_INCLUDE}/neutrino/assets/tiles/types.hh
             ${PROJECT_INCLUDE}/neutrino/assets/tiles/tilesheet_description.hh
             tiles/tilesheet_description.cc
+            ${PROJECT_INCLUDE}/neutrino/assets/tiles/world/tilesheet_resource.hh
+            tiles/world/tilesheet_resource.cc
             ${PROJECT_INCLUDE}/neutrino/assets/tiles/world/object.hh
             tiles/world/object.cc
             ${PROJECT_INCLUDE}/neutrino/assets/tiles/world/image_layer.hh

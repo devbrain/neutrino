@@ -129,7 +129,7 @@ namespace neutrino::assets {
       tilesheet_info ti (ts.tile_width(), ts.tile_height(), ts.spacing(), ts.margin(), ts.offset_x(), ts.offset_y(), ts.tile_count());
       lazy_tilesheet_info lti(*ts_img->width(), *ts_img->height(), ti);
       lazy_tilesheet lazy_ts = make_tilesheet (lazy_image_loader(lazy_loader_fn), lti);
-      auto id = atlas.images.add (lazy_ts);
+      auto id = atlas.images.add (lazy_ts, ts.name());
       gid_map.insert (std::make_pair (ts.first_gid(), std::make_tuple (id, ts.tile_count())));
       for (const auto& tli : ts) {
         if (tli.has_image()) {
@@ -228,7 +228,7 @@ namespace neutrino::assets {
       c.g = map.background_color().g;
       c.b = map.background_color().b;
       c.a = map.background_color().a;
-      auto atlas_id = assets.images.add(c);
+      auto atlas_id = assets.images.add(c, "#color_layer");
       w.m_layers.push_back (color_layer{tile_handle(atlas_id, cell_id_t(0))});
     }
     for (const auto& layer : map.layers()) {
@@ -268,7 +268,7 @@ namespace neutrino::assets {
                   return s;
                 };
 
-                auto atlas_id = assets.images.add (lazy_image_loader(lazy_loader_fn));
+                auto atlas_id = assets.images.add (lazy_image_loader(lazy_loader_fn), img_layer.name());
                 image_layer img_l(tile_handle(atlas_id, cell_id_t(0)));
                 w.m_layers.push_back (img_l);
                 },

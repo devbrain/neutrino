@@ -11,19 +11,29 @@
 #include <neutrino/assets/tiles/tilesheet_description.hh>
 #include <neutrino/assets/tiles/types.hh>
 #include <neutrino/assets/tiles/tile_handle.hh>
+#include <neutrino/assets/tiles/world/tilesheet_resource.hh>
 
 namespace neutrino::assets {
   class image_atlas {
     public:
-      using entry_t = std::variant<lazy_tilesheet, lazy_image_loader, color, hal::surface, assets::tilesheet>;
+      using entry_t = std::variant<resource<tilesheet_resource>, color>;
       using map_t = std::map<atlas_id_t, entry_t>;
       using iterator_t = map_t::const_iterator;
     public:
-      [[nodiscard]] atlas_id_t add(lazy_tilesheet ts);
-      [[nodiscard]] atlas_id_t add(lazy_image_loader loader);
-      [[nodiscard]] atlas_id_t add(color bgcolor);
-      [[nodiscard]] atlas_id_t add(hal::surface img);
-      [[nodiscard]] atlas_id_t add(assets::tilesheet ts);
+
+      [[nodiscard]] atlas_id_t add(color bgcolor, const std::string& name);
+
+      /*
+       * T is one of tilesheet_resource_reader materials
+       */
+      template <class T>
+      [[nodiscard]] atlas_id_t add(T ts, const std::string& name) {
+        auto v = atlas_id_t (m_map.size());
+        tilesheet_resource_reader ldr;
+        auto x = ldr.load (ts, name);
+        m_map.insert (std::make_pair(v, std::move(x)));
+        return v;
+      }
 
       [[nodiscard]] iterator_t begin() const;
       [[nodiscard]] iterator_t end() const;

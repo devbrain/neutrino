@@ -5,33 +5,10 @@
 #include <neutrino/assets/tiles/image_atlas.hh>
 
 namespace neutrino::assets {
-  atlas_id_t image_atlas::add(lazy_tilesheet ts) {
-    auto v = atlas_id_t (m_map.size());
-    m_map.insert (std::make_pair(v, std::move(ts)));
-    return v;
-  }
 
-  atlas_id_t image_atlas::add(lazy_image_loader loader) {
-    auto v = atlas_id_t (m_map.size());
-    m_map.insert (std::make_pair(v, std::move(loader)));
-    return v;
-  }
-
-  atlas_id_t image_atlas::add(color bgcolor) {
+  atlas_id_t image_atlas::add(color bgcolor, [[maybe_unused]] const std::string& name) {
     auto v = atlas_id_t (m_map.size());
     m_map.insert (std::make_pair(v, bgcolor));
-    return v;
-  }
-
-  atlas_id_t image_atlas::add(hal::surface img) {
-    auto v = atlas_id_t (m_map.size());
-    m_map.insert (std::make_pair(v, std::move(img)));
-    return v;
-  }
-
-  atlas_id_t image_atlas::add(assets::tilesheet ts) {
-    auto v = atlas_id_t (m_map.size());
-    m_map.insert (std::make_pair(v, std::move(ts)));
     return v;
   }
 
