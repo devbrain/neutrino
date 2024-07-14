@@ -1,5 +1,1 @@
-add_subdirectory(sdl_demo)
-add_subdirectory(tools)
-add_subdirectory(tmx)
-add_subdirectory(lexical)
-add_subdirectory(imgui)
+add_subdirectory(events)
