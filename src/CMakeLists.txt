@@ -1,6 +1,1 @@
-add_subdirectory(thirdparty)
-add_subdirectory(utils)
-add_subdirectory(hal)
-add_subdirectory(math)
-add_subdirectory(kernel)
-add_subdirectory(tiled)
+add_subdirectory(neutrino)

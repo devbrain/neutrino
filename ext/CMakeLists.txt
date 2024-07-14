@@ -1,17 +1,14 @@
 include(FetchContent)
 
 set(FETCHCONTENT_QUIET off)
-get_filename_component(fc_base "../fetched_content" REALPATH BASE_DIR "${CMAKE_BINARY_DIR}")
-set(FETCHCONTENT_BASE_DIR ${fc_base})
 
-add_subdirectory(rapid-yaml)
-add_subdirectory(glm)
-add_subdirectory(sdl2)
-add_subdirectory(pugixml)
-add_subdirectory(doctest)
-add_subdirectory(bitflags)
-add_subdirectory(nlohmann)
-add_subdirectory(dr_imgui)
-add_subdirectory(re2c)
-add_subdirectory(pfr)
-add_subdirectory(glad)
+add_subdirectory(sdlpp)
+add_subdirectory(assets)
+add_subdirectory(vfs)
+add_subdirectory(callable_traits)
+add_subdirectory(yaml)
+
+
+
+
+
