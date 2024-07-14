@@ -44,7 +44,7 @@ namespace neutrino {
 		private:
 			bool need_to_quit() const;
 			bool user_init_sequence();
-
+			bool internal_run(std::chrono::milliseconds delta_t);
 		private:
 			sdl::system m_initializer;
 			sdl::window m_main_window;
