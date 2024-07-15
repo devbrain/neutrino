@@ -5,39 +5,19 @@
 #include <neutrino/scene/scene.hh>
 
 namespace neutrino {
-	scene::scene() = default;
+	scene::scene()
+		: m_scene_manager(nullptr),
+		  m_is_active(false) {
+	}
+
 	scene::~scene() = default;
 
 	void scene::handle_input(const sdl::events::event_t& ev) {
-		if (const auto* moved_event = std::get_if<sdl::events::window_moved>(&ev)) {
-			on_widow_moved(sdl::point(static_cast<int>(moved_event->x), static_cast <int>(moved_event->y)));
-		} else if (const auto* resized_event = std::get_if<sdl::events::window_resized>(&ev)) {
-			on_widow_resized(sdl::area_type(static_cast <int>(resized_event->w), static_cast <int>(resized_event->h)));
-		} else if (std::get_if<sdl::events::window_shown>(&ev)) {
-			on_window_shown();
-		} else if (std::get_if<sdl::events::window_hidden>(&ev)) {
-			on_window_hidden();
-		} else if (std::get_if<sdl::events::window_exposed>(&ev)) {
-			on_window_exposed();
-		} else if (std::get_if<sdl::events::window_minimized>(&ev)) {
-			on_window_minimized();
-		} else if (std::get_if<sdl::events::window_maximized>(&ev)) {
-			on_window_maximized();
-		} else if (std::get_if<sdl::events::window_restored>(&ev)) {
-			on_window_restored();
-		} else if (std::get_if<sdl::events::window_mouse_entered>(&ev)) {
-			on_window_mouse_entered();
-		} else if (std::get_if<sdl::events::window_mouse_leaved>(&ev)) {
-			on_window_mouse_leaved();
-		} else if (std::get_if<sdl::events::window_focus_gained>(&ev)) {
-			on_window_focus_gained();
-		} else if (std::get_if<sdl::events::window_focus_lost>(&ev)) {
-			on_window_focus_lost();
-		} else if (std::get_if<sdl::events::window_close>(&ev)) {
-			on_window_close();
-		} else {
 			m_events_reactor.handle(ev);
-		}
+	}
+
+	scene::flags scene::get_flags() const {
+		return {};
 	}
 
 	void scene::on_widow_moved(const sdl::point& new_pos) {
@@ -77,5 +57,78 @@ namespace neutrino {
 	}
 
 	void scene::on_window_close() {
+	}
+
+	void scene::on_timer([[maybe_unused]] void* data) {
+	}
+
+	void scene::on_activated() {
+	}
+
+	void scene::on_deactived() {
+	}
+
+	void scene::on_evicted() {
+	}
+
+	bool scene::is_active() const {
+		return m_is_active;
+	}
+
+	void scene::activate() {
+		if (!m_is_active) {
+			m_is_active = true;
+			on_activated();
+		}
+	}
+
+	void scene::deactivate() {
+		if (m_is_active) {
+			m_is_active = false;
+			on_deactived();
+		}
+	}
+
+	void scene::evict() {
+		deactivate();
+		on_evicted();
+		m_scene_manager = nullptr;
+	}
+
+	bool scene::handle_system_event(const sdl::events::event_t& ev) {
+		if (const auto* moved_event = std::get_if <sdl::events::window_moved>(&ev)) {
+			on_widow_moved(sdl::point(static_cast <int>(moved_event->x), static_cast <int>(moved_event->y)));
+		} else if (const auto* resized_event = std::get_if <sdl::events::window_resized>(&ev)) {
+			on_widow_resized(sdl::area_type(static_cast <int>(resized_event->w), static_cast <int>(resized_event->h)));
+		} else if (std::get_if <sdl::events::window_shown>(&ev)) {
+			on_window_shown();
+		} else if (std::get_if <sdl::events::window_hidden>(&ev)) {
+			on_window_hidden();
+		} else if (std::get_if <sdl::events::window_exposed>(&ev)) {
+			on_window_exposed();
+		} else if (std::get_if <sdl::events::window_minimized>(&ev)) {
+			on_window_minimized();
+		} else if (std::get_if <sdl::events::window_maximized>(&ev)) {
+			on_window_maximized();
+		} else if (std::get_if <sdl::events::window_restored>(&ev)) {
+			on_window_restored();
+		} else if (std::get_if <sdl::events::window_mouse_entered>(&ev)) {
+			on_window_mouse_entered();
+		} else if (std::get_if <sdl::events::window_mouse_leaved>(&ev)) {
+			on_window_mouse_leaved();
+		} else if (std::get_if <sdl::events::window_focus_gained>(&ev)) {
+			on_window_focus_gained();
+		} else if (std::get_if <sdl::events::window_focus_lost>(&ev)) {
+			on_window_focus_lost();
+		} else if (std::get_if <sdl::events::window_close>(&ev)) {
+			on_window_close();
+		} else {
+			return false;
+		}
+		return true;
+	}
+
+	void scene::setup_scene_manager(scene_manager* sm) {
+		m_scene_manager = sm;
 	}
 }

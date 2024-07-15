@@ -151,9 +151,6 @@ namespace neutrino {
 
 	bool application::internal_run(std::chrono::milliseconds delta_t) {
 		try {
-			const auto top_scene = m_scene_manager.top();
-			ENFORCE(top_scene);
-
 			SDL_Event sdl_event;
 			while (SDL_PollEvent(&sdl_event)) {
 				bool do_quit = false;
@@ -192,11 +189,11 @@ namespace neutrino {
 				if (!system_event_handeled) {
 					auto internal_event = sdl::map_event(sdl_event);
 					m_event_reactor.handle(internal_event);
-					top_scene->handle_input(internal_event);
+					m_scene_manager.handle_input(internal_event);
 				}
 			}
-			top_scene->update(delta_t);
-			top_scene->render(m_renderer);
+			m_scene_manager.update(delta_t);
+			m_scene_manager.render(m_renderer);
 		} catch (const std::exception& e) {
 			on_error(e);
 			return false;
