@@ -7,6 +7,8 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/events/events_reactor.hh
         ${PROJECT_INCLUDE}/neutrino/events/detail/event_producer.hh
         events/events_reactor.cc
+        events/neutrino_events.cc
+        events/neutrino_events.hh
 
         # =============================================================
         # SCENE
