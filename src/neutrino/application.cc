@@ -22,6 +22,7 @@ namespace neutrino {
 	}
 
 	void application::init(unsigned w, unsigned h, bool fullscreen, int desired_fps) {
+		s_instance = this;
 		m_desired_fps = desired_fps;
 		m_main_window = fullscreen
 			                ? sdl::window(static_cast <int>(w), static_cast <int>(h),
@@ -29,9 +30,6 @@ namespace neutrino {
 			                : sdl::window(static_cast <int>(w), static_cast <int>(h));
 		m_renderer = sdl::renderer(m_main_window);
 		m_quit_flag = !user_init_sequence();
-		if (!m_quit_flag) {
-			s_instance = this;
-		}
 	}
 
 	void application::run() {
@@ -94,6 +92,18 @@ namespace neutrino {
 		return *s_instance;
 	}
 
+	const texture_atlas& application::get_texture_atlas() const {
+		return m_texture_atlas;
+	}
+
+	texture_atlas& application::get_texture_atlas() {
+		return m_texture_atlas;
+	}
+
+	scene_manager& application::get_scene_manager() {
+		return m_scene_manager;
+	}
+
 	void application::init_logger() {
 	}
 
@@ -152,6 +162,8 @@ namespace neutrino {
 	bool application::internal_run(std::chrono::milliseconds delta_t) {
 		try {
 			SDL_Event sdl_event;
+			m_event_reactor.reset();
+			m_scene_manager.clear_events();
 			while (SDL_PollEvent(&sdl_event)) {
 				bool do_quit = false;
 				bool system_event_handeled = true;
@@ -193,7 +205,9 @@ namespace neutrino {
 				}
 			}
 			m_scene_manager.update(delta_t);
+			m_renderer.clear();
 			m_scene_manager.render(m_renderer);
+			m_renderer.present();
 		} catch (const std::exception& e) {
 			on_error(e);
 			return false;

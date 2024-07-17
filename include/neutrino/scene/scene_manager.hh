@@ -10,12 +10,13 @@
 #include <neutrino/scene/scene.hh>
 #include <neutrino/neutrino_export.hh>
 
-#include "events/neutrino_events.hh"
+
 
 namespace neutrino {
 	struct scene_timer_event;
-
+	class NEUTRINO_EXPORT application;
 	class NEUTRINO_EXPORT scene_manager {
+		friend class application;
 		public:
 			scene_manager();
 			~scene_manager();
@@ -34,6 +35,7 @@ namespace neutrino {
 			void update(std::chrono::milliseconds delta_time);
 		private:
 			void update_timers(const scene_timer_event& e);
+			void clear_events();
 		private:
 			std::vector <std::shared_ptr<scene>> m_stack;
 	};

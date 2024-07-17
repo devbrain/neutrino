@@ -11,6 +11,7 @@
 #include <neutrino/neutrino_export.hh>
 #include <neutrino/events/events_reactor.hh>
 #include <neutrino/scene/scene_manager.hh>
+#include <neutrino/systems/video/texture_atlas.hh>
 
 namespace neutrino {
 	class NEUTRINO_EXPORT application {
@@ -26,6 +27,9 @@ namespace neutrino {
 			unsigned get_fps() const;
 			static application& instance();
 
+			const texture_atlas& get_texture_atlas() const;
+			texture_atlas& get_texture_atlas();
+			scene_manager& get_scene_manager();
 		protected:
 			virtual void init_logger();
 			virtual void init_vfs();
@@ -45,6 +49,7 @@ namespace neutrino {
 			bool need_to_quit() const;
 			bool user_init_sequence();
 			bool internal_run(std::chrono::milliseconds delta_t);
+
 		private:
 			sdl::system m_initializer;
 			sdl::window m_main_window;
@@ -54,6 +59,7 @@ namespace neutrino {
 			bool m_quit_flag;
 			int m_desired_fps;
 			unsigned m_fps;
+			texture_atlas m_texture_atlas;
 	};
 }
 

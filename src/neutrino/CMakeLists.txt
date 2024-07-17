@@ -14,9 +14,11 @@ set (src
         # SCENE
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/scene/scene.hh
+        ${PROJECT_INCLUDE}/neutrino/scene/title_scene.hh
         ${PROJECT_INCLUDE}/neutrino/scene/scene_manager.hh
         scene/scene.cc
         scene/scene_manager.cc
+        scene/title_scene.cc
 
         # =============================================================
         # APPLICATION
@@ -32,6 +34,13 @@ set (src
         ini/ini_parser.cc
         ini/inih.h
         ini/inih.c
+
+        # =============================================================
+        # SYSTEMS/VIDEO
+        # =============================================================
+        ${PROJECT_INCLUDE}/neutrino/systems/video/types.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/texture_atlas.hh
+        systems/video/texture_atlas.cc
 )
 
 if (NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET AND
@@ -58,6 +67,12 @@ target_include_directories(neutrino
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${test_include}
 )
+
+target_compile_options(neutrino PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+        -Wall>
+        $<$<CXX_COMPILER_ID:MSVC>:
+        /W4>)
 
 target_compile_features(neutrino PUBLIC cxx_std_17)
 

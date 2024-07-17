@@ -2,8 +2,8 @@
 // Created by igor on 7/14/24.
 //
 
-#ifndef CONFIG_PARSER_HH
-#define CONFIG_PARSER_HH
+#ifndef NEUTRINO_INI_CONFIG_PARSER_HH
+#define NEUTRINO_INI_CONFIG_PARSER_HH
 
 #include <map>
 #include <any>
