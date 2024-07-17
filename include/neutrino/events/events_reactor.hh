@@ -80,7 +80,7 @@ namespace neutrino {
 				using tuple_t = detail::producers_tuple <Callable...>;
 				using event_type = typename tuple_t::event_type;
 				static const std::string key(type_name_v <event_type>);
-				EVLOG_TRACE(EVLOG_DEBUG, "Registering event handler for", key);
+				EVLOG_TRACE(EVLOG_DEBUG, "Registering event handler for ", key);
 				m_handlers.insert(std::make_pair(key,
 				                                 std::make_unique <detail::event_handler <Callable...>>(
 					                                 std::forward <Callable>(f)...)));

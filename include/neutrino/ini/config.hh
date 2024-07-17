@@ -2,8 +2,8 @@
 // Created by igor on 7/14/24.
 //
 
-#ifndef CONFIG_HH
-#define CONFIG_HH
+#ifndef NEUTRINO_INI_CONFIG_HH
+#define NEUTRINO_INI_CONFIG_HH
 
 #include <string_view>
 #include <bsw/macros.hh>

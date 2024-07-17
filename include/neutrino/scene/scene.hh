@@ -8,6 +8,7 @@
 #include <chrono>
 #include <neutrino/neutrino_export.hh>
 #include <neutrino/events/events_reactor.hh>
+#include <neutrino/systems/video/texture_atlas.hh>
 #include <sdlpp/sdlpp.hh>
 #include <bitflags/bitflags.hpp>
 
@@ -32,6 +33,7 @@ namespace neutrino {
 			virtual ~scene();
 
 		protected:
+			virtual void initialize();
 			virtual void handle_input(const sdl::events::event_t& ev);
 			virtual void update(std::chrono::milliseconds delta_time) = 0;
 			virtual void render(sdl::renderer& renderer) = 0;
@@ -42,6 +44,16 @@ namespace neutrino {
 				m_events_reactor.register_handler(std::forward <Callbacks>(callbacks)...);
 			}
 
+			template <typename Event>
+			const Event* get_event() {
+				return m_events_reactor.get<Event>();
+			}
+
+			virtual texture_atlas& get_texture_atlas();
+
+			static void push_scene(std::shared_ptr<scene> new_scene);
+			static void pop_scene();
+			static void replace_scene(std::shared_ptr<scene> new_scene);
 		protected:
 			virtual void on_widow_moved(const sdl::point& new_pos);
 			virtual void on_widow_resized(const sdl::area_type& new_area);
@@ -77,6 +89,7 @@ namespace neutrino {
 			events_reactor m_events_reactor;
 			scene_manager* m_scene_manager;
 			bool m_is_active;
+			bool m_is_initialized;
 	};
 }
 

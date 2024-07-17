@@ -42,13 +42,24 @@ namespace neutrino {
 		return m_stack.empty();
 	}
 
+	void scene_manager::clear_events() {
+		for (auto& scene_ptr : m_stack) {
+			scene_ptr->m_events_reactor.reset();
+		}
+	}
+
 	void scene_manager::render(sdl::renderer& renderer) {
+		std::size_t start_idx = m_stack.size() - 1;
 		for (auto i = m_stack.rbegin(); i != m_stack.rend(); ++i) {
 			auto& scene_ptr = *i;
-			scene_ptr->render(renderer);
+
 			if (!scene_ptr->get_flags().contains(scene::flags::TRANSPARENT)) {
 				break;
 			}
+			start_idx--;
+		}
+		for (auto i=start_idx; i<m_stack.size(); i++) {
+			m_stack[i]->render(renderer);
 		}
 	}
 
