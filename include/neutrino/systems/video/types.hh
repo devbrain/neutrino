@@ -13,13 +13,21 @@
 namespace neutrino {
 	namespace detail {
 		struct texture_id_t_;
+		using underlying_texture_type = uint16_t;
+
 		struct tile_id_t_;
 		using underlying_tile_type = uint16_t;
+
+		struct font_id_t_;
+		using underlying_font_type = uint16_t;
 	}
 
-	using texture_id_t = strong::type<uint16_t, detail::texture_id_t_, strong::ordered, strong::equality, strong::ostreamable>;
+	using texture_id_t = strong::type<detail::underlying_texture_type, detail::texture_id_t_, strong::ordered, strong::equality, strong::ostreamable>;
 	using tile_id_t = strong::type<detail::underlying_tile_type, detail::tile_id_t_, strong::ordered, strong::equality, strong::ostreamable>;
-	inline constexpr auto EMPTY_TILE_VALUE = std::numeric_limits<detail::underlying_tile_type>::max();
+	using font_id_t = strong::type<detail::underlying_font_type, detail::font_id_t_, strong::ordered, strong::equality, strong::ostreamable>;
+
+	inline constexpr auto INVALID_TEXTURE_VALUE = texture_id_t(std::numeric_limits<detail::underlying_texture_type>::max());
+	inline constexpr auto EMPTY_TILE_VALUE = tile_id_t(std::numeric_limits<detail::underlying_tile_type>::max());
 }
 
 #endif

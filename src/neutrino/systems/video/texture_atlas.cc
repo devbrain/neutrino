@@ -28,6 +28,9 @@ namespace neutrino {
 	}
 
 	std::tuple<const sdl::texture*, sdl::rect> texture_atlas::get(texture_id_t tid) const {
+		if (tid == INVALID_TEXTURE_VALUE) {
+			return {nullptr, {}};
+		}
 		auto i = m_textures.find(tid);
 		if (i == m_textures.end()) {
 			return {nullptr, {}};
@@ -36,7 +39,7 @@ namespace neutrino {
 	}
 
 	std::tuple<const sdl::texture*, sdl::rect> texture_atlas::get(const tile& tlid) const {
-		if (tlid.m_id.value_of() == EMPTY_TILE_VALUE) {
+		if (tlid.m_id == EMPTY_TILE_VALUE || tlid.m_texture == INVALID_TEXTURE_VALUE) {
 			return {nullptr, {}};
 		}
 		const auto ridx = tlid.m_id.value_of();
