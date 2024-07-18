@@ -41,8 +41,18 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/systems/video/types.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/texture_atlas.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/tile.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/tile_font_spec.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/font_renderer.hh
         systems/video/texture_atlas.cc
         systems/video/tile.cc
+        systems/video/tile_font_spec.cc
+        systems/video/font_renderer.cc
+
+        # =============================================================
+        # UTILS
+        # =============================================================
+        ${PROJECT_INCLUDE}/neutrino/utils/line.hh
+
 )
 
 if (NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET AND

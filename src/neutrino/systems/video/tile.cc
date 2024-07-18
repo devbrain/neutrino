@@ -5,8 +5,8 @@
 
 namespace neutrino {
 	tile::tile()
-		: m_texture(0),
-		  m_id(0) {
+		: m_texture(INVALID_TEXTURE_VALUE),
+		  m_id(EMPTY_TILE_VALUE) {
 	}
 
 	tile::tile(tile_id_t tile_id)
