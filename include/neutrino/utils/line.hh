@@ -5,6 +5,8 @@
 #ifndef NEUTRINO_UTILS_LINE_HH
 #define NEUTRINO_UTILS_LINE_HH
 
+#include <sdlpp/video/geometry.hh>
+
 namespace neutrino::utils {
 	namespace detail {
 		template<typename T>
@@ -70,6 +72,11 @@ namespace neutrino::utils {
 				y += sy;
 			}
 		}
+	}
+
+	template<typename Callable>
+	void line(const sdl::point& start, const sdl::point& end, const Callable& plot) {
+		line(start.x, start.y, end.x, end.y, plot);
 	}
 }
 
