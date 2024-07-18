@@ -35,6 +35,15 @@ namespace neutrino {
 		return {&i->second.m_texture, i->second.m_dims};
 	}
 
+	std::tuple<const sdl::texture*, sdl::rect> texture_atlas::get(const tile& tlid) const {
+		if (tlid.m_id.value_of() == EMPTY_TILE_VALUE) {
+			return {nullptr, {}};
+		}
+		const auto ridx = tlid.m_id.value_of();
+		auto i = m_textures.find(tlid.m_texture);
+		return {&i->second.m_texture, i->second.m_rects[ridx]};
+	}
+
 	void texture_atlas::remove(texture_id_t tid) {
 		auto i = m_textures.find(tid);
 		if (i != m_textures.end()) {

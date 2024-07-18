@@ -5,6 +5,7 @@
 #include <neutrino/application.hh>
 #include <neutrino/scene/title_scene.hh>
 #include "data_loader/data_directory.hh"
+#include "data_loader/data_manager.hh"
 #include "scenes/title_scene.hh"
 #include "scenes/main_screen_scene.hh"
 #include "scenes/scenes_registry.hh"
@@ -14,7 +15,7 @@ class cc_application : public neutrino::application {
 		explicit cc_application(const std::filesystem::path& path_to_data);
 	private:
 		void setup_scenes(neutrino::sdl::renderer& renderer) override;
-
+		void load_tiles();
 		std::shared_ptr<neutrino::scene> create_main_scene(neutrino::sdl::renderer& renderer);
 		std::shared_ptr<neutrino::scene> create_title_scene(neutrino::sdl::renderer& renderer);
 	private:
@@ -26,10 +27,18 @@ cc_application::cc_application(const std::filesystem::path& path_to_data)
 }
 
 void cc_application::setup_scenes(neutrino::sdl::renderer& renderer) {
+	load_tiles();
 	auto title = create_title_scene(renderer);
 	scenes_registry::instance().add(name_t::TITLE_SCREEN, title);
 	scenes_registry::instance().add(name_t::MAIN_SCREEN, create_main_scene(renderer));
 	get_scene_manager().push(title);
+}
+
+void cc_application::load_tiles() {
+	m_data_dir.load_tileset(data_directory::CC1_TILES).get_surface().save_bmp("tiles.bmp");
+	m_data_dir.load_tileset(data_directory::CC1_MINI_TILES1).get_surface().save_bmp("tiles-1.bmp");
+	m_data_dir.load_tileset(data_directory::CC1_MINI_TILES2).get_surface().save_bmp("tiles-2.bmp");
+	m_data_dir.load_tileset(data_directory::CC1_MINI_TILES3).get_surface().save_bmp("tiles-3.bmp");
 }
 
 std::shared_ptr<neutrino::scene> cc_application::create_main_scene(neutrino::sdl::renderer& renderer) {

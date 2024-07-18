@@ -40,7 +40,9 @@ set (src
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/systems/video/types.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/texture_atlas.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/tile.hh
         systems/video/texture_atlas.cc
+        systems/video/tile.cc
 )
 
 if (NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET AND

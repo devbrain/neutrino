@@ -12,21 +12,23 @@
 #include <sdlpp/sdlpp.hh>
 
 #include <neutrino/systems/video/types.hh>
+#include <neutrino/systems/video/tile.hh>
 #include <neutrino/neutrino_export.hh>
 
 namespace neutrino {
 	class NEUTRINO_EXPORT texture_atlas {
 		public:
+			texture_id_t add(sdl::texture&& texture);
+			texture_id_t add(sdl::texture&& texture, std::vector <sdl::rect>&& rects);
 
-		texture_id_t add(sdl::texture&& texture);
-		texture_id_t add(sdl::texture&& texture, std::vector <sdl::rect>&& rects);
+			texture_id_t add(sdl::surface&& srf, const sdl::renderer& renderer);
+			texture_id_t add(sdl::surface&& srf, std::vector <sdl::rect>&& rects, const sdl::renderer& renderer);
 
-		texture_id_t add(sdl::surface&& srf, const sdl::renderer& renderer);
-		texture_id_t add(sdl::surface&& srf, std::vector <sdl::rect>&& rects, const sdl::renderer& renderer);
+			[[nodiscard]] std::tuple <const sdl::texture*, sdl::rect> get(texture_id_t tid) const;
+			[[nodiscard]] std::tuple <const sdl::texture*, sdl::rect> get(const tile& tlid) const;
 
-		[[nodiscard]] std::tuple<const sdl::texture*, sdl::rect> get(texture_id_t tid) const;
+			void remove(texture_id_t tid);
 
-		void remove(texture_id_t tid);
 		private:
 			struct tiles_map {
 				tiles_map(std::vector <sdl::rect>&& rects, sdl::texture&& texture);
@@ -34,7 +36,8 @@ namespace neutrino {
 				sdl::texture m_texture; // texture itself
 				sdl::rect m_dims; // dimensions of the texture
 			};
-		std::map<texture_id_t, tiles_map> m_textures;
+
+			std::map <texture_id_t, tiles_map> m_textures;
 	};
 }
 
