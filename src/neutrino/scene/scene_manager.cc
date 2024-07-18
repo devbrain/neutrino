@@ -53,10 +53,12 @@ namespace neutrino {
 		for (auto i = m_stack.rbegin(); i != m_stack.rend(); ++i) {
 			auto& scene_ptr = *i;
 
-			if (!scene_ptr->get_flags().contains(scene::flags::TRANSPARENT)) {
+			if (scene_ptr->get_flags() & scene::flags::TRANSPARENT) {
+				start_idx--;
+			} else {
 				break;
 			}
-			start_idx--;
+
 		}
 		for (auto i=start_idx; i<m_stack.size(); i++) {
 			m_stack[i]->render(renderer);

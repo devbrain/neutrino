@@ -5,7 +5,7 @@
 #ifndef  CRYSTAL_CAVES_HH
 #define  CRYSTAL_CAVES_HH
 
-#include <filesystem>
+#include <istream>
 #include <map>
 #include <assets/assets.hh>
 #include "data_loader/raw_map.hh"
@@ -47,8 +47,9 @@ class exe_map_props {
 extern exe_map_props cc1;
 extern exe_map_props cc3;
 
-std::vector<raw_map> extract_maps_cc(const std::filesystem::path& path_to_exe, const exe_map_props& props);
-neutrino::assets::tileset load_tileset_cc(const std::filesystem::path& pth);
+std::vector<raw_map> extract_maps_cc(std::istream& is, const exe_map_props& props);
+neutrino::assets::tileset load_tileset_cc(std::istream& is);
+neutrino::assets::tileset load_mini_tileset_cc(std::istream& is);
 
 
 

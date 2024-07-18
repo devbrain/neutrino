@@ -25,7 +25,9 @@ namespace neutrino {
 	}
 
 	scene::flags scene::get_flags() const {
-		return {};
+		flags f;
+		f.clear();
+		return f;
 	}
 
 	texture_atlas& scene::get_texture_atlas() {
