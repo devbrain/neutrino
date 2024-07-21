@@ -102,7 +102,7 @@ assets::tileset load_tileset_cc(std::istream& is) {
 	auto ts = get_data_manager()->load <assets::tileset>(rc);
  	sdl::palette palette(cc_pal.begin(), cc_pal.end());
 	ts.get_surface().set_palette(palette);
-	ts.get_surface().color_key(sdl::colors::black);
+	//ts.get_surface().color_key(sdl::colors::black);
 	return ts;
 }
 
@@ -111,6 +111,6 @@ assets::tileset load_mini_tileset_cc(std::istream& is) {
 	auto ts =  get_data_manager()->load <assets::tileset>(rc);
 	sdl::palette palette(cc_pal.begin(), cc_pal.end());
 	ts.get_surface().set_palette(palette);
-	ts.get_surface().color_key(sdl::colors::black);
+	//ts.get_surface().color_key(sdl::colors::black);
 	return ts;
 }

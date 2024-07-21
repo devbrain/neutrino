@@ -14,6 +14,7 @@
 #include <neutrino/systems/video/types.hh>
 #include <neutrino/systems/video/tile.hh>
 #include <neutrino/neutrino_export.hh>
+#include <assets/resources/tileset/tileset.hh>
 
 namespace neutrino {
 	class NEUTRINO_EXPORT texture_atlas {
@@ -23,6 +24,8 @@ namespace neutrino {
 
 			texture_id_t add(sdl::surface&& srf, const sdl::renderer& renderer);
 			texture_id_t add(sdl::surface&& srf, std::vector <sdl::rect>&& rects, const sdl::renderer& renderer);
+			texture_id_t add(assets::tileset&& tileset, const sdl::renderer& renderer);
+
 
 			[[nodiscard]] std::tuple <const sdl::texture*, sdl::rect> get(texture_id_t tid) const;
 			[[nodiscard]] std::tuple <const sdl::texture*, sdl::rect> get(const tile& tlid) const;

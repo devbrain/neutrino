@@ -27,6 +27,14 @@ namespace neutrino {
 		return add (sdl::texture(renderer, srf), std::move(rects));
 	}
 
+	texture_id_t texture_atlas::add(assets::tileset&& tileset, const sdl::renderer& renderer) {
+		std::vector<sdl::rect> rects;
+		for (const auto& i : tileset) {
+			rects.emplace_back(std::get<0>(i.second));
+		}
+		return add(std::move(tileset.get_surface()), std::move(rects), renderer);
+	}
+
 	std::tuple<const sdl::texture*, sdl::rect> texture_atlas::get(texture_id_t tid) const {
 		if (tid == INVALID_TEXTURE_VALUE) {
 			return {nullptr, {}};

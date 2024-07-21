@@ -28,6 +28,9 @@ namespace neutrino {
 
 	inline constexpr auto INVALID_TEXTURE_VALUE = texture_id_t(std::numeric_limits<detail::underlying_texture_type>::max());
 	inline constexpr auto EMPTY_TILE_VALUE = tile_id_t(std::numeric_limits<detail::underlying_tile_type>::max());
+
+	using tile_coord_t = unsigned;
+	using pixel_coord_t = unsigned;
 }
 
 #endif
