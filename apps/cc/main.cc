@@ -35,10 +35,11 @@ void cc_application::setup_scenes(neutrino::sdl::renderer& renderer) {
 }
 
 void cc_application::load_tiles() {
-	m_data_dir.load_tileset(data_directory::CC1_TILES).get_surface().save_bmp("tiles.bmp");
-	m_data_dir.load_tileset(data_directory::CC1_MINI_TILES1).get_surface().save_bmp("tiles-1.bmp");
-	m_data_dir.load_tileset(data_directory::CC1_MINI_TILES2).get_surface().save_bmp("tiles-2.bmp");
-	m_data_dir.load_tileset(data_directory::CC1_MINI_TILES3).get_surface().save_bmp("tiles-3.bmp");
+	//m_data_dir.load_tileset(data_directory::CC1_TILES).get_surface().save_bmp("tiles.bmp");
+	auto [srf, rects] = m_data_dir.load_tileset(data_directory::CC1_MINI_TILES1);
+	srf.save_bmp("tiles-1.bmp");
+	//m_data_dir.load_tileset(data_directory::CC1_MINI_TILES2).get_surface().save_bmp("tiles-2.bmp");
+	//m_data_dir.load_tileset(data_directory::CC1_MINI_TILES3).get_surface().save_bmp("tiles-3.bmp");
 }
 
 std::shared_ptr<neutrino::scene> cc_application::create_main_scene(neutrino::sdl::renderer& renderer) {

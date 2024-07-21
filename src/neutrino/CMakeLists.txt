@@ -42,11 +42,24 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/systems/video/texture_atlas.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/tile.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/tile_font_spec.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/font_renderer.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/fonts_registry.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/fonts_renderer.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/renderer_state.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/world/tiles_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/world/color_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/world/image_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/world/world_model.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/world/animation_sequence.hh
         systems/video/texture_atlas.cc
         systems/video/tile.cc
         systems/video/tile_font_spec.cc
-        systems/video/font_renderer.cc
+        systems/video/fonts_registry.cc
+        systems/video/fonts_renderer.cc
+        systems/video/world/tiles_layer.cc
+        systems/video/world/color_layer.cc
+        systems/video/world/image_layer.cc
+        systems/video/world/world_model.cc
+        systems/video/world/animation_sequence.cc
 
         # =============================================================
         # UTILS

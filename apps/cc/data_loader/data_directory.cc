@@ -20,6 +20,9 @@ static std::map <std::string, data_directory::resource_t> names_mappings = {
 	{"CC1-F1.MNI", data_directory::CC1_MINI_TILES1},
 	{"CC1-F2.MNI", data_directory::CC1_MINI_TILES2},
 	{"CC1-SPL.MNI", data_directory::CC1_MINI_TILES3},
+	{"CC1-1.SND", data_directory::CC1_SOUNDS1},
+	{"CC1-2.SND", data_directory::CC1_SOUNDS2},
+	{"CC1-3.SND", data_directory::CC1_SOUNDS3},
 
 	{"CC2.APG", data_directory::CC2_APOGEE_SCREEN},
 	{"CC2.TTL", data_directory::CC2_UP_MAIN},
@@ -29,6 +32,9 @@ static std::map <std::string, data_directory::resource_t> names_mappings = {
 	{"CC2-F1.MNI", data_directory::CC2_MINI_TILES1},
 	{"CC2-F2.MNI", data_directory::CC2_MINI_TILES2},
 	{"CC2-SPL.MNI", data_directory::CC2_MINI_TILES3},
+	{"CC2-1.SND", data_directory::CC2_SOUNDS1},
+	{"CC2-2.SND", data_directory::CC2_SOUNDS2},
+	{"CC2-3.SND", data_directory::CC2_SOUNDS3},
 
 	{"CC3.APG", data_directory::CC3_APOGEE_SCREEN},
 	{"CC3.TTL", data_directory::CC3_UP_MAIN},
@@ -38,6 +44,9 @@ static std::map <std::string, data_directory::resource_t> names_mappings = {
 	{"CC3-F1.MNI", data_directory::CC3_MINI_TILES1},
 	{"CC3-F2.MNI", data_directory::CC3_MINI_TILES2},
 	{"CC3-SPL.MNI", data_directory::CC3_MINI_TILES3},
+	{"CC3-1.SND", data_directory::CC3_SOUNDS1},
+	{"CC3-2.SND", data_directory::CC3_SOUNDS2},
+	{"CC3-3.SND", data_directory::CC3_SOUNDS3},
 };
 
 data_directory::data_directory(const std::filesystem::path& root) {
@@ -70,7 +79,33 @@ neutrino::sdl::surface data_directory::load_picture(resource_t rc) {
 	return ::load_picture(*this, rc);
 }
 
-neutrino::assets::tileset data_directory::load_tileset(resource_t rc) {
+static std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> convert_tileset(
+	const neutrino::assets::tileset& ts) {
+	const auto& s = ts.get_surface();
+	auto out_srf = neutrino::sdl::surface::make_rgba_32bit(s.get_dimanesions());
+	std::vector <neutrino::sdl::rect> rects;
+	constexpr neutrino::sdl::color transparent(0, 0, 0, 0);
+	for (const auto& inf : ts) {
+		auto src_rect = ts.get_tile(inf.first);
+
+		s.blit(src_rect, out_srf, src_rect);
+		rects.emplace_back(src_rect);
+		if (const auto* bitmap = ts.get_bitmap(inf.first)) {
+			for (std::size_t y = 0; y < bitmap->get_height(); y++) {
+				uint8_t* row = static_cast <uint8_t*>(out_srf->pixels) + (src_rect.y + y) * out_srf->pitch;
+				for (std::size_t x = 0; x < bitmap->get_width(); x++) {
+					if (bitmap->data()[bitmap->get_height() * y + x]) {
+						uint32_t* px = reinterpret_cast <uint32_t*>(row) + (src_rect.x + x);
+						*px = out_srf.map_color(transparent);
+					}
+				}
+			}
+		}
+	}
+	return {std::move(out_srf), rects};
+}
+
+std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> data_directory::load_tileset(resource_t rc) {
 	bool is_mini = false;
 	switch (rc) {
 		case CC1_TILES:
@@ -93,7 +128,7 @@ neutrino::assets::tileset data_directory::load_tileset(resource_t rc) {
 			RAISE_EX("Should not be here");
 	}
 	if (is_mini) {
-		return load_mini_tileset_cc(*get(rc));
+		return convert_tileset(load_mini_tileset_cc(*get(rc)));
 	}
-	return load_tileset_cc(*get(rc));
+	return convert_tileset(load_tileset_cc(*get(rc)));
 }
