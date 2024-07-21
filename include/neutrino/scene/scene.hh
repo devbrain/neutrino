@@ -20,6 +20,7 @@ namespace neutrino {
 
 		public:
 			BEGIN_BITFLAGS(flags)
+				FLAG(NONE)
 				FLAG(TRANSPARENT)
 				FLAG(PROPAGATE_EVENTS)
 				FLAG(PROPAGATE_UPDATES)

@@ -30,6 +30,8 @@ namespace neutrino {
 			                : sdl::window(static_cast <int>(w), static_cast <int>(h));
 		m_renderer = sdl::renderer(m_main_window);
 		m_quit_flag = !user_init_sequence();
+		m_size.w = w;
+		m_size.h = h;
 	}
 
 	void application::run() {
@@ -102,6 +104,10 @@ namespace neutrino {
 
 	scene_manager& application::get_scene_manager() {
 		return m_scene_manager;
+	}
+
+	sdl::area_type application::get_window_dimensions() const {
+		return m_size;
 	}
 
 	void application::init_logger() {
@@ -208,6 +214,7 @@ namespace neutrino {
 			m_renderer.clear();
 			m_scene_manager.render(m_renderer);
 			m_renderer.present();
+
 		} catch (const std::exception& e) {
 			on_error(e);
 			return false;

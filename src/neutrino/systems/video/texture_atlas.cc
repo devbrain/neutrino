@@ -13,29 +13,35 @@ namespace neutrino {
 		return tid;
 	}
 
-	texture_id_t texture_atlas::add(sdl::texture&& texture, std::vector<sdl::rect>&& rects) {
+	texture_id_t texture_atlas::add(sdl::texture&& texture, std::vector <sdl::rect>&& rects) {
 		texture_id_t tid(counter++);
 		m_textures.insert(std::make_pair(tid, tiles_map(std::move(rects), std::move(texture))));
 		return tid;
 	}
 
 	texture_id_t texture_atlas::add(sdl::surface&& srf, const sdl::renderer& renderer) {
-		return add (sdl::texture(renderer, srf));
+		return add(sdl::texture(renderer, srf));
 	}
 
-	texture_id_t texture_atlas::add(sdl::surface&& srf, std::vector<sdl::rect>&& rects, const sdl::renderer& renderer) {
-		return add (sdl::texture(renderer, srf), std::move(rects));
+	texture_id_t texture_atlas::add(sdl::surface&& srf, std::vector <sdl::rect>&& rects,
+	                                const sdl::renderer& renderer) {
+		return add(sdl::texture(renderer, srf), std::move(rects));
+	}
+
+	texture_id_t texture_atlas::add(std::tuple <sdl::surface, std::vector <sdl::rect>>&& material,
+	                                const sdl::renderer& renderer) {
+		return add(std::move(std::get <0>(material)), std::move(std::get <1>(material)), renderer);
 	}
 
 	texture_id_t texture_atlas::add(assets::tileset&& tileset, const sdl::renderer& renderer) {
-		std::vector<sdl::rect> rects;
+		std::vector <sdl::rect> rects;
 		for (const auto& i : tileset) {
-			rects.emplace_back(std::get<0>(i.second));
+			rects.emplace_back(std::get <0>(i.second));
 		}
 		return add(std::move(tileset.get_surface()), std::move(rects), renderer);
 	}
 
-	std::tuple<const sdl::texture*, sdl::rect> texture_atlas::get(texture_id_t tid) const {
+	std::tuple <const sdl::texture*, sdl::rect> texture_atlas::get(texture_id_t tid) const {
 		if (tid == INVALID_TEXTURE_VALUE) {
 			return {nullptr, {}};
 		}
@@ -46,7 +52,7 @@ namespace neutrino {
 		return {&i->second.m_texture, i->second.m_dims};
 	}
 
-	std::tuple<const sdl::texture*, sdl::rect> texture_atlas::get(const tile& tlid) const {
+	std::tuple <const sdl::texture*, sdl::rect> texture_atlas::get(const tile& tlid) const {
 		if (tlid.m_id == EMPTY_TILE_VALUE || tlid.m_texture == INVALID_TEXTURE_VALUE) {
 			return {nullptr, {}};
 		}

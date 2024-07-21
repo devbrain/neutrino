@@ -25,6 +25,10 @@ namespace neutrino::tiled {
 		}
 	}
 
+	void world_model::add_animation(const animation_sequence& seq) {
+		m_animations.insert(std::make_pair(seq.get_first_tile(), seq));
+	}
+
 	const std::map <tile, animation_sequence>& world_model::get_animations() const {
 		return m_animations;
 	}

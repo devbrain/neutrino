@@ -9,6 +9,6 @@ title_scene::title_scene(neutrino::texture_id_t tid, std::chrono::seconds displa
 }
 
 void title_scene::when_done() {
-	replace_scene(scenes_registry::instance().get(name_t::MAIN_SCREEN));
-	scenes_registry::instance().remove(name_t::TITLE_SCREEN);
+	replace_scene(scenes_registry::instance().get(scene_name_t::MAIN_SCREEN));
+	scenes_registry::instance().remove(scene_name_t::TITLE_SCREEN);
 }

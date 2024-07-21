@@ -30,6 +30,8 @@ namespace neutrino {
 			const texture_atlas& get_texture_atlas() const;
 			texture_atlas& get_texture_atlas();
 			scene_manager& get_scene_manager();
+
+			sdl::area_type get_window_dimensions() const;
 		protected:
 			virtual void init_logger();
 			virtual void init_vfs();
@@ -60,6 +62,7 @@ namespace neutrino {
 			int m_desired_fps;
 			unsigned m_fps;
 			texture_atlas m_texture_atlas;
+			sdl::area_type m_size;
 	};
 }
 

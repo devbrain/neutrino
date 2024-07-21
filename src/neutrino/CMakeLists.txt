@@ -45,6 +45,7 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/systems/video/fonts_registry.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/fonts_renderer.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/renderer_state.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/world_renderer.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/world/tiles_layer.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/world/color_layer.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/world/image_layer.hh
@@ -55,6 +56,7 @@ set (src
         systems/video/tile_font_spec.cc
         systems/video/fonts_registry.cc
         systems/video/fonts_renderer.cc
+        systems/video/world_renderer.cc
         systems/video/world/tiles_layer.cc
         systems/video/world/color_layer.cc
         systems/video/world/image_layer.cc

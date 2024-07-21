@@ -83,12 +83,11 @@ static std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> co
 	const neutrino::assets::tileset& ts) {
 	const auto& s = ts.get_surface();
 	auto out_srf = neutrino::sdl::surface::make_rgba_32bit(s.get_dimanesions());
+	s.blit(out_srf);
 	std::vector <neutrino::sdl::rect> rects;
 	constexpr neutrino::sdl::color transparent(0, 0, 0, 0);
 	for (const auto& inf : ts) {
 		auto src_rect = ts.get_tile(inf.first);
-
-		s.blit(src_rect, out_srf, src_rect);
 		rects.emplace_back(src_rect);
 		if (const auto* bitmap = ts.get_bitmap(inf.first)) {
 			for (std::size_t y = 0; y < bitmap->get_height(); y++) {
