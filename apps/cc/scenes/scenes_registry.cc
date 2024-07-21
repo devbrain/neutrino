@@ -6,17 +6,17 @@
 #include <bsw/exception.hh>
 
 namespace detail {
-	void scenes_registry::add(name_t name, const std::shared_ptr<neutrino::scene>& scene) {
+	void scenes_registry::add(scene_name_t name, const std::shared_ptr<neutrino::scene>& scene) {
 		m_scenes.insert(std::make_pair(name, scene));
 	}
 
-	std::shared_ptr<neutrino::scene> scenes_registry::get(name_t name) {
+	std::shared_ptr<neutrino::scene> scenes_registry::get(scene_name_t name) {
 		auto i = m_scenes.find(name);
 		ENFORCE(i != m_scenes.end());
 		return i->second;
 	}
 
-	void scenes_registry::remove(name_t name) {
+	void scenes_registry::remove(scene_name_t name) {
 		auto i = m_scenes.find(name);
 		ENFORCE(i != m_scenes.end());
 		m_scenes.erase(i);

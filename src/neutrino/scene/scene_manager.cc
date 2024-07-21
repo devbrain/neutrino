@@ -52,8 +52,8 @@ namespace neutrino {
 		std::size_t start_idx = m_stack.size() - 1;
 		for (auto i = m_stack.rbegin(); i != m_stack.rend(); ++i) {
 			auto& scene_ptr = *i;
-
-			if (scene_ptr->get_flags() & scene::flags::TRANSPARENT) {
+			auto flags = scene_ptr->get_flags();
+			if ( flags & scene::flags::TRANSPARENT) {
 				start_idx--;
 			} else {
 				break;

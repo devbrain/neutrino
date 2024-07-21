@@ -24,6 +24,7 @@ namespace neutrino {
 
 			texture_id_t add(sdl::surface&& srf, const sdl::renderer& renderer);
 			texture_id_t add(sdl::surface&& srf, std::vector <sdl::rect>&& rects, const sdl::renderer& renderer);
+			texture_id_t add(std::tuple<sdl::surface, std::vector <sdl::rect>>&& material, const sdl::renderer& renderer);
 			texture_id_t add(assets::tileset&& tileset, const sdl::renderer& renderer);
 
 

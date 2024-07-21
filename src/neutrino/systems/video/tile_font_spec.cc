@@ -60,4 +60,13 @@ namespace neutrino {
 		}
 		return *this;
 	}
+
+	tile_font_spec_builder& tile_font_spec_builder::add(texture_id_t tid, tile_id_t tl_first, const std::string& str) {
+		ENFORCE(m_atlas);
+		auto first_id = tl_first.value_of();
+		for (char ch: str) {
+			m_fonts[ch] = tile_font_spec::glyph(m_atlas, tile(tid, tile_id_t(first_id++)));
+		}
+		return *this;
+	}
 }

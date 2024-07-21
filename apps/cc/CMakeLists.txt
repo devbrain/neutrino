@@ -1,5 +1,7 @@
 add_executable(cc
         main.cc
+        tile_names.cc
+        tile_names.hh
         data_loader/crystal_caves/cc_decode.cc
         data_loader/crystal_caves/cc_decode.hh
         data_loader/crystal_caves/cc_tiles_mapping.hh
@@ -21,6 +23,10 @@ add_executable(cc
         scenes/main_screen_scene.hh
         scenes/scenes_registry.cc
         scenes/scenes_registry.hh
+        scenes/dialog_box.cc
+        scenes/dialog_box.hh
+        scenes/dialogs.cc
+        scenes/dialogs.hh
 
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

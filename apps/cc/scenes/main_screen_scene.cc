@@ -3,6 +3,8 @@
 //
 
 #include "main_screen_scene.hh"
+#include "scenes_registry.hh"
+struct any_key {};
 
 main_screen_scene::main_screen_scene(neutrino::texture_id_t upper, neutrino::texture_id_t lower, double rows_per_second,
                                      std::chrono::seconds wait_time)
@@ -17,36 +19,39 @@ main_screen_scene::main_screen_scene(neutrino::texture_id_t upper, neutrino::tex
 }
 
 void main_screen_scene::update(std::chrono::milliseconds delta_time) {
-	m_time_in_state += delta_time;
-	if (m_direction == NONE) {
-		if (std::chrono::duration_cast<std::chrono::seconds>(m_time_in_state) > m_wait_time) {
-			m_time_in_state = std::chrono::milliseconds(0);
-			if (m_hit_bottom) {
-				m_direction = UP;
-			} else {
-				m_direction = DOWN;
-			}
-		}
+	if (get_event<any_key>()) {
+		push_scene(scenes_registry::instance().get(scene_name_t::MAIN_DIALOG));
 	} else {
-		auto rows_ellapsed = static_cast<int>(m_rows_per_second * m_time_in_state.count() / 1000.0);
-		if (m_direction == DOWN) {
-			m_window.y = rows_ellapsed;
-			if (m_window.y >= m_up_dims.h) {
-				m_window.y = m_up_dims.h;
-				m_direction = NONE;
-				m_hit_bottom = true;
+		m_time_in_state += delta_time;
+		if (m_direction == NONE) {
+			if (std::chrono::duration_cast<std::chrono::seconds>(m_time_in_state) > m_wait_time) {
 				m_time_in_state = std::chrono::milliseconds(0);
+				if (m_hit_bottom) {
+					m_direction = UP;
+				} else {
+					m_direction = DOWN;
+				}
 			}
 		} else {
-			m_window.y = m_window.h - rows_ellapsed;
-			if (m_window.y <= 0) {
-				m_window.y = 0;
-				m_direction = NONE;
-				m_hit_bottom = false;
-				m_time_in_state = std::chrono::milliseconds(0);
+			auto rows_ellapsed = static_cast<int>(m_rows_per_second * m_time_in_state.count() / 1000.0);
+			if (m_direction == DOWN) {
+				m_window.y = rows_ellapsed;
+				if (m_window.y >= m_up_dims.h) {
+					m_window.y = m_up_dims.h;
+					m_direction = NONE;
+					m_hit_bottom = true;
+					m_time_in_state = std::chrono::milliseconds(0);
+				}
+			} else {
+				m_window.y = m_window.h - rows_ellapsed;
+				if (m_window.y <= 0) {
+					m_window.y = 0;
+					m_direction = NONE;
+					m_hit_bottom = false;
+					m_time_in_state = std::chrono::milliseconds(0);
+				}
 			}
 		}
-
 	}
 }
 
@@ -76,10 +81,16 @@ void main_screen_scene::render(neutrino::sdl::renderer& renderer) {
 	}
 }
 
+
+
 void main_screen_scene::initialize() {
 	std::tie(m_up, m_up_dims) = get_texture_atlas().get(m_upper);
 	std::tie(m_down, m_down_dims) = get_texture_atlas().get(m_lower);
 	m_window = m_up_dims;
+
+	register_event_handler([](const neutrino::sdl::events::keyboard& kb, any_key&) {
+		return kb.pressed;
+	});
 }
 
 

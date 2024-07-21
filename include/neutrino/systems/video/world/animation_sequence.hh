@@ -28,6 +28,7 @@ namespace neutrino::tiled {
 
 			[[nodiscard]] const std::vector <frame>& get_frames() const;
 			void add_frame(const frame& f);
+			[[nodiscard]] tile get_first_tile() const;
 
 		private:
 			std::vector <frame> m_frames;

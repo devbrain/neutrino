@@ -10,9 +10,11 @@
 #include <neutrino/scene/scene.hh>
 #include <bsw/singleton.hh>
 
-enum class name_t {
+enum class scene_name_t {
 	TITLE_SCREEN,
-	MAIN_SCREEN
+	MAIN_SCREEN,
+	MAIN_DIALOG,
+	QUIT_TO_DOS_DIALOG
 };
 
 namespace detail {
@@ -20,11 +22,11 @@ namespace detail {
 		public:
 
 		public:
-			void add(name_t name, const std::shared_ptr <neutrino::scene>& scene);
-			std::shared_ptr <neutrino::scene> get(name_t name);
-			void remove(name_t name);
+			void add(scene_name_t name, const std::shared_ptr <neutrino::scene>& scene);
+			std::shared_ptr <neutrino::scene> get(scene_name_t name);
+			void remove(scene_name_t name);
 		private:
-			std::map <name_t, std::shared_ptr <neutrino::scene>> m_scenes;
+			std::map <scene_name_t, std::shared_ptr <neutrino::scene>> m_scenes;
 	};
 
 }

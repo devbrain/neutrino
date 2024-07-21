@@ -25,6 +25,10 @@ namespace neutrino {
 				tile                 m_tile;
 			};
 
+			tile_font_spec() = default;
+			tile_font_spec(const tile_font_spec&) = default;
+			tile_font_spec& operator = (const tile_font_spec&) = default;
+
 			[[nodiscard]] glyph get(char ch) const;
 		private:
 			explicit tile_font_spec(const std::array <glyph, 256>& fonts);
@@ -41,6 +45,7 @@ namespace neutrino {
 			tile_font_spec_builder& set_atlas(const texture_atlas* atlas);
 			tile_font_spec_builder& add(texture_id_t tid, tile_id_t tl, char ch);
 			tile_font_spec_builder& add(texture_id_t tid, tile_id_t tl_first, char first, char last);
+			tile_font_spec_builder& add(texture_id_t tid, tile_id_t tl_first, const std::string& str);
 		private:
 			std::array <tile_font_spec::glyph, 256> m_fonts;
 			const texture_atlas* m_atlas;
