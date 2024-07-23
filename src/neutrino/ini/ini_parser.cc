@@ -195,7 +195,7 @@ namespace neutrino::utils {
     }
   }
   // ------------------------------------------------------------------------------------------------------------
-  void config_parser::parse(std::vector<std::map<std::string, std::any>>& out, const nlohmann::json& map) {
+  void config_parser::parse(std::vector<std::map<std::string, std::any>>& out, nlohmann::json const& map) {
     if (map.is_object()) {
       std::map<std::string, std::any> obj;
       parse(obj, map);
