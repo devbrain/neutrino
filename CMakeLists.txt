@@ -41,4 +41,4 @@ set(PROJECT_CONFIG_INCLUDE ${CMAKE_BINARY_DIR}/include)
 add_subdirectory(ext)
 add_subdirectory(src)
 add_subdirectory(apps)
-
+add_subdirectory(test)

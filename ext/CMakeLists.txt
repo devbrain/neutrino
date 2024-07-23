@@ -7,6 +7,7 @@ add_subdirectory(assets)
 add_subdirectory(vfs)
 add_subdirectory(callable_traits)
 add_subdirectory(yaml)
+add_subdirectory(doctest)
 
 
 
