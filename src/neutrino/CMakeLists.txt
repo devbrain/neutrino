@@ -70,7 +70,7 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/sorted_array.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/bi_map.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/component_bucket.hh
-        #ecs/detail/component_bucket.cc
+        ecs/detail/component_bucket.cc
         # =============================================================
         # UTILS
         # =============================================================

@@ -18,6 +18,11 @@ namespace neutrino::ecs::detail {
 			explicit sorted_array (std::size_t capacity) {
 				m_array.reserve(capacity);
 			}
+			sorted_array(const T& min_val, const T& max_val) {
+				for (T i=min_val; i != max_val; i++) {
+					m_array.emplace_back(i);
+				}
+			}
 			void insert(const T& value) {
 				m_array.insert(std::upper_bound(m_array.begin(), m_array.end(), value), value);
 			}
@@ -75,6 +80,12 @@ namespace neutrino::ecs::detail {
 				return m_array[index];
 			}
 
+			T pop_back() {
+				ENFORCE(!empty());
+				T out = m_array.back();
+				m_array.pop_back();
+				return out;
+			}
 		private:
 			using array_t = std::vector <T>;
 			array_t m_array;

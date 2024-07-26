@@ -37,6 +37,9 @@ namespace neutrino::ecs::detail {
 	template<typename K, typename V>
 	class bi_map {
 		public:
+			using kv_t = key_to_val <K, V>;
+			using vk_t = key_to_val <V, K>;
+		public:
 			bi_map() = default;
 
 			explicit bi_map(std::size_t capacity)
@@ -55,10 +58,28 @@ namespace neutrino::ecs::detail {
 				return m_keys.get(idx).val;
 			}
 
+			[[nodiscard]] bool get_value_by_key(const K& key, V& out) const {
+				auto idx = m_keys.index_of(kv_t(key));
+				if (m_keys.is_valid_index(idx)) {
+					out = m_keys.get(idx).val;
+					return true;
+				}
+				return false;
+			}
+
 			[[nodiscard]] K get_key_by_value(const V& v) const {
 				auto idx = m_vals.index_of(vk_t(v));
 				ENFORCE(m_vals.is_valid_index(idx));
 				return m_vals.get(idx).val;
+			}
+
+			[[nodiscard]] bool get_key_by_value(const V& v, K& out) const {
+				auto idx = m_vals.index_of(vk_t(v));
+				if (m_vals.is_valid_index(idx)) {
+					out = m_vals.get(idx).val;
+					return true;
+				}
+				return false;
 			}
 
 			[[nodiscard]] bool key_exists(const K& key) const {
@@ -71,18 +92,25 @@ namespace neutrino::ecs::detail {
 				return m_vals.is_valid_index(idx);
 			}
 
-			bool remove_by_key(const K& k) {
+			bool remove_by_key(const K& k, kv_t* removed = nullptr) {
 				kv_t old(k);
 				if (m_keys.remove(old, &old)) {
+					if (removed) {
+						*removed = old;
+					}
 					m_vals.remove(vk_t(old.val));
+
 					return true;
 				}
 				return false;
 			}
 
-			bool remove_by_value(const V& v) {
+			bool remove_by_value(const V& v, vk_t* removed = nullptr) {
 				vk_t old(v);
 				if (m_vals.remove(old, &old)) {
+					if (removed) {
+						*removed = old;
+					}
 					m_keys.remove(kv_t(old.val));
 					return true;
 				}
@@ -100,8 +128,6 @@ namespace neutrino::ecs::detail {
 			}
 
 		private:
-			using kv_t = key_to_val <K, V>;
-			using vk_t = key_to_val <V, K>;
 			sorted_array <kv_t> m_keys;
 			sorted_array <vk_t> m_vals;
 	};
