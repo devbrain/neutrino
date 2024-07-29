@@ -416,7 +416,7 @@ namespace neutrino::ecs {
         using args = boost::callable_traits::args_t <Callable>;
         using pargs_t = detail::parse_args <args>;
         registry_iterator <typename pargs_t::components> itr(*this);
-        auto idx_seq = typename detail::gens<std::tuple_size_v<args>>::type();
+        constexpr auto idx_seq = typename detail::gens<std::tuple_size_v<args>>::type();
         while (itr.has_next()) {
             bool has_all = false;
             auto tuple = itr.next(&has_all);
