@@ -29,6 +29,25 @@ namespace neutrino::ecs {
         return itr != m_ents_map.end();
     }
 
+    void registry::remove_entity(entity_id_t e) {
+        auto ei = m_ents_map.find(e.value_of());
+        if (ei == m_ents_map.end()) {
+            return;
+        }
+        for (std::size_t i=0; i<ei->second.components.size(); i++) {
+            if (ei->second.components[i]) {
+                auto itr = m_components_names_map.find(i);
+                if (itr != m_components_names_map.end()) {
+                    auto bucket = m_components.find(itr->second.bucket);
+                    if (bucket != m_components.end()) {
+                        bucket->second->destruct(e);
+                    }
+                }
+
+            }
+        }
+    }
+
     std::vector<std::string> registry::list_components(entity_id_t e) const {
         auto ei = m_ents_map.find(e.value_of());
         ENFORCE(ei != m_ents_map.end());
@@ -37,7 +56,7 @@ namespace neutrino::ecs {
             if (ei->second.components[i]) {
                 auto itr = m_components_names_map.find(i);
                 ENFORCE(itr != m_components_names_map.end());
-                out.emplace_back(itr->second);
+                out.emplace_back(itr->second.name);
             }
         }
         return out;
