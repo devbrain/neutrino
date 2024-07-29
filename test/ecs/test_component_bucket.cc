@@ -8,40 +8,41 @@
 #include <utility>
 
 using namespace neutrino::ecs::detail;
+namespace {
+    struct A {
+        A(std::string s, int i)
+            : s(std::move(s)),
+              i(i) {
+        }
+        ~A() {
+            destruct_count++;
+        }
+        static int destruct_count;
 
-struct A {
-    A(std::string s, int i)
-        : s(std::move(s)),
-          i(i) {
+        std::string s;
+        int i;
+    };
+
+    int A::destruct_count = 0;
+
+    bool operator<(const A& lhs, const A& rhs) {
+        if (lhs.s < rhs.s)
+            return true;
+        if (rhs.s < lhs.s)
+            return false;
+        return lhs.i < rhs.i;
     }
-    ~A() {
-        destruct_count++;
+
+
+    bool operator==(const A& lhs, const A& rhs) {
+        return lhs.s == rhs.s
+               && lhs.i == rhs.i;
     }
-    static int destruct_count;
 
-    std::string s;
-    int i;
-};
-
-int A::destruct_count = 0;
-
-bool operator<(const A& lhs, const A& rhs) {
-    if (lhs.s < rhs.s)
-        return true;
-    if (rhs.s < lhs.s)
-        return false;
-    return lhs.i < rhs.i;
+    bool operator!=(const A& lhs, const A& rhs) {
+        return !(lhs == rhs);
+    }
 }
-
-bool operator==(const A& lhs, const A& rhs) {
-    return lhs.s == rhs.s
-           && lhs.i == rhs.i;
-}
-
-bool operator!=(const A& lhs, const A& rhs) {
-    return !(lhs == rhs);
-}
-
 TEST_SUITE("Test components bucket") {
     TEST_CASE("test creation and iteration") {
         auto bucket = typed_component_bucket <A>::create(10);

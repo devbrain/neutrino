@@ -67,10 +67,12 @@ set (src
         # ECS
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/ecs/types.hh
+        ${PROJECT_INCLUDE}/neutrino/ecs/registry.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/sorted_array.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/bi_map.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/component_bucket.hh
         ecs/detail/component_bucket.cc
+        ecs/registry.cc
         # =============================================================
         # UTILS
         # =============================================================
@@ -118,6 +120,6 @@ if (neutrino_ENABLE_TESTING)
 endif()
 
 target_link_libraries(neutrino
-        PUBLIC neutrino::assets neutrino::vfs bsw::bsw boost_callable_traits
+        PUBLIC neutrino::assets neutrino::vfs bsw::bsw boost_callable_traits JGuegant::dense_hash_map
         PRIVATE ryml::ryml thirdparty::json
 )
