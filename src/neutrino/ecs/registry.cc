@@ -46,6 +46,7 @@ namespace neutrino::ecs {
 
             }
         }
+        m_ents_map.erase(ei);
     }
 
     std::vector<std::string> registry::list_components(entity_id_t e) const {

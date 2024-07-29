@@ -143,6 +143,7 @@ TEST_SUITE("ECS Registry test") {
         auto e3 = b.with_component <A>(1000).with_component <B>(2.71).build();
 
         r.remove_entity(e2);
+        REQUIRE_FALSE(r.exists(e2));
         int count = 0;
         r.iterate([&count, e2](entity_id_t eid, const A& a) {
             count++;
@@ -151,6 +152,7 @@ TEST_SUITE("ECS Registry test") {
         REQUIRE(count == 2);
         count = 0;
         r.remove_entity(e3);
+        REQUIRE_FALSE(r.exists(e3));
         r.iterate([&count, e2, e3](entity_id_t eid, const A& a) {
             count++;
             REQUIRE(eid != e2);
