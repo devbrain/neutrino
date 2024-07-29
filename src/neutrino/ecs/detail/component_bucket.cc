@@ -50,12 +50,14 @@ namespace neutrino::ecs::detail {
 		return m_owner.get_key_by_index(m_last_taken);
 	}
 
-	component_bucket::component_bucket(std::size_t alignment, std::size_t size_of_element, uint16_t count)
+	component_bucket::component_bucket(std::size_t alignment, std::size_t size_of_element, uint16_t count,
+		void (*destructor) (component_bucket& bucket, entity_id_t entity_id))
 		: m_storage(static_cast <char*>(std::aligned_alloc(alignment, size_of_element * count))),
 		  m_size_of_element(size_of_element),
 		  m_capacity(count),
 		  m_names_map(count),
-		  m_free(0, count) {
+		  m_free(0, count),
+		  m_destructor(destructor) {
 	}
 
 	component_bucket::~component_bucket() {
@@ -101,5 +103,11 @@ namespace neutrino::ecs::detail {
 
 	std::size_t component_bucket::size() const {
 		return m_capacity - m_free.size();
+	}
+
+	void component_bucket::destruct(entity_id_t entity_id) {
+		if (m_destructor) {
+			m_destructor(*this, entity_id);
+		}
 	}
 }

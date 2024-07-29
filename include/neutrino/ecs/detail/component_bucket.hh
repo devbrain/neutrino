@@ -25,7 +25,10 @@ namespace neutrino::ecs::detail {
             using index_t = uint16_t;
 
         public:
-            component_bucket(std::size_t alignment, std::size_t size_of_element, uint16_t count);
+            component_bucket(std::size_t alignment,
+                std::size_t size_of_element,
+                uint16_t count,
+                void (*destructor) (component_bucket& bucket, entity_id_t entity_id));
             ~component_bucket();
 
             [[nodiscard]] std::tuple <index_t, char*> get_free() const;
@@ -38,6 +41,7 @@ namespace neutrino::ecs::detail {
             [[nodiscard]] std::size_t capacity() const;
             [[nodiscard]] std::size_t size() const;
 
+            void destruct(entity_id_t entity_id);
         private:
             char* m_storage;
             std::size_t m_size_of_element;
@@ -45,6 +49,8 @@ namespace neutrino::ecs::detail {
             using names_map_t = bi_map <key_t, index_t>;
             names_map_t m_names_map;
             mutable sorted_array <index_t> m_free;
+
+            void (*m_destructor) (component_bucket& bucket, entity_id_t entity_id);
     };
 
     class NEUTRINO_EXPORT component_bucket_iterator {
@@ -108,7 +114,7 @@ namespace neutrino::ecs::detail {
     template<typename T>
     class typed_component_bucket {
         public:
-            static void destruct(component_bucket* bucket) {
+            static void destroy(component_bucket* bucket) {
                 component_bucket_iterator itr(*bucket);
                 while (itr.has_next()) {
                     auto [buff, _] = itr.next();
@@ -118,7 +124,8 @@ namespace neutrino::ecs::detail {
 
             static std::unique_ptr <component_bucket, void(*)(component_bucket*)> create(uint16_t capacity) {
                 return std::unique_ptr <component_bucket, void(*)(component_bucket*)>(
-                    new component_bucket(alignof(T), sizeof(T), capacity), typed_component_bucket <T>::destruct);
+                    new component_bucket(alignof(T), sizeof(T), capacity, typed_component_bucket <T>::destruct),
+                    typed_component_bucket <T>::destroy);
             }
 
             template<typename... Args>

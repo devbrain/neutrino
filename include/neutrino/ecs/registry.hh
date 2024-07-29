@@ -5,10 +5,13 @@
 #ifndef NEUTRINO_ECS_REGISTRY_HH
 #define NEUTRINO_ECS_REGISTRY_HH
 
+#include <utility>
 #include <vector>
 #include <string>
 #include <iostream>
+#include <tuple>
 #include <type_traits>
+#include <boost/callable_traits.hpp>
 
 #include <jg/dense_hash_map.hpp>
 #include <neutrino/neutrino_export.hh>
@@ -17,6 +20,9 @@
 #include <bsw/mp/type_name/type_name.hpp>
 #include <bsw/mp/typelist.hh>
 #include <bsw/mp/constexpr_for.hh>
+
+#include "neutrino/ecs/registry.hh"
+#include "neutrino/ecs/types.hh"
 
 namespace neutrino::ecs {
     template<typename... Components>
@@ -40,6 +46,8 @@ namespace neutrino::ecs {
             template<typename Component>
             void remove_component(entity_id_t e);
 
+            void remove_entity(entity_id_t e);
+
             [[nodiscard]] std::vector <std::string> list_components(entity_id_t e) const;
 
             template<typename Component>
@@ -50,6 +58,9 @@ namespace neutrino::ecs {
 
             template<typename... Components>
             registry_iterator <Components...> iterator();
+
+            template<typename Callable>
+            void iterate(Callable&& func);
 
         private:
             template<typename T>
@@ -64,19 +75,19 @@ namespace neutrino::ecs {
             std::size_t m_max_components;
 
             struct NEUTRINO_EXPORT component_info {
-                component_info(std::size_t serial, std::size_t bucket)
-                    : serial(serial),
+                component_info(std::string  name_, std::size_t bucket)
+                    : name(std::move(name_)),
                       bucket(bucket) {
                 }
 
-                std::size_t serial;
+                std::string name;
                 std::size_t bucket;
             };
 
-            using components_id_map_t = jg::dense_hash_map <std::size_t, component_info>;
+            using components_id_map_t = jg::dense_hash_map <std::size_t, std::size_t>;
             components_id_map_t m_components_id_map;
 
-            using components_names_map_t = jg::dense_hash_map <std::size_t, std::string>;
+            using components_names_map_t = jg::dense_hash_map <std::size_t, component_info>;
             components_names_map_t m_components_names_map;
 
             struct NEUTRINO_EXPORT entity_description {
@@ -174,7 +185,7 @@ namespace neutrino::ecs {
                 return std::make_tuple(entity_id_t(eid), ba.template get <Components>(eid, buff)...);
             }
 
-        private:
+        protected:
             explicit registry_iterator(registry& owner)
                 : m_owner(owner),
                   m_buckets(create_buckets_vector(owner)),
@@ -225,7 +236,7 @@ namespace neutrino::ecs {
                 return {eid, &c};
             }
 
-        private:
+        protected:
             explicit registry_iterator(registry& owner)
                 : m_owner(owner),
                   m_iterator(*m_owner.get_bucket_by_type <Component>()) {
@@ -233,7 +244,16 @@ namespace neutrino::ecs {
 
         private:
             registry& m_owner;
-            detail::typed_component_bucket_iterator<Component> m_iterator;
+            detail::typed_component_bucket_iterator <Component> m_iterator;
+    };
+
+
+    template<typename... Components>
+    class registry_iterator <std::tuple <Components...>> : public registry_iterator <Components...> {
+        public:
+            explicit registry_iterator(registry& owner)
+                : registry_iterator <Components...>(owner) {
+            }
     };
 
     class NEUTRINO_EXPORT entity_builder {
@@ -267,11 +287,11 @@ namespace neutrino::ecs {
         std::size_t component_index = 0;
         if (ci == m_components_id_map.end()) {
             auto cmp_id = m_components_id_map.size();
-            m_components_id_map.insert(std::make_pair(bucket_key, component_info(cmp_id, bucket_key)));
-            m_components_names_map.insert(std::make_pair(cmp_id, type_name_v <Component>));
+            m_components_id_map.insert(std::make_pair(bucket_key, cmp_id));
+            m_components_names_map.insert(std::make_pair(cmp_id, component_info(std::string(type_name_v <Component>), bucket_key)));
             component_index = cmp_id;
         } else {
-            component_index = ci->second.serial;
+            component_index = ci->second;
         }
         auto ei = m_ents_map.find(key.value_of());
         if (ei == m_ents_map.end()) {
@@ -292,7 +312,7 @@ namespace neutrino::ecs {
         if (ei == m_ents_map.end()) {
             return false;
         }
-        return ei->second.components[ci->second.serial];
+        return ei->second.components[ci->second];
     }
 
     template<typename Component>
@@ -333,6 +353,83 @@ namespace neutrino::ecs {
     template<typename... Components>
     registry_iterator <Components...> registry::iterator() {
         return registry_iterator <Components...>(*this);
+    }
+
+    namespace detail {
+        template<typename T>
+        T call_adaptor(T x) {
+            return x;
+        }
+
+        template<typename T>
+        T& call_adaptor(T* x) {
+            return *x;
+        }
+
+        template<int ...>
+        struct seq {
+        };
+
+        template<int N, int ... S>
+        struct gens : gens <N - 1, N - 1, S...> {
+        };
+
+        template<int ... S>
+        struct gens <0, S...> {
+            typedef seq <S...> type;
+        };
+
+        template<typename Callable, typename Tuple, int ... S>
+        void callFunc(Callable&& func, const Tuple& params, seq <S...>) {
+            func(call_adaptor(std::get <S>(params))...);
+        }
+
+        template<typename Callable, typename Tuple, int ... S>
+        boost::callable_traits::return_type_t<Callable> callFuncRet(Callable&& func, const Tuple& params, seq <S...>) {
+            return func(call_adaptor(std::get <S>(params))...);
+        }
+
+        template<typename... T>
+        struct parse_args;
+
+        template<typename... T>
+        struct parse_args <std::tuple <const entity_id_t&, T...>> {
+            using first_arg = const entity_id_t&;
+            using components = std::tuple <std::decay_t <T>...>;
+        };
+
+        template<typename... T>
+        struct parse_args <std::tuple <const entity_id_t, T...>> {
+            using first_arg = entity_id_t;
+            using components = std::tuple <std::decay_t <T>...>;
+        };
+
+        template<typename... T>
+        struct parse_args <std::tuple <entity_id_t, T...>> {
+            using first_arg = entity_id_t;
+            using components = std::tuple <std::decay_t <T>...>;
+        };
+    }
+
+    template<typename Callable>
+    void registry::iterate(Callable&& func) {
+        using args = boost::callable_traits::args_t <Callable>;
+        using pargs_t = detail::parse_args <args>;
+        registry_iterator <typename pargs_t::components> itr(*this);
+        auto idx_seq = typename detail::gens<std::tuple_size_v<args>>::type();
+        while (itr.has_next()) {
+            bool has_all = false;
+            auto tuple = itr.next(&has_all);
+            if (has_all) {
+                if constexpr (boost::callable_traits::has_void_return_v<Callable>) {
+                    detail::callFunc(func, tuple, idx_seq);
+                } else {
+                    if (!detail::callFuncRet(func, tuple, idx_seq)) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     template<typename T>
