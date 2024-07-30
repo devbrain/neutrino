@@ -12,6 +12,7 @@
 #include <neutrino/systems/video/world/world_model.hh>
 #include <neutrino/systems/video/world_renderer.hh>
 #include "scenes/scenes_registry.hh"
+#include "neutrino/ecs/registry.hh"
 
 
 class dialog_box : public neutrino::scene {
@@ -35,6 +36,7 @@ class dialog_box : public neutrino::scene {
 		neutrino::world_renderer m_world_renderer;
 		neutrino::tiled::world_model m_world_model;
 		keys_map_t m_key_mapping;
+		neutrino::ecs::registry m_stars;
 };
 
 

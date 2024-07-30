@@ -143,7 +143,7 @@ namespace neutrino::ecs::detail {
                 ENFORCE(buff != nullptr);
                 ::new(buff) T(std::forward <Args>(args)...);
                 out->mark_occupied(entity_id.value_of(), index);
-                return std::move(out);
+                return out;
             }
 
             static void destruct(component_bucket& bucket, entity_id_t entity_id) {

@@ -20,7 +20,7 @@ void setup_cc_names(neutrino::texture_atlas& atlas,
 	TILE_DIALOG_BG = {cc_mini_tiles_1, 8};
 	TILE_DIALOG_EMPTY = {cc_mini_tiles_1, 9};
 
-	ANI_DIALOG_STAR.add_frame({TILE_DIALOG_EMPTY, std::chrono::milliseconds(500)});
+
 	ANI_DIALOG_STAR.add_frame({{cc_mini_tiles_1, 38}, std::chrono::milliseconds(500)});
 	ANI_DIALOG_STAR.add_frame({{cc_mini_tiles_1, 39}, std::chrono::milliseconds(500)});
 	ANI_DIALOG_STAR.add_frame({{cc_mini_tiles_1, 40}, std::chrono::milliseconds(500)});
