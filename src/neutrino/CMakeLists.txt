@@ -47,6 +47,7 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/systems/video/renderer_state.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/world_renderer.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/world/tiles_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/systems/video/world/objects_layer.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/world/color_layer.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/world/image_layer.hh
         ${PROJECT_INCLUDE}/neutrino/systems/video/world/world_model.hh
@@ -58,6 +59,7 @@ set (src
         systems/video/fonts_renderer.cc
         systems/video/world_renderer.cc
         systems/video/world/tiles_layer.cc
+        systems/video/world/objects_layer.cc
         systems/video/world/color_layer.cc
         systems/video/world/image_layer.cc
         systems/video/world/world_model.cc
@@ -68,6 +70,8 @@ set (src
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/ecs/types.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/registry.hh
+        ${PROJECT_INCLUDE}/neutrino/ecs/iterators/registry_iterator.hh
+        ${PROJECT_INCLUDE}/neutrino/ecs/iterators/registry_iterator_impl.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/sorted_array.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/bi_map.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/component_bucket.hh

@@ -34,6 +34,7 @@ namespace neutrino {
 			void draw_layer (const tiled::image_layer& layer);
 			void draw_layer (const tiled::color_layer& layer) const;
 			void draw_layer (const tiled::tiles_layer& layer, std::chrono::milliseconds delta_time, std::set<tile>& updated_animations);
+			void draw_layer (tiled::objects_layer& layer, std::chrono::milliseconds delta_time);
 
 			sdl::renderer& m_renderer;
 			sdl::area_type m_dimension;
