@@ -11,7 +11,7 @@
 #include <neutrino/neutrino_export.hh>
 #include <neutrino/events/events_reactor.hh>
 #include <neutrino/scene/scene_manager.hh>
-#include <neutrino/systems/video/texture_atlas.hh>
+#include <neutrino/modules/video/texture_atlas.hh>
 
 namespace neutrino {
 	class NEUTRINO_EXPORT application {

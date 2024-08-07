@@ -8,7 +8,7 @@
 #include <chrono>
 #include <neutrino/neutrino_export.hh>
 #include <neutrino/events/events_reactor.hh>
-#include <neutrino/systems/video/texture_atlas.hh>
+#include <neutrino/modules/video/texture_atlas.hh>
 #include <sdlpp/sdlpp.hh>
 #include <bitflags/bitflags.hpp>
 

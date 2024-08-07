@@ -5,16 +5,16 @@
 #ifndef  TILE_NAMES_HH
 #define  TILE_NAMES_HH
 
-#include <neutrino/systems/video/tile.hh>
-#include <neutrino/systems/video/world/animation_sequence.hh>
-#include <neutrino/systems/video/tile_font_spec.hh>
-#include <neutrino/systems/video/texture_atlas.hh>
+#include <neutrino/modules/video/tile.hh>
+#include <neutrino/modules/video/world/animation_sequence.hh>
+#include <neutrino/modules/video/tile_font_spec.hh>
+#include <neutrino/modules/video/texture_atlas.hh>
 
 void setup_cc_names(neutrino::texture_atlas& atlas,
-		neutrino::texture_id_t cc_mini_tiles_1,
-		neutrino::texture_id_t cc_mini_tiles_2,
-		neutrino::texture_id_t cc_mini_tiles_3
-		);
+                    neutrino::texture_id_t cc_mini_tiles_1,
+                    neutrino::texture_id_t cc_mini_tiles_2,
+                    neutrino::texture_id_t cc_mini_tiles_3
+);
 
 #if !defined(INSTANTIATE_TILES)
 #define d_DECLARE_TILE(NAME) extern neutrino::tile NAME

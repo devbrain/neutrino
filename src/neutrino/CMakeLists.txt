@@ -36,40 +36,49 @@ set (src
         ini/inih.c
 
         # =============================================================
-        # SYSTEMS/VIDEO
+        # modules/PHYSICS
         # =============================================================
-        ${PROJECT_INCLUDE}/neutrino/systems/video/types.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/texture_atlas.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/tile.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/tile_font_spec.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/fonts_registry.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/fonts_renderer.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/renderer_state.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/world_renderer.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/world/tiles_layer.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/world/objects_layer.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/world/color_layer.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/world/image_layer.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/world/world_model.hh
-        ${PROJECT_INCLUDE}/neutrino/systems/video/world/animation_sequence.hh
-        systems/video/texture_atlas.cc
-        systems/video/tile.cc
-        systems/video/tile_font_spec.cc
-        systems/video/fonts_registry.cc
-        systems/video/fonts_renderer.cc
-        systems/video/world_renderer.cc
-        systems/video/world/tiles_layer.cc
-        systems/video/world/objects_layer.cc
-        systems/video/world/color_layer.cc
-        systems/video/world/image_layer.cc
-        systems/video/world/world_model.cc
-        systems/video/world/animation_sequence.cc
-
+        ${PROJECT_INCLUDE}/neutrino/modules/physics/components/body.hh
+        # =============================================================
+        # modules/VIDEO
+        # =============================================================
+        ${PROJECT_INCLUDE}/neutrino/modules/video/types.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/texture_atlas.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/tile.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/tile_font_spec.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/fonts_registry.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/fonts_renderer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/renderer_state.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world_renderer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/tiles_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/objects_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/color_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/image_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/world_model.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/animation_sequence.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/components/sprite_component.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/systems/sprite_system.hh
+        modules/video/texture_atlas.cc
+        modules/video/tile.cc
+        modules/video/tile_font_spec.cc
+        modules/video/fonts_registry.cc
+        modules/video/fonts_renderer.cc
+        modules/video/world_renderer.cc
+        modules/video/world/tiles_layer.cc
+        modules/video/world/objects_layer.cc
+        modules/video/world/color_layer.cc
+        modules/video/world/image_layer.cc
+        modules/video/world/world_model.cc
+        modules/video/world/animation_sequence.cc
+        modules/video/components/sprite_component.cc
+        modules/video/systems/sprite_system.cc
         # =============================================================
         # ECS
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/ecs/types.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/registry.hh
+        ${PROJECT_INCLUDE}/neutrino/ecs/systems_holder.hh
+        ${PROJECT_INCLUDE}/neutrino/ecs/abstract_system.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/iterators/registry_iterator.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/iterators/registry_iterator_impl.hh
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/sorted_array.hh
@@ -77,6 +86,8 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/ecs/detail/component_bucket.hh
         ecs/detail/component_bucket.cc
         ecs/registry.cc
+        ecs/abstract_system.cc
+        ecs/systems_holder.cc
         # =============================================================
         # UTILS
         # =============================================================
@@ -125,5 +136,5 @@ endif()
 
 target_link_libraries(neutrino
         PUBLIC neutrino::assets neutrino::vfs bsw::bsw boost_callable_traits JGuegant::dense_hash_map
-        PRIVATE ryml::ryml thirdparty::json
+        PRIVATE ryml::ryml thirdparty::json box2d
 )
