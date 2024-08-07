@@ -6,7 +6,7 @@
 #define NEUTRINO_SCENE_TITLE_SCENE_HH
 
 #include <chrono>
-#include <neutrino/systems/video/types.hh>
+#include <neutrino/modules/video/types.hh>
 #include <neutrino/scene/scene.hh>
 #include <neutrino/neutrino_export.hh>
 

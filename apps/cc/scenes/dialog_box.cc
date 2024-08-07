@@ -42,7 +42,7 @@ class stars_layer : public neutrino::tiled::objects_layer {
                     c.time_in_current_state = std::chrono::milliseconds(0);
                     if (c.visible) {
                         c.m_current_frame++;
-                        if (c.m_current_frame >= ANI_DIALOG_STAR.get_frames().size()) {
+                        if (c.m_current_frame >= static_cast <int>(ANI_DIALOG_STAR.get_frames().size())) {
                             c.m_current_frame = 0;
                             c.visible = false;
                         }
@@ -72,7 +72,7 @@ class stars_layer : public neutrino::tiled::objects_layer {
             });
         }
 
-        void present(neutrino::sdl::renderer& r, const neutrino::sdl::rect& viewport, const neutrino::texture_atlas& atlas) override {
+        void present(neutrino::sdl::renderer& r, [[maybe_unused]] const neutrino::sdl::rect& viewport, const neutrino::texture_atlas& atlas) override {
             get_registry().iterate([&atlas, &r](neutrino::ecs::entity_id_t, const star_animation_component& c) {
                 if (c.visible) {
                     const auto& current_frame = ANI_DIALOG_STAR.get_frames()[c.m_current_frame];

@@ -9,8 +9,8 @@
 #include <functional>
 #include <map>
 #include <neutrino/scene/scene.hh>
-#include <neutrino/systems/video/world/world_model.hh>
-#include <neutrino/systems/video/world_renderer.hh>
+#include <neutrino/modules/video/world/world_model.hh>
+#include <neutrino/modules/video/world_renderer.hh>
 #include "scenes/scenes_registry.hh"
 #include "neutrino/ecs/registry.hh"
 

@@ -9,6 +9,7 @@ add_subdirectory(callable_traits)
 add_subdirectory(yaml)
 add_subdirectory(doctest)
 add_subdirectory(dence_hash_map)
+add_subdirectory(box2d)
 
 
 
