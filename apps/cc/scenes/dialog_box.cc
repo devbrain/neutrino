@@ -4,16 +4,17 @@
 
 #include <algorithm>
 #include <utility>
-#include <cstdlib>
 #include "dialog_box.hh"
 #include "tile_names.hh"
 #include "neutrino/application.hh"
+#include "neutrino/modules/video/systems/world_rendering_system.hh"
+#include "neutrino/utils/random.hh"
 
 namespace {
     struct star_animation_component {
         star_animation_component()
             : time_in_current_state(0),
-              visible(false),
+              visible(true),
               x(0),
               y(0),
               m_current_frame(0) {
@@ -27,15 +28,17 @@ namespace {
     };
 }
 
-class stars_layer : public neutrino::tiled::objects_layer {
+class stars_system : public neutrino::ecs::world_rendering_system {
     public:
-        explicit stars_layer(neutrino::ecs::registry& registry)
-            : objects_layer(registry) {
+        explicit stars_system(const neutrino::world_renderer& world_renderer_)
+            : world_rendering_system(world_renderer_) {
         }
 
     private:
-        void update(std::chrono::milliseconds delta_t, const neutrino::sdl::rect& viewport) override {
-            get_registry().iterate([delta_t, &viewport](neutrino::ecs::entity_id_t, star_animation_component& c) {
+        void update(neutrino::ecs::registry& reg,
+                    std::chrono::milliseconds delta_t) override {
+            auto visual_rect = get_screen_viewport();
+            reg.iterate([delta_t, &visual_rect](neutrino::ecs::entity_id_t, star_animation_component& c) {
                 const auto& current_frame = ANI_DIALOG_STAR.get_frames()[c.m_current_frame];
                 c.time_in_current_state += delta_t;
                 if (c.time_in_current_state > current_frame.m_duration) {
@@ -49,22 +52,22 @@ class stars_layer : public neutrino::tiled::objects_layer {
                     } else {
                         c.m_current_frame = 0;
                         c.visible = true;
-                        const bool vert = rand() % 2 == 0;
+                        const bool vert = neutrino::random::chance(0.5);
                         if (vert) {
-                            c.y = rand() % (viewport.h) + viewport.y;
-                            const bool left = rand() % 2 == 0;
+                            c.y = visual_rect.y + neutrino::random::get_int(0, visual_rect.h);
+                            const bool left = neutrino::random::chance(0.5);;
                             if (left) {
-                                c.x = viewport.x;
+                                c.x = visual_rect.x;
                             } else {
-                                c.x = viewport.w + viewport.x;
+                                c.x = visual_rect.w + visual_rect.x - HUD_TILE_W;
                             }
                         } else {
-                            c.x = rand() % (viewport.w) + viewport.x;
-                            const bool top = rand() % 2 == 0;
+                            c.x = visual_rect.x + neutrino::random::get_int(0, visual_rect.w);
+                            const bool top = neutrino::random::chance(0.5);
                             if (top) {
-                                c.y = viewport.y;
+                                c.y = visual_rect.y;
                             } else {
-                                c.y = viewport.h + viewport.y;
+                                c.y = visual_rect.h + visual_rect.y - HUD_TILE_H;
                             }
                         }
                     }
@@ -72,19 +75,13 @@ class stars_layer : public neutrino::tiled::objects_layer {
             });
         }
 
-        void present(neutrino::sdl::renderer& r, [[maybe_unused]] const neutrino::sdl::rect& viewport, const neutrino::texture_atlas& atlas) override {
-            get_registry().iterate([&atlas, &r](neutrino::ecs::entity_id_t, const star_animation_component& c) {
+        void present(neutrino::ecs::registry& reg) override {
+            reg.iterate([this](neutrino::ecs::entity_id_t, const star_animation_component& c) {
                 if (c.visible) {
-                    const auto& current_frame = ANI_DIALOG_STAR.get_frames()[c.m_current_frame];
-                    auto [text_ptr, rect] = atlas.get(current_frame.m_tile);
-                    if (text_ptr) {
-                        const neutrino::sdl::rect dst_rect(c.x, c.y, rect.w, rect.h);
-                        r.copy(*text_ptr, rect, dst_rect);
-                    }
+                    draw_tile(ANI_DIALOG_STAR, c.m_current_frame, c.x, c.y);
                 }
             });
         }
-
 };
 
 static neutrino::sdl::area_type get_dialog_box_dimensions_tiles(const std::string& text) {
@@ -112,7 +109,10 @@ static neutrino::sdl::area_type get_dialog_box_dimensions_tiles(const std::strin
     return {tiles_w, tiles_h};
 }
 
-static void create_dialog_map(neutrino::tiled::world_model& wm, const std::string& text, neutrino::ecs::registry& registry) {
+static void create_dialog_map(neutrino::tiled::world_model& wm,
+                              const std::string& text,
+                              neutrino::ecs::registry& registry,
+                              const neutrino::world_renderer& world_renderer) {
     auto dims = get_dialog_box_dimensions_tiles(text);
     auto tiles_w = dims.w;
     auto tiles_h = dims.h;
@@ -153,7 +153,9 @@ static void create_dialog_map(neutrino::tiled::world_model& wm, const std::strin
     }
     wm.append(bg);
     wm.append(fg);
-    wm.append(std::move(std::make_unique<stars_layer>(registry)));
+    neutrino::tiled::objects_layer stars_layer(registry);
+    stars_layer.register_system <stars_system>(world_renderer);
+    wm.append(std::move(stars_layer));
     wm.add_animation(ANI_DIALOG_QMARK);
     wm.set_geometry(8, 8, tiles_w, tiles_h);
 }
@@ -169,9 +171,13 @@ void dialog_box::replace_scene(scene_name_t name) {
 dialog_box::dialog_box(neutrino::sdl::renderer& r, const std::string& text, keys_map_t key_mapping)
     : m_world_renderer(r, 8 * get_dialog_box_dimensions_tiles(text)),
       m_key_mapping(std::move(key_mapping)) {
-
-    m_stars.bind_component<star_animation_component>(neutrino::ecs::entity_id_t(0));
-    create_dialog_map(m_world_model, text, m_stars);
+    const auto dims = neutrino::application::instance().get_window_dimensions();
+    const auto px_size = m_world_renderer.get_dimension();
+    const int x1 = static_cast <int>((dims.w - px_size.w) / 2);
+    const int y1 = static_cast <int>((dims.h - px_size.h) / 2);
+    m_world_renderer.set_destination_point(neutrino::sdl::point(x1, y1));
+    m_stars.bind_component <star_animation_component>(neutrino::ecs::entity_id_t(0));
+    create_dialog_map(m_world_model, text, m_stars, m_world_renderer);
 }
 
 struct key_event {
@@ -194,12 +200,7 @@ void dialog_box::update(std::chrono::milliseconds delta_time) {
 }
 
 void dialog_box::render(neutrino::sdl::renderer& renderer) {
-    auto dims = neutrino::application::instance().get_window_dimensions();
-    auto px_size = m_world_renderer.get_dimension();
-    int x1 = (dims.w - px_size.w) / 2;
-    int y1 = (dims.h - px_size.h) / 2;
-    neutrino::sdl::rect r(x1, y1, px_size.w, px_size.h);
-    m_world_renderer.present(r);
+    m_world_renderer.present();
 }
 
 void dialog_box::initialize() {

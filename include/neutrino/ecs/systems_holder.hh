@@ -13,16 +13,15 @@ namespace neutrino::ecs {
     class NEUTRINO_EXPORT systems_holder {
         public:
             systems_holder() = default;
+            systems_holder(systems_holder&& ) = default;
 
             template <typename System, typename ... Args>
             void register_system(Args&& ... args) {
                 m_systems.emplace_back(std::make_unique<System>(std::forward<Args>(args)...));
             }
 
-            void update(registry& registry, std::chrono::milliseconds delta_t, const sdl::rect& viewport);
-            void present(registry& registry, sdl::renderer& renderer, const sdl::rect& viewport,
-                         const texture_atlas& atlas);
-
+            void update(registry& registry, std::chrono::milliseconds delta_t);
+            void present(registry& registry);
         private:
             std::vector <std::unique_ptr <abstract_system>> m_systems;
     };
