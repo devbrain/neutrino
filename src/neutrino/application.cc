@@ -23,6 +23,8 @@ namespace neutrino {
 
 	void application::init(unsigned w, unsigned h, bool fullscreen, int desired_fps) {
 		s_instance = this;
+		m_size.w = w;
+		m_size.h = h;
 		m_desired_fps = desired_fps;
 		m_main_window = fullscreen
 			                ? sdl::window(static_cast <int>(w), static_cast <int>(h),
@@ -30,8 +32,6 @@ namespace neutrino {
 			                : sdl::window(static_cast <int>(w), static_cast <int>(h));
 		m_renderer = sdl::renderer(m_main_window);
 		m_quit_flag = !user_init_sequence();
-		m_size.w = w;
-		m_size.h = h;
 	}
 
 	void application::run() {

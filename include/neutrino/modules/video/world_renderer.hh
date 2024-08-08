@@ -18,6 +18,11 @@ namespace neutrino {
 			world_renderer(sdl::renderer& renderer,
 			               const sdl::area_type& dimensions,
 			               sdl::pixel_format pixel_format = sdl::pixel_format::RGBA8888);
+
+			world_renderer(sdl::renderer& renderer,
+					   const sdl::area_type& dimensions,
+					   const sdl::point& dest_point,
+					   sdl::pixel_format pixel_format = sdl::pixel_format::RGBA8888);
 			~world_renderer();
 
 			void init(texture_atlas& atlas, const tiled::world_model& model);
@@ -25,10 +30,15 @@ namespace neutrino {
 
 			void update(std::chrono::milliseconds delta_time);
 
-			void present(const sdl::rect& dst_rect) const;
+			void present() const;
 			[[nodiscard]] sdl::point set_camera (const sdl::point& camera);
+			[[nodiscard]] sdl::point get_camera () const;
 			[[nodiscard]] sdl::area_type get_dimension() const;
-
+			void set_destination_point(const sdl::point& dst_point);
+			[[nodiscard]] sdl::point get_destination_point() const;
+			[[nodiscard]] sdl::rect get_destination_rect() const;
+			[[nodiscard]] const texture_atlas& get_atlas() const;
+			[[nodiscard]] sdl::renderer& get_renderer() const;
 		private:
 			void _update(std::chrono::milliseconds delta_time);
 			void draw_layer (const tiled::image_layer& layer);
@@ -38,6 +48,7 @@ namespace neutrino {
 
 			sdl::renderer& m_renderer;
 			sdl::area_type m_dimension;
+			sdl::point     m_destination;
 			sdl::texture m_target;
 			texture_atlas* m_texture_atlas;
 			const tiled::world_model* m_model;

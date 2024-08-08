@@ -58,6 +58,7 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/modules/video/world/animation_sequence.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/components/sprite_component.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/systems/sprite_system.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/systems/world_rendering_system.hh
         modules/video/texture_atlas.cc
         modules/video/tile.cc
         modules/video/tile_font_spec.cc
@@ -72,6 +73,7 @@ set (src
         modules/video/world/animation_sequence.cc
         modules/video/components/sprite_component.cc
         modules/video/systems/sprite_system.cc
+        modules/video/systems/world_rendering_system.cc
         # =============================================================
         # ECS
         # =============================================================
@@ -92,7 +94,7 @@ set (src
         # UTILS
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/utils/line.hh
-
+        ${PROJECT_INCLUDE}/neutrino/utils/random.hh
 )
 
 if (NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET AND

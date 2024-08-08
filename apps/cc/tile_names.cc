@@ -19,11 +19,11 @@ void setup_cc_names(neutrino::texture_atlas& atlas,
 	TILE_DIALOG_DOWN = {cc_mini_tiles_1, 6};
 	TILE_DIALOG_BG = {cc_mini_tiles_1, 8};
 	TILE_DIALOG_EMPTY = {cc_mini_tiles_1, 9};
+	using namespace std::chrono_literals;
 
-
-	ANI_DIALOG_STAR.add_frame({{cc_mini_tiles_1, 38}, std::chrono::milliseconds(500)});
-	ANI_DIALOG_STAR.add_frame({{cc_mini_tiles_1, 39}, std::chrono::milliseconds(500)});
-	ANI_DIALOG_STAR.add_frame({{cc_mini_tiles_1, 40}, std::chrono::milliseconds(500)});
+	ANI_DIALOG_STAR.add_frame({{cc_mini_tiles_1, 38}, 500ms});
+	ANI_DIALOG_STAR.add_frame({{cc_mini_tiles_1, 39}, 500ms});
+	ANI_DIALOG_STAR.add_frame({{cc_mini_tiles_1, 40}, 500ms});
 
 	DIALOG_FONTS = neutrino::tile_font_spec_builder(&atlas)
 	               .add(cc_mini_tiles_1, neutrino::tile_id_t(10), " !\"#$%&'()*+,-.^`")

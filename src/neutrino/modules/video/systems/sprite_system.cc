@@ -5,27 +5,32 @@
 #include <neutrino/modules/video/systems/sprite_system.hh>
 #include <neutrino/modules/physics/components/body.hh>
 
-namespace neutrino {
-    void sprite_system::update(ecs::registry& registry, std::chrono::milliseconds delta_t, const sdl::rect& viewport) {
-        registry.iterate([this, delta_t]([[maybe_unused]] ecs::entity_id_t eid, animated_sprite& s) {
+namespace neutrino::ecs {
+    sprite_system::sprite_system(const world_renderer& world_renderer_)
+        : world_rendering_system(world_renderer_) {
+    }
+
+    void sprite_system::update(registry& registry, std::chrono::milliseconds delta_t) {
+        registry.iterate([this, delta_t]([[maybe_unused]] entity_id_t eid, animated_sprite& s) {
             _update(s, delta_t);
         });
-        registry.iterate([this, delta_t]([[maybe_unused]] ecs::entity_id_t eid, animated_sprite_sequence& s) {
+        registry.iterate([this, delta_t]([[maybe_unused]] entity_id_t eid, animated_sprite_sequence& s) {
             _update(s.states[s.current_state], delta_t);
         });
     }
 
-    void sprite_system::present(ecs::registry& registry, sdl::renderer& renderer, const sdl::rect& viewport,
-                                const texture_atlas& atlas) {
-        registry.iterate([this, &renderer, &atlas]([[maybe_unused]] ecs::entity_id_t eid, const single_tile_sprite& s, const body& b) {
+    void sprite_system::present(registry& registry) {
+        auto& renderer = get_renderer();
+        const auto& atlas = get_atlas();
+        registry.iterate([this, &renderer, &atlas]([[maybe_unused]] entity_id_t eid, const single_tile_sprite& s, const body& b) {
             _present(s.sprite, renderer, b.position.x, b.position.y, atlas);
         });
-        registry.iterate([this, &renderer, &atlas]([[maybe_unused]] ecs::entity_id_t eid, const animated_sprite& s, const body& b) {
+        registry.iterate([this, &renderer, &atlas]([[maybe_unused]] entity_id_t eid, const animated_sprite& s, const body& b) {
             _present(s, renderer, b.position.x, b.position.y, atlas);
         });
 
         registry.iterate(
-            [this, &renderer, &atlas]([[maybe_unused]] ecs::entity_id_t eid, const animated_sprite_sequence& s, const body& b) {
+            [this, &renderer, &atlas]([[maybe_unused]] entity_id_t eid, const animated_sprite_sequence& s, const body& b) {
                 _present(s.states[s.current_state], renderer, b.position.x, b.position.y, atlas);
             });
     }

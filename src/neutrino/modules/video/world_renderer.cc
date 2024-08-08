@@ -15,6 +15,19 @@ namespace neutrino {
                                    sdl::pixel_format pixel_format)
         : m_renderer(renderer),
           m_dimension(dimensions),
+          m_destination(0, 0),
+          m_target(m_renderer, pixel_format, dimensions.w, dimensions.h, sdl::texture::access::TARGET),
+          m_texture_atlas(nullptr),
+          m_model(nullptr),
+          m_camera_x(0),
+          m_camera_y(0) {
+    }
+
+    world_renderer::world_renderer(sdl::renderer& renderer, const sdl::area_type& dimensions,
+                                   const sdl::point& dest_point, sdl::pixel_format pixel_format)
+        : m_renderer(renderer),
+          m_dimension(dimensions),
+          m_destination(dest_point),
           m_target(m_renderer, pixel_format, dimensions.w, dimensions.h, sdl::texture::access::TARGET),
           m_texture_atlas(nullptr),
           m_model(nullptr),
@@ -49,8 +62,9 @@ namespace neutrino {
         _update(delta_time);
     }
 
-    void world_renderer::present(const sdl::rect& dst_rect) const {
+    void world_renderer::present() const {
         const sdl::rect src_rect(m_dimension);
+        const sdl::rect dst_rect(m_destination, m_dimension);
         m_renderer.copy(m_target, src_rect, dst_rect);
     }
 
@@ -65,8 +79,33 @@ namespace neutrino {
         return {static_cast <int>(m_camera_x), static_cast <int>(m_camera_y)};
     }
 
+    sdl::point world_renderer::get_camera() const {
+        return {static_cast<int>(m_camera_x), static_cast<int>(m_camera_y)};
+    }
+
     sdl::area_type world_renderer::get_dimension() const {
         return m_dimension;
+    }
+
+    void world_renderer::set_destination_point(const sdl::point& dst_point) {
+        m_destination = dst_point;
+    }
+
+    sdl::point world_renderer::get_destination_point() const {
+        return m_destination;
+    }
+
+    sdl::rect world_renderer::get_destination_rect() const {
+        return {m_destination, m_dimension};
+    }
+
+    const texture_atlas& world_renderer::get_atlas() const {
+        ENFORCE(m_texture_atlas != nullptr);
+        return *m_texture_atlas;
+    }
+
+    sdl::renderer& world_renderer::get_renderer() const {
+        return m_renderer;
     }
 
     void world_renderer::_update(std::chrono::milliseconds delta_time) {
@@ -225,12 +264,8 @@ namespace neutrino {
     }
 
     void world_renderer::draw_layer(tiled::objects_layer& layer, std::chrono::milliseconds delta_time) {
-        sdl::rect view_port(static_cast <int>(m_camera_x),
-                            static_cast <int>(m_camera_y),
-                            static_cast <int>(m_dimension.w),
-                            static_cast <int>(m_dimension.h));
-        layer.update(delta_time, view_port);
-        layer.present(m_renderer, view_port, *m_texture_atlas);
+        layer.update(delta_time);
+        layer.present();
     }
 
     world_renderer::animation_data::animation_data(const tiled::animation_sequence& seq)

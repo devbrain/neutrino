@@ -13,12 +13,12 @@ namespace neutrino::tiled {
 
     objects_layer::~objects_layer() = default;
 
-    void objects_layer::update(std::chrono::milliseconds delta_t, const sdl::rect& viewport) {
-        m_holder.update(m_registry, delta_t, viewport);
+    void objects_layer::update(std::chrono::milliseconds delta_t) {
+        m_holder.update(m_registry, delta_t);
     }
 
-    void objects_layer::present(sdl::renderer& r, const sdl::rect& viewport, const texture_atlas& atlas) {
-        m_holder.present(m_registry, r, viewport, atlas);
+    void objects_layer::present() {
+        m_holder.present(m_registry);
     }
 
 

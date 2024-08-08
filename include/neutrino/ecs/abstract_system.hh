@@ -17,9 +17,8 @@ namespace neutrino::ecs {
         public:
             virtual ~abstract_system();
 
-            virtual void update(registry& registry, std::chrono::milliseconds delta_t, const sdl::rect& viewport) = 0;
-            virtual void present(registry& registry, sdl::renderer& renderer, const sdl::rect& viewport,
-                                 const texture_atlas& atlas) = 0;
+            virtual void update(registry& registry, std::chrono::milliseconds delta_t) = 0;
+            virtual void present(registry& registry) = 0;
     };
 }
 

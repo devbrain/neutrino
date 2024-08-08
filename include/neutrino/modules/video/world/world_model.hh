@@ -24,13 +24,13 @@ namespace neutrino::tiled {
 
             template<typename T>
             world_model& append(T&& layer) {
-                m_layers.emplace_back(std::forward <T>(layer));
+                m_layers.emplace_back(std::forward<T>(layer));
                 return *this;
             }
 
             template<typename T>
             world_model& prepend(T&& layer) {
-                m_layers.emplace_front(std::forward <T>(layer));
+                m_layers.emplace_front(layer);
                 return *this;
             }
 

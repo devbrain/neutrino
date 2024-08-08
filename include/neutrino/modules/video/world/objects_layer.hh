@@ -21,8 +21,10 @@ namespace neutrino {
 namespace neutrino::tiled {
     class NEUTRINO_EXPORT objects_layer {
         friend class neutrino::world_renderer;
+
         public:
             explicit objects_layer(ecs::registry& ecs_registry);
+            objects_layer(objects_layer&&) = default;
             ~objects_layer();
 
             template<typename System, typename... Args>
@@ -31,8 +33,8 @@ namespace neutrino::tiled {
             }
 
         private:
-            void update(std::chrono::milliseconds delta_t, const sdl::rect& viewport);
-            void present(sdl::renderer& r, const sdl::rect& viewport, const texture_atlas& atlas);
+            void update(std::chrono::milliseconds delta_t);
+            void present();
 
         private:
             ecs::registry& m_registry;
