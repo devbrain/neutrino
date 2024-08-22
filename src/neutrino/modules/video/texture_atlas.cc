@@ -9,13 +9,13 @@ namespace neutrino {
 
 	texture_id_t texture_atlas::add(sdl::texture&& texture) {
 		texture_id_t tid(counter++);
-		m_textures.insert(std::make_pair(tid, tiles_map({}, std::move(texture))));
+		m_textures.emplace(std::make_pair(tid, tiles_map({}, std::move(texture))));
 		return tid;
 	}
 
 	texture_id_t texture_atlas::add(sdl::texture&& texture, std::vector <sdl::rect>&& rects) {
 		texture_id_t tid(counter++);
-		m_textures.insert(std::make_pair(tid, tiles_map(std::move(rects), std::move(texture))));
+		m_textures.emplace(std::make_pair(tid, tiles_map(std::move(rects), std::move(texture))));
 		return tid;
 	}
 
