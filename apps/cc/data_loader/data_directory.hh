@@ -12,8 +12,10 @@
 #include <vector>
 #include <map>
 
-#include <sdlpp/sdlpp.hh>
 #include <assets/assets.hh>
+
+#include "data_loader/map_tile.hh"
+#include "data_loader/crystal_caves/crystal_caves.hh"
 
 class data_directory {
 	public:
@@ -60,6 +62,7 @@ class data_directory {
 		std::unique_ptr<std::istream> get(resource_t rc);
 		neutrino::sdl::surface load_picture(resource_t rc);
 		std::tuple<neutrino::sdl::surface, std::vector<neutrino::sdl::rect>> load_tileset(resource_t rc);
+		std::vector<std::tuple<bg_map_t, fg_map_t>> load_maps(resource_t rc);
 	private:
 		std::map<resource_t, std::filesystem::path> m_fs;
 };

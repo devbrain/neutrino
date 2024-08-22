@@ -33,14 +33,14 @@ namespace neutrino {
 
 		union {
 			struct {
-				int hor_flip: 1;
-				int vert_flip: 1;
-				int diag_flip: 1;
-				int animated: 1;
+				unsigned int hor_flip: 1;
+				unsigned int vert_flip: 1;
+				unsigned int diag_flip: 1;
+				unsigned int animated: 1;
 			} flags;
 
 			uint8_t bit_flags;
-		} info{0};
+		} info{};
 	};
 
 	static_assert(sizeof(tile) == 8);

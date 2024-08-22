@@ -137,6 +137,6 @@ if (neutrino_ENABLE_TESTING)
 endif()
 
 target_link_libraries(neutrino
-        PUBLIC neutrino::assets neutrino::vfs bsw::bsw boost_callable_traits JGuegant::dense_hash_map
+        PUBLIC neutrino::assets bsw::bsw boost_callable_traits JGuegant::dense_hash_map
         PRIVATE ryml::ryml thirdparty::json box2d
 )
