@@ -11,10 +11,10 @@ namespace neutrino::ecs {
     }
 
     void sprite_system::update(registry& registry, std::chrono::milliseconds delta_t) {
-        registry.iterate([this, delta_t]([[maybe_unused]] entity_id_t eid, animated_sprite& s) {
+        registry.iterate([delta_t]([[maybe_unused]] entity_id_t eid, animated_sprite& s) {
             _update(s, delta_t);
         });
-        registry.iterate([this, delta_t]([[maybe_unused]] entity_id_t eid, animated_sprite_sequence& s) {
+        registry.iterate([delta_t]([[maybe_unused]] entity_id_t eid, animated_sprite_sequence& s) {
             _update(s.states[s.current_state], delta_t);
         });
     }
@@ -22,15 +22,15 @@ namespace neutrino::ecs {
     void sprite_system::present(registry& registry) {
         auto& renderer = get_renderer();
         const auto& atlas = get_atlas();
-        registry.iterate([this, &renderer, &atlas]([[maybe_unused]] entity_id_t eid, const single_tile_sprite& s, const body& b) {
+        registry.iterate([&renderer, &atlas]([[maybe_unused]] entity_id_t eid, const single_tile_sprite& s, const body& b) {
             _present(s.sprite, renderer, b.position.x, b.position.y, atlas);
         });
-        registry.iterate([this, &renderer, &atlas]([[maybe_unused]] entity_id_t eid, const animated_sprite& s, const body& b) {
+        registry.iterate([&renderer, &atlas]([[maybe_unused]] entity_id_t eid, const animated_sprite& s, const body& b) {
             _present(s, renderer, b.position.x, b.position.y, atlas);
         });
 
         registry.iterate(
-            [this, &renderer, &atlas]([[maybe_unused]] entity_id_t eid, const animated_sprite_sequence& s, const body& b) {
+            [&renderer, &atlas]([[maybe_unused]] entity_id_t eid, const animated_sprite_sequence& s, const body& b) {
                 _present(s.states[s.current_state], renderer, b.position.x, b.position.y, atlas);
             });
     }

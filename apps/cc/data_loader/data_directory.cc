@@ -131,3 +131,9 @@ std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> data_dire
 	}
 	return convert_tileset(load_tileset_cc(*get(rc)));
 }
+
+std::vector<std::tuple<bg_map_t, fg_map_t>> data_directory::load_maps(resource_t rc) {
+	if (rc == CC1_EXE) {
+
+	}
+}
