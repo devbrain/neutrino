@@ -157,7 +157,7 @@ static void create_dialog_map(neutrino::tiled::world_model& wm,
     stars_layer.register_system <stars_system>(world_renderer);
     wm.append(std::move(stars_layer));
     wm.add_animation(ANI_DIALOG_QMARK);
-    wm.set_geometry(8, 8, tiles_w, tiles_h);
+    wm.set_geometry(HUD_TILE_W, HUD_TILE_H, tiles_w, tiles_h);
 }
 
 void dialog_box::push_scene(scene_name_t name) {
@@ -169,7 +169,7 @@ void dialog_box::replace_scene(scene_name_t name) {
 }
 
 dialog_box::dialog_box(neutrino::sdl::renderer& r, const std::string& text, keys_map_t key_mapping)
-    : m_world_renderer(r, 8 * get_dialog_box_dimensions_tiles(text)),
+    : m_world_renderer(r, HUD_TILE_W * get_dialog_box_dimensions_tiles(text)),
       m_key_mapping(std::move(key_mapping)) {
     const auto dims = neutrino::application::instance().get_window_dimensions();
     const auto px_size = m_world_renderer.get_dimension();

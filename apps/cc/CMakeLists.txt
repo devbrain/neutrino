@@ -27,6 +27,17 @@ add_executable(cc
         scenes/dialog_box.hh
         scenes/dialogs.cc
         scenes/dialogs.hh
+        level/maps_registry.cc
+        level/maps_registry.hh
+        level/cc_world_mapper.cc
+        level/cc_world_mapper.hh
+        scenes/main_level_scene.cc
+        scenes/main_level_scene.hh
+        level/components/component_player.hh
+        level/ecs_registry.cc
+        level/ecs_registry.hh
+        level/hud.cc
+        level/hud.hh
 
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
