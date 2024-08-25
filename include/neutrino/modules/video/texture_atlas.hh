@@ -36,6 +36,7 @@ namespace neutrino {
 		private:
 			struct tiles_map {
 				tiles_map(std::vector <sdl::rect>&& rects, sdl::texture&& texture);
+				tiles_map(tiles_map&&) noexcept = default;
 				std::vector <sdl::rect> m_rects; // tiles
 				sdl::texture m_texture; // texture itself
 				sdl::rect m_dims; // dimensions of the texture

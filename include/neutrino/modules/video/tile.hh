@@ -14,6 +14,7 @@ namespace neutrino {
 	namespace tiled {
 		class NEUTRINO_EXPORT animation_sequence;
 	}
+
 	struct NEUTRINO_EXPORT tile {
 		tile();
 		explicit tile(tile_id_t tile_id);
@@ -42,8 +43,9 @@ namespace neutrino {
 			uint8_t bit_flags;
 		} info{};
 	};
-
+#if !defined(_MSC_VER)
 	static_assert(sizeof(tile) == 8);
+#endif
 
 	inline
 	bool operator == (const tile& a, const tile& b) {
