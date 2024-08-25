@@ -81,13 +81,23 @@ namespace neutrino {
 				using event_type = typename tuple_t::event_type;
 				static const std::string key(type_name_v <event_type>);
 				EVLOG_TRACE(EVLOG_DEBUG, "Registering event handler for ", key);
+#if defined(_MSC_VER)
 				m_handlers.insert(std::make_pair(key,
-				                                 std::make_unique <detail::event_handler <Callable...>>(
+				                                 std::make_shared <detail::event_handler <Callable...>>(
 					                                 std::forward <Callable>(f)...)));
+#else 
+				m_handlers.insert(std::make_pair(key,
+					std::make_unique <detail::event_handler <Callable...>>(
+						std::forward <Callable>(f)...)));
+#endif
 			}
 
 		private:
+#if defined(_MSC_VER)
+			std::unordered_map <std::string, std::shared_ptr <detail::basic_event_handler>> m_handlers;
+#else
 			std::unordered_map <std::string, std::unique_ptr <detail::basic_event_handler>> m_handlers;
+#endif
 	};
 }
 
