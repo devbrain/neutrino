@@ -9,6 +9,7 @@
 #include "data_directory.hh"
 #include "load_picture.hh"
 #include "data_manager.hh"
+#include "data_loader/crystal_caves/cc_decode.hh"
 #include "data_loader/crystal_caves/crystal_caves.hh"
 
 static std::map <std::string, data_directory::resource_t> names_mappings = {
@@ -133,7 +134,19 @@ std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> data_dire
 }
 
 std::vector<std::tuple<bg_map_t, fg_map_t>> data_directory::load_maps(resource_t rc) {
+	std::vector<std::tuple<bg_map_t, fg_map_t>> out;
+	std::vector<raw_map> maps;
 	if (rc == CC1_EXE) {
-
+		maps = extract_maps_cc(*get(rc), cc1);
+	} else if (rc == CC2_EXE) {
+		maps = extract_maps_cc(*get(rc), cc1);
+	} else if (rc == CC3_EXE) {
+		maps = extract_maps_cc(*get(rc), cc3);
+	} else {
+		RAISE_EX("Should not be here");
 	}
+	for (const auto& m : maps) {
+		out.emplace_back(cc_decode(m));
+	}
+	return out;
 }

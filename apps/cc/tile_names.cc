@@ -8,7 +8,9 @@
 void setup_cc_names(neutrino::texture_atlas& atlas,
                     neutrino::texture_id_t cc_mini_tiles_1,
                     neutrino::texture_id_t cc_mini_tiles_2,
-                    neutrino::texture_id_t cc_mini_tiles_3) {
+                    neutrino::texture_id_t cc_mini_tiles_3,
+                    neutrino::texture_id_t cc_main_tex) {
+	MAIN_TEX = cc_main_tex;
 	TILE_DIALOG_UP_LEFT = {cc_mini_tiles_1, 0};
 	TILE_DIALOG_UP = {cc_mini_tiles_1, 1};
 	TILE_DIALOG_UP_RIGHT = {cc_mini_tiles_1, 2};
@@ -43,7 +45,12 @@ void setup_cc_names(neutrino::texture_atlas& atlas,
 	TILE_HUD_GUN = {cc_mini_tiles_3, 0};
 	TILE_HUD_HEART = {cc_mini_tiles_3, 4};
 	TILE_HUD_KEY = {cc_mini_tiles_3, 5};
+	TILE_HUD_DOLLAR = {cc_mini_tiles_1, 14};
 	HUD_FONTS = neutrino::tile_font_spec_builder(&atlas)
-	            .add(cc_mini_tiles_1, neutrino::tile_id_t(8), "0123456789")
+	            .add(cc_mini_tiles_3, neutrino::tile_id_t(8), "0123456789")
 	            .build();
+	TILE_BG_BRICK_LEFT = {cc_main_tex, 21};
+	TILE_BG_BRICK_RIGHT = {cc_main_tex, 20};
+	TILE_BG_BRICK_INNER1 = {cc_main_tex, 25};
+	TILE_BG_BRICK_INNER2 = {cc_main_tex, 24};
 }

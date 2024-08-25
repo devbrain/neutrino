@@ -19,17 +19,24 @@ inline constexpr int HUD_TILE_H = 8;
 void setup_cc_names(neutrino::texture_atlas& atlas,
                     neutrino::texture_id_t cc_mini_tiles_1,
                     neutrino::texture_id_t cc_mini_tiles_2,
-                    neutrino::texture_id_t cc_mini_tiles_3
+                    neutrino::texture_id_t cc_mini_tiles_3,
+                    neutrino::texture_id_t main_tiles
 );
 
 #if !defined(INSTANTIATE_TILES)
-#define d_DECLARE_TILE(NAME) extern neutrino::tile NAME
-#define d_DECLARE_ANI(NAME) extern neutrino::tiled::animation_sequence NAME
-#define d_DECLARE_FONT_SPEC(NAME) extern neutrino::tile_font_spec NAME
+#define dNAME_ACCESS extern
 #else
-#define d_DECLARE_TILE(NAME) neutrino::tile NAME
-#define d_DECLARE_ANI(NAME)  neutrino::tiled::animation_sequence NAME
-#define d_DECLARE_FONT_SPEC(NAME) neutrino::tile_font_spec NAME
+#define dNAME_ACCESS
+#endif
+
+#define d_DECLARE_TILE(NAME) dNAME_ACCESS neutrino::tile NAME
+#define d_DECLARE_ANI(NAME)  dNAME_ACCESS neutrino::tiled::animation_sequence NAME
+#define d_DECLARE_FONT_SPEC(NAME) dNAME_ACCESS neutrino::tile_font_spec NAME
+
+#if !defined(INSTANTIATE_TILES)
+#define d_DECLARE_TEXTURE(NAME) dNAME_ACCESS neutrino::texture_id_t NAME
+#else
+#define d_DECLARE_TEXTURE(NAME) dNAME_ACCESS neutrino::texture_id_t NAME{0}
 #endif
 
 // DIALOG TILES
@@ -49,8 +56,13 @@ d_DECLARE_ANI(ANI_DIALOG_QMARK);
 d_DECLARE_TILE(TILE_HUD_GUN);
 d_DECLARE_TILE(TILE_HUD_HEART);
 d_DECLARE_TILE(TILE_HUD_KEY);
+d_DECLARE_TILE(TILE_HUD_DOLLAR);
 d_DECLARE_FONT_SPEC(HUD_FONTS);
-
+d_DECLARE_TEXTURE(MAIN_TEX);
+d_DECLARE_TILE(TILE_BG_BRICK_LEFT);
+d_DECLARE_TILE(TILE_BG_BRICK_RIGHT);
+d_DECLARE_TILE(TILE_BG_BRICK_INNER1);
+d_DECLARE_TILE(TILE_BG_BRICK_INNER2);
 
 
 

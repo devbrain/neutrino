@@ -43,7 +43,6 @@ namespace neutrino::ecs {
                         bucket->second->destruct(e);
                     }
                 }
-
             }
         }
         m_ents_map.erase(ei);

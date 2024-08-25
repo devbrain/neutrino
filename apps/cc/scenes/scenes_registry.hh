@@ -14,7 +14,8 @@ enum class scene_name_t {
 	TITLE_SCREEN,
 	MAIN_SCREEN,
 	MAIN_DIALOG,
-	QUIT_TO_DOS_DIALOG
+	QUIT_TO_DOS_DIALOG,
+	MAIN_LEVEL
 };
 
 namespace detail {

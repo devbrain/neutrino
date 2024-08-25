@@ -52,6 +52,9 @@ namespace neutrino::ecs {
 
             void remove_entity(entity_id_t e);
 
+            template<typename Predicate>
+            void remove_if(const Predicate& p);
+
             [[nodiscard]] std::vector <std::string> list_components(entity_id_t e) const;
 
             template<typename Component>
@@ -111,7 +114,7 @@ namespace neutrino::ecs {
             template<typename Component, typename... Args>
             const entity_builder& with_component(Args&&... args) const;
 
-            entity_id_t build() const;
+            [[nodiscard]] entity_id_t build() const;
 
         private:
             registry& m_registry;
@@ -180,6 +183,30 @@ namespace neutrino::ecs {
             return;
         }
         ei->second.components[ci->second] = false;
+    }
+
+    template<typename Predicate>
+    void registry::remove_if(const Predicate& p) {
+        auto it = m_ents_map.begin();
+        while (it != m_ents_map.end()) {
+            entity_id_t e{it->first};
+            if (p(e)) {
+                for (std::size_t i=0; i<it->second.components.size(); i++) {
+                    if (it->second.components[i]) {
+                        auto itr = m_components_names_map.find(i);
+                        if (itr != m_components_names_map.end()) {
+                            auto bucket = m_components.find(itr->second.bucket);
+                            if (bucket != m_components.end()) {
+                                bucket->second->destruct(e);
+                            }
+                        }
+                    }
+                }
+                it = m_ents_map.erase(it);
+            } else {
+                ++it;
+            }
+        }
     }
 
     template<typename Component>
