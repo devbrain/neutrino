@@ -14,11 +14,13 @@ set (src
         # SCENE
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/scene/scene.hh
+        ${PROJECT_INCLUDE}/neutrino/scene/ui_scene.hh
         ${PROJECT_INCLUDE}/neutrino/scene/title_scene.hh
         ${PROJECT_INCLUDE}/neutrino/scene/scene_manager.hh
         scene/scene.cc
         scene/scene_manager.cc
         scene/title_scene.cc
+        scene/ui_scene.cc
 
         # =============================================================
         # APPLICATION
@@ -55,6 +57,7 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/modules/video/world/color_layer.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/world/image_layer.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/world/world_model.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/world_serializer.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/world/animation_sequence.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/components/sprite_component.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/systems/sprite_system.hh
@@ -70,6 +73,7 @@ set (src
         modules/video/world/color_layer.cc
         modules/video/world/image_layer.cc
         modules/video/world/world_model.cc
+        modules/video/world/world_serializer.cc
         modules/video/world/animation_sequence.cc
         modules/video/components/sprite_component.cc
         modules/video/systems/sprite_system.cc
@@ -95,6 +99,28 @@ set (src
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/utils/line.hh
         ${PROJECT_INCLUDE}/neutrino/utils/random.hh
+
+        # =============================================================
+        # ImGUI
+        # =============================================================
+        ${PROJECT_INCLUDE}/neutrino/imgui/imgui.h
+        ${PROJECT_INCLUDE}/neutrino/imgui/imconfig.h
+        thirdparty/imgui/imgui.cpp
+        thirdparty/imgui/imgui_draw.cpp
+        thirdparty/imgui/imgui_impl_sdl2.cpp
+        thirdparty/imgui/imgui_impl_sdl2.h
+        thirdparty/imgui/imgui_impl_sdlrenderer2.cpp
+        thirdparty/imgui/imgui_impl_sdlrenderer2.h
+        thirdparty/imgui/imgui.cpp
+        thirdparty/imgui/imgui_internal.h
+        thirdparty/imgui/imgui_tables.cpp
+        thirdparty/imgui/imgui_widgets.cpp
+        thirdparty/imgui/imstb_rectpack.h
+        thirdparty/imgui/imstb_textedit.h
+        thirdparty/imgui/imstb_truetype.h
+
+        imgui/imgui.cc
+        imgui/imgui.hh
 )
 
 if (NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET AND

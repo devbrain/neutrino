@@ -120,12 +120,13 @@ namespace neutrino::ecs::detail {
                     auto [buff, _] = itr.next();
                     std::destroy_at(std::launder(reinterpret_cast <T*>(buff)));
                 }
+                delete bucket;
             }
 
             static std::unique_ptr <component_bucket, void(*)(component_bucket*)> create(uint16_t capacity) {
-                return std::unique_ptr <component_bucket, void(*)(component_bucket*)>(
+                return {
                     new component_bucket(alignof(T), sizeof(T), capacity, typed_component_bucket <T>::destruct),
-                    typed_component_bucket <T>::destroy);
+                    typed_component_bucket <T>::destroy};
             }
 
             template<typename... Args>
