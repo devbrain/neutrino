@@ -62,12 +62,14 @@ namespace neutrino::imgui {
         }
     }
 
-    void start_frame() {
+    bool start_frame() {
         if (imgui_initialized) {
             ImGui_ImplSDLRenderer2_NewFrame();
             ImGui_ImplSDL2_NewFrame();
             ImGui::NewFrame();
+            return true;
         }
+        return false;
     }
 
     void init_imgui_ui(const std::function<void()>& init_fn) {

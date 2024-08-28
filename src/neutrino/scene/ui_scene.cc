@@ -9,6 +9,12 @@ namespace neutrino {
         imgui::request_for_imgui();
     }
 
+    void ui_scene::setup_imgui() {
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        ImGui::StyleColorsDark();
+    }
+
     scene::flags ui_scene::get_flags() const {
         return scene::flags::TRANSPARENT | scene::flags::PROPAGATE_EVENTS | scene::flags::PROPAGATE_UPDATES;
     }
@@ -19,15 +25,15 @@ namespace neutrino {
     }
 
     void ui_scene::handle_input([[maybe_unused]] const sdl::events::event_t& ev) {
-        ImGui::Begin("Input");
     }
 
     void ui_scene::update([[maybe_unused]] std::chrono::milliseconds delta_time) {
     }
 
     void ui_scene::render(sdl::renderer& renderer) {
-        imgui::start_frame();
-        draw_imgui(renderer);
-        imgui::render_imgui(renderer);
+        if (imgui::start_frame()) {
+            draw_imgui(renderer);
+            imgui::render_imgui(renderer);
+        }
     }
 }

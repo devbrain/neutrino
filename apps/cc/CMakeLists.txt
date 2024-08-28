@@ -3,7 +3,7 @@ fetchcontent_declare(
         GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
         GIT_PROGRESS TRUE
         GIT_SHALLOW TRUE
-        GIT_TAG master
+        GIT_TAG v3.2.1
         TIMEOUT 10
         UPDATE_COMMAND ""
 )
@@ -52,6 +52,10 @@ add_executable(cc
         level/hud.hh
         cc_application.cc
         cc_application.hh
+        props_editor/props_editor_app.cc
+        props_editor/props_editor_app.hh
+        props_editor/props_editor_ui.cc
+        props_editor/props_editor_ui.hh
 
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

@@ -16,7 +16,7 @@ namespace neutrino {
             ~ui_scene() override = default;
         protected:
             virtual void draw_imgui(sdl::renderer& renderer) = 0;
-            virtual void setup_imgui() = 0;
+            virtual void setup_imgui();
             flags get_flags() const override;
         private:
             void initialize() override;

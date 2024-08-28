@@ -14,7 +14,7 @@ namespace neutrino::imgui {
     void shutdown_imgui();
     void handle_imgui_events(const SDL_Event& e);
     void render_imgui(sdl::renderer& renderer);
-    void start_frame();
+    bool start_frame();
 
     void init_imgui_ui(const std::function<void()>& init_fn);
 

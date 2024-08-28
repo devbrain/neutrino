@@ -53,7 +53,7 @@ namespace neutrino {
         for (auto i = m_stack.rbegin(); i != m_stack.rend(); ++i) {
             auto& scene_ptr = *i;
             auto flags = scene_ptr->get_flags();
-            if (flags & scene::flags::TRANSPARENT) {
+            if (flags & scene::flags::TRANSPARENT && start_idx > 0) {
                 start_idx--;
             } else {
                 break;
