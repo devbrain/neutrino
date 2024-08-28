@@ -53,4 +53,17 @@ void setup_cc_names(neutrino::texture_atlas& atlas,
 	TILE_BG_BRICK_RIGHT = {cc_main_tex, 20};
 	TILE_BG_BRICK_INNER1 = {cc_main_tex, 25};
 	TILE_BG_BRICK_INNER2 = {cc_main_tex, 24};
+
+	TILE_STAR_BG_0 = {cc_main_tex, 344};
+	TILE_STAR_BG_1 = {cc_main_tex, 345};
+	TILE_STAR_BG_2 = {cc_main_tex, 346};
+	TILE_STAR_BG_3 = {cc_main_tex, 346};
+	TILE_STAR_BG_4 = {cc_main_tex, 347};
+	TILE_STAR_BG_5 = {cc_main_tex, 348};
+	TILE_STAR_BG_6 = {cc_main_tex, 349};
+
+	TILE_TORCH_ANI.add_frame({{cc_main_tex, 639}, std::chrono::milliseconds(200)});
+	TILE_TORCH_ANI.add_frame({{cc_main_tex, 640}, std::chrono::milliseconds(200)});
+	TILE_TORCH_ANI.add_frame({{cc_main_tex, 641}, std::chrono::milliseconds(200)});
+	TILE_TORCH_ANI.add_frame({{cc_main_tex, 642}, std::chrono::milliseconds(200)});
 }

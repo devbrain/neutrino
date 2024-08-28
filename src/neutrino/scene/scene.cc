@@ -152,8 +152,10 @@ namespace neutrino {
 			on_window_focus_gained();
 		} else if (std::get_if <sdl::events::window_focus_lost>(&ev)) {
 			on_window_focus_lost();
-		} else if (std::get_if <sdl::events::window_close>(&ev)) {
-			on_window_close();
+		} else if (auto* close_ev = std::get_if <sdl::events::window_close>(&ev)) {
+			if (close_ev->window_id == application::instance().get_window_id()) {
+				on_window_close();
+			}
 		} else {
 			return false;
 		}

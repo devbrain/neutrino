@@ -30,10 +30,12 @@ namespace neutrino {
 
 			[[nodiscard]] bool empty() const;
 
+
+		private:
 			void render(sdl::renderer& renderer);
 			void handle_input(const sdl::events::event_t& ev);
 			void update(std::chrono::milliseconds delta_time);
-		private:
+
 			void update_timers(const scene_timer_event& e);
 			void clear_events();
 		private:

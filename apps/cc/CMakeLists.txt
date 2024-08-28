@@ -1,3 +1,14 @@
+fetchcontent_declare(
+        CXXOPTS_EXT
+        GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
+        GIT_PROGRESS TRUE
+        GIT_SHALLOW TRUE
+        GIT_TAG master
+        TIMEOUT 10
+        UPDATE_COMMAND ""
+)
+fetchcontent_makeavailable(CXXOPTS_EXT)
+
 add_executable(cc
         main.cc
         tile_names.cc
@@ -7,6 +18,7 @@ add_executable(cc
         data_loader/crystal_caves/cc_tiles_mapping.hh
         data_loader/crystal_caves/crystal_caves.hh
         data_loader/crystal_caves/crystal_caves.cc
+        data_loader/crystal_caves/cc_tile_names.hh
         data_loader/map_tile.hh
         data_loader/raw_map.hh
         data_loader/raw_map.cc
@@ -38,6 +50,8 @@ add_executable(cc
         level/ecs_registry.hh
         level/hud.cc
         level/hud.hh
+        cc_application.cc
+        cc_application.hh
 
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -47,4 +61,4 @@ target_compile_options(cc PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:
         /W4>)
 
-target_link_libraries(cc PRIVATE neutrino thirdparty::sdl2-main)
+target_link_libraries(cc PRIVATE neutrino thirdparty::sdl2-main cxxopts)

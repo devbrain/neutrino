@@ -15,9 +15,14 @@
 #include <neutrino/modules/video/tile.hh>
 #include <neutrino/neutrino_export.hh>
 #include <assets/resources/tileset/tileset.hh>
+#include <neutrino/modules/video/world/world_serializer.hh>
 
 namespace neutrino {
 	class NEUTRINO_EXPORT texture_atlas {
+		friend NEUTRINO_EXPORT void serialize_tmx(const std::filesystem::path& out_dir,
+					   const tiled::world_model& model,
+					   const texture_atlas& atlas,
+					   const sdl::renderer& renderer);
 		public:
 			texture_id_t add(sdl::texture&& texture);
 			texture_id_t add(sdl::texture&& texture, std::vector <sdl::rect>&& rects);

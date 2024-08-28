@@ -1,0 +1,8 @@
+[
+  {
+    "name" : "green slug",
+    "first_tile": 50,
+    "last_tile" : 89,
+    "type" : "enemy"
+  }
+]

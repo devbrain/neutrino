@@ -4,6 +4,7 @@
 
 #include "main_level_scene.hh"
 #include "tile_names.hh"
+#include "neutrino/application.hh"
 
 static auto init_world_renderer(neutrino::sdl::renderer& r, const neutrino::sdl::area_type& window_size) {
     auto window = window_size;
@@ -16,6 +17,7 @@ main_level_scene::main_level_scene(neutrino::sdl::renderer& r, const neutrino::s
       m_ecs{},
       m_hud(m_ecs, static_cast <int>(window_size.h - HUD_TILE_H)) {
     m_world_model = maps.get_map(maps_registry::MAIN_LEVEL, m_ecs.get_registry());
+    neutrino::serialize_tmx("zopa-tmx", m_world_model, neutrino::application::instance().get_texture_atlas(), r);
 }
 
 void main_level_scene::update(std::chrono::milliseconds delta_time) {
@@ -29,4 +31,5 @@ void main_level_scene::render(neutrino::sdl::renderer& renderer) {
 
 void main_level_scene::initialize() {
     m_world_renderer.init(get_texture_atlas(), m_world_model);
+
 }
