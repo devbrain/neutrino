@@ -5,5 +5,6 @@ add_executable(unittest
         ecs/test_bi_map.cc
         ecs/test_component_bucket.cc
         ecs/test_ecs_registry.cc
+        s11n/test_s11n.cc
 )
 target_link_libraries(unittest PRIVATE neutrino thirdparty::doctest)

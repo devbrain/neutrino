@@ -5,10 +5,9 @@
 #include <bsw/exception.hh>
 #include <bsw/strings/number_parser.hh>
 #include <neutrino/ini/config_parser.hh>
+#include <yaml-cpp/yaml.h>
+#include "tojson.hpp"
 
-
-#include <ryml.hpp>
-#include <ryml_std.hpp>
 
 #include "inih.h"
 
@@ -103,31 +102,7 @@ namespace neutrino::utils {
     }
     // ----------------------------------------------------------------------------------------------
     nlohmann::json load_from_yaml (const std::string& input) {
-      try {
-        std::vector<char> data(input.size());
-        std::memcpy(data.data(), input.c_str(), input.size());
-        c4::substr in(data.data (), data.size ());
-
-        auto tree = c4::yml::parse_in_place(in);
-        const auto stream = tree.rootref();
-        auto is_stream = stream.is_stream();
-        if (!is_stream) {
-          std::ostringstream ss;
-          ss << ryml::as_json (tree);
-          return nlohmann::json::parse (ss.str ());
-        } else {
-          auto out = nlohmann::json::array();
-          for(const auto& doc : stream.children()) {
-            std::ostringstream ss;
-            ss << ryml::as_json(doc);
-            out.push_back (nlohmann::json::parse (ss.str ()));
-          }
-          return out;
-        }
-      }
-      catch (const std::exception& e) {
-        RAISE_EX("Failed to parse yaml: ", e.what ());
-      }
+        return tojson::yaml2json(input);
     }
   }
   // ----------------------------------------------------------------------------------------------------------------

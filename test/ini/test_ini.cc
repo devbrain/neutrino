@@ -5,8 +5,9 @@
 #include <string>
 #include <neutrino/ini/config_parser.hh>
 
-TEST_SUITE("ini test case") {
+#include <iostream>
 
+TEST_SUITE("ini test case") {
 	TEST_CASE("test from json simple") {
 		struct A {
 			int x{};
@@ -111,10 +112,9 @@ test3 = 2
 		REQUIRE(cfg["comment_test"]["test2"].get<int>() == 2);
 		REQUIRE(cfg["comment_test"]["test3"].get<int>() == 2);
 	}
-/*
+
 	TEST_CASE("parse ini to map") {
-		const std::string txt = R"(
- ---
+		const std::string txt = R"(---
  doe: "a deer, a female deer"
  ray: "a drop of golden sun"
  pi: 3.14159
@@ -132,8 +132,7 @@ test3 = 2
    partridges:
      count: 1
      location: "a pear tree"
-   turtle-doves: two
-)";
+   turtle-doves: two)";
 		using cfg_t = std::map <std::string, std::any>;
 		std::vector <cfg_t> out;
 		neutrino::utils::config_parser::parse(out, txt, neutrino::utils::config_parser::YAML);
@@ -150,5 +149,5 @@ test3 = 2
 		auto c1 = std::any_cast <cfg_t>(c["partridges"]);
 		REQUIRE(std::any_cast<int>(c1["count"]) == 1);
 	}
-	*/
+
 }

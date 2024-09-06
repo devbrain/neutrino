@@ -36,6 +36,7 @@ set (src
         ini/ini_parser.cc
         ini/inih.h
         ini/inih.c
+        ini/tojson.hpp
 
         # =============================================================
         # modules/PHYSICS
@@ -62,6 +63,8 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/modules/video/components/sprite_component.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/systems/sprite_system.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/systems/world_rendering_system.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/properties/sprite_properties.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/properties/tile_properties.hh
         modules/video/texture_atlas.cc
         modules/video/tile.cc
         modules/video/tile_font_spec.cc
@@ -100,6 +103,20 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/utils/line.hh
         ${PROJECT_INCLUDE}/neutrino/utils/random.hh
 
+        # =============================================================
+        # S11N
+        # =============================================================
+        ${PROJECT_INCLUDE}/neutrino/s11n/s11n.hh
+        ${PROJECT_INCLUDE}/neutrino/s11n/detail/cista.hh
+        ${PROJECT_INCLUDE}/neutrino/s11n/detail/traits_s11n.hh
+        ${PROJECT_INCLUDE}/neutrino/s11n/detail/yaml_s11n.hh
+        ${PROJECT_INCLUDE}/neutrino/s11n/detail/json_s11n.hh
+        # =============================================================
+        # Properties
+        # =============================================================
+        ${PROJECT_INCLUDE}/neutrino/modules/properties/properties.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/properties/properties_db.hh
+        modules/properties/properties_db.cc
         # =============================================================
         # ImGUI
         # =============================================================
@@ -164,6 +181,5 @@ if (neutrino_ENABLE_TESTING)
 endif()
 
 target_link_libraries(neutrino
-        PUBLIC neutrino::assets bsw::bsw boost_callable_traits JGuegant::dense_hash_map
-        PRIVATE ryml::ryml thirdparty::json box2d
+        PUBLIC neutrino::assets bsw::bsw boost_callable_traits JGuegant::dense_hash_map thirdparty::cista thirdparty::yml thirdparty::json
 )
