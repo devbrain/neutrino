@@ -1,10 +1,10 @@
 fetchcontent_declare(
-        RYAML
-        GIT_REPOSITORY "https://github.com/biojppm/rapidyaml.git"
+        YAML-CPP
+        GIT_REPOSITORY "https://github.com/jbeder/yaml-cpp.git"
         GIT_TAG master     # or a particular branch, tag or commit
         GIT_SHALLOW FALSE  # ensure submodules are checked out
 )
-fetchcontent_makeavailable(RYAML)
+fetchcontent_makeavailable(YAML-CPP)
 
-set_target_properties(ryml PROPERTIES FOLDER "ThirdParty")
-add_library(thirdparty::ryml ALIAS ryml)
+add_library(thirdparty::yml ALIAS yaml-cpp)
+set_target_properties(yaml-cpp PROPERTIES FOLDER "ThirdParty")
