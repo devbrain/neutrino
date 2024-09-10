@@ -52,11 +52,22 @@ add_executable(cc
         level/hud.hh
         cc_application.cc
         cc_application.hh
+        # =======================================================
+        # Editor
+        # =======================================================
         props_editor/props_editor_app.cc
         props_editor/props_editor_app.hh
         props_editor/props_editor_ui.cc
         props_editor/props_editor_ui.hh
-
+        props_editor/editor_context.cc
+        props_editor/editor_context.hh
+        props_editor/tiles_selector_widget.cc
+        props_editor/tiles_selector_widget.hh
+        props_editor/main_menu.cc
+        props_editor/main_menu.hh
+        props_editor/sprites_editor_widget.cc
+        props_editor/sprites_editor_widget.hh
+        props_editor/sprite_names.hh
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(cc PRIVATE

@@ -3,20 +3,47 @@
 //
 
 #include <neutrino/application.hh>
+#include <neutrino/s11n/s11n.hh>
+
 #include <bsw/exception.hh>
 #include <bsw/logger/logger.hh>
 #include <bsw/register_at_exit.hh>
 #include "bsw/logger/system.hh"
 #include "imgui/imgui.hh"
+#include <bsw/config_path.hh>
+#include <bsw/whereami.hh>
+
 
 namespace neutrino {
+
+    struct application_config {
+        int desired_fps;
+        bool fullscreen;
+        unsigned screen_width;
+        unsigned screen_height;
+
+        SERIALIZATION_SCHEMA(desired_fps, fullscreen, screen_height, screen_height)
+    };
+
     static application* s_instance = nullptr;
+
+    struct application_state {
+        application_state()
+            : is_fullscreen(false) {
+            EVLOG_TRACE(EVLOG_INFO, "C");
+        }
+        bool is_fullscreen;
+    };
 
     application::application()
         : m_quit_flag(false),
           m_desired_fps(60),
           m_fps(0),
-          m_window_id(0) {
+          m_window_id(0),
+          m_fullscreen(false) {
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+        EVLOG_TRACE(EVLOG_INFO, "Where am I ", bsw::get_executable_path());
+        EVLOG_TRACE(EVLOG_INFO, "Config path ", bsw::get_config_path());
     }
 
     application::~application() {
@@ -33,10 +60,22 @@ namespace neutrino {
                             ? sdl::window(static_cast <int>(w), static_cast <int>(h),
                                           sdl::window::flags::FULL_SCREEN_DESKTOP)
                             : sdl::window(static_cast <int>(w), static_cast <int>(h));
+        m_fullscreen = fullscreen;
         m_renderer = sdl::renderer(m_main_window);
         m_window_id = m_main_window.id();
 
         m_quit_flag = !user_init_sequence();
+
+        m_event_reactor.register_handler([](const sdl::events::keyboard& kb, application_state& ev) {
+                if (kb.pressed && kb.scan_code == sdl::F) {
+                    ev.is_fullscreen = true;
+                    EVLOG_TRACE(EVLOG_INFO, "Full screen");
+                    return true;
+                }
+                ev.is_fullscreen = false;
+                return false;
+            }
+        );
     }
 
     void application::run() {
@@ -128,13 +167,6 @@ namespace neutrino {
 
     void application::init_assets() {
     }
-
-    // void application::init_imgui() {
-    //     ImGuiIO& io = ImGui::GetIO();
-    //     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-    //
-    //     ImGui::StyleColorsDark();
-    // }
 
     void application::on_error(const std::exception& exception) const {
         EVLOG_TRACE(EVLOG_FATAL, exception.what());
@@ -231,6 +263,21 @@ namespace neutrino {
                     m_scene_manager.handle_input(internal_event);
                 }
             }
+
+            if (auto* s = m_event_reactor.get <application_state>()) {
+                 if (s->is_fullscreen) {
+                     if (m_fullscreen) {
+                         m_main_window.set_fullscreen(false);
+                         m_fullscreen = false;
+                         m_renderer.set_logical_size(m_size.w, m_size.h);
+                     } else {
+                         m_main_window.set_fullscreen(true);
+                         m_fullscreen = true;
+                         m_renderer.set_logical_size(m_size.w, m_size.h);
+                     }
+                 }
+            }
+
             m_scene_manager.update(delta_t);
             m_renderer.clear();
             m_scene_manager.render(m_renderer);

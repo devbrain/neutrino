@@ -65,6 +65,7 @@ namespace neutrino {
 			texture_atlas m_texture_atlas;
 			sdl::area_type m_size;
 			sdl::window_id_t m_window_id;
+			bool m_fullscreen;
 	};
 }
 

@@ -1,7 +1,7 @@
 fetchcontent_declare(
         FMT
         URL "https://github.com/fmtlib/fmt/releases/download/11.0.2/fmt-11.0.2.zip"
-
+        DOWNLOAD_EXTRACT_TIMESTAMP FALSE
 )
 fetchcontent_makeavailable(FMT)
 
@@ -9,6 +9,7 @@ fetchcontent_declare(
         CISTA
         URL "https://github.com/felixguendling/cista/releases/download/v0.15/cista.h"
         DOWNLOAD_NO_EXTRACT TRUE
+
 )
 fetchcontent_makeavailable(CISTA)
 FetchContent_GetProperties(CISTA SOURCE_DIR CISTA_SOURCE_DIR)
