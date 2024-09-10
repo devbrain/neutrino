@@ -6,7 +6,7 @@
 #define NEUTRINO_VIDEO_PROPERTIES_SPRITE_PROPERTIES_HH
 
 #include <map>
-#include <neutrino/s11n/s11n.hh>
+#include <bsw/s11n/s11n.hh>
 #include <neutrino/modules/video/types.hh>
 #include <neutrino/modules/video/properties/tile_properties.hh>
 

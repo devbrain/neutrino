@@ -6,7 +6,7 @@
 #define NEUTRINO_MODULES_VIDEO_TILE_PROPERTIES_HH
 
 #include <vector>
-#include <neutrino/s11n/s11n.hh>
+#include <bsw/s11n/s11n.hh>
 #include <neutrino/modules/video/types.hh>
 #include <neutrino/neutrino_export.hh>
 
