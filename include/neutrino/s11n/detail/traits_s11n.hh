@@ -10,12 +10,13 @@
 #include <vector>
 #include <string>
 #include <type_traits>
+#include <optional>
 
-namespace neutrino::detail {
+namespace neutrino::s11n::detail {
 
     template<typename T>
     struct is_simple {
-        static constexpr bool value = std::is_arithmetic_v <T>;
+        static constexpr bool value = std::is_arithmetic_v <T> || std::is_floating_point_v<T>;
     };
 
     template<>
@@ -60,6 +61,17 @@ namespace neutrino::detail {
         using inner = V;
     };
 
+    template<typename T>
+    struct is_optional {
+        using inner = void;
+        static constexpr bool value = false;
+    };
+
+    template<typename T>
+    struct is_optional<std::optional<T>> {
+        using inner = T;
+        static constexpr bool value = true;
+    };
 
 }
 

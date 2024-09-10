@@ -7,6 +7,7 @@
 
 #include <neutrino/application.hh>
 #include "data_loader/data_directory.hh"
+#include "props_editor/editor_context.hh"
 
 class props_editor_app : public neutrino::application {
     public:
@@ -15,6 +16,7 @@ class props_editor_app : public neutrino::application {
         void setup_scenes(neutrino::sdl::renderer& renderer) override;
     private:
         data_directory m_data_dir;
+        editor_context m_ctx;
 };
 
 #endif

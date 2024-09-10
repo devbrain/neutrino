@@ -224,7 +224,7 @@ namespace neutrino::utils {
 						RAISE_EX_WITH_CAUSE(std::move (e), "Failed to parse config field ", name);
 					}
 				}
-			} else if constexpr (std::is_convertible_v <field_t, neutrino::utils::detail::config_section>) {
+			} else if constexpr (std::is_convertible_v <field_t, detail::config_section>) {
 				std::string name = field.name.data();
 				if (map.contains(name)) {
 					try {

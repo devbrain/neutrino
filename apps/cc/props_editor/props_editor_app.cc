@@ -13,7 +13,8 @@ props_editor_app::props_editor_app(const std::filesystem::path& path_to_data)
 void props_editor_app::setup_scenes(neutrino::sdl::renderer& renderer) {
     auto [srf, rects] = m_data_dir.load_tileset(data_directory::CC1_TILES);
 
-    get_scene_manager().push(std::make_shared<props_editor_ui>(neutrino::sdl::texture (renderer, srf), std::move(rects)));
+    get_scene_manager().push(std::make_shared<props_editor_ui>(neutrino::sdl::texture (renderer, srf),
+        std::move(rects), m_ctx));
 }
 
 
