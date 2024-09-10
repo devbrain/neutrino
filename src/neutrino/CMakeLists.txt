@@ -103,19 +103,7 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/utils/line.hh
         ${PROJECT_INCLUDE}/neutrino/utils/random.hh
 
-        # =============================================================
-        # S11N
-        # =============================================================
-        ${PROJECT_INCLUDE}/neutrino/s11n/s11n.hh
-        ${PROJECT_INCLUDE}/neutrino/s11n/detail/cista.hh
-        ${PROJECT_INCLUDE}/neutrino/s11n/detail/traits_s11n.hh
-        ${PROJECT_INCLUDE}/neutrino/s11n/detail/archive.hh
-        ${PROJECT_INCLUDE}/neutrino/s11n/detail/s11n_convert.hh
-        s11n/yaml_archive_impl.hh
-        s11n/json_archive_impl.hh
-        s11n/archive.cc
-        s11n/yaml_archive_impl.cc
-        s11n/json_archive_impl.cc
+
         # =============================================================
         # Properties
         # =============================================================
@@ -186,5 +174,5 @@ if (neutrino_ENABLE_TESTING)
 endif()
 
 target_link_libraries(neutrino
-        PUBLIC neutrino::assets bsw::bsw boost_callable_traits JGuegant::dense_hash_map thirdparty::cista thirdparty::yml thirdparty::json
+        PUBLIC neutrino::assets bsw::bsw boost_callable_traits JGuegant::dense_hash_map
 )

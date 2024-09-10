@@ -3,7 +3,7 @@
 //
 
 #include <neutrino/application.hh>
-#include <neutrino/s11n/s11n.hh>
+#include <bsw/s11n/s11n.hh>
 
 #include <bsw/exception.hh>
 #include <bsw/logger/logger.hh>
