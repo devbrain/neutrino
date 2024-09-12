@@ -11,7 +11,7 @@
 #include <sdlpp/events/system_events.hh>
 #include <boost/callable_traits.hpp>
 #include <bsw/mp/all_same.hh>
-
+#include <bsw/mp/typelist.hh>
 
 namespace neutrino::detail {
 	namespace priv {

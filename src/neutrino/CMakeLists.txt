@@ -6,9 +6,13 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/events/events.hh
         ${PROJECT_INCLUDE}/neutrino/events/events_reactor.hh
         ${PROJECT_INCLUDE}/neutrino/events/detail/event_producer.hh
+        ${PROJECT_INCLUDE}/neutrino/events/detail/keyboard_state.hh
+        ${PROJECT_INCLUDE}/neutrino/events/hotkey_mapper.hh
         events/events_reactor.cc
         events/neutrino_events.cc
         events/neutrino_events.hh
+        events/hotkey_mapper.cc
+        events/detail/keyboard_state.cc
 
         # =============================================================
         # SCENE
@@ -103,7 +107,12 @@ set (src
         ${PROJECT_INCLUDE}/neutrino/utils/line.hh
         ${PROJECT_INCLUDE}/neutrino/utils/random.hh
 
-
+        # =============================================================
+        # CONFIG
+        # =============================================================
+        ${PROJECT_INCLUDE}/neutrino/config/config_service.hh
+        config/config_service.cc
+        ${PROJECT_INCLUDE}/neutrino/config/config_hotkey.hh
         # =============================================================
         # Properties
         # =============================================================
