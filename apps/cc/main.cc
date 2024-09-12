@@ -35,7 +35,9 @@ void parse_cmd_line(const int argc, char** argv) {
 // --------------------------------------------------------------------------------
 void run_game() {
     cc_application app("/home/igor/proj/ares/games/CAVES/");
-    app.init(320, 200);
+    if (!app.is_configured()) {
+        app.init(320, 200);
+    }
     app.run();
 }
 // --------------------------------------------------------------------------------

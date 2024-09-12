@@ -3,35 +3,69 @@
 //
 
 #include <neutrino/application.hh>
+#include <neutrino/config/config_hotkey.hh>
 #include <bsw/s11n/s11n.hh>
-
 #include <bsw/exception.hh>
 #include <bsw/logger/logger.hh>
 #include <bsw/register_at_exit.hh>
 #include "bsw/logger/system.hh"
 #include "imgui/imgui.hh"
-#include <bsw/config_path.hh>
-#include <bsw/whereami.hh>
-
 
 namespace neutrino {
 
-    struct application_config {
-        int desired_fps;
-        bool fullscreen;
-        unsigned screen_width;
-        unsigned screen_height;
+    inline constexpr int FULLSCREEN_PRESSED = 1;
 
-        SERIALIZATION_SCHEMA(desired_fps, fullscreen, screen_height, screen_height)
+    struct application_config {
+        application_config() = default;
+
+        int desired_fps{60};
+        bool fullscreen{false};
+        unsigned screen_width{800};
+        unsigned screen_height{600};
+        std::optional <config_hotkey> fullscreen_key{config_hotkey(sdl::scancode::RETURN, sdl::keymod::ALT)};
+
+        SERIALIZATION_SCHEMA(desired_fps, fullscreen, screen_height, screen_height, fullscreen_key)
     };
+
+    static application_config global_config;
+
+    static std::tuple <bool, std::string> load_application_config() {
+        if (!config_service::has_config_prefix()) {
+            config_service::set_config_prefix(config_service::get_executable_name());
+        }
+        bool create_cfg_dir = false;
+        if (!config_service::is_config_root_exists()) {
+            create_cfg_dir = true;
+        } else {
+            if (config_service::is_config_root_writable()) {
+                create_cfg_dir = true;
+            }
+        }
+
+        if (create_cfg_dir) {
+            if (!config_service::make_application_config_dirs()) {
+                EVLOG_TRACE(EVLOG_ERROR, "Failed to create application config directory");
+            }
+        }
+        EVLOG_TRACE(EVLOG_INFO, "Using ", config_service::get_path_to_configs(), " for configuration storage");
+        auto cfg_name = config_service::get_executable_name() + ".yml";
+        if (!config_service::file_exists(cfg_name)) {
+            EVLOG_TRACE(EVLOG_WARNING, "Application config file ", cfg_name, " does not exist. using defaults");
+        } else {
+            EVLOG_TRACE(EVLOG_INFO, "Using config file ", cfg_name, " for application config");
+        }
+        auto [cfg, loaded] = config_service::load <application_config>(cfg_name);
+        global_config = cfg;
+        return {loaded, cfg_name};
+    }
 
     static application* s_instance = nullptr;
 
     struct application_state {
         application_state()
             : is_fullscreen(false) {
-            EVLOG_TRACE(EVLOG_INFO, "C");
         }
+
         bool is_fullscreen;
     };
 
@@ -40,10 +74,17 @@ namespace neutrino {
           m_desired_fps(60),
           m_fps(0),
           m_window_id(0),
-          m_fullscreen(false) {
+          m_fullscreen(false),
+          m_configured(false),
+          m_initialized(false) {
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-        EVLOG_TRACE(EVLOG_INFO, "Where am I ", bsw::get_executable_path());
-        EVLOG_TRACE(EVLOG_INFO, "Config path ", bsw::get_config_path());
+        auto [loaded, cfg_name] = load_application_config();
+        m_configured = loaded;
+        m_config_name = cfg_name;
+        m_desired_fps = global_config.desired_fps;
+        m_size.w = global_config.screen_width;
+        m_size.h = global_config.screen_height;
+        m_fullscreen = global_config.fullscreen;
     }
 
     application::~application() {
@@ -52,6 +93,7 @@ namespace neutrino {
     }
 
     void application::init(unsigned w, unsigned h, bool fullscreen, int desired_fps) {
+        ENFORCE(!m_initialized);
         s_instance = this;
         m_size.w = w;
         m_size.h = h;
@@ -62,23 +104,40 @@ namespace neutrino {
                             : sdl::window(static_cast <int>(w), static_cast <int>(h));
         m_fullscreen = fullscreen;
         m_renderer = sdl::renderer(m_main_window);
+        if (fullscreen) {
+            m_renderer.set_logical_size(w, h);
+        }
         m_window_id = m_main_window.id();
 
-        m_quit_flag = !user_init_sequence();
+        if (!is_configured()) {
+            application_config app_cfg;
+            app_cfg.desired_fps = desired_fps;
+            app_cfg.fullscreen = fullscreen;
+            app_cfg.screen_width = w;
+            app_cfg.screen_height = h;
 
-        m_event_reactor.register_handler([](const sdl::events::keyboard& kb, application_state& ev) {
-                if (kb.pressed && kb.scan_code == sdl::F) {
-                    ev.is_fullscreen = true;
-                    EVLOG_TRACE(EVLOG_INFO, "Full screen");
-                    return true;
-                }
-                ev.is_fullscreen = false;
-                return false;
-            }
-        );
+            config_service::save(app_cfg, m_config_name);
+        }
+
+        m_quit_flag = !user_init_sequence();
+        if (global_config.fullscreen_key) {
+            m_hotkey_mapper.register_hotkey(*global_config.fullscreen_key, FULLSCREEN_PRESSED);
+        }
+        m_hotkey_mapper.add_to_reactor(m_event_reactor);
+        m_initialized = true;
+    }
+
+    void application::init() {
+        init(m_size.w, m_size.h, m_fullscreen, m_desired_fps);
     }
 
     void application::run() {
+        if (!m_initialized) {
+            if (m_configured) {
+                init();
+            }
+        }
+        ENFORCE(m_initialized);
         imgui::auto_init imgui_auto_init(m_main_window, m_renderer);
 
         static uint64_t frames = 0;
@@ -157,6 +216,10 @@ namespace neutrino {
 
     sdl::window_id_t application::get_window_id() const {
         return m_window_id;
+    }
+
+    bool application::is_configured() const {
+        return m_configured;
     }
 
     void application::init_logger() {
@@ -264,18 +327,18 @@ namespace neutrino {
                 }
             }
 
-            if (auto* s = m_event_reactor.get <application_state>()) {
-                 if (s->is_fullscreen) {
-                     if (m_fullscreen) {
-                         m_main_window.set_fullscreen(false);
-                         m_fullscreen = false;
-                         m_renderer.set_logical_size(m_size.w, m_size.h);
-                     } else {
-                         m_main_window.set_fullscreen(true);
-                         m_fullscreen = true;
-                         m_renderer.set_logical_size(m_size.w, m_size.h);
-                     }
-                 }
+            if (auto* s = m_event_reactor.get <hotkey_pressed_event>()) {
+                if (s->hotkey_id == FULLSCREEN_PRESSED) {
+                    if (m_fullscreen) {
+                        m_main_window.set_fullscreen(false);
+                        m_fullscreen = false;
+                        m_renderer.set_logical_size(m_size.w, m_size.h);
+                    } else {
+                        m_main_window.set_fullscreen(true);
+                        m_fullscreen = true;
+                        m_renderer.set_logical_size(m_size.w, m_size.h);
+                    }
+                }
             }
 
             m_scene_manager.update(delta_t);

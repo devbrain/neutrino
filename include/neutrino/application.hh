@@ -12,61 +12,72 @@
 #include <neutrino/events/events_reactor.hh>
 #include <neutrino/scene/scene_manager.hh>
 #include <neutrino/modules/video/texture_atlas.hh>
+#include <neutrino/config/config_service.hh>
+#include <neutrino/events/hotkey_mapper.hh>
 
 namespace neutrino {
-	class NEUTRINO_EXPORT application {
-		public:
-			application();
-			virtual ~application();
+    class NEUTRINO_EXPORT application {
+        public:
+            application();
+            virtual ~application();
 
-			void init(unsigned w, unsigned h, bool fullscreen = false, int desired_fps = 60);
+            void init(unsigned w, unsigned h, bool fullscreen = false, int desired_fps = 60);
+            void init();
 
-			virtual void run();
+            virtual void run();
 
-			void quit();
-			unsigned get_fps() const;
-			static application& instance();
+            void quit();
 
-			const texture_atlas& get_texture_atlas() const;
-			texture_atlas& get_texture_atlas();
-			scene_manager& get_scene_manager();
+            unsigned get_fps() const;
+            static application& instance();
 
-			sdl::area_type get_window_dimensions() const;
-			sdl::window_id_t get_window_id() const;
-		protected:
-			virtual void init_logger();
-			virtual void init_vfs();
-			virtual void init_assets();
-			virtual void setup_scenes(sdl::renderer& renderer) = 0;
-			virtual void on_error(const std::exception& exception) const;
-			virtual void on_unkown_error() const;
+            const texture_atlas& get_texture_atlas() const;
+            texture_atlas& get_texture_atlas();
+            scene_manager& get_scene_manager();
 
-			virtual void on_terminating();
-			virtual void on_low_memory();
-			virtual void on_before_backgroud();
-			virtual void on_in_backgroud();
-			virtual void on_before_foreground();
-			virtual void on_in_foreground();
+            sdl::area_type get_window_dimensions() const;
+            sdl::window_id_t get_window_id() const;
 
-		private:
-			bool need_to_quit() const;
-			bool user_init_sequence();
-			bool internal_run(std::chrono::milliseconds delta_t);
+            [[nodiscard]] bool is_configured() const;
 
-		private:
-			sdl::system m_initializer;
-			sdl::window m_main_window;
-			sdl::renderer m_renderer;
-			scene_manager m_scene_manager;
-			events_reactor m_event_reactor;
-			bool m_quit_flag;
-			int m_desired_fps;
-			unsigned m_fps;
-			texture_atlas m_texture_atlas;
-			sdl::area_type m_size;
-			sdl::window_id_t m_window_id;
-			bool m_fullscreen;
-	};
+        protected:
+            virtual void init_logger();
+            virtual void init_vfs();
+            virtual void init_assets();
+            virtual void setup_scenes(sdl::renderer& renderer) = 0;
+            virtual void on_error(const std::exception& exception) const;
+            virtual void on_unkown_error() const;
+
+            virtual void on_terminating();
+            virtual void on_low_memory();
+            virtual void on_before_backgroud();
+            virtual void on_in_backgroud();
+            virtual void on_before_foreground();
+            virtual void on_in_foreground();
+
+        private:
+            bool need_to_quit() const;
+            bool user_init_sequence();
+            bool internal_run(std::chrono::milliseconds delta_t);
+
+        private:
+            sdl::system m_initializer;
+            sdl::window m_main_window;
+            sdl::renderer m_renderer;
+            scene_manager m_scene_manager;
+            events_reactor m_event_reactor;
+            bool m_quit_flag;
+            int m_desired_fps;
+            unsigned m_fps;
+            texture_atlas m_texture_atlas;
+            sdl::area_type m_size;
+            sdl::window_id_t m_window_id;
+            bool m_fullscreen;
+            bool m_configured;
+            std::string m_config_name;
+            bool m_initialized;
+            hotkey_mapper m_hotkey_mapper;
+    };
 }
 
 #endif
