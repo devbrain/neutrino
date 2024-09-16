@@ -3,12 +3,14 @@
 //
 #include <iostream>
 #include "cc_application.hh"
+#include "tmx_export.hh"
 #include "props_editor/props_editor_app.hh"
 #include <cxxopts.hpp>
 
 enum run_mode_t {
     RUN_GAME,
     RUN_PROPS_EDITOR,
+    RUN_TMX_EXPORT,
     RUN_EXIT
 };
 
@@ -18,6 +20,7 @@ void parse_cmd_line(const int argc, char** argv) {
     cxxopts::Options options("CC", "Crystal Caves");
     options.add_options()
         ("p, pros-editor", "Run props editor", cxxopts::value <bool>()->default_value("false"))
+        ("e, export", "Export to tmx", cxxopts::value <bool>()->default_value("false"))
         ("h, help", "Print help");
     const auto result = options.parse(argc, argv);
 
@@ -26,12 +29,15 @@ void parse_cmd_line(const int argc, char** argv) {
         run_mode = RUN_EXIT;
         return;
     }
-    if (result["p"].as<bool>()) {
+    if (result["p"].as <bool>()) {
         run_mode = RUN_PROPS_EDITOR;
+    } else if (result["e"].as <bool>()) {
+        run_mode = RUN_TMX_EXPORT;
     } else {
         run_mode = RUN_GAME;
     }
 }
+
 // --------------------------------------------------------------------------------
 void run_game() {
     cc_application app("/home/igor/proj/ares/games/CAVES/");
@@ -40,12 +46,14 @@ void run_game() {
     }
     app.run();
 }
+
 // --------------------------------------------------------------------------------
 void run_props_editor() {
     props_editor_app app("/home/igor/proj/ares/games/CAVES/");
     app.init(1024, 768);
     app.run();
 }
+
 // --------------------------------------------------------------------------------
 int main(int argc, char* argv[]) {
     try {
@@ -60,6 +68,9 @@ int main(int argc, char* argv[]) {
             break;
         case RUN_PROPS_EDITOR:
             run_props_editor();
+            break;
+        case RUN_TMX_EXPORT:
+            tmx_export();
             break;
         case RUN_EXIT:
             break;

@@ -112,3 +112,47 @@ assets::tileset load_mini_tileset_cc(std::istream& is) {
 	ts.get_surface().set_palette(palette);
 	return ts;
 }
+
+
+std::vector<cc_level_description> extract_raw_levels_cc(std::istream& is, const exe_map_props& props) {
+
+	auto unpacked = get_data_manager()->load <neutrino::assets::unpacked_exe>(is);
+
+	bsw::io::memory_input_stream exe_stream(unpacked.data(), static_cast <std::streamoff>(unpacked.size()));
+	exe_stream.seekg(props.get_offset(), std::ios::beg);
+	bsw::io::binary_reader rdr(exe_stream);
+
+	int level = 0;
+	int rows = 0;
+	std::vector <cc_level_description> maps;
+	while (true) {
+		uint8_t len;
+		if (props.get_offset() != 0) {
+			rdr >> len;
+			if (len != props.get_columns()) {
+				break;
+			}
+		} else {
+			len = props.get_columns();
+		}
+
+		if (rows == 0) {
+			maps.emplace_back(level,
+				neutrino::sdl::area_type{props.get_columns(), props.get_rows(level)}
+				);
+		}
+
+		for (uint8_t i = 0; i < len; i++) {
+			int8_t ch;
+			rdr >> ch;
+			maps.back().tiles.push_back(static_cast<int>(ch));
+		}
+
+		rows++;
+		if (rows >= props.get_rows(level)) {
+			level++;
+			rows = 0;
+		}
+	}
+	return maps;
+}
