@@ -24,7 +24,7 @@ namespace neutrino {
         unsigned screen_height{600};
         std::optional <config_hotkey> fullscreen_key{config_hotkey(sdl::scancode::RETURN, sdl::keymod::ALT)};
 
-        SERIALIZATION_SCHEMA(desired_fps, fullscreen, screen_height, screen_height, fullscreen_key)
+        SERIALIZATION_SCHEMA(desired_fps, fullscreen, screen_width, screen_height, fullscreen_key)
     };
 
     static application_config global_config;

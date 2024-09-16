@@ -67,7 +67,23 @@ add_executable(cc
         props_editor/main_menu.hh
         props_editor/sprites_editor_widget.cc
         props_editor/sprites_editor_widget.hh
-        props_editor/sprite_names.hh
+        # ==========================================================
+        properties/tile_type.hh
+        properties/background_tile.hh
+        properties/sprite_seq.hh
+        # ==========================================================
+
+        #data_loader/crystal_caves/level.cc
+        properties/map_tile.hh
+        properties/map_tile.cc
+        data_loader/crystal_caves/cc_level_loader.cc
+        data_loader/crystal_caves/cc_level_loader.hh
+        data_loader/crystal_caves/cc_tile_names.hh
+        tmx_export.cc
+        tmx_export.hh
+        data_loader/raw_level_map.cc
+        data_loader/raw_level_map.hh
+        data_loader/crystal_caves/cc_map_cell.hh
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(cc PRIVATE

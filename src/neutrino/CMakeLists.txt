@@ -116,6 +116,7 @@ set (src
         # =============================================================
         # Properties
         # =============================================================
+        ${PROJECT_INCLUDE}/neutrino/modules/properties/tile_properties.hh
         ${PROJECT_INCLUDE}/neutrino/modules/properties/properties.hh
         ${PROJECT_INCLUDE}/neutrino/modules/properties/properties_db.hh
         modules/properties/properties_db.cc

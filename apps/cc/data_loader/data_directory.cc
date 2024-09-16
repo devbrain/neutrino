@@ -10,6 +10,7 @@
 #include "load_picture.hh"
 #include "data_manager.hh"
 #include "data_loader/crystal_caves/cc_decode.hh"
+#include "data_loader/crystal_caves/cc_level_loader.hh"
 #include "data_loader/crystal_caves/crystal_caves.hh"
 
 static std::map <std::string, data_directory::resource_t> names_mappings = {
@@ -136,9 +137,7 @@ std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> data_dire
 std::vector<std::tuple<bg_map_t, fg_map_t>> data_directory::load_maps(resource_t rc) {
 	std::vector<std::tuple<bg_map_t, fg_map_t>> out;
 	std::vector<raw_map> maps;
-	if (rc == CC1_EXE) {
-		maps = extract_maps_cc(*get(rc), cc1);
-	} else if (rc == CC2_EXE) {
+	if (rc == CC1_EXE || rc == CC2_EXE) {
 		maps = extract_maps_cc(*get(rc), cc1);
 	} else if (rc == CC3_EXE) {
 		maps = extract_maps_cc(*get(rc), cc3);
@@ -150,3 +149,22 @@ std::vector<std::tuple<bg_map_t, fg_map_t>> data_directory::load_maps(resource_t
 	}
 	return out;
 }
+
+std::vector<raw_level_map> data_directory::load_levels(resource_t rc) {
+	std::vector<raw_level_map> out;
+	if (rc == CC1_EXE || rc == CC2_EXE) {
+		const auto& level_descr = extract_raw_levels_cc(*get(rc), cc1);
+		for (const auto& lvl : level_descr) {
+			out.emplace_back(parse_level(lvl));
+		}
+	} else if (rc == CC3_EXE) {
+		const auto& level_descr = extract_raw_levels_cc(*get(rc), cc3);
+		for (const auto& lvl : level_descr) {
+			out.emplace_back(parse_level(lvl));
+		}
+	} else {
+		RAISE_EX("Should not be here");
+	}
+	return out;
+}
+
