@@ -118,14 +118,14 @@ static void save_tmx(const raw_level_map& lvl,
     });
 
     create_layer(root_node, "bg2", w, h, lvl.cells, [](const cell& v) {
-        if (v.is_empty() == -1 || (v.flags & CC_TILE_FLAG_RENDER_IN_FRONT) != CC_TILE_FLAG_RENDER_IN_FRONT) {
+        if (v.is_empty() || (v.flags & CC_TILE_FLAG_RENDER_IN_FRONT) != CC_TILE_FLAG_RENDER_IN_FRONT) {
             return 0;
         }
         return 1 + v.tile_name_id;
     });
 
     create_layer(root_node, "fg", w, h, lvl.cells, [](const cell& v) {
-        if (v.is_empty() == -1 || (v.flags & CC_TILE_FLAG_RENDER_IN_FRONT) == CC_TILE_FLAG_RENDER_IN_FRONT) {
+        if (v.is_empty() || (v.flags & CC_TILE_FLAG_RENDER_IN_FRONT) == CC_TILE_FLAG_RENDER_IN_FRONT) {
             return 0;
         }
         return 1 + v.tile_name_id;

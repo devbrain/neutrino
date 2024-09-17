@@ -8,7 +8,7 @@
 #include <istream>
 #include <map>
 #include <assets/assets.hh>
-#include "data_loader/raw_map.hh"
+
 #include "cc_tile_ids.hh"
 
 class exe_map_props {
@@ -47,7 +47,7 @@ class exe_map_props {
 extern exe_map_props cc1;
 extern exe_map_props cc3;
 
-std::vector <raw_map> extract_maps_cc(std::istream& is, const exe_map_props& props);
+
 neutrino::assets::tileset load_tileset_cc(std::istream& is);
 neutrino::assets::tileset load_mini_tileset_cc(std::istream& is);
 

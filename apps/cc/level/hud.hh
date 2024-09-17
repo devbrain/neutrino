@@ -12,11 +12,10 @@
 class hud {
     public:
         hud(const ecs_registry& reg, int y_px);
-        void draw(neutrino::sdl::renderer& renderer, const neutrino::texture_atlas& atlas) const;
-    private:
+        virtual ~hud();
+        virtual void draw(neutrino::sdl::renderer& renderer, const neutrino::texture_atlas& atlas) const = 0;
+    protected:
         void draw_tile(neutrino::sdl::renderer& renderer, const neutrino::texture_atlas& atlas, int tile_x, neutrino::tile tile_id) const;
-        void draw_string_green(neutrino::sdl::renderer& renderer, int tile_x, const char* text) const;
-    private:
         const ecs_registry& m_reg;
         int m_y;
 };

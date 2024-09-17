@@ -6,13 +6,11 @@
 #include "main_menu.hh"
 
 props_editor_ui::props_editor_ui(neutrino::sdl::texture&& img, std::vector <neutrino::sdl::rect>&& rects, editor_context& ctx)
-    : show_another_window(false),
-      m_ctx(ctx),
+    : m_ctx(ctx),
       m_tiles_selector(std::move(img), std::move(rects)) {
 }
 
 void props_editor_ui::draw_imgui(neutrino::sdl::renderer& renderer) {
     show_main_menu(m_ctx);
     m_tiles_selector.show(m_ctx);
-    m_sprites_editor.show(m_ctx);
 }

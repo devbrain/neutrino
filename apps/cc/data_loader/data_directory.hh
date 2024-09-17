@@ -13,9 +13,6 @@
 #include <map>
 
 #include <assets/assets.hh>
-
-#include "data_loader/map_tile.hh"
-#include "data_loader/crystal_caves/crystal_caves.hh"
 #include "data_loader/raw_level_map.hh"
 
 class data_directory {
@@ -60,12 +57,10 @@ class data_directory {
 	public:
 		explicit data_directory(const std::filesystem::path& root);
 
-		std::unique_ptr<std::istream> get(resource_t rc);
-		neutrino::sdl::surface load_picture(resource_t rc);
-		std::tuple<neutrino::sdl::surface, std::vector<neutrino::sdl::rect>> load_tileset(resource_t rc);
-		std::vector<std::tuple<bg_map_t, fg_map_t>> load_maps(resource_t rc);
-
-		std::vector <raw_level_map> load_levels(resource_t rc);
+		[[nodiscard]] std::unique_ptr<std::istream> get(resource_t rc) const;
+		[[nodiscard]] neutrino::sdl::surface load_picture(resource_t rc) const;
+		[[nodiscard]] std::tuple<neutrino::sdl::surface, std::vector<neutrino::sdl::rect>> load_tileset(resource_t rc) const;
+		[[nodiscard]] std::vector <raw_level_map> load_levels(resource_t rc) const;
 	private:
 		std::map<resource_t, std::filesystem::path> m_fs;
 };

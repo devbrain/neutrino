@@ -7,7 +7,7 @@
 
 #include <neutrino/application.hh>
 #include <neutrino/ecs/registry.hh>
-#include "data_loader/data_directory.hh"
+#include "factory.hh"
 #include "level/maps_registry.hh"
 
 class cc_application : public neutrino::application {
@@ -20,12 +20,12 @@ class cc_application : public neutrino::application {
         void setup_scenes(neutrino::sdl::renderer& renderer) override;
         void load_tiles(const neutrino::sdl::renderer& renderer);
 
-        std::shared_ptr <neutrino::scene> create_main_scene(neutrino::sdl::renderer& renderer);
-        std::shared_ptr <neutrino::scene> create_title_scene(neutrino::sdl::renderer& renderer);
-        std::shared_ptr <neutrino::scene> create_main_level(neutrino::sdl::renderer& renderer);
+        std::shared_ptr <neutrino::scene> create_main_scene(const neutrino::sdl::renderer& renderer);
+        std::shared_ptr <neutrino::scene> create_title_scene(const neutrino::sdl::renderer& renderer);
+        std::shared_ptr <neutrino::scene> create_main_level(neutrino::sdl::renderer& renderer) const;
 
     private:
-        data_directory m_data_dir;
+        std::unique_ptr<factory> m_factory ;
         std::unique_ptr <maps_registry> m_maps_registry;
 };
 

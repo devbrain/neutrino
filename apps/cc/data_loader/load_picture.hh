@@ -9,6 +9,6 @@
 #include <sdlpp/sdlpp.hh>
 #include "data_loader/data_directory.hh"
 
-neutrino::sdl::surface load_picture(data_directory& d, data_directory::resource_t rc);
+neutrino::sdl::surface load_picture(const data_directory& d, data_directory::resource_t rc);
 
 #endif
