@@ -9,7 +9,6 @@
 #include <neutrino/scene/ui_scene.hh>
 #include <sdlpp/sdlpp.hh>
 #include "props_editor/tiles_selector_widget.hh"
-#include "props_editor/sprites_editor_widget.hh"
 #include "props_editor/editor_context.hh"
 
 class props_editor_ui : public neutrino::ui_scene {
@@ -22,10 +21,8 @@ class props_editor_ui : public neutrino::ui_scene {
         void draw_imgui(neutrino::sdl::renderer& renderer) override;
 
     private:
-        bool show_another_window;
         editor_context& m_ctx;
         tiles_selector_widget m_tiles_selector;
-        sprites_editor_widget m_sprites_editor;
 };
 
 #endif

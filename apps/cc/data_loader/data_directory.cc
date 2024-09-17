@@ -9,7 +9,7 @@
 #include "data_directory.hh"
 #include "load_picture.hh"
 #include "data_manager.hh"
-#include "data_loader/crystal_caves/cc_decode.hh"
+
 #include "data_loader/crystal_caves/cc_level_loader.hh"
 #include "data_loader/crystal_caves/crystal_caves.hh"
 
@@ -67,7 +67,7 @@ data_directory::data_directory(const std::filesystem::path& root) {
 	// ofs.write(x.data(), x.size());
 }
 
-std::unique_ptr <std::istream> data_directory::get(resource_t rc) {
+std::unique_ptr <std::istream> data_directory::get(resource_t rc) const {
 	auto i = m_fs.find(rc);
 	ENFORCE(i != m_fs.end());
 	auto out = std::make_unique <std::ifstream>(i->second, std::ios::binary | std::ios::in);
@@ -77,7 +77,7 @@ std::unique_ptr <std::istream> data_directory::get(resource_t rc) {
 	return out;
 }
 
-neutrino::sdl::surface data_directory::load_picture(resource_t rc) {
+neutrino::sdl::surface data_directory::load_picture(resource_t rc) const {
 	return ::load_picture(*this, rc);
 }
 
@@ -106,7 +106,7 @@ static std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> co
 	return {std::move(out_srf), rects};
 }
 
-std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> data_directory::load_tileset(resource_t rc) {
+std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> data_directory::load_tileset(resource_t rc) const {
 	bool is_mini = false;
 	switch (rc) {
 		case CC1_TILES:
@@ -134,23 +134,8 @@ std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> data_dire
 	return convert_tileset(load_tileset_cc(*get(rc)));
 }
 
-std::vector<std::tuple<bg_map_t, fg_map_t>> data_directory::load_maps(resource_t rc) {
-	std::vector<std::tuple<bg_map_t, fg_map_t>> out;
-	std::vector<raw_map> maps;
-	if (rc == CC1_EXE || rc == CC2_EXE) {
-		maps = extract_maps_cc(*get(rc), cc1);
-	} else if (rc == CC3_EXE) {
-		maps = extract_maps_cc(*get(rc), cc3);
-	} else {
-		RAISE_EX("Should not be here");
-	}
-	for (const auto& m : maps) {
-		out.emplace_back(cc_decode(m));
-	}
-	return out;
-}
 
-std::vector<raw_level_map> data_directory::load_levels(resource_t rc) {
+std::vector<raw_level_map> data_directory::load_levels(resource_t rc) const {
 	std::vector<raw_level_map> out;
 	if (rc == CC1_EXE || rc == CC2_EXE) {
 		const auto& level_descr = extract_raw_levels_cc(*get(rc), cc1);

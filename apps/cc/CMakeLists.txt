@@ -13,15 +13,9 @@ add_executable(cc
         main.cc
         tile_names.cc
         tile_names.hh
-        data_loader/crystal_caves/cc_decode.cc
-        data_loader/crystal_caves/cc_decode.hh
-        data_loader/crystal_caves/cc_tiles_mapping.hh
         data_loader/crystal_caves/crystal_caves.hh
         data_loader/crystal_caves/crystal_caves.cc
-        data_loader/crystal_caves/cc_tile_names.hh
         data_loader/map_tile.hh
-        data_loader/raw_map.hh
-        data_loader/raw_map.cc
         data_loader/data_manager.cc
         data_loader/data_manager.hh
         data_loader/load_picture.cc
@@ -65,25 +59,24 @@ add_executable(cc
         props_editor/tiles_selector_widget.hh
         props_editor/main_menu.cc
         props_editor/main_menu.hh
-        props_editor/sprites_editor_widget.cc
-        props_editor/sprites_editor_widget.hh
-        # ==========================================================
-        properties/tile_type.hh
-        properties/background_tile.hh
-        properties/sprite_seq.hh
+
         # ==========================================================
 
         #data_loader/crystal_caves/level.cc
-        properties/map_tile.hh
-        properties/map_tile.cc
+
         data_loader/crystal_caves/cc_level_loader.cc
         data_loader/crystal_caves/cc_level_loader.hh
-        data_loader/crystal_caves/cc_tile_names.hh
         tmx_export.cc
         tmx_export.hh
         data_loader/raw_level_map.cc
         data_loader/raw_level_map.hh
         data_loader/crystal_caves/cc_map_cell.hh
+        level/crystal_caves/crystal_caves_map.cc
+        level/crystal_caves/crystal_caves_map.hh
+        level/crystal_caves/crystal_caves_hud.cc
+        level/crystal_caves/crystal_caves_hud.hh
+        factory.cc
+        factory.hh
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(cc PRIVATE

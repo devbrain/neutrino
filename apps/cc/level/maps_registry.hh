@@ -16,12 +16,13 @@ class maps_registry {
         static constexpr int OUTRO = 1;
         static constexpr int MAIN_LEVEL = 2;
 
-        explicit maps_registry(std::vector <std::tuple <bg_map_t, fg_map_t>> maps);
-        [[nodiscard]] neutrino::tiled::world_model get_map(int name, neutrino::ecs::registry& reg) const;
-    private:
-        std::vector <std::tuple <bg_map_t, fg_map_t>> m_maps;
+        explicit maps_registry(std::vector <raw_level_map> maps);
+        virtual ~maps_registry();
+        virtual neutrino::tiled::world_model get_map(int name, neutrino::ecs::registry& reg) const = 0;
+    protected:
+        std::vector <raw_level_map> m_maps;
 };
 
-neutrino::tiled::world_model get_map(int name, neutrino::ecs::registry& reg);
+
 
 #endif
