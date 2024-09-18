@@ -77,6 +77,11 @@ add_executable(cc
         level/crystal_caves/crystal_caves_hud.hh
         factory.cc
         factory.hh
+        data_loader/crystal_caves/cc1_text_resources.hh
+        data_loader/text_resource_loader.cc
+        data_loader/text_resource_loader.hh
+        data_loader/text_resource.cc
+        data_loader/text_resource.hh
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(cc PRIVATE

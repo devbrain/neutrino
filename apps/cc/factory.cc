@@ -4,7 +4,12 @@
 
 #include "factory.hh"
 #include <bsw/exception.hh>
+#include <assets/assets.hh>
 #include "tile_names.hh"
+#include <bsw/io/memory_stream_buf.hh>
+#include "data_loader/data_manager.hh"
+#include "data_loader/crystal_caves/cc1_text_resources.hh"
+#include "data_loader/text_resource_loader.hh"
 
 std::unique_ptr <factory> factory::create(game_name name, const std::filesystem::path& path_to_data) {
     return std::unique_ptr <factory>{new factory(name, path_to_data)};
@@ -103,18 +108,40 @@ void factory::setup_tiles(neutrino::texture_atlas& atlas,
     }
 }
 
-std::vector<raw_level_map> factory::load_levels() const {
+std::tuple<std::vector <raw_level_map>, text_resource> factory::load_levels_and_text() const {
+    std::unique_ptr<std::istream> is;
+    auto rc = data_directory::CC1_EXE;
     switch (m_game_name) {
         case game_name::CC1:
-            return m_data_directory.load_levels(data_directory::CC1_EXE);
+            is = m_data_directory.get(data_directory::CC1_EXE);
+            rc = data_directory::CC1_EXE;
+            break;
         case game_name::CC2:
-            return m_data_directory.load_levels(data_directory::CC2_EXE);
+            is = m_data_directory.get(data_directory::CC2_EXE);
+            rc = data_directory::CC2_EXE;
+            break;
         case game_name::CC3:
-            return m_data_directory.load_levels(data_directory::CC3_EXE);
+            is = m_data_directory.get(data_directory::CC3_EXE);
+            rc = data_directory::CC3_EXE;
+            break;
+        default:
+            RAISE_EX("Not implemented yet");
+    }
+    auto unpacked = get_data_manager()->load <neutrino::assets::unpacked_exe>(*is);
+
+    bsw::io::memory_input_stream exe_stream(unpacked.data(), static_cast <std::streamoff>(unpacked.size()));
+    auto levels = m_data_directory.load_levels(exe_stream, rc);
+    text_resource tr;
+    switch (m_game_name) {
+        case game_name::CC1:
+            load_text_resource<cc1_menu_resources>(exe_stream, text_resource::MENUS, tr);
+            load_text_resource<cc1_in_game_resources>(exe_stream, text_resource::IN_GAME, tr);
+            break;
         default:
             RAISE_EX("Not implemented yet");
     }
 
+    return {levels, tr};
 }
 
 factory::factory(game_name name, const std::filesystem::path& path_to_data)

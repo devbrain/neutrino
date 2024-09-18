@@ -8,7 +8,6 @@
 #include "scenes/title_scene.hh"
 #include "scenes/main_screen_scene.hh"
 #include "scenes/scenes_registry.hh"
-#include "scenes/dialogs.hh"
 #include "scenes/main_level_scene.hh"
 
 #include "cc_application.hh"
@@ -27,7 +26,9 @@ neutrino::tiled::world_model cc_application::get_map(int name, neutrino::ecs::re
 }
 
 void cc_application::load_maps() {
-    m_maps_registry = std::make_unique <crystal_caves_map>(m_factory->load_levels());
+    auto [levels, text] = m_factory->load_levels_and_text();
+    m_maps_registry = std::make_unique <crystal_caves_map>(levels);
+    m_dialogs_factory = std::make_unique<dialogs_factory>(m_factory->get_game_name(), std::move(text));
 }
 
 void cc_application::setup_scenes(neutrino::sdl::renderer& renderer) {
@@ -37,8 +38,8 @@ void cc_application::setup_scenes(neutrino::sdl::renderer& renderer) {
     // auto main_level = create_main_level(renderer);
     scenes_registry::instance().add(scene_name_t::TITLE_SCREEN, title);
     scenes_registry::instance().add(scene_name_t::MAIN_SCREEN, create_main_scene(renderer));
-    scenes_registry::instance().add(scene_name_t::MAIN_DIALOG, create_main_dialog_box(renderer));
-    scenes_registry::instance().add(scene_name_t::QUIT_TO_DOS_DIALOG, create_quit_to_dos_dialog_box(renderer));
+    m_dialogs_factory->create_dialogs(renderer);
+
     get_scene_manager().push(title);
 }
 
