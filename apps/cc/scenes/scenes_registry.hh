@@ -24,6 +24,23 @@ enum class scene_name_t {
 	INSTRUCTIONS_4,
 	INSTRUCTIONS_5,
 	INSTRUCTIONS_6,
+	INSTRUCTIONS_7,
+
+	STORY1,
+	STORY2,
+
+	ORDER1,
+	ORDER2,
+	ORDER3,
+
+	FORDER1,
+	FORDER2,
+	FORDER3,
+	FORDER4,
+
+	BBS,
+	ABOUT_APOGEE,
+	ABOUT_VIDEO
 };
 
 namespace detail {

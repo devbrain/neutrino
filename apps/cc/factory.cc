@@ -108,8 +108,8 @@ void factory::setup_tiles(neutrino::texture_atlas& atlas,
     }
 }
 
-std::tuple<std::vector <raw_level_map>, text_resource> factory::load_levels_and_text() const {
-    std::unique_ptr<std::istream> is;
+std::tuple <std::vector <raw_level_map>, text_resource> factory::load_levels_and_text() const {
+    std::unique_ptr <std::istream> is;
     auto rc = data_directory::CC1_EXE;
     switch (m_game_name) {
         case game_name::CC1:
@@ -134,8 +134,11 @@ std::tuple<std::vector <raw_level_map>, text_resource> factory::load_levels_and_
     text_resource tr;
     switch (m_game_name) {
         case game_name::CC1:
-            load_text_resource<cc1_menu_resources>(exe_stream, text_resource::MENUS, tr);
-            load_text_resource<cc1_in_game_resources>(exe_stream, text_resource::IN_GAME, tr);
+            load_text_bundle <cc1_menu_resources,
+                              cc1_in_game_resources,
+                              cc1_intro_resources,
+                              cc1_story_resources,
+                              cc1_ordering_resources>(exe_stream, tr);
             break;
         default:
             RAISE_EX("Not implemented yet");
