@@ -36,8 +36,9 @@ static std::string read_pascal_string(std::istream& unpacked_exe) {
     return s;
 }
 
-std::string load_text_from_offset(std::istream& unpacked_exe, uint64_t offset) {
+std::string load_text_from_offset(std::istream& unpacked_exe, uint64_t offset, uint64_t next) {
     std::ostringstream os;
+    auto curr = offset;
     unpacked_exe.seekg(offset - 1, std::ios::beg);
     for (int i=0; i<32; i++) {
         auto s = read_pascal_string(unpacked_exe);
@@ -45,7 +46,10 @@ std::string load_text_from_offset(std::istream& unpacked_exe, uint64_t offset) {
             break;
         }
         bool end_found = false;
-
+        curr += s.size();
+        if (curr > next) {
+            break;
+        }
         for (const auto ch : s) {
             if (ch == '^') {
                 os << '{';

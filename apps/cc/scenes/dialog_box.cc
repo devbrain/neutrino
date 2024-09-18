@@ -103,8 +103,8 @@ static neutrino::sdl::area_type get_dialog_box_dimensions_tiles(const std::strin
         lines++;
     }
     max_char = std::max(max_char, chars);
-    int tiles_w = max_char + 2;
-    int tiles_h = lines + 1;
+    int tiles_w = max_char + 4;
+    int tiles_h = lines + 4;
 
     return {tiles_w, tiles_h};
 }
@@ -136,12 +136,12 @@ static void create_dialog_map(neutrino::tiled::world_model& wm,
         fg.at(0, y) = TILE_DIALOG_LEFT;
         fg.at(tiles_w - 1, y) = TILE_DIALOG_RIGHT;
     }
-    int x = 1;
-    int y = 1;
+    int x = 2;
+    int y = 2;
     for (char c : text) {
         if (c == '\n') {
             y++;
-            x = 1;
+            x = 2;
         } else {
             if (c == '{') {
                 fg.at(x, y) = ANI_DIALOG_QMARK;
