@@ -77,11 +77,11 @@ assets::tileset load_mini_tileset_cc(std::istream& is) {
 
 std::vector<cc_level_description> extract_raw_levels_cc(std::istream& is, const exe_map_props& props) {
 
-	auto unpacked = get_data_manager()->load <neutrino::assets::unpacked_exe>(is);
-
-	bsw::io::memory_input_stream exe_stream(unpacked.data(), static_cast <std::streamoff>(unpacked.size()));
-	exe_stream.seekg(props.get_offset(), std::ios::beg);
-	bsw::io::binary_reader rdr(exe_stream);
+	// auto unpacked = get_data_manager()->load <assets::unpacked_exe>(is);
+	//
+	// bsw::io::memory_input_stream exe_stream(unpacked.data(), static_cast <std::streamoff>(unpacked.size()));
+	is.seekg(props.get_offset(), std::ios::beg);
+	bsw::io::binary_reader rdr(is);
 
 	int level = 0;
 	int rows = 0;

@@ -6,6 +6,8 @@
 #include <string>
 #include <bsw/strings/string_utils.hh>
 #include <bsw/exception.hh>
+#include <bsw/io/memory_stream_buf.hh>
+
 #include "data_directory.hh"
 #include "load_picture.hh"
 #include "data_manager.hh"
@@ -77,6 +79,12 @@ std::unique_ptr <std::istream> data_directory::get(resource_t rc) const {
 	return out;
 }
 
+// std::unique_ptr<std::istream> data_directory::unpack_exe(resource_t rc) const {
+// 	auto exe_is = get(rc);
+// 	auto unpacked = get_data_manager()->load <neutrino::assets::unpacked_exe>(*exe_is);
+// 	return std::make_unique<bsw::io::memory_input_stream>(unpacked.data(), static_cast <std::streamoff>(unpacked.size()));
+// }
+
 neutrino::sdl::surface data_directory::load_picture(resource_t rc) const {
 	return ::load_picture(*this, rc);
 }
@@ -134,16 +142,21 @@ std::tuple <neutrino::sdl::surface, std::vector <neutrino::sdl::rect>> data_dire
 	return convert_tileset(load_tileset_cc(*get(rc)));
 }
 
-
 std::vector<raw_level_map> data_directory::load_levels(resource_t rc) const {
+	auto unpacked = get_data_manager()->load <neutrino::assets::unpacked_exe>(*get(rc));
+	bsw::io::memory_input_stream exe_stream(unpacked.data(), static_cast <std::streamoff>(unpacked.size()));
+	return load_levels(exe_stream, rc);
+}
+
+std::vector<raw_level_map> data_directory::load_levels(std::istream& unpacked_exe, resource_t rc) const {
 	std::vector<raw_level_map> out;
 	if (rc == CC1_EXE || rc == CC2_EXE) {
-		const auto& level_descr = extract_raw_levels_cc(*get(rc), cc1);
+		const auto& level_descr = extract_raw_levels_cc(unpacked_exe, cc1);
 		for (const auto& lvl : level_descr) {
 			out.emplace_back(parse_level(lvl));
 		}
 	} else if (rc == CC3_EXE) {
-		const auto& level_descr = extract_raw_levels_cc(*get(rc), cc3);
+		const auto& level_descr = extract_raw_levels_cc(unpacked_exe, cc3);
 		for (const auto& lvl : level_descr) {
 			out.emplace_back(parse_level(lvl));
 		}

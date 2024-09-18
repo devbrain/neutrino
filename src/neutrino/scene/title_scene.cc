@@ -12,9 +12,7 @@ namespace neutrino {
 
 	}
 
-	title_scene::~title_scene() {
-		//application::instance().get_texture_atlas().remove()
-	}
+	title_scene::~title_scene() = default;
 
 	void title_scene::update(std::chrono::milliseconds delta_time) {
 		m_time_in_screen += delta_time;

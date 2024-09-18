@@ -9,6 +9,7 @@
 #include <neutrino/ecs/registry.hh>
 #include "factory.hh"
 #include "level/maps_registry.hh"
+#include "scenes/dialogs.hh"
 
 class cc_application : public neutrino::application {
     public:
@@ -25,8 +26,9 @@ class cc_application : public neutrino::application {
         std::shared_ptr <neutrino::scene> create_main_level(neutrino::sdl::renderer& renderer) const;
 
     private:
-        std::unique_ptr<factory> m_factory ;
-        std::unique_ptr <maps_registry> m_maps_registry;
+        std::unique_ptr<factory>        m_factory ;
+        std::unique_ptr<maps_registry> m_maps_registry;
+        std::unique_ptr<dialogs_factory> m_dialogs_factory;
 };
 
 #endif

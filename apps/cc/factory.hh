@@ -11,8 +11,8 @@
 #include <vector>
 
 #include <neutrino/modules/video/texture_atlas.hh>
-
 #include "data_loader/data_directory.hh"
+#include "data_loader/text_resource.hh"
 
 enum class game_name {
     CC1,
@@ -36,7 +36,7 @@ class factory {
         void setup_tiles(neutrino::texture_atlas& atlas,
                          const neutrino::sdl::renderer& renderer) const;
 
-        [[nodiscard]] std::vector <raw_level_map> load_levels() const;
+        [[nodiscard]] std::tuple<std::vector <raw_level_map>, text_resource> load_levels_and_text() const;
 
     private:
         factory(game_name name, const std::filesystem::path& path_to_data);

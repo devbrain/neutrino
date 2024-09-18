@@ -104,7 +104,7 @@ static neutrino::sdl::area_type get_dialog_box_dimensions_tiles(const std::strin
     }
     max_char = std::max(max_char, chars);
     int tiles_w = max_char + 2;
-    int tiles_h = lines + 2;
+    int tiles_h = lines + 1;
 
     return {tiles_w, tiles_h};
 }
@@ -173,6 +173,14 @@ dialog_box::dialog_box(neutrino::sdl::renderer& r, const std::string& text, keys
       m_key_mapping(std::move(key_mapping)) {
     const auto dims = neutrino::application::instance().get_window_dimensions();
     const auto px_size = m_world_renderer.get_dimension();
+    if (dims.w < px_size.w) {
+        EVLOG_TRACE(EVLOG_ERROR, "Wrong width");
+    }
+
+    if (dims.h < px_size.h) {
+        EVLOG_TRACE(EVLOG_ERROR, "Wrong height");
+    }
+
     const int x1 = static_cast <int>((dims.w - px_size.w) / 2);
     const int y1 = static_cast <int>((dims.h - px_size.h) / 2);
     m_world_renderer.set_destination_point(neutrino::sdl::point(x1, y1));
@@ -192,6 +200,12 @@ void dialog_box::update(std::chrono::milliseconds delta_time) {
         if (i != m_key_mapping.end()) {
             i->second();
             handeled = true;
+        } else {
+            i = m_key_mapping.find(neutrino::sdl::scancode::UNKNOWN);
+            if (i != m_key_mapping.end()) {
+                i->second();
+                handeled = true;
+            }
         }
     }
     if (!handeled) {

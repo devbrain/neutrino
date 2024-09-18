@@ -61,6 +61,7 @@ class data_directory {
 		[[nodiscard]] neutrino::sdl::surface load_picture(resource_t rc) const;
 		[[nodiscard]] std::tuple<neutrino::sdl::surface, std::vector<neutrino::sdl::rect>> load_tileset(resource_t rc) const;
 		[[nodiscard]] std::vector <raw_level_map> load_levels(resource_t rc) const;
+		[[nodiscard]] std::vector <raw_level_map> load_levels(std::istream& unpacked_exe, resource_t rc) const;
 	private:
 		std::map<resource_t, std::filesystem::path> m_fs;
 };

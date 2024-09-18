@@ -13,6 +13,7 @@
 #include "data_loader/data_directory.hh"
 #include "data_loader/crystal_caves/cc_level_loader.hh"
 #include "data_loader/crystal_caves/cc_map_cell.hh"
+#include "factory.hh"
 
 using tile_props = std::map <int, std::map <std::string, std::string>>;
 
