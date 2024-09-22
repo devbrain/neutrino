@@ -16,6 +16,8 @@ inline constexpr int TILE_H = 16;
 inline constexpr int HUD_TILE_W = 8;
 inline constexpr int HUD_TILE_H = 8;
 
+neutrino::tile create_tile(int sprite_id);
+
 void setup_cc_names(neutrino::texture_atlas& atlas,
                     neutrino::texture_id_t cc_mini_tiles_1,
                     neutrino::texture_id_t cc_mini_tiles_2,

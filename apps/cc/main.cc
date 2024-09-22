@@ -2,9 +2,10 @@
 // Created by igor on 7/15/24.
 //
 #include <iostream>
+#include <sdlpp/sdlpp.hh>
 #include "cc_application.hh"
 #include "tmx_export.hh"
-#include "props_editor/props_editor_app.hh"
+#include "level_viewer/level_viewer_app.hh"
 #include <cxxopts.hpp>
 
 enum run_mode_t {
@@ -49,8 +50,11 @@ void run_game() {
 
 // --------------------------------------------------------------------------------
 void run_props_editor() {
-    props_editor_app app("/home/igor/proj/ares/games/CAVES/");
-    app.init(1024, 768);
+    level_viewer_app app("/home/igor/proj/ares/games/CAVES/");
+    neutrino::sdl::display display(neutrino::sdl::display::index_t(0));
+    auto bounds = display.get_desktop_bounds();
+
+    app.init(bounds.w, bounds.h);
     app.run();
 }
 

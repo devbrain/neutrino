@@ -5,6 +5,13 @@
 #define INSTANTIATE_TILES
 #include "tile_names.hh"
 
+
+neutrino::tile create_tile(int sprite_id) {
+	return neutrino::tile(MAIN_TEX, sprite_id);
+}
+
+
+
 void setup_cc_names(neutrino::texture_atlas& atlas,
                     neutrino::texture_id_t cc_mini_tiles_1,
                     neutrino::texture_id_t cc_mini_tiles_2,

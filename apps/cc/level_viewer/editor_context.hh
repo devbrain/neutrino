@@ -5,7 +5,8 @@
 #ifndef  EDITOR_CONTEXT_HH
 #define  EDITOR_CONTEXT_HH
 
-#include <neutrino/modules/properties/properties.hh>
+#include "data_loader/raw_level_map.hh"
+#include "level_viewer/tiles_holder.hh"
 
 enum class command_mode_t {
     NONE,
@@ -17,7 +18,10 @@ struct editor_context {
     editor_context();
 
     command_mode_t command_mode;
-    neutrino::properties properties;
+    std::vector<raw_level_map> m_level_maps;
+    int m_current_level;
+    tiles_holder m_tiles_holder;
+    tiles_holder m_fonts;
 };
 
 

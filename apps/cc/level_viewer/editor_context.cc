@@ -5,5 +5,6 @@
 #include "editor_context.hh"
 
 editor_context::editor_context()
-    : command_mode(command_mode_t::NONE) {
+    : command_mode(command_mode_t::NONE),
+      m_current_level(2) {
 }

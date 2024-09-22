@@ -5,7 +5,7 @@
 #ifndef  MAIN_MENU_HH
 #define  MAIN_MENU_HH
 
-#include "props_editor/editor_context.hh"
+#include "level_viewer/editor_context.hh"
 
 void show_main_menu(editor_context& ctx);
 

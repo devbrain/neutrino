@@ -35,12 +35,12 @@ void cc_application::setup_scenes(neutrino::sdl::renderer& renderer) {
     load_maps();
     load_tiles(renderer);
     auto title = create_title_scene(renderer);
-    // auto main_level = create_main_level(renderer);
+    auto main_level = create_main_level(renderer);
     scenes_registry::instance().add(scene_name_t::TITLE_SCREEN, title);
     scenes_registry::instance().add(scene_name_t::MAIN_SCREEN, create_main_scene(renderer));
     m_dialogs_factory->create_dialogs(renderer);
 
-    get_scene_manager().push(title);
+    get_scene_manager().push(main_level);
 }
 
 void cc_application::load_tiles(const neutrino::sdl::renderer& renderer) {
