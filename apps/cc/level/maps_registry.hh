@@ -20,6 +20,7 @@ class maps_registry {
         virtual ~maps_registry();
         virtual neutrino::tiled::world_model get_map(int name, neutrino::ecs::registry& reg) const = 0;
     protected:
+        [[nodiscard]] const raw_level_map& get_by_name(int name) const;
         std::vector <raw_level_map> m_maps;
 };
 

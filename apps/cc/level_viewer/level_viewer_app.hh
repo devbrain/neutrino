@@ -7,11 +7,11 @@
 
 #include <neutrino/application.hh>
 #include "data_loader/data_directory.hh"
-#include "props_editor/editor_context.hh"
+#include "level_viewer/editor_context.hh"
 
-class props_editor_app : public neutrino::application {
+class level_viewer_app : public neutrino::application {
     public:
-        explicit props_editor_app(const std::filesystem::path& path_to_data);
+        explicit level_viewer_app(const std::filesystem::path& path_to_data);
     private:
         void setup_scenes(neutrino::sdl::renderer& renderer) override;
     private:

@@ -15,7 +15,6 @@ add_executable(cc
         tile_names.hh
         data_loader/crystal_caves/crystal_caves.hh
         data_loader/crystal_caves/crystal_caves.cc
-        data_loader/map_tile.hh
         data_loader/data_manager.cc
         data_loader/data_manager.hh
         data_loader/load_picture.cc
@@ -35,8 +34,6 @@ add_executable(cc
         scenes/dialogs.hh
         level/maps_registry.cc
         level/maps_registry.hh
-        level/cc_world_mapper.cc
-        level/cc_world_mapper.hh
         scenes/main_level_scene.cc
         scenes/main_level_scene.hh
         level/components/component_player.hh
@@ -49,16 +46,16 @@ add_executable(cc
         # =======================================================
         # Editor
         # =======================================================
-        props_editor/props_editor_app.cc
-        props_editor/props_editor_app.hh
-        props_editor/props_editor_ui.cc
-        props_editor/props_editor_ui.hh
-        props_editor/editor_context.cc
-        props_editor/editor_context.hh
-        props_editor/tiles_selector_widget.cc
-        props_editor/tiles_selector_widget.hh
-        props_editor/main_menu.cc
-        props_editor/main_menu.hh
+        level_viewer/level_viewer_app.cc
+        level_viewer/level_viewer_app.hh
+        level_viewer/level_editor_ui.cc
+        level_viewer/level_editor_ui.hh
+        level_viewer/editor_context.cc
+        level_viewer/editor_context.hh
+        level_viewer/tiles_selector_widget.cc
+        level_viewer/tiles_selector_widget.hh
+        level_viewer/main_menu.cc
+        level_viewer/main_menu.hh
 
         # ==========================================================
 
@@ -82,6 +79,8 @@ add_executable(cc
         data_loader/text_resource_loader.hh
         data_loader/text_resource.cc
         data_loader/text_resource.hh
+        level_viewer/tiles_holder.cc
+        level_viewer/tiles_holder.hh
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(cc PRIVATE

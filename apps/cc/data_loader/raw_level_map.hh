@@ -52,6 +52,7 @@ struct raw_level_map {
     neutrino::sdl::area_type dims;
     std::vector<int> backround; // array of tile ids
     std::vector<cell> cells;
+    std::vector<uint8_t> raw_map;
 };
 
 #endif
