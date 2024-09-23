@@ -9,10 +9,10 @@
 
 class crystal_caves_map : public maps_registry {
     public:
-    explicit crystal_caves_map(std::vector <raw_level_map> maps);
-    [[nodiscard]] neutrino::tiled::world_model get_map(int name, neutrino::ecs::registry& reg) const override;
+        explicit crystal_caves_map(std::vector <raw_level_map> maps);
+        [[nodiscard]] neutrino::tiled::world_model get_map(int name,
+                                                           ecs_registry& reg,
+                                                           neutrino::world_renderer& wr) const override;
 };
-
-
 
 #endif

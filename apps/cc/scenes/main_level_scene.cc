@@ -16,7 +16,7 @@ main_level_scene::main_level_scene(neutrino::sdl::renderer& r, const neutrino::s
     : m_world_renderer(init_world_renderer(r, window_size)),
       m_ecs{},
       m_hud(m_ecs, static_cast <int>(window_size.h - HUD_TILE_H)) {
-      m_world_model = maps.get_map(maps_registry::MAIN_LEVEL, m_ecs.get_registry());
+      m_world_model = maps.get_map(maps_registry::MAIN_LEVEL, m_ecs, m_world_renderer);
 //    neutrino::serialize_tmx("zopa-tmx", m_world_model, neutrino::application::instance().get_texture_atlas(), r);
 }
 

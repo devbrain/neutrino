@@ -55,13 +55,13 @@ namespace neutrino::ecs::detail {
 
     class NEUTRINO_EXPORT component_bucket_iterator {
         public:
-            explicit component_bucket_iterator(const component_bucket& owner);
+            explicit component_bucket_iterator(const component_bucket* owner);
             [[nodiscard]] bool has_next() const;
             std::tuple <char*, std::size_t> next();
             [[nodiscard]] component_bucket::key_t get_key() const;
 
         protected:
-            const component_bucket& m_owner;
+            const component_bucket* m_owner;
 
         private:
             std::size_t m_cur_block;
@@ -74,7 +74,7 @@ namespace neutrino::ecs::detail {
     template<typename T>
     class typed_component_bucket_iterator : component_bucket_iterator {
         public:
-            explicit typed_component_bucket_iterator(component_bucket& bucket)
+            explicit typed_component_bucket_iterator(component_bucket* bucket)
                 : component_bucket_iterator(bucket) {
             }
 
@@ -89,7 +89,7 @@ namespace neutrino::ecs::detail {
             std::tuple <entity_id_t, T&> get_next_entity() {
                 auto [element, idx] = next();
                 ENFORCE(element != nullptr);
-                return {entity_id_t(m_owner.get_key_by_index(idx)), *std::launder(reinterpret_cast <T*>(element))};
+                return {entity_id_t(m_owner->get_key_by_index(idx)), *std::launder(reinterpret_cast <T*>(element))};
             }
 
             const T& get_next() const {
@@ -102,7 +102,7 @@ namespace neutrino::ecs::detail {
                 auto [element, idx] = const_cast <typed_component_bucket_iterator <T>*>(this)->next();
                 ENFORCE(element != nullptr);
                 return {
-                    entity_id_t(m_owner.get_key_by_index(idx)), *std::launder(reinterpret_cast <const T*>(element))
+                    entity_id_t(m_owner->get_key_by_index(idx)), *std::launder(reinterpret_cast <const T*>(element))
                 };
             }
 
@@ -115,7 +115,7 @@ namespace neutrino::ecs::detail {
     class typed_component_bucket {
         public:
             static void destroy(component_bucket* bucket) {
-                component_bucket_iterator itr(*bucket);
+                component_bucket_iterator itr(bucket);
                 while (itr.has_next()) {
                     auto [buff, _] = itr.next();
                     std::destroy_at(std::launder(reinterpret_cast <T*>(buff)));
@@ -132,7 +132,9 @@ namespace neutrino::ecs::detail {
             template<typename... Args>
             static void construct(component_bucket& bucket, entity_id_t entity_id, Args&&... args) {
                 auto [index, buff] = bucket.get_free();
-                ENFORCE(buff != nullptr);
+				if (buff == nullptr) {
+					ENFORCE(buff != nullptr);
+				}
                 ::new(buff) T(std::forward <Args>(args)...);
                 bucket.mark_occupied(entity_id.value_of(), index);
             }

@@ -81,6 +81,9 @@ add_executable(cc
         data_loader/text_resource.hh
         level_viewer/tiles_holder.cc
         level_viewer/tiles_holder.hh
+        level/crystal_caves/sprite_components_factory.cc
+        level/crystal_caves/sprite_components_factory.hh
+        level/crystal_caves/crystal_caves_sprite_states.hh
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(cc PRIVATE
