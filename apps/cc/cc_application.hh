@@ -14,8 +14,6 @@
 class cc_application : public neutrino::application {
     public:
         explicit cc_application(const std::filesystem::path& path_to_data);
-        [[nodiscard]] neutrino::tiled::world_model get_map(int name, neutrino::ecs::registry& reg) const;
-
     private:
         void load_maps();
         void setup_scenes(neutrino::sdl::renderer& renderer) override;
@@ -26,8 +24,8 @@ class cc_application : public neutrino::application {
         std::shared_ptr <neutrino::scene> create_main_level(neutrino::sdl::renderer& renderer) const;
 
     private:
-        std::unique_ptr<factory>        m_factory ;
-        std::unique_ptr<maps_registry> m_maps_registry;
+        std::unique_ptr<factory>         m_factory ;
+        std::unique_ptr<maps_registry>   m_maps_registry;
         std::unique_ptr<dialogs_factory> m_dialogs_factory;
 };
 

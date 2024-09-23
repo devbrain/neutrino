@@ -6,20 +6,25 @@
 #include <bsw/exception.hh>
 
 namespace neutrino::ecs::detail {
-	component_bucket_iterator::component_bucket_iterator(const component_bucket& owner)
+	component_bucket_iterator::component_bucket_iterator(const component_bucket* owner)
 		: m_owner(owner),
 		  m_cur_block(0),
-		  m_free_pos(owner.m_capacity),
+		  m_free_pos(owner ? owner->m_capacity : 0),
 		  m_free_idx(0),
 		  m_blocks_seen(0),
 	      m_last_taken(0) {
-		if (!m_owner.m_free.empty()) {
-			m_free_pos = m_owner.m_free.get(m_free_idx);
+		if (owner) {
+			if (!m_owner->m_free.empty()) {
+				m_free_pos = m_owner->m_free.get(m_free_idx);
+			}
 		}
 	}
 
 	bool component_bucket_iterator::has_next() const {
-		return m_blocks_seen < m_owner.size();
+		if (!m_owner) {
+			return false;
+		}
+		return m_blocks_seen < m_owner->size();
 	}
 
 	std::tuple<char*, std::size_t> component_bucket_iterator::next() {
@@ -27,10 +32,10 @@ namespace neutrino::ecs::detail {
 			while (true) {
 				m_free_idx++;
 				m_cur_block++;
-				if (m_free_idx >= m_owner.m_free.size()) {
+				if (m_free_idx >= m_owner->m_free.size()) {
 					break;
 				}
-				auto next_free = m_owner.m_free.get(m_free_idx);
+				auto next_free = m_owner->m_free.get(m_free_idx);
 				if (next_free - m_free_pos == 1) {
 					m_free_pos = next_free;
 				} else {
@@ -40,14 +45,14 @@ namespace neutrino::ecs::detail {
 			}
 		}
 		m_last_taken = m_cur_block;
-		char* out = m_owner.m_storage + m_cur_block * m_owner.m_size_of_element;
+		char* out = m_owner->m_storage + m_cur_block * m_owner->m_size_of_element;
 		m_blocks_seen++;
 		m_cur_block++;
 		return {out, m_last_taken};
 	}
 
 	component_bucket::key_t component_bucket_iterator::get_key() const {
-		return m_owner.get_key_by_index(m_last_taken);
+		return m_owner->get_key_by_index(m_last_taken);
 	}
 
 	component_bucket::component_bucket(std::size_t alignment, std::size_t size_of_element, uint16_t count,

@@ -22,17 +22,28 @@ namespace neutrino::ecs {
     void sprite_system::present(registry& registry) {
         auto& renderer = get_renderer();
         const auto& atlas = get_atlas();
-        registry.iterate([&renderer, &atlas]([[maybe_unused]] entity_id_t eid, const single_tile_sprite& s, const body& b) {
-            _present(s.sprite, renderer, b.position.x, b.position.y, atlas);
+		const auto viewport = get_world_viewport();
+        registry.iterate([&renderer, &atlas, &viewport]([[maybe_unused]] entity_id_t eid, const single_tile_sprite& s, const body& b) {
+            _present(s.sprite, renderer, b.position, viewport, atlas);
         });
-        registry.iterate([&renderer, &atlas]([[maybe_unused]] entity_id_t eid, const animated_sprite& s, const body& b) {
-            _present(s, renderer, b.position.x, b.position.y, atlas);
+        registry.iterate([&renderer, &atlas, &viewport]([[maybe_unused]] entity_id_t eid, const animated_sprite& s, const body& b) {
+            _present(s, renderer, b.position, viewport, atlas);
         });
-
         registry.iterate(
-            [&renderer, &atlas]([[maybe_unused]] entity_id_t eid, const animated_sprite_sequence& s, const body& b) {
-                _present(s.states[s.current_state], renderer, b.position.x, b.position.y, atlas);
+            [&renderer, &atlas, &viewport]([[maybe_unused]] entity_id_t eid, const animated_sprite_sequence& s, const body& b) {
+                _present(s.states[s.current_state], renderer, b.position, viewport, atlas);
             });
+
+		registry.iterate(
+			[&renderer, &atlas, &viewport]([[maybe_unused]] entity_id_t eid, const sprite_bank& s, const body& b) {
+			  _present(s.sprites[s.current], renderer, b.position, viewport, atlas);
+			});
+
+		registry.iterate(
+			[&renderer, &atlas, &viewport]([[maybe_unused]] entity_id_t eid, const sprite_bank_array& s, const body& b) {
+			  const auto& bank = s.banks[s.current];
+			  _present(bank.sprites[bank.current], renderer, b.position, viewport, atlas);
+			});
     }
 
     void sprite_system::_update(animated_sprite& sprite, std::chrono::milliseconds delta_t) {
@@ -47,16 +58,26 @@ namespace neutrino::ecs {
         }
     }
 
-    void sprite_system::_present(const animated_sprite& sprite, sdl::renderer& r, int x, int y,
+    void sprite_system::_present(const animated_sprite& sprite,
+								 sdl::renderer& r,
+								 const sdl::point& pos,
+								 const sdl::rect& viewport,
                                  const texture_atlas& atlas) {
-        _present(sprite.sequence.get_frames()[sprite.current_frame].m_tile, r, x, y, atlas);
+        _present(sprite.sequence.get_frames()[sprite.current_frame].m_tile, r, pos, viewport, atlas);
     }
 
-    void sprite_system::_present(const tile& sprite, sdl::renderer& r, int x, int y, const texture_atlas& atlas) {
+    void sprite_system::_present(const tile& sprite,
+								 sdl::renderer& r,
+								 const sdl::point& pos,
+								 const sdl::rect& viewport,
+								 const texture_atlas& atlas) {
         auto [text_ptr, rect] = atlas.get(sprite);
         if (text_ptr) {
-            const sdl::rect dst_rect(x, y, rect.w, rect.h);
-            r.copy(*text_ptr, rect, dst_rect);
+            sdl::rect dst_rect(pos.x, pos.y, rect.w, rect.h);
+			if (sdl::intersects(dst_rect, viewport)) {
+				dst_rect = sdl::intersection(dst_rect, viewport);
+				r.copy(*text_ptr, rect, dst_rect);
+			}
         }
     }
 }

@@ -13,17 +13,12 @@
 #include "cc_application.hh"
 
 
-neutrino::tiled::world_model get_map(int name, neutrino::ecs::registry& reg) {
-    return dynamic_cast <const cc_application&>(neutrino::application::instance()).get_map(name, reg);
-}
+
 
 cc_application::cc_application(const std::filesystem::path& path_to_data)
     : m_factory(factory::create(game_name::CC1, path_to_data)) {
 }
 
-neutrino::tiled::world_model cc_application::get_map(int name, neutrino::ecs::registry& reg) const {
-    return m_maps_registry->get_map(name, reg);
-}
 
 void cc_application::load_maps() {
     auto [levels, text] = m_factory->load_levels_and_text();

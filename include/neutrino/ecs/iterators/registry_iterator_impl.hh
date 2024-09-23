@@ -98,7 +98,7 @@ namespace neutrino::ecs {
     registry_iterator <Components...>::registry_iterator(registry& owner)
         : m_owner(owner),
           m_buckets(create_buckets_vector(owner)),
-          m_iterator(*m_buckets[0]) {
+          m_iterator(m_buckets.size() != sizeof...(Components)? nullptr : m_buckets[0]) {
     }
 
     template<typename... Components>
@@ -107,10 +107,10 @@ namespace neutrino::ecs {
         bsw::mp::for_types <Components...>([&reg, &buckets](auto tp) {
             using ct = std::remove_const_t <std::remove_pointer_t <decltype(tp)>>;
             auto* bucket = reg.get_bucket_by_type <ct>();
-            ENFORCE(bucket != nullptr);
-            buckets.push_back(bucket);
+            if (bucket != nullptr) {
+				buckets.push_back(bucket);
+			}
         });
-        ENFORCE(!buckets.empty());
         return buckets;
     }
 
@@ -140,7 +140,7 @@ namespace neutrino::ecs {
     template<typename Component>
     registry_iterator <Component>::registry_iterator(registry& owner)
         : m_owner(owner),
-          m_iterator(*m_owner.get_bucket_by_type <Component>()) {
+          m_iterator(m_owner.get_bucket_by_type <Component>()) {
     }
 
     template<typename... Components>
