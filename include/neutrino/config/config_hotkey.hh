@@ -18,6 +18,8 @@ namespace neutrino {
             : scancode(scancode_) {}
         config_hotkey(sdl::scancode scancode_, sdl::keymod keymod_)
             :scancode(scancode_), keymod(keymod_) {}
+		explicit config_hotkey(sdl::keymod keymod_)
+			: keymod(keymod_) {}
 
         std::optional<sdl::scancode> scancode;
         std::optional<sdl::keymod> keymod;

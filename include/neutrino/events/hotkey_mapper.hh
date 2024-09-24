@@ -17,6 +17,7 @@ namespace neutrino {
         hotkey_pressed_event()
             : hotkey_id(-1) {}
         int hotkey_id;
+		std::vector<bool> hotkeys;
     };
 
 
@@ -32,6 +33,7 @@ namespace neutrino {
         private:
             using hotkey_entry_t = std::pair<config_hotkey, int>;
             std::vector<hotkey_entry_t> m_hotkeys;
+			std::size_t m_max_id;
     };
 }
 

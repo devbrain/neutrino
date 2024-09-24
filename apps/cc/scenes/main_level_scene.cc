@@ -14,13 +14,13 @@ static auto init_world_renderer(neutrino::sdl::renderer& r, const neutrino::sdl:
 
 main_level_scene::main_level_scene(neutrino::sdl::renderer& r, const neutrino::sdl::area_type& window_size, const maps_registry& maps)
     : m_world_renderer(init_world_renderer(r, window_size)),
-      m_ecs{},
-      m_hud(m_ecs, static_cast <int>(window_size.h - HUD_TILE_H)) {
-      m_world_model = maps.get_map(maps_registry::MAIN_LEVEL, m_ecs, m_world_renderer);
+      m_hud(static_cast <int>(window_size.h - HUD_TILE_H)) {
+      m_world = maps.get_map(maps_registry::MAIN_LEVEL, m_world_renderer);
 //    neutrino::serialize_tmx("zopa-tmx", m_world_model, neutrino::application::instance().get_texture_atlas(), r);
 }
 
 void main_level_scene::update(std::chrono::milliseconds delta_time) {
+	m_world->update(delta_time);
     m_world_renderer.update(delta_time);
 }
 
@@ -30,6 +30,6 @@ void main_level_scene::render(neutrino::sdl::renderer& renderer) {
 }
 
 void main_level_scene::initialize() {
-    m_world_renderer.init(get_texture_atlas(), m_world_model);
-
+    m_world_renderer.init(get_texture_atlas(), m_world->get_model());
+	level::get_user_input_handler().register_in_reactor(get_events_reactor());
 }
