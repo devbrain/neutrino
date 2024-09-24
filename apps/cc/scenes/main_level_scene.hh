@@ -9,7 +9,6 @@
 #include <neutrino/scene/scene.hh>
 #include <neutrino/modules/video/world/world_model.hh>
 #include <neutrino/modules/video/world_renderer.hh>
-#include "level/ecs_registry.hh"
 #include "level/crystal_caves/crystal_caves_hud.hh"
 #include "level/maps_registry.hh"
 
@@ -22,10 +21,8 @@ class main_level_scene : public neutrino::scene {
         void update(std::chrono::milliseconds delta_time) override;
         void render(neutrino::sdl::renderer& renderer) override;
         void initialize() override;
-
         neutrino::world_renderer m_world_renderer;
-        ecs_registry m_ecs;
-        neutrino::tiled::world_model m_world_model;
+        std::unique_ptr<level> m_world;
         crystal_caves_hud m_hud;
 };
 

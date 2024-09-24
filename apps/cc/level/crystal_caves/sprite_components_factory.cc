@@ -27,7 +27,7 @@ neutrino::sprite_bank_array create_mylo_sprite_component() {
 		neutrino::sprite_bank(MAIN_TEX, 800, 816),
 		neutrino::sprite_bank(MAIN_TEX, 817, 820)
 	);
-	sc.current = SPRITE_STATE_MOVE_LEFT;
+	sc.current = SPRITE_STATE_MOVE_RIGHT;
 
 	return sc;
 }

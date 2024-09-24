@@ -36,7 +36,6 @@ add_executable(cc
         level/maps_registry.hh
         scenes/main_level_scene.cc
         scenes/main_level_scene.hh
-        level/components/component_player.hh
         level/ecs_registry.cc
         level/ecs_registry.hh
         level/hud.cc
@@ -84,6 +83,12 @@ add_executable(cc
         level/crystal_caves/sprite_components_factory.cc
         level/crystal_caves/sprite_components_factory.hh
         level/crystal_caves/crystal_caves_sprite_states.hh
+        level/global_state.cc
+        level/global_state.hh
+        level/level.hh
+        level/level.cc
+        level/user_input.cc
+        level/user_input.hh
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(cc PRIVATE

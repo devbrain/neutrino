@@ -165,4 +165,8 @@ namespace neutrino {
 	void scene::setup_scene_manager(scene_manager* sm) {
 		m_scene_manager = sm;
 	}
+
+	events_reactor& scene::get_events_reactor() {
+		return m_events_reactor;
+	}
 }

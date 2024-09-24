@@ -4,9 +4,10 @@
 
 #include "crystal_caves_hud.hh"
 #include "tile_names.hh"
+#include "level/global_state.hh"
 
-crystal_caves_hud::crystal_caves_hud(const ecs_registry& reg, int y_px)
-    : hud(reg, y_px) {
+crystal_caves_hud::crystal_caves_hud(int y_px)
+    : hud(y_px) {
 }
 
 void crystal_caves_hud::draw_string_green(neutrino::sdl::renderer& renderer, int tile_x, const char* text) const {
@@ -24,18 +25,18 @@ void crystal_caves_hud::draw(neutrino::sdl::renderer& renderer, const neutrino::
     pos += 2;
 
     std::ostringstream os;
-    os << m_reg.get_player().score;
+    os << global_state ::instance().score;
     draw_string_green(renderer, pos, os.str().c_str());
 
     pos = 12;
     draw_tile(renderer, atlas, pos, TILE_HUD_GUN);
     pos += 2;
     os.str("");
-    os << m_reg.get_player().bullets;
+    os << global_state ::instance().bullets;
     draw_string_green(renderer, pos, os.str().c_str());
 
     pos = 21;
-    for (int i=0; i<m_reg.get_player().lives; i++) {
+    for (int i=0; i<global_state ::instance().lives; i++) {
         draw_tile(renderer, atlas, pos, TILE_HUD_HEART);
         pos++;
     }

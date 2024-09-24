@@ -40,6 +40,10 @@ struct cell {
         props[prop] = v;
     }
 
+	[[nodiscard]] bool is_interesting() const {
+		return !is_empty() || flags != 0 || !props.empty();
+	}
+
     int tile_name_id;
     unsigned int flags;
     std::map <int, int> props;

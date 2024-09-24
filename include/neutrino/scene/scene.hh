@@ -50,6 +50,8 @@ namespace neutrino {
 				return m_events_reactor.get<Event>();
 			}
 
+			events_reactor& get_events_reactor();
+
 			virtual texture_atlas& get_texture_atlas();
 
 			static void push_scene(std::shared_ptr<scene> new_scene);

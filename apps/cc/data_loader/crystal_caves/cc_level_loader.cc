@@ -809,7 +809,7 @@ raw_level_map parse_level(const cc_level_description& descr) {
                     sprite = CC_TILE_NAME_TORCH_1;
                     sprites_count = 4;
                     flags |= CC_TILE_FLAG_ANIMATED;
-                    tile_type = CC_CELL_TORCH;
+					//tile_type = CC_CELL_TORCH;
                     break;
                 case -58:
                     sprite = CC_TILE_NAME_SIGN_DOWN;

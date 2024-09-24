@@ -3,23 +3,19 @@
 //
 
 #include "ecs_registry.hh"
-#include "components/component_player.hh"
 
-static auto create_player(neutrino::ecs::registry& reg) {
-    neutrino::ecs::entity_builder builder(reg);
-    return builder.with_component <component_player>().build();
-}
+
 
 ecs_registry::ecs_registry()
-    : m_registry{}, m_player(create_player(m_registry)) {
+    : m_registry{}, m_player(0) {
 }
 
-component_player& ecs_registry::get_player() {
-    return m_registry.get_component<component_player>(m_player);
+neutrino::ecs::entity_id_t ecs_registry::get_player() const {
+    return m_player;
 }
 
-const component_player& ecs_registry::get_player() const {
-    return m_registry.get_component<component_player>(m_player);
+void ecs_registry::set_player(neutrino::ecs::entity_id_t v) {
+    m_player = v;
 }
 
 neutrino::ecs::registry& ecs_registry::get_registry() {
