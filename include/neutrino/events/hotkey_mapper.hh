@@ -17,13 +17,15 @@ namespace neutrino {
         hotkey_pressed_event()
             : hotkey_id(-1) {}
         int hotkey_id;
-		std::vector<bool> hotkeys;
     };
 
 
 
     class NEUTRINO_EXPORT hotkey_mapper {
         public:
+
+			static bool is_pressed(const config_hotkey& hotkey);
+
             hotkey_mapper();
             void register_hotkey(const config_hotkey& hotkey, int hotkey_id);
             void unregister_hotkey(int hotkey_id);
@@ -33,7 +35,6 @@ namespace neutrino {
         private:
             using hotkey_entry_t = std::pair<config_hotkey, int>;
             std::vector<hotkey_entry_t> m_hotkeys;
-			std::size_t m_max_id;
     };
 }
 

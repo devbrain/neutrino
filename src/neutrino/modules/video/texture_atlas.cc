@@ -58,6 +58,7 @@ namespace neutrino {
 		}
 		const auto ridx = tlid.m_id.value_of();
 		auto i = m_textures.find(tlid.m_texture);
+		ENFORCE(i != m_textures.end());
 		return {&i->second.m_texture, i->second.m_rects[ridx]};
 	}
 

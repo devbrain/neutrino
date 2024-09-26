@@ -21,6 +21,11 @@ namespace neutrino::detail {
     static std::vector<bool> key_state = keyboard_state_init<sdl::scancode>();
     static std::vector<bool> mod_state = keyboard_state_init<sdl::keymod>();
 
+	void keyboard_state_reset() {
+		//std::fill(key_state.begin(), key_state.end(), false);
+		//std::fill(mod_state.begin(), mod_state.end(), false);
+	}
+
     void keyboard_state_update(const sdl::events::keyboard& kbev) {
         key_state[kbev.scan_code] = kbev.pressed;
         static const auto all_mods = neutrino::sdl::values<sdl::keymod>();

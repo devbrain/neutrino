@@ -7,9 +7,7 @@
 #include <neutrino/events/detail/keyboard_state.hh>
 
 namespace neutrino {
-    hotkey_mapper::hotkey_mapper() : m_max_id(0) {
-
-	}
+    hotkey_mapper::hotkey_mapper() = default;
 
     void hotkey_mapper::register_hotkey(const config_hotkey& hotkey, int hotkey_id) {
 		ENFORCE(hotkey_id >= 0);
@@ -19,10 +17,6 @@ namespace neutrino {
                 return;
             }
         }
-        m_hotkeys.emplace_back(hotkey, hotkey_id);
-		if (m_max_id < hotkey_id) {
-			m_max_id = hotkey_id;
-		}
     }
 
     void hotkey_mapper::unregister_hotkey(int hotkey_id) {
@@ -40,34 +34,32 @@ namespace neutrino {
                 return this->handle(ev);
             }
 		  	ev.hotkey_id = -1;
-		  	std::fill(ev.hotkeys.begin(), ev.hotkeys.end(), false);
             return false;
         });
     }
 
     bool hotkey_mapper::handle(hotkey_pressed_event& ev) {
-        bool rc = false;
-		if (ev.hotkeys.size() < m_max_id + 1) {
-			ev.hotkeys.resize(m_max_id + 1, false);
-		}
         for (const auto& [key_conf, ev_id] : m_hotkeys) {
-            if (key_conf.scancode && key_conf.keymod) {
-                auto s = detail::keyboard_state_check(*key_conf.scancode);
-                auto m = detail::keyboard_state_check(*key_conf.keymod);
-                rc = s && m;
-            } else if (key_conf.scancode && !key_conf.keymod) {
-                rc = detail::keyboard_state_check(*key_conf.scancode);
-            } else if (!key_conf.scancode && key_conf.keymod) {
-                rc = detail::keyboard_state_check(*key_conf.keymod);
-            }
-            if (rc) {
+            if (is_pressed(key_conf)) {
                 ev.hotkey_id = ev_id;
-				ev.hotkeys[ev_id] = true;
                 return true;;
             }
         }
         ev.hotkey_id = -1;
-		std::fill(ev.hotkeys.begin(), ev.hotkeys.end(), false);
         return false;
     }
+
+	bool hotkey_mapper::is_pressed(const config_hotkey& hotkey) {
+		bool rc = false;
+		if (hotkey.scancode && hotkey.keymod) {
+			auto s = detail::keyboard_state_check(*hotkey.scancode);
+			auto m = detail::keyboard_state_check(*hotkey.keymod);
+			rc = s && m;
+		} else if (hotkey.scancode && !hotkey.keymod) {
+			rc = detail::keyboard_state_check(*hotkey.scancode);
+		} else if (!hotkey.scancode && hotkey.keymod) {
+			rc = detail::keyboard_state_check(*hotkey.keymod);
+		}
+		return rc;
+	}
 }

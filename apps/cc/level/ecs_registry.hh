@@ -14,12 +14,28 @@ class ecs_registry {
         [[nodiscard]] neutrino::ecs::entity_id_t get_player() const;
         void set_player(neutrino::ecs::entity_id_t v);
 
-        neutrino::ecs::registry& get_registry();
-        [[nodiscard]] const neutrino::ecs::registry& get_registry() const;
+        neutrino::ecs::registry& get_world();
+        [[nodiscard]] const neutrino::ecs::registry& get_world() const;
         void clear();
+
+		template <typename Component>
+		Component& get_component();
+
+		template <typename Component>
+		const Component& get_component() const;
     private:
         neutrino::ecs::registry m_registry;
         neutrino::ecs::entity_id_t m_player;
 };
+
+template <typename Component>
+Component& ecs_registry::get_component() {
+	return m_registry.get_component<Component>(m_player);
+}
+
+template <typename Component>
+const Component& ecs_registry::get_component() const {
+	return m_registry.get_component<Component>(m_player);
+}
 
 #endif

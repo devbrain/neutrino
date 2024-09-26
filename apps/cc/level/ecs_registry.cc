@@ -18,11 +18,11 @@ void ecs_registry::set_player(neutrino::ecs::entity_id_t v) {
     m_player = v;
 }
 
-neutrino::ecs::registry& ecs_registry::get_registry() {
+neutrino::ecs::registry& ecs_registry::get_world() {
     return m_registry;
 }
 
-const neutrino::ecs::registry& ecs_registry::get_registry() const {
+const neutrino::ecs::registry& ecs_registry::get_world() const {
     return m_registry;
 }
 
@@ -31,3 +31,7 @@ void ecs_registry::clear() {
         return e != m_player;
     });
 }
+
+
+
+

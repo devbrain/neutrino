@@ -21,9 +21,14 @@ class level {
 	ecs_registry& get_registry();
 	[[nodiscard]] const ecs_registry& get_registry() const;
 
-	void update(std::chrono::milliseconds delta_time);
+	void update(std::chrono::milliseconds delta_time, neutrino::sdl::rect& viewport);
 
 	static user_input& get_user_input_handler();
+ private:
+	void move_game_objects(std::chrono::milliseconds delta_time);
+	void process_player_actions(std::chrono::milliseconds frame_duration);
+	void update_game_state(neutrino::sdl::rect& viewport);
+	void update_game_camera(neutrino::sdl::rect& viewport);
  private:
 	neutrino::tiled::world_model m_model;
 	ecs_registry m_registry;

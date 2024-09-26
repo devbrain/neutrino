@@ -89,6 +89,7 @@ add_executable(cc
         level/level.cc
         level/user_input.cc
         level/user_input.hh
+        level/player_flags.hh
 )
 target_include_directories(cc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(cc PRIVATE
