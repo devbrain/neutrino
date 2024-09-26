@@ -113,18 +113,18 @@ namespace neutrino {
 			  banks{std::forward<T>(args)...} {}
 
 		void next(const std::chrono::milliseconds& time_for_frame) {
-			ENFORCE(current < banks.size());
+			ENFORCE(current < banks.size())
 			banks[current].next(time_for_frame);
 		}
 
 		void next() {
-			ENFORCE(current < banks.size());
+			ENFORCE(current < banks.size())
 			banks[current].next();
 		}
 
 		void set_current(std::size_t v) {
 			if (v != current) {
-				ENFORCE(v < banks.size());
+				ENFORCE(v < banks.size())
 				banks[current].reset();
 				current = v;
 				banks[current].reset();
