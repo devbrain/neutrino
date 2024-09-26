@@ -71,12 +71,13 @@ void level::process_player_actions(std::chrono::milliseconds frame_duration) {
 void level::update_game_state(neutrino::sdl::rect& viewport) {
 	auto& player_body = m_registry.get_component<neutrino::body>();
 	auto& mylo_sprite = m_registry.get_component<neutrino::sprite_bank_array>();
+	static constexpr std::chrono::milliseconds time_in_frame{200};
 	if (player_body.flags & PLAYER_FLAGS_MOVING_RIGHT) {
 		mylo_sprite.set_current(SPRITE_STATE_MOVE_RIGHT);
-		mylo_sprite.next();
+		mylo_sprite.next(time_in_frame);
 	} else if (player_body.flags & PLAYER_FLAGS_MOVING_LEFT) {
 		mylo_sprite.set_current(SPRITE_STATE_MOVE_LEFT);
-		mylo_sprite.next();
+		mylo_sprite.next(time_in_frame);
 	}
 
 	update_game_camera(viewport);

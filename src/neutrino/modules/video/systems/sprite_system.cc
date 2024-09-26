@@ -17,6 +17,12 @@ namespace neutrino::ecs {
         registry.iterate([delta_t]([[maybe_unused]] entity_id_t eid, animated_sprite_sequence& s) {
             _update(s.states[s.current_state], delta_t);
         });
+		registry.iterate([delta_t]([[maybe_unused]] entity_id_t eid, sprite_bank& s) {
+		  _update(s, delta_t);
+		});
+		registry.iterate([delta_t]([[maybe_unused]] entity_id_t eid, sprite_bank_array& s) {
+		  _update(s.banks[s.current], delta_t);
+		});
     }
 
     void sprite_system::present(registry& registry) {
@@ -58,6 +64,10 @@ namespace neutrino::ecs {
         }
     }
 
+	void sprite_system::_update(sprite_bank& sprite, std::chrono::milliseconds delta_t) {
+		sprite.time_in_current_frame += delta_t;
+	}
+
     void sprite_system::_present(const animated_sprite& sprite,
 								 sdl::renderer& r,
 								 const sdl::point& pos,
@@ -82,4 +92,6 @@ namespace neutrino::ecs {
 			}
         }
     }
+
+
 }
