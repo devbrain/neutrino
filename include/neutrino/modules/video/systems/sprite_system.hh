@@ -15,11 +15,13 @@ namespace neutrino::ecs {
 
         protected:
             static void _update(animated_sprite& sprite, std::chrono::milliseconds delta_t);
+			static void _update(sprite_bank& sprite, std::chrono::milliseconds delta_t);
             static void _present(const animated_sprite& sprite,
 								 sdl::renderer& r,
 								 const sdl::point& pos,
 								 const sdl::rect& viewport,
                                  const texture_atlas& atlas);
+
             static void _present(const tile& sprite,
 								 sdl::renderer& r,
 								 const sdl::point& pos,
