@@ -34,6 +34,7 @@ namespace neutrino {
 			[[nodiscard]] sdl::point set_camera (const sdl::point& camera);
 			[[nodiscard]] sdl::point get_camera () const;
 			[[nodiscard]] sdl::area_type get_dimension() const;
+			[[nodiscard]] sdl::rect get_world_viewport () const;
 			void set_destination_point(const sdl::point& dst_point);
 			[[nodiscard]] sdl::point get_destination_point() const;
 			[[nodiscard]] sdl::rect get_destination_rect() const;

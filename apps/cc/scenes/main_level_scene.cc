@@ -20,7 +20,9 @@ main_level_scene::main_level_scene(neutrino::sdl::renderer& r, const neutrino::s
 }
 
 void main_level_scene::update(std::chrono::milliseconds delta_time) {
-	m_world->update(delta_time);
+	auto viewport = m_world_renderer.get_world_viewport();
+	m_world->update(delta_time, viewport);
+	(void)m_world_renderer.set_camera(viewport.offset());
     m_world_renderer.update(delta_time);
 }
 

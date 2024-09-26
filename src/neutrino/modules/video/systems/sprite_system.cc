@@ -76,6 +76,8 @@ namespace neutrino::ecs {
             sdl::rect dst_rect(pos.x, pos.y, rect.w, rect.h);
 			if (sdl::intersects(dst_rect, viewport)) {
 				dst_rect = sdl::intersection(dst_rect, viewport);
+				dst_rect.x = dst_rect.x - viewport.x;
+				dst_rect.y = dst_rect.y - viewport.y;
 				r.copy(*text_ptr, rect, dst_rect);
 			}
         }

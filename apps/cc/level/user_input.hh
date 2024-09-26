@@ -27,8 +27,7 @@ class user_input {
 	[[nodiscard]] const neutrino::config_hotkey& get_key_jump() const;
 	[[nodiscard]] const neutrino::config_hotkey& get_key_fire() const;
 
-	[[nodiscard]] pressed_key get_key() const;
-	[[nodiscard]] bool check_key(pressed_key k) const;
+	[[nodiscard]] bool check(pressed_key k) const;
  private:
 	neutrino::config_hotkey m_key_move_left;
 	neutrino::config_hotkey m_key_move_right;

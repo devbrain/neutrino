@@ -70,12 +70,14 @@ namespace neutrino {
 
     sdl::point world_renderer::set_camera(const sdl::point& camera) {
         ENFORCE(m_model);
-        if (camera.x > 0 && camera.x + m_dimension.w < m_model->get_world_width()) {
-            m_camera_x = camera.x;
-        }
-        if (camera.y > 0 && camera.y + m_dimension.h < m_model->get_world_height()) {
-            m_camera_y = camera.y;
-        }
+		if (m_camera_x != camera.x || m_camera_y != camera.y) {
+			if (camera.x > 0 && camera.x + m_dimension.w < m_model->get_world_width()) {
+				m_camera_x = camera.x;
+			}
+			if (camera.y > 0 && camera.y + m_dimension.h < m_model->get_world_height()) {
+				m_camera_y = camera.y;
+			}
+		}
         return {static_cast <int>(m_camera_x), static_cast <int>(m_camera_y)};
     }
 
@@ -268,7 +270,11 @@ namespace neutrino {
         layer.present();
     }
 
-    world_renderer::animation_data::animation_data(const tiled::animation_sequence& seq)
+	sdl::rect world_renderer::get_world_viewport() const {
+		return {get_camera(), get_dimension()};
+	}
+
+	world_renderer::animation_data::animation_data(const tiled::animation_sequence& seq)
         : m_current_frame(0),
           m_time_in_current_frame(0),
           m_sequence(seq) {

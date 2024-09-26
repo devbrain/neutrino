@@ -10,6 +10,7 @@ namespace neutrino {
 	detail::basic_event_handler::~basic_event_handler() = default;
 
 	void events_reactor::reset() {
+		detail::keyboard_state_reset();
 		for (auto& [_, v] : m_handlers) {
 			v->reset();
 		}

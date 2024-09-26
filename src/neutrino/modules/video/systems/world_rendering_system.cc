@@ -18,7 +18,7 @@ namespace neutrino::ecs {
     }
 
     sdl::rect world_rendering_system::get_world_viewport() const {
-        return {m_world_renderer.get_camera(), m_world_renderer.get_dimension()};
+        return m_world_renderer.get_world_viewport();
     }
 
     sdl::rect world_rendering_system::get_screen_viewport() const {

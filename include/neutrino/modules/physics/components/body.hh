@@ -11,7 +11,7 @@
 
 namespace neutrino {
     struct NEUTRINO_EXPORT body {
-        sdl::point position{0,0};
+        sdl::point2f position{0.0f,0.0f};
 		sdl::area_type dimensions {0, 0};
 		uint32_t flags {0};
     };

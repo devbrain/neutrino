@@ -9,6 +9,7 @@
 #include <neutrino/neutrino_export.hh>
 
 namespace neutrino::detail {
+	NEUTRINO_EXPORT void keyboard_state_reset();
     NEUTRINO_EXPORT void keyboard_state_update(const sdl::events::keyboard& kbev);
     NEUTRINO_EXPORT bool keyboard_state_check(const sdl::scancode& sc);
     NEUTRINO_EXPORT bool keyboard_state_check(const sdl::keymod& mod);

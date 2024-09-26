@@ -37,16 +37,19 @@ void user_input::register_in_reactor(neutrino::events_reactor& reactor) {
 	m_mapper.add_to_reactor(reactor);
 }
 
-user_input::pressed_key user_input::get_key() const {
-	if (auto* s = m_reactor->get <neutrino::hotkey_pressed_event>()) {
-		return static_cast<user_input::pressed_key>(s->hotkey_id);
-	}
-	return pressed_key::NONE;
-}
-
-bool user_input::check_key(user_input::pressed_key k) const {
-	if (auto* s = m_reactor->get <neutrino::hotkey_pressed_event>()) {
-		return s->hotkeys[k];
+bool user_input::check(user_input::pressed_key k) const {
+	switch (k) {
+		case NONE:
+			return false;
+		case MOVE_LEFT:
+			return neutrino::hotkey_mapper::is_pressed(m_key_move_left);
+		case MOVE_RIGHT:
+			return neutrino::hotkey_mapper::is_pressed(m_key_move_right);
+		case JUMP:
+			return neutrino::hotkey_mapper::is_pressed(m_key_jump);
+		case FIRE:
+			return neutrino::hotkey_mapper::is_pressed(m_key_fire);
 	}
 	return false;
 }
+

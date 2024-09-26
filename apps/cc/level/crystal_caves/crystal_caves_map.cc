@@ -7,6 +7,7 @@
 #include "crystal_caves_map.hh"
 #include "tile_names.hh"
 #include "sprite_components_factory.hh"
+#include "crystal_caves_sprite_states.hh"
 #include <neutrino/utils/random.hh>
 
 #include <neutrino/modules/physics/components/body.hh>
@@ -17,7 +18,7 @@ crystal_caves_map::crystal_caves_map(std::vector <raw_level_map> maps)
 }
 
 void add_object(const cell& c, ecs_registry& reg, int x, int y) {
-	neutrino::ecs::entity_builder builder(reg.get_registry());
+	neutrino::ecs::entity_builder builder(reg.get_world());
 	neutrino::body phys{};
 	phys.dimensions = {TILE_W, TILE_H};
 	phys.position = neutrino::sdl::point{x, y};
@@ -48,12 +49,13 @@ std::unique_ptr<level> crystal_caves_map::get_map(int name, neutrino::world_rend
 	auto out = std::make_unique<level>();
 
     auto lvl = get_by_name(name);
-    auto tiles_w = neutrino::tile_coord_t{lvl.dims.w};
-    auto tiles_h = neutrino::tile_coord_t{lvl.dims.h};
-    neutrino::tiled::tiles_layer bg_layer(tiles_w, tiles_h, TILE_W, TILE_H);
-    neutrino::tiled::tiles_layer static_layer(tiles_w, tiles_h, TILE_W, TILE_H);
-    neutrino::tiled::tiles_layer front_layer(tiles_w, tiles_h, TILE_W, TILE_H);
+    auto num_tiles_hor = neutrino::tile_coord_t{lvl.dims.w};
+    auto num_tiles_vert = neutrino::tile_coord_t{lvl.dims.h};
+    neutrino::tiled::tiles_layer bg_layer(num_tiles_hor, num_tiles_vert, TILE_W, TILE_H);
+    neutrino::tiled::tiles_layer static_layer(num_tiles_hor, num_tiles_vert, TILE_W, TILE_H);
+    neutrino::tiled::tiles_layer front_layer(num_tiles_hor, num_tiles_vert, TILE_W, TILE_H);
     auto& wm = out->get_model();
+	wm.set_geometry(TILE_W, TILE_H, num_tiles_hor, num_tiles_vert);
 
     for (unsigned y = 0; y < lvl.dims.h; y++) {
         for (unsigned x = 0; x < lvl.dims.w; x++) {
@@ -104,8 +106,15 @@ std::unique_ptr<level> crystal_caves_map::get_map(int name, neutrino::world_rend
 			}
         }
     }
-    neutrino::tiled::objects_layer objects(out->get_registry().get_registry());
+    neutrino::tiled::objects_layer objects(out->get_registry().get_world());
     objects.register_system <neutrino::ecs::sprite_system>(wr);
+	auto& player = out->get_registry().get_component<neutrino::body>();
+	auto& mylo = out->get_registry().get_component<neutrino::sprite_bank_array>();
+	if (player.position.x / TILE_W < num_tiles_hor / 2.0f) {
+		mylo.current = SPRITE_STATE_MOVE_RIGHT;
+	} else {
+		mylo.current = SPRITE_STATE_MOVE_LEFT;
+	}
     wm.append(std::move(bg_layer));
     wm.append(std::move(static_layer));
 	wm.append(std::move(objects));

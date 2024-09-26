@@ -66,7 +66,7 @@ namespace neutrino {
 
 		void next() {
 			current++;
-			if (current > sprites.size()) {
+			if (current >= sprites.size()) {
 				current = 0;
 			}
 		}
@@ -91,9 +91,11 @@ namespace neutrino {
 		}
 
 		void set_current(std::size_t v) {
-			ENFORCE(v < banks.size());
-			banks[current].current = 0;
-			current = v;
+			if (v != current) {
+				ENFORCE(v < banks.size());
+				banks[current].current = 0;
+				current = v;
+			}
 		}
 		std::size_t current;
 		std::vector<sprite_bank> banks;
