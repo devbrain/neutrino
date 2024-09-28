@@ -22,7 +22,7 @@ namespace neutrino::ecs {
     }
 
     sdl::rect world_rendering_system::get_screen_viewport() const {
-        return {{0, 0}, m_world_renderer.get_dimension()};
+        return sdl::rect{m_world_renderer.get_dimension()};
     }
 
     void world_rendering_system::draw_tile(const tile& tid, int x, int y) const {

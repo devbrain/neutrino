@@ -84,8 +84,9 @@ namespace neutrino::ecs {
         auto [text_ptr, rect] = atlas.get(sprite);
         if (text_ptr) {
             sdl::rect dst_rect(pos.x, pos.y, rect.w, rect.h);
-			if (sdl::intersects(dst_rect, viewport)) {
-				dst_rect = sdl::intersection(dst_rect, viewport);
+			auto ir = dst_rect.intersection(viewport);
+			if (ir) {
+				dst_rect = *ir;
 				dst_rect.x = dst_rect.x - viewport.x;
 				dst_rect.y = dst_rect.y - viewport.y;
 				r.copy(*text_ptr, rect, dst_rect);

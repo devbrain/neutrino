@@ -17,14 +17,14 @@ namespace neutrino {
 	}
 
 	sdl::area_type get_rendered_dimensions(const assets::bgi_font& font, const std::string& str) {
-		int w = 0;
-		int h = 0;
+		unsigned int w = 0;
+		unsigned int h = 0;
 		for (const auto c : str) {
 			auto i = font.glyphs.find(c);
 			ENFORCE(i != font.glyphs.end());
 			auto d = i->second.dimension;
-			w += static_cast <int>(d.w);
-			h = std::max(h, static_cast <int>(d.h));
+			w += d.w;
+			h = std::max(h, d.h);
 		}
 		return {w, h};
 	}
@@ -33,12 +33,12 @@ namespace neutrino {
 		ENFORCE(font.empty());
 		auto w = font.front().get_width();
 		auto h = font.front().get_height();
-		return {static_cast <int>(w * str.size()), static_cast <int>(h)};
+		return {w * static_cast <unsigned int>(str.size()), h};
 	}
 
 	sdl::area_type get_rendered_dimensions(const bios_rom_font& font, const std::string& str) {
-		int w = 0;
-		int h = 0;
+		unsigned int w = 0;
+		unsigned int h = 0;
 		switch (font) {
 			case BIOS_8x8:
 				w = 8;
@@ -57,18 +57,18 @@ namespace neutrino {
 				h = 0;
 				break;
 		}
-		return {static_cast <int>(w * str.size()), h};
+		return {w * static_cast <unsigned int>(str.size()), h};
 	}
 
 	sdl::area_type get_rendered_dimensions(const tile_font_spec& font, const std::string& str) {
-		int w = 0;
-		int h = 0;
+		unsigned int w = 0;
+		unsigned int h = 0;
 		for (const auto& c : str) {
 			auto glyph = font.get(c);
 			ENFORCE(glyph.is_valid());
 			auto [_, r] = glyph.m_atlas->get(glyph.m_tile);
 			w += r.w;
-			h = std::max(h, r.h);
+			h = std::max(h, static_cast<unsigned int>(r.h));
 		}
 		return {w, h};
 	}
