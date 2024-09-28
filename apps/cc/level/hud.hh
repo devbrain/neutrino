@@ -10,12 +10,12 @@
 
 class hud {
     public:
-        explicit hud(int y_px);
+        explicit hud(unsigned int y_px);
         virtual ~hud();
         virtual void draw(neutrino::sdl::renderer& renderer, const neutrino::texture_atlas& atlas) const = 0;
     protected:
-        void draw_tile(neutrino::sdl::renderer& renderer, const neutrino::texture_atlas& atlas, int tile_x, neutrino::tile tile_id) const;
-        int m_y;
+        void draw_tile(neutrino::sdl::renderer& renderer, const neutrino::texture_atlas& atlas, unsigned int tile_x, neutrino::tile tile_id) const;
+        unsigned int m_y;
 };
 
 #endif

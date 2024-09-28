@@ -103,8 +103,8 @@ static neutrino::sdl::area_type get_dialog_box_dimensions_tiles(const std::strin
         lines++;
     }
     max_char = std::max(max_char, chars);
-    int tiles_w = max_char + 4;
-    int tiles_h = lines + 4;
+    unsigned int tiles_w = max_char + 4;
+    unsigned int tiles_h = lines + 4;
 
     return {tiles_w, tiles_h};
 }

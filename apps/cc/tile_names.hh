@@ -10,11 +10,11 @@
 #include <neutrino/modules/video/tile_font_spec.hh>
 #include <neutrino/modules/video/texture_atlas.hh>
 
-inline constexpr int TILE_W = 16;
-inline constexpr int TILE_H = 16;
+inline constexpr unsigned int TILE_W = 16;
+inline constexpr unsigned int TILE_H = 16;
 
-inline constexpr int HUD_TILE_W = 8;
-inline constexpr int HUD_TILE_H = 8;
+inline constexpr unsigned int HUD_TILE_W = 8;
+inline constexpr unsigned int HUD_TILE_H = 8;
 
 neutrino::tile create_tile(int sprite_id);
 

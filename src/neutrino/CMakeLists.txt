@@ -46,6 +46,9 @@ set (src
         # modules/PHYSICS
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/modules/physics/components/body.hh
+        modules/physics/quad_tree/quad_tree.hh
+        modules/physics/quad_tree/Vector2.h
+        modules/physics/quad_tree/Box.h
         # =============================================================
         # modules/VIDEO
         # =============================================================
