@@ -6,12 +6,14 @@
 #include <memory>
 #include <type_traits>
 #include <vector>
-#include "Box.h"
+#include <sdlpp/video/geometry.hh>
 
-namespace quadtree {
+namespace neutrino {
+	template <typename T>
+	using Box = sdl::generic::rect<T>;
 
 	template <typename T, typename GetBox, typename Equal = std::equal_to<T>, typename Float = float>
-	class Quadtree {
+	class quad_tree {
 		static_assert(std::is_convertible_v<std::invoke_result_t<GetBox, const T&>, Box<Float>>,
 					  "GetBox must be a callable of signature Box<Float>(const T&)");
 		static_assert(std::is_convertible_v<std::invoke_result_t<Equal, const T&, const T&>, bool>,
@@ -19,35 +21,50 @@ namespace quadtree {
 		static_assert(std::is_arithmetic_v<Float>);
 
 	 public:
-		Quadtree(const Box<Float>& box, const GetBox& getBox = GetBox(),
-				 const Equal& equal = Equal())
-			:
-			mBox(box), mRoot(std::make_unique<Node>()), mGetBox(getBox), mEqual(equal) {
-
+		explicit quad_tree(const Box<Float>& box, const GetBox& getBox = GetBox(),
+						   const Equal& equal = Equal())
+			: m_box(box),
+			  m_root(std::make_unique<Node>()),
+			  m_get_box(getBox),
+			  m_equal(equal) {
 		}
 
 		void add(const T& value) {
-			add(mRoot.get(), 0, mBox, value);
+			add(m_root.get(), 0, m_box, value);
 		}
 
 		void remove(const T& value) {
-			remove(mRoot.get(), mBox, value);
+			remove(m_root.get(), m_box, value);
+		}
+
+		template <class Callback>
+		void query(const Box<Float>& box, const Callback& cbk) const {
+			query(m_root.get(), m_box, box, cbk);
 		}
 
 		std::vector<T> query(const Box<Float>& box) const {
 			auto values = std::vector<T>();
-			query(mRoot.get(), mBox, box, values);
+			query(m_root.get(), m_box, box, [&values](const auto& i) {
+				values.emplace_back(i);
+			});
 			return values;
 		}
 
-		std::vector<std::pair<T, T>> findAllIntersections() const {
+		template <class Callback>
+		void find_all_intersections(const Callback& cbk) const {
+			find_all_intersections(m_root.get(), cbk);
+		}
+
+		std::vector<std::pair<T, T>> find_all_intersections() const {
 			auto intersections = std::vector<std::pair<T, T>>();
-			findAllIntersections(mRoot.get(), intersections);
+			find_all_intersections(m_root.get(), [&intersections](const auto& i, const auto& j){
+			  intersections.emplace_back(i, j);
+			});
 			return intersections;
 		}
 
-		Box<Float> getBox() const {
-			return mBox;
+		Box<Float> get_box() const noexcept {
+			return m_box;
 		}
 
 	 private:
@@ -59,53 +76,55 @@ namespace quadtree {
 			std::vector<T> values;
 		};
 
-		Box<Float> mBox;
-		std::unique_ptr<Node> mRoot;
-		GetBox mGetBox;
-		Equal mEqual;
+		Box<Float> m_box;
+		std::unique_ptr<Node> m_root;
+		GetBox m_get_box;
+		Equal m_equal;
 
-		bool isLeaf(const Node* node) const {
+		bool is_leaf(const Node* node) const {
 			return !static_cast<bool>(node->children[0]);
 		}
 
-		Box<Float> computeBox(const Box<Float>& box, int i) const {
-			auto origin = box.getTopLeft();
-			auto childSize = box.getSize() / static_cast<Float>(2);
+		Box<Float> compute_box(const Box<Float>& box, int i) const {
+			auto origin = box.offset();
+			auto childSize = box.area() / static_cast<Float>(2);
 			switch (i) {
 				// North West
 				case 0:return Box<Float>(origin, childSize);
 					// Norst East
-				case 1:return Box<Float>(Vector2<Float>(origin.x + childSize.x, origin.y), childSize);
+				case 1:return Box<Float>(math::vector<Float, 2>(origin.x + childSize.w, origin.y), childSize);
 					// South West
-				case 2:return Box<Float>(Vector2<Float>(origin.x, origin.y + childSize.y), childSize);
+				case 2:return Box<Float>(math::vector<Float, 2>(origin.x, origin.y + childSize.h), childSize);
 					// South East
-				case 3:return Box<Float>(origin + childSize, childSize);
+				case 3:
+					return Box<Float>(math::vector<Float, 2>(
+						origin.x + childSize.w, origin.y + childSize.h), childSize);
 				default:assert(false && "Invalid child index");
 					return Box<Float>();
 			}
 		}
 
-		int getQuadrant(const Box<Float>& nodeBox, const Box<Float>& valueBox) const {
-			auto center = nodeBox.getCenter();
+		int get_quadrant(const Box<Float>& nodeBox, const Box<Float>& valueBox) const {
+			auto center = nodeBox.center();
 			// West
-			if (valueBox.getRight() < center.x) {
+			if (valueBox.right() < center.x) {
 				// North West
-				if (valueBox.getBottom() < center.y)
+				if (valueBox.bottom() < center.y)
 					return 0;
 					// South West
-				else if (valueBox.top >= center.y)
+				else if (valueBox.top() >= center.y)
 					return 2;
 					// Not contained in any quadrant
 				else
 					return -1;
 			}
 				// East
-			else if (valueBox.left >= center.x) {
+			else if (valueBox.left() >= center.x) {
 				// North East
-				if (valueBox.getBottom() < center.y)
+				if (valueBox.bottom() < center.y)
 					return 1;
 					// South East
-				else if (valueBox.top >= center.y)
+				else if (valueBox.top() >= center.y)
 					return 3;
 					// Not contained in any quadrant
 				else
@@ -118,82 +137,84 @@ namespace quadtree {
 
 		void add(Node* node, std::size_t depth, const Box<Float>& box, const T& value) {
 			assert(node != nullptr);
-			assert(box.contains(mGetBox(value)));
-			if (isLeaf(node)) {
+			assert(box.contains(m_get_box(value)));
+			if (is_leaf(node)) {
 				// Insert the value in this node if possible
-				if (depth >= MaxDepth || node->values.size() < Threshold)
+				if (depth >= MaxDepth || node->values.size() < Threshold) {
 					node->values.push_back(value);
 					// Otherwise, we split and we try again
-				else {
+				} else {
 					split(node, box);
 					add(node, depth, box, value);
 				}
 			} else {
-				auto i = getQuadrant(box, mGetBox(value));
+				auto i = get_quadrant(box, m_get_box(value));
 				// Add the value in a child if the value is entirely contained in it
-				if (i != -1)
-					add(node->children[static_cast<std::size_t>(i)].get(), depth + 1, computeBox(box, i), value);
+				if (i != -1) {
+					add(node->children[static_cast<std::size_t>(i)].get(), depth + 1, compute_box(box, i), value);
 					// Otherwise, we add the value in the current node
-				else
+				} else {
 					node->values.push_back(value);
+				}
 			}
 		}
 
 		void split(Node* node, const Box<Float>& box) {
 			assert(node != nullptr);
-			assert(isLeaf(node) && "Only leaves can be split");
+			assert(is_leaf(node) && "Only leaves can be split");
 			// Create children
 			for (auto& child : node->children)
 				child = std::make_unique<Node>();
 			// Assign values to children
 			auto newValues = std::vector<T>(); // New values for this node
 			for (const auto& value : node->values) {
-				auto i = getQuadrant(box, mGetBox(value));
-				if (i != -1)
+				auto i = get_quadrant(box, m_get_box(value));
+				if (i != -1) {
 					node->children[static_cast<std::size_t>(i)]->values.push_back(value);
-				else
+				} else {
 					newValues.push_back(value);
+				}
 			}
 			node->values = std::move(newValues);
 		}
 
 		bool remove(Node* node, const Box<Float>& box, const T& value) {
 			assert(node != nullptr);
-			assert(box.contains(mGetBox(value)));
-			if (isLeaf(node)) {
+			assert(box.contains(m_get_box(value)));
+			if (is_leaf(node)) {
 				// Remove the value from node
-				removeValue(node, value);
+				remove_value(node, value);
 				return true;
 			} else {
 				// Remove the value in a child if the value is entirely contained in it
-				auto i = getQuadrant(box, mGetBox(value));
+				auto i = get_quadrant(box, m_get_box(value));
 				if (i != -1) {
-					if (remove(node->children[static_cast<std::size_t>(i)].get(), computeBox(box, i), value))
-						return tryMerge(node);
+					if (remove(node->children[static_cast<std::size_t>(i)].get(), compute_box(box, i), value))
+						return try_merge(node);
 				}
 					// Otherwise, we remove the value from the current node
 				else
-					removeValue(node, value);
+					remove_value(node, value);
 				return false;
 			}
 		}
 
-		void removeValue(Node* node, const T& value) {
+		void remove_value(Node* node, const T& value) {
 			// Find the value in node->values
 			auto it = std::find_if(std::begin(node->values), std::end(node->values),
-								   [this, &value](const auto& rhs) { return mEqual(value, rhs); });
+								   [this, &value](const auto& rhs) { return m_equal(value, rhs); });
 			assert(it != std::end(node->values) && "Trying to remove a value that is not present in the node");
 			// Swap with the last element and pop back
 			*it = std::move(node->values.back());
 			node->values.pop_back();
 		}
 
-		bool tryMerge(Node* node) {
+		bool try_merge(Node* node) {
 			assert(node != nullptr);
-			assert(!isLeaf(node) && "Only interior nodes can be merged");
+			assert(!is_leaf(node) && "Only interior nodes can be merged");
 			auto nbValues = node->values.size();
 			for (const auto& child : node->children) {
-				if (!isLeaf(child.get()))
+				if (!is_leaf(child.get()))
 					return false;
 				nbValues += child->values.size();
 			}
@@ -205,61 +226,70 @@ namespace quadtree {
 						node->values.push_back(value);
 				}
 				// Remove the children
-				for (auto& child : node->children)
+				for (auto& child : node->children) {
 					child.reset();
+				}
 				return true;
-			} else
+			} else {
 				return false;
+			}
 		}
 
-		void query(Node* node, const Box<Float>& box, const Box<Float>& queryBox, std::vector<T>& values) const {
+		template <typename Callable>
+		void query(Node* node, const Box<Float>& box, const Box<Float>& queryBox, const Callable& cbk) const {
 			assert(node != nullptr);
 			assert(queryBox.intersects(box));
 			for (const auto& value : node->values) {
-				if (queryBox.intersects(mGetBox(value)))
-					values.push_back(value);
+				if (queryBox.intersects(m_get_box(value))) {
+					cbk(value);
+				}
 			}
-			if (!isLeaf(node)) {
+			if (!is_leaf(node)) {
 				for (auto i = std::size_t(0); i < node->children.size(); ++i) {
-					auto childBox = computeBox(box, static_cast<int>(i));
-					if (queryBox.intersects(childBox))
-						query(node->children[i].get(), childBox, queryBox, values);
+					auto childBox = compute_box(box, static_cast<int>(i));
+					if (queryBox.intersects(childBox)) {
+						query(node->children[i].get(), childBox, queryBox, cbk);
+					}
 				}
 			}
 		}
 
-		void findAllIntersections(Node* node, std::vector<std::pair<T, T>>& intersections) const {
+		template <class Callback>
+		void find_all_intersections(Node* node, const Callback& cbk) const {
 			// Find intersections between values stored in this node
 			// Make sure to not report the same intersection twice
 			for (auto i = std::size_t(0); i < node->values.size(); ++i) {
 				for (auto j = std::size_t(0); j < i; ++j) {
-					if (mGetBox(node->values[i]).intersects(mGetBox(node->values[j])))
-						intersections.emplace_back(node->values[i], node->values[j]);
+					if (m_get_box(node->values[i]).intersects(m_get_box(node->values[j])))
+						cbk(node->values[i], node->values[j]);
 				}
 			}
-			if (!isLeaf(node)) {
+			if (!is_leaf(node)) {
 				// Values in this node can intersect values in descendants
 				for (const auto& child : node->children) {
-					for (const auto& value : node->values)
-						findIntersectionsInDescendants(child.get(), value, intersections);
+					for (const auto& value : node->values) {
+						find_intersections_in_descendants(child.get(), value, cbk);
+					}
 				}
 				// Find intersections in children
-				for (const auto& child : node->children)
-					findAllIntersections(child.get(), intersections);
+				for (const auto& child : node->children) {
+					find_all_intersections(child.get(), cbk);
+				}
 			}
 		}
 
-		void
-		findIntersectionsInDescendants(Node* node, const T& value, std::vector<std::pair<T, T>>& intersections) const {
+		template <typename Callback>
+		void find_intersections_in_descendants(Node* node, const T& value, const Callback& cbk) const {
 			// Test against the values stored in this node
 			for (const auto& other : node->values) {
-				if (mGetBox(value).intersects(mGetBox(other)))
-					intersections.emplace_back(value, other);
+				if (m_get_box(value).intersects(m_get_box(other)))
+					cbk(value, other);
 			}
 			// Test against values stored into descendants of this node
-			if (!isLeaf(node)) {
-				for (const auto& child : node->children)
-					findIntersectionsInDescendants(child.get(), value, intersections);
+			if (!is_leaf(node)) {
+				for (const auto& child : node->children) {
+					find_intersections_in_descendants(child.get(), value, cbk);
+				}
 			}
 		}
 	};

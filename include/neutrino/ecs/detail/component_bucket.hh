@@ -197,7 +197,7 @@ namespace neutrino::ecs::detail {
             }
 
             static typed_component_bucket_iterator <T> iterator(component_bucket& bucket) {
-                return typed_component_bucket_iterator <T>(bucket);
+                return typed_component_bucket_iterator <T>(&bucket);
             }
     };
 }
