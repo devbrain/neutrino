@@ -17,6 +17,7 @@ namespace neutrino {
                 return;
             }
         }
+		m_hotkeys.emplace_back(hotkey, hotkey_id);
     }
 
     void hotkey_mapper::unregister_hotkey(int hotkey_id) {

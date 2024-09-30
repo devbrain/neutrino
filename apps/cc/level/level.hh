@@ -26,7 +26,7 @@ class level {
 	static user_input& get_user_input_handler();
  private:
 	void move_game_objects(std::chrono::milliseconds delta_time);
-	void process_player_actions(std::chrono::milliseconds frame_duration);
+	void process_player_actions();
 	void update_game_state(neutrino::sdl::rect& viewport);
 	void update_game_camera(neutrino::sdl::rect& viewport);
  private:

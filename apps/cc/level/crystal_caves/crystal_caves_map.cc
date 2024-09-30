@@ -11,6 +11,7 @@
 #include <neutrino/utils/random.hh>
 
 #include <neutrino/modules/physics/components/body.hh>
+#include <neutrino/modules/physics/systems/movement_system.hh>
 #include <neutrino/modules/video/systems/sprite_system.hh>
 
 crystal_caves_map::crystal_caves_map(std::vector <raw_level_map> maps)
@@ -107,7 +108,10 @@ std::unique_ptr<level> crystal_caves_map::get_map(int name, neutrino::world_rend
         }
     }
     neutrino::tiled::objects_layer objects(out->get_registry().get_world());
+
+	objects.register_system <neutrino::ecs::movement_system>(wm.get_geometry());
     objects.register_system <neutrino::ecs::sprite_system>(wr);
+
 	auto& player = out->get_registry().get_component<neutrino::body>();
 	auto& mylo = out->get_registry().get_component<neutrino::sprite_bank_array>();
 	if (player.position.x / TILE_W < num_tiles_hor / 2.0f) {

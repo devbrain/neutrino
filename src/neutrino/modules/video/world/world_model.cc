@@ -64,4 +64,8 @@ namespace neutrino::tiled {
 	pixel_coord_t world_model::get_tile_height() const {
 		return m_tile_height;
 	}
+
+	sdl::area_type world_model::get_geometry() const {
+		return {m_world_width, m_world_height};
+	}
 }

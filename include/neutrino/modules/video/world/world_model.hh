@@ -54,7 +54,7 @@ namespace neutrino::tiled {
             [[nodiscard]] container_t::const_iterator end() const;
 
             void set_geometry(unsigned tile_width, unsigned tile_height, unsigned num_tiles_x, unsigned num_tiles_y);
-
+			[[nodiscard]] sdl::area_type get_geometry() const;
             [[nodiscard]] pixel_coord_t get_world_width() const;
             [[nodiscard]] pixel_coord_t get_world_height() const;
             [[nodiscard]] pixel_coord_t get_tile_width() const;
