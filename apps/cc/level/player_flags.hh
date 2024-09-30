@@ -7,10 +7,9 @@
 
 #include <cstdint>
 
-inline constexpr uint32_t PLAYER_FLAGS_NONE           = 0;
-inline constexpr uint32_t PLAYER_FLAGS_MOVING_LEFT    = 1;
-inline constexpr uint32_t PLAYER_FLAGS_MOVING_RIGHT   = 2;
-inline constexpr uint32_t PLAYER_FLAGS_MOVING_IN_JUMP = 4;
-inline constexpr uint32_t PLAYER_FLAGS_MOVING_IN_FIRE = 8;
+inline constexpr unsigned PLAYER_FLAGS_MOVING_LEFT    = 0;
+inline constexpr unsigned PLAYER_FLAGS_MOVING_RIGHT   = 1;
+inline constexpr unsigned PLAYER_FLAGS_MOVING_IN_JUMP = 2;
+inline constexpr unsigned PLAYER_FLAGS_MOVING_IN_FIRE = 3;
 
 #endif

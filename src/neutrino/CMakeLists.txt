@@ -47,6 +47,9 @@ set (src
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/modules/physics/components/body.hh
         ${PROJECT_INCLUDE}/neutrino/modules/physics/detail/quad_tree/quad_tree.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/physics/systems/collider.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/physics/systems/movement_system.hh
+        modules/physics/systems/movement_system.cc
         # =============================================================
         # modules/VIDEO
         # =============================================================

@@ -33,8 +33,8 @@ user_input& level::get_user_input_handler() {
 }
 
 void level::update(std::chrono::milliseconds delta_time, neutrino::sdl::rect& viewport) {
+	process_player_actions();
 	move_game_objects(delta_time); // bring the game to the current state
-	process_player_actions(delta_time);
 	update_game_state(viewport);
 }
 
@@ -42,7 +42,7 @@ void level::move_game_objects(std::chrono::milliseconds delta_time) {
 
 }
 
-void level::process_player_actions(std::chrono::milliseconds frame_duration) {
+void level::process_player_actions() {
 	const auto jump_pressed = s_user_input.check(user_input::JUMP);
 	const auto fire_pressed = s_user_input.check(user_input::FIRE);
 	const auto left_pressed = s_user_input.check(user_input::MOVE_LEFT);
@@ -54,32 +54,37 @@ void level::process_player_actions(std::chrono::milliseconds frame_duration) {
 	auto& player_body = m_registry.get_component<neutrino::body>();
 
 	if (right_pressed) {
-		player_body.position.x += speed_ms*frame_duration.count();
-		player_body.flags |= PLAYER_FLAGS_MOVING_RIGHT;
+		player_body.speed.x = speed_ms;
+		player_body.set_flag(PLAYER_FLAGS_MOVING_RIGHT);
 	} else {
-		player_body.flags &= ~PLAYER_FLAGS_MOVING_RIGHT;
+		player_body.clear_flag(PLAYER_FLAGS_MOVING_RIGHT);
+		player_body.speed.x = 0;
 	}
 
 	if (left_pressed) {
-		player_body.position.x -= speed_ms*frame_duration.count();
-		player_body.flags |= PLAYER_FLAGS_MOVING_LEFT;
+		player_body.speed.x = -speed_ms;
+		player_body.set_flag(PLAYER_FLAGS_MOVING_LEFT);
 	} else {
-		player_body.flags &= ~PLAYER_FLAGS_MOVING_LEFT;
+		player_body.clear_flag(PLAYER_FLAGS_MOVING_LEFT);
+		if (!player_body.has_flag(PLAYER_FLAGS_MOVING_RIGHT)) {
+			player_body.speed.x = 0;
+		}
 	}
+
+
 }
 
 void level::update_game_state(neutrino::sdl::rect& viewport) {
 	auto& player_body = m_registry.get_component<neutrino::body>();
 	auto& mylo_sprite = m_registry.get_component<neutrino::sprite_bank_array>();
 	static constexpr std::chrono::milliseconds time_in_frame{200};
-	if (player_body.flags & PLAYER_FLAGS_MOVING_RIGHT) {
+	if (player_body.has_flag(PLAYER_FLAGS_MOVING_RIGHT)) {
 		mylo_sprite.set_current(SPRITE_STATE_MOVE_RIGHT);
 		mylo_sprite.next(time_in_frame);
-	} else if (player_body.flags & PLAYER_FLAGS_MOVING_LEFT) {
+	} else if (player_body.has_flag(PLAYER_FLAGS_MOVING_LEFT)) {
 		mylo_sprite.set_current(SPRITE_STATE_MOVE_LEFT);
 		mylo_sprite.next(time_in_frame);
 	}
-
 	update_game_camera(viewport);
 }
 
@@ -87,7 +92,7 @@ void level::update_game_camera(neutrino::sdl::rect& viewport) {
 	auto& player_body = m_registry.get_component<neutrino::body>();
 	neutrino::sdl::point player = player_body.position - viewport.center();
 	auto offs = viewport.offset();
-	if (player_body.flags & PLAYER_FLAGS_MOVING_RIGHT) {
+	if (player_body.has_flag(PLAYER_FLAGS_MOVING_RIGHT)) {
 		if (player.x > 0) {
 			offs.x += player.x;
 		}
@@ -96,7 +101,7 @@ void level::update_game_camera(neutrino::sdl::rect& viewport) {
 		}
 	}
 
-	if (player_body.flags & PLAYER_FLAGS_MOVING_LEFT) {
+	if (player_body.has_flag(PLAYER_FLAGS_MOVING_LEFT)) {
 		if (player.x < 0) {
 			offs.x += player.x;
 		}
