@@ -8,7 +8,7 @@
 #include <neutrino/modules/video/systems/world_rendering_system.hh>
 #include <neutrino/modules/video/components/sprite_component.hh>
 
-namespace neutrino::ecs {
+namespace neutrino::ecs::video {
     class NEUTRINO_EXPORT sprite_system : public world_rendering_system {
         public:
             explicit sprite_system(const world_renderer& world_renderer_);

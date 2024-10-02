@@ -5,6 +5,7 @@
 #include "level/level.hh"
 #include "level/player_flags.hh"
 #include <neutrino/modules/physics/components/body.hh>
+#include <neutrino/modules/physics/components/dynamic_object.hh>
 #include <neutrino/modules/video/components/sprite_component.hh>
 #include "level/crystal_caves/crystal_caves_sprite_states.hh"
 #include <bsw/logger/logger.hh>
@@ -51,31 +52,31 @@ void level::process_player_actions() {
 	const float speed = 74.0f; // pixel per second
 	const float speed_ms = speed / 1000.0f;
 
-	auto& player_body = m_registry.get_component<neutrino::body>();
+	auto& player_body = m_registry.get_component<neutrino::ecs::physics::body>();
+	auto& dyn_obj = m_registry.get_component<neutrino::ecs::physics::dynamic_object>();
 
 	if (right_pressed) {
-		player_body.speed.x = speed_ms;
+		dyn_obj.speed.x = speed_ms;
 		player_body.set_flag(PLAYER_FLAGS_MOVING_RIGHT);
 	} else {
 		player_body.clear_flag(PLAYER_FLAGS_MOVING_RIGHT);
-		player_body.speed.x = 0;
 	}
 
 	if (left_pressed) {
-		player_body.speed.x = -speed_ms;
+		dyn_obj.speed.x = -speed_ms;
 		player_body.set_flag(PLAYER_FLAGS_MOVING_LEFT);
 	} else {
 		player_body.clear_flag(PLAYER_FLAGS_MOVING_LEFT);
-		if (!player_body.has_flag(PLAYER_FLAGS_MOVING_RIGHT)) {
-			player_body.speed.x = 0;
-		}
 	}
 
+	if (!(left_pressed || right_pressed)) {
+		dyn_obj.speed.x = 0;
+	}
 
 }
 
 void level::update_game_state(neutrino::sdl::rect& viewport) {
-	auto& player_body = m_registry.get_component<neutrino::body>();
+	auto& player_body = m_registry.get_component<neutrino::ecs::physics::body>();
 	auto& mylo_sprite = m_registry.get_component<neutrino::sprite_bank_array>();
 	static constexpr std::chrono::milliseconds time_in_frame{200};
 	if (player_body.has_flag(PLAYER_FLAGS_MOVING_RIGHT)) {
@@ -89,7 +90,7 @@ void level::update_game_state(neutrino::sdl::rect& viewport) {
 }
 
 void level::update_game_camera(neutrino::sdl::rect& viewport) {
-	auto& player_body = m_registry.get_component<neutrino::body>();
+	auto& player_body = m_registry.get_component<neutrino::ecs::physics::body>();
 	neutrino::sdl::point player = player_body.position - viewport.center();
 	auto offs = viewport.offset();
 	if (player_body.has_flag(PLAYER_FLAGS_MOVING_RIGHT)) {

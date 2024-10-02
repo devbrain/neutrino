@@ -7,15 +7,12 @@
 
 #include <cstdint>
 #include <neutrino/neutrino_export.hh>
-#include <sdlpp/video/geometry.hh>
+#include <neutrino/modules/physics/components/types.hh>
 
-namespace neutrino {
+namespace neutrino::ecs::physics {
     struct NEUTRINO_EXPORT body {
-        sdl::point2f position{0.0f,0.0f};
-		sdl::point2f speed {0.0f,0.0f};
-		sdl::point2f acceleartion{0.0f, 0.0f};
-
-		sdl::area_type dimensions {0, 0};
+        vector2f position{0.0f,0.0f};
+		dimensions dimensions {0, 0};
 
 		uint64_t flags {0};
 

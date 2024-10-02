@@ -8,9 +8,10 @@
 #include <neutrino/neutrino_export.hh>
 #include <neutrino/ecs/abstract_system.hh>
 #include <neutrino/modules/physics/components/body.hh>
+#include <neutrino/modules/physics/detail/quad_tree/quad_tree.hh>
 #include <sdlpp/video/geometry.hh>
 
-namespace neutrino::ecs {
+namespace neutrino::ecs::physics {
 	class NEUTRINO_EXPORT movement_system : public abstract_system {
 	 public:
 		explicit movement_system(const sdl::area_type& world_dimensions);
