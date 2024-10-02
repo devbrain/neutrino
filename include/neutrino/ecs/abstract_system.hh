@@ -16,9 +16,9 @@ namespace neutrino::ecs {
     class NEUTRINO_EXPORT abstract_system {
         public:
             virtual ~abstract_system();
-
+			virtual void start(registry& registry);
             virtual void update(registry& registry, std::chrono::milliseconds delta_t) = 0;
-            virtual void present(registry& registry) = 0;
+            virtual void present(registry& registry);
     };
 }
 

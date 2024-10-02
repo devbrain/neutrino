@@ -3,7 +3,7 @@
 #include <doctest/doctest.h>
 #include "neutrino/modules/physics/detail/quad_tree/quad_tree.hh"
 
-using namespace neutrino;
+using namespace neutrino::ecs::physics;
 
 
 

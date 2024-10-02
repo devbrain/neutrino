@@ -46,7 +46,11 @@ set (src
         # modules/PHYSICS
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/modules/physics/components/body.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/physics/components/types.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/physics/components/dynamic_object.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/physics/components/static_object.hh
         ${PROJECT_INCLUDE}/neutrino/modules/physics/detail/quad_tree/quad_tree.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/physics/detail/quad_tree/quad_tree_generic.hh
         ${PROJECT_INCLUDE}/neutrino/modules/physics/systems/collider.hh
         ${PROJECT_INCLUDE}/neutrino/modules/physics/systems/movement_system.hh
         modules/physics/systems/movement_system.cc
