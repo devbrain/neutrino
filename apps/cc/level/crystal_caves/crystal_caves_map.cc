@@ -13,8 +13,10 @@
 #include <neutrino/modules/physics/components/body.hh>
 #include <neutrino/modules/physics/components/dynamic_object.hh>
 #include <neutrino/modules/physics/components/static_object.hh>
+#include <neutrino/modules/video/components/world_renderer_camera.hh>
 #include <neutrino/modules/physics/systems/movement_system.hh>
 #include <neutrino/modules/video/systems/sprite_system.hh>
+
 
 crystal_caves_map::crystal_caves_map(std::vector<raw_level_map> maps)
 	: maps_registry(std::move(maps)) {
@@ -119,7 +121,7 @@ std::unique_ptr<level> crystal_caves_map::get_map(int name, neutrino::world_rend
 	neutrino::tiled::objects_layer objects(out->get_registry().get_world());
 
 	objects.register_system<neutrino::ecs::physics::movement_system>(wm.get_geometry());
-	objects.register_system<neutrino::ecs::video::sprite_system>(wr);
+	objects.register_system<neutrino::ecs::video::sprite_system>();
 
 	auto& player = out->get_registry().get_component<neutrino::ecs::physics::body>();
 	auto& mylo = out->get_registry().get_component<neutrino::sprite_bank_array>();
@@ -132,5 +134,11 @@ std::unique_ptr<level> crystal_caves_map::get_map(int name, neutrino::world_rend
 	wm.append(std::move(static_layer));
 	wm.append(std::move(objects));
 	wm.append(std::move(front_layer));
+
+
+	neutrino::ecs::entity_builder builder(out->get_registry().get_world());
+	(void)builder
+		.with_component<neutrino::world_renderer_camera>(320, 192)
+		.build();
 	return out;
 }

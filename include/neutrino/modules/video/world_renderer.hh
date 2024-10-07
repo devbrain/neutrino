@@ -31,6 +31,7 @@ namespace neutrino {
 			void update(std::chrono::milliseconds delta_time);
 
 			void present() const;
+
 			[[nodiscard]] sdl::point set_camera (const sdl::point& camera);
 			[[nodiscard]] sdl::point get_camera () const;
 			[[nodiscard]] sdl::area_type get_dimension() const;

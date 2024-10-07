@@ -29,6 +29,11 @@
 
 namespace neutrino::ecs {
 
+	template <typename Component>
+	struct max_num_entities_with_component {
+		static constexpr std::size_t value = 2048;
+	};
+
     class NEUTRINO_EXPORT registry {
         template<typename... Components>
         friend class registry_iterator;
@@ -37,6 +42,9 @@ namespace neutrino::ecs {
         friend class entities_set_iterator;
 
         public:
+		/**
+		 * @param max_components max number of components per entity
+		 */
             explicit registry(std::size_t max_components = 64);
 
             template<typename Component, typename... Args>
@@ -80,7 +88,6 @@ namespace neutrino::ecs {
                 std::size_t, std::unique_ptr <detail::component_bucket, void(*)(detail::component_bucket*)>>;
             components_holder_t m_components;
             std::size_t m_max_components;
-			std::size_t m_components_capacity{2048};
 
             struct NEUTRINO_EXPORT component_info {
                 component_info(std::string  name_, std::size_t bucket)
@@ -130,7 +137,9 @@ namespace neutrino::ecs {
             m_components.insert({
                 bucket_key,
                 detail::typed_component_bucket <Component>::construct_and_create(
-					m_components_capacity, key, std::forward <Args>(args)...)
+					max_num_entities_with_component<Component>::value,
+					key,
+					std::forward <Args>(args)...)
             });
         } else {
             detail::typed_component_bucket <Component>::construct(*itr->second, key, std::forward <Args>(args)...);

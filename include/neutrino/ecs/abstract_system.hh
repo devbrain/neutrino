@@ -20,6 +20,7 @@ namespace neutrino::ecs {
             virtual void update(registry& registry, std::chrono::milliseconds delta_t) = 0;
             virtual void present(registry& registry);
     };
+
 }
 
 #endif
