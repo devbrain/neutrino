@@ -9,6 +9,8 @@
 #include <doctest/doctest.h>
 #include <neutrino/ecs/detail/sorted_array.hh>
 
+#include <neutrino/modules/input/systems/input_system.hh>
+
 template< class Iter >
 void fill_with_random_int_values( Iter start, Iter end)
 {
@@ -24,6 +26,7 @@ void fill_with_random_int_values( Iter start, Iter end)
 using namespace neutrino::ecs::detail;
 
 TEST_SUITE("sorted array") {
+
 	TEST_CASE("test insertion fixed") {
 		fixed_sorted_array<int, 16> arr;
 		REQUIRE(arr.insert(100));

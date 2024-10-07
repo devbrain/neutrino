@@ -36,6 +36,10 @@ add_executable(cc
         level/maps_registry.hh
         scenes/main_level_scene.cc
         scenes/main_level_scene.hh
+        scenes/main_map_scene.cc
+        scenes/main_map_scene.hh
+        scenes/cc_main_map.cc
+        scenes/cc_main_map.hh
         level/ecs_registry.cc
         level/ecs_registry.hh
         level/hud.cc

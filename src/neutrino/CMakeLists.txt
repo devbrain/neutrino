@@ -13,11 +13,12 @@ set (src
         events/neutrino_events.hh
         events/hotkey_mapper.cc
         events/detail/keyboard_state.cc
-
         # =============================================================
         # SCENE
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/scene/scene.hh
+        ${PROJECT_INCLUDE}/neutrino/scene/ecs_scene.hh
+        ${PROJECT_INCLUDE}/neutrino/scene/ecs_world_scene.hh
         ${PROJECT_INCLUDE}/neutrino/scene/ui_scene.hh
         ${PROJECT_INCLUDE}/neutrino/scene/title_scene.hh
         ${PROJECT_INCLUDE}/neutrino/scene/scene_manager.hh
@@ -25,7 +26,8 @@ set (src
         scene/scene_manager.cc
         scene/title_scene.cc
         scene/ui_scene.cc
-
+        scene/ecs_scene.cc
+        scene/ecs_world_scene.cc
         # =============================================================
         # APPLICATION
         # =============================================================
@@ -57,26 +59,28 @@ set (src
         # =============================================================
         # modules/VIDEO
         # =============================================================
-        ${PROJECT_INCLUDE}/neutrino/modules/video/types.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/components/sprite_component.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/components/world_renderer_camera.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/fonts_registry.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/fonts_renderer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/properties/sprite_properties.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/properties/tile_properties.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/renderer_state.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/systems/video_system.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/systems/sprite_system.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/systems/world_rendering_system.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/texture_atlas.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/tile.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/tile_font_spec.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/fonts_registry.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/fonts_renderer.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/renderer_state.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/world_renderer.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/world/tiles_layer.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/world/objects_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/types.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/animation_sequence.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/world/color_layer.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/world/image_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/objects_layer.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world/tiles_layer.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/world/world_model.hh
         ${PROJECT_INCLUDE}/neutrino/modules/video/world/world_serializer.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/world/animation_sequence.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/components/sprite_component.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/systems/sprite_system.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/systems/world_rendering_system.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/properties/sprite_properties.hh
-        ${PROJECT_INCLUDE}/neutrino/modules/video/properties/tile_properties.hh
+        ${PROJECT_INCLUDE}/neutrino/modules/video/world_renderer.hh
         modules/video/texture_atlas.cc
         modules/video/tile.cc
         modules/video/tile_font_spec.cc
@@ -92,6 +96,7 @@ set (src
         modules/video/world/animation_sequence.cc
         modules/video/components/sprite_component.cc
         modules/video/systems/sprite_system.cc
+        modules/video/systems/video_system.cc
         modules/video/systems/world_rendering_system.cc
         # =============================================================
         # ECS
@@ -114,7 +119,10 @@ set (src
         # =============================================================
         ${PROJECT_INCLUDE}/neutrino/utils/line.hh
         ${PROJECT_INCLUDE}/neutrino/utils/random.hh
-
+        # =============================================================
+        # Input
+        # =============================================================
+        ${PROJECT_INCLUDE}/neutrino/modules/input/systems/input_system.hh
         # =============================================================
         # CONFIG
         # =============================================================

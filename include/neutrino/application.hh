@@ -38,6 +38,9 @@ namespace neutrino {
             sdl::area_type get_window_dimensions() const;
             sdl::window_id_t get_window_id() const;
 
+			sdl::renderer& get_renderer();
+			const sdl::renderer& get_renderer() const;
+
             [[nodiscard]] bool is_configured() const;
 
         protected:

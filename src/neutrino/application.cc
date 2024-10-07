@@ -354,4 +354,12 @@ namespace neutrino {
         }
         return true;
     }
+
+	sdl::renderer& application::get_renderer() {
+		return m_renderer;
+	}
+
+	const sdl::renderer& application::get_renderer() const {
+		return m_renderer;
+	}
 }

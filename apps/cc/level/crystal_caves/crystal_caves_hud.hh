@@ -9,7 +9,7 @@
 
 class crystal_caves_hud : public hud {
     public:
-        crystal_caves_hud(int y_px);
+        explicit crystal_caves_hud(int y_px);
 
         void draw(neutrino::sdl::renderer& renderer, const neutrino::texture_atlas& atlas) const override;
     private:
