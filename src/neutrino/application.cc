@@ -86,4 +86,24 @@ namespace neutrino {
     sdlpp::button_state application::get_key_state(sdlpp::scancode scan) const noexcept {
         return get_key(scan);
     }
+
+    sdlpp::button_state application::get_mouse_state(sdlpp::mouse_button button) const noexcept {
+        return get_mouse(button);
+    }
+
+    int application::get_mouse_x() const noexcept {
+        return game_application::get_mouse_x();
+    }
+
+    int application::get_mouse_y() const noexcept {
+        return game_application::get_mouse_y();
+    }
+
+    sdlpp::point_i application::get_mouse_pos() const noexcept {
+        return game_application::get_mouse_pos();
+    }
+
+    int application::get_mouse_wheel() const noexcept {
+        return game_application::get_mouse_wheel();
+    }
 }
