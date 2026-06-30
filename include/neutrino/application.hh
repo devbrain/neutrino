@@ -25,6 +25,8 @@ namespace neutrino {
             explicit application(const application_config& cfg);
             ~application() override;
 
+            [[nodiscard]] sdlpp::button_state get_key_state(sdlpp::scancode scan) const noexcept;
+
         protected:
             sdlpp::window_config get_window_config() override;
             void on_ready() override;
