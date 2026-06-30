@@ -12,7 +12,7 @@
 #include <musac/codecs/register_codecs.hh>
 
 namespace neutrino {
-    static application* g_app = nullptr;
+    application* g_app = nullptr;
 
     struct application::impl {
         application_config m_cfg;
@@ -81,5 +81,9 @@ namespace neutrino {
         failsafe::logger::set_backend(failsafe::logger::backends::make_sdl_backend());
         m_pimpl->m_renderer = &get_renderer();
         m_pimpl->m_window = &get_window();
+    }
+
+    sdlpp::button_state application::get_key_state(sdlpp::scancode scan) const noexcept {
+        return get_key(scan);
     }
 }
