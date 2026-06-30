@@ -41,8 +41,12 @@ include(${NEUTRINO_CMAKE_DIR}/deps/onyx_image.cmake)
 neutrino_fetch_onyx_image()
 include(${NEUTRINO_CMAKE_DIR}/deps/onyx_font.cmake)
 neutrino_fetch_onyx_font()
+
 include(${NEUTRINO_CMAKE_DIR}/deps/onyx_anim.cmake)
 neutrino_fetch_onyx_anim()
+
+include(${NEUTRINO_CMAKE_DIR}/deps/musac.cmake)
+neutrino_fetch_musac()
 
 # ============================================================================
 # Output directories

@@ -27,6 +27,7 @@ namespace neutrino {
 
         protected:
             sdlpp::window_config get_window_config() override;
+            void on_ready() override;
         private:
             struct impl;
             std::unique_ptr <impl> m_pimpl;
