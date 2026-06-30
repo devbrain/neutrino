@@ -46,6 +46,7 @@ namespace neutrino {
     }
 
     application::~application() {
+        musac::audio_system::done();
         g_app = nullptr;
     }
 
