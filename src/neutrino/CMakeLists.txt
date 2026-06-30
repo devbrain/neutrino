@@ -10,10 +10,12 @@ add_library(neutrino ${_lib_type}
         ${PROJECT_SOURCE_DIR}/include/neutrino/neutrino.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/input/hotkey.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/input/mouse_click.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/input/gamepad_button.hh
         neutrino.cc
         application.cc
         input/hotkey.cc
         input/mouse_click.cc
+        input/gamepad_button.cc
 )
 add_library(neutrino::neutrino ALIAS neutrino)
 
