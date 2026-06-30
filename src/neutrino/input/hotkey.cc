@@ -72,7 +72,7 @@ namespace neutrino {
                 return false;
             }
 
-            auto state = g_app->get_key_state(scan);
+            auto state = g_app->get_key(scan);
             if (!(state.*member)) {
                 return false;
             }
