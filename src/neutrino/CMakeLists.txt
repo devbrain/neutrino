@@ -8,8 +8,12 @@ neutrino_library_type(neutrino _lib_type)
 
 add_library(neutrino ${_lib_type}
         ${PROJECT_SOURCE_DIR}/include/neutrino/neutrino.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/input/hotkey.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/input/mouse_click.hh
         neutrino.cc
         application.cc
+        input/hotkey.cc
+        input/mouse_click.cc
 )
 add_library(neutrino::neutrino ALIAS neutrino)
 

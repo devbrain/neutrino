@@ -27,6 +27,12 @@ namespace neutrino {
 
             [[nodiscard]] sdlpp::button_state get_key_state(sdlpp::scancode scan) const noexcept;
 
+            [[nodiscard]] sdlpp::button_state get_mouse_state(sdlpp::mouse_button button) const noexcept;
+            [[nodiscard]] int get_mouse_x() const noexcept;
+            [[nodiscard]] int get_mouse_y() const noexcept;
+            [[nodiscard]] sdlpp::point_i get_mouse_pos() const noexcept;
+            [[nodiscard]] int get_mouse_wheel() const noexcept;
+
         protected:
             sdlpp::window_config get_window_config() override;
             void on_ready() override;
