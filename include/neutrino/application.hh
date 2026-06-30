@@ -26,13 +26,12 @@ namespace neutrino {
             explicit application(const application_config& cfg);
             ~application() override;
 
-            [[nodiscard]] sdlpp::button_state get_key_state(sdlpp::scancode scan) const noexcept;
-
-            [[nodiscard]] sdlpp::button_state get_mouse_state(sdlpp::mouse_button button) const noexcept;
-            [[nodiscard]] int get_mouse_x() const noexcept;
-            [[nodiscard]] int get_mouse_y() const noexcept;
-            [[nodiscard]] sdlpp::point_i get_mouse_pos() const noexcept;
-            [[nodiscard]] int get_mouse_wheel() const noexcept;
+            using sdlpp::game_application::get_key;
+            using sdlpp::game_application::get_mouse;
+            using sdlpp::game_application::get_mouse_x;
+            using sdlpp::game_application::get_mouse_y;
+            using sdlpp::game_application::get_mouse_pos;
+            using sdlpp::game_application::get_mouse_wheel;
 
             [[nodiscard]] sdlpp::button_state get_gamepad_button_state(int gamepad_index, sdlpp::gamepad_button button) const noexcept;
             [[nodiscard]] float get_gamepad_axis(int gamepad_index, sdlpp::gamepad_axis axis) const noexcept;

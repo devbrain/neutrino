@@ -44,7 +44,7 @@ namespace neutrino {
                 return false;
             }
 
-            auto state = g_app->get_mouse_state(button);
+            auto state = g_app->get_mouse(button);
             if (!(state.*member)) {
                 return false;
             }
