@@ -1,0 +1,26 @@
+# ============================================================================
+# Neutrino Library Target
+# ============================================================================
+
+include(GenerateExportHeader)
+
+neutrino_library_type(neutrino _lib_type)
+
+add_library(neutrino ${_lib_type}
+        ${PROJECT_SOURCE_DIR}/include/neutrino/neutrino.hh
+        neutrino.cc
+)
+add_library(neutrino::neutrino ALIAS neutrino)
+
+target_include_directories(neutrino
+        PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+)
+
+target_compile_features(neutrino PUBLIC cxx_std_20)
+
+generate_export_header(neutrino
+        BASE_NAME NEUTRINO
+        EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/neutrino/neutrino_export.h
+)
