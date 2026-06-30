@@ -32,6 +32,19 @@ include(NeutrinoInit)
 neutrino_define_library_options(neutrino)
 
 # ============================================================================
+include(${NEUTRINO_CMAKE_DIR}/deps/sdlpp.cmake)
+neutrino_fetch_sdlpp()
+
+include(${NEUTRINO_CMAKE_DIR}/deps/euler.cmake)
+neutrino_fetch_euler()
+include(${NEUTRINO_CMAKE_DIR}/deps/onyx_image.cmake)
+neutrino_fetch_onyx_image()
+include(${NEUTRINO_CMAKE_DIR}/deps/onyx_font.cmake)
+neutrino_fetch_onyx_font()
+include(${NEUTRINO_CMAKE_DIR}/deps/onyx_anim.cmake)
+neutrino_fetch_onyx_anim()
+
+# ============================================================================
 # Output directories
 # ============================================================================
 

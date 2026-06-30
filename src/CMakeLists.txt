@@ -19,8 +19,11 @@ target_include_directories(neutrino
 )
 
 target_compile_features(neutrino PUBLIC cxx_std_20)
+target_link_libraries(neutrino PUBLIC neutrino::sdlpp neutrino::musac neutrino::onyx_image neutrino::onyx_font)
 
 generate_export_header(neutrino
         BASE_NAME NEUTRINO
         EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/neutrino/neutrino_export.h
 )
+
+
