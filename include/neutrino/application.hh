@@ -8,6 +8,7 @@
 #include <string>
 
 #include <neutrino/neutrino_export.h>
+#include <neutrino/scene/base_scene.hh>
 #include <sdlpp/app/game_application.hh>
 #include <sdlpp/input/gamepad.hh>
 
@@ -33,22 +34,35 @@ namespace neutrino {
             using sdlpp::game_application::get_mouse_pos;
             using sdlpp::game_application::get_mouse_wheel;
 
-            [[nodiscard]] sdlpp::button_state get_gamepad_button_state(int gamepad_index, sdlpp::gamepad_button button) const noexcept;
-            [[nodiscard]] float get_gamepad_axis(int gamepad_index, sdlpp::gamepad_axis axis) const noexcept;
-
         protected:
             sdlpp::window_config get_window_config() override;
-            void on_ready() final;
-            void on_update(float dt) final;
-            void on_render(sdlpp::renderer& r) final;
-            void handle_event(const sdlpp::event& e) final;
 
             // Template method overrides for game logic
             virtual void ready() {}
             virtual void update([[maybe_unused]] float dt) {}
-            virtual void render([[maybe_unused]] sdlpp::renderer& r) {}
             virtual void event([[maybe_unused]] const sdlpp::event& e) {}
 
+            /// @brief Called when a gamepad is connected (also once per pad
+            /// already plugged in at startup). gamepad_index is the stable
+            /// player slot used by gamepad_button / gamepad_axis; a
+            /// reconnected pad reuses the lowest free slot.
+            virtual void on_gamepad_connected([[maybe_unused]] int gamepad_index) {}
+            /// @brief Called when a gamepad is disconnected. The slot keeps
+            /// its index and reads as "nothing pressed" until reused.
+            virtual void on_gamepad_disconnected([[maybe_unused]] int gamepad_index) {}
+
+            /// @brief Provide the first scene of the game. Called once after
+            /// ready(); the scene is pushed synchronously, so the stack is
+            /// populated before the first frame. Return nullptr (the default)
+            /// to run without scenes on the plain update() callback, or push
+            /// scenes manually from ready() via neutrino::push_scene().
+            virtual std::unique_ptr <base_scene> create_initial_scene() { return nullptr; }
+        private:
+            void on_ready() final;
+            void on_update(float dt) final;
+            void on_render(sdlpp::renderer& r) final;
+            void handle_event(const sdlpp::event& e) final;
+            void on_quit() noexcept final;
         private:
             struct impl;
             std::unique_ptr <impl> m_pimpl;
