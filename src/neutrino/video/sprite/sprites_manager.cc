@@ -141,6 +141,21 @@ namespace neutrino {
         state.mode = details::sprite_state_mode::animation;
     }
 
+    bool sprites_manager::switch_animation(sprite_state_id id, sprite_animation_id animation) {
+        ENFORCE(!get(animation).empty());
+
+        auto& state = m_states.get(id);
+        if (state.mode == details::sprite_state_mode::animation && state.animation == animation) {
+            return false;
+        }
+
+        state.appearance = sprite_appearance{};
+        state.animation = animation;
+        state.elapsed = sprite_animation_duration::zero();
+        state.mode = details::sprite_state_mode::animation;
+        return true;
+    }
+
     sprite_appearance sprites_manager::appearance(sprite_state_id id) const {
         const auto& state = m_states.get(id);
         if (state.mode == details::sprite_state_mode::appearance) {

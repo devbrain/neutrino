@@ -71,10 +71,35 @@ namespace neutrino {
     /**
      * @brief Replace a state with an animation playback starting at elapsed zero.
      *
+     * This is equivalent to @ref restart_sprite_animation.
+     *
      * @pre @p state must identify a live sprite state.
      * @pre @p animation must identify a registered animation definition.
      */
     NEUTRINO_EXPORT void set_sprite_state_animation(sprite_state_id state, sprite_animation_id animation);
+
+    /**
+     * @brief Replace a state with animation playback starting at elapsed zero.
+     *
+     * Use this for one-shot actions that must restart even if the same animation is
+     * already active, such as a fresh jump or attack.
+     *
+     * @pre @p state must identify a live sprite state.
+     * @pre @p animation must identify a registered animation definition.
+     */
+    NEUTRINO_EXPORT void restart_sprite_animation(sprite_state_id state, sprite_animation_id animation);
+
+    /**
+     * @brief Switch a state to an animation only when it is not already active.
+     *
+     * If @p state is already playing @p animation, elapsed time is preserved and the
+     * function returns false. Otherwise the state switches to @p animation, elapsed
+     * time is reset to zero, and the function returns true.
+     *
+     * @pre @p state must identify a live sprite state.
+     * @pre @p animation must identify a registered animation definition.
+     */
+    NEUTRINO_EXPORT bool switch_sprite_animation(sprite_state_id state, sprite_animation_id animation);
 
     /**
      * @brief Resolve the current appearance of a runtime state.

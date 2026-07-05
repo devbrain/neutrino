@@ -1,0 +1,8 @@
+arcade_platformerV2.png
+
+Source:
+https://opengameart.org/sites/default/files/arcade_platformerV2.png
+
+This file is used by the Neutrino sprite demo to exercise sprite sheets,
+animation states, looping animations, one-shot animations, and explicit
+resource cleanup.
