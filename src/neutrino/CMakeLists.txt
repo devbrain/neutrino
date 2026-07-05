@@ -70,6 +70,8 @@ add_library(neutrino ${_lib_type}
         video/globals.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/draw.hh
         video/draw.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprites.hh
+        video/sprites.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/bitmask.hh
         video/sprite/bitmask.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/cpu_texture_atlas.hh

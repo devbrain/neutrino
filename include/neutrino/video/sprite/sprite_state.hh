@@ -84,6 +84,26 @@ namespace neutrino {
      * @pre @p state must identify a live sprite state.
      */
     NEUTRINO_EXPORT sprite_appearance sprite_state_appearance(sprite_state_id state);
+
+    /**
+     * @brief Has the state's current non-looping animation reached its end?
+     *
+     * Fixed appearances and looping animations return false. Replacing a state with
+     * @ref set_sprite_state_animation resets the completion state to false.
+     *
+     * @pre @p state must identify a live sprite state.
+     */
+    NEUTRINO_EXPORT bool sprite_state_finished(sprite_state_id state);
+
+    /**
+     * @brief Unregister a runtime sprite state.
+     *
+     * Invalid or already-erased handles are ignored. Removing a state releases its
+     * references to fixed appearances and animation definitions.
+     *
+     * @pre An application must be initialized.
+     */
+    NEUTRINO_EXPORT void unregister_sprite_state(sprite_state_id state);
 }
 
 /**

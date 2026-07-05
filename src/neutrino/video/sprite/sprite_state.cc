@@ -41,4 +41,20 @@ namespace neutrino {
         ENFORCE(manager != nullptr);
         return manager->appearance(state);
     }
+
+    bool sprite_state_finished(sprite_state_id state) {
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+        return manager->finished(state);
+    }
+
+    void unregister_sprite_state(sprite_state_id state) {
+        if (!state.valid()) {
+            return;
+        }
+
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+        manager->erase(state);
+    }
 }

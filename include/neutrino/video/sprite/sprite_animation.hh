@@ -161,6 +161,16 @@ namespace neutrino {
      * @pre @p animation must contain at least one frame.
      */
     NEUTRINO_EXPORT sprite_animation_id register_sprite_animation(sprite_animation animation);
+
+    /**
+     * @brief Unregister a sprite animation definition.
+     *
+     * Invalid or already-erased handles are ignored. A registered animation cannot
+     * be unregistered while any runtime sprite state is playing it.
+     *
+     * @pre An application must be initialized.
+     */
+    NEUTRINO_EXPORT void unregister_sprite_animation(sprite_animation_id animation);
 }
 
 /**

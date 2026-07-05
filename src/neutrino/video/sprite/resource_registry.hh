@@ -54,6 +54,13 @@ namespace neutrino::details {
             }
 
             /**
+             * @brief Does this registry currently store @p id?
+             */
+            [[nodiscard]] bool contains(Id id) const {
+                return m_resources.find(id) != m_resources.end();
+            }
+
+            /**
              * @brief Remove a resource if present.
              */
             void erase(Id id) {
