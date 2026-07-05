@@ -106,6 +106,8 @@ namespace neutrino {
     }
 
     void application::on_update(float dt) {
+        m_pimpl->m_sprites.update(sprite_animation_duration{dt * 1000.0f});
+
         if (!m_pimpl->m_scenes_manager.empty()) {
             m_pimpl->m_had_scenes = true;
             // Safety net: an exception escaping to SDL would become

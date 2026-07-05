@@ -16,6 +16,7 @@ namespace neutrino::test {
             explicit test_application(const application_config& cfg)
                 : m_app(cfg) {
                 SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, "dummy", SDL_HINT_OVERRIDE);
+                SDL_SetHintWithPriority(SDL_HINT_VIDEO_DRIVER, "dummy", SDL_HINT_OVERRIDE);
 
                 auto* app = static_cast <sdlpp::abstract_application*>(&m_app);
                 app->init_sdl_();
@@ -38,6 +39,11 @@ namespace neutrino::test {
 
             [[nodiscard]] const application& app() const noexcept {
                 return m_app;
+            }
+
+            void iterate() {
+                auto* app = static_cast <sdlpp::abstract_application*>(&m_app);
+                app->on_iterate();
             }
 
             void shutdown() noexcept {

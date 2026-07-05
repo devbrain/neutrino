@@ -79,6 +79,8 @@ add_library(neutrino ${_lib_type}
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_appearance.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_animation.hh
         video/sprite/sprite_animation.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_state.hh
+        video/sprite/sprite_state.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_sheet.hh
         video/sprite/sprite_sheet.cc
         video/sprite/resource_registry.hh

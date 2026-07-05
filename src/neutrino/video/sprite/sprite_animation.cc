@@ -9,6 +9,9 @@
 
 #include <failsafe/enforce.hh>
 
+#include "services/service_locator.hh"
+#include "video/sprite/sprites_manager.hh"
+
 namespace neutrino {
     namespace {
         [[nodiscard]] sprite_animation_duration clamp_or_wrap(
@@ -95,7 +98,7 @@ namespace neutrino {
         return frame_at(elapsed).appearance;
     }
 
-    void sprite_animation::validate_frame(const sprite_animation_frame& frame) const {
+    void sprite_animation::validate_frame(const sprite_animation_frame& frame) {
         ENFORCE(frame.duration > sprite_animation_duration::zero());
     }
 
@@ -104,5 +107,11 @@ namespace neutrino {
         for (const auto& frame : m_frames) {
             m_total_duration += frame.duration;
         }
+    }
+
+    sprite_animation_id register_sprite_animation(sprite_animation animation) {
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+        return manager->create(std::move(animation));
     }
 }

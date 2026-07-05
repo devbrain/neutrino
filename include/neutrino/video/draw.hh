@@ -5,7 +5,7 @@
 #pragma once
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/geometry_types.hh>
-#include <neutrino/video/sprite/sprite_appearance.hh>
+#include <neutrino/video/sprite/sprite_state.hh>
 #include <neutrino/neutrino_export.h>
 
 #include <string>
@@ -74,6 +74,16 @@ namespace neutrino {
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
         const point& position,
         const sprite_appearance& appearance);
+
+    /**
+     * @brief Draw a runtime sprite state at a caller-supplied position.
+     *
+     * The current appearance is resolved from the internal sprite manager, so
+     * animated states advance automatically with the application update loop.
+     */
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_state_id state);
 
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_line_aa(int x1, int y1, int x2, int y2);
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_line_aa(int x1, int y1, int x2, int y2, const sdlpp::color& c);

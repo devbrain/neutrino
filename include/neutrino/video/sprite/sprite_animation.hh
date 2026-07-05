@@ -6,12 +6,43 @@
 
 #include <chrono>
 #include <cstddef>
+#include <cstdint>
+#include <functional>
 #include <vector>
 
 #include <neutrino/neutrino_export.h>
+#include <neutrino/video/sprite/detail/id_strong_type.hh>
 #include <neutrino/video/sprite/sprite_appearance.hh>
 
 namespace neutrino {
+    class sprites_manager;
+
+    namespace details {
+        struct sprite_animation_id_tag;
+    }
+
+    /**
+     * @brief Opaque handle to a registered @ref sprite_animation definition.
+     *
+     * The handle identifies animation metadata stored by the internal sprite
+     * manager. It is not a playback clock and carries no world position.
+     */
+    class NEUTRINO_EXPORT sprite_animation_id
+        : public details::id_strong_type <details::sprite_animation_id_tag> {
+        friend class sprites_manager;
+
+        public:
+            /**
+             * @brief Construct an invalid animation handle.
+             */
+            sprite_animation_id() = default;
+
+        private:
+            explicit sprite_animation_id(std::uint32_t value)
+                : id_strong_type(value) {
+            }
+    };
+
     /**
      * @brief Duration type used by sprite animation definitions.
      */
@@ -112,11 +143,34 @@ namespace neutrino {
             [[nodiscard]] sprite_appearance appearance_at(sprite_animation_duration elapsed) const;
 
         private:
-            void validate_frame(const sprite_animation_frame& frame) const;
+            static void validate_frame(const sprite_animation_frame& frame);
             void rebuild_total_duration() noexcept;
 
             std::vector <sprite_animation_frame> m_frames;
             sprite_animation_duration m_total_duration{0.0f};
             bool m_loop{true};
     };
+
+    /**
+     * @brief Register a sprite animation definition with the active application.
+     *
+     * Registered definitions are immutable render metadata. Runtime playback time
+     * lives in @ref sprite_state_id values created from the returned handle.
+     *
+     * @pre An application must be initialized.
+     * @pre @p animation must contain at least one frame.
+     */
+    NEUTRINO_EXPORT sprite_animation_id register_sprite_animation(sprite_animation animation);
 }
+
+/**
+ * @brief @c std::hash specialization so @ref neutrino::sprite_animation_id keys
+ *        @c unordered_map / @c unordered_set.
+ */
+template<>
+struct std::hash <neutrino::sprite_animation_id> {
+    [[nodiscard]] std::size_t operator()(const neutrino::sprite_animation_id& id) const noexcept {
+        using base_type = neutrino::details::id_strong_type <neutrino::details::sprite_animation_id_tag>;
+        return std::hash <base_type>{}(static_cast <const base_type&>(id));
+    }
+};
