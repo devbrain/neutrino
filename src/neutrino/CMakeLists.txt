@@ -64,6 +64,7 @@ add_library(neutrino ${_lib_type}
         # -------------------------------------------------------
         # Video
         # -------------------------------------------------------
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/detail/id_strong_type.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/geometry_types.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/globals.hh
         video/globals.cc
@@ -75,8 +76,12 @@ add_library(neutrino ${_lib_type}
         video/sprite/cpu_texture_atlas.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/texture_atlas.hh
         video/sprite/texture_atlas.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_appearance.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_sheet.hh
         video/sprite/sprite_sheet.cc
+        video/sprite/resource_registry.hh
+        video/sprite/sprites_manager.cc
+        video/sprite/sprites_manager.hh
         video/sprite/texture_registry.cc
         video/sprite/texture_registry.hh
         # -------------------------------------------------------
@@ -117,4 +122,3 @@ generate_export_header(neutrino
         BASE_NAME NEUTRINO
         EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/neutrino/neutrino_export.h
 )
-

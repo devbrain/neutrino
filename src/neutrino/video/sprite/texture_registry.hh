@@ -4,12 +4,14 @@
 
 #pragma once
 
-#include <map>
+#include <cstdint>
 #include <vector>
 
 #include <sdlpp/video/texture.hh>
 
 #include <neutrino/video/sprite/texture_atlas.hh>
+
+#include "resource_registry.hh"
 
 namespace neutrino {
     /**
@@ -84,7 +86,8 @@ namespace neutrino {
              */
             void erase(gpu_texture_atlas_id idx);
         private:
-            std::map <gpu_texture_atlas_id, gpu_texture_atlas> m_atlases;
-            static uint32_t s_counter;
+            static gpu_texture_atlas_id make_id(std::uint32_t value);
+
+            details::resource_registry <gpu_texture_atlas_id, gpu_texture_atlas> m_atlases;
     };
 }

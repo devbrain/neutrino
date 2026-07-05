@@ -7,10 +7,10 @@
 #include <failsafe/enforce.hh>
 #include <neutrino/video/sprite/sprite_sheet.hh>
 
+#include "services/service_locator.hh"
+#include "video/sprite/sprites_manager.hh"
+
 namespace neutrino {
-    bool sprite_visual_id::valid() const noexcept {
-        return m_value != invalid_value;
-    }
 
     sprite_sheet::sprite_sheet(gpu_texture_atlas_id atlas)
         : m_atlas(atlas) {
@@ -38,11 +38,11 @@ namespace neutrino {
 
     sprite_visual_id sprite_sheet::visual_id(std::size_t index) const {
         ENFORCE(index < m_visuals.size());
-        return sprite_visual_id(index);
+        return sprite_visual_id(static_cast <std::uint32_t>(index));
     }
 
     sprite_visual_id sprite_sheet::add_visual(sprite_visual visual) {
-        const sprite_visual_id id(m_visuals.size());
+        const sprite_visual_id id(static_cast <std::uint32_t>(m_visuals.size()));
         m_visuals.push_back(std::move(visual));
         return id;
     }
@@ -72,9 +72,36 @@ namespace neutrino {
         return it->second;
     }
 
-    sprite_sheet register_sprite_sheet(
+    sprite_sheet_id register_sprite_sheet(sprite_sheet sheet) {
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+        return manager->create(std::move(sheet));
+    }
+
+    sprite_sheet_id register_sprite_sheet(
         const cpu_texture_atlas& atlas,
         atlas_texture_format format) {
-        return sprite_sheet(register_atlas(atlas, format), atlas);
+        return register_sprite_sheet(sprite_sheet(register_atlas(atlas, format), atlas));
+    }
+
+    sprite_visual_ref visual_ref(sprite_sheet_id sheet, std::size_t index) {
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+
+        const auto& registered = manager->get(sheet);
+        return sprite_visual_ref{sheet, registered.visual_id(index)};
+    }
+
+    std::optional <sprite_visual_ref> find_visual_ref(sprite_sheet_id sheet, std::string_view name) {
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+
+        const auto& registered = manager->get(sheet);
+        const auto visual = registered.find(name);
+        if (!visual) {
+            return std::nullopt;
+        }
+
+        return sprite_visual_ref{sheet, *visual};
     }
 }

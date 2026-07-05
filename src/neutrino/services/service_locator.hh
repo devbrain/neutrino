@@ -9,6 +9,7 @@
 
 #include "input/gamepads.hh"
 #include "video/sprite/texture_registry.hh"
+#include "video/sprite/sprites_manager.hh"
 
 
 namespace neutrino {
@@ -53,6 +54,10 @@ namespace neutrino {
                 return m_texture_registry;
             }
 
+            sprites_manager* get_sprites_manager() const {
+                return m_sprites_manager;
+            }
+
         private:
             void set_window(sdlpp::window& w);
             void set_renderer(sdlpp::renderer& r);
@@ -61,6 +66,7 @@ namespace neutrino {
             void set_gamepads(gamepads& g);
             void set_sound_system(sound_system& s);
             void set_texture_registry(texture_registry& s);
+            void set_sprites_manager(sprites_manager& s);
             void clear_application(application& a) noexcept;
 
         private:
@@ -71,6 +77,7 @@ namespace neutrino {
             gamepads*      m_gamepads = nullptr;
             sound_system*  m_sound_system = nullptr;
             texture_registry* m_texture_registry = nullptr;
+            sprites_manager* m_sprites_manager = nullptr;
     };
 
 }
