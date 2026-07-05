@@ -37,4 +37,18 @@ namespace neutrino {
     void service_locator::set_texture_registry(texture_registry& s) {
         m_texture_registry = &s;
     }
+
+    void service_locator::clear_application(application& a) noexcept {
+        if (m_application != &a) {
+            return;
+        }
+
+        m_renderer = nullptr;
+        m_window = nullptr;
+        m_scenes_manager = nullptr;
+        m_application = nullptr;
+        m_gamepads = nullptr;
+        m_sound_system = nullptr;
+        m_texture_registry = nullptr;
+    }
 }

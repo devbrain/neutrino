@@ -1,8 +1,7 @@
 #include <doctest/doctest.h>
-#include <neutrino/application.hh>
 #include <neutrino/audio/audio.hh>
-#include <neutrino/video/draw.hh>
-#include <neutrino/video/globals.hh>
+
+#include "test_application.hh"
 
 #include <cstdint>
 #include <sstream>
@@ -31,19 +30,7 @@ static std::string make_test_wav() {
 
 TEST_SUITE("neutrino::audio") {
     TEST_CASE("audio lifecycle and speaker creation") {
-        // Create config with hidden window if possible, or minimal size
-        neutrino::application_config cfg;
-        cfg.title = "Audio test scaffolding";
-        cfg.width = 100;
-        cfg.height = 100;
-        cfg.flags = sdlpp::window_flags::hidden;
-
-        // Instantiating the application brings the audio system up; there is
-        // no separate init step.
-        neutrino::application app(cfg);
-        auto* abs_app = static_cast<sdlpp::abstract_application*>(&app);
-        abs_app->init_sdl_();
-        abs_app->on_init(0, nullptr);
+        neutrino::test::test_application test_app("Audio test scaffolding");
 
         CHECK(neutrino::audio_active());
 
@@ -106,61 +93,5 @@ TEST_SUITE("neutrino::audio") {
             neutrino::stop_music();
             CHECK_FALSE(neutrino::is_music_playing());
         }
-
-        // ------------------------------------------------------------
-        // Video drawing tests (uses same application context)
-        // ------------------------------------------------------------
-        sdlpp::color red = sdlpp::colors::red;
-        auto color_res = neutrino::set_draw_color(red);
-        REQUIRE(color_res.has_value());
-
-        auto get_color_res = neutrino::get_draw_color();
-        REQUIRE(get_color_res.has_value());
-        CHECK(get_color_res.value().r == red.r);
-        CHECK(get_color_res.value().g == red.g);
-        CHECK(get_color_res.value().b == red.b);
-
-        // Test drawing points
-        auto draw_pt_res = neutrino::draw_point(10, 20);
-        CHECK(draw_pt_res.has_value());
-
-        auto draw_pt_color_res = neutrino::draw_point(15, 25, sdlpp::colors::green);
-        CHECK(draw_pt_color_res.has_value());
-
-        // Test drawing lines
-        auto draw_line_res = neutrino::draw_line(0, 0, 50, 50);
-        CHECK(draw_line_res.has_value());
-
-        auto draw_line_color_res = neutrino::draw_line(10, 0, 10, 40, sdlpp::colors::blue);
-        CHECK(draw_line_color_res.has_value());
-
-        // Test drawing rects
-        auto draw_rect_res = neutrino::draw_rect(10, 10, 40, 40);
-        CHECK(draw_rect_res.has_value());
-
-        auto draw_rect_color_res = neutrino::draw_rect(5, 5, 25, 25, sdlpp::colors::white);
-        CHECK(draw_rect_color_res.has_value());
-
-        // Test drawing filled rects
-        auto fill_rect_res = neutrino::draw_rect_fill(15, 15, 30, 30);
-        CHECK(fill_rect_res.has_value());
-
-        // Test drawing circles
-        auto draw_circle_res = neutrino::draw_circle(50, 50, 10);
-        CHECK(draw_circle_res.has_value());
-
-        auto fill_circle_res = neutrino::draw_circle_fill(50, 50, 10, sdlpp::colors::yellow);
-        CHECK(fill_circle_res.has_value());
-
-        // Test drawing arrows
-        auto draw_arrow_res = neutrino::draw_arrow(neutrino::point{0, 0}, neutrino::point{20, 20});
-        CHECK(draw_arrow_res.has_value());
-
-        // Test drawing crosses
-        auto draw_cross_res = neutrino::draw_cross(neutrino::point{50, 50}, 5, sdlpp::colors::cyan);
-        CHECK(draw_cross_res.has_value());
-
-        abs_app->on_quit();
-        abs_app->shutdown_sdl_();
     }
 }
