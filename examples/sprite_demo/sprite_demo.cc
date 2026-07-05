@@ -25,6 +25,9 @@ namespace {
     constexpr int window_width = 640;
     constexpr int window_height = 360;
     constexpr int ground_y = 268;
+    constexpr float player_scale = 3.0f;
+    constexpr float prop_scale = 3.0f;
+    constexpr float player_half_width = 16.0f * player_scale;
 
     struct named_frame {
         std::string_view name;
@@ -192,7 +195,7 @@ namespace {
 
                 if (left != right) {
                     m_player_x += (right ? 1.0f : -1.0f) * 90.0f * seconds;
-                    m_player_x = std::clamp(m_player_x, 32.0f, static_cast <float>(window_width - 32));
+                    m_player_x = std::clamp(m_player_x, player_half_width, static_cast <float>(window_width) - player_half_width);
                     m_facing_left = left;
                 }
 
@@ -230,19 +233,21 @@ namespace {
             void render(neutrino::frame_duration) override {
                 draw_background();
 
-                neutrino::draw_sprite(neutrino::point{430, ground_y - 4}, m_sprites.torch_state);
-                neutrino::draw_sprite(neutrino::point{470, ground_y - 4}, m_sprites.coin_state);
+                neutrino::draw_sprite(neutrino::point{430, ground_y - 4}, m_sprites.torch_state, prop_scale);
+                neutrino::draw_sprite(neutrino::point{470, ground_y - 4}, m_sprites.coin_state, prop_scale);
 
                 const auto player_flip = m_facing_left ? neutrino::sprite_flip::horizontal : neutrino::sprite_flip::none;
                 if (m_mode == player_mode::walk || m_mode == player_mode::jump) {
                     neutrino::draw_sprite(
                         neutrino::point{static_cast <int>(m_player_x), static_cast <int>(m_player_y)},
                         neutrino::sprite_state_appearance(m_sprites.player).visual,
-                        player_flip);
+                        player_flip,
+                        player_scale);
                 } else {
                     neutrino::draw_sprite(
                         neutrino::point{static_cast <int>(m_player_x), static_cast <int>(m_player_y)},
-                        m_sprites.player);
+                        m_sprites.player,
+                        player_scale);
                 }
             }
 

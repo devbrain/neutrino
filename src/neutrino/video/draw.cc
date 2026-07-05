@@ -44,6 +44,14 @@ namespace neutrino {
             return origin;
         }
 
+        [[nodiscard]] int scaled_offset(int value, float scale) noexcept {
+            return static_cast <int>(std::lround(static_cast <float>(value) * scale));
+        }
+
+        [[nodiscard]] int scaled_extent(int value, float scale) noexcept {
+            return std::max(1, scaled_offset(value, scale));
+        }
+
         struct local_point {
             float x{0};
             float y{0};
@@ -69,11 +77,12 @@ namespace neutrino {
             local_point local,
             local_point anchor,
             const point& position,
+            float scale,
             SDL_FPoint tex_coord) noexcept {
             return SDL_Vertex{
                 .position = {
-                    static_cast <float>(position.x) + local.x - anchor.x,
-                    static_cast <float>(position.y) + local.y - anchor.y
+                    static_cast <float>(position.x) + (local.x - anchor.x) * scale,
+                    static_cast <float>(position.y) + (local.y - anchor.y) * scale
                 },
                 .color = {1.0f, 1.0f, 1.0f, 1.0f},
                 .tex_coord = tex_coord
@@ -85,7 +94,8 @@ namespace neutrino {
             const sdlpp::texture& texture,
             const sprite_visual& visual,
             const point& position,
-            sprite_flip flip) {
+            sprite_flip flip,
+            float scale) {
             const auto texture_size = texture.get_size();
             if (!texture_size) {
                 return sdlpp::make_unexpectedf(texture_size.error());
@@ -108,10 +118,10 @@ namespace neutrino {
                 flip);
 
             const std::array <SDL_Vertex, 4> vertices{
-                make_sprite_vertex(transform_local_tiled({0.0f, 0.0f}, width, height, flip), anchor, position, {u0, v0}),
-                make_sprite_vertex(transform_local_tiled({width, 0.0f}, width, height, flip), anchor, position, {u1, v0}),
-                make_sprite_vertex(transform_local_tiled({width, height}, width, height, flip), anchor, position, {u1, v1}),
-                make_sprite_vertex(transform_local_tiled({0.0f, height}, width, height, flip), anchor, position, {u0, v1})
+                make_sprite_vertex(transform_local_tiled({0.0f, 0.0f}, width, height, flip), anchor, position, scale, {u0, v0}),
+                make_sprite_vertex(transform_local_tiled({width, 0.0f}, width, height, flip), anchor, position, scale, {u1, v0}),
+                make_sprite_vertex(transform_local_tiled({width, height}, width, height, flip), anchor, position, scale, {u1, v1}),
+                make_sprite_vertex(transform_local_tiled({0.0f, height}, width, height, flip), anchor, position, scale, {u0, v1})
             };
             constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
 
@@ -252,6 +262,17 @@ namespace neutrino {
         sprite_visual_id visual_id,
         const point& position,
         sprite_flip flip) {
+        return draw_sprite(sheet, visual_id, position, flip, 1.0f);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const sprite_sheet& sheet,
+        sprite_visual_id visual_id,
+        const point& position,
+        sprite_flip flip,
+        float scale) {
+        ENFORCE(std::isfinite(scale) && scale > 0.0f)("sprite scale must be finite and greater than zero");
+
         auto* registry = service_locator::instance().get_texture_registry();
         ENFORCE(registry != nullptr);
 
@@ -260,15 +281,15 @@ namespace neutrino {
         auto& renderer = get_renderer();
 
         if (has_diagonal_flip(flip)) {
-            return draw_sprite_diagonal(renderer, atlas.texture, visual, position, flip);
+            return draw_sprite_diagonal(renderer, atlas.texture, visual, position, flip, scale);
         }
 
         const auto origin = transformed_origin(visual, flip);
         const rect dst{
-            position.x - origin.x,
-            position.y - origin.y,
-            visual.texture_rect.w,
-            visual.texture_rect.h
+            position.x - scaled_offset(origin.x, scale),
+            position.y - scaled_offset(origin.y, scale),
+            scaled_extent(visual.texture_rect.w, scale),
+            scaled_extent(visual.texture_rect.h, scale)
         };
 
         return renderer.copy_ex(
@@ -290,28 +311,74 @@ namespace neutrino {
 
     sdlpp::expected <void, std::string> draw_sprite(
         const point& position,
+        const sprite_sheet& sheet,
+        sprite_visual_id visual,
+        float scale) {
+        return draw_sprite(sheet, visual, position, sprite_flip::none, scale);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        const sprite_sheet& sheet,
+        sprite_visual_id visual,
+        sprite_flip flip,
+        float scale) {
+        return draw_sprite(sheet, visual, position, flip, scale);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
         sprite_visual_ref visual,
         sprite_flip flip) {
+        return draw_sprite(position, visual, flip, 1.0f);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_visual_ref visual,
+        float scale) {
+        return draw_sprite(position, visual, sprite_flip::none, scale);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_visual_ref visual,
+        sprite_flip flip,
+        float scale) {
         auto* manager = service_locator::instance().get_sprites_manager();
         ENFORCE(manager != nullptr);
 
-        return draw_sprite(manager->get(visual.sheet), visual.visual, position, flip);
+        return draw_sprite(manager->get(visual.sheet), visual.visual, position, flip, scale);
     }
 
     sdlpp::expected <void, std::string> draw_sprite(
         const point& position,
         const sprite_appearance& appearance) {
+        return draw_sprite(position, appearance, 1.0f);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        const sprite_appearance& appearance,
+        float scale) {
         if (!appearance.visible) {
             return {};
         }
 
-        return draw_sprite(position, appearance.visual, appearance.flip);
+        return draw_sprite(position, appearance.visual, appearance.flip, scale);
     }
 
     sdlpp::expected <void, std::string> draw_sprite(
         const point& position,
         sprite_state_id state) {
-        return draw_sprite(position, sprite_state_appearance(state));
+        return draw_sprite(position, state, 1.0f);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_state_id state,
+        float scale) {
+        return draw_sprite(position, sprite_state_appearance(state), scale);
     }
 
     // --- Anti-aliased Lines ---
