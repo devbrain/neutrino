@@ -84,6 +84,16 @@ namespace neutrino {
         return register_sprite_sheet(sprite_sheet(register_atlas(atlas, format), atlas));
     }
 
+    void unregister_sprite_sheet(sprite_sheet_id sheet) {
+        if (!sheet.valid()) {
+            return;
+        }
+
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+        manager->erase(sheet);
+    }
+
     sprite_visual_ref visual_ref(sprite_sheet_id sheet, std::size_t index) {
         auto* manager = service_locator::instance().get_sprites_manager();
         ENFORCE(manager != nullptr);

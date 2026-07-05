@@ -80,6 +80,16 @@ namespace neutrino {
     NEUTRINO_EXPORT gpu_texture_atlas_id register_atlas(
         const cpu_texture_atlas& atlas,
         atlas_texture_format format = atlas_texture_format::automatic);
+
+    /**
+     * @brief Unregister an uploaded texture atlas.
+     *
+     * Invalid or already-erased handles are ignored. A registered atlas cannot be
+     * unregistered while any registered @ref sprite_sheet still uses it.
+     *
+     * @pre An application must be initialized.
+     */
+    NEUTRINO_EXPORT void unregister_atlas(gpu_texture_atlas_id atlas);
 }
 
 /**

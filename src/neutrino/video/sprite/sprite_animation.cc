@@ -114,4 +114,14 @@ namespace neutrino {
         ENFORCE(manager != nullptr);
         return manager->create(std::move(animation));
     }
+
+    void unregister_sprite_animation(sprite_animation_id animation) {
+        if (!animation.valid()) {
+            return;
+        }
+
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+        manager->erase(animation);
+    }
 }

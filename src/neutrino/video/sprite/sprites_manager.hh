@@ -56,8 +56,15 @@ namespace neutrino {
 
             /**
              * @brief Remove a registered sheet if present.
+             *
+             * @pre No registered animation frame or fixed runtime state may reference it.
              */
             void erase(sprite_sheet_id id);
+
+            /**
+             * @brief Does any registered sprite sheet use this texture atlas?
+             */
+            [[nodiscard]] bool uses(gpu_texture_atlas_id id) const;
 
             /**
              * @brief Store an animation definition and return its opaque handle.
@@ -73,8 +80,15 @@ namespace neutrino {
 
             /**
              * @brief Remove a registered animation if present.
+             *
+             * @pre No runtime state may be playing it.
              */
             void erase(sprite_animation_id id);
+
+            /**
+             * @brief Does any runtime state use this animation?
+             */
+            [[nodiscard]] bool uses(sprite_animation_id id) const;
 
             /**
              * @brief Create a state that resolves to a fixed appearance.
@@ -111,6 +125,15 @@ namespace neutrino {
             [[nodiscard]] sprite_appearance appearance(sprite_state_id id) const;
 
             /**
+             * @brief Has the state's current non-looping animation reached its end?
+             *
+             * Fixed appearances and looping animations return false.
+             *
+             * @pre @p id must identify a state stored in this manager.
+             */
+            [[nodiscard]] bool finished(sprite_state_id id) const;
+
+            /**
              * @brief Advance every animated sprite state.
              */
             void update(sprite_animation_duration dt);
@@ -119,6 +142,11 @@ namespace neutrino {
              * @brief Remove a state if present.
              */
             void erase(sprite_state_id id);
+
+            /**
+             * @brief Does any registered animation or runtime state use this sheet?
+             */
+            [[nodiscard]] bool uses(sprite_sheet_id id) const;
 
         private:
             static sprite_sheet_id make_sheet_id(std::uint32_t value);

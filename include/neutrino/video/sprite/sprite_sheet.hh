@@ -4,7 +4,6 @@
 
 #pragma once
 
-
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -26,6 +25,7 @@ namespace neutrino {
     namespace details {
         struct sprite_sheet_id_tag;
     }
+
     /**
      * @brief Opaque handle to a registered @ref sprite_sheet.
      *
@@ -51,6 +51,7 @@ namespace neutrino {
     namespace details {
         struct sprite_visual_id_tag;
     }
+
     /**
      * @brief Opaque handle to a visual entry inside a @ref sprite_sheet.
      *
@@ -233,6 +234,17 @@ namespace neutrino {
     NEUTRINO_EXPORT sprite_sheet_id register_sprite_sheet(
         const cpu_texture_atlas& atlas,
         atlas_texture_format format = atlas_texture_format::automatic);
+
+    /**
+     * @brief Unregister a sprite sheet.
+     *
+     * Invalid or already-erased handles are ignored. A registered sheet cannot be
+     * unregistered while any registered animation frame or fixed runtime state
+     * still references one of its visuals.
+     *
+     * @pre An application must be initialized.
+     */
+    NEUTRINO_EXPORT void unregister_sprite_sheet(sprite_sheet_id sheet);
 
     /**
      * @brief Build a registered visual reference from a sheet handle and visual index.
