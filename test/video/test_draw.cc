@@ -67,6 +67,15 @@ TEST_SUITE("neutrino::video::draw") {
             neutrino::point{40, 20},
             sprite,
             neutrino::sprite_flip::diagonal | neutrino::sprite_flip::horizontal | neutrino::sprite_flip::vertical).has_value());
+        CHECK(neutrino::draw_sprite(
+            neutrino::point{52, 20},
+            sprite,
+            2.0f).has_value());
+        CHECK(neutrino::draw_sprite(
+            neutrino::point{60, 20},
+            sprite,
+            neutrino::sprite_flip::diagonal | neutrino::sprite_flip::horizontal,
+            2.0f).has_value());
 
         const neutrino::sprite_appearance appearance{
             .visual = sprite,
@@ -74,14 +83,17 @@ TEST_SUITE("neutrino::video::draw") {
             .visible = true
         };
         CHECK(neutrino::draw_sprite(neutrino::point{44, 20}, appearance).has_value());
+        CHECK(neutrino::draw_sprite(neutrino::point{68, 20}, appearance, 2.0f).has_value());
 
         const auto state = neutrino::create_sprite_state(appearance);
         CHECK(neutrino::draw_sprite(neutrino::point{46, 20}, state).has_value());
+        CHECK(neutrino::draw_sprite(neutrino::point{76, 20}, state, 2.0f).has_value());
 
         const neutrino::sprite_appearance hidden{
             .visual = sprite,
             .visible = false
         };
         CHECK(neutrino::draw_sprite(neutrino::point{48, 20}, hidden).has_value());
+        CHECK(neutrino::draw_sprite(neutrino::point{84, 20}, hidden, 2.0f).has_value());
     }
 }

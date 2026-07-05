@@ -48,11 +48,39 @@ namespace neutrino {
         const point& position,
         sprite_flip flip = sprite_flip::none);
 
+    /**
+     * @brief Draw a sprite-sheet visual with a draw-time scale.
+     *
+     * @p position is the visual origin/anchor in render coordinates. @p scale
+     * is applied around that origin and must be finite and greater than zero.
+     * Scaling is a rendering concern; it does not mutate the sprite sheet,
+     * visual, appearance, or runtime sprite state.
+     */
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const sprite_sheet& sheet,
+        sprite_visual_id visual,
+        const point& position,
+        sprite_flip flip,
+        float scale);
+
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
         const point& position,
         const sprite_sheet& sheet,
         sprite_visual_id visual,
         sprite_flip flip = sprite_flip::none);
+
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        const sprite_sheet& sheet,
+        sprite_visual_id visual,
+        float scale);
+
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        const sprite_sheet& sheet,
+        sprite_visual_id visual,
+        sprite_flip flip,
+        float scale);
 
     /**
      * @brief Draw a registered sprite visual at a caller-supplied position.
@@ -67,6 +95,29 @@ namespace neutrino {
         sprite_flip flip = sprite_flip::none);
 
     /**
+     * @brief Draw a registered sprite visual with a draw-time scale.
+     *
+     * @p scale is applied around the visual origin and must be finite and
+     * greater than zero.
+     */
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_visual_ref visual,
+        float scale);
+
+    /**
+     * @brief Draw a registered sprite visual with flip flags and draw-time scale.
+     *
+     * Diagonal flips keep the same Tiled-compatible semantics as the unscaled
+     * overload.
+     */
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_visual_ref visual,
+        sprite_flip flip,
+        float scale);
+
+    /**
      * @brief Draw a sprite appearance at a caller-supplied position.
      *
      * Invisible appearances are skipped and return success.
@@ -74,6 +125,16 @@ namespace neutrino {
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
         const point& position,
         const sprite_appearance& appearance);
+
+    /**
+     * @brief Draw a sprite appearance with a draw-time scale.
+     *
+     * Invisible appearances are skipped and return success.
+     */
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        const sprite_appearance& appearance,
+        float scale);
 
     /**
      * @brief Draw a runtime sprite state at a caller-supplied position.
@@ -84,6 +145,14 @@ namespace neutrino {
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
         const point& position,
         sprite_state_id state);
+
+    /**
+     * @brief Draw a runtime sprite state with a draw-time scale.
+     */
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_state_id state,
+        float scale);
 
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_line_aa(int x1, int y1, int x2, int y2);
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_line_aa(int x1, int y1, int x2, int y2, const sdlpp::color& c);
