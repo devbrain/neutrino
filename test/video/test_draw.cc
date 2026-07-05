@@ -40,19 +40,45 @@ TEST_SUITE("neutrino::video::draw") {
         std::vector <neutrino::cpu_texture_atlas_frame> sprite_frames;
         sprite_frames.emplace_back(neutrino::rect{0, 0, 4, 4});
         neutrino::cpu_texture_atlas sprite_atlas(std::move(*sprite_surface), std::move(sprite_frames));
-        auto sprite_sheet = neutrino::register_sprite_sheet(sprite_atlas, neutrino::atlas_texture_format::rgba);
-        const auto sprite = sprite_sheet.visual_id(0);
+        const auto sprite_sheet = neutrino::register_sprite_sheet(sprite_atlas, neutrino::atlas_texture_format::rgba);
+        const auto sprite = neutrino::visual_ref(sprite_sheet, 0);
 
-        CHECK(neutrino::draw_sprite(sprite_sheet, sprite, neutrino::point{20, 20}).has_value());
         CHECK(neutrino::draw_sprite(
-            sprite_sheet,
+            neutrino::point{20, 20},
             sprite,
+            neutrino::sprite_flip::none).has_value());
+        CHECK(neutrino::draw_sprite(
             neutrino::point{24, 20},
+            sprite,
             neutrino::sprite_flip::horizontal | neutrino::sprite_flip::vertical).has_value());
         CHECK(neutrino::draw_sprite(
-            sprite_sheet,
-            sprite,
             neutrino::point{28, 20},
+            sprite,
             neutrino::sprite_flip::diagonal).has_value());
+        CHECK(neutrino::draw_sprite(
+            neutrino::point{32, 20},
+            sprite,
+            neutrino::sprite_flip::diagonal | neutrino::sprite_flip::horizontal).has_value());
+        CHECK(neutrino::draw_sprite(
+            neutrino::point{36, 20},
+            sprite,
+            neutrino::sprite_flip::diagonal | neutrino::sprite_flip::vertical).has_value());
+        CHECK(neutrino::draw_sprite(
+            neutrino::point{40, 20},
+            sprite,
+            neutrino::sprite_flip::diagonal | neutrino::sprite_flip::horizontal | neutrino::sprite_flip::vertical).has_value());
+
+        const neutrino::sprite_appearance appearance{
+            .visual = sprite,
+            .flip = neutrino::sprite_flip::horizontal,
+            .visible = true
+        };
+        CHECK(neutrino::draw_sprite(neutrino::point{44, 20}, appearance).has_value());
+
+        const neutrino::sprite_appearance hidden{
+            .visual = sprite,
+            .visible = false
+        };
+        CHECK(neutrino::draw_sprite(neutrino::point{48, 20}, hidden).has_value());
     }
 }

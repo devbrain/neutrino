@@ -5,48 +5,12 @@
 #pragma once
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/geometry_types.hh>
-#include <neutrino/video/sprite/sprite_sheet.hh>
+#include <neutrino/video/sprite/sprite_appearance.hh>
 #include <neutrino/neutrino_export.h>
 
-#include <cstdint>
 #include <string>
 
 namespace neutrino {
-    /**
-     * @brief Render-time flip flags for @ref draw_sprite.
-     *
-     * The sprite position is always the visual origin/anchor after the requested
-     * flips are applied. @ref diagonal transposes the visual across its local main
-     * diagonal before horizontal/vertical flips.
-     */
-    enum class sprite_flip : std::uint8_t {
-        none = 0,
-        horizontal = 1u << 0u,
-        vertical = 1u << 1u,
-        diagonal = 1u << 2u
-    };
-
-    [[nodiscard]] constexpr sprite_flip operator |(sprite_flip lhs, sprite_flip rhs) noexcept {
-        return static_cast <sprite_flip>(
-            static_cast <std::uint8_t>(lhs) | static_cast <std::uint8_t>(rhs));
-    }
-
-    [[nodiscard]] constexpr sprite_flip operator &(sprite_flip lhs, sprite_flip rhs) noexcept {
-        return static_cast <sprite_flip>(
-            static_cast <std::uint8_t>(lhs) & static_cast <std::uint8_t>(rhs));
-    }
-
-    constexpr sprite_flip& operator |=(sprite_flip& lhs, sprite_flip rhs) noexcept {
-        lhs = lhs | rhs;
-        return lhs;
-    }
-
-    constexpr sprite_flip& operator &=(sprite_flip& lhs, sprite_flip rhs) noexcept {
-        lhs = lhs & rhs;
-        return lhs;
-    }
-
-
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> set_draw_color(const sdlpp::color& c);
     NEUTRINO_EXPORT [[nodiscard]] sdlpp::expected <sdlpp::color, std::string> get_draw_color();
 
@@ -89,6 +53,27 @@ namespace neutrino {
         const sprite_sheet& sheet,
         sprite_visual_id visual,
         sprite_flip flip = sprite_flip::none);
+
+    /**
+     * @brief Draw a registered sprite visual at a caller-supplied position.
+     *
+     * @p position is the visual origin/anchor in render coordinates. The sprite
+     * system does not store world position; callers provide it from their own
+     * transform/scene/physics layer.
+     */
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_visual_ref visual,
+        sprite_flip flip = sprite_flip::none);
+
+    /**
+     * @brief Draw a sprite appearance at a caller-supplied position.
+     *
+     * Invisible appearances are skipped and return success.
+     */
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        const sprite_appearance& appearance);
 
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_line_aa(int x1, int y1, int x2, int y2);
     NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_line_aa(int x1, int y1, int x2, int y2, const sdlpp::color& c);

@@ -69,6 +69,25 @@ TEST_SUITE("neutrino::video::sprite_sheet") {
         CHECK(ids.size() == 3);
     }
 
+    TEST_CASE("registered sprite handles support invalid values and unordered containers") {
+        const neutrino::sprite_sheet_id invalid_sheet;
+        const neutrino::sprite_visual_ref invalid_ref;
+
+        CHECK_FALSE(invalid_sheet.valid());
+        CHECK_FALSE(invalid_ref.valid());
+
+        std::unordered_set <neutrino::sprite_sheet_id> sheets;
+        sheets.insert(invalid_sheet);
+        sheets.insert(invalid_sheet);
+
+        std::unordered_set <neutrino::sprite_visual_ref> visuals;
+        visuals.insert(invalid_ref);
+        visuals.insert(invalid_ref);
+
+        CHECK(sheets.size() == 1);
+        CHECK(visuals.size() == 1);
+    }
+
     TEST_CASE("sprite_sheet copies texture rectangles from a cpu texture atlas") {
         auto surface = sdlpp::surface::create_rgb(16, 16, sdlpp::pixel_format_enum::RGBA8888);
         REQUIRE(surface.has_value());

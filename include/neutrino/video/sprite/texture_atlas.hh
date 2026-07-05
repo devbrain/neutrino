@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include <compare>
-#include <cstdint>
+
 #include <functional>
-#include <limits>
+
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/sprite/cpu_texture_atlas.hh>
+#include <neutrino/video/sprite/detail/id_strong_type.hh>
 
 namespace neutrino {
     /**
@@ -42,7 +42,9 @@ namespace neutrino {
     };
 
     class texture_registry;
-
+    namespace details {
+        struct gpu_texture_atlas_id_tag;
+    }
     /**
      * @brief Opaque handle for a renderer-resident texture atlas.
      *
@@ -50,34 +52,20 @@ namespace neutrino {
      * code should treat it as a value handle and should not infer backend texture
      * details from it.
      */
-    class NEUTRINO_EXPORT gpu_texture_atlas_id {
+    class NEUTRINO_EXPORT gpu_texture_atlas_id
+        : public details::id_strong_type <details::gpu_texture_atlas_id_tag> {
         friend class texture_registry;
-        friend struct std::hash <gpu_texture_atlas_id>;
 
         public:
             /**
              * @brief Construct an invalid atlas handle.
              */
             gpu_texture_atlas_id() = default;
-            gpu_texture_atlas_id(const gpu_texture_atlas_id&) = default;
-            gpu_texture_atlas_id& operator =(const gpu_texture_atlas_id&) = default;
-            gpu_texture_atlas_id(gpu_texture_atlas_id&&) = default;
-            gpu_texture_atlas_id& operator =(gpu_texture_atlas_id&&) = default;
-
-            bool operator ==(const gpu_texture_atlas_id& other) const = default;
-
-            bool operator !=(const gpu_texture_atlas_id& other) const {
-                return !(*this == other);
-            }
-
-            std::strong_ordering operator <=>(const gpu_texture_atlas_id& other) const = default;
 
         private:
-            explicit gpu_texture_atlas_id(uint32_t x)
-                : m_value(x) {
+            explicit gpu_texture_atlas_id(std::uint32_t value)
+                : id_strong_type(value) {
             }
-
-            uint32_t m_value{std::numeric_limits <uint32_t>::max()};
     };
 
     /**
@@ -101,6 +89,7 @@ namespace neutrino {
 template<>
 struct std::hash <neutrino::gpu_texture_atlas_id> {
     [[nodiscard]] std::size_t operator()(const neutrino::gpu_texture_atlas_id& id) const noexcept {
-        return std::hash <std::uint32_t>{}(id.m_value);
+        using base_type = neutrino::details::id_strong_type <neutrino::details::gpu_texture_atlas_id_tag>;
+        return std::hash <base_type>{}(static_cast <const base_type&>(id));
     }
 };

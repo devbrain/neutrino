@@ -38,6 +38,10 @@ namespace neutrino {
         m_texture_registry = &s;
     }
 
+    void service_locator::set_sprites_manager(sprites_manager& s) {
+        m_sprites_manager = &s;
+    }
+
     void service_locator::clear_application(application& a) noexcept {
         if (m_application != &a) {
             return;
@@ -50,5 +54,6 @@ namespace neutrino {
         m_gamepads = nullptr;
         m_sound_system = nullptr;
         m_texture_registry = nullptr;
+        m_sprites_manager = nullptr;
     }
 }

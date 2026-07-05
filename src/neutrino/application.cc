@@ -10,6 +10,7 @@
 #include "input/gamepads.hh"
 #include "scene/scenes_manager.hh"
 #include "services/service_locator.hh"
+#include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
 
 namespace neutrino {
@@ -20,6 +21,7 @@ namespace neutrino {
         gamepads m_gamepads;
         scenes_manager m_scenes_manager;
         texture_registry m_textures;
+        sprites_manager m_sprites;
         // Set once the first scene enters the stack; an empty stack after
         // that means the game is over, while a scene-less application keeps
         // running on the plain update()/render() callbacks.
@@ -85,6 +87,7 @@ namespace neutrino {
         service_locator::instance().set_sound_system(m_pimpl->m_sound_system);
         service_locator::instance().set_scenes_manager(m_pimpl->m_scenes_manager);
         service_locator::instance().set_texture_registry(m_pimpl->m_textures);
+        service_locator::instance().set_sprites_manager(m_pimpl->m_sprites);
 
         // sdlpp initializes SDL with video|events only; without the gamepad
         // subsystem SDL emits no gamepad events at all. Ref-counted, and

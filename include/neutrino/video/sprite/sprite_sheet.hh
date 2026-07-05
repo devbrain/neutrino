@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <compare>
+
 #include <cstddef>
+#include <cstdint>
 #include <functional>
-#include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -17,51 +17,92 @@
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
+#include <neutrino/video/sprite/detail/id_strong_type.hh>
 
 namespace neutrino {
     class sprite_sheet;
+    class sprites_manager;
 
+    namespace details {
+        struct sprite_sheet_id_tag;
+    }
+    /**
+     * @brief Opaque handle to a registered @ref sprite_sheet.
+     *
+     * The handle identifies sprite-sheet metadata stored by the internal sprite
+     * resource manager. It does not identify a world object and carries no position.
+     */
+    class NEUTRINO_EXPORT sprite_sheet_id
+        : public details::id_strong_type <details::sprite_sheet_id_tag> {
+        friend class sprites_manager;
+
+        public:
+            /**
+             * @brief Construct an invalid sheet handle.
+             */
+            sprite_sheet_id() = default;
+
+        private:
+            explicit sprite_sheet_id(std::uint32_t value)
+                : id_strong_type(value) {
+            }
+    };
+
+    namespace details {
+        struct sprite_visual_id_tag;
+    }
     /**
      * @brief Opaque handle to a visual entry inside a @ref sprite_sheet.
      *
      * A visual is static sprite metadata over one texture-atlas frame. It is not a
-     * live world object; live sprite instances should use their own handle type.
+     * live world object; runtime appearance stores @ref sprite_visual_ref values.
      */
-    class NEUTRINO_EXPORT sprite_visual_id {
+    class NEUTRINO_EXPORT sprite_visual_id
+        : public details::id_strong_type <details::sprite_visual_id_tag> {
         friend class sprite_sheet;
-        friend struct std::hash <sprite_visual_id>;
 
         public:
             /**
              * @brief Construct an invalid visual handle.
              */
             sprite_visual_id() = default;
-            sprite_visual_id(const sprite_visual_id&) = default;
-            sprite_visual_id& operator =(const sprite_visual_id&) = default;
-            sprite_visual_id(sprite_visual_id&&) = default;
-            sprite_visual_id& operator =(sprite_visual_id&&) = default;
-
-            /**
-             * @brief Is this not the null sentinel?
-             */
-            [[nodiscard]] bool valid() const noexcept;
-
-            bool operator ==(const sprite_visual_id& other) const = default;
-
-            bool operator !=(const sprite_visual_id& other) const {
-                return !(*this == other);
-            }
-
-            std::strong_ordering operator <=>(const sprite_visual_id& other) const = default;
 
         private:
-            explicit sprite_visual_id(std::size_t value)
-                : m_value(value) {
+            explicit sprite_visual_id(std::uint32_t value)
+                : id_strong_type(value) {
             }
+    };
 
-            static constexpr std::size_t invalid_value = std::numeric_limits <std::size_t>::max();
+    /**
+     * @brief Complete registered-resource reference to one sprite visual.
+     *
+     * @ref sheet identifies the registered sheet resource and @ref visual identifies
+     * the static visual inside that sheet. This is the value a higher gameplay layer
+     * can store as "what this object looks like" without storing position.
+     */
+    struct sprite_visual_ref {
+        /**
+         * @brief Registered sheet containing the visual.
+         */
+        sprite_sheet_id sheet;
 
-            std::size_t m_value{invalid_value};
+        /**
+         * @brief Visual entry inside @ref sheet.
+         */
+        sprite_visual_id visual;
+
+        /**
+         * @brief Are both handles non-null sentinels?
+         */
+        [[nodiscard]] bool valid() const noexcept {
+            return sheet.valid() && visual.valid();
+        }
+
+        bool operator ==(const sprite_visual_ref& other) const = default;
+
+        bool operator !=(const sprite_visual_ref& other) const {
+            return !(*this == other);
+        }
     };
 
     /**
@@ -175,16 +216,58 @@ namespace neutrino {
     };
 
     /**
-     * @brief Upload a CPU atlas and build a default sprite sheet from its frame rects.
+     * @brief Register an already-built sprite sheet.
+     *
+     * The sheet is copied/moved into the internal sprite resource manager and can be
+     * addressed later through the returned handle.
+     */
+    NEUTRINO_EXPORT sprite_sheet_id register_sprite_sheet(sprite_sheet sheet);
+
+    /**
+     * @brief Upload a CPU atlas and register a default sprite sheet from its frame rects.
      *
      * This is the sprite-level convenience wrapper around @ref register_atlas. It
      * uploads the texture atlas, creates one unnamed visual per CPU frame, and copies
      * each frame's atlas rectangle into @ref sprite_visual::texture_rect.
      */
-    NEUTRINO_EXPORT sprite_sheet register_sprite_sheet(
+    NEUTRINO_EXPORT sprite_sheet_id register_sprite_sheet(
         const cpu_texture_atlas& atlas,
         atlas_texture_format format = atlas_texture_format::automatic);
+
+    /**
+     * @brief Build a registered visual reference from a sheet handle and visual index.
+     *
+     * This is the usual lookup path for sheets created directly from CPU atlas
+     * frames, where visual order matches frame order.
+     *
+     * @pre @p sheet must identify a registered sheet and @p index must be in range.
+     */
+    NEUTRINO_EXPORT sprite_visual_ref visual_ref(sprite_sheet_id sheet, std::size_t index);
+
+    /**
+     * @brief Find a registered visual reference by sheet-local name.
+     *
+     * @return The matching registered visual reference, or std::nullopt when no name
+     *         is bound in that sheet.
+     *
+     * @pre @p sheet must identify a registered sheet.
+     */
+    NEUTRINO_EXPORT std::optional <sprite_visual_ref> find_visual_ref(
+        sprite_sheet_id sheet,
+        std::string_view name);
 }
+
+/**
+ * @brief @c std::hash specialization so @ref neutrino::sprite_sheet_id keys
+ *        @c unordered_map / @c unordered_set.
+ */
+template<>
+struct std::hash <neutrino::sprite_sheet_id> {
+    [[nodiscard]] std::size_t operator()(const neutrino::sprite_sheet_id& id) const noexcept {
+        using base_type = neutrino::details::id_strong_type <neutrino::details::sprite_sheet_id_tag>;
+        return std::hash <base_type>{}(static_cast <const base_type&>(id));
+    }
+};
 
 /**
  * @brief @c std::hash specialization so @ref neutrino::sprite_visual_id keys
@@ -193,6 +276,20 @@ namespace neutrino {
 template<>
 struct std::hash <neutrino::sprite_visual_id> {
     [[nodiscard]] std::size_t operator()(const neutrino::sprite_visual_id& id) const noexcept {
-        return std::hash <std::size_t>{}(id.m_value);
+        using base_type = neutrino::details::id_strong_type <neutrino::details::sprite_visual_id_tag>;
+        return std::hash <base_type>{}(static_cast <const base_type&>(id));
+    }
+};
+
+/**
+ * @brief @c std::hash specialization so @ref neutrino::sprite_visual_ref keys
+ *        @c unordered_map / @c unordered_set.
+ */
+template<>
+struct std::hash <neutrino::sprite_visual_ref> {
+    [[nodiscard]] std::size_t operator()(const neutrino::sprite_visual_ref& ref) const noexcept {
+        auto result = std::hash <neutrino::sprite_sheet_id>{}(ref.sheet);
+        result ^= std::hash <neutrino::sprite_visual_id>{}(ref.visual) + 0x9e3779b9u + (result << 6u) + (result >> 2u);
+        return result;
     }
 };

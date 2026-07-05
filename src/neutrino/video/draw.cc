@@ -49,7 +49,9 @@ namespace neutrino {
             float y{0};
         };
 
-        [[nodiscard]] local_point transform_local(local_point p, float width, float height, sprite_flip flip) noexcept {
+        [[nodiscard]] local_point transform_local_tiled(local_point p, float width, float height, sprite_flip flip) noexcept {
+            // Match Tiled orthogonal/isometric GID flags: diagonal first, then H/V.
+            // The diagonal flag swaps bottom-left and top-right corners (x/y axis swap).
             if (has_flip(flip, sprite_flip::diagonal)) {
                 std::swap(p.x, p.y);
                 std::swap(width, height);
@@ -99,17 +101,17 @@ namespace neutrino {
             const float width = static_cast <float>(src.w);
             const float height = static_cast <float>(src.h);
 
-            const auto anchor = transform_local(
+            const auto anchor = transform_local_tiled(
                 local_point{static_cast <float>(visual.origin.x), static_cast <float>(visual.origin.y)},
                 width,
                 height,
                 flip);
 
             const std::array <SDL_Vertex, 4> vertices{
-                make_sprite_vertex(transform_local({0.0f, 0.0f}, width, height, flip), anchor, position, {u0, v0}),
-                make_sprite_vertex(transform_local({width, 0.0f}, width, height, flip), anchor, position, {u1, v0}),
-                make_sprite_vertex(transform_local({width, height}, width, height, flip), anchor, position, {u1, v1}),
-                make_sprite_vertex(transform_local({0.0f, height}, width, height, flip), anchor, position, {u0, v1})
+                make_sprite_vertex(transform_local_tiled({0.0f, 0.0f}, width, height, flip), anchor, position, {u0, v0}),
+                make_sprite_vertex(transform_local_tiled({width, 0.0f}, width, height, flip), anchor, position, {u1, v0}),
+                make_sprite_vertex(transform_local_tiled({width, height}, width, height, flip), anchor, position, {u1, v1}),
+                make_sprite_vertex(transform_local_tiled({0.0f, height}, width, height, flip), anchor, position, {u0, v1})
             };
             constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
 
@@ -284,6 +286,26 @@ namespace neutrino {
         sprite_visual_id visual,
         sprite_flip flip) {
         return draw_sprite(sheet, visual, position, flip);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_visual_ref visual,
+        sprite_flip flip) {
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+
+        return draw_sprite(manager->get(visual.sheet), visual.visual, position, flip);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        const sprite_appearance& appearance) {
+        if (!appearance.visible) {
+            return {};
+        }
+
+        return draw_sprite(position, appearance.visual, appearance.flip);
     }
 
     // --- Anti-aliased Lines ---
