@@ -3,11 +3,119 @@
 //
 
 #include <neutrino/video/draw.hh>
+#include <failsafe/enforce.hh>
 #include <sdlpp/video/renderer.hh>
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <optional>
+
+#include "services/service_locator.hh"
 
 namespace neutrino {
+    namespace {
+        [[nodiscard]] bool has_flip(sprite_flip flags, sprite_flip flag) noexcept {
+            return static_cast <std::uint8_t>(flags & flag) != 0;
+        }
+
+        [[nodiscard]] bool has_diagonal_flip(sprite_flip flags) noexcept {
+            return has_flip(flags, sprite_flip::diagonal);
+        }
+
+        [[nodiscard]] sdlpp::flip_mode to_sdl_flip(sprite_flip flags) noexcept {
+            auto result = sdlpp::flip_mode::none;
+            if (has_flip(flags, sprite_flip::horizontal)) {
+                result |= sdlpp::flip_mode::horizontal;
+            }
+            if (has_flip(flags, sprite_flip::vertical)) {
+                result |= sdlpp::flip_mode::vertical;
+            }
+            return result;
+        }
+
+        [[nodiscard]] point transformed_origin(const sprite_visual& visual, sprite_flip flip) noexcept {
+            point origin = visual.origin;
+            if (has_flip(flip, sprite_flip::horizontal)) {
+                origin.x = visual.texture_rect.w - origin.x;
+            }
+            if (has_flip(flip, sprite_flip::vertical)) {
+                origin.y = visual.texture_rect.h - origin.y;
+            }
+            return origin;
+        }
+
+        struct local_point {
+            float x{0};
+            float y{0};
+        };
+
+        [[nodiscard]] local_point transform_local(local_point p, float width, float height, sprite_flip flip) noexcept {
+            if (has_flip(flip, sprite_flip::diagonal)) {
+                std::swap(p.x, p.y);
+                std::swap(width, height);
+            }
+            if (has_flip(flip, sprite_flip::horizontal)) {
+                p.x = width - p.x;
+            }
+            if (has_flip(flip, sprite_flip::vertical)) {
+                p.y = height - p.y;
+            }
+            return p;
+        }
+
+        [[nodiscard]] SDL_Vertex make_sprite_vertex(
+            local_point local,
+            local_point anchor,
+            const point& position,
+            SDL_FPoint tex_coord) noexcept {
+            return SDL_Vertex{
+                .position = {
+                    static_cast <float>(position.x) + local.x - anchor.x,
+                    static_cast <float>(position.y) + local.y - anchor.y
+                },
+                .color = {1.0f, 1.0f, 1.0f, 1.0f},
+                .tex_coord = tex_coord
+            };
+        }
+
+        sdlpp::expected <void, std::string> draw_sprite_diagonal(
+            sdlpp::renderer& renderer,
+            const sdlpp::texture& texture,
+            const sprite_visual& visual,
+            const point& position,
+            sprite_flip flip) {
+            const auto texture_size = texture.get_size();
+            if (!texture_size) {
+                return sdlpp::make_unexpectedf(texture_size.error());
+            }
+
+            const auto& src = visual.texture_rect;
+            const float texture_width = static_cast <float>(texture_size->width);
+            const float texture_height = static_cast <float>(texture_size->height);
+            const float u0 = static_cast <float>(src.x) / texture_width;
+            const float v0 = static_cast <float>(src.y) / texture_height;
+            const float u1 = static_cast <float>(src.x + src.w) / texture_width;
+            const float v1 = static_cast <float>(src.y + src.h) / texture_height;
+            const float width = static_cast <float>(src.w);
+            const float height = static_cast <float>(src.h);
+
+            const auto anchor = transform_local(
+                local_point{static_cast <float>(visual.origin.x), static_cast <float>(visual.origin.y)},
+                width,
+                height,
+                flip);
+
+            const std::array <SDL_Vertex, 4> vertices{
+                make_sprite_vertex(transform_local({0.0f, 0.0f}, width, height, flip), anchor, position, {u0, v0}),
+                make_sprite_vertex(transform_local({width, 0.0f}, width, height, flip), anchor, position, {u1, v0}),
+                make_sprite_vertex(transform_local({width, height}, width, height, flip), anchor, position, {u1, v1}),
+                make_sprite_vertex(transform_local({0.0f, height}, width, height, flip), anchor, position, {u0, v1})
+            };
+            constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
+
+            return renderer.render_geometry(texture.get(), vertices, indices);
+        }
+    }
 
     sdlpp::expected<void, std::string> set_draw_color(const sdlpp::color& c) {
         return get_renderer().set_draw_color(c);
@@ -135,6 +243,47 @@ namespace neutrino {
         auto& r_dev = get_renderer();
         sdlpp::renderer::draw_color_guard guard(r_dev, c);
         return r_dev.fill_rect(r);
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const sprite_sheet& sheet,
+        sprite_visual_id visual_id,
+        const point& position,
+        sprite_flip flip) {
+        auto* registry = service_locator::instance().get_texture_registry();
+        ENFORCE(registry != nullptr);
+
+        const auto& visual = sheet.visual(visual_id);
+        const auto& atlas = registry->get(sheet.atlas());
+        auto& renderer = get_renderer();
+
+        if (has_diagonal_flip(flip)) {
+            return draw_sprite_diagonal(renderer, atlas.texture, visual, position, flip);
+        }
+
+        const auto origin = transformed_origin(visual, flip);
+        const rect dst{
+            position.x - origin.x,
+            position.y - origin.y,
+            visual.texture_rect.w,
+            visual.texture_rect.h
+        };
+
+        return renderer.copy_ex(
+            atlas.texture,
+            std::optional <rect>{visual.texture_rect},
+            std::optional <rect>{dst},
+            0.0,
+            std::optional <point>{},
+            to_sdl_flip(flip));
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        const sprite_sheet& sheet,
+        sprite_visual_id visual,
+        sprite_flip flip) {
+        return draw_sprite(sheet, visual, position, flip);
     }
 
     // --- Anti-aliased Lines ---

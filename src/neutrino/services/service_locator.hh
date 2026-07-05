@@ -61,6 +61,8 @@ namespace neutrino {
             void set_gamepads(gamepads& g);
             void set_sound_system(sound_system& s);
             void set_texture_registry(texture_registry& s);
+            void clear_application(application& a) noexcept;
+
         private:
             sdlpp::renderer* m_renderer = nullptr;
             sdlpp::window* m_window = nullptr;

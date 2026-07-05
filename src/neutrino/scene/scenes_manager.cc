@@ -15,6 +15,7 @@
 namespace neutrino {
     static constexpr auto INVALID_EVENT = std::numeric_limits <uint32_t>::max();
     static uint32_t s_event_type = INVALID_EVENT;
+    static bool s_scenes_manager_initialized = false;
     static constexpr int PUSH_SCENE = 1;
     static constexpr int POP_SCENE = 2;
     static constexpr int REPLACE_SCENE = 3;
@@ -34,12 +35,13 @@ namespace neutrino {
     }
 
     scenes_manager::scenes_manager() {
-        static bool initialized = false;
-        ENFORCE(!initialized);
-        initialized = true;
+        ENFORCE(!s_scenes_manager_initialized);
+        s_scenes_manager_initialized = true;
     }
 
-    scenes_manager::~scenes_manager() = default;
+    scenes_manager::~scenes_manager() {
+        s_scenes_manager_initialized = false;
+    }
 
     void scenes_manager::push_scene(std::unique_ptr <base_scene>&& scene) {
         auto v = std::move(scene);

@@ -45,6 +45,7 @@ namespace neutrino {
     }
 
     application::~application() {
+        service_locator::instance().clear_application(*this);
     }
 
     sdlpp::window_config application::get_window_config() {
@@ -182,6 +183,7 @@ namespace neutrino {
             LOG_ERROR("Scene teardown threw during shutdown");
         }
         game_application::on_quit();
+        service_locator::instance().clear_application(*this);
     }
 
 }
