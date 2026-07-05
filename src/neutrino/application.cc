@@ -1,70 +1,50 @@
 #include <neutrino/application.hh>
+#include <neutrino/scene/scene_transitions.hh>
 #include <sdlpp/video/display.hh>
-#include <sdlpp/input/gamepad.hh>
+#include <SDL3/SDL.h>
 #include <failsafe/enforce.hh>
+#include <failsafe/logger.hh>
 #include <failsafe/logger/backend/sdl_backend.hh>
 
-#include <musac_backends/sdl3/sdl3_backend.hh>
-#include <musac/audio_device.hh>
-#include <musac/audio_source.hh>
-#include <musac/audio_system.hh>
-#include <musac/stream.hh>
-#include <musac/error.hh>
-#include <musac/codecs/register_codecs.hh>
-
-#include <algorithm>
-#include <array>
-#include <vector>
+#include "audio/sound_system.hh"
+#include "input/gamepads.hh"
+#include "scene/scenes_manager.hh"
+#include "services/service_locator.hh"
+#include "video/sprite/texture_registry.hh"
 
 namespace neutrino {
-    application* g_app = nullptr;
-
-    struct gamepad_state {
-        sdlpp::gamepad pad;
-        sdlpp::joystick_id instance_id = 0;
-        std::array<sdlpp::button_state, static_cast<size_t>(sdlpp::gamepad_button::max)> buttons{};
-        std::array<float, static_cast<size_t>(sdlpp::gamepad_axis::max)> axes{};
-
-        explicit gamepad_state(sdlpp::gamepad&& p, sdlpp::joystick_id id)
-            : pad(std::move(p)), instance_id(id) {}
-    };
-
     struct application::impl {
         application_config m_cfg;
-        sdlpp::renderer* m_renderer = nullptr;
-        sdlpp::window* m_window = nullptr;
 
-        std::shared_ptr <musac::audio_backend> m_audio_backend;
-        std::shared_ptr<musac::decoders_registry> m_musac_codecs;
-
-        std::vector<gamepad_state> m_gamepads;
+        sound_system m_sound_system;
+        gamepads m_gamepads;
+        scenes_manager m_scenes_manager;
+        texture_registry m_textures;
+        // Set once the first scene enters the stack; an empty stack after
+        // that means the game is over, while a scene-less application keeps
+        // running on the plain update()/render() callbacks.
+        bool m_had_scenes = false;
+        // A scene faulted in update_physics this frame: its pop is already
+        // enqueued, so skip its render to avoid enqueueing a second pop.
+        bool m_scene_faulted = false;
 
         explicit impl(const application_config& cfg)
             : m_cfg(cfg) {
-            m_audio_backend = musac::create_sdl3_backend();
-            m_musac_codecs = musac::create_registry_with_all_codecs();
-
-            if (!musac::audio_system::init(m_audio_backend, m_musac_codecs)) {
-                THROW_RUNTIME("Failed to initialize audio system");
-            }
         }
     };
 
     application::application()
-        : m_pimpl(std::make_unique <impl>(application_config{})) {
-        ENFORCE(!g_app)("neutrino::application was already initialized");
-        g_app = this;
+        : application(application_config{}) {
     }
 
     application::application(const application_config& cfg)
         : m_pimpl(std::make_unique <impl>(cfg)) {
-        ENFORCE(!g_app)("neutrino::application was already initialized");
-        g_app = this;
+        auto& services = service_locator::instance();
+        ENFORCE(!services.get_application())("neutrino::application was already initialized");
+
     }
 
     application::~application() {
-        musac::audio_system::done();
-        g_app = nullptr;
     }
 
     sdlpp::window_config application::get_window_config() {
@@ -96,100 +76,112 @@ namespace neutrino {
     void application::on_ready() {
         game_application::on_ready();
         failsafe::logger::set_backend(failsafe::logger::backends::make_sdl_backend());
-        m_pimpl->m_renderer = &get_renderer();
-        m_pimpl->m_window = &get_window();
+
+        service_locator::instance().set_application(*this);
+        service_locator::instance().set_renderer(get_renderer());
+        service_locator::instance().set_window(get_window());
+        service_locator::instance().set_gamepads(m_pimpl->m_gamepads);
+        service_locator::instance().set_sound_system(m_pimpl->m_sound_system);
+        service_locator::instance().set_scenes_manager(m_pimpl->m_scenes_manager);
+        service_locator::instance().set_texture_registry(m_pimpl->m_textures);
+
+        // sdlpp initializes SDL with video|events only; without the gamepad
+        // subsystem SDL emits no gamepad events at all. Ref-counted, and
+        // SDL_Quit at teardown releases it.
+        if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
+            LOG_ERROR("Failed to initialize gamepad subsystem:", SDL_GetError());
+        }
         ready();
+        if (auto scene = create_initial_scene()) {
+            m_pimpl->m_scenes_manager.push_scene_sync(std::move(scene));
+            // Even if the scene's on_enter threw and was rolled back, the
+            // game committed to scene mode: an empty stack now means quit
+            // instead of idling on a black screen forever.
+            m_pimpl->m_had_scenes = true;
+        }
     }
 
     void application::on_update(float dt) {
-        // Clear transient button states
-        for (auto& pad : m_pimpl->m_gamepads) {
-            for (auto& btn : pad.buttons) {
-                btn.pressed = false;
-                btn.released = false;
+        if (!m_pimpl->m_scenes_manager.empty()) {
+            m_pimpl->m_had_scenes = true;
+            // Safety net: an exception escaping to SDL would become
+            // SDL_APP_FAILURE and terminate the process. Log it and drop the
+            // top scene (it's clearly broken) so the next frame runs a
+            // known-good one. The pop is enqueued via the SDL event queue and
+            // takes effect when the next handle_event drains it.
+            try {
+                m_pimpl->m_scenes_manager.update_physics(frame_duration{dt * 1000.0f});
+            } catch (const std::exception& ex) {
+                LOG_ERROR("Scene update threw:", ex.what());
+                pop_scene();
+                m_pimpl->m_scene_faulted = true;
+            } catch (...) {
+                LOG_ERROR("Scene update threw an unknown exception");
+                pop_scene();
+                m_pimpl->m_scene_faulted = true;
             }
+        } else if (m_pimpl->m_had_scenes) {
+            quit();
+            return;
         }
+
         update(dt);
     }
 
     void application::on_render(sdlpp::renderer& r) {
-        render(r);
+        r.set_draw_color(sdlpp::colors::black);
+        r.clear();
+        if (m_pimpl->m_scene_faulted) {
+            m_pimpl->m_scene_faulted = false;
+        } else {
+            try {
+                m_pimpl->m_scenes_manager.render(frame_duration{delta_time() * 1000.0f});
+            } catch (const std::exception& ex) {
+                LOG_ERROR("Scene render threw:", ex.what());
+                pop_scene();
+            } catch (...) {
+                LOG_ERROR("Scene render threw an unknown exception");
+                pop_scene();
+            }
+        }
+        r.present();
+
+        // End of frame: clear transient gamepad state (pressed/released) at
+        // the same point where sdlpp clears keyboard/mouse transients.
+        // Events for the next frame arrive after this, so a press stays
+        // visible to scene updates for exactly one full frame. Clearing at
+        // the start of on_update would wipe presses delivered just before
+        // the iterate and they would never be observable.
+        m_pimpl->m_gamepads.clear_state();
     }
 
     void application::handle_event(const sdlpp::event& e) {
-        if (e.type() == sdlpp::event_type::gamepad_added) {
-            if (auto* dev_ev = e.as<sdlpp::gamepad_device_event>()) {
-                auto pad_res = sdlpp::gamepad::open(dev_ev->which);
-                if (pad_res) {
-                    m_pimpl->m_gamepads.emplace_back(std::move(*pad_res), dev_ev->which);
-                }
-            }
-        } else if (e.type() == sdlpp::event_type::gamepad_removed) {
-            if (auto* dev_ev = e.as<sdlpp::gamepad_device_event>()) {
-                auto it = std::find_if(m_pimpl->m_gamepads.begin(), m_pimpl->m_gamepads.end(), [&](const auto& g) {
-                    return g.instance_id == dev_ev->which;
-                });
-                if (it != m_pimpl->m_gamepads.end()) {
-                    m_pimpl->m_gamepads.erase(it);
-                }
-            }
-        } else if (e.type() == sdlpp::event_type::gamepad_button_down) {
-            if (auto* btn_ev = e.as<sdlpp::gamepad_button_event>()) {
-                auto it = std::find_if(m_pimpl->m_gamepads.begin(), m_pimpl->m_gamepads.end(), [&](const auto& g) {
-                    return g.instance_id == btn_ev->which;
-                });
-                if (it != m_pimpl->m_gamepads.end() && btn_ev->button < static_cast<Uint8>(sdlpp::gamepad_button::max)) {
-                    auto& btn = it->buttons[btn_ev->button];
-                    btn.pressed = true;
-                    btn.held = true;
-                }
-            }
-        } else if (e.type() == sdlpp::event_type::gamepad_button_up) {
-            if (auto* btn_ev = e.as<sdlpp::gamepad_button_event>()) {
-                auto it = std::find_if(m_pimpl->m_gamepads.begin(), m_pimpl->m_gamepads.end(), [&](const auto& g) {
-                    return g.instance_id == btn_ev->which;
-                });
-                if (it != m_pimpl->m_gamepads.end() && btn_ev->button < static_cast<Uint8>(sdlpp::gamepad_button::max)) {
-                    auto& btn = it->buttons[btn_ev->button];
-                    btn.released = true;
-                    btn.held = false;
-                }
-            }
-        } else if (e.type() == sdlpp::event_type::gamepad_axis_motion) {
-            if (auto* axis_ev = e.as<sdlpp::gamepad_axis_event>()) {
-                auto it = std::find_if(m_pimpl->m_gamepads.begin(), m_pimpl->m_gamepads.end(), [&](const auto& g) {
-                    return g.instance_id == axis_ev->which;
-                });
-                if (it != m_pimpl->m_gamepads.end() && axis_ev->axis < static_cast<Uint8>(sdlpp::gamepad_axis::max)) {
-                    float val = static_cast<float>(axis_ev->value) / 32767.0f;
-                    if (val < -1.0f) val = -1.0f;
-                    if (val > 1.0f) val = 1.0f;
-                    it->axes[axis_ev->axis] = val;
-                }
+        if (auto change = m_pimpl->m_gamepads.handle_event(e)) {
+            if (change->connected) {
+                on_gamepad_connected(change->index);
+            } else {
+                on_gamepad_disconnected(change->index);
             }
         }
-
+        try {
+            m_pimpl->m_scenes_manager.handle_action(e);
+        } catch (const std::exception& ex) {
+            LOG_ERROR("Scene event handler threw:", ex.what());
+        } catch (...) {
+            LOG_ERROR("Scene event handler threw an unknown exception");
+        }
         event(e);
     }
 
-
-    sdlpp::button_state application::get_gamepad_button_state(int gamepad_index, sdlpp::gamepad_button button) const noexcept {
-        if (gamepad_index >= 0 && static_cast<size_t>(gamepad_index) < m_pimpl->m_gamepads.size()) {
-            auto btn_idx = static_cast<size_t>(button);
-            if (btn_idx < m_pimpl->m_gamepads[gamepad_index].buttons.size()) {
-                return m_pimpl->m_gamepads[gamepad_index].buttons[btn_idx];
-            }
+    void application::on_quit() noexcept {
+        // Tear down the scene stack while the renderer, window and audio are
+        // still alive — scenes may release textures / sounds in on_exit().
+        try {
+            m_pimpl->m_scenes_manager.finish();
+        } catch (...) {
+            LOG_ERROR("Scene teardown threw during shutdown");
         }
-        return {};
+        game_application::on_quit();
     }
 
-    float application::get_gamepad_axis(int gamepad_index, sdlpp::gamepad_axis axis) const noexcept {
-        if (gamepad_index >= 0 && static_cast<size_t>(gamepad_index) < m_pimpl->m_gamepads.size()) {
-            auto axis_idx = static_cast<size_t>(axis);
-            if (axis_idx < m_pimpl->m_gamepads[gamepad_index].axes.size()) {
-                return m_pimpl->m_gamepads[gamepad_index].axes[axis_idx];
-            }
-        }
-        return 0.0f;
-    }
 }

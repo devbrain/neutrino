@@ -1,16 +1,15 @@
 #include <neutrino/input/gamepad_button.hh>
-#include <neutrino/application.hh>
+#include "services/service_locator.hh"
 
 namespace neutrino {
 
-    extern application* g_app;
-
     namespace {
         bool check_state(int gamepad_index, sdlpp::gamepad_button button, bool sdlpp::button_state::*member) noexcept {
-            if (!g_app) {
+            auto* pads = service_locator::instance().get_gamepads();
+            if (!pads) {
                 return false;
             }
-            auto state = g_app->get_gamepad_button_state(gamepad_index, button);
+            auto state = pads->get_gamepad_button_state(gamepad_index, button);
             return state.*member;
         }
     }
@@ -33,7 +32,8 @@ namespace neutrino {
     }
 
     float gamepad_axis(int gamepad_index, sdlpp::gamepad_axis axis) noexcept {
-        return g_app ? g_app->get_gamepad_axis(gamepad_index, axis) : 0.0f;
+        auto* pads = service_locator::instance().get_gamepads();
+        return pads ? pads->get_gamepad_axis(gamepad_index, axis) : 0.0f;
     }
 
 } // namespace neutrino

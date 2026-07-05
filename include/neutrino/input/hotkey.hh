@@ -39,21 +39,33 @@ namespace neutrino {
         return static_cast<modifier>(~static_cast<std::uint32_t>(mod));
     }
 
-    // Ergonomic aliases
-    constexpr modifier NONE   = modifier::none;
-    constexpr modifier LSHIFT = modifier::lshift;
-    constexpr modifier RSHIFT = modifier::rshift;
-    constexpr modifier SHIFT  = modifier::shift;
-    constexpr modifier LCTRL  = modifier::lctrl;
-    constexpr modifier RCTRL  = modifier::rctrl;
-    constexpr modifier CTRL   = modifier::ctrl;
-    constexpr modifier LALT   = modifier::lalt;
-    constexpr modifier RALT   = modifier::ralt;
-    constexpr modifier ALT    = modifier::alt;
-    constexpr modifier LGUI   = modifier::lgui;
-    constexpr modifier RGUI   = modifier::rgui;
-    constexpr modifier GUI    = modifier::gui;
+    // Ergonomic aliases, scoped to avoid collisions with user code and
+    // platform headers (SHIFT/CTRL/... are common macro/constant names).
+    namespace mods {
+        inline constexpr modifier none   = modifier::none;
+        inline constexpr modifier lshift = modifier::lshift;
+        inline constexpr modifier rshift = modifier::rshift;
+        inline constexpr modifier shift  = modifier::shift;
+        inline constexpr modifier lctrl  = modifier::lctrl;
+        inline constexpr modifier rctrl  = modifier::rctrl;
+        inline constexpr modifier ctrl   = modifier::ctrl;
+        inline constexpr modifier lalt   = modifier::lalt;
+        inline constexpr modifier ralt   = modifier::ralt;
+        inline constexpr modifier alt    = modifier::alt;
+        inline constexpr modifier lgui   = modifier::lgui;
+        inline constexpr modifier rgui   = modifier::rgui;
+        inline constexpr modifier gui    = modifier::gui;
+    }
 
+    /// @brief Keyboard hotkey query (polled, not event-driven).
+    ///
+    /// Modifier matching is strict:
+    /// - hotkey(scancode::a) fires only while NO modifier is held.
+    /// - hotkey(mods::ctrl, key) accepts either ctrl (but no other groups).
+    /// - hotkey(mods::lshift, key) requires specifically left shift; it does
+    ///   not fire while right shift is also down.
+    /// - A hotkey on a modifier key itself (e.g. scancode::lshift) ignores
+    ///   that key's own modifier bit when matching.
     class NEUTRINO_EXPORT hotkey {
     public:
         // Scancode constructors

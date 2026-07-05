@@ -1,0 +1,24 @@
+# Clangd configuration for warlords project
+# https://clangd.llvm.org/config
+
+CompileFlags:
+  CompilationDatabase: build/
+  Add:
+    # doctest uses the GCC/Clang `__COUNTER__` builtin to mint a
+    # unique identifier per TEST_CASE (doctest/doctest.h:421). If
+    # clangd's indexer doesn't define `__COUNTER__`, doctest's
+    # `#else` branch leaves DOCTEST_ANONYMOUS undefined and every
+    # TEST_CASE in the file expands to an unknown-identifier error
+    # — that's the "test files are all red" symptom. CLion's bundled
+    # clangd hits this; clang's native builtin still wins at real
+    # compile time, so this fallback only affects indexing.
+    - "-D__COUNTER__=__LINE__"
+
+Diagnostics:
+  Suppress:
+    # doctest uses expression decomposition with operator<< which
+    # otherwise triggers this warning.
+    - "overloaded-shift-op-parentheses"
+    # The `-D__COUNTER__` fallback above redefines a builtin when
+    # clangd does happen to predefine it.
+    - "builtin-macro-redefined"
