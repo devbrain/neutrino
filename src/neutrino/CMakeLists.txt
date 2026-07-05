@@ -71,10 +71,12 @@ add_library(neutrino ${_lib_type}
         video/draw.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/bitmask.hh
         video/sprite/bitmask.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/cpu_sprites_atlas.hh
-        video/sprite/cpu_sprites_atlas.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprites_atlas.hh
-        video/sprite/sprites_atlas.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/cpu_texture_atlas.hh
+        video/sprite/cpu_texture_atlas.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/texture_atlas.hh
+        video/sprite/texture_atlas.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_sheet.hh
+        video/sprite/sprite_sheet.cc
         video/sprite/texture_registry.cc
         video/sprite/texture_registry.hh
         # -------------------------------------------------------
@@ -115,5 +117,4 @@ generate_export_header(neutrino
         BASE_NAME NEUTRINO
         EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/neutrino/neutrino_export.h
 )
-
 

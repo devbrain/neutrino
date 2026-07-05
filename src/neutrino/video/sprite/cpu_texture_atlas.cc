@@ -3,7 +3,7 @@
 //
 
 #include <utility>
-#include <neutrino/video/sprite/cpu_sprites_atlas.hh>
+#include <neutrino/video/sprite/cpu_texture_atlas.hh>
 #include <failsafe/enforce.hh>
 
 
@@ -68,10 +68,10 @@ namespace neutrino {
         };
     }
 
-    std::optional <bitmask> cpu_sprite_frame::evaluate_bitmask(
+    std::optional <bitmask> cpu_texture_atlas_frame::evaluate_bitmask(
         const sdlpp::surface& s,
         const rect& atlas_rect,
-        const cpu_sprite_frame_mask_options& options) {
+        const cpu_texture_atlas_mask_options& options) {
         if (!s || atlas_rect.x < 0 || atlas_rect.y < 0 || atlas_rect.w < 0 || atlas_rect.h < 0) {
             return std::nullopt;
         }
@@ -133,29 +133,29 @@ namespace neutrino {
         return evaluated;
     }
 
-    cpu_sprites_atlas::cpu_sprites_atlas(sdlpp::surface&& s)
+    cpu_texture_atlas::cpu_texture_atlas(sdlpp::surface&& s)
         : m_surface(std::move(s)) {
     }
 
-    cpu_sprites_atlas::cpu_sprites_atlas(sdlpp::surface&& s, std::vector <cpu_sprite_frame>&& frames)
+    cpu_texture_atlas::cpu_texture_atlas(sdlpp::surface&& s, std::vector <cpu_texture_atlas_frame>&& frames)
         : m_surface(std::move(s)),
           m_frames(std::move(frames)) {
     }
 
-    const sdlpp::surface& cpu_sprites_atlas::surface() const noexcept {
+    const sdlpp::surface& cpu_texture_atlas::surface() const noexcept {
         return m_surface;
     }
 
-    std::size_t cpu_sprites_atlas::frame_count() const noexcept {
+    std::size_t cpu_texture_atlas::frame_count() const noexcept {
         return m_frames.size();
     }
 
-    const cpu_sprite_frame& cpu_sprites_atlas::frame(std::size_t index) const {
+    const cpu_texture_atlas_frame& cpu_texture_atlas::frame(std::size_t index) const {
         ENFORCE(index < m_frames.size());
         return m_frames[index];
     }
 
-    void cpu_sprites_atlas::add_frame(const cpu_sprite_frame& f) {
+    void cpu_texture_atlas::add_frame(const cpu_texture_atlas_frame& f) {
         m_frames.push_back(f);
     }
 }

@@ -23,7 +23,7 @@ namespace neutrino {
             return surface.format();
         }
 
-        std::vector <rect> copy_frame_rects(const cpu_sprites_atlas& atlas) {
+        std::vector <rect> copy_frame_rects(const cpu_texture_atlas& atlas) {
             std::vector <rect> frames;
             frames.reserve(atlas.frame_count());
             for (std::size_t i = 0; i < atlas.frame_count(); ++i) {
@@ -36,34 +36,34 @@ namespace neutrino {
 
     uint32_t texture_registry::s_counter = 0;
 
-    gpu_sprites_atlas_id texture_registry::create(const sdlpp::renderer& renderer, sdlpp::pixel_format_enum format,
+    gpu_texture_atlas_id texture_registry::create(const sdlpp::renderer& renderer, sdlpp::pixel_format_enum format,
         sdlpp::texture_access access, int width, int height) {
-        gpu_sprites_atlas_id key(s_counter);
+        gpu_texture_atlas_id key(s_counter);
         auto tex = sdlpp::texture::create(renderer, format, access, width, height);
         if (tex) {
-            m_atlases.emplace(key, gpu_sprites_atlas{std::move(*tex), {}, atlas_texture_format::automatic});
+            m_atlases.emplace(key, gpu_texture_atlas{std::move(*tex), {}, atlas_texture_format::automatic});
             ++s_counter;
             return key;
         }
         THROW_RUNTIME(tex.error());
     }
 
-    gpu_sprites_atlas_id texture_registry::create(const sdlpp::renderer& renderer, const sdlpp::surface& s) {
-        gpu_sprites_atlas_id key(s_counter);
+    gpu_texture_atlas_id texture_registry::create(const sdlpp::renderer& renderer, const sdlpp::surface& s) {
+        gpu_texture_atlas_id key(s_counter);
         auto tex = sdlpp::texture::create(renderer, s);
         if (tex) {
-            m_atlases.emplace(key, gpu_sprites_atlas{std::move(*tex), {}, atlas_texture_format::automatic});
+            m_atlases.emplace(key, gpu_texture_atlas{std::move(*tex), {}, atlas_texture_format::automatic});
             ++s_counter;
             return key;
         }
         THROW_RUNTIME(tex.error());
     }
 
-    gpu_sprites_atlas_id texture_registry::create(
+    gpu_texture_atlas_id texture_registry::create(
         const sdlpp::renderer& renderer,
-        const cpu_sprites_atlas& atlas,
+        const cpu_texture_atlas& atlas,
         atlas_texture_format format) {
-        gpu_sprites_atlas_id key(s_counter);
+        gpu_texture_atlas_id key(s_counter);
         auto frames = copy_frame_rects(atlas);
 
         sdlpp::expected <sdlpp::texture, std::string> tex;
@@ -81,26 +81,26 @@ namespace neutrino {
         }
 
         if (tex) {
-            m_atlases.emplace(key, gpu_sprites_atlas{std::move(*tex), std::move(frames), format});
+            m_atlases.emplace(key, gpu_texture_atlas{std::move(*tex), std::move(frames), format});
             ++s_counter;
             return key;
         }
         THROW_RUNTIME(tex.error());
     }
 
-    gpu_sprites_atlas& texture_registry::get(gpu_sprites_atlas_id idx) {
+    gpu_texture_atlas& texture_registry::get(gpu_texture_atlas_id idx) {
         auto itr = m_atlases.find(idx);
         ENFORCE(itr != m_atlases.end());
         return itr->second;
     }
 
-    const gpu_sprites_atlas& texture_registry::get(gpu_sprites_atlas_id idx) const {
+    const gpu_texture_atlas& texture_registry::get(gpu_texture_atlas_id idx) const {
         auto itr = m_atlases.find(idx);
         ENFORCE(itr != m_atlases.end());
         return itr->second;
     }
 
-    void texture_registry::erase(gpu_sprites_atlas_id idx) {
+    void texture_registry::erase(gpu_texture_atlas_id idx) {
         auto itr = m_atlases.find(idx);
         if (itr != m_atlases.end()) {
             m_atlases.erase(itr);
