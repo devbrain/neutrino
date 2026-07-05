@@ -70,6 +70,10 @@ if(NEUTRINO_NEUTRINO_BUILD_TESTS)
     add_subdirectory(test)
 endif()
 
+if(NEUTRINO_NEUTRINO_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
 # ============================================================================
 # Summary
 # ============================================================================

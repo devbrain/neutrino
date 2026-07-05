@@ -118,6 +118,16 @@ namespace neutrino {
             void set_animation(sprite_state_id id, sprite_animation_id animation);
 
             /**
+             * @brief Switch to an animation only if it is not already active.
+             *
+             * @return true when the state changed and elapsed time was reset.
+             *
+             * @pre @p id must identify a state stored in this manager.
+             * @pre @p animation must identify an animation stored in this manager.
+             */
+            bool switch_animation(sprite_state_id id, sprite_animation_id animation);
+
+            /**
              * @brief Resolve the appearance currently represented by a state.
              *
              * @pre @p id must identify a state stored in this manager.

@@ -111,6 +111,43 @@ TEST_SUITE("neutrino::video::sprite_state") {
         CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::none);
     }
 
+    TEST_CASE("sprite animation switch preserves elapsed time when unchanged") {
+        neutrino::application_config cfg;
+        cfg.title = "Sprite animation switch test";
+        cfg.width = 100;
+        cfg.height = 100;
+        cfg.flags = sdlpp::window_flags::hidden;
+        cfg.target_fps = 0;
+        neutrino::test::test_application test_app(cfg);
+
+        const auto walk = neutrino::register_sprite_animation(neutrino::sprite_animation({
+            frame(neutrino::sprite_flip::none, 1.0f),
+            frame(neutrino::sprite_flip::horizontal, 50.0f)
+        }));
+        const auto jump = neutrino::register_sprite_animation(neutrino::sprite_animation({
+            frame(neutrino::sprite_flip::vertical, 1.0f),
+            frame(neutrino::sprite_flip::diagonal, 50.0f)
+        }, false));
+        const auto state = neutrino::create_sprite_state(walk);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        test_app.iterate();
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::horizontal);
+
+        CHECK_FALSE(neutrino::switch_sprite_animation(state, walk));
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::horizontal);
+
+        CHECK(neutrino::switch_sprite_animation(state, jump));
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::vertical);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        test_app.iterate();
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::diagonal);
+
+        neutrino::restart_sprite_animation(state, jump);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::vertical);
+    }
+
     TEST_CASE("sprite_state_finished reports completed non-looping animations") {
         neutrino::application_config cfg;
         cfg.title = "Sprite state finished test";

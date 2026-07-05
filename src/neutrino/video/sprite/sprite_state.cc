@@ -31,9 +31,19 @@ namespace neutrino {
     }
 
     void set_sprite_state_animation(sprite_state_id state, sprite_animation_id animation) {
+        restart_sprite_animation(state, animation);
+    }
+
+    void restart_sprite_animation(sprite_state_id state, sprite_animation_id animation) {
         auto* manager = service_locator::instance().get_sprites_manager();
         ENFORCE(manager != nullptr);
         manager->set_animation(state, animation);
+    }
+
+    bool switch_sprite_animation(sprite_state_id state, sprite_animation_id animation) {
+        auto* manager = service_locator::instance().get_sprites_manager();
+        ENFORCE(manager != nullptr);
+        return manager->switch_animation(state, animation);
     }
 
     sprite_appearance sprite_state_appearance(sprite_state_id state) {
