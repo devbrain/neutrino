@@ -75,6 +75,9 @@ TEST_SUITE("neutrino::video::draw") {
         };
         CHECK(neutrino::draw_sprite(neutrino::point{44, 20}, appearance).has_value());
 
+        const auto state = neutrino::create_sprite_state(appearance);
+        CHECK(neutrino::draw_sprite(neutrino::point{46, 20}, state).has_value());
+
         const neutrino::sprite_appearance hidden{
             .visual = sprite,
             .visible = false

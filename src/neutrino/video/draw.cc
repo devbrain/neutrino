@@ -308,6 +308,12 @@ namespace neutrino {
         return draw_sprite(position, appearance.visual, appearance.flip);
     }
 
+    sdlpp::expected <void, std::string> draw_sprite(
+        const point& position,
+        sprite_state_id state) {
+        return draw_sprite(position, sprite_state_appearance(state));
+    }
+
     // --- Anti-aliased Lines ---
 
     sdlpp::expected<void, std::string> draw_line_aa(int x1, int y1, int x2, int y2) {

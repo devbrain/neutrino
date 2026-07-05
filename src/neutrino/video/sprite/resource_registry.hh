@@ -63,6 +63,26 @@ namespace neutrino::details {
                 }
             }
 
+            /**
+             * @brief Visit each stored resource.
+             */
+            template <typename Function>
+            void for_each_resource(Function&& fn) {
+                for (auto& entry : m_resources) {
+                    fn(entry.second);
+                }
+            }
+
+            /**
+             * @brief Visit each stored resource without mutation.
+             */
+            template <typename Function>
+            void for_each_resource(Function&& fn) const {
+                for (const auto& entry : m_resources) {
+                    fn(entry.second);
+                }
+            }
+
         private:
             std::map <Id, Resource> m_resources;
             static inline std::uint32_t s_counter = 0;

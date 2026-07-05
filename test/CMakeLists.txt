@@ -30,6 +30,7 @@ add_executable(neutrino_tests
         input/test_input.cc
         video/test_bitmask.cc
         video/test_sprite_animation.cc
+        video/test_sprite_state.cc
         video/test_cpu_texture_atlas.cc
         video/test_draw.cc
         video/test_sprite_sheet.cc
