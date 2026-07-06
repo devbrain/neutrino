@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include <nlohmann/json.hpp>
+#include "utils/json.hh"
+
 #include <pugixml.hpp>
 
 #include <charconv>
@@ -18,7 +19,7 @@
 #include <neutrino/world/world.hh>
 
 namespace neutrino::world_tmx {
-    using json = nlohmann::json;
+    using json = utils::json;
 
     enum class node_kind {
         xml,
@@ -40,7 +41,6 @@ namespace neutrino::world_tmx {
 
     [[nodiscard]] std::string make_string(std::string_view value);
     [[nodiscard]] std::string trim(std::string_view value);
-    [[nodiscard]] std::string trim_document(std::string_view value);
 
     [[nodiscard]] std::optional <std::string> attribute(const node_view& node, std::string_view name);
     [[nodiscard]] bool has_attribute(const node_view& node, std::string_view name);

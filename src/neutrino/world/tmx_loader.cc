@@ -6,9 +6,10 @@
 
 #include "world/tmx/parser.hh"
 
+#include <failsafe/exception.hh>
+
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
 #include <system_error>
 
 namespace neutrino {
@@ -16,7 +17,7 @@ namespace neutrino {
         [[nodiscard]] std::string read_text_file(const std::filesystem::path& path) {
             std::ifstream input(path, std::ios::binary);
             if (!input) {
-                throw std::runtime_error("failed to open world file: " + path.string());
+                THROW_RUNTIME("failed to open world file:", path.string());
             }
             std::ostringstream out;
             out << input.rdbuf();
@@ -41,21 +42,21 @@ namespace neutrino {
             std::string_view source) {
             const auto relative = std::filesystem::path(std::string(source));
             if (relative.is_absolute()) {
-                throw std::runtime_error("external tileset path must be relative: " + relative.string());
+                THROW_RUNTIME("external tileset path must be relative:", relative.string());
             }
 
             std::error_code ec;
             const auto canonical_base = std::filesystem::weakly_canonical(base, ec);
             if (ec) {
-                throw std::runtime_error("failed to resolve world directory: " + base.string());
+                THROW_RUNTIME("failed to resolve world directory:", base.string());
             }
 
             const auto candidate = std::filesystem::weakly_canonical(canonical_base / relative, ec);
             if (ec) {
-                throw std::runtime_error("failed to resolve external tileset path: " + relative.string());
+                THROW_RUNTIME("failed to resolve external tileset path:", relative.string());
             }
             if (!path_has_prefix(candidate, canonical_base)) {
-                throw std::runtime_error("external tileset path escapes world directory: " + relative.string());
+                THROW_RUNTIME("external tileset path escapes world directory:", relative.string());
             }
             return candidate;
         }

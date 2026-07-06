@@ -105,21 +105,16 @@ namespace neutrino::world_tmx {
             result.height = require_int(node, "height");
             const auto expected_cells = expected_cell_count(result.width, result.height, "chunk");
 
-            if (encoding.empty() && compression.empty()) {
-                if (node.is_json()) {
-                    result.cells = parse_json_tile_data(node, encoding, compression, expected_cells, "chunk");
-                } else {
+            if (node.is_json()) {
+                result.cells = parse_json_tile_data(node, encoding, compression, expected_cells, "chunk");
+            } else {
+                if (encoding.empty() && compression.empty()) {
                     for_each_element(node, "tile", [&](const node_view& tile) {
                         result.cells.push_back(decode_gid(get_uint(tile, "gid", 0)));
                     });
                     validate_cell_count(result.cells.size(), expected_cells, "chunk");
-                }
-            } else {
-                const auto data = node.is_json() ? get_string(node, "data", "") : text(node);
-                if (node.is_json()) {
-                    result.cells = parse_json_tile_data(node, encoding, compression, expected_cells, "chunk");
                 } else {
-                    result.cells = parse_encoded_cells(encoding, compression, data, expected_cells);
+                    result.cells = parse_encoded_cells(encoding, compression, text(node), expected_cells);
                 }
             }
             return result;
@@ -139,8 +134,6 @@ namespace neutrino::world_tmx {
                     for_each_element(node, "chunks", [&](const node_view& chunk) {
                         result.chunks.push_back(parse_chunk(chunk, encoding, compression));
                     });
-                } else if (encoding.empty() && compression.empty()) {
-                    result.cells = parse_json_tile_data(node, encoding, compression, expected_cells, "tile layer");
                 } else {
                     result.cells = parse_json_tile_data(node, encoding, compression, expected_cells, "tile layer");
                 }

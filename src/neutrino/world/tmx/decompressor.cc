@@ -11,6 +11,8 @@
 #include <limits>
 #include <string>
 
+#include <SDL3/SDL_stdinc.h>
+
 #if defined(NEUTRINO_TMX_ENABLE_ZSTD)
 #include <zstd.h>
 #endif
@@ -111,17 +113,6 @@ namespace neutrino::world_tmx {
             ++offset;
         }
 
-        [[nodiscard]] std::uint32_t crc32(const byte_buffer& data) {
-            auto crc = 0xffffffffu;
-            for (const auto byte : data) {
-                crc ^= byte;
-                for (int bit = 0; bit < 8; ++bit) {
-                    const auto mask = 0u - (crc & 1u);
-                    crc = (crc >> 1u) ^ (0xedb88320u & mask);
-                }
-            }
-            return crc ^ 0xffffffffu;
-        }
     }
 
     byte_buffer decompressor::decompress(
@@ -202,7 +193,7 @@ namespace neutrino::world_tmx {
 
         const auto expected_crc = read_le32(input, input.size() - 8);
         const auto expected_size = read_le32(input, input.size() - 4);
-        if (crc32(output) != expected_crc) {
+        if (SDL_crc32(0, output.data(), output.size()) != expected_crc) {
             fail("gzip data CRC check failed");
         }
         if ((output.size() & 0xffffffffu) != expected_size) {

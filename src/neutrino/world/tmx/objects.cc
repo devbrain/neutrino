@@ -93,6 +93,7 @@ namespace neutrino::world_tmx {
             const auto decoded = decode_gid(get_uint(node, "gid", 0));
             result.gid = decoded.gid;
             result.flip = decoded.flip;
+            result.rotated_hex_120 = decoded.rotated_hex_120;
             parse_local_properties(result, node);
             return result;
         }

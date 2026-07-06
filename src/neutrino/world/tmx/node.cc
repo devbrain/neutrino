@@ -4,12 +4,13 @@
 
 #include "world/tmx/node.hh"
 
+#include <failsafe/exception.hh>
+
 #include <cctype>
-#include <stdexcept>
 
 namespace neutrino::world_tmx {
     [[noreturn]] void fail(const std::string& message) {
-        throw std::runtime_error("TMX parse error: " + message);
+        THROW_RUNTIME("TMX parse error: " + message);
     }
 
     std::string make_string(std::string_view value) {
@@ -31,18 +32,6 @@ namespace neutrino::world_tmx {
             last = prev;
         }
         return {first, last};
-    }
-
-    std::string trim_document(std::string_view value) {
-        auto clean = trim(value);
-        if (clean.size() >= 3 &&
-            static_cast <unsigned char>(clean[0]) == 0xefu &&
-            static_cast <unsigned char>(clean[1]) == 0xbbu &&
-            static_cast <unsigned char>(clean[2]) == 0xbfu) {
-            clean.erase(0, 3);
-            clean = trim(clean);
-        }
-        return clean;
     }
 
     std::optional <std::string> attribute(const node_view& node, std::string_view name) {

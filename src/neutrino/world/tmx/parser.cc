@@ -23,7 +23,7 @@ namespace neutrino::world_tmx {
     }
 
     world parse_document(std::string_view document, const tmx_path_resolver& resolver) {
-        const auto clean = trim_document(document);
+        const auto clean = utils::trim_document(document);
         if (clean.empty()) {
             fail("document is empty");
         }

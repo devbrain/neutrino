@@ -100,26 +100,19 @@ namespace neutrino::world_tmx {
     }
 
     world_layer_header parse_layer_header(const node_view& node, const group_context* parent) {
+        auto combined = parse_group_context(node, parent);
+
         world_layer_header result;
         result.id = static_cast <world_layer_id>(get_uint(node, "id", 0));
         result.name = get_string(node, "name", "");
-        result.opacity = (parent && parent->opacity ? *parent->opacity : 1.0f) *
-            static_cast <float>(get_double(node, "opacity", 1.0));
-        result.visible = (parent && parent->visible ? *parent->visible : true) &&
-            get_bool(node, "visible", true);
-        result.offset_x = (parent && parent->offset_x ? *parent->offset_x : 0.0) +
-            get_double(node, "offsetx", 0.0);
-        result.offset_y = (parent && parent->offset_y ? *parent->offset_y : 0.0) +
-            get_double(node, "offsety", 0.0);
-        result.parallax_x = (parent && parent->parallax_x ? *parent->parallax_x : 1.0f) *
-            static_cast <float>(get_double(node, "parallaxx", 1.0));
-        result.parallax_y = (parent && parent->parallax_y ? *parent->parallax_y : 1.0f) *
-            static_cast <float>(get_double(node, "parallaxy", 1.0));
-        result.tint = parse_optional_color(node, "tintcolor");
-        if (!result.tint && parent && parent->tint) {
-            result.tint = parent->tint;
-        }
-        parse_properties(result, node, parent ? &parent->properties : nullptr);
+        result.opacity = combined.opacity.value_or(1.0f);
+        result.visible = combined.visible.value_or(true);
+        result.offset_x = combined.offset_x.value_or(0.0);
+        result.offset_y = combined.offset_y.value_or(0.0);
+        result.parallax_x = combined.parallax_x.value_or(1.0f);
+        result.parallax_y = combined.parallax_y.value_or(1.0f);
+        result.tint = combined.tint;
+        static_cast <world_component&>(result) = std::move(combined.properties);
         return result;
     }
 }

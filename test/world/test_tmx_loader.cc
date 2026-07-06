@@ -697,6 +697,40 @@ TEST_CASE("tmx loader reports json and floating-point parse errors consistently"
     )"), std::runtime_error);
 }
 
+TEST_CASE("tmx loader json errors carry the failing element path") {
+    try {
+        static_cast <void>(neutrino::load_tmx_world(R"(
+            {
+              "map": {
+                "height": 1,
+                "layers": [
+                  {
+                    "data": [1, "x"],
+                    "height": 1,
+                    "name": "bad",
+                    "type": "tilelayer",
+                    "visible": true,
+                    "width": 2
+                  }
+                ],
+                "orientation": "orthogonal",
+                "renderorder": "right-down",
+                "tileheight": 32,
+                "tilesets": [],
+                "tilewidth": 32,
+                "type": "map",
+                "width": 2
+              }
+            }
+        )"));
+        FAIL("expected a TMX parse error");
+    } catch (const std::runtime_error& e) {
+        const std::string message = e.what();
+        CHECK(message.find("TMX parse error") != std::string::npos);
+        CHECK(message.find("/layers/0/data/1") != std::string::npos);
+    }
+}
+
 TEST_CASE("tmx loader accepts utf8 bom documents and external tilesets") {
     const std::string bom = "\xef\xbb\xbf";
     const auto world = neutrino::load_tmx_world(bom + R"(
@@ -860,6 +894,96 @@ TEST_CASE("world tileset rejects out of range tile rectangles") {
 
     tileset.tile_count = 2;
     CHECK_THROWS_AS(static_cast <void>(tileset.tile_rect(1)), std::out_of_range);
+}
+
+TEST_CASE("world tileset converts global ids and reports ownership") {
+    neutrino::world_tileset tileset;
+    tileset.first_gid = 5;
+    tileset.tile_count = 4;
+
+    CHECK(tileset.to_local(5) == 0);
+    CHECK(tileset.to_local(8) == 3);
+    CHECK(tileset.to_global(3) == 8);
+    CHECK_THROWS_AS(static_cast <void>(tileset.to_local(4)), std::out_of_range);
+    CHECK_THROWS_AS(static_cast <void>(tileset.to_local(0)), std::out_of_range);
+
+    CHECK(!tileset.contains(0));
+    CHECK(!tileset.contains(4));
+    CHECK(tileset.contains(5));
+    CHECK(tileset.contains(8));
+    CHECK(!tileset.contains(9));
+
+    tileset.tile_count = 0;
+    CHECK(tileset.contains(1000000));
+    CHECK(!tileset.contains(4));
+}
+
+TEST_CASE("world resolves the owning tileset for a gid") {
+    neutrino::world world;
+
+    neutrino::world_tileset first;
+    first.name = "first";
+    first.first_gid = 1;
+    first.tile_count = 4;
+    world.add_tileset(std::move(first));
+
+    neutrino::world_tileset second;
+    second.name = "second";
+    second.first_gid = 101;
+    world.add_tileset(std::move(second));
+
+    const auto owner_name = [&world](neutrino::world_tile_id gid) {
+        const auto* tileset = world.tileset_for(gid);
+        REQUIRE(tileset != nullptr);
+        return tileset->name;
+    };
+
+    CHECK(world.tileset_for(0) == nullptr);
+    CHECK(owner_name(1) == "first");
+    CHECK(owner_name(4) == "first");
+    CHECK(owner_name(100) == "first");
+    CHECK(owner_name(101) == "second");
+    CHECK(owner_name(50000) == "second");
+
+    const neutrino::world empty;
+    CHECK(empty.tileset_for(1) == nullptr);
+}
+
+TEST_CASE("tmx loader preserves hexagonal 120 degree rotation bits") {
+    const auto world = neutrino::load_tmx_world(R"(
+        <map version="1.10" orientation="hexagonal" renderorder="right-down"
+             width="2" height="1" tilewidth="14" tileheight="12"
+             hexsidelength="6" staggeraxis="y" staggerindex="odd">
+          <tileset firstgid="1" name="hex" tilewidth="14" tileheight="12" tilecount="4" columns="2">
+            <image source="hex.png" width="28" height="24"/>
+          </tileset>
+          <layer id="1" name="ground" width="2" height="1">
+            <data encoding="csv">268435457,4026531841</data>
+          </layer>
+          <objectgroup id="2" name="objects">
+            <object id="1" gid="268435458" x="0" y="12" width="14" height="12"/>
+          </objectgroup>
+        </map>
+    )");
+
+    const auto& layer = tile_layer(world, 0);
+    REQUIRE(layer.cells.size() == 2);
+
+    CHECK(layer.cells[0].gid == 1);
+    CHECK(layer.cells[0].flip == neutrino::sprite_flip::none);
+    CHECK(layer.cells[0].rotated_hex_120);
+
+    CHECK(layer.cells[1].gid == 1);
+    CHECK(layer.cells[1].horizontally_flipped());
+    CHECK(layer.cells[1].vertically_flipped());
+    CHECK(layer.cells[1].diagonally_flipped());
+    CHECK(layer.cells[1].rotated_hex_120);
+
+    const auto& objects = object_layer(world, 0);
+    REQUIRE(objects.objects.size() == 1);
+    const auto& object = std::get <neutrino::world_rectangle_object>(objects.objects[0]);
+    CHECK(object.gid == 2);
+    CHECK(object.rotated_hex_120);
 }
 
 TEST_CASE("tmx loader preserves tiled documentation layer and chunk examples") {

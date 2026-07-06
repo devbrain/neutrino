@@ -173,22 +173,13 @@ namespace neutrino::world_tmx {
                 require_uint(node, "tileid"),
                 sprite_flip::none
             };
-            if (get_bool(
-                    node,
-                    "hflip",
-                    (result.flip & sprite_flip::horizontal) == sprite_flip::horizontal)) {
+            if (get_bool(node, "hflip", false)) {
                 result.flip |= sprite_flip::horizontal;
             }
-            if (get_bool(
-                    node,
-                    "vflip",
-                    (result.flip & sprite_flip::vertical) == sprite_flip::vertical)) {
+            if (get_bool(node, "vflip", false)) {
                 result.flip |= sprite_flip::vertical;
             }
-            if (get_bool(
-                    node,
-                    "dflip",
-                    (result.flip & sprite_flip::diagonal) == sprite_flip::diagonal)) {
+            if (get_bool(node, "dflip", false)) {
                 result.flip |= sprite_flip::diagonal;
             }
             return result;
@@ -234,7 +225,7 @@ namespace neutrino::world_tmx {
             const std::string& source,
             const tmx_path_resolver& resolver) {
             const auto content = resolve_required(resolver, source);
-            const auto clean = trim_document(content);
+            const auto clean = utils::trim_document(content);
             if (clean.empty()) {
                 fail("external tileset <" + source + "> is empty");
             }
