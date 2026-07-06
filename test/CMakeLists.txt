@@ -35,6 +35,8 @@ add_executable(neutrino_tests
         video/test_cpu_texture_atlas.cc
         video/test_draw.cc
         video/test_sprite_sheet.cc
+
+        world/test_tmx_loader.cc
 )
 
 target_include_directories(neutrino_tests
@@ -47,5 +49,16 @@ target_link_libraries(neutrino_tests
         neutrino
         doctest::doctest
 )
+
+target_compile_definitions(neutrino_tests
+        PRIVATE
+        NEUTRINO_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/world/data"
+)
+
+if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)
+        target_compile_definitions(neutrino_tests
+                PRIVATE
+                NEUTRINO_TMX_ENABLE_ZSTD)
+endif()
 
 add_test(NAME neutrino_tests COMMAND neutrino_tests)

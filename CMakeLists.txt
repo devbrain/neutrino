@@ -30,6 +30,10 @@ include(NeutrinoInit)
 # ============================================================================
 
 neutrino_define_library_options(neutrino)
+neutrino_option(
+    NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD
+    "Enable zstd-compressed TMX data support"
+    ON)
 
 # ============================================================================
 include(${NEUTRINO_CMAKE_DIR}/deps/sdlpp.cmake)
@@ -47,6 +51,55 @@ neutrino_fetch_onyx_anim()
 
 include(${NEUTRINO_CMAKE_DIR}/deps/musac.cmake)
 neutrino_fetch_musac()
+
+FetchContent_Declare(pugixml
+    GIT_REPOSITORY https://github.com/zeux/pugixml.git
+    GIT_TAG v1.14
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(pugixml)
+
+FetchContent_Declare(nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)
+    set(ZSTD_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_STATIC ON CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_COMPRESSION OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_DECOMPRESSION ON CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_DICTBUILDER OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_DEPRECATED OFF CACHE BOOL "" FORCE)
+    set(ZSTD_LEGACY_SUPPORT OFF CACHE BOOL "" FORCE)
+    set(ZSTD_MULTITHREAD_SUPPORT OFF CACHE BOOL "" FORCE)
+    set(ZSTDLIB_VISIBLE hidden CACHE STRING "" FORCE)
+    set(ZSTDERRORLIB_VISIBLE hidden CACHE STRING "" FORCE)
+    set(ZDICTLIB_VISIBLE hidden CACHE STRING "" FORCE)
+    set(ZSTDLIB_STATIC_API hidden CACHE STRING "" FORCE)
+    set(ZDICTLIB_STATIC_API hidden CACHE STRING "" FORCE)
+
+    FetchContent_Declare(zstd
+        GIT_REPOSITORY https://github.com/facebook/zstd.git
+        GIT_TAG v1.5.6
+        GIT_SHALLOW TRUE
+        SOURCE_SUBDIR build/cmake
+    )
+    FetchContent_MakeAvailable(zstd)
+
+    if(TARGET libzstd_static)
+        set_target_properties(libzstd_static
+            PROPERTIES
+            POSITION_INDEPENDENT_CODE ON
+            C_VISIBILITY_PRESET hidden
+        )
+    endif()
+endif()
 
 # ============================================================================
 # Output directories
