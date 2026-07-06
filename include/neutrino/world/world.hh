@@ -165,6 +165,7 @@ namespace neutrino {
     struct world_tile_cell {
         world_tile_id gid{};
         sprite_flip flip{sprite_flip::none};
+        bool rotated_hex_120{};
 
         [[nodiscard]] bool empty() const noexcept {
             return gid == 0;
@@ -243,6 +244,7 @@ namespace neutrino {
         bool visible{true};
         world_tile_id gid{};
         sprite_flip flip{sprite_flip::none};
+        bool rotated_hex_120{};
     };
 
     struct world_rectangle_object : world_object_base {};
@@ -396,7 +398,22 @@ namespace neutrino {
 
         [[nodiscard]] const world_tile* tile(world_local_tile_id id) const noexcept;
         [[nodiscard]] rect tile_rect(world_local_tile_id id) const;
-        [[nodiscard]] world_local_tile_id to_local(world_tile_id gid) const noexcept;
+
+        /**
+         * @brief Whether this tileset owns the given global tile id.
+         *
+         * The empty gid (0) belongs to no tileset. When tile_count is zero the
+         * upper bound is unknown and any gid at or above first_gid matches.
+         */
+        [[nodiscard]] bool contains(world_tile_id gid) const noexcept;
+
+        /**
+         * @brief Convert a global tile id to a tileset-local id.
+         *
+         * @throws std::out_of_range when gid is below first_gid (including the
+         *         empty gid 0); use world::tileset_for to pick the owning tileset.
+         */
+        [[nodiscard]] world_local_tile_id to_local(world_tile_id gid) const;
         [[nodiscard]] world_tile_id to_global(world_local_tile_id id) const noexcept;
     };
 
@@ -449,6 +466,29 @@ namespace neutrino {
             [[nodiscard]] std::vector <world_tileset>& tilesets() noexcept;
             [[nodiscard]] const std::vector <world_layer>& layers() const noexcept;
             [[nodiscard]] std::vector <world_layer>& layers() noexcept;
+
+            /**
+             * @brief Find the tileset owning a global tile id.
+             *
+             * Follows the Tiled rule: the tileset with the highest first_gid
+             * that is lower than or equal to gid. Returns nullptr for the empty
+             * gid (0) or when no tileset qualifies.
+             */
+            [[nodiscard]] const world_tileset* tileset_for(world_tile_id gid) const noexcept;
+
+            /**
+             * @brief All layers of one concrete layer type, in map order.
+             */
+            template <typename T>
+            [[nodiscard]] std::vector <const T*> layers_of() const {
+                std::vector <const T*> result;
+                for (const auto& layer : m_layers) {
+                    if (const auto* typed = std::get_if <T>(&layer)) {
+                        result.push_back(typed);
+                    }
+                }
+                return result;
+            }
 
             [[nodiscard]] std::vector <const world_object_layer*> object_layers() const;
             [[nodiscard]] std::vector <const world_tile_layer*> tile_layers() const;

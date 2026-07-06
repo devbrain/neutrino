@@ -91,6 +91,11 @@ add_library(neutrino ${_lib_type}
         video/sprite/texture_registry.cc
         video/sprite/texture_registry.hh
         # -------------------------------------------------------
+        # Utils
+        # -------------------------------------------------------
+        utils/json.cc
+        utils/json.hh
+        # -------------------------------------------------------
         # World
         # -------------------------------------------------------
         ${PROJECT_SOURCE_DIR}/include/neutrino/world/world.hh

@@ -4,8 +4,9 @@
 
 #include <neutrino/world/world.hh>
 
+#include <failsafe/exception.hh>
+
 #include <limits>
-#include <stdexcept>
 
 namespace neutrino {
     bool world_component::empty() const noexcept {
@@ -38,7 +39,8 @@ namespace neutrino {
 
     const world_tile_cell& world_tile_layer::at(unsigned x, unsigned y) const {
         if (x >= width || y >= height) {
-            throw std::out_of_range("world_tile_layer coordinates are out of range");
+            THROW_OUT_OF_RANGE("world_tile_layer coordinates (", x, ",", y,
+                               ") are out of range for size", width, "x", height);
         }
         return cells.at(static_cast <std::size_t>(y) * width + x);
     }
@@ -59,28 +61,28 @@ namespace neutrino {
 
     rect world_tileset::tile_rect(world_local_tile_id id) const {
         if (!image) {
-            throw std::logic_error("tileset has no image");
+            THROW_LOGIC("tileset has no image");
         }
         if (tile_width == 0 || tile_height == 0) {
-            throw std::logic_error("tileset tile size is zero");
+            THROW_LOGIC("tileset tile size is zero");
         }
         if (tile_count != 0 && id >= tile_count) {
-            throw std::out_of_range("tileset tile id is out of range");
+            THROW_OUT_OF_RANGE("tileset tile id", id, "is out of range for tile count", tile_count);
         }
         const auto image_width = image->width;
         if (image_width < 2 * margin + tile_width) {
-            throw std::logic_error("tileset image is too small for the tile size and margin");
+            THROW_LOGIC("tileset image is too small for the tile size and margin");
         }
         const auto image_height = image->height;
         if (image_height < 2 * margin + tile_height) {
-            throw std::logic_error("tileset image is too small for the tile size and margin");
+            THROW_LOGIC("tileset image is too small for the tile size and margin");
         }
         const auto usable_width = image_width - 2 * margin + spacing;
         const auto stride_x = tile_width + spacing;
         const auto computed_columns = stride_x == 0 ? 0 : usable_width / stride_x;
         const auto actual_columns = columns == 0 ? computed_columns : columns;
         if (actual_columns == 0) {
-            throw std::logic_error("tileset has no columns");
+            THROW_LOGIC("tileset has no columns");
         }
 
         const auto tile_x = static_cast <std::size_t>(id % actual_columns);
@@ -90,14 +92,14 @@ namespace neutrino {
         const auto margin_size = static_cast <std::size_t>(margin);
         if (tile_x > (std::numeric_limits <std::size_t>::max() - margin_size) / stride_x_size ||
             tile_y > (std::numeric_limits <std::size_t>::max() - margin_size) / stride_y_size) {
-            throw std::out_of_range("tileset tile id is out of range");
+            THROW_OUT_OF_RANGE("tileset tile id", id, "is out of range");
         }
         const auto x = margin_size + tile_x * stride_x_size;
         const auto y = margin_size + tile_y * stride_y_size;
         if (x + tile_width > image_width || y + tile_height > image_height ||
             x > static_cast <std::size_t>(std::numeric_limits <int>::max()) ||
             y > static_cast <std::size_t>(std::numeric_limits <int>::max())) {
-            throw std::out_of_range("tileset tile id is out of range");
+            THROW_OUT_OF_RANGE("tileset tile id", id, "does not fit the tileset image");
         }
         return {
             static_cast <int>(x),
@@ -107,8 +109,18 @@ namespace neutrino {
         };
     }
 
-    world_local_tile_id world_tileset::to_local(world_tile_id gid) const noexcept {
-        return gid < first_gid ? 0 : gid - first_gid;
+    bool world_tileset::contains(world_tile_id gid) const noexcept {
+        if (gid == 0 || gid < first_gid) {
+            return false;
+        }
+        return tile_count == 0 || gid - first_gid < tile_count;
+    }
+
+    world_local_tile_id world_tileset::to_local(world_tile_id gid) const {
+        if (gid < first_gid) {
+            THROW_OUT_OF_RANGE("gid", gid, "does not belong to tileset with first_gid", first_gid);
+        }
+        return gid - first_gid;
     }
 
     world_tile_id world_tileset::to_global(world_local_tile_id id) const noexcept {
@@ -229,33 +241,28 @@ namespace neutrino {
         return m_layers;
     }
 
-    std::vector <const world_object_layer*> world::object_layers() const {
-        std::vector <const world_object_layer*> result;
-        for (const auto& layer : m_layers) {
-            if (const auto* object_layer = std::get_if <world_object_layer>(&layer)) {
-                result.push_back(object_layer);
+    const world_tileset* world::tileset_for(world_tile_id gid) const noexcept {
+        if (gid == 0) {
+            return nullptr;
+        }
+        const world_tileset* best = nullptr;
+        for (const auto& tileset : m_tilesets) {
+            if (tileset.first_gid <= gid && (best == nullptr || tileset.first_gid > best->first_gid)) {
+                best = &tileset;
             }
         }
-        return result;
+        return best;
+    }
+
+    std::vector <const world_object_layer*> world::object_layers() const {
+        return layers_of <world_object_layer>();
     }
 
     std::vector <const world_tile_layer*> world::tile_layers() const {
-        std::vector <const world_tile_layer*> result;
-        for (const auto& layer : m_layers) {
-            if (const auto* tile_layer = std::get_if <world_tile_layer>(&layer)) {
-                result.push_back(tile_layer);
-            }
-        }
-        return result;
+        return layers_of <world_tile_layer>();
     }
 
     std::vector <const world_image_layer*> world::image_layers() const {
-        std::vector <const world_image_layer*> result;
-        for (const auto& layer : m_layers) {
-            if (const auto* image_layer = std::get_if <world_image_layer>(&layer)) {
-                result.push_back(image_layer);
-            }
-        }
-        return result;
+        return layers_of <world_image_layer>();
     }
 }
