@@ -91,6 +91,34 @@ add_library(neutrino ${_lib_type}
         video/sprite/texture_registry.cc
         video/sprite/texture_registry.hh
         # -------------------------------------------------------
+        # World
+        # -------------------------------------------------------
+        ${PROJECT_SOURCE_DIR}/include/neutrino/world/world.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/world/tmx_loader.hh
+        world/world.cc
+        world/tmx_loader.cc
+        world/tmx/component.cc
+        world/tmx/component.hh
+        world/tmx/decompressor.cc
+        world/tmx/decompressor.hh
+        world/tmx/encoding.cc
+        world/tmx/encoding.hh
+        world/tmx/image.cc
+        world/tmx/image.hh
+        world/tmx/layers.cc
+        world/tmx/layers.hh
+        world/tmx/node.cc
+        world/tmx/node.hh
+        world/tmx/objects.cc
+        world/tmx/objects.hh
+        world/tmx/parser.cc
+        world/tmx/parser.hh
+        world/tmx/sinfl.h
+        world/tmx/tilesets.cc
+        world/tmx/tilesets.hh
+        world/tmx/world_parser.cc
+        world/tmx/world_parser.hh
+        # -------------------------------------------------------
         # Services
         # -------------------------------------------------------
         services/service_locator.cc
@@ -122,7 +150,25 @@ target_link_libraries(neutrino
         musac::backend_sdl3
         musac::codecs
         neutrino::onyx_image
-        neutrino::onyx_font)
+        neutrino::onyx_font
+        PRIVATE
+        nlohmann_json::nlohmann_json
+        pugixml::pugixml)
+
+if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)
+        target_compile_definitions(neutrino
+                PRIVATE
+                NEUTRINO_TMX_ENABLE_ZSTD)
+        target_link_libraries(neutrino
+                PRIVATE
+                libzstd_static)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        set_source_files_properties(world/tmx/decompressor.cc
+                PROPERTIES
+                COMPILE_OPTIONS "-fvisibility=hidden")
+endif()
 
 generate_export_header(neutrino
         BASE_NAME NEUTRINO
