@@ -69,6 +69,19 @@ TEST_SUITE("neutrino::video::sprite_sheet") {
         CHECK(ids.size() == 3);
     }
 
+    TEST_CASE("sprite visual ids are tied to the sheet that minted them") {
+        neutrino::sprite_sheet first_sheet(neutrino::gpu_texture_atlas_id{});
+        neutrino::sprite_sheet second_sheet(neutrino::gpu_texture_atlas_id{});
+
+        const auto first_visual = first_sheet.add_visual(neutrino::sprite_visual{.texture_rect = {0, 0, 8, 8}});
+        const auto second_visual = second_sheet.add_visual(neutrino::sprite_visual{.texture_rect = {0, 0, 8, 8}});
+
+        CHECK(first_sheet.contains(first_visual));
+        CHECK(second_sheet.contains(second_visual));
+        CHECK_FALSE(second_sheet.contains(first_visual));
+        CHECK_FALSE(first_sheet.contains(second_visual));
+    }
+
     TEST_CASE("registered sprite handles support invalid values and unordered containers") {
         const neutrino::sprite_sheet_id invalid_sheet;
         const neutrino::sprite_visual_ref invalid_ref;

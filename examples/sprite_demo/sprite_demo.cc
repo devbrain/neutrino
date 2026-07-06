@@ -98,8 +98,7 @@ namespace {
         neutrino::sprite_state_id player;
         neutrino::sprite_state_id torch_state;
         neutrino::sprite_state_id coin_state;
-        neutrino::sprite_appearance idle_right;
-        neutrino::sprite_appearance idle_left;
+        neutrino::sprite_appearance idle;
     };
 
     [[nodiscard]] sprite_resources load_sprites() {
@@ -135,11 +134,7 @@ namespace {
             {"coin.0", "coin.1"},
             neutrino::sprite_animation_duration{160.0f}));
 
-        auto idle_right = neutrino::make_sprite_appearance(sheet_id, "player.idle");
-        auto idle_left = neutrino::make_sprite_appearance(
-            sheet_id,
-            "player.idle",
-            neutrino::sprite_flip::horizontal);
+        auto idle = neutrino::make_sprite_appearance(sheet_id, "player.idle");
 
         return sprite_resources{
             .atlas = atlas,
@@ -148,11 +143,10 @@ namespace {
             .jump = jump,
             .torch = torch,
             .coin = coin,
-            .player = neutrino::create_sprite_state(idle_right),
+            .player = neutrino::create_sprite_state(idle),
             .torch_state = neutrino::create_sprite_state(torch),
             .coin_state = neutrino::create_sprite_state(coin),
-            .idle_right = idle_right,
-            .idle_left = idle_left
+            .idle = idle
         };
     }
 
@@ -213,7 +207,6 @@ namespace {
                         m_player_y = ground_y;
                         m_player_vy = 0.0f;
                         m_on_ground = true;
-                        m_mode = player_mode::idle;
                     }
                 }
 
@@ -223,9 +216,7 @@ namespace {
                         neutrino::switch_sprite_animation(m_sprites.player, m_sprites.walk);
                     } else if (m_mode != player_mode::idle) {
                         m_mode = player_mode::idle;
-                        neutrino::set_sprite_state_appearance(
-                            m_sprites.player,
-                            m_facing_left ? m_sprites.idle_left : m_sprites.idle_right);
+                        neutrino::set_sprite_state_appearance(m_sprites.player, m_sprites.idle);
                     }
                 }
             }
@@ -233,22 +224,14 @@ namespace {
             void render(neutrino::frame_duration) override {
                 draw_background();
 
-                neutrino::draw_sprite(neutrino::point{430, ground_y - 4}, m_sprites.torch_state, prop_scale);
-                neutrino::draw_sprite(neutrino::point{470, ground_y - 4}, m_sprites.coin_state, prop_scale);
+                neutrino::draw_sprite(neutrino::point{430, ground_y - 4}, m_sprites.torch_state, {.scale = prop_scale});
+                neutrino::draw_sprite(neutrino::point{470, ground_y - 4}, m_sprites.coin_state, {.scale = prop_scale});
 
                 const auto player_flip = m_facing_left ? neutrino::sprite_flip::horizontal : neutrino::sprite_flip::none;
-                if (m_mode == player_mode::walk || m_mode == player_mode::jump) {
-                    neutrino::draw_sprite(
-                        neutrino::point{static_cast <int>(m_player_x), static_cast <int>(m_player_y)},
-                        neutrino::sprite_state_appearance(m_sprites.player).visual,
-                        player_flip,
-                        player_scale);
-                } else {
-                    neutrino::draw_sprite(
-                        neutrino::point{static_cast <int>(m_player_x), static_cast <int>(m_player_y)},
-                        m_sprites.player,
-                        player_scale);
-                }
+                neutrino::draw_sprite(
+                    neutrino::point{static_cast <int>(m_player_x), static_cast <int>(m_player_y)},
+                    m_sprites.player,
+                    {.scale = player_scale, .flip = player_flip});
             }
 
             void handle_action(const sdlpp::event&) override {

@@ -11,6 +11,18 @@
 #include "video/sprite/sprites_manager.hh"
 
 namespace neutrino {
+    namespace {
+        [[nodiscard]] std::uint64_t make_visual_owner() noexcept {
+            static std::uint64_t next_owner = 0;
+            const auto owner = next_owner;
+            ++next_owner;
+            return owner;
+        }
+    }
+
+    std::uint64_t sprite_sheet::next_visual_owner() noexcept {
+        return make_visual_owner();
+    }
 
     sprite_sheet::sprite_sheet(gpu_texture_atlas_id atlas)
         : m_atlas(atlas) {
@@ -33,16 +45,16 @@ namespace neutrino {
     }
 
     bool sprite_sheet::contains(sprite_visual_id id) const noexcept {
-        return id.m_value < m_visuals.size();
+        return id.valid() && id.m_owner == m_visual_owner && id.m_value < m_visuals.size();
     }
 
     sprite_visual_id sprite_sheet::visual_id(std::size_t index) const {
         ENFORCE(index < m_visuals.size());
-        return sprite_visual_id(static_cast <std::uint32_t>(index));
+        return sprite_visual_id(static_cast <std::uint32_t>(index), m_visual_owner);
     }
 
     sprite_visual_id sprite_sheet::add_visual(sprite_visual visual) {
-        const sprite_visual_id id(static_cast <std::uint32_t>(m_visuals.size()));
+        const sprite_visual_id id(static_cast <std::uint32_t>(m_visuals.size()), m_visual_owner);
         m_visuals.push_back(std::move(visual));
         return id;
     }
@@ -64,7 +76,7 @@ namespace neutrino {
     }
 
     std::optional <sprite_visual_id> sprite_sheet::find(std::string_view name) const {
-        const auto it = m_names.find(std::string(name));
+        const auto it = m_names.find(name);
         if (it == m_names.end()) {
             return std::nullopt;
         }

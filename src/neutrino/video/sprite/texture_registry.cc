@@ -22,26 +22,24 @@ namespace neutrino {
             return surface.format();
         }
 
-        std::vector <rect> copy_frame_rects(const cpu_texture_atlas& atlas) {
-            std::vector <rect> frames;
-            frames.reserve(atlas.frame_count());
-            for (std::size_t i = 0; i < atlas.frame_count(); ++i) {
-                frames.push_back(atlas.frame(i).atlas_rect);
+        [[nodiscard]] gpu_texture_atlas make_atlas_record(sdlpp::texture tex, atlas_texture_format format) {
+            const auto size = tex.get_size();
+            if (!size) {
+                THROW_RUNTIME(size.error());
             }
-            return frames;
+            return gpu_texture_atlas{std::move(tex), format, size->width, size->height};
         }
-
     }
 
     gpu_texture_atlas_id texture_registry::make_id(std::uint32_t value) {
-        return gpu_texture_atlas_id(value);
+        return details::id_access::make <gpu_texture_atlas_id>(value);
     }
 
     gpu_texture_atlas_id texture_registry::create(const sdlpp::renderer& renderer, sdlpp::pixel_format_enum format,
         sdlpp::texture_access access, int width, int height) {
         auto tex = sdlpp::texture::create(renderer, format, access, width, height);
         if (tex) {
-            return m_atlases.store(make_id, gpu_texture_atlas{std::move(*tex), {}, atlas_texture_format::automatic});
+            return m_atlases.store(make_id, make_atlas_record(std::move(*tex), atlas_texture_format::automatic));
         }
         THROW_RUNTIME(tex.error());
     }
@@ -49,7 +47,7 @@ namespace neutrino {
     gpu_texture_atlas_id texture_registry::create(const sdlpp::renderer& renderer, const sdlpp::surface& s) {
         auto tex = sdlpp::texture::create(renderer, s);
         if (tex) {
-            return m_atlases.store(make_id, gpu_texture_atlas{std::move(*tex), {}, atlas_texture_format::automatic});
+            return m_atlases.store(make_id, make_atlas_record(std::move(*tex), atlas_texture_format::automatic));
         }
         THROW_RUNTIME(tex.error());
     }
@@ -58,8 +56,6 @@ namespace neutrino {
         const sdlpp::renderer& renderer,
         const cpu_texture_atlas& atlas,
         atlas_texture_format format) {
-        auto frames = copy_frame_rects(atlas);
-
         sdlpp::expected <sdlpp::texture, std::string> tex;
         if (format == atlas_texture_format::automatic) {
             tex = sdlpp::texture::create(renderer, atlas.surface());
@@ -75,7 +71,7 @@ namespace neutrino {
         }
 
         if (tex) {
-            return m_atlases.store(make_id, gpu_texture_atlas{std::move(*tex), std::move(frames), format});
+            return m_atlases.store(make_id, make_atlas_record(std::move(*tex), format));
         }
         THROW_RUNTIME(tex.error());
     }
@@ -86,6 +82,10 @@ namespace neutrino {
 
     const gpu_texture_atlas& texture_registry::get(gpu_texture_atlas_id idx) const {
         return m_atlases.get(idx);
+    }
+
+    bool texture_registry::contains(gpu_texture_atlas_id idx) const {
+        return m_atlases.contains(idx);
     }
 
     void texture_registry::erase(gpu_texture_atlas_id idx) {

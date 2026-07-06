@@ -14,8 +14,6 @@
 #include <neutrino/video/sprite/sprite_appearance.hh>
 
 namespace neutrino {
-    class sprites_manager;
-
     namespace details {
         struct sprite_state_id_tag;
     }
@@ -29,7 +27,7 @@ namespace neutrino {
      */
     class NEUTRINO_EXPORT sprite_state_id
         : public details::id_strong_type <details::sprite_state_id_tag> {
-        friend class sprites_manager;
+        friend struct details::id_access;
 
         public:
             /**
@@ -69,16 +67,6 @@ namespace neutrino {
     NEUTRINO_EXPORT void set_sprite_state_appearance(sprite_state_id state, sprite_appearance appearance);
 
     /**
-     * @brief Replace a state with an animation playback starting at elapsed zero.
-     *
-     * This is equivalent to @ref restart_sprite_animation.
-     *
-     * @pre @p state must identify a live sprite state.
-     * @pre @p animation must identify a registered animation definition.
-     */
-    NEUTRINO_EXPORT void set_sprite_state_animation(sprite_state_id state, sprite_animation_id animation);
-
-    /**
      * @brief Replace a state with animation playback starting at elapsed zero.
      *
      * Use this for one-shot actions that must restart even if the same animation is
@@ -114,7 +102,7 @@ namespace neutrino {
      * @brief Has the state's current non-looping animation reached its end?
      *
      * Fixed appearances and looping animations return false. Replacing a state with
-     * @ref set_sprite_state_animation resets the completion state to false.
+     * @ref restart_sprite_animation resets the completion state to false.
      *
      * @pre @p state must identify a live sprite state.
      */
@@ -136,9 +124,6 @@ namespace neutrino {
  *        @c unordered_map / @c unordered_set.
  */
 template<>
-struct std::hash <neutrino::sprite_state_id> {
-    [[nodiscard]] std::size_t operator()(const neutrino::sprite_state_id& id) const noexcept {
-        using base_type = neutrino::details::id_strong_type <neutrino::details::sprite_state_id_tag>;
-        return std::hash <base_type>{}(static_cast <const base_type&>(id));
-    }
+struct std::hash <neutrino::sprite_state_id>
+    : std::hash <neutrino::details::id_strong_type <neutrino::details::sprite_state_id_tag>> {
 };

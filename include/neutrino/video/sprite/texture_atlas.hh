@@ -41,20 +41,19 @@ namespace neutrino {
         indexed8
     };
 
-    class texture_registry;
     namespace details {
         struct gpu_texture_atlas_id_tag;
     }
     /**
      * @brief Opaque handle for a renderer-resident texture atlas.
      *
-     * The handle identifies an uploaded atlas stored by @ref texture_registry. Game
-     * code should treat it as a value handle and should not infer backend texture
-     * details from it.
+     * The handle identifies an uploaded atlas stored by the internal texture
+     * registry. Game code should treat it as a value handle and should not infer
+     * backend texture details from it.
      */
     class NEUTRINO_EXPORT gpu_texture_atlas_id
         : public details::id_strong_type <details::gpu_texture_atlas_id_tag> {
-        friend class texture_registry;
+        friend struct details::id_access;
 
         public:
             /**
@@ -97,9 +96,6 @@ namespace neutrino {
  *        @c unordered_map / @c unordered_set.
  */
 template<>
-struct std::hash <neutrino::gpu_texture_atlas_id> {
-    [[nodiscard]] std::size_t operator()(const neutrino::gpu_texture_atlas_id& id) const noexcept {
-        using base_type = neutrino::details::id_strong_type <neutrino::details::gpu_texture_atlas_id_tag>;
-        return std::hash <base_type>{}(static_cast <const base_type&>(id));
-    }
+struct std::hash <neutrino::gpu_texture_atlas_id>
+    : std::hash <neutrino::details::id_strong_type <neutrino::details::gpu_texture_atlas_id_tag>> {
 };

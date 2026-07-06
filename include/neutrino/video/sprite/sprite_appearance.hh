@@ -46,6 +46,22 @@ namespace neutrino {
     }
 
     /**
+     * @brief Compose two flip transforms by toggling flags.
+     *
+     * Each flip flag is an involution, so applying the same flag twice cancels
+     * out. Draw-time flips compose with an appearance's intrinsic flip this way.
+     */
+    [[nodiscard]] constexpr sprite_flip operator ^(sprite_flip lhs, sprite_flip rhs) noexcept {
+        return static_cast <sprite_flip>(
+            static_cast <std::uint8_t>(lhs) ^ static_cast <std::uint8_t>(rhs));
+    }
+
+    constexpr sprite_flip& operator ^=(sprite_flip& lhs, sprite_flip rhs) noexcept {
+        lhs = lhs ^ rhs;
+        return lhs;
+    }
+
+    /**
      * @brief Sprite render state without world position.
      *
      * This is the component-like value a world/entity layer can store to describe

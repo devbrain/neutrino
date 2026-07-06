@@ -15,8 +15,6 @@
 #include <neutrino/video/sprite/sprite_appearance.hh>
 
 namespace neutrino {
-    class sprites_manager;
-
     namespace details {
         struct sprite_animation_id_tag;
     }
@@ -29,7 +27,7 @@ namespace neutrino {
      */
     class NEUTRINO_EXPORT sprite_animation_id
         : public details::id_strong_type <details::sprite_animation_id_tag> {
-        friend class sprites_manager;
+        friend struct details::id_access;
 
         public:
             /**
@@ -144,9 +142,11 @@ namespace neutrino {
 
         private:
             static void validate_frame(const sprite_animation_frame& frame);
-            void rebuild_total_duration() noexcept;
+            void rebuild_frame_index();
 
             std::vector <sprite_animation_frame> m_frames;
+            /// Cumulative end time per frame, so frame_at is a binary search.
+            std::vector <sprite_animation_duration> m_end_times;
             sprite_animation_duration m_total_duration{0.0f};
             bool m_loop{true};
     };
@@ -178,9 +178,6 @@ namespace neutrino {
  *        @c unordered_map / @c unordered_set.
  */
 template<>
-struct std::hash <neutrino::sprite_animation_id> {
-    [[nodiscard]] std::size_t operator()(const neutrino::sprite_animation_id& id) const noexcept {
-        using base_type = neutrino::details::id_strong_type <neutrino::details::sprite_animation_id_tag>;
-        return std::hash <base_type>{}(static_cast <const base_type&>(id));
-    }
+struct std::hash <neutrino::sprite_animation_id>
+    : std::hash <neutrino::details::id_strong_type <neutrino::details::sprite_animation_id_tag>> {
 };

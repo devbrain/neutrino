@@ -5,7 +5,8 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
+#include <limits>
+#include <unordered_map>
 #include <utility>
 
 #include <failsafe/enforce.hh>
@@ -25,10 +26,23 @@ namespace neutrino::details {
              */
             template <typename MakeId>
             Id store(MakeId make_id, Resource resource) {
-                Id key = make_id(s_counter);
-                m_resources.emplace(key, std::move(resource));
-                ++s_counter;
-                return key;
+                constexpr auto max_attempts =
+                    static_cast <std::uint64_t>(std::numeric_limits <std::uint32_t>::max()) + 1u;
+
+                for (std::uint64_t attempt = 0; attempt < max_attempts; ++attempt) {
+                    Id key = make_id(m_next_id);
+                    ++m_next_id;
+
+                    if (!key.valid() || contains(key)) {
+                        continue;
+                    }
+
+                    m_resources.emplace(key, std::move(resource));
+                    return key;
+                }
+
+                ENFORCE(false)("Resource registry id space exhausted");
+                return Id{};
             }
 
             /**
@@ -90,8 +104,21 @@ namespace neutrino::details {
                 }
             }
 
+            /**
+             * @brief Does any stored resource satisfy @p pred? Stops at the first match.
+             */
+            template <typename Predicate>
+            [[nodiscard]] bool any_of(Predicate&& pred) const {
+                for (const auto& entry : m_resources) {
+                    if (pred(entry.second)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
         private:
-            std::map <Id, Resource> m_resources;
-            static inline std::uint32_t s_counter = 0;
+            std::unordered_map <Id, Resource> m_resources;
+            std::uint32_t m_next_id{0};
     };
 }

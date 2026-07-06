@@ -6,7 +6,11 @@
 
 #include <failsafe/enforce.hh>
 
+#include <cmath>
 #include <utility>
+
+#include "services/service_locator.hh"
+#include "video/sprite/texture_registry.hh"
 
 namespace neutrino {
     namespace {
@@ -29,18 +33,43 @@ namespace neutrino {
     }
 
     sprite_sheet_id sprites_manager::make_sheet_id(std::uint32_t value) {
-        return sprite_sheet_id(value);
+        return details::id_access::make <sprite_sheet_id>(value);
     }
 
     sprite_animation_id sprites_manager::make_animation_id(std::uint32_t value) {
-        return sprite_animation_id(value);
+        return details::id_access::make <sprite_animation_id>(value);
     }
 
     sprite_state_id sprites_manager::make_state_id(std::uint32_t value) {
-        return sprite_state_id(value);
+        return details::id_access::make <sprite_state_id>(value);
+    }
+
+    void sprites_manager::validate_sheet(const sprite_sheet& sheet) const {
+        auto* textures = service_locator::instance().get_texture_registry();
+        ENFORCE(textures != nullptr);
+        ENFORCE(sheet.atlas().valid())("Sprite sheet must reference a valid texture atlas");
+        ENFORCE(textures->contains(sheet.atlas()))("Sprite sheet texture atlas is not registered");
+    }
+
+    void sprites_manager::validate_appearance(const sprite_appearance& appearance) const {
+        if (!appearance.visual.valid()) {
+            return;
+        }
+
+        ENFORCE(m_sheets.contains(appearance.visual.sheet))("Sprite visual sheet is not registered");
+        ENFORCE(m_sheets.get(appearance.visual.sheet).contains(appearance.visual.visual))(
+            "Sprite visual id is not part of the referenced sheet");
+    }
+
+    void sprites_manager::validate_animation(const sprite_animation& animation) const {
+        ENFORCE(!animation.empty());
+        for (std::size_t i = 0; i < animation.frame_count(); ++i) {
+            validate_appearance(animation.frame(i).appearance);
+        }
     }
 
     sprite_sheet_id sprites_manager::create(sprite_sheet sheet) {
+        validate_sheet(sheet);
         return m_sheets.store(make_sheet_id, std::move(sheet));
     }
 
@@ -62,21 +91,13 @@ namespace neutrino {
     }
 
     bool sprites_manager::uses(gpu_texture_atlas_id id) const {
-        if (!id.valid()) {
-            return false;
-        }
-
-        bool found = false;
-        m_sheets.for_each_resource([&found, id](const sprite_sheet& sheet) {
-            if (sheet.atlas() == id) {
-                found = true;
-            }
+        return id.valid() && m_sheets.any_of([id](const sprite_sheet& sheet) {
+            return sheet.atlas() == id;
         });
-        return found;
     }
 
     sprite_animation_id sprites_manager::create(sprite_animation animation) {
-        ENFORCE(!animation.empty());
+        validate_animation(animation);
         return m_animations.store(make_animation_id, std::move(animation));
     }
 
@@ -94,23 +115,16 @@ namespace neutrino {
     }
 
     bool sprites_manager::uses(sprite_animation_id id) const {
-        if (!id.valid()) {
-            return false;
-        }
-
-        bool found = false;
-        m_states.for_each_resource([&found, id](const details::sprite_state_record& state) {
-            if (state.mode == details::sprite_state_mode::animation && state.animation == id) {
-                found = true;
-            }
+        return id.valid() && m_states.any_of([id](const details::sprite_state_record& state) {
+            return state.animation == id;
         });
-        return found;
     }
 
     sprite_state_id sprites_manager::create(sprite_appearance appearance) {
+        validate_appearance(appearance);
+
         details::sprite_state_record state;
         state.appearance = appearance;
-        state.mode = details::sprite_state_mode::appearance;
         return m_states.store(make_state_id, state);
     }
 
@@ -119,16 +133,16 @@ namespace neutrino {
 
         details::sprite_state_record state;
         state.animation = animation;
-        state.mode = details::sprite_state_mode::animation;
         return m_states.store(make_state_id, state);
     }
 
     void sprites_manager::set_appearance(sprite_state_id id, sprite_appearance appearance) {
+        validate_appearance(appearance);
+
         auto& state = m_states.get(id);
         state.appearance = appearance;
         state.animation = sprite_animation_id{};
         state.elapsed = sprite_animation_duration::zero();
-        state.mode = details::sprite_state_mode::appearance;
     }
 
     void sprites_manager::set_animation(sprite_state_id id, sprite_animation_id animation) {
@@ -138,27 +152,22 @@ namespace neutrino {
         state.appearance = sprite_appearance{};
         state.animation = animation;
         state.elapsed = sprite_animation_duration::zero();
-        state.mode = details::sprite_state_mode::animation;
     }
 
     bool sprites_manager::switch_animation(sprite_state_id id, sprite_animation_id animation) {
         ENFORCE(!get(animation).empty());
 
-        auto& state = m_states.get(id);
-        if (state.mode == details::sprite_state_mode::animation && state.animation == animation) {
+        if (m_states.get(id).animation == animation) {
             return false;
         }
 
-        state.appearance = sprite_appearance{};
-        state.animation = animation;
-        state.elapsed = sprite_animation_duration::zero();
-        state.mode = details::sprite_state_mode::animation;
+        set_animation(id, animation);
         return true;
     }
 
     sprite_appearance sprites_manager::appearance(sprite_state_id id) const {
         const auto& state = m_states.get(id);
-        if (state.mode == details::sprite_state_mode::appearance) {
+        if (!state.animation.valid()) {
             return state.appearance;
         }
 
@@ -167,7 +176,7 @@ namespace neutrino {
 
     bool sprites_manager::finished(sprite_state_id id) const {
         const auto& state = m_states.get(id);
-        if (state.mode == details::sprite_state_mode::appearance) {
+        if (!state.animation.valid()) {
             return false;
         }
 
@@ -180,9 +189,20 @@ namespace neutrino {
             return;
         }
 
-        m_states.for_each_resource([dt](details::sprite_state_record& state) {
-            if (state.mode == details::sprite_state_mode::animation) {
-                state.elapsed += dt;
+        m_states.for_each_resource([this, dt](details::sprite_state_record& state) {
+            if (!state.animation.valid()) {
+                return;
+            }
+
+            state.elapsed += dt;
+            const auto& animation = get(state.animation);
+            const auto total = animation.total_duration();
+            if (total <= sprite_animation_duration::zero()) {
+                state.elapsed = sprite_animation_duration::zero();
+            } else if (animation.loop()) {
+                state.elapsed = sprite_animation_duration{std::fmod(state.elapsed.count(), total.count())};
+            } else if (state.elapsed > total) {
+                state.elapsed = total;
             }
         });
     }
@@ -196,22 +216,11 @@ namespace neutrino {
             return false;
         }
 
-        bool found = false;
-        m_animations.for_each_resource([&found, id](const sprite_animation& animation) {
-            if (uses_sheet(animation, id)) {
-                found = true;
-            }
-        });
-
-        if (found) {
-            return true;
-        }
-
-        m_states.for_each_resource([&found, id](const details::sprite_state_record& state) {
-            if (state.mode == details::sprite_state_mode::appearance && uses_sheet(state.appearance, id)) {
-                found = true;
-            }
-        });
-        return found;
+        return m_animations.any_of([id](const sprite_animation& animation) {
+                return uses_sheet(animation, id);
+            })
+            || m_states.any_of([id](const details::sprite_state_record& state) {
+                return !state.animation.valid() && uses_sheet(state.appearance, id);
+            });
     }
 }
