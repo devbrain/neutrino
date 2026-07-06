@@ -93,6 +93,7 @@ add_library(neutrino ${_lib_type}
         # -------------------------------------------------------
         # Utils
         # -------------------------------------------------------
+        ${PROJECT_SOURCE_DIR}/include/neutrino/detail/hash.hh
         utils/json.cc
         utils/json.hh
         # -------------------------------------------------------

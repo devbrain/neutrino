@@ -4,9 +4,11 @@
 
 #pragma once
 
+#include <compare>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -14,13 +16,13 @@
 #include <vector>
 
 #include <neutrino/neutrino_export.h>
+#include <neutrino/detail/hash.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 #include <neutrino/video/sprite/detail/id_strong_type.hh>
 
 namespace neutrino {
     class sprite_sheet;
-    class sprites_manager;
 
     namespace details {
         struct sprite_sheet_id_tag;
@@ -34,7 +36,7 @@ namespace neutrino {
      */
     class NEUTRINO_EXPORT sprite_sheet_id
         : public details::id_strong_type <details::sprite_sheet_id_tag> {
-        friend class sprites_manager;
+        friend struct details::id_access;
 
         public:
             /**
@@ -61,6 +63,7 @@ namespace neutrino {
     class NEUTRINO_EXPORT sprite_visual_id
         : public details::id_strong_type <details::sprite_visual_id_tag> {
         friend class sprite_sheet;
+        friend struct std::hash <sprite_visual_id>;
 
         public:
             /**
@@ -68,10 +71,30 @@ namespace neutrino {
              */
             sprite_visual_id() = default;
 
-        private:
-            explicit sprite_visual_id(std::uint32_t value)
-                : id_strong_type(value) {
+            /**
+             * @brief Is this a visual handle minted by a sprite sheet?
+             */
+            [[nodiscard]] bool valid() const noexcept {
+                return id_strong_type::valid() && m_owner != invalid_owner;
             }
+
+            bool operator ==(const sprite_visual_id& other) const = default;
+
+            bool operator !=(const sprite_visual_id& other) const {
+                return !(*this == other);
+            }
+
+            std::strong_ordering operator <=>(const sprite_visual_id& other) const = default;
+
+        private:
+            static constexpr auto invalid_owner = std::numeric_limits <std::uint64_t>::max();
+
+            sprite_visual_id(std::uint32_t value, std::uint64_t owner)
+                : id_strong_type(value),
+                  m_owner(owner) {
+            }
+
+            std::uint64_t m_owner{invalid_owner};
     };
 
     /**
@@ -211,9 +234,16 @@ namespace neutrino {
             [[nodiscard]] std::optional <sprite_visual_id> find(std::string_view name) const;
 
         private:
+            static std::uint64_t next_visual_owner() noexcept;
+
             gpu_texture_atlas_id m_atlas;
+            std::uint64_t m_visual_owner{next_visual_owner()};
             std::vector <sprite_visual> m_visuals;
-            std::unordered_map <std::string, sprite_visual_id> m_names;
+            std::unordered_map <
+                std::string,
+                sprite_visual_id,
+                details::transparent_string_hash,
+                std::equal_to <>> m_names;
     };
 
     /**
@@ -274,11 +304,8 @@ namespace neutrino {
  *        @c unordered_map / @c unordered_set.
  */
 template<>
-struct std::hash <neutrino::sprite_sheet_id> {
-    [[nodiscard]] std::size_t operator()(const neutrino::sprite_sheet_id& id) const noexcept {
-        using base_type = neutrino::details::id_strong_type <neutrino::details::sprite_sheet_id_tag>;
-        return std::hash <base_type>{}(static_cast <const base_type&>(id));
-    }
+struct std::hash <neutrino::sprite_sheet_id>
+    : std::hash <neutrino::details::id_strong_type <neutrino::details::sprite_sheet_id_tag>> {
 };
 
 /**
@@ -289,7 +316,9 @@ template<>
 struct std::hash <neutrino::sprite_visual_id> {
     [[nodiscard]] std::size_t operator()(const neutrino::sprite_visual_id& id) const noexcept {
         using base_type = neutrino::details::id_strong_type <neutrino::details::sprite_visual_id_tag>;
-        return std::hash <base_type>{}(static_cast <const base_type&>(id));
+        auto result = std::hash <base_type>{}(static_cast <const base_type&>(id));
+        neutrino::details::hash_combine(result, std::hash <std::uint64_t>{}(id.m_owner));
+        return result;
     }
 };
 
@@ -301,7 +330,7 @@ template<>
 struct std::hash <neutrino::sprite_visual_ref> {
     [[nodiscard]] std::size_t operator()(const neutrino::sprite_visual_ref& ref) const noexcept {
         auto result = std::hash <neutrino::sprite_sheet_id>{}(ref.sheet);
-        result ^= std::hash <neutrino::sprite_visual_id>{}(ref.visual) + 0x9e3779b9u + (result << 6u) + (result >> 2u);
+        neutrino::details::hash_combine(result, std::hash <neutrino::sprite_visual_id>{}(ref.visual));
         return result;
     }
 };

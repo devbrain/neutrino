@@ -11,6 +11,17 @@
 #include <limits>
 
 namespace neutrino::details {
+    /**
+     * @brief Passkey factory so internal registries can mint strong ids without
+     *        public headers befriending internal manager classes.
+     */
+    struct id_access {
+        template <typename Id>
+        [[nodiscard]] static Id make(std::uint32_t value) noexcept {
+            return Id(value);
+        }
+    };
+
     template <typename Tag>
     class id_strong_type {
         friend struct std::hash <id_strong_type<Tag>>;

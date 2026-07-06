@@ -1,6 +1,8 @@
 #include <doctest/doctest.h>
 #include <neutrino/video/sprite/bitmask.hh>
 
+#include <limits>
+
 TEST_SUITE("neutrino::video::sprite::bitmask") {
     TEST_CASE("Constructor and dimensions") {
         neutrino::bitmask empty_mask;
@@ -47,6 +49,13 @@ TEST_SUITE("neutrino::video::sprite::bitmask") {
         CHECK_FALSE(mask.get(4, 0));
         CHECK_FALSE(mask.get(0, 4));
         CHECK_FALSE(mask.get(4, 4));
+    }
+
+    TEST_CASE("Constructor rejects invalid dimensions") {
+        CHECK_THROWS(neutrino::bitmask(-1, 5));
+        CHECK_THROWS(neutrino::bitmask(5, -1));
+        CHECK_THROWS(neutrino::bitmask(65536, 65536));
+        CHECK_THROWS(neutrino::bitmask(std::numeric_limits <int>::max(), 2));
     }
 
     TEST_CASE("Overlaps: No-overlap scenarios (Empty, Transparent, Disjoint)") {

@@ -30,10 +30,6 @@ namespace neutrino {
         manager->set_appearance(state, appearance);
     }
 
-    void set_sprite_state_animation(sprite_state_id state, sprite_animation_id animation) {
-        restart_sprite_animation(state, animation);
-    }
-
     void restart_sprite_animation(sprite_state_id state, sprite_animation_id animation) {
         auto* manager = service_locator::instance().get_sprites_manager();
         ENFORCE(manager != nullptr);

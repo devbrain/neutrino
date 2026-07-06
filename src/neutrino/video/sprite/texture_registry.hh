@@ -5,7 +5,6 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 #include <sdlpp/video/texture.hh>
 
@@ -17,9 +16,9 @@ namespace neutrino {
     /**
      * @brief Renderer-resident texture atlas record.
      *
-     * This stores the backend texture together with the copied frame rectangles from
-     * the CPU atlas. Higher-level systems resolve frame indices through @ref frames
-     * and use @ref texture for actual renderer submission.
+     * This stores the backend texture for renderer submission. Frame rectangles
+     * live in the sprite sheet's visuals; the texture dimensions are cached here
+     * so draw paths never query the backend per draw.
      */
     struct gpu_texture_atlas {
         /**
@@ -28,14 +27,19 @@ namespace neutrino {
         sdlpp::texture texture;
 
         /**
-         * @brief Source rectangles in texture coordinates, copied from the CPU atlas.
-         */
-        std::vector <rect> frames;
-
-        /**
          * @brief Format requested when the atlas was registered.
          */
         atlas_texture_format format{atlas_texture_format::automatic};
+
+        /**
+         * @brief Texture width in pixels, cached at upload time.
+         */
+        int width{0};
+
+        /**
+         * @brief Texture height in pixels, cached at upload time.
+         */
+        int height{0};
     };
 
     /**
@@ -80,6 +84,11 @@ namespace neutrino {
              * @pre @p idx must identify an atlas stored in this registry.
              */
             const gpu_texture_atlas& get(gpu_texture_atlas_id idx) const;
+
+            /**
+             * @brief Does this registry currently store @p idx?
+             */
+            [[nodiscard]] bool contains(gpu_texture_atlas_id idx) const;
 
             /**
              * @brief Remove an uploaded atlas if present.

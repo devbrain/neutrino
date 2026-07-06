@@ -5,21 +5,46 @@
 
 #include <initializer_list>
 #include <utility>
+#include <vector>
 
 TEST_SUITE("neutrino::video::sprites") {
     namespace {
-        [[nodiscard]] neutrino::sprite_sheet_id make_registered_sheet() {
-            neutrino::sprite_sheet sheet(neutrino::gpu_texture_atlas_id{});
-            sheet.add_visual("idle.0", neutrino::sprite_visual{.texture_rect = {0, 0, 8, 8}});
-            sheet.add_visual("run.0", neutrino::sprite_visual{.texture_rect = {8, 0, 8, 8}});
-            sheet.add_visual("run.1", neutrino::sprite_visual{.texture_rect = {16, 0, 8, 8}});
-            return neutrino::register_sprite_sheet(std::move(sheet));
+        struct registered_sheet {
+            neutrino::gpu_texture_atlas_id atlas;
+            neutrino::sprite_sheet_id sheet;
+        };
+
+        [[nodiscard]] neutrino::cpu_texture_atlas make_cpu_atlas() {
+            auto surface = sdlpp::surface::create_rgb(24, 8, sdlpp::pixel_format_enum::RGBA8888);
+            REQUIRE(surface.has_value());
+
+            std::vector <neutrino::cpu_texture_atlas_frame> frames;
+            frames.emplace_back(neutrino::rect{0, 0, 8, 8});
+            frames.emplace_back(neutrino::rect{8, 0, 8, 8});
+            frames.emplace_back(neutrino::rect{16, 0, 8, 8});
+            return neutrino::cpu_texture_atlas(std::move(*surface), std::move(frames));
+        }
+
+        [[nodiscard]] registered_sheet make_registered_sheet() {
+            auto cpu_atlas = make_cpu_atlas();
+            const auto atlas = neutrino::register_atlas(cpu_atlas, neutrino::atlas_texture_format::rgba);
+            neutrino::sprite_sheet sheet(atlas, cpu_atlas);
+            sheet.bind("idle.0", sheet.visual_id(0));
+            sheet.bind("run.0", sheet.visual_id(1));
+            sheet.bind("run.1", sheet.visual_id(2));
+            return registered_sheet{atlas, neutrino::register_sprite_sheet(std::move(sheet))};
+        }
+
+        void unregister(registered_sheet registered) {
+            neutrino::unregister_sprite_sheet(registered.sheet);
+            neutrino::unregister_atlas(registered.atlas);
         }
     }
 
     TEST_CASE("sprite facade builds appearances from visual references, indexes, and names") {
         neutrino::test::test_application test_app("Sprite facade appearance test");
-        const auto sheet = make_registered_sheet();
+        const auto registered = make_registered_sheet();
+        const auto sheet = registered.sheet;
         const auto idle = neutrino::visual_ref(sheet, "idle.0");
 
         const auto direct = neutrino::make_sprite_appearance(
@@ -40,12 +65,13 @@ TEST_SUITE("neutrino::video::sprites") {
         CHECK(by_name.visible);
 
         CHECK_THROWS(neutrino::visual_ref(sheet, "missing"));
-        neutrino::unregister_sprite_sheet(sheet);
+        unregister(registered);
     }
 
     TEST_CASE("sprite facade builds animation frames and constant-duration animations") {
         neutrino::test::test_application test_app("Sprite facade animation test");
-        const auto sheet = make_registered_sheet();
+        const auto registered = make_registered_sheet();
+        const auto sheet = registered.sheet;
 
         const auto idle = neutrino::make_sprite_appearance(sheet, "idle.0");
         const auto run = neutrino::make_sprite_appearance(
@@ -84,12 +110,13 @@ TEST_SUITE("neutrino::video::sprites") {
             {idle},
             neutrino::sprite_animation_duration{0.0f}));
 
-        neutrino::unregister_sprite_sheet(sheet);
+        unregister(registered);
     }
 
     TEST_CASE("sprite facade builds animations from sheet indexes, names, and ranges") {
         neutrino::test::test_application test_app("Sprite facade sheet animation test");
-        const auto sheet = make_registered_sheet();
+        const auto registered = make_registered_sheet();
+        const auto sheet = registered.sheet;
 
         const auto by_index = neutrino::make_sprite_animation(
             sheet,
@@ -131,6 +158,6 @@ TEST_SUITE("neutrino::video::sprites") {
             std::initializer_list <std::size_t>{},
             neutrino::sprite_animation_duration{60.0f}));
 
-        neutrino::unregister_sprite_sheet(sheet);
+        unregister(registered);
     }
 }

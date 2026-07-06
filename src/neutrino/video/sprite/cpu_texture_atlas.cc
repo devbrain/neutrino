@@ -11,24 +11,7 @@
 namespace neutrino {
     namespace {
         bool has_alpha_channel(sdlpp::pixel_format_enum format) {
-            switch (format) {
-                case sdlpp::pixel_format_enum::ARGB4444:
-                case sdlpp::pixel_format_enum::RGBA4444:
-                case sdlpp::pixel_format_enum::ABGR4444:
-                case sdlpp::pixel_format_enum::BGRA4444:
-                case sdlpp::pixel_format_enum::ARGB1555:
-                case sdlpp::pixel_format_enum::RGBA5551:
-                case sdlpp::pixel_format_enum::ABGR1555:
-                case sdlpp::pixel_format_enum::BGRA5551:
-                case sdlpp::pixel_format_enum::ARGB8888:
-                case sdlpp::pixel_format_enum::RGBA8888:
-                case sdlpp::pixel_format_enum::ABGR8888:
-                case sdlpp::pixel_format_enum::BGRA8888:
-                case sdlpp::pixel_format_enum::ARGB2101010:
-                    return true;
-                default:
-                    return false;
-            }
+            return SDL_ISPIXELFORMAT_ALPHA(static_cast <SDL_PixelFormat>(format));
         }
 
         bool same_rgb(const sdlpp::color& lhs, const sdlpp::color& rhs) {

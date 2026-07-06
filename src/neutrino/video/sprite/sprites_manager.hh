@@ -14,16 +14,14 @@
 
 namespace neutrino {
     namespace details {
-        enum class sprite_state_mode {
-            appearance,
-            animation
-        };
-
+        /**
+         * @brief Runtime render state: animation playback when @ref animation is
+         *        valid, otherwise the fixed @ref appearance.
+         */
         struct sprite_state_record {
             sprite_appearance appearance;
             sprite_animation_id animation;
             sprite_animation_duration elapsed{0.0f};
-            sprite_state_mode mode{sprite_state_mode::appearance};
         };
     }
 
@@ -162,6 +160,10 @@ namespace neutrino {
             static sprite_sheet_id make_sheet_id(std::uint32_t value);
             static sprite_animation_id make_animation_id(std::uint32_t value);
             static sprite_state_id make_state_id(std::uint32_t value);
+
+            void validate_sheet(const sprite_sheet& sheet) const;
+            void validate_appearance(const sprite_appearance& appearance) const;
+            void validate_animation(const sprite_animation& animation) const;
 
             details::resource_registry <sprite_sheet_id, sprite_sheet> m_sheets;
             details::resource_registry <sprite_animation_id, sprite_animation> m_animations;

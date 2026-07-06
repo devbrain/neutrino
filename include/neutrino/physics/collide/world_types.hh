@@ -39,6 +39,8 @@
 #include <iterator>
 #include <type_traits>
 #include <variant>
+
+#include <neutrino/detail/hash.hh>
 #include <vector>
 #include <optional>
 
@@ -305,12 +307,9 @@ namespace neutrino::physics {
 template <>
 struct std::hash<neutrino::physics::collider_id> {
     [[nodiscard]] std::size_t operator()(const neutrino::physics::collider_id& id) const noexcept {
-        const std::size_t h1 = std::hash<std::uint32_t>{}(id.value);
-        const std::size_t h2 = std::hash<std::uint32_t>{}(id.generation);
-        const std::size_t h3 = std::hash<std::uint32_t>{}(static_cast<std::uint32_t>(id.type_id));
-        std::size_t h = h1;
-        h ^= h2 + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
-        h ^= h3 + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
+        std::size_t h = std::hash<std::uint32_t>{}(id.value);
+        neutrino::details::hash_combine(h, std::hash<std::uint32_t>{}(id.generation));
+        neutrino::details::hash_combine(h, std::hash<std::uint32_t>{}(static_cast<std::uint32_t>(id.type_id)));
         return h;
     }
 };

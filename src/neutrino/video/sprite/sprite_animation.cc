@@ -4,6 +4,7 @@
 
 #include <neutrino/video/sprite/sprite_animation.hh>
 
+#include <algorithm>
 #include <cmath>
 #include <utility>
 
@@ -45,7 +46,7 @@ namespace neutrino {
         for (const auto& frame : m_frames) {
             validate_frame(frame);
         }
-        rebuild_total_duration();
+        rebuild_frame_index();
     }
 
     bool sprite_animation::loop() const noexcept {
@@ -77,21 +78,18 @@ namespace neutrino {
         validate_frame(frame);
         m_total_duration += frame.duration;
         m_frames.push_back(std::move(frame));
+        m_end_times.push_back(m_total_duration);
     }
 
     const sprite_animation_frame& sprite_animation::frame_at(sprite_animation_duration elapsed) const {
         ENFORCE(!m_frames.empty());
 
         const auto normalized = clamp_or_wrap(elapsed, m_total_duration, m_loop);
-        sprite_animation_duration end_time{0.0f};
-        for (const auto& frame : m_frames) {
-            end_time += frame.duration;
-            if (normalized < end_time) {
-                return frame;
-            }
-        }
-
-        return m_frames.back();
+        const auto it = std::upper_bound(m_end_times.begin(), m_end_times.end(), normalized);
+        const auto index = std::min(
+            static_cast <std::size_t>(std::distance(m_end_times.begin(), it)),
+            m_frames.size() - 1);
+        return m_frames[index];
     }
 
     sprite_appearance sprite_animation::appearance_at(sprite_animation_duration elapsed) const {
@@ -102,10 +100,13 @@ namespace neutrino {
         ENFORCE(frame.duration > sprite_animation_duration::zero());
     }
 
-    void sprite_animation::rebuild_total_duration() noexcept {
+    void sprite_animation::rebuild_frame_index() {
         m_total_duration = sprite_animation_duration::zero();
+        m_end_times.clear();
+        m_end_times.reserve(m_frames.size());
         for (const auto& frame : m_frames) {
             m_total_duration += frame.duration;
+            m_end_times.push_back(m_total_duration);
         }
     }
 

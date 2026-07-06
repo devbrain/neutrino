@@ -56,6 +56,26 @@ TEST_SUITE("neutrino::video::sprite_state") {
         CHECK_NOTHROW(neutrino::unregister_atlas(neutrino::gpu_texture_atlas_id{}));
     }
 
+    TEST_CASE("sprite registration rejects dangling resource references") {
+        neutrino::test::test_application test_app("Sprite registration validation test");
+
+        CHECK_THROWS(neutrino::register_sprite_sheet(neutrino::sprite_sheet(neutrino::gpu_texture_atlas_id{})));
+
+        auto cpu_atlas = make_atlas();
+        const auto atlas = neutrino::register_atlas(cpu_atlas, neutrino::atlas_texture_format::rgba);
+        const auto sheet = neutrino::register_sprite_sheet(neutrino::sprite_sheet(atlas, cpu_atlas));
+        const auto stale_visual = neutrino::visual_ref(sheet, 0);
+        neutrino::unregister_sprite_sheet(sheet);
+        neutrino::unregister_atlas(atlas);
+
+        CHECK_THROWS(neutrino::register_sprite_animation(neutrino::sprite_animation({
+            neutrino::sprite_animation_frame{
+                .appearance = neutrino::sprite_appearance{.visual = stale_visual},
+                .duration = neutrino::sprite_animation_duration{10.0f}
+            }
+        })));
+    }
+
     TEST_CASE("sprite states resolve fixed appearances") {
         neutrino::test::test_application test_app("Sprite state fixed appearance test");
 
@@ -107,7 +127,7 @@ TEST_SUITE("neutrino::video::sprite_state") {
         });
         CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::vertical);
 
-        neutrino::set_sprite_state_animation(state, animation);
+        neutrino::restart_sprite_animation(state, animation);
         CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::none);
     }
 
@@ -180,7 +200,7 @@ TEST_SUITE("neutrino::video::sprite_state") {
         CHECK_FALSE(neutrino::sprite_state_finished(looping));
         CHECK(neutrino::sprite_state_finished(one_shot));
 
-        neutrino::set_sprite_state_animation(one_shot, one_shot_animation);
+        neutrino::restart_sprite_animation(one_shot, one_shot_animation);
         CHECK_FALSE(neutrino::sprite_state_finished(one_shot));
 
         neutrino::set_sprite_state_appearance(one_shot, neutrino::sprite_appearance{});
