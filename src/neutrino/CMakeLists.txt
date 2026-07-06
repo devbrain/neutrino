@@ -94,6 +94,7 @@ add_library(neutrino ${_lib_type}
         # Utils
         # -------------------------------------------------------
         ${PROJECT_SOURCE_DIR}/include/neutrino/detail/hash.hh
+        detail/hash.cc
         utils/json.cc
         utils/json.hh
         # -------------------------------------------------------
@@ -137,6 +138,8 @@ add_library(neutrino ${_lib_type}
         input/hotkey.cc
         input/mouse_click.cc
         input/gamepad_button.cc
+
+
 )
 add_library(neutrino::neutrino ALIAS neutrino)
 

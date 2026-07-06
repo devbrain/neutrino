@@ -37,6 +37,8 @@ add_executable(neutrino_tests
         video/test_sprite_sheet.cc
 
         world/test_tmx_loader.cc
+
+        detail/test_hash.cc
 )
 
 target_include_directories(neutrino_tests
