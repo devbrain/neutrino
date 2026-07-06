@@ -10,6 +10,8 @@
 #include <functional>
 #include <limits>
 
+#include <neutrino/detail/hash.hh>
+
 namespace neutrino::details {
     /**
      * @brief Passkey factory so internal registries can mint strong ids without
@@ -64,6 +66,6 @@ namespace neutrino::details {
 template<typename Tag>
 struct std::hash <neutrino::details::id_strong_type<Tag>> {
     [[nodiscard]] std::size_t operator()(const neutrino::details::id_strong_type<Tag>& id) const noexcept {
-        return std::hash <std::size_t>{}(id.m_value);
+        return neutrino::details::hash_value(id.m_value);
     }
 };

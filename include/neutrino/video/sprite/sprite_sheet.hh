@@ -317,7 +317,7 @@ struct std::hash <neutrino::sprite_visual_id> {
     [[nodiscard]] std::size_t operator()(const neutrino::sprite_visual_id& id) const noexcept {
         using base_type = neutrino::details::id_strong_type <neutrino::details::sprite_visual_id_tag>;
         auto result = std::hash <base_type>{}(static_cast <const base_type&>(id));
-        neutrino::details::hash_combine(result, std::hash <std::uint64_t>{}(id.m_owner));
+        neutrino::details::hash_combine(result, neutrino::details::hash_value(id.m_owner));
         return result;
     }
 };
