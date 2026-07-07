@@ -65,6 +65,7 @@ add_library(neutrino ${_lib_type}
         # Video
         # -------------------------------------------------------
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/detail/id_strong_type.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image_loader.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/geometry_types.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/globals.hh
         video/globals.cc
@@ -90,6 +91,8 @@ add_library(neutrino ${_lib_type}
         video/sprite/sprites_manager.hh
         video/sprite/texture_registry.cc
         video/sprite/texture_registry.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/atlas_packer.hh
+        video/sprite/atlas_packer.cc
         # -------------------------------------------------------
         # Utils
         # -------------------------------------------------------
@@ -100,6 +103,7 @@ add_library(neutrino ${_lib_type}
         # -------------------------------------------------------
         # World
         # -------------------------------------------------------
+        ${PROJECT_SOURCE_DIR}/include/neutrino/world/content_key.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/world/world.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/world/tmx_loader.hh
         world/world.cc
@@ -162,7 +166,8 @@ target_link_libraries(neutrino
         neutrino::onyx_font
         PRIVATE
         nlohmann_json::nlohmann_json
-        pugixml::pugixml)
+        pugixml::pugixml
+        neutrino_stb_rect_pack)
 
 if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)
         target_compile_definitions(neutrino

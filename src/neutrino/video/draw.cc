@@ -5,6 +5,8 @@
 #include <neutrino/video/draw.hh>
 #include <failsafe/enforce.hh>
 #include <sdlpp/video/renderer.hh>
+#include <euler/complex/complex.hh>
+#include <euler/angles/degree.hh>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -158,7 +160,8 @@ namespace neutrino {
             const sprite_visual& visual,
             const point& position,
             sprite_flip flip,
-            float scale) {
+            float scale,
+            float rotation) {
             const auto& src = visual.texture_rect;
             const float texture_width = static_cast <float>(atlas.width);
             const float texture_height = static_cast <float>(atlas.height);
@@ -185,12 +188,26 @@ namespace neutrino {
                 geometry.pixel_height
             };
 
-            const std::array <SDL_Vertex, 4> vertices{
+            std::array <SDL_Vertex, 4> vertices{
                 make_sprite_vertex(geometry.corners[0], geometry, dst, scale, {u0, v0}),
                 make_sprite_vertex(geometry.corners[1], geometry, dst, scale, {u1, v0}),
                 make_sprite_vertex(geometry.corners[2], geometry, dst, scale, {u1, v1}),
                 make_sprite_vertex(geometry.corners[3], geometry, dst, scale, {u0, v1})
             };
+            if (rotation != 0.0f) {
+                // A 2D rotation is a unit complex: multiplying (dx,dy) by
+                // polar(1, θ) gives (dx·cosθ - dy·sinθ, dx·sinθ + dy·cosθ) —
+                // clockwise in screen space (y down), matching copy_ex on the
+                // other path. Rotate each vertex about the anchor `position`.
+                const auto rotor = euler::complex<float>::polar(1.0f, euler::degree<float>(rotation));
+                const float cx = static_cast <float>(position.x);
+                const float cy = static_cast <float>(position.y);
+                for (auto& v : vertices) {
+                    const auto rotated = euler::complex<float>(v.position.x - cx, v.position.y - cy) * rotor;
+                    v.position.x = cx + rotated.real();
+                    v.position.y = cy + rotated.imag();
+                }
+            }
             constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
 
             return renderer.render_geometry(atlas.texture.get(), vertices, indices);
@@ -214,15 +231,17 @@ namespace neutrino {
             sprite_visual_id visual_id,
             const point& position,
             sprite_flip flip,
-            float scale) {
+            float scale,
+            float rotation) {
             ENFORCE(std::isfinite(scale) && scale > 0.0f)("sprite scale must be finite and greater than zero");
+            ENFORCE(std::isfinite(rotation))("sprite rotation must be finite");
 
             const auto& visual = sheet.visual(visual_id);
             const auto& atlas = registry.get(sheet.atlas());
             auto& renderer = get_renderer();
 
             if (has_diagonal_flip(flip)) {
-                return draw_sprite_diagonal(renderer, atlas, visual, position, flip, scale);
+                return draw_sprite_diagonal(renderer, atlas, visual, position, flip, scale, rotation);
             }
 
             const auto dst_w = scaled_extent(visual.texture_rect.w, scale);
@@ -243,12 +262,15 @@ namespace neutrino {
                 dst_h
             };
 
+            const bool rotate = rotation != 0.0f;
             return renderer.copy_ex(
                 atlas.texture,
                 std::optional <rect>{visual.texture_rect},
                 std::optional <rect>{dst},
-                0.0,
-                std::optional <point>{},
+                static_cast <double>(rotation),
+                // Pivot around the (flip-adjusted) visual origin; at 0 keep the
+                // original nullopt center so no-rotation is byte-identical.
+                rotate ? std::optional <point>{point{origin_x, origin_y}} : std::optional <point>{},
                 to_sdl_flip(flip));
         }
 
@@ -267,7 +289,8 @@ namespace neutrino {
                 appearance.visual.visual,
                 position,
                 appearance.flip ^ params.flip,
-                params.scale);
+                params.scale,
+                params.rotation_degrees);
         }
     }
 
@@ -404,7 +427,8 @@ namespace neutrino {
         const sprite_sheet& sheet,
         sprite_visual_id visual,
         const sprite_draw_params& params) {
-        return draw_visual_impl(require_texture_registry(), sheet, visual, position, params.flip, params.scale);
+        return draw_visual_impl(require_texture_registry(), sheet, visual, position, params.flip, params.scale,
+                                params.rotation_degrees);
     }
 
     sdlpp::expected <void, std::string> draw_sprite(
@@ -418,7 +442,8 @@ namespace neutrino {
             visual.visual,
             position,
             params.flip,
-            params.scale);
+            params.scale,
+            params.rotation_degrees);
     }
 
     sdlpp::expected <void, std::string> draw_sprite(

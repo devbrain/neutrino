@@ -4,6 +4,7 @@
 
 #include "test_application.hh"
 
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -112,5 +113,47 @@ TEST_SUITE("neutrino::video::draw") {
         auto flip = sprite_flip::vertical;
         flip ^= sprite_flip::vertical | sprite_flip::horizontal;
         CHECK(flip == sprite_flip::horizontal);
+    }
+
+    TEST_CASE("sprite rotation renders through both draw paths") {
+        neutrino::test::test_application app("Sprite rotation test scaffolding");
+
+        auto surface = sdlpp::surface::create_rgb(4, 4, sdlpp::pixel_format_enum::RGBA8888);
+        REQUIRE(surface.has_value());
+        REQUIRE(surface->fill(sdlpp::colors::white).has_value());
+        std::vector <neutrino::cpu_texture_atlas_frame> frames;
+        frames.emplace_back(neutrino::rect{0, 0, 4, 4});
+        neutrino::cpu_texture_atlas atlas(std::move(*surface), std::move(frames));
+        const auto sheet = neutrino::register_sprite_sheet(atlas, neutrino::atlas_texture_format::rgba);
+        const auto sprite = neutrino::visual_ref(sheet, 0);
+        const neutrino::point at{20, 20};
+
+        using neutrino::sprite_flip;
+
+        // Non-diagonal path (copy_ex): rotation alone, hex-120, and rotation + flip.
+        CHECK(neutrino::draw_sprite(at, sprite, {.rotation_degrees = 90.0f}).has_value());
+        CHECK(neutrino::draw_sprite(at, sprite, {.rotation_degrees = 120.0f}).has_value());
+        CHECK(neutrino::draw_sprite(
+            at, sprite, {.flip = sprite_flip::horizontal, .rotation_degrees = 45.0f}).has_value());
+
+        // Diagonal path (render_geometry): rotation composed with a diagonal flip.
+        CHECK(neutrino::draw_sprite(
+            at, sprite, {.flip = sprite_flip::diagonal, .rotation_degrees = 90.0f}).has_value());
+        CHECK(neutrino::draw_sprite(
+            at, sprite,
+            {.scale = 2.0f,
+             .flip = sprite_flip::diagonal | sprite_flip::horizontal,
+             .rotation_degrees = 120.0f}).has_value());
+
+        // Negative angle and a full turn are accepted.
+        CHECK(neutrino::draw_sprite(at, sprite, {.rotation_degrees = -90.0f}).has_value());
+        CHECK(neutrino::draw_sprite(at, sprite, {.rotation_degrees = 360.0f}).has_value());
+
+        // 0 degrees takes the no-rotation path (byte-identical: angle 0, no pivot).
+        CHECK(neutrino::draw_sprite(at, sprite, {.rotation_degrees = 0.0f}).has_value());
+
+        // A non-finite rotation is rejected.
+        CHECK_THROWS((void)neutrino::draw_sprite(
+            at, sprite, {.rotation_degrees = std::numeric_limits<float>::infinity()}));
     }
 }

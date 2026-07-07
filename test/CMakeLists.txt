@@ -35,10 +35,12 @@ add_executable(neutrino_tests
         video/test_cpu_texture_atlas.cc
         video/test_draw.cc
         video/test_sprite_sheet.cc
+        video/test_atlas_packer.cc
 
         world/test_tmx_loader.cc
 
         detail/test_hash.cc
+        detail/test_content_hash.cc
 )
 
 target_include_directories(neutrino_tests

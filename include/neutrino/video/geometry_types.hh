@@ -4,6 +4,7 @@
 
 #pragma once
 #include <sdlpp/utility/geometry.hh>
+#include <sdlpp/utility/dimension.hh>
 
 namespace neutrino {
     // Coordinate type aliases
@@ -11,4 +12,5 @@ namespace neutrino {
     using line = sdlpp::line<int>;
     using rect = sdlpp::rect<int>;
     using circle = sdlpp::circle<int>;
+    using dim = sdlpp::size<int>;
 }

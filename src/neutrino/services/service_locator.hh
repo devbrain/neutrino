@@ -58,6 +58,9 @@ namespace neutrino {
                 return m_sprites_manager;
             }
 
+            int get_max_texture_size() const {
+                return m_max_texture_size;
+            }
         private:
             void set_window(sdlpp::window& w);
             void set_renderer(sdlpp::renderer& r);
@@ -78,6 +81,7 @@ namespace neutrino {
             sound_system*  m_sound_system = nullptr;
             texture_registry* m_texture_registry = nullptr;
             sprites_manager* m_sprites_manager = nullptr;
+            int m_max_texture_size = 0;
     };
 
 }

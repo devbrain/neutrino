@@ -6,8 +6,6 @@
 
 #include "world/tmx/encoding.hh"
 
-#include <cstddef>
-
 namespace neutrino::world_tmx {
     world_image parse_image(const node_view& node) {
         world_image result;
@@ -27,11 +25,7 @@ namespace neutrino::world_tmx {
         for_one_element(node, "data", [&](const node_view& data_node) {
             const auto encoding = get_string(data_node, "encoding", "");
             const auto compression = get_string(data_node, "compression", "");
-            auto bytes = parse_encoded_bytes(encoding, compression, text(data_node));
-            result.data.reserve(bytes.size());
-            for (const auto byte : bytes) {
-                result.data.push_back(static_cast <std::byte>(byte));
-            }
+            result.data = parse_encoded_bytes(encoding, compression, text(data_node));
         });
         return result;
     }

@@ -41,6 +41,26 @@ neutrino_fetch_sdlpp()
 
 include(${NEUTRINO_CMAKE_DIR}/deps/euler.cmake)
 neutrino_fetch_euler()
+
+# stb single-header libraries. Declared BEFORE onyx_image (which also pulls stb):
+# FetchContent honours the first declaration, so pinning to a fixed commit here
+# makes the stb version reproducible for both neutrino and onyx_image instead of
+# tracking a moving master. The neutrino library uses stb_rect_pack.h for atlas
+# packing (Phase 3); header-only — STB_RECT_PACK_IMPLEMENTATION is defined in
+# exactly one TU (atlas_packer.cc).
+FetchContent_Declare(stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG 31c1ad37456438565541f4919958214b6e762fb4
+    DOWNLOAD_ONLY YES
+)
+FetchContent_MakeAvailable(stb)
+
+if(NOT TARGET neutrino_stb_rect_pack)
+    add_library(neutrino_stb_rect_pack INTERFACE)
+    target_include_directories(neutrino_stb_rect_pack
+        INTERFACE $<BUILD_INTERFACE:${stb_SOURCE_DIR}>)
+endif()
+
 include(${NEUTRINO_CMAKE_DIR}/deps/onyx_image.cmake)
 neutrino_fetch_onyx_image()
 include(${NEUTRINO_CMAKE_DIR}/deps/onyx_font.cmake)

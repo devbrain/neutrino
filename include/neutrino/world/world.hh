@@ -156,7 +156,7 @@ namespace neutrino {
         std::optional <sdlpp::color> transparent_color;
         unsigned width{};
         unsigned height{};
-        std::vector <std::byte> data;
+        std::vector <std::uint8_t> data;
     };
 
     /**
