@@ -38,6 +38,7 @@ add_executable(neutrino_tests
         video/test_atlas_packer.cc
 
         world/test_tmx_loader.cc
+        world/test_tile_resolution.cc
 
         detail/test_hash.cc
         detail/test_content_hash.cc

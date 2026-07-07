@@ -109,6 +109,38 @@ namespace neutrino {
         };
     }
 
+    tile_drawable world_tileset::drawable(world_local_tile_id id) const {
+        tile_drawable result;
+        result.origin = point{offset_x, offset_y};
+
+        const world_tile* meta = tile(id);
+        result.animated = meta != nullptr && !meta->animation.empty();
+
+        if (meta != nullptr && meta->image) {
+            // Collection-of-images: the tile owns its whole image.
+            result.image = &*meta->image;
+            result.src = rect{
+                0, 0,
+                static_cast <int>(meta->image->width),
+                static_cast <int>(meta->image->height)
+            };
+        } else {
+            // Uniform grid: a sub-rect of the shared tileset image.
+            result.image = image ? &*image : nullptr;
+            result.src = tile_rect(id); // throws for a missing shared image / bad id
+        }
+        return result;
+    }
+
+    const std::vector <world_tile_animation_frame>*
+        world_tileset::animation_of(world_local_tile_id id) const noexcept {
+        const world_tile* meta = tile(id);
+        if (meta != nullptr && !meta->animation.empty()) {
+            return &meta->animation;
+        }
+        return nullptr;
+    }
+
     bool world_tileset::contains(world_tile_id gid) const noexcept {
         if (gid == 0 || gid < first_gid) {
             return false;
@@ -125,14 +157,6 @@ namespace neutrino {
 
     world_tile_id world_tileset::to_global(world_local_tile_id id) const noexcept {
         return first_gid + id;
-    }
-
-    const std::string& world::version() const noexcept {
-        return m_version;
-    }
-
-    void world::set_version(std::string version) {
-        m_version = std::move(version);
     }
 
     world_orientation world::orientation() const noexcept {

@@ -26,10 +26,10 @@ namespace neutrino::world_tmx {
         if ((raw & flipped_diagonally) != 0) {
             flip |= sprite_flip::diagonal;
         }
-        const auto rotated_hex_120 = (raw & rotated_hexagonal_120) != 0;
+        const float rotation_degrees = (raw & rotated_hexagonal_120) != 0 ? 120.0f : 0.0f;
 
         raw &= ~(flipped_horizontally | flipped_vertically | flipped_diagonally | rotated_hexagonal_120);
-        return {raw, flip, rotated_hex_120};
+        return {raw, flip, rotation_degrees};
     }
 
     std::vector <std::uint32_t> parse_csv_values(std::string_view data) {

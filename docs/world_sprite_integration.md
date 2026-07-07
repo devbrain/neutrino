@@ -1,6 +1,6 @@
 # World ↔ Sprite Integration — Implementation Plan
 
-Status: **Phases 1–4 done; Phases 5–13 pending**
+Status: **Phases 1–5 done; Phases 6–13 pending**
 Owner: igor
 Last updated: 2026-07-06
 
@@ -291,39 +291,44 @@ pass. — **Met**; full suite 493/493.
 
 ---
 
-## Phase 5 — Neutral tile-resolution interface on `world`
+## Phase 5 — Neutral tile-resolution interface on `world` ✅ DONE
 
 **Goal.** Expose the format-neutral, render-neutral resolution the bridge
 depends on. Pure data — no sprite/texture/GPU types.
 
-**Deliverables.**
-- On `world_tileset` / `world` (in `include/neutrino/world/world.hh`), a
-  descriptor + methods (illustrative):
-  - `struct tile_drawable { const world_image* image; rect src; point origin; bool animated; };`
-  - `world_tileset::drawable(world_local_tile_id) const -> tile_drawable`
-    — uniform: `image = &this->image, src = tile_rect(id)`; collection:
-    `image = &tile(id)->image, src = {0,0,w,h}`.
-  - `world_tileset::animation_of(world_local_tile_id) const -> const std::vector<world_tile_animation_frame>*`
-    (nullptr if not animated).
-  - Cell resolution already exists: `world::tileset_for(gid)` + `to_local(gid)` +
-    `world_tile_cell{flip, rotated_hex_120}`.
+**Deliverables.** (`include/neutrino/world/world.hh` + `src/neutrino/world/world.cc`.)
+- `struct tile_drawable { const world_image* image; rect src; point origin; bool animated; }`.
+  **Done.**
+- `world_tileset::drawable(world_local_tile_id) const -> tile_drawable`
+  — uniform: `image = &*this->image, src = tile_rect(id)`; collection (tile owns an
+  image): `image = &*tile(id)->image, src = {0,0,w,h}`. `origin = {offset_x,
+  offset_y}` (tileset draw offset); `animated` set from the tile's animation.
+  Throws (via `tile_rect`) for a uniform tile with no shared image / bad id. **Done.**
+- `world_tileset::animation_of(world_local_tile_id) const -> const std::vector<world_tile_animation_frame>*`
+  (nullptr if not animated). **Done.**
+- Cell resolution already existed: `world::tileset_for(gid)` + `to_local(gid)` +
+  `world_tile_cell{flip, rotated_hex_120}`. Additive; no behavioral change.
 
 **Design notes.**
 - The descriptor references a `world_image` (path/bytes) — the *bridge* turns
   that into a texture. World never touches the GPU.
-- This is where collection-of-images stops being a special case: `drawable`
-  hides whether the source is a shared atlas image or a per-tile image.
-- No behavioral change to existing methods; this is additive.
+- `drawable` is where collection-of-images stops being a special case: it hides
+  whether the source is a shared atlas image or a per-tile image.
+- `origin` is the tileset per-tile draw offset in pixels; the anchor convention
+  (bottom-left alignment etc.) is applied by the renderer in Phase 9/10.
 
-**Tests** (extend `test/world/test_tmx_loader.cc`, no render context):
-- Uniform tileset fixture: `drawable(N).src == tile_rect(N)`, origin correct.
-- Collection tileset fixture: `drawable(N).image` is the per-tile image, `src`
-  covers the whole tile image.
-- `animation_of` returns the frame list for an animated tile, nullptr otherwise.
-- `tileset_for(gid)` / `to_local` round-trips across multiple tilesets.
+**Tests** (`test/world/test_tile_resolution.cc`, pure data, no render context):
+- Uniform tileset: `drawable(id).src == tile_rect(id)`, image is the shared image,
+  `origin == {offset_x, offset_y}`.
+- Collection tileset: `drawable(id).image` is the tile's own image, `src` covers
+  the whole image.
+- `animation_of` returns frames for an animated tile, nullptr otherwise; the
+  `drawable.animated` flag matches.
+- `tileset_for` / `to_local` / `to_global` round-trip across two tilesets (incl.
+  the Tiled "highest first_gid, not upper-bounded" selection rule).
 
 **Done when.** Both tileset kinds resolve through one descriptor; existing world
-tests still pass.
+tests still pass. — **Met**; full suite 497/497.
 
 ---
 
