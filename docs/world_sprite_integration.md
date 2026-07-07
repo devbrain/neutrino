@@ -1,6 +1,6 @@
 # World ↔ Sprite Integration — Implementation Plan
 
-Status: **design agreed, not yet implemented**
+Status: **Phases 1–4 done; Phases 5–13 pending**
 Owner: igor
 Last updated: 2026-07-06
 
@@ -127,18 +127,20 @@ P6 onward is largely linear.
 
 ---
 
-## Phase 1 — Content hash utility
+## Phase 1 — Content hash utility ✅ DONE
 
 **Goal.** A fast, stable 64-bit content hash plus a length discriminator, built
 from two seeded `SDL_murmur3_32`.
 
-**Deliverables.** (byte-hash primitive already landed as `details::hash_bytes`.)
+**Deliverables.** (all landed; `content_key` in `include/neutrino/world/content_key.hh`.)
 - `details::hash_bytes(const void*, size_t)` / `hash_bytes(std::span<T>)` —
   composes two seeded `SDL_murmur3_32` into a fixed 64-bit digest, identical on
   every platform. **Done.**
 - `struct content_key { std::uint64_t hash; std::uint64_t length; auto operator<=>() = default; };`
-  with `content_key content_hash(std::span<const std::byte>) = { hash_bytes(bytes), bytes.size() }`.
-- A `std::hash<content_key>` specialization for hash-table bucketing.
+  with `content_key content_hash(std::span<const std::byte>) = { hash_bytes(bytes), bytes.size() }`. **Done.**
+- A `std::hash<content_key>` specialization for hash-table bucketing — mixes in
+  full 64-bit via `hash_combine64`, narrows to `size_t` once at the end (keeps
+  both murmur halves influencing the bucket on 32-bit targets). **Done.**
 
 **Design notes.**
 - `hash_bytes` returns a full `std::uint64_t` and never narrows to `std::size_t`,
@@ -163,101 +165,129 @@ from two seeded `SDL_murmur3_32`.
   This pins cross-platform/cross-build stability — if the mixing ever becomes
   `size_t`-width-dependent again, a 32-bit build would fail this test.
 
-**Done when.** Tests pass; util is usable from any TU.
+**Done when.** Tests pass; util is usable from any TU. — **Met:** 7 cases in
+`test/detail/test_content_hash.cc` green (golden `0xE12B6F8F24F63248`); full
+suite 470/470.
 
 ---
 
-## Phase 2 — Image decode → `sdlpp::surface`
+## Phase 2 — Image decode → `sdlpp::surface` ✅ DONE
 
 **Goal.** The missing bridge: turn a file path or byte span into an
-`sdlpp::surface`, using onyx_image. Generic, no world dependency.
+`sdlpp::surface`. Generic, no world dependency.
 
-**Deliverables.**
-- New `src/neutrino/video/image_loader.{hh,cc}` (public header under
-  `include/neutrino/video/`):
-  - `sdlpp::expected<sdlpp::surface, std::string> decode_surface(std::span<const std::byte>);`
-  - `sdlpp::expected<sdlpp::surface, std::string> load_surface(const std::filesystem::path&);`
-- onyx_image decodes to its own surface abstraction → convert to `sdlpp::surface`.
-- CMake: add source; link onyx_image to the neutrino target if not already.
+**Deliverables.** (header-only; `include/neutrino/video/image_loader.hh`.)
+- Discovery: `sdlpp::image` already wraps onyx_image and exposes
+  `load(const std::filesystem::path&)` and `load(std::span<const std::uint8_t>)`,
+  both returning `expected<surface, std::string>` — so no new `.cc`, no
+  onyx→sdlpp conversion to hand-write. The bridge is a thin wrapper. **Done.**
+- `neutrino::load_image(const std::filesystem::path&) -> sdlpp::surface`
+  and `load_image(std::span<const std::uint8_t>) -> sdlpp::surface`, both
+  forwarding to `sdlpp::image::load` and `THROW_RUNTIME(error)` on failure.
+  **Done.**
+- CMake: header registered on the neutrino target; `neutrino::sdlpp` +
+  `neutrino::onyx_image` already linked PUBLIC. **Done.**
 
 **Design notes.**
-- `load_surface` reads bytes then calls `decode_surface` — one read, reusable by
-  the cache (which also wants the bytes to hash).
-- Return `expected`, not throw, so callers choose graceful degradation.
+- **Chose throw over `expected`** (diverges from the original plan): consistent
+  with the rest of the world loader's `THROW_*` convention. If the resource
+  cache later wants per-image graceful degradation, add a non-throwing
+  `decode_image -> expected` overload beside these; the wrapper is trivial.
+- Byte span is `std::span<const std::uint8_t>` so const image buffers (the
+  hashed bytes, `world_image::data` via a const `world`) can call it.
 - Format auto-detected by onyx_image; no format hint needed.
 
-**Tests** (`test/video/test_image_loader.cc`):
-- Fixture: add a tiny known PNG under `test/video/data/`, **or** synthesize
-  bytes at test time (encode a procedural surface via onyx_image / stb_image_write).
-- Decode → surface has expected width/height/format and a known pixel value.
-- Malformed bytes → `expected` error, no crash.
-- `load_surface` on a missing path → error.
+**Tests.** Covered upstream in onyx_image's own suite (decode correctness,
+format detection, malformed input). The neutrino wrapper is a pass-through with
+no logic of its own; a compile check confirms the const-span accepts both const
+and mutable buffers. No neutrino-side test added.
 
-**Done when.** A known image round-trips to a surface with correct dimensions
-and a sampled pixel.
+**Done when.** A path/byte span round-trips to an `sdlpp::surface`. — **Met**
+via `sdlpp::image::load`; wrapper compiles against real include flags.
 
 ---
 
-## Phase 3 — Rectangle packer + surface compositing
+## Phase 3 — Rectangle packer + surface compositing ✅ DONE
 
 **Goal.** Given N sized inputs, assign non-overlapping positions with gutter and
-multi-page spill (stb_rect_pack), and composite N surfaces into one
-`cpu_texture_atlas`.
+multi-page spill (stb_rect_pack), and composite N surfaces into `cpu_texture_atlas`
+pages.
 
-**Deliverables.**
-- New `src/neutrino/video/atlas_packer.{hh,cc}`:
-  - Low level: `pack(std::span<const dim>, int max_page_w, int max_page_h, int gutter) -> pack_result`
-    where `pack_result` has, per input, `{page index, rect}`; may span pages.
-  - High level: `pack_surfaces(std::span<sdlpp::surface>, options) -> std::vector<cpu_texture_atlas>`
-    (one atlas per page), compositing via `blit_to` with gutter + edge-extrude.
-- Depends on Phase 2 (surfaces) and `stb_rect_pack.h`.
+**Deliverables.** (`include/neutrino/video/sprite/atlas_packer.{hh}` +
+`src/neutrino/video/sprite/atlas_packer.cc`; stb pinned in the top `CMakeLists.txt`.)
+- Low level: `pack_atlas(std::span<const rect>, max_w, max_h, margin) -> pack_result`
+  — per-input `placement{page, input_index, bounds}` ordered by `(page, input_index)`,
+  auto-spilling to new pages; `pages` holds trimmed extents. `pack_atlas(rects, margin)`
+  resolves the cap from the renderer. **Done.**
+- General primitive: `pack_regions(std::span<const pack_region>, format, …)` where a
+  `pack_region` is `{surface, src_rect, mask}` — composites via straight (blend-none)
+  `blit_to` with gutter + edge-extrude, converts each distinct source to `format`
+  once, preserves or (opt-in) generates the per-frame bitmask. **Done.**
+- Adapters over it: `pack_surfaces(span<const surface>)` (whole images) and
+  `pack_atlases(span<const cpu_texture_atlas>)` (repack many sheets' frames into
+  fewer textures). Each has a convenience overload (format from first input, cap
+  from renderer) and an optional `cpu_texture_atlas_mask_options generate`. **Done.**
 
 **Design notes.**
-- Sort inputs by height-then-width before packing (better fill, stable output).
-- Gutter: inflate each rect by N px before packing; extrude border pixels into
-  the gutter after blitting (prevents bleed under scale/linear filter).
-- Cap page size at a safe max (query renderer max texture size; default 2048/4096).
-- Multi-page: an input resolves to `(page, rect)`; keep the page even though most
-  tilesets fit one page.
+- Gutter: each rect inflated by `2*margin` (symmetric belt); after blitting, edge
+  strips are extruded into the belt so linear/scaled sampling never bleeds.
+- Page size is the **trimmed** used-extent (incl. gutter), not the cap.
+- Multi-page spill built in; a rect larger than the cap throws (terminal).
+- Robustness: non-positive tile sizes and overflowing inflations rejected in 64-bit;
+  every surface op (`fill`/`convert`/`set_blend_mode`/`blit`) is `ENFORCE`d.
+- Build surfaces via raw `SDL_CreateSurface`/`SDL_ConvertSurface`? No — the earlier
+  ENFORCE-guts-the-expected bug was fixed in failsafe, so the sdlpp factories are
+  used directly with `ENFORCE(x.has_value())`.
 
-**Tests** (`test/video/test_atlas_packer.cc`):
-- Pack rects → assert no two placed rects overlap (accounting for gutter).
-- All inputs placed exactly once across pages; oversized-set spills to page 2.
-- Composite two solid-color surfaces → sampled pixels land in the right rects;
-  gutter pixels are the extruded edge color, not a neighbor's.
-- Deterministic output for the same input order.
+**Tests** (`test/video/test_atlas_packer.cc`, 17 cases, headless).
+- Packer: exactly-once placement, no overlap + gutter separation, tiles inside the
+  trimmed page, multi-page spill, `(page,input_index)` order, oversized/invalid/
+  non-positive throws, determinism.
+- Compositing: each source lands in its slot, gutter carries the edge colour,
+  straight-copy (translucent RGB not premultiplied), heterogeneous formats convert.
+- Merge: `pack_atlases` relocates frame pixels intact and carries masks; mask
+  generation is opt-in and reflects source alpha; convenience overloads derive
+  format+cap; empty input → empty.
 
 **Done when.** Packing is overlap-free and complete; compositing places pixels
-correctly with a bleed-safe gutter.
+correctly with a bleed-safe gutter. — **Met**; full suite 492/492.
 
 ---
 
-## Phase 4 — Draw-time rotation (transform superset)
+## Phase 4 — Draw-time rotation (transform superset) ✅ DONE
 
 **Goal.** Add `rotation` to the sprite draw transform and wire it through both
 draw paths; this serves hex-120 tiles and object rotation.
 
-**Deliverables.**
-- `sprite_draw_params { float scale{1}; sprite_flip flip{none}; float rotation_degrees{0}; };`
-- Wire rotation into:
-  - the `copy_ex` (non-diagonal) path — SDL already takes an angle;
-  - the `render_geometry` (diagonal) path — fold rotation into the vertex transform.
-- Rotation pivots around the visual origin/anchor (same anchor scale/flip use).
+**Deliverables.** (`include/neutrino/video/draw.hh` + `src/neutrino/video/draw.cc`.)
+- `sprite_draw_params` gains `float rotation_degrees{0}`. **Done.**
+- Wired into both paths, threaded through every `draw_sprite` overload:
+  - `copy_ex` (non-diagonal): pass the angle and pivot around the flip-adjusted
+    visual origin (`center = {origin_x, origin_y}`). **Done.**
+  - `render_geometry` (diagonal): rotate the four vertices clockwise (screen
+    space) about the anchor `position` after building them. **Done.**
+- Rotation validated finite (`ENFORCE`); `0` skips the pivot / rotation loop so
+  it is byte-identical to no-rotation. **Done.**
 
 **Design notes.**
-- Keep the anchor semantics consistent: scale, flip, and rotation all resolve
-  around the visual origin so a rotated tile stays pinned to its cell anchor.
-- hex-120 is just `rotation_degrees = 120` composed with the cell's flip.
+- Both paths pivot around the same screen point (the draw `position`/anchor):
+  `copy_ex`'s dst-relative center maps to `position`, and the geometry path
+  rotates about `position` — so scale, flip, and rotation all resolve around the
+  visual origin and a rotated tile stays pinned to its cell anchor.
+- Clockwise-positive in screen space, matching `SDL_RenderTextureRotated`, so the
+  two paths agree. hex-120 is `rotation_degrees = 120` composed with the cell flip.
+- The geometry path's vertex rotation uses `euler::complex::polar` (a 2D rotation
+  is a unit complex) rather than hand-rolled trig; `copy_ex` delegates its angle to
+  SDL. No bespoke rotation math.
 
-**Tests** (extend `test/video/test_draw.cc`, needs app/render context):
-- `draw_sprite(..., {.rotation_degrees = 90})` returns success for both a
-  non-diagonal and a diagonal-flipped sprite.
-- 0° is byte-identical to no-rotation (regression guard).
-- A rotation + flip combination returns success (composition doesn't assert).
-- If the harness supports geometry readback, assert a corner lands where a 90°
-  rotation about the origin predicts.
+**Tests** (`test/video/test_draw.cc`, app/render context).
+- `rotation_degrees = 90 / 120 / -90 / 360` all succeed on the non-diagonal path;
+  rotation composed with a diagonal flip (and scale) succeeds on the geometry path.
+- `rotation_degrees = 0` succeeds via the no-rotation path.
+- Non-finite rotation throws.
 
-**Done when.** Rotation renders through both paths; existing draw tests still pass.
+**Done when.** Rotation renders through both paths; existing draw tests still
+pass. — **Met**; full suite 493/493.
 
 ---
 
@@ -536,6 +566,19 @@ and survive resident-tileset switches without a phase reset.
   on revisit. Separate from the GPU resource cache.
 - **Megatexture uniform tilesets** into shared pages for batching — only if
   draw-call count is measured to matter; doesn't change the resolution interface.
+  The merge primitive already exists: `pack_atlases(std::span<const cpu_texture_atlas>)`
+  (a thin adapter over `pack_regions`, which packs `{surface, src_rect, mask}`
+  regions). **Constraint:** only merge content with the *same lifetime* (e.g. one
+  level's static tiles) — merging across the Phase-7 refcount/delta boundary
+  destroys per-tileset unload granularity.
+- **Generate bitmasks while packing.** *Done.* `pack_regions`/`pack_surfaces`/
+  `pack_atlases` take an optional `cpu_texture_atlas_mask_options generate`: an input
+  region's mask is preserved (correct across relocation + format conversion — the
+  mask is a format-agnostic solid/transparent grid), and for regions with no mask
+  the policy evaluates one via `cpu_texture_atlas_frame::evaluate_bitmask` against
+  the original (pre-conversion) surface. Phase 6 just picks the policy (key-colour
+  vs alpha). Convenience overloads (format from first input, cap from the renderer)
+  also carry it.
 - **Texture-vs-sheet key split** — share a texture across different tile-size
   uses of the same image. Only if a real case needs it.
 - **Layer opacity/tint** compositing beyond visible/skip.

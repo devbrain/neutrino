@@ -16,6 +16,14 @@ namespace neutrino {
 
     void service_locator::set_renderer(sdlpp::renderer& r) {
         m_renderer = &r;
+        if (const auto prop_id = SDL_GetRendererProperties(r.get())) {
+            m_max_texture_size = static_cast <int>(SDL_GetNumberProperty(prop_id, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0));
+            if (m_max_texture_size <= 0) {
+                m_max_texture_size = 0;
+            }
+        } else {
+            m_max_texture_size = 0;
+        }
     }
 
     void service_locator::set_scenes_manager(scenes_manager& s) {
@@ -55,5 +63,6 @@ namespace neutrino {
         m_sound_system = nullptr;
         m_texture_registry = nullptr;
         m_sprites_manager = nullptr;
+        m_max_texture_size = 0;
     }
 }

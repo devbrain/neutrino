@@ -49,12 +49,17 @@ namespace neutrino {
      * greater than zero. @ref flip composes with a drawn appearance's intrinsic
      * flip by toggling flags (each flip is an involution), so drawing a
      * left-authored frame with a horizontal draw flip renders it facing right.
-     * Diagonal flips use Tiled-compatible semantics. The params never mutate the
-     * sprite sheet, visual, appearance, or runtime sprite state.
+     * Diagonal flips use Tiled-compatible semantics. @ref rotation_degrees rotates
+     * the drawn sprite clockwise (screen space) about the visual origin/anchor,
+     * applied on top of scale and flip; it must be finite. 0 means no rotation and
+     * renders byte-identically to omitting it (e.g. a TMX hex-120 tile is
+     * rotation_degrees = 120 composed with the cell flip). The params never mutate
+     * the sprite sheet, visual, appearance, or runtime sprite state.
      */
     struct sprite_draw_params {
         float scale{1.0f};
         sprite_flip flip{sprite_flip::none};
+        float rotation_degrees{0.0f};
     };
 
     /**
