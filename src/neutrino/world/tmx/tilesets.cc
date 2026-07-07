@@ -9,80 +9,12 @@
 #include "world/tmx/image.hh"
 #include "world/tmx/objects.hh"
 
-#include <algorithm>
-#include <array>
 #include <chrono>
-#include <cstddef>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace neutrino::world_tmx {
     namespace {
-        [[nodiscard]] world_terrain parse_terrain(const node_view& node) {
-            world_terrain result;
-            result.name = require_string(node, "name");
-            result.tile = get_int(node, "tile", -1);
-            parse_local_properties(result, node);
-            return result;
-        }
-
-        [[nodiscard]] std::array <unsigned, 4> parse_terrain_corners(const node_view& node) {
-            std::array <unsigned, 4> terrain{
-                world_tile::invalid_terrain,
-                world_tile::invalid_terrain,
-                world_tile::invalid_terrain,
-                world_tile::invalid_terrain
-            };
-
-            if (node.is_json()) {
-                if (!node.js || !node.js->is_object()) {
-                    return terrain;
-                }
-                const auto it = node.js->find("terrain");
-                if (it == node.js->end()) {
-                    return terrain;
-                }
-                if (!it->is_array()) {
-                    fail("tile terrain field must be an array");
-                }
-                std::size_t index = 0;
-                for (const auto& item : *it) {
-                    if (index >= terrain.size()) {
-                        fail("tile terrain array has too many entries");
-                    }
-                    terrain[index++] = item.get <unsigned>();
-                }
-                return terrain;
-            }
-
-            const auto raw = get_string(node, "terrain", "");
-            if (raw.empty()) {
-                return terrain;
-            }
-            std::size_t index = 0;
-            std::string token;
-            auto flush = [&]() {
-                const auto clean = trim(token);
-                token.clear();
-                if (index >= terrain.size()) {
-                    fail("tile terrain attribute has too many entries");
-                }
-                terrain[index++] = clean.empty()
-                    ? world_tile::invalid_terrain
-                    : parse_integral <unsigned>(clean, "terrain");
-            };
-            for (const auto ch : raw) {
-                if (ch == ',') {
-                    flush();
-                } else {
-                    token.push_back(ch);
-                }
-            }
-            flush();
-            return terrain;
-        }
-
         [[nodiscard]] std::vector <world_tile_animation_frame> parse_animation_frames(
             const node_view& node) {
             std::vector <world_tile_animation_frame> frames;
@@ -106,8 +38,6 @@ namespace neutrino::world_tmx {
         [[nodiscard]] world_tile parse_tile(const node_view& node) {
             world_tile result;
             result.id = static_cast <world_local_tile_id>(require_uint(node, "id"));
-            result.terrain = parse_terrain_corners(node);
-            result.probability = get_double(node, "probability", 1.0);
             parse_local_properties(result, node);
 
             if (node.is_json()) {
@@ -126,78 +56,6 @@ namespace neutrino::world_tmx {
             result.animation = parse_animation_frames(node);
             for_one_element(node, "objectgroup", [&](const node_view& object_group) {
                 result.objects = parse_object_layer(object_group, nullptr);
-            });
-            return result;
-        }
-
-        [[nodiscard]] world_wang_color parse_wang_color(const node_view& node) {
-            world_wang_color result;
-            result.color = parse_color(require_string(node, "color"));
-            result.name = require_string(node, "name");
-            result.tile = get_int(node, "tile", -1);
-            result.probability = get_double(node, "probability", 0.0);
-            parse_local_properties(result, node);
-            return result;
-        }
-
-        [[nodiscard]] std::array <unsigned, 8> parse_wang_id(const node_view& node) {
-            std::array <unsigned, 8> result{};
-            if (node.is_json()) {
-                if (!node.js || !node.js->is_object()) {
-                    fail("wang tile must be a json object");
-                }
-                const auto it = node.js->find("wangid");
-                if (it == node.js->end() || !it->is_array()) {
-                    fail("wang tile must contain wangid array");
-                }
-                if (it->size() != result.size()) {
-                    fail("wangid array must have 8 entries");
-                }
-                for (std::size_t i = 0; i < result.size(); ++i) {
-                    result[i] = (*it)[i].get <unsigned>();
-                }
-                return result;
-            }
-
-            const auto values = parse_csv_values(require_string(node, "wangid"));
-            if (values.size() != result.size()) {
-                fail("wangid attribute must have 8 entries");
-            }
-            std::copy(values.begin(), values.end(), result.begin());
-            return result;
-        }
-
-        [[nodiscard]] world_wang_tile parse_wang_tile(const node_view& node) {
-            auto result = world_wang_tile{
-                parse_wang_id(node),
-                require_uint(node, "tileid"),
-                sprite_flip::none
-            };
-            if (get_bool(node, "hflip", false)) {
-                result.flip |= sprite_flip::horizontal;
-            }
-            if (get_bool(node, "vflip", false)) {
-                result.flip |= sprite_flip::vertical;
-            }
-            if (get_bool(node, "dflip", false)) {
-                result.flip |= sprite_flip::diagonal;
-            }
-            return result;
-        }
-
-        [[nodiscard]] world_wang_set parse_wang_set(const node_view& node) {
-            world_wang_set result;
-            result.name = require_string(node, "name");
-            result.tile = get_int(node, "tile", -1);
-            parse_local_properties(result, node);
-
-            const auto colors_name = node.is_json() ? "colors" : "wangcolor";
-            const auto tiles_name = node.is_json() ? "wangtiles" : "wangtile";
-            for_each_element(node, colors_name, [&](const node_view& color) {
-                result.colors.push_back(parse_wang_color(color));
-            });
-            for_each_element(node, tiles_name, [&](const node_view& tile) {
-                result.tiles.push_back(parse_wang_tile(tile));
             });
             return result;
         }
@@ -293,36 +151,19 @@ namespace neutrino::world_tmx {
                         result.image = std::move(image);
                     }
                 }
-                for_each_element(node, "terrains", [&](const node_view& terrain) {
-                    result.terrains.push_back(parse_terrain(terrain));
-                });
             } else {
                 for_one_element(node, "image", [&](const node_view& image) {
                     result.image = parse_image(image);
                 });
-                for_one_element(node, "terraintypes", [&](const node_view& terrains) {
-                    for_each_element(terrains, "terrain", [&](const node_view& terrain) {
-                        result.terrains.push_back(parse_terrain(terrain));
-                    });
-                });
             }
 
+            // Tiled terrain/wang authoring metadata is intentionally not parsed:
+            // it drives the editor's autotiling, is never read at runtime, and has
+            // no analog in other loaders (e.g. LDtk). The world model stays neutral.
             const auto tiles_name = node.is_json() ? "tiles" : "tile";
             for_each_element(node, tiles_name, [&](const node_view& tile_node) {
                 result.tiles.push_back(parse_tile(tile_node));
             });
-
-            if (node.is_json()) {
-                for_each_element(node, "wangsets", [&](const node_view& wang) {
-                    result.wang_sets.push_back(parse_wang_set(wang));
-                });
-            } else {
-                for_one_element(node, "wangsets", [&](const node_view& wangsets) {
-                    for_each_element(wangsets, "wangset", [&](const node_view& wang) {
-                        result.wang_sets.push_back(parse_wang_set(wang));
-                    });
-                });
-            }
             return result;
         }
     }

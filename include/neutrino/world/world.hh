@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <array>
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
@@ -165,7 +164,10 @@ namespace neutrino {
     struct world_tile_cell {
         world_tile_id gid{};
         sprite_flip flip{sprite_flip::none};
-        bool rotated_hex_120{};
+        /// Draw-time rotation in degrees (clockwise), composed with @ref flip.
+        /// A TMX hexagonal 120-degree cell decodes to 120; loaders without hex
+        /// rotation leave it 0.
+        float rotation_degrees{0.0f};
 
         [[nodiscard]] bool empty() const noexcept {
             return gid == 0;
@@ -240,11 +242,10 @@ namespace neutrino {
         world_point origin{0.0f, 0.0f};
         double width{};
         double height{};
-        double rotation{};
+        double rotation{}; ///< Clockwise degrees; a TMX hex-120 tile object folds +120 in here.
         bool visible{true};
         world_tile_id gid{};
         sprite_flip flip{sprite_flip::none};
-        bool rotated_hex_120{};
     };
 
     struct world_rectangle_object : world_object_base {};
@@ -293,14 +294,6 @@ namespace neutrino {
     using world_layer = std::variant <world_tile_layer, world_image_layer, world_object_layer>;
 
     /**
-     * @brief Terrain definition inside a tileset.
-     */
-    struct world_terrain : world_component {
-        std::string name;
-        int tile{-1};
-    };
-
-    /**
      * @brief One frame of a tile animation.
      */
     struct world_tile_animation_frame {
@@ -312,59 +305,10 @@ namespace neutrino {
      * @brief Per-tile metadata inside a tileset.
      */
     struct world_tile : world_component {
-        static constexpr unsigned invalid_terrain = static_cast <unsigned>(-1);
-
         world_local_tile_id id{};
-        std::array <unsigned, 4> terrain{
-            invalid_terrain,
-            invalid_terrain,
-            invalid_terrain,
-            invalid_terrain
-        };
-        double probability{1.0};
         std::optional <world_image> image;
         std::optional <world_object_layer> objects;
         std::vector <world_tile_animation_frame> animation;
-    };
-
-    /**
-     * @brief Wang color entry inside a wang set.
-     */
-    struct world_wang_color : world_component {
-        sdlpp::color color;
-        std::string name;
-        int tile{-1};
-        double probability{};
-    };
-
-    /**
-     * @brief Wang tile entry inside a wang set.
-     */
-    struct world_wang_tile {
-        enum index : std::size_t {
-            top = 0,
-            top_right = 1,
-            right = 2,
-            bottom_right = 3,
-            bottom = 4,
-            bottom_left = 5,
-            left = 6,
-            top_left = 7
-        };
-
-        std::array <unsigned, 8> wang_id{};
-        world_local_tile_id tile{};
-        sprite_flip flip{sprite_flip::none};
-    };
-
-    /**
-     * @brief Wang set definition inside a tileset.
-     */
-    struct world_wang_set : world_component {
-        std::string name;
-        int tile{-1};
-        std::vector <world_wang_color> colors;
-        std::vector <world_wang_tile> tiles;
     };
 
     /**
@@ -374,6 +318,25 @@ namespace neutrino {
         bool orthogonal{true};
         unsigned width{};
         unsigned height{};
+    };
+
+    /**
+     * @brief Format-neutral, render-neutral description of how to draw one tile.
+     *
+     * Unifies the two tileset kinds so callers never special-case them: for a
+     * uniform grid tileset @ref image is the shared tileset image and @ref src is
+     * the tile's sub-rectangle; for a collection-of-images tileset @ref image is
+     * the tile's own image and @ref src covers all of it. @ref origin is the
+     * tileset's per-tile draw offset in pixels (applied by the renderer).
+     * @ref animated is true when the tile has an animation — resolve its frames
+     * with @ref world_tileset::animation_of. Pure data: the bridge turns @ref image
+     * into a texture; world never touches the GPU.
+     */
+    struct tile_drawable {
+        const world_image* image{nullptr}; ///< Shared tileset image, or the tile's own image.
+        rect               src{};          ///< Source sub-rect of @ref image for this tile.
+        point              origin{};       ///< Tileset per-tile draw offset, in pixels.
+        bool               animated{false}; ///< Whether this tile has an animation.
     };
 
     /**
@@ -392,12 +355,28 @@ namespace neutrino {
         int offset_y{};
         std::optional <world_image> image;
         std::optional <world_tileset_grid> grid;
-        std::vector <world_terrain> terrains;
         std::vector <world_tile> tiles;
-        std::vector <world_wang_set> wang_sets;
 
         [[nodiscard]] const world_tile* tile(world_local_tile_id id) const noexcept;
         [[nodiscard]] rect tile_rect(world_local_tile_id id) const;
+
+        /**
+         * @brief Resolve how to draw a local tile, hiding uniform vs collection.
+         *
+         * Uniform tileset: @ref tile_drawable::image is the shared image and
+         * @ref tile_drawable::src is @ref tile_rect(id). Collection tileset (the
+         * tile owns an image): its image, with @c src covering the whole image.
+         *
+         * @throws (via @ref tile_rect) for a uniform tile with no shared image or
+         *         an out-of-range id.
+         */
+        [[nodiscard]] tile_drawable drawable(world_local_tile_id id) const;
+
+        /**
+         * @brief The animation frames of a tile, or nullptr if it is not animated.
+         */
+        [[nodiscard]] const std::vector <world_tile_animation_frame>*
+            animation_of(world_local_tile_id id) const noexcept;
 
         /**
          * @brief Whether this tileset owns the given global tile id.
@@ -426,9 +405,6 @@ namespace neutrino {
     class NEUTRINO_EXPORT world : public world_component {
         public:
             world() = default;
-
-            [[nodiscard]] const std::string& version() const noexcept;
-            void set_version(std::string version);
 
             [[nodiscard]] world_orientation orientation() const noexcept;
             void set_orientation(world_orientation orientation) noexcept;
@@ -495,7 +471,6 @@ namespace neutrino {
             [[nodiscard]] std::vector <const world_image_layer*> image_layers() const;
 
         private:
-            std::string m_version{"1.0"};
             world_orientation m_orientation{world_orientation::unknown};
             world_render_order m_render_order{world_render_order::right_down};
             unsigned m_width{};

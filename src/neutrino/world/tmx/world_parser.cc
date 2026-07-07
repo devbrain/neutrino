@@ -11,7 +11,6 @@
 namespace neutrino::world_tmx {
     world parse_world(const node_view& node, const tmx_path_resolver& resolver) {
         world result;
-        result.set_version(get_string(node, "version", "1.0"));
         result.set_orientation(parse_enum <world_orientation>(
             node,
             "orientation",

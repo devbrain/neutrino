@@ -368,7 +368,6 @@ TEST_CASE("tmx loader preserves json properties and object variants") {
     )");
 
     CHECK(world.background_color() == sdlpp::color{101, 102, 103, 255});
-    CHECK(world.version() == "1");
     CHECK(has_property(
         world,
         "mapProperty1",
@@ -524,7 +523,9 @@ TEST_CASE("tmx loader accepts flipped object gids") {
     CHECK((object->flip & neutrino::sprite_flip::diagonal) == neutrino::sprite_flip::none);
 }
 
-TEST_CASE("tmx loader accepts fractional tile probabilities") {
+TEST_CASE("tmx loader ignores tile authoring metadata (probability)") {
+    // Probability is Tiled editor metadata; the loader accepts but does not parse
+    // it, and still produces the tile.
     const auto world = neutrino::load_tmx_world(R"(
         {
           "height": 1,
@@ -554,7 +555,7 @@ TEST_CASE("tmx loader accepts fractional tile probabilities") {
     REQUIRE(world.tilesets().size() == 1);
     const auto* tile = world.tilesets()[0].tile(0);
     REQUIRE(tile);
-    CHECK(tile->probability == doctest::Approx(0.5));
+    CHECK(tile->id == 0);
 }
 
 TEST_CASE("tmx loader accepts xml tile elements without gid") {
@@ -833,11 +834,12 @@ TEST_CASE("tmx loader accepts legacy json object-form properties and tiles") {
     REQUIRE(world.tilesets().size() == 1);
     const auto* tile = world.tilesets()[0].tile(0);
     REQUIRE(tile);
-    CHECK(tile->probability == doctest::Approx(0.25));
     CHECK(has_property(*tile, "solid", std::string{"yes"}));
 }
 
-TEST_CASE("tmx loader preserves large local wang tile ids") {
+TEST_CASE("tmx loader ignores wangsets") {
+    // Wang sets are Tiled autotiling metadata; the loader accepts the document
+    // but does not carry them into the neutral world model.
     const auto world = neutrino::load_tmx_world(R"(
         {
           "height": 1,
@@ -874,9 +876,7 @@ TEST_CASE("tmx loader preserves large local wang tile ids") {
     )");
 
     REQUIRE(world.tilesets().size() == 1);
-    REQUIRE(world.tilesets()[0].wang_sets.size() == 1);
-    REQUIRE(world.tilesets()[0].wang_sets[0].tiles.size() == 1);
-    CHECK(world.tilesets()[0].wang_sets[0].tiles[0].tile == 268435457u);
+    CHECK(world.tilesets()[0].name == "wang"); // parsed fine, wang data simply dropped
 }
 
 TEST_CASE("world tileset rejects out of range tile rectangles") {
@@ -949,7 +949,7 @@ TEST_CASE("world resolves the owning tileset for a gid") {
     CHECK(empty.tileset_for(1) == nullptr);
 }
 
-TEST_CASE("tmx loader preserves hexagonal 120 degree rotation bits") {
+TEST_CASE("tmx loader decodes hexagonal 120 degree rotation as degrees") {
     const auto world = neutrino::load_tmx_world(R"(
         <map version="1.10" orientation="hexagonal" renderorder="right-down"
              width="2" height="1" tilewidth="14" tileheight="12"
@@ -971,19 +971,19 @@ TEST_CASE("tmx loader preserves hexagonal 120 degree rotation bits") {
 
     CHECK(layer.cells[0].gid == 1);
     CHECK(layer.cells[0].flip == neutrino::sprite_flip::none);
-    CHECK(layer.cells[0].rotated_hex_120);
+    CHECK(layer.cells[0].rotation_degrees == 120.0f);
 
     CHECK(layer.cells[1].gid == 1);
     CHECK(layer.cells[1].horizontally_flipped());
     CHECK(layer.cells[1].vertically_flipped());
     CHECK(layer.cells[1].diagonally_flipped());
-    CHECK(layer.cells[1].rotated_hex_120);
+    CHECK(layer.cells[1].rotation_degrees == 120.0f);
 
     const auto& objects = object_layer(world, 0);
     REQUIRE(objects.objects.size() == 1);
     const auto& object = std::get <neutrino::world_rectangle_object>(objects.objects[0]);
     CHECK(object.gid == 2);
-    CHECK(object.rotated_hex_120);
+    CHECK(object.rotation == doctest::Approx(120.0)); // hex-120 folded into object rotation
 }
 
 TEST_CASE("tmx loader preserves tiled documentation layer and chunk examples") {
@@ -1048,7 +1048,6 @@ TEST_CASE("tmx loader preserves tiled documentation layer and chunk examples") {
     CHECK(world.render_order() == neutrino::world_render_order::right_down);
     CHECK(world.tile_width() == 32);
     CHECK(world.tile_height() == 32);
-    CHECK(world.version() == "1");
     CHECK(has_property(world, "mapProperty1", neutrino::world_typed_string{"one", "string"}));
     CHECK(has_property(world, "mapProperty2", neutrino::world_typed_string{"two", "string"}));
 
@@ -1123,7 +1122,7 @@ TEST_CASE("tmx loader preserves tiled documentation layer and chunk examples") {
     REQUIRE(chunks.chunks[0].cells.size() == 16);
 }
 
-TEST_CASE("tmx loader preserves tiled documentation tileset tile properties and wang examples") {
+TEST_CASE("tmx loader preserves tiled documentation tileset tile properties") {
     const auto world = neutrino::load_tmx_world(R"(
         {
           "height": 1,
@@ -1226,38 +1225,7 @@ TEST_CASE("tmx loader preserves tiled documentation tileset tile properties and 
     REQUIRE(tile);
     CHECK(tile->id == 11);
     CHECK(has_property(*tile, "myProperty2", std::string{"myProperty2_value"}));
-    CHECK(tile->terrain[0] == 0);
-    CHECK(tile->terrain[1] == 1);
-    CHECK(tile->terrain[2] == 0);
-    CHECK(tile->terrain[3] == 1);
-
-    REQUIRE(tileset.wang_sets.size() == 1);
-    const auto& wang = tileset.wang_sets[0];
-    CHECK(wang.name == "FirstWang");
-    CHECK(wang.tile == -1);
-    REQUIRE(wang.colors.size() == 4);
-    CHECK(has_property(wang, "is_wang", true));
-
-    const auto& orange = wang.colors[3];
-    CHECK(orange.color == sdlpp::color{255, 119, 0, 255});
-    CHECK(orange.name == "Orange");
-    CHECK(orange.probability == doctest::Approx(1.0));
-    CHECK(orange.tile == -1);
-
-    REQUIRE(wang.tiles.size() == 11);
-    const auto& wang_tile = wang.tiles[10];
-    CHECK((wang_tile.flip & neutrino::sprite_flip::diagonal) == neutrino::sprite_flip::none);
-    CHECK((wang_tile.flip & neutrino::sprite_flip::horizontal) == neutrino::sprite_flip::none);
-    CHECK((wang_tile.flip & neutrino::sprite_flip::vertical) == neutrino::sprite_flip::none);
-    CHECK(wang_tile.tile == 18);
-    CHECK(wang_tile.wang_id[neutrino::world_wang_tile::top] == 3);
-    CHECK(wang_tile.wang_id[neutrino::world_wang_tile::top_right] == 0);
-    CHECK(wang_tile.wang_id[neutrino::world_wang_tile::right] == 3);
-    CHECK(wang_tile.wang_id[neutrino::world_wang_tile::bottom_right] == 0);
-    CHECK(wang_tile.wang_id[neutrino::world_wang_tile::bottom] == 1);
-    CHECK(wang_tile.wang_id[neutrino::world_wang_tile::bottom_left] == 0);
-    CHECK(wang_tile.wang_id[neutrino::world_wang_tile::left] == 1);
-    CHECK(wang_tile.wang_id[neutrino::world_wang_tile::top_left] == 0);
+    // Terrain / wang authoring metadata is intentionally not carried into the model.
 }
 
 TEST_CASE("tmx loader reads infinite maps and chunks") {
@@ -1383,9 +1351,6 @@ TEST_CASE("tmx loader reads complex example objects and tilesets") {
     CHECK(first_tileset.name == "marioenemies");
     CHECK(first_tileset.tile_width == 32);
     CHECK(first_tileset.tile_height == 32);
-    REQUIRE(first_tileset.terrains.size() == 1);
-    CHECK(first_tileset.terrains[0].name == "New Terrain");
-    CHECK(first_tileset.terrains[0].tile == 0);
     REQUIRE(first_tileset.tile(0));
     CHECK(first_tileset.tile(0)->id == 0);
     CHECK(has_property(*first_tileset.tile(0), "wall", std::string{"true"}));
@@ -1457,7 +1422,7 @@ TEST_CASE("tmx loader reads complex example objects and tilesets") {
     check_point(polygon->points[14], 702.0f, 101.0f);
 }
 
-TEST_CASE("tmx loader reads wang sets") {
+TEST_CASE("tmx loader reads isometric staggered maps with a tileset grid") {
     for (const auto& file : {
              "wang/isometric_staggered_grass_and_water.tmx",
              "wang/js_isometric_staggered_grass_and_water.json"
@@ -1475,27 +1440,6 @@ TEST_CASE("tmx loader reads wang sets") {
         CHECK(!tileset.grid->orthogonal);
         CHECK(tileset.grid->width == 64);
         CHECK(tileset.grid->height == 32);
-        REQUIRE(tileset.wang_sets.size() == 1);
-
-        const auto& wang = tileset.wang_sets[0];
-        CHECK(wang.name == "Terrains");
-        CHECK(wang.tile == 15);
-        REQUIRE(wang.colors.size() == 2);
-        CHECK(wang.colors[1].color == sdlpp::color{114, 159, 207, 255});
-        CHECK(wang.colors[1].name == "Water");
-        CHECK(wang.colors[1].tile == 22);
-        CHECK(wang.colors[1].probability == doctest::Approx(1.0));
-
-        REQUIRE(wang.tiles.size() == 24);
-        const auto& tile = wang.tiles[8];
-        CHECK(tile.tile == 8);
-        CHECK(tile.wang_id[neutrino::world_wang_tile::top] == 0);
-        CHECK(tile.wang_id[neutrino::world_wang_tile::top_right] == 2);
-        CHECK(tile.wang_id[neutrino::world_wang_tile::right] == 0);
-        CHECK(tile.wang_id[neutrino::world_wang_tile::bottom_right] == 2);
-        CHECK(tile.wang_id[neutrino::world_wang_tile::bottom] == 0);
-        CHECK(tile.wang_id[neutrino::world_wang_tile::bottom_left] == 2);
-        CHECK(tile.wang_id[neutrino::world_wang_tile::left] == 0);
-        CHECK(tile.wang_id[neutrino::world_wang_tile::top_left] == 1);
+        // Wang sets in these fixtures are authoring metadata, not carried into the model.
     }
 }
