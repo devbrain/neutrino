@@ -364,6 +364,17 @@ namespace neutrino {
         [[nodiscard]] rect tile_rect(world_local_tile_id id) const;
 
         /**
+         * @brief The number of grid slots in a uniform (shared image) tileset.
+         *
+         * Returns @ref tile_count when it is known; otherwise derives it from the
+         * shared image dimensions (as Tiled does), so a hand-authored or direct-built
+         * tileset that omitted tile_count still yields the right slot count instead of
+         * building zero visuals. Returns 0 when it cannot be derived (no shared image,
+         * or zero tile size) -- collection tilesets number their slots from @ref tiles.
+         */
+        [[nodiscard]] unsigned effective_tile_count() const noexcept;
+
+        /**
          * @brief Resolve how to draw a local tile, hiding uniform vs collection.
          *
          * Uniform tileset: @ref tile_drawable::image is the shared image and

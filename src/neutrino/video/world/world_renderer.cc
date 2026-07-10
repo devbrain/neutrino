@@ -193,9 +193,13 @@ namespace neutrino {
         // anchor/scale path: the seam-free AABB tiling below assumes an axis-aligned
         // orthogonal grid. Hex/iso tiles overlap on a staggered layout, so they draw at
         // their anchor. All are rare or not seam-sensitive (hex tiles have transparent
-        // edges that hide any 1px boundary).
+        // edges that hide any 1px boundary). `unknown` is treated as orthogonal here, as
+        // it is everywhere else (a direct-built map that never set an orientation).
+        const world_orientation orient = m_world->orientation();
+        const bool grid_aligned = orient == world_orientation::orthogonal
+                                  || orient == world_orientation::unknown;
         if (rotation != 0.0f || (flip & sprite_flip::diagonal) == sprite_flip::diagonal
-            || m_world->orientation() != world_orientation::orthogonal) {
+            || !grid_aligned) {
             const point sp = to_screen(cam, layer, vp, anchor);
             const point pos{viewport.x + sp.x, viewport.y + sp.y};
             const auto result = draw_sprite(pos, visual, {cam.zoom, flip, rotation});

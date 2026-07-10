@@ -70,6 +70,33 @@ TEST_SUITE("neutrino::video tileset bundle") {
         CHECK(bundle.atlases.empty());
     }
 
+    TEST_CASE("a uniform tileset with omitted tile_count derives its slots from the image") {
+        neutrino::test::test_application app("tileset bundle derived count");
+
+        // A hand-authored or direct-built uniform tileset that never set tile_count:
+        // the 64x64 image at 16px tiles is a 4x4 grid, so 16 visuals must still build.
+        SUBCASE("columns known, tile_count omitted") {
+            const world_tileset ts = uniform_tileset(64, 16, 4, /*tile_count=*/0);
+            CHECK(ts.effective_tile_count() == 16);
+            tileset_bundle bundle = build_bundle(ts);
+            CHECK(bundle.visuals.size() == 16);
+            for (world_local_tile_id id = 0; id < 16; ++id) {
+                CHECK(bundle.visual(id).valid());
+            }
+            destroy_bundle(bundle);
+        }
+
+        // Neither columns nor tile_count set: both derive from the image dimensions.
+        SUBCASE("columns and tile_count both omitted") {
+            const world_tileset ts = uniform_tileset(64, 16, /*columns=*/0, /*tile_count=*/0);
+            CHECK(ts.effective_tile_count() == 16);
+            tileset_bundle bundle = build_bundle(ts);
+            CHECK(bundle.visuals.size() == 16);
+            CHECK(bundle.visual(15).valid());
+            destroy_bundle(bundle);
+        }
+    }
+
     TEST_CASE("collection tileset resolves present tiles and leaves gaps invalid") {
         neutrino::test::test_application app("tileset bundle collection");
 

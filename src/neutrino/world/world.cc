@@ -109,6 +109,27 @@ namespace neutrino {
         };
     }
 
+    unsigned world_tileset::effective_tile_count() const noexcept {
+        if (tile_count != 0) {
+            return tile_count;
+        }
+        // Derive from the shared image, mirroring Tiled and the TMX loader: columns
+        // from the image width, rows from the height, both net of margin/spacing.
+        if (!image || tile_width == 0 || tile_height == 0) {
+            return 0;
+        }
+        const unsigned two_margin = margin * 2;
+        unsigned cols = columns;
+        if (cols == 0 && image->width > two_margin) {
+            cols = (image->width - two_margin + spacing) / (tile_width + spacing);
+        }
+        if (cols == 0 || image->height <= two_margin) {
+            return 0;
+        }
+        const unsigned rows = (image->height - two_margin + spacing) / (tile_height + spacing);
+        return cols * rows;
+    }
+
     tile_drawable world_tileset::drawable(world_local_tile_id id) const {
         tile_drawable result;
         result.origin = point{offset_x, offset_y};

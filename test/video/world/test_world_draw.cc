@@ -175,6 +175,28 @@ TEST_SUITE("neutrino::video world draw") {
         CHECK(stats.failed == 0);
     }
 
+    TEST_CASE("a default-orientation (unknown) map draws through the orthogonal path") {
+        neutrino::test::test_application app("world draw unknown orientation");
+        resource_cache cache;
+
+        // A direct-built world that never called set_orientation defaults to `unknown`.
+        // The renderer must treat that as orthogonal -- the seam-free grid path, as the
+        // rest of the camera/culling code already does -- not fall through to the
+        // non-orthogonal anchor path (which would regress to fractional-zoom seams).
+        world w = make_world(square_ts(), filled_layer(4, 4, 1));
+        REQUIRE(w.orientation() == world_orientation::unknown);
+        world_renderer r(w, cache);
+
+        // Fractional zoom is where the two paths diverge; the grid path must still place
+        // every cell without gaps and draw them all.
+        camera cam = origin_camera(rect{0, 0, 64, 64});
+        cam.zoom = 1.3f;
+        const draw_stats stats = r.draw(cam, rect{0, 0, 64, 64});
+
+        CHECK(stats.drawn == 16);
+        CHECK(stats.failed == 0);
+    }
+
     TEST_CASE("empty cells are absent, not skipped") {
         neutrino::test::test_application app("world draw empties");
         resource_cache cache;
