@@ -93,6 +93,15 @@ add_library(neutrino ${_lib_type}
         video/sprite/texture_registry.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/atlas_packer.hh
         video/sprite/atlas_packer.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/tileset_bundle.hh
+        video/world/tileset_bundle.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/resource_cache.hh
+        video/world/resource_cache.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/world_renderer.hh
+        video/world/world_renderer.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/camera.hh
+        video/world/camera.cc
+        utils/lru.hh
         # -------------------------------------------------------
         # Utils
         # -------------------------------------------------------

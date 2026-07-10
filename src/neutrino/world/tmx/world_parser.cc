@@ -33,6 +33,9 @@ namespace neutrino::world_tmx {
             }));
         result.set_size(require_uint(node, "width"), require_uint(node, "height"));
         result.set_tile_size(require_uint(node, "tilewidth"), require_uint(node, "tileheight"));
+        result.set_parallax_origin(world_point{
+            static_cast <float>(get_double(node, "parallaxoriginx", 0.0)),
+            static_cast <float>(get_double(node, "parallaxoriginy", 0.0))});
         result.set_background_color(parse_color(get_string(node, "backgroundcolor", "#000000")));
         result.set_hex_side_length(get_uint(node, "hexsidelength", 0));
         result.set_stagger_axis(parse_enum <world_stagger_axis>(

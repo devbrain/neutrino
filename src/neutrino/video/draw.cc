@@ -447,6 +447,29 @@ namespace neutrino {
     }
 
     sdlpp::expected <void, std::string> draw_sprite(
+        const rect& dst,
+        sprite_visual_ref visual,
+        sprite_flip flip) {
+        if (!visual.valid() || dst.w <= 0 || dst.h <= 0) {
+            return {}; // nothing to draw
+        }
+        const auto& manager = require_sprites_manager();
+        const auto& sheet = manager.get(visual.sheet);
+        const auto& sprite = sheet.visual(visual.visual);
+        const auto& atlas = require_texture_registry().get(sheet.atlas());
+        // Straight blit into the explicit destination: the caller has already rounded
+        // both corners, so no origin/scale rounding here. Diagonal flip / rotation are
+        // not supported on this path (H/V only).
+        return get_renderer().copy_ex(
+            atlas.texture,
+            std::optional <rect>{sprite.texture_rect},
+            std::optional <rect>{dst},
+            0.0,
+            std::optional <point>{},
+            to_sdl_flip(flip));
+    }
+
+    sdlpp::expected <void, std::string> draw_sprite(
         const point& position,
         const sprite_appearance& appearance,
         const sprite_draw_params& params) {

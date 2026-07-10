@@ -25,7 +25,9 @@ namespace neutrino {
 
         auto& services = service_locator::instance();
         auto* registry = services.get_texture_registry();
-        ENFORCE(registry != nullptr);
+        if (registry == nullptr) {
+            return; // services already torn down: the GPU texture is gone, nothing to do
+        }
 
         if (auto* sprites = services.get_sprites_manager()) {
             ENFORCE(!sprites->uses(atlas))("Cannot unregister texture atlas while a sprite sheet still uses it");
