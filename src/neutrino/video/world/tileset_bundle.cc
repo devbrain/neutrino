@@ -78,8 +78,10 @@ namespace neutrino {
         // Local-id slot count: dense uniform tilesets number 0..tile_count-1, but an
         // image-collection tileset can carry sparse ids past tile_count (e.g. ids up to
         // 13 with tile_count 7). Every id-indexed table below must span the highest id,
-        // or those tiles resolve to nothing.
-        std::size_t slot_count = tileset.tile_count;
+        // or those tiles resolve to nothing. effective_tile_count derives the grid size
+        // from the shared image when tile_count was omitted, so a direct-built or
+        // hand-authored uniform tileset does not build zero visuals.
+        std::size_t slot_count = tileset.effective_tile_count();
         for (const world_tile& t : tileset.tiles) {
             slot_count = std::max(slot_count, static_cast <std::size_t>(t.id) + 1);
         }
