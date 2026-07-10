@@ -472,8 +472,8 @@ TEST_CASE("tmx loader composes grouped layer state") {
     CHECK(layer.name == "child");
     CHECK(!layer.visible);
     CHECK(layer.opacity == doctest::Approx(0.25));
-    CHECK(layer.offset_x == doctest::Approx(10.75));
-    CHECK(layer.offset_y == doctest::Approx(2.75));
+    CHECK(layer.offset.x == doctest::Approx(10.75));
+    CHECK(layer.offset.y == doctest::Approx(2.75));
     CHECK(layer.parallax_x == doctest::Approx(0.25));
     CHECK(layer.parallax_y == doctest::Approx(0.125));
     REQUIRE(layer.cells.size() == 1);
@@ -1058,8 +1058,8 @@ TEST_CASE("tmx loader preserves tiled documentation layer and chunk examples") {
     CHECK(ground.name == "ground");
     CHECK(ground.opacity == doctest::Approx(1.0));
     CHECK(ground.visible);
-    CHECK(ground.offset_x == doctest::Approx(0.0));
-    CHECK(ground.offset_y == doctest::Approx(0.0));
+    CHECK(ground.offset.x == doctest::Approx(0.0));
+    CHECK(ground.offset.y == doctest::Approx(0.0));
     REQUIRE(ground.tint);
     CHECK(*ground.tint == sdlpp::color{101, 102, 103, 255});
     CHECK(has_property(ground, "tileLayerProp", std::int64_t{1}));
@@ -1315,8 +1315,8 @@ TEST_CASE("tmx loader reads properties animations groups and text objects") {
                 found_group_child = true;
                 CHECK(layer->width == 10);
                 CHECK(layer->height == 10);
-                CHECK(layer->offset_x == doctest::Approx(11.0));
-                CHECK(layer->offset_y == doctest::Approx(2.0));
+                CHECK(layer->offset.x == doctest::Approx(11.0));
+                CHECK(layer->offset.y == doctest::Approx(2.0));
             }
         }
         CHECK(found_group_child);
@@ -1442,4 +1442,21 @@ TEST_CASE("tmx loader reads isometric staggered maps with a tileset grid") {
         CHECK(tileset.grid->height == 32);
         // Wang sets in these fixtures are authoring metadata, not carried into the model.
     }
+}
+
+TEST_CASE("tmx loader derives columns/tilecount from the image when omitted") {
+    // Older / hand-authored maps (e.g. some hexagonal examples) omit columns and
+    // tilecount on a uniform tileset; the loader must derive them from the image or
+    // the tileset builds no tiles.
+    const auto world = neutrino::load_tmx_world(R"(<?xml version="1.0"?>
+<map version="1.0" orientation="orthogonal" width="2" height="2" tilewidth="16" tileheight="16" infinite="0">
+ <tileset firstgid="1" name="t" tilewidth="16" tileheight="16">
+  <image source="x.png" width="64" height="48"/>
+ </tileset>
+ <layer id="1" name="L" width="2" height="2"><data encoding="csv">1,2,3,4</data></layer>
+</map>)");
+
+    REQUIRE(world.tilesets().size() == 1);
+    CHECK(world.tilesets()[0].columns == 4);     // 64 / 16
+    CHECK(world.tilesets()[0].tile_count == 12); // 4 columns * (48/16 = 3) rows
 }

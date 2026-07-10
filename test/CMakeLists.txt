@@ -36,17 +36,25 @@ add_executable(neutrino_tests
         video/test_draw.cc
         video/test_sprite_sheet.cc
         video/test_atlas_packer.cc
+        video/world/test_tileset_bundle.cc
+        video/world/test_resource_cache.cc
+        video/world/test_world_renderer.cc
+        video/world/test_world_camera.cc
+        video/world/test_world_draw.cc
 
         world/test_tmx_loader.cc
         world/test_tile_resolution.cc
 
         detail/test_hash.cc
         detail/test_content_hash.cc
+
+        utils/test_lru.cc
 )
 
 target_include_directories(neutrino_tests
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/neutrino
 )
 
 target_link_libraries(neutrino_tests

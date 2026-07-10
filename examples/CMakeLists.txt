@@ -1,1 +1,2 @@
 add_subdirectory(sprite_demo)
+add_subdirectory(map_viewer)

@@ -205,8 +205,7 @@ namespace neutrino {
         std::string name;
         float opacity{1.0f};
         bool visible{true};
-        double offset_x{};
-        double offset_y{};
+        world_point offset{0.0f, 0.0f}; // layer draw offset in world pixels
         float parallax_x{1.0f};
         float parallax_y{1.0f};
         std::optional <sdlpp::color> tint;
@@ -307,6 +306,10 @@ namespace neutrino {
     struct world_tile : world_component {
         world_local_tile_id id{};
         std::optional <world_image> image;
+        /// Sub-rectangle of @ref image this tile occupies. Used by image-collection
+        /// tilesets that slice one shared image into per-tile regions; when unset the
+        /// tile is the whole image.
+        std::optional <rect> source_rect;
         std::optional <world_object_layer> objects;
         std::vector <world_tile_animation_frame> animation;
     };
@@ -435,6 +438,11 @@ namespace neutrino {
             [[nodiscard]] bool infinite() const noexcept;
             void set_infinite(bool infinite) noexcept;
 
+            /// @brief Map-level parallax reference point in world pixels: the point that
+            ///        stays fixed as parallax layers scroll. Default (0,0).
+            [[nodiscard]] world_point parallax_origin() const noexcept;
+            void set_parallax_origin(world_point origin) noexcept;
+
             void add_tileset(world_tileset tileset);
             void add_layer(world_layer layer);
 
@@ -482,6 +490,7 @@ namespace neutrino {
             world_stagger_axis m_stagger_axis{world_stagger_axis::y};
             world_stagger_index m_stagger_index{world_stagger_index::odd};
             bool m_infinite{};
+            world_point m_parallax_origin{0.0f, 0.0f};
             std::vector <world_tileset> m_tilesets;
             std::vector <world_layer> m_layers;
     };

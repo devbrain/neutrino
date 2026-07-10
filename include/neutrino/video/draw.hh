@@ -84,6 +84,22 @@ namespace neutrino {
         const sprite_draw_params& params = {});
 
     /**
+     * @brief Draw a registered sprite visual stretched to fill an explicit
+     *        destination rectangle, with optional H/V flip.
+     *
+     * Unlike the position+scale overloads (which round position and size
+     * independently), the caller supplies the exact integer destination. This lets
+     * a tile renderer derive @p dst from two rounded world corners so adjacent tiles
+     * share edges exactly under fractional zoom (no 1px seams). No rotation and no
+     * diagonal flip on this path; use the position overload for those. An invalid
+     * visual or a non-positive @p dst is a no-op returning success.
+     */
+    NEUTRINO_EXPORT sdlpp::expected <void, std::string> draw_sprite(
+        const rect& dst,
+        sprite_visual_ref visual,
+        sprite_flip flip = sprite_flip::none);
+
+    /**
      * @brief Draw a sprite appearance at a caller-supplied position.
      *
      * Invisible appearances and appearances without a valid visual are skipped

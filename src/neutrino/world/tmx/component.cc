@@ -107,8 +107,9 @@ namespace neutrino::world_tmx {
         result.name = get_string(node, "name", "");
         result.opacity = combined.opacity.value_or(1.0f);
         result.visible = combined.visible.value_or(true);
-        result.offset_x = combined.offset_x.value_or(0.0);
-        result.offset_y = combined.offset_y.value_or(0.0);
+        result.offset = world_point{
+            static_cast <float>(combined.offset_x.value_or(0.0)),
+            static_cast <float>(combined.offset_y.value_or(0.0))};
         result.parallax_x = combined.parallax_x.value_or(1.0f);
         result.parallax_y = combined.parallax_y.value_or(1.0f);
         result.tint = combined.tint;

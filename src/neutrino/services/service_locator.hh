@@ -16,6 +16,7 @@ namespace neutrino {
     class application;
     class scenes_manager;
     class sound_system;
+    class resource_cache;
 
     class service_locator {
         friend class application;
@@ -58,6 +59,12 @@ namespace neutrino {
                 return m_sprites_manager;
             }
 
+            // The application's shared tileset render-resource cache (Tier 2). Null
+            // before the application is ready and after it is torn down.
+            resource_cache* get_resource_cache() const {
+                return m_resource_cache;
+            }
+
             int get_max_texture_size() const {
                 return m_max_texture_size;
             }
@@ -70,6 +77,7 @@ namespace neutrino {
             void set_sound_system(sound_system& s);
             void set_texture_registry(texture_registry& s);
             void set_sprites_manager(sprites_manager& s);
+            void set_resource_cache(resource_cache& c);
             void clear_application(application& a) noexcept;
 
         private:
@@ -81,6 +89,7 @@ namespace neutrino {
             sound_system*  m_sound_system = nullptr;
             texture_registry* m_texture_registry = nullptr;
             sprites_manager* m_sprites_manager = nullptr;
+            resource_cache* m_resource_cache = nullptr;
             int m_max_texture_size = 0;
     };
 

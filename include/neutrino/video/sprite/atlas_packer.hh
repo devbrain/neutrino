@@ -149,6 +149,17 @@ namespace neutrino {
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 
     /**
+     * @brief Convenience @ref pack_regions: explicit @p format, per-page cap from the
+     *        renderer. Use when the pages must be a canonical format (e.g. RGBA) rather
+     *        than whatever the first source happens to be — a palettized source would
+     *        otherwise yield a palettized page the GPU sprite path cannot sample.
+     */
+    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_regions(
+        std::span <const pack_region> regions,
+        sdlpp::pixel_format_enum format, int margin,
+        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
+
+    /**
      * @brief Composite surfaces into one or more atlas pages in a target format.
      *
      * Packs @p images with @ref pack_atlas, allocates a page surface per page in

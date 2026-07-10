@@ -1,8 +1,8 @@
 # World ↔ Sprite Integration — Implementation Plan
 
-Status: **Phases 1–5 done; Phases 6–13 pending**
+Status: **Phases 1–13 done — feature complete** (backlog items in §5 remain)
 Owner: igor
-Last updated: 2026-07-06
+Last updated: 2026-07-09
 
 This document specifies how a loaded `world` (from the TMX loader today, LDtk
 later) is turned into drawable sprite resources and rendered, with a resource
@@ -332,233 +332,643 @@ tests still pass. — **Met**; full suite 497/497.
 
 ---
 
-## Phase 6 — Tileset → render-resource bundle builder
+## Phase 6 — Tileset → render-resource bundle builder ✅ DONE
 
 **Goal.** Given one `world_tileset` (+ loader + packer), produce a registered
-bundle: atlas(es), sheet, and one animation+state per animated tile. No cache
+bundle: atlas(es), sheet(s), and one animation+state per animated tile. No cache
 yet.
 
-**Deliverables.**
-- New `src/neutrino/video/world/tileset_bundle.{hh,cc}`:
-  - `struct tileset_bundle { std::vector<gpu_texture_atlas_id> atlases; sprite_sheet_id sheet; std::unordered_map<world_local_tile_id, sprite_animation_id> animations; std::unordered_map<world_local_tile_id, sprite_state_id> states; };`
-  - `tileset_bundle build_bundle(const world_tileset&);`
-  - Teardown helper that unregisters in order: states → animations → sheet →
-    atlases.
-- Uniform tileset: `load_surface(image.source)` → `register_atlas` → sheet whose
-  visual *i* = `drawable(i)`.
-- Collection tileset: decode per-tile images → `pack_surfaces` → atlas(es) →
-  sheet.
-- Animated tiles: build `sprite_animation` from `animation_of`, one shared
-  `sprite_state` each.
+**What shipped** (`include/neutrino/video/world/tileset_bundle.hh`,
+`src/neutrino/video/world/tileset_bundle.cc`):
+- `struct tileset_bundle { std::vector<gpu_texture_atlas_id> atlases; std::vector<sprite_sheet_id> sheets; std::vector<sprite_visual_ref> visuals; std::vector<sprite_state_id> states; std::vector<sprite_animation_id> animations; };`
+  plus `visual(id)` / `state(id)` bounds-checked accessors.
+- `tileset_bundle build_bundle(const world_tileset&);`, a
+  `build_bundle(const world_tileset&, dim max_page_size)` overload with an
+  explicit per-page cap (renderer-cap default vs. an injected bound; format is
+  still inferred), and `void destroy_bundle(tileset_bundle&) noexcept;`
+  (unregisters states → animations → sheets → atlases).
 
-**Design notes.**
-- Visual index == local id for uniform tilesets (identity), so cell resolution
-  stays a direct index.
-- Origin from the tileset `offset`/tile origin flows into `sprite_visual::origin`.
-- Reuse Phase 2/3/5; do not duplicate loading or packing here.
+**Design decisions (settled during Phase 6):**
+- **Flat direct-index vectors, not `unordered_map`.** Local tile ids are dense
+  and 0-based, and Phase 10 resolves `local_id → visual` per cell per frame; a
+  `vector` indexed by id is a single contiguous load with no hashing. `visuals`
+  and `states` are sized to `tile_count`; absent tiles (sparse collection gaps,
+  non-animated tiles) hold the invalid sentinel. (`sorted_array` from physics was
+  considered and rejected here: the keyspace is dense so direct index beats its
+  binary search, and it would couple `video` to `physics`.)
+- **Honest multi-page bundle.** A `sprite_sheet` backs exactly one atlas, so a
+  tileset that spills past the page cap yields several pages/sheets and `visuals`
+  points each tile at whichever sheet holds it. This drops the earlier
+  "visual index == local id" shortcut in favour of the `sprite_visual_ref` seam,
+  which also absorbs sparse collection tilesets for free.
+- **One unified pack path.** Uniform *and* collection tiles are packed through
+  `pack_regions` (uniform: one region per tile at `drawable(id).src` into the
+  shared decoded image, deduped so the sheet image is decoded once; collection:
+  each tile's own whole image). Packing every tile gives all of them a gutter
+  belt, so uniform tiles no longer bleed under draw-time scaling. `drawable()`
+  is consulted per tile, so mixed tilesets (some tiles with own images) work.
+- **`origin`** is derived from `drawable(id)` into each `sprite_visual::origin` —
+  which is why the sheet is built manually with `add_visual`, not via the
+  origin-less `register_sprite_sheet(cpu_atlas)` convenience. Per Phase 10's D1 the
+  stored value is the **bottom-left draw anchor** `(−off_x, src.h − off_y)`, not the
+  raw tileset offset, so the renderer can anchor each cell at its bottom-left and get
+  Tiled placement (oversized tiles extend up; offset carries the correct sign).
+- **Transactional build.** All decoding + packing (the throwing work) precedes
+  any `register_*`; a failure mid-registration tears the partial bundle down and
+  rethrows, so a failed build leaks nothing.
 
-**Tests** (`test/video/world/test_tileset_bundle.cc`, app context):
-- Uniform fixture → sheet visual count == tile count; a resolved visual draws.
-- Collection fixture → packed atlas(es); each tile resolves to a visual with the
-  right size.
-- Animated fixture → a state per animated local id; `sprite_state_appearance` of
-  a state resolves to a frame visual.
-- Teardown unregisters cleanly (no `uses()` violation, no leak).
+**Tests** (`test/video/world/test_tileset_bundle.cc`, app context — surfaces are
+fabricated in-memory and BMP-encoded into `world_image::data`, so no on-disk
+assets): uniform → one valid visual per tile, one sheet per page, no states;
+collection → present tiles resolve, gaps stay invalid, single page; **spill →
+under an explicit 64×64 cap two 40×40 tiles land on separate pages, giving two
+atlases, two sheets, and the two tiles resolving through different sheets** (the
+ref-map's whole reason for being); animated → one shared state per animated id,
+`sprite_state_appearance` at t=0 resolves to the first frame's visual; teardown →
+order-clean, tileset rebuilds afterwards.
+
+**Update (canonical format — shipped).** The atlas pages were originally packed in
+whatever format the first source surface had. That broke on **palettized (indexed)
+PNGs**: a palettized GPU texture can't be sampled by the sprite path ("Texture
+doesn't have a palette"). Bundles now pack in a **canonical `RGBA8888`** regardless of
+source (new `pack_regions(regions, format, margin)` convenience; the packer already
+converts every source on the way in).
+
+**Update (PNG tRNS transparency — fixed upstream).** `onyx_image` (lodepng) was
+emitting palettized PNGs as an indexed surface with an RGB palette + single
+transparent-index, which downstream consumers dropped when rebuilding an SDL/GPU
+palette — so a transparent sprite drew with a solid background. Fixed in
+`devbrain/onyx_image` (`src/codecs/png.cpp`): the compact indexed form is kept only
+for fully-opaque palettes; a palette with `tRNS` transparency now decodes to RGBA so
+per-pixel alpha survives. Neutrino carries no workaround for this. (Surfaced by
+`forest`'s squirrel sprite.)
+
+**Update (image-collection atlas tilesets — shipped).** A collection tileset can
+slice one shared image into per-tile sub-rectangles (Tiled `<tile x y w h><image/>`)
+and number its tiles **sparsely, past `tile_count`**. Support added: `world_tile`
+gained an optional `source_rect` (loader parses the tile's `x/y/w/h`; `drawable`
+returns it in place of the whole image), and the bundle sizes its id-indexed tables
+to `max(tile_count, highest id + 1)` so the sparse high ids resolve. Overhang uses the
+sub-rect size, not the shared image's. (Surfaced by the `forest` example map.)
 
 **Done when.** A tileset of each kind builds a drawable bundle and tears down
-cleanly.
+cleanly. — **Met:** 5 cases (incl. deterministic multi-page spill), full suite
+502/502.
 
 ---
 
-## Phase 7 — Content-keyed resource cache
+## Phase 7 — Content-keyed resource cache ✅ DONE
 
 **Goal.** The heart of "load/unload only the delta": a cache mapping tileset
 identity → bundle, with refcounts and an LRU cold pool.
 
-**Deliverables.**
-- New `src/neutrino/video/world/resource_cache.{hh,cc}`:
-  - `content_key key_for(const world_tileset&)` — file-backed: stat
-    `(path,mtime,size)`, look up cached hash, recompute (Phase 1) on change;
-    collection/embedded: hash of inputs + pack params.
-  - `bundle_handle acquire(const world_tileset&)` — hit: `++refcount`, resurrect
-    from cold pool if needed; miss: `build_bundle` (Phase 6), insert at 1.
-  - `void release(bundle_handle)` — `--refcount`; at 0 → move to cold pool.
-  - Cold pool: budgeted LRU; on overflow, evict (tear down bundle).
-- Stat-key → content-key map cached, invalidated on mtime/size change.
+**What shipped.**
+- **`src/neutrino/utils/lru.hh` — `neutrino::utils::lru_index<Key>`**: a generic,
+  capacity-bounded, recency-ordered *key* set (ordering only, no values), extracted
+  and tested in isolation (`test/utils/test_lru.cc`, 7 cases). `std::list` (front =
+  LRU, back = MRU) + `unordered_map<Key, list::iterator>` → O(1) `touch`
+  (insert/move-to-MRU, returns any evicted key), `erase`, `pop_oldest`, `contains`.
+  The test target gains `${PROJECT_SOURCE_DIR}/src/neutrino` on its include path so
+  internal headers like this are testable directly.
+- **`include/neutrino/video/world/resource_cache.{hh,cc}`**: public
+  `resource_cache` (pimpl, so the internal `lru_index` + maps stay out of the public
+  header) and a `bundle_handle { content_key key; const tileset_bundle* bundle; }`
+  with `visual`/`state` resolution passthrough.
+  - `acquire(const world_tileset&)` — hit: `++refcount` (erasing from the cold index
+    if it was idle); miss: `build_bundle` (Phase 6) then insert at 1. Builds *before*
+    inserting, so a build failure leaves the cache untouched.
+  - `release(const bundle_handle&)` — `--refcount`; at 0 `cold.touch(key)`, and if
+    that overflows the budget, `destroy_bundle` + erase the evicted LRU entry.
+  - `resident_count()` / `cold_count()` introspection.
 
-**Design notes.**
-- **Acquire-before-release** is the caller's contract (Phase 8 enforces it).
-- Cold bundles stay registered and keep ticking (animated states cost ~nothing),
-  so re-acquire is instant and in-phase.
-- Refcount is *intent*; the manager's `uses()` guard remains the *safety net*.
-- Budget is a knob (bytes or bundle count); start with a count.
+**Design decisions (settled during Phase 7):**
+- **Two-level file identity.** A file-backed image is identified by a
+  `(path → mtime, size)` stat key mapped to a cached content hash (Phase 1),
+  recomputed only when the file changes — so re-acquiring an unchanged tilesheet is
+  a stat, not a re-hash. Embedded images hash their bytes directly.
+- **The key folds in geometry + per-tile images/animations, and excludes
+  `first_gid`.** The bundle's visuals are geometry-specific, so tile size etc. must
+  be in the key; `first_gid` is a *map-level* id assignment, not tileset content, so
+  excluding it lets the same tileset share one bundle across maps that number it
+  differently. (Sharing a *texture* across tile-size variants stays the deferred
+  "texture-vs-sheet key split.")
+- **Bundles never move.** They live in one pointer-stable `unordered_map` node for
+  their whole life; only their membership in the cold `lru_index` toggles, so a held
+  `bundle_handle` never dangles while acquired. This is why the LRU is ordering-only
+  rather than a value-owning cache.
+- **Cold budget is a bundle count** (default 8); cold bundles stay registered and
+  keep ticking, so re-acquire is instant. Refcount is *intent*; the sprite manager's
+  `uses()` guard stays the safety net. Destructor tears down every bundle.
 
-**Tests** (`test/video/world/test_resource_cache.cc`, app context):
-- Acquire same tileset twice → one build, refcount 2 (assert via a build counter
-  or by observing a single sheet id).
-- Release once → still resident; release twice → in cold pool (still resolvable),
-  not yet unregistered.
-- Exceed cold-pool budget → LRU bundle unregistered.
-- Two tilesets referencing the same image (same content key) → shared bundle.
-- Change mtime (touch fixture) → new content key → new bundle.
-- **Switch delta:** acquire {A,B}, then acquire {B,C} before releasing {A,B};
-  assert B never rebuilt, A cold/evicted, C built once.
+**Tests** (`test/video/world/test_resource_cache.cc`, app context — observing build
+vs. share vs. rebuild through `sprite_sheet_id` identity, no test hook): acquire
+twice → one build + shared bundle; release-to-cold stays resident and resolvable;
+cold-budget overflow evicts + tears down the LRU (rebuild yields a newer sheet id);
+identical content → shared bundle; a rewritten file-backed image → new bundle; and
+the **switch delta** — acquire {A,B}, then {B,C}, release {A,B} → B never rebuilt
+(same bundle + sheet id throughout), C built once, A idle in the cold pool.
 
 **Done when.** The switch-delta test proves shared bundles survive and only the
-difference loads/unloads.
+difference loads/unloads. — **Met:** 6 cache cases + 7 LRU cases, full suite
+515/515.
 
 ---
 
-## Phase 8 — `world_renderer` binding (lifecycle only)
+## Phase 8 — `world_renderer` binding (lifecycle only) ✅ DONE
 
 **Goal.** A per-level RAII object that acquires bundles for every tileset in a
 world and releases them on destruction. No drawing yet.
 
-**Deliverables.**
-- New `src/neutrino/video/world/world_renderer.{hh,cc}`:
-  - `world_renderer(const world&, resource_cache&)` — acquires a bundle per
-    tileset; holds a `tileset index → bundle_handle` table.
-  - Destructor releases all handles.
-  - Non-copyable, movable.
-- A switch helper that constructs the new renderer before dropping the old
-  (encodes acquire-before-release so call sites can't get it backwards).
+**What shipped** (`include/neutrino/video/world/world_renderer.{hh}`,
+`src/neutrino/video/world/world_renderer.cc`):
+- `world_renderer(const world&, resource_cache&)` — acquires a bundle per tileset
+  into a `std::vector<bundle_handle>` **index-aligned with `world::tilesets()`**
+  (so Phase 10's `tileset_for(gid)` → index is pointer arithmetic, no map).
+  Destructor releases all handles.
+- `world_renderer(const world&)` — defaults to the **application-wide cache**
+  published through the service locator (see below), so call sites just write
+  `world_renderer r(level)`. The explicit-cache ctor stays for tests/tools.
+- Non-copyable, move-only. Move leaves the source inert (empty handles, null
+  cache) so a moved-from renderer releases nothing; move-assign releases the
+  target's own handles before adopting the source's.
+- `switch_to(const world& next)` — the switch helper: `*this = world_renderer(next,
+  *m_cache)`, so the temporary acquires *next*'s bundles before the move-assignment
+  releases the current level's. Acquire-before-release is encoded in one place;
+  call sites can't reverse it.
+- `tileset_count()` / `handle_for_tileset(index)` accessors (the latter also serves
+  Phase 10).
 
-**Design notes.**
-- The renderer owns only its *view* (handles + draw scratch), never the bundles
-  themselves — those live in the cache.
-- Move semantics must not double-release.
+**Service-locator integration (agreed during Phase 8).** `resource_cache` is
+Tier 2 sitting directly on Tier 1 (`texture_registry` + `sprites_manager`), which
+are already app-owned and published through the internal `service_locator`, and the
+cache already reaches them transitively via `register_*`. So the `application` now
+**owns a default `resource_cache`** (a `unique_ptr` in its pimpl) and publishes a
+pointer through the locator, exactly like the other render services. The cache stays
+an ordinary constructible class (not a singleton) so tests still build local caches
+with a chosen cold budget.
+- **Teardown order is the one constraint:** `destroy_bundle` destroys GPU textures
+  and unregisters through the sprite/texture services, so the cache must tear down
+  while those (and the renderer) are still live. It is reset in `application::on_quit`
+  — after scenes (and their `world_renderer`s) release their handles, before the
+  renderer teardown and `clear_application` — with an idempotent `reset()` in
+  `~application` as a fallback.
 
-**Tests** (`test/video/world/test_world_renderer.cc`, app context):
-- Construct over a world → all tilesets acquired (cache refcounts bumped).
-- Destroy → all released.
-- Two renderers over worlds sharing a tileset; destroy the first → shared bundle
-  stays resident (refcount held by the second). This is the level-switch guarantee.
-- Move a renderer → no double-release on destruction.
+**Tests** (`test/video/world/test_world_renderer.cc`, app context): construct →
+one refcount per tileset (`resident_count`), destroy → all released to cold; a
+tileset shared by two renderers survives the first's destruction (same bundle
+pointer, only the departed tileset goes idle); move-construct and move-assign each
+release exactly once (no double-release); `switch_to` keeps the shared tileset's
+bundle *and* sheet id across the switch with only the departed tileset going idle;
+the default ctor acquires through the located cache.
 
 **Done when.** Renderer lifetime drives cache refcounts correctly, including the
-shared-tileset switch case.
+shared-tileset switch case. — **Met:** 5 cases, full suite **522/522**.
 
 ---
 
-## Phase 9 — Camera + culling (finite orthogonal)
+## Phase 9 — Camera + culling (finite orthogonal) ✅ DONE
 
-**Goal.** Minimal camera and the visible-cell-range computation for finite
-orthogonal layers. Pure math, no drawing.
+**Goal.** A minimal camera and the visible-cell-range computation for finite
+orthogonal tile layers. Pure math, no drawing, no render context.
 
-**Deliverables.**
-- `struct camera { point offset; float zoom{1}; };` (+ world-pixel → screen).
-- `visible_cell_range(const world&, const world_tile_layer&, const camera&, screen_size) -> {x0,y0,x1,y1}`.
+**Scope.** Finite orthogonal only. Infinite/chunked culling is Phase 13; isometric
+and hex are later. This phase answers *which cells are on screen*; Phase 10 turns
+cells into draws.
 
-**Design notes.**
-- Zoom multiplies into `sprite_draw_params.scale`.
-- Clamp the range to layer bounds; account for tile size, layer offset, parallax.
+### Coordinate model (the part worth pinning down)
+
+Three spaces:
+- **Layer-cell** `(cx, cy)` — integer grid index into a `world_tile_layer`.
+- **World-pixel** — `world_point` (float). A cell occupies
+  `[cx·tw, (cx+1)·tw) × [cy·th, (cy+1)·th)`, where `(tw, th)` is the **map** tile
+  size (`world::tile_width/height`), i.e. the cell stride.
+- **Screen-pixel** — `point` (int), what `draw_sprite` consumes.
+
+The camera holds a **float** world position and a zoom:
+
+```cpp
+struct camera {
+    world_point offset{0.0f, 0.0f};  // world-pixel mapped to the viewport's TOP-LEFT corner (parallax 1)
+    float       zoom{1.0f};
+};
+```
+
+Per layer, parallax and the layer's static offset fold into an effective origin:
+
+```
+layer_origin(cam, layer) = { cam.offset.x·layer.parallax_x - layer.offset_x,
+                             cam.offset.y·layer.parallax_y - layer.offset_y }
+```
+
+and the transform for any world point in that layer is:
+
+```
+to_screen = round( (world_pt - layer_origin) · zoom )
+```
+
+`visible_cell_range` is exactly the inverse of that same expression, so culling and
+drawing can never drift apart.
+
+### Deliverables (`include/neutrino/video/world/camera.hh` [+ `camera.cc`])
+
+```cpp
+struct camera { world_point offset{0,0}; float zoom{1.0f}; };
+
+point to_screen(const camera&, world_point p) noexcept;                        // parallax 1, no layer offset (HUD/objects)
+point to_screen(const camera&, const world_layer_header& layer, world_point);  // folds parallax + layer offset
+
+struct cell_range {                        // half-open [x0,x1) x [y0,y1), already clamped to the layer
+    int x0{0}, y0{0}, x1{0}, y1{0};
+    [[nodiscard]] bool empty() const noexcept { return x1 <= x0 || y1 <= y0; }
+};
+
+cell_range visible_cell_range(const world&, const world_tile_layer&, const camera&, dim viewport);
+```
+
+The math inside `visible_cell_range`:
+
+```
+o  = layer_origin(cam, layer)
+wl = o.x;  wr = o.x + viewport.w / zoom      // world-x at screen 0 and at screen width
+wt = o.y;  wb = o.y + viewport.h / zoom
+x0 = clamp(floor(wl/tw), 0, layer.width);   x1 = clamp(ceil(wr/tw), 0, layer.width)
+y0 = clamp(floor(wt/th), 0, layer.height);  y1 = clamp(ceil(wb/th), 0, layer.height)
+```
+
+### Design decisions (agreed)
+
+- **Separate render-space camera, in `world_point` — deliberately not the physics
+  `vec`/`view`.** The physics module already has a world-position type
+  (`physics::vec = euler::vec2f`) and a proto-camera `view { origin, pixels_per_unit,
+  y_up }` in `simplex/collide/bridge.hh` (whose comment notes "a real camera does not
+  yet exist"). We do **not** reuse them here. Physics is deliberately kept in pure
+  world units with no SDL/display dependency, bridged to display space in exactly one
+  place; the tile world is authored in TMX **pixels** (`world_point`), which is the
+  space the camera culls and positions. So the camera speaks tile-pixel space, and
+  making it follow a physics body is an explicit `physics::vec → pixel` conversion at
+  the call site (a gameplay/scene concern), not a shared type. This keeps two
+  coordinate vocabularies — intentional, to preserve the physics module's clean
+  separation — rather than tying the tile world into the physics coordinate model.
+- **`world_point` (float) offset, not the plan's original `point offset`.** Parallax
+  multiplies the offset by a float and zoom is fractional; an int camera can't scroll
+  or parallax sub-pixel. Float world offset, rounding to int only at the final
+  `to_screen` — the same "diverge-when-justified" call as P4's rotation.
+- **Half-open, pre-clamped `cell_range` as a type**, not a bare `{x0,y0,x1,y1}`.
+  Matches C++ iteration and can never yield negative / out-of-bounds indices.
+- **Offset = viewport top-left**, with a `center_on(world_point, dim viewport)`
+  helper that sets `offset = target - (viewport/2)/zoom`. Top-left keeps the core
+  transform simple; centring is one line on top.
+- **`to_screen` / `layer_origin` inline in the header** (Phase-10 per-cell hot path
+  wants inlining); `visible_cell_range` in a `.cc` (once per layer per frame).
+- **Zoom multiplies into `sprite_draw_params.scale`** at draw time (Phase 10).
+  `visible_cell_range` validates `zoom > 0` (and finite) once per layer via `ENFORCE`;
+  `to_screen` assumes a valid camera (no per-cell check).
+- **Orthogonal-only, lenient.** Computed orthogonally; isometric/hex are future
+  phases. No throw when `orientation() == unknown`, since manually-built test worlds
+  often leave it unset.
+
+### Deferred (with rationale, not silently)
+
+- **Oversized-tile overhang** — `visible_cell_range` returns the exact *grid*
+  intersection. A tileset with tiles taller than the map cell draws them extending
+  upward (bottom-aligned), so a tile whose cell is just off the top edge can still be
+  visible. Phase 10 inflates the range by the tileset's known max overhang (in cells)
+  before iterating, keeping this function a clean grid intersection.
+- **Per-cell rounding seams** — adjacent tiles can differ by 1px under fractional
+  zoom; Phase 10 handles it by rounding shared edges consistently (round position and
+  position+size, not position + scaled size).
 
 **Tests** (`test/video/world/test_world_camera.cc`, no render context):
 - A camera over a large layer yields a cell range matching the viewport rect.
 - Offset/zoom shift and shrink/grow the range as predicted.
-- Ranges clamp at layer edges (no negative / out-of-bounds indices).
-- Parallax/offset shift the range correctly.
+- Ranges clamp at all four layer edges (no negative / out-of-bounds indices).
+- Parallax < 1 shifts a background layer less than parallax = 1; layer offset shifts
+  the range correctly.
+- A camera fully off the layer → `empty()`.
+- `to_screen` round-trips a known world point to the expected screen pixel under
+  offset/zoom/parallax; `center_on` puts the target at the viewport centre.
 
 **Done when.** Culling returns exactly the on-screen cell rectangle for varied
-camera states.
+camera states (offset, zoom, parallax, edge clamping), and `to_screen` agrees with
+the same transform `visible_cell_range` inverts. — **Met:** 10 cases in
+`test/video/world/test_world_camera.cc`, full suite **535/535**.
+
+**Update (parallax — shipped, look-at camera).** Parallax layers (factor ≠ 1) drew in
+the wrong place through several iterations against the TMX model (top-left offset +
+view-centre anchor + separate origin + a `(1−factor)` inversion — four places to get a
+sign or term wrong). The final form **reparameterises the camera as a look-at**:
+`camera{ target, zoom, parallax_rest }`, where `target` is the world point shown at
+the screen centre and `parallax_rest` is the target value at which layers align. The
+whole transform collapses to
+`screen(p) = viewport/2 + (p − eff_target)·zoom`, `eff_target = rest + factor·(target
+− rest)`. This removes the tangle: the viewport appears only as a centring term (never
+woven into the factor), `factor` reads directly (0 static, 1 follows), and the origin
+sign is self-evident — layers align exactly when `target == rest`. `world_renderer::
+draw` fills `parallax_rest` from the map's `parallaxoriginx/y` (loader-parsed); the
+viewer's pan/zoom/clamp operate on `target` and got simpler. Same visual result as the
+view-centre formula, just without the foot-guns. (Verified against Tiled's
+`MapScene::parallaxOffset` and the `forest` screenshots.)
+
+**What shipped / divergences from the plan above.**
+- `camera`, both `to_screen` overloads, and `eval_layer_origin` are header-inline in
+  `include/neutrino/video/world/camera.hh`; `visible_cell_range` is out-of-line in
+  `src/neutrino/video/world/camera.cc` (once per layer per frame; carries the
+  `ENFORCE(zoom > 0 && finite)` guard). `NEUTRINO_EXPORT` on the out-of-line symbol.
+- **`to_screen` snaps with `round`** (nearest pixel), as the coordinate model here
+  specifies. Cull edges use `floor` (near) / `ceil` (far) so the range includes every
+  cell the viewport touches; the two conventions are mutually consistent.
+- **Layer offset was ported to `world_point` (float).** `world_layer_header.offset_x/y`
+  (`double`) became a single `world_point offset` — the world's canonical world-space
+  vector, matching the space the camera computes in. The TMX loader narrows its
+  double accumulation into it; `world_tileset.offset` (int draw offset) is unchanged.
+- **`center_on` is deferred, not shipped.** The `offset = viewport top-left` model and
+  `to_screen` round-trips are covered; the centring helper can land with Phase 10 when
+  a call site needs it (it is one line on top of the existing transform).
+- Oversized-tile overhang and per-cell rounding seams remain deferred to Phase 10 as
+  the plan states.
 
 ---
 
-## Phase 10 — Tile-layer draw path (static tiles)
+## Phase 10 — Tile-layer draw path (static tiles) ✅ DONE
 
-**Goal.** Render finite orthogonal tile layers of static tiles.
+**Goal.** Render finite orthogonal tile layers of static tiles, pixel-correct
+under camera offset/zoom/parallax, honoring per-cell flip + hex-rotation.
 
-**Deliverables.**
-- `world_renderer::draw(const camera&, screen_size)`:
-  - For each visible tile layer, cull (Phase 9), iterate cells; per cell:
-    gid → `tileset_for` → `to_local` → bundle sheet → `visual_ref` → `draw_sprite`
-    at the computed screen position with `{scale=zoom, flip=cell.flip,
-    rotation = cell.rotated_hex_120 ? 120 : 0}`.
-- Layer opacity/visible/tint honored (skip invisible; opacity later if needed).
+### Placement model (the part worth pinning down)
+
+Draw is anchor-based: `draw_sprite(position, visual, params)` computes
+`dst_topleft = position - visual.origin·scale` (see `draw.cc`). So *where a tile
+lands is split* between the per-cell `position` the renderer computes and the
+`origin` baked into the visual. Getting that split right is the whole phase.
+
+Tiled orthogonal semantics: a tile's **bottom-left** aligns to its cell's
+bottom-left, the tileset draw offset shifts it, and a tile taller than the map
+cell **extends upward**. The tile's top-left in world pixels is:
+
+```
+TL_world = ( cx·mtw + off_x , (cy+1)·mth − pth + off_y )
+```
+
+where `mtw,mth` = map cell size, `pth` = tile pixel height, `off` = tileset draw
+offset.
+
+The clean split: the **renderer positions each cell at its plain bottom-left**,
+`world_anchor = (cx·mtw, (cy+1)·mth)`, `position = viewport_origin +
+to_screen(cam, layer, world_anchor)` (see D4 for `viewport_origin`); the
+**bundle bakes the image-local anchor** `origin = (−off_x,
+pth − off_y)`. Then `dst = position − origin·scale` reduces exactly to
+`TL_world`. Same-size tiles with no offset → `origin = (0, pth)` and it just
+works; oversized tiles extend up for free; `off` gets the correct sign. `mth` is
+map-level, so the bundle only needs `pth` (= `drawable(id).src.h`, in hand at
+build time) — it never bakes in the map cell size and stays map-agnostic/shared.
+
+### Design decisions (agreed)
+
+- **D1 — origin reconciliation (revisits Phase 6).** The bundle today stores
+  `sprite_visual.origin = (+off_x, +off_y)` — wrong sign for a *subtracted* origin
+  and missing the bottom-left term; it is correct only when `off = 0` **and** the
+  tile size equals the cell size. Phase 10 changes the built origin to
+  `(−off_x, drawable(id).src.h − off_y)` (a ~2-line change through
+  `world_tileset::drawable`/`tileset_bundle.cc`), and the renderer anchors at the
+  cell bottom-left. This makes both phases correct and **subsumes the
+  Phase-9-deferred oversized-tile overhang** at the draw origin.
+- **D2 — `draw()` returns stats, never throws on content.** A per-cell failure
+  must not kill the scene. `draw` returns `draw_stats { std::size_t drawn,
+  skipped, failed; }`: a *non-empty* gid that resolves to no tileset or an invalid
+  visual increments `skipped`; a `draw_sprite` error increments `failed`; a
+  successful tile draw increments `drawn`; empty cells (gid 0) are not counted (they
+  are absent, not skipped). Nothing throws. Testable ("everything drew, nothing
+  failed") without a hook.
+- **D3 — fractional-zoom seams.** Originally deferred, then **fixed** when the map
+  viewer surfaced a black grid under wheel zoom: `round(x·z) + round(w·z) ≠
+  round((x+w)·z)`, so independently-rounded position and size left 1px gaps. The tile
+  path now derives the destination rect from **two rounded world corners** of the
+  tile's pixel AABB via a new `draw_sprite(rect dst, visual, flip)` overload — a
+  shared world edge rounds to one screen pixel, so neighbours meet exactly. Rotated
+  and diagonally-flipped cells keep the anchor/scale path (the AABB blit is H/V only)
+  and may still seam; both are rare and not seam-sensitive. **Tile objects share the
+  same seam-free path** — cells and objects both go through one `draw_gid_at(gid,
+  world_anchor, …)` helper — so side-by-side background bands (e.g. a parallax
+  layer's four objects) don't show 1px gaps under fractional zoom either. Image
+  layers are a single picture (nothing adjacent to seam against), so they keep the
+  position overload.
+- **D4 — the viewport is a destination `rect`, not a bare size.** The camera says
+  *what world region* is shown; it does not say *where on the target* the map is
+  painted. `to_screen` maps the camera's viewport top-left to the target's origin,
+  so with only a `dim` a map can never be inset into a sub-region (split-screen, a
+  UI panel, a letterboxed view). `draw` therefore takes a screen-space
+  `rect viewport`: its size `{w,h}` drives culling exactly as before, and its
+  top-left `{x,y}` translates every tile's screen position —
+  `screen = {viewport.x, viewport.y} + to_screen(cam, layer, world_anchor)`.
+  `rect{0,0,w,h}` is the whole-window default. The *render target itself* stays
+  implicit (`get_renderer()`, like every other draw); an offscreen pass sets the
+  SDL render target before calling `draw`, unchanged by this API. Clipping edge/
+  overhang tiles to the viewport rect (so a sub-region can't bleed into its
+  neighbor) is a one-line `set_clip_rect` guard, noted as an optional refinement.
+
+### Deliverables
+
+- `world_renderer::draw(const camera& cam, const rect& viewport) -> draw_stats`:
+  - Iterate `m_world->tile_layers()` in map order; skip `!layer.visible`.
+  - Cull with `visible_cell_range(*m_world, *layer, cam, {viewport.w, viewport.h})`
+    (Phase 9), **inflated for overhang** (below).
+  - Per non-empty cell `(cx,cy)`: `gid → tileset_for → index (pointer arithmetic
+    vs `tilesets()`) → handle_for_tileset(index) → to_local(gid) →
+    handle.visual(local)`; then `draw_sprite({viewport.x, viewport.y} +
+    to_screen(cam, layer, cell_bottom_left), visual, {scale = zoom, flip =
+    cell.flip, rotation_degrees = cell.rotation_degrees})`.
+- **Overhang inflation.** A tile larger than its cell (or with a draw offset)
+  overhangs its grid rect — with the bottom-left anchor, a taller tile pokes
+  *upward* out of cells below the viewport, a wider one *rightward* out of cells to
+  the left, and an offset can push either way. Rather than reason per-direction,
+  inflate the culled range **on all four sides** by `ceil(max_overhang / cell)`
+  cells, where `max_overhang = max over this level's tilesets of
+  (max tile px size − cell size, plus |off|)`, then re-clamp to the layer.
+  Computed once at construction (tilesets are fixed for the level), applied as a
+  cheap clamp-adjust each frame; over-including an off-screen border cell is
+  harmless (it clips). This pays the Phase-9 overhang deferral.
 
 **Design notes.**
-- Empty cells (gid 0) skipped.
-- Resolve services once per draw (the sprite API already supports this).
-- Draw order per the world's render order.
+- Empty cells (gid 0) skipped before any resolution.
+- gid→bundle is pointer arithmetic: `tileset_for` returns a pointer into
+  `tilesets()`, and the handle table is index-aligned with it (Phase 8), so no map.
+- The `draw_sprite(position, sprite_visual_ref, params)` overload resolves the
+  sheet/atlas internally — no per-draw service lookup in the renderer.
+- Draw order follows the world's render order within a layer (cheap to honor;
+  matters once overhang/overlap draws overlap).
 
 **Tests** (`test/video/world/test_world_draw.cc`, app/offscreen context):
-- Render a small finite world → all draws return success, no throw.
-- A flipped cell and a hex-rotated cell draw without asserting.
-- If pixel readback is available: a known tile lands at the predicted screen
-  position under a given camera.
-- An out-of-range/garbage gid is skipped or errors gracefully (no scene kill).
+- A small finite world renders → `stats.failed == 0`, `stats.drawn == non-empty
+  cell count`.
+- A flipped cell and a hex-rotated (120°) cell draw without error.
+- A known tile lands at the predicted screen position under a given camera
+  (pixel readback if available; else assert against the same `to_screen` the
+  renderer uses).
+- An oversized tile (taller than the cell) still draws when its anchoring cell is
+  just *below* the viewport (it overhangs upward — overhang inflation catches it).
+- An out-of-range/garbage gid → counted in `stats.skipped`, scene survives.
 
 **Done when.** A finite orthogonal map renders its static tiles at correct
-positions under camera transforms.
+positions under camera transforms (offset/zoom/parallax), with flip and
+hex-rotation, oversized tiles bottom-aligned and culled with overhang, and a
+garbage gid skipped rather than fatal. — **Met:** 8 cases in
+`test/video/world/test_world_draw.cc`, full suite **543/543**.
+
+**What shipped / notes.**
+- D1 (bottom-left anchor baked into `sprite_visual.origin`), D2 (`draw_stats`
+  return, per-cell non-throwing), D3 (fractional-zoom seams left deferred), and D4
+  (destination `rect` viewport) all landed as specified.
+- **Render order is honored within a layer** — `right/left` sets the column
+  direction, `*_down/*_up` the row direction (y outer), so overlapping/oversized
+  tiles paint in the correct z-order. A test drives all four orders and confirms
+  full-range coverage.
+- **Not asserted: pixel-exact positions.** Tests verify plumbing (draw counts,
+  no-throw, cull + overhang + order coverage), not exact screen pixels — that would
+  need render-target readback under the dummy driver. The placement math is verified
+  by construction (D1).
+- Object and image layers are still stubs (Phase 12); animated tiles use the static
+  path for now (Phase 11 swaps `visual(local)` for the shared state's current frame).
 
 ---
 
-## Phase 11 — Animated tiles (shared-clock draw integration)
+## Phase 11 — Animated tiles (shared-clock draw integration) ✅ DONE
 
-**Goal.** Draw animated tiles via the shared clock, resolved once per frame.
+**Goal.** Draw animated tiles in lockstep off the shared per-tile clock, composing
+each cell's flip/rotation on top.
 
-**Deliverables.**
-- In the draw pass, before iterating cells: for each animated local id in the
-  visible tilesets, resolve the bundle state's current appearance once into a
-  `local_id → current visual` table.
-- Cell resolution consults the table: static → identity visual, animated →
-  current visual; flip composes per cell.
-- States tick via the existing `sprites_manager::update` (nothing new to tick).
+**What shipped.** A single branch in the tile draw loop
+(`world_renderer::draw_layer`): after resolving `local`, if `handle.state(local)`
+is valid the cell draws through that shared `sprite_state_id`
+(`draw_sprite(pos, state, params)`), otherwise through the fixed
+`handle.visual(local)`. The draw stats/skip logic is unchanged. Almost everything
+this phase needs already existed:
+- **Shared state per animated tile** — Phase 6's `build_bundle` registers one
+  `sprite_state` per animated local id; every cell of that tile reads the same
+  state, so lockstep is automatic (one clock, not per-cell).
+- **Ticking is free** — `application` already calls `sprites_manager::update(dt)`
+  each frame (`application.cc`), which advances every registered state; the
+  renderer's held bundle keeps them resident, and Phase 7 cold bundles keep ticking,
+  so a switched-away-but-resident tileset stays in phase.
+- **Transform composition is free** — `draw_sprite(pos, state, params)` resolves the
+  current frame from the manager and composes `appearance.flip ^ params.flip` and
+  `params.rotation_degrees` (`draw.cc`), so the cell flip and hex-120 apply on top of
+  the current frame with no extra code.
 
-**Design notes.**
-- One resolve per animated tile per frame, not per cell.
-- Flip is orthogonal to the clock: the clock picks the frame, the cell picks the
-  mirror — one state serves cells of differing flips.
+### Design decision (diverges from the original plan above)
 
-**Tests** (extend `test/video/world/test_world_draw.cc`):
-- Advance the app several frames → an animated tile's resolved visual changes at
-  frame boundaries; matches `total_duration` wrap.
-- Two cells of the same animated tile resolve to the identical current visual.
-- A flipped animated cell composes flip with the current frame correctly.
-- Phase survives a simulated level switch that keeps the tileset resident
-  (no reset).
+- **Resolve per cell, not into a per-frame table.** The plan called for a
+  `local_id → current visual` table resolved once per frame ("O(distinct animated
+  tiles)"). But **lockstep comes from the shared state, not the table** — the table
+  is only a perf optimization saving one `manager.appearance(state)` call (a map
+  lookup + short frame scan) per animated cell, which is negligible for realistic
+  animated-cell counts. The per-cell `draw_sprite(state)` is one branch, keeps
+  `draw_layer` `const` (a table would need a `mutable` scratch buffer), and is
+  correctness-identical. The table remains a documented optimization to add only if
+  a huge animated field measures hot. This revises the done-criterion from
+  "O(distinct animated tiles)" to **"O(animated cells), one shared clock."**
 
-**Done when.** Animated tiles play in lockstep, cost O(distinct animated tiles),
-and survive resident-tileset switches without a phase reset.
+**Tests** (`test/video/world/test_world_draw.cc`, app context; the clock is advanced
+in-test via `sprites_manager::update`):
+- An animated tile's resolved current visual is the first frame at t=0 and the
+  second frame after advancing past the first frame's duration; the animated field
+  still draws every cell.
+- A flipped animated cell draws without error (composition through the state path).
+- **Resident switch** — advance the clock into frame 1, `switch_to` a world sharing
+  the identical tileset; the shared `sprite_state_id` is unchanged (not rebuilt) and
+  its appearance is still frame 1 (no reset).
+
+**Done when.** Animated tiles play in lockstep off one shared clock (O(animated
+cells)), compose per-cell flip/rotation, and survive resident-tileset switches
+without a phase reset. — **Met:** 3 added cases (11 in the draw suite), full suite
+**546/546**.
 
 ---
 
-## Phase 12 — Tile objects + image layers
+## Phase 12 — Tile objects + image layers ✅ DONE
 
-**Goal.** Render object-layer tile objects (gid) and image layers.
+**Goal.** Render object-layer tile objects (gid) and image layers alongside tile
+layers.
 
-**Deliverables.**
-- Tile objects: `world_object_base.gid` resolves exactly like a cell (+ object
-  `rotation` into the same rotation field, + flip).
-- Image layers: build a one-visual bundle for `world_image_layer.image`; draw as
-  a single sprite at the layer position.
+**What shipped.**
+- **`draw_gid(gid, pos, params, stats)`** — the cell resolution/draw (tileset_for →
+  aligned handle → visual/animated-state → draw + count) extracted into one helper,
+  now shared by the tile-cell loop and tile objects. Animated tile objects get the
+  shared-clock behaviour for free.
+- **Tile objects** (`draw_layer(world_object_layer)`): iterate `objects`, take the
+  `world_object_base` of each variant; a visible object with `gid != 0` draws via
+  `draw_gid` at `to_screen(cam, layer, base.origin)` with `{zoom, base.flip,
+  base.rotation}`. Tiled anchors a tile object by its **bottom-left** at its origin
+  and rotates about that point — which is exactly the bundle's baked bottom-left
+  visual origin and `draw_sprite`'s pivot, so objects reuse the tile placement math
+  unchanged.
+- **Image layers** (`draw_layer(world_image_layer)`): each image-layer picture is
+  wrapped as a **synthetic one-tile collection tileset** and acquired through the
+  same `resource_cache` at construction (held in a `layer* → bundle_handle` map,
+  released/moved with the rest). It draws once at the layer origin, with parallax/
+  offset riding through `to_screen`.
 
-**Design notes.**
-- Non-gid objects (shapes/text) are out of scope for sprite rendering (debug/UI
-  layer handles them).
-- Image-layer images can optionally go through the packer or stand alone.
+**Design decisions.**
+- **Image layers go through the cache, not a bespoke path.** Wrapping the image as a
+  content-keyed bundle means an identical background shared across levels stays
+  resident across a `switch_to` (the Phase-7 delta-loading guarantee) with zero new
+  lifecycle code — build/teardown/refcount are all reused.
+- **Non-gid objects are absent, not skipped.** Shapes, text, points and hidden
+  objects are handled by the debug/UI layer, not sprite-rendered; like an empty
+  cell they are not counted in `draw_stats`.
 
-**Tests** (extend world draw tests):
-- A world with a tile object → draws at object position with rotation/flip.
-- An image layer → draws once at the right position.
+**Deferred (documented, not silent).**
+- **Object width/height resize** — `sprite_draw_params.scale` is a single uniform
+  float, so a tile object authored at a non-native size currently draws at native
+  size (scaled only by zoom). Per-axis object scaling needs a draw-params extension.
+- **Object `draw_order`** (`top_down` vs `index`) — objects draw in list order;
+  y-sorting for `top_down` is a small follow-up (matters only for overlapping
+  objects).
+- **Large image-layer standalone upload** — the picture is packed (gutter belt) like
+  any tile; a background larger than the max atlas page would throw. A direct
+  standalone-texture path is the fix, tracked in the backlog.
 
-**Done when.** Tile objects and image layers render alongside tile layers.
+**Tests** (`test/video/world/test_world_draw.cc`): a tile object draws through the
+gid path (`drawn == 1`); a shape (gid 0) and a hidden object are neither drawn nor
+counted; a rotated + diagonally-flipped tile object draws clean; an animated tile
+object plays off the shared clock; an image layer draws its picture once.
+
+**Done when.** Tile objects and image layers render alongside tile layers. —
+**Met:** 5 added cases (16 in the draw suite), full suite **551/551**.
 
 ---
 
-## Phase 13 — Infinite / chunked maps
+## Phase 13 — Infinite / chunked maps ✅ DONE
 
 **Goal.** Support infinite maps by culling to intersecting chunks.
 
-**Deliverables.**
-- Chunk-aware culling: iterate only `world_tile_chunk`s intersecting the camera
-  rect; within each, the Phase 10/11 cell path.
+**What shipped.**
+- **`visible_cell_bounds`** — the unclamped floor/ceil cell rect was factored out of
+  `visible_cell_range` (which now just clamps it to the layer). Infinite layers have
+  no finite `width`/`height` to clamp against and address arbitrary — including
+  negative — cell coordinates, so the chunk path culls with the unclamped bounds.
+- **`draw_cell(cell, cx, cy, ...)`** — the per-cell anchor/position/`draw_gid` step
+  extracted from the finite loop and reused by both paths, so finite and chunked
+  cells resolve and place identically.
+- **Chunk path** in `draw_layer(world_tile_layer)`: when a layer has chunks, compute
+  the overhang-inflated unclamped bounds and, for each `world_tile_chunk`, iterate
+  only the intersection of its cell rect with those bounds (the loops run zero times
+  for a non-intersecting chunk — so far-away chunks are never touched). A malformed
+  chunk (bad dims or short cell vector) is skipped rather than indexed out of range.
+  World cell `(chunk.x + lx, chunk.y + ly)` feeds the same bottom-left anchor as a
+  finite cell.
 
-**Tests.**
-- An infinite-map fixture → only chunks intersecting the camera are visited;
-  cells render at correct world positions.
+**Deferred.** Render order *across* chunks — cells within a chunk draw in
+`right_down` order and chunks in list order; full cross-chunk z-ordering (matters
+only for overlapping oversized tiles spanning chunk seams) is a follow-up, like the
+finite path's per-layer order but lifted over the chunk grid.
 
-**Done when.** An infinite map renders only its visible chunks.
+**Tests** (`test/video/world/test_world_draw.cc`): a two-chunk map draws only the
+visible corner of the near chunk (`drawn == 16`) and never visits the far one; a
+chunk at negative coordinates renders under a negatively-offset camera; a camera off
+every chunk draws nothing.
+
+**Done when.** An infinite map renders only its visible chunks. — **Met:** 3 added
+cases (19 in the draw suite), full suite **554/554**.
 
 ---
 
@@ -588,6 +998,44 @@ and survive resident-tileset switches without a phase reset.
   uses of the same image. Only if a real case needs it.
 - **Layer opacity/tint** compositing beyond visible/skip.
 - **LDtk loader** — populates the same `world` + neutral resolution interface.
+
+---
+
+## 8. Non-orthogonal maps (post-Phase-13)
+
+**Hexagonal — done.** A `layout` seam concentrates the only orientation-specific
+logic in two functions: `cell_to_world(world, cx, cy)` (the cell's bottom-left anchor)
+and `visible_cell_bounds`'s cell derivation. Orthogonal uses the plain grid;
+**hexagonal** uses Tiled's staggered formula (`HexagonalRenderer::tileToScreenCoords`
++ `doStaggerX/Y`, driven by `hex_side_length` / `stagger_axis` / `stagger_index`),
+verified by unit test against hand-computed positions. Hex/non-orthogonal tiles take
+the **anchor draw path** (they overlap on a staggered layout, so the seam-free
+axis-aligned AABB blit doesn't apply; their transparent edges hide any boundary), and
+culling is **conservative** (map the view rect to grid indices by the per-axis stride,
+inflated to cover the half-stagger and tile overhang; over-included cells clip). The
+rest of the stack — bundle/cache/animation/parallax/stats — is orientation-agnostic.
+Verified end-to-end on `hexagonal-mini.tmx` (400 tiles) and `test_hexagonal_tile…`.
+
+A loader gap surfaced alongside it: **columns/tilecount are now derived from the
+image** when a uniform tileset omits them (older/hand-authored TMX), matching Tiled —
+otherwise the tileset builds no tiles.
+
+**Staggered — done.** `StaggeredRenderer` *inherits* `HexagonalRenderer::
+tileToScreenCoords`, i.e. staggered **is** the hex formula with `hex_side_length` 0
+(which staggered maps have). So `cell_to_world` and the culling just route `staggered`
+through the same hex path — no new math. Verified end-to-end on
+`isometric_staggered_grass_and_water.tmx` (650 tiles).
+
+**Isometric — done.** The diamond projection (`IsometricRenderer`): `cell_to_world`
+maps `(cx, cy)` to `((cx−cy)·tw/2 + originX, (cx+cy)·th/2)` (the diamond top corner,
+with Tiled's `originX = map_height·tw/2`) and offsets to the tile bbox bottom-left
+`(x − tw/2, y + th)`. Culling inverts the projection at the four view-rect corners and
+takes the bounding cell box, inflated for tiles taller than the diamond. Verified on
+`isometric_grass_and_water.tmx` (625 tiles).
+
+All four Tiled orientations now render (orthogonal, hexagonal, staggered, isometric),
+each hand-verified against the matching Tiled renderer and unit-tested on known
+positions. The layout seam stayed exactly two functions.
 
 ---
 

@@ -12,6 +12,7 @@
 #include "services/service_locator.hh"
 #include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
+#include <neutrino/video/world/resource_cache.hh>
 
 namespace neutrino {
     struct application::impl {
@@ -22,6 +23,10 @@ namespace neutrino {
         scenes_manager m_scenes_manager;
         texture_registry m_textures;
         sprites_manager m_sprites;
+        // The shared tileset render-resource cache (Tier 2). Held by pointer and
+        // torn down explicitly in ~application while m_textures/m_sprites are still
+        // published, since destroy_bundle unregisters through the service_locator.
+        std::unique_ptr<resource_cache> m_resource_cache;
         // Set once the first scene enters the stack; an empty stack after
         // that means the game is over, while a scene-less application keeps
         // running on the plain update()/render() callbacks.
@@ -47,6 +52,9 @@ namespace neutrino {
     }
 
     application::~application() {
+        // Normally on_quit() already reset the cache while the render services were
+        // live; this is an idempotent fallback for an abnormal teardown path.
+        m_pimpl->m_resource_cache.reset();
         service_locator::instance().clear_application(*this);
     }
 
@@ -82,12 +90,19 @@ namespace neutrino {
 
         service_locator::instance().set_application(*this);
         service_locator::instance().set_renderer(get_renderer());
+        // The game_application path leaves vsync off; honor the config so apps present
+        // without tearing by default (fast full-screen scrolling otherwise tears).
+        if (auto vs = get_renderer().set_vsync(m_pimpl->m_cfg.vsync); !vs) {
+            LOG_ERROR("Failed to set vsync:", vs.error());
+        }
         service_locator::instance().set_window(get_window());
         service_locator::instance().set_gamepads(m_pimpl->m_gamepads);
         service_locator::instance().set_sound_system(m_pimpl->m_sound_system);
         service_locator::instance().set_scenes_manager(m_pimpl->m_scenes_manager);
         service_locator::instance().set_texture_registry(m_pimpl->m_textures);
         service_locator::instance().set_sprites_manager(m_pimpl->m_sprites);
+        m_pimpl->m_resource_cache = std::make_unique<resource_cache>();
+        service_locator::instance().set_resource_cache(*m_pimpl->m_resource_cache);
 
         // sdlpp initializes SDL with video|events only; without the gamepad
         // subsystem SDL emits no gamepad events at all. Ref-counted, and
@@ -187,6 +202,11 @@ namespace neutrino {
         } catch (...) {
             LOG_ERROR("Scene teardown threw during shutdown");
         }
+        // Now that scenes (and their world_renderers) have released their handles,
+        // tear the cache down while the renderer, texture registry and sprite
+        // manager are still alive — destroy_bundle destroys GPU textures and
+        // unregisters through the still-published services.
+        m_pimpl->m_resource_cache.reset();
         game_application::on_quit();
         service_locator::instance().clear_application(*this);
     }

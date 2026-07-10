@@ -117,13 +117,14 @@ namespace neutrino {
         result.animated = meta != nullptr && !meta->animation.empty();
 
         if (meta != nullptr && meta->image) {
-            // Collection-of-images: the tile owns its whole image.
+            // Collection-of-images: the tile references an image -- either its own whole
+            // image, or a sub-rectangle of a shared image (image-collection atlas).
             result.image = &*meta->image;
-            result.src = rect{
+            result.src = meta->source_rect.value_or(rect{
                 0, 0,
                 static_cast <int>(meta->image->width),
                 static_cast <int>(meta->image->height)
-            };
+            });
         } else {
             // Uniform grid: a sub-rect of the shared tileset image.
             result.image = image ? &*image : nullptr;
@@ -239,6 +240,14 @@ namespace neutrino {
 
     void world::set_infinite(bool infinite) noexcept {
         m_infinite = infinite;
+    }
+
+    world_point world::parallax_origin() const noexcept {
+        return m_parallax_origin;
+    }
+
+    void world::set_parallax_origin(world_point origin) noexcept {
+        m_parallax_origin = origin;
     }
 
     void world::add_tileset(world_tileset tileset) {

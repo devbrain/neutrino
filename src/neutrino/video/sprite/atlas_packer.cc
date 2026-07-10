@@ -233,6 +233,16 @@ namespace neutrino {
         return pack_regions(regions, regions.front().surface->format(), cap, cap, margin, generate);
     }
 
+    surface_atlases pack_regions(std::span <const pack_region> regions,
+                                 sdlpp::pixel_format_enum format, int margin,
+                                 std::optional <cpu_texture_atlas_mask_options> generate) {
+        if (regions.empty()) {
+            return {};
+        }
+        const int cap = default_page_cap();
+        return pack_regions(regions, format, cap, cap, margin, generate);
+    }
+
     surface_atlases pack_surfaces(std::span <const sdlpp::surface> images, int margin,
                                   std::optional <cpu_texture_atlas_mask_options> generate) {
         if (images.empty()) {

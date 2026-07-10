@@ -60,7 +60,9 @@ namespace neutrino {
         }
 
         auto* manager = service_locator::instance().get_sprites_manager();
-        ENFORCE(manager != nullptr);
+        if (manager == nullptr) {
+            return; // services already torn down: the resource is gone, nothing to do
+        }
         manager->erase(state);
     }
 }

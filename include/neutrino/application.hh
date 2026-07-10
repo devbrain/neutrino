@@ -19,6 +19,9 @@ namespace neutrino {
         int height = 720;
         sdlpp::window_flags flags = sdlpp::window_flags::resizable;
         int target_fps = 60;
+        /// Present in lock-step with the display: 1 = on (default, no tearing),
+        /// 0 = off, -1 = adaptive. Applied to the renderer at ready time.
+        int vsync = 1;
     };
 
     class NEUTRINO_EXPORT application : public sdlpp::game_application {

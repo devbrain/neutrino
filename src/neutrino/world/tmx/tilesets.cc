@@ -53,6 +53,21 @@ namespace neutrino::world_tmx {
                 });
             }
 
+            // Image-collection atlas: an x/y/width/height on the tile is the tile's
+            // sub-rectangle within its (shared) image.
+            if (result.image) {
+                const auto rect_w = get_uint(node, "width", 0);
+                const auto rect_h = get_uint(node, "height", 0);
+                if (rect_w > 0 && rect_h > 0) {
+                    result.source_rect = rect{
+                        static_cast <int>(get_uint(node, "x", 0)),
+                        static_cast <int>(get_uint(node, "y", 0)),
+                        static_cast <int>(rect_w),
+                        static_cast <int>(rect_h)
+                    };
+                }
+            }
+
             result.animation = parse_animation_frames(node);
             for_one_element(node, "objectgroup", [&](const node_view& object_group) {
                 result.objects = parse_object_layer(object_group, nullptr);
@@ -155,6 +170,22 @@ namespace neutrino::world_tmx {
                 for_one_element(node, "image", [&](const node_view& image) {
                     result.image = parse_image(image);
                 });
+            }
+
+            // Older/hand-authored TMX may omit columns/tilecount for a uniform (shared
+            // image) tileset; Tiled derives them from the image. Do the same, or the
+            // tileset builds zero visuals and every cell referencing it is skipped.
+            if (result.image && result.tile_width > 0 && result.tile_height > 0) {
+                const unsigned iw = result.image->width;
+                const unsigned ih = result.image->height;
+                const unsigned two_margin = result.margin * 2;
+                if (result.columns == 0 && iw > two_margin) {
+                    result.columns = (iw - two_margin + result.spacing) / (result.tile_width + result.spacing);
+                }
+                if (result.tile_count == 0 && result.columns > 0 && ih > two_margin) {
+                    const unsigned rows = (ih - two_margin + result.spacing) / (result.tile_height + result.spacing);
+                    result.tile_count = result.columns * rows;
+                }
             }
 
             // Tiled terrain/wang authoring metadata is intentionally not parsed:
