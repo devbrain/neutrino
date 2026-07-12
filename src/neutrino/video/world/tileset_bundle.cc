@@ -210,57 +210,27 @@ namespace neutrino {
     }
 
     void destroy_bundle(tileset_bundle& bundle) noexcept {
-        for (const sprite_state_id state : bundle.states) {
-            unregister_sprite_state(state);
-        }
-        for (const sprite_animation_id animation : bundle.animations) {
-            unregister_sprite_animation(animation);
-        }
-        for (const sprite_sheet_id sheet : bundle.sheets) {
-            unregister_sprite_sheet(sheet);
-        }
-        for (const gpu_texture_atlas_id atlas : bundle.atlases) {
-            unregister_atlas(atlas);
-        }
-        // Clear in place now that every id has been unregistered, so a repeated
-        // teardown (the destructor, or another call) iterates empty vectors and does
-        // nothing.
-        bundle.states.clear();
-        bundle.animations.clear();
-        bundle.sheets.clear();
+        // The render_bundle base owns and unregisters atlas/sheet/animation/state in
+        // dependency order; visuals are lightweight refs (nothing to unregister).
+        bundle.release();
         bundle.visuals.clear();
-        bundle.atlases.clear();
     }
 
-    // RAII: the destructor performs the same dependency-ordered teardown, so every
-    // build local, every cache entry, and every partially built bundle releases its
-    // registered resources exactly once, on any path.
-    tileset_bundle::~tileset_bundle() {
-        destroy_bundle(*this);
-    }
-
-    // Swap our (empty, freshly default-constructed) vectors with the source's, so the
-    // source is left provably empty by exchange semantics -- not by relying on the
-    // vector's allocator-dependent moved-from state -- and its destructor no-ops.
-    tileset_bundle::tileset_bundle(tileset_bundle&& other) noexcept {
-        atlases.swap(other.atlases);
-        sheets.swap(other.sheets);
+    // Delegate the owned ids to the base's swap-move, then swap visuals so the moved-from
+    // bundle is provably empty (not std::vector's valid-but-unspecified state). The
+    // destructor stays implicit: the base releases.
+    tileset_bundle::tileset_bundle(tileset_bundle&& other) noexcept
+        : render_bundle(std::move(other)) {
         visuals.swap(other.visuals);
-        states.swap(other.states);
-        animations.swap(other.animations);
     }
 
-    // Release our own resources first (destroy_bundle leaves our vectors empty), then
-    // swap the source in. The source ends up with our now-empty vectors, so overwriting
-    // a live bundle can never leak and the source's destructor no-ops.
     tileset_bundle& tileset_bundle::operator=(tileset_bundle&& other) noexcept {
         if (this != &other) {
-            destroy_bundle(*this);
-            atlases.swap(other.atlases);
-            sheets.swap(other.sheets);
+            render_bundle::operator=(std::move(other)); // release ours, swap the base in
+            // The base clears its own vectors, but not our facade refs; drop them before
+            // the swap so the source is left with an empty (not our stale) visuals.
+            visuals.clear();
             visuals.swap(other.visuals);
-            states.swap(other.states);
-            animations.swap(other.animations);
         }
         return *this;
     }

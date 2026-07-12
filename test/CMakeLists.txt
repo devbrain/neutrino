@@ -30,6 +30,10 @@ add_executable(neutrino_tests
         input/test_input.cc
         video/test_bitmask.cc
         video/test_sprites.cc
+        video/test_sprite_def.cc
+        video/test_sprite_set.cc
+        video/test_sprite_cache.cc
+        video/test_atlas_loader.cc
         video/test_sprite_animation.cc
         video/test_sprite_state.cc
         video/test_cpu_texture_atlas.cc
@@ -38,6 +42,7 @@ add_executable(neutrino_tests
         video/test_atlas_packer.cc
         video/world/test_tileset_bundle.cc
         video/world/test_resource_cache.cc
+        video/world/test_resource_cache_core.cc
         video/world/test_world_renderer.cc
         video/world/test_world_camera.cc
         video/world/test_world_draw.cc

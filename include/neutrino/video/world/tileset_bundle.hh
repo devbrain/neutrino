@@ -8,18 +8,20 @@
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/world/world.hh>
-#include <neutrino/video/sprite/texture_atlas.hh>
+#include <neutrino/video/sprite/render_bundle.hh>
 #include <neutrino/video/sprite/sprite_sheet.hh>
-#include <neutrino/video/sprite/sprite_animation.hh>
 #include <neutrino/video/sprite/sprite_state.hh>
 
 namespace neutrino {
     /**
      * @brief Registered render resources for one @ref world_tileset.
      *
-     * @ref build_bundle packs a tileset's tiles into atlas page(s), uploads them,
-     * and exposes each local tile as a registered @ref sprite_visual_ref; animated
-     * tiles additionally get one shared @ref sprite_state_id playing their frames.
+     * A local-tile-id facade over a @ref render_bundle (which owns the atlases,
+     * sheets, animations, and shared states and tears them down in order). @ref
+     * build_bundle packs a tileset's tiles into atlas page(s), uploads them, and
+     * exposes each local tile as a registered @ref sprite_visual_ref; animated tiles
+     * additionally get one shared @ref sprite_state_id (in @ref render_bundle::states,
+     * indexed by local id) playing their frames.
      *
      * Lookup is by @ref world_local_tile_id, and those ids are small and dense
      * (@c 0..tile_count-1), so the maps are flat vectors indexed directly by id -- a
@@ -31,26 +33,17 @@ namespace neutrino {
      * past the page cap yields several pages, sheets, and the @ref visuals map
      * points each tile at whichever page/sheet holds it -- callers never see the
      * page split.
+     *
+     * Move-only and RAII via the @ref render_bundle base (which owns/tears down the
+     * registered ids). The move operations are explicit so they *swap* @ref visuals too,
+     * leaving a moved-from bundle provably empty rather than in @c std::vector's
+     * valid-but-unspecified moved-from state -- keeping the whole bundle's "empty after
+     * move" contract uniform. The destructor is implicit (the base releases).
      */
-    struct tileset_bundle {
-        std::vector <gpu_texture_atlas_id> atlases;   ///< One uploaded atlas per packed page.
-        std::vector <sprite_sheet_id>      sheets;    ///< One sheet per page (a sheet is single-atlas).
-        std::vector <sprite_visual_ref>    visuals;   ///< Indexed by local tile id; invalid = absent.
-        std::vector <sprite_state_id>      states;    ///< Indexed by local tile id; invalid = not animated.
-        std::vector <sprite_animation_id>  animations; ///< Registered animations, for teardown only.
+    struct tileset_bundle : render_bundle {
+        std::vector <sprite_visual_ref> visuals; ///< Indexed by local tile id; invalid = absent.
 
-        // Owns registered resource IDs and unregisters them on destruction (RAII), so
-        // exceptions during a build and ordinary scope exit both release cleanly and
-        // exactly once. A copy would alias the IDs and double-unregister, so copying is
-        // deleted. Both move operations transfer ownership by *swapping* into an empty
-        // target, so the moved-from bundle is left provably empty by exchange semantics
-        // -- independent of the vector's allocator-dependent moved-from state -- and its
-        // destructor becomes a no-op. Move-assignment first releases the target's own
-        // resources, so overwriting a live bundle can never leak.
-        tileset_bundle()                          = default;
-        ~tileset_bundle();
-        tileset_bundle(const tileset_bundle&)            = delete;
-        tileset_bundle& operator=(const tileset_bundle&) = delete;
+        tileset_bundle()                                 = default;
         tileset_bundle(tileset_bundle&&) noexcept;
         tileset_bundle& operator=(tileset_bundle&&) noexcept;
 
