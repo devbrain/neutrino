@@ -12,9 +12,22 @@
 #include "services/service_locator.hh"
 #include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
+#include <neutrino/video/globals.hh>
 #include <neutrino/video/world/resource_cache.hh>
 
 namespace neutrino {
+    namespace {
+        [[nodiscard]] SDL_RendererLogicalPresentation to_sdl(scale_mode mode) noexcept {
+            switch (mode) {
+                case scale_mode::letterbox:      return SDL_LOGICAL_PRESENTATION_LETTERBOX;
+                case scale_mode::integer_scale:  return SDL_LOGICAL_PRESENTATION_INTEGER_SCALE;
+                case scale_mode::overscan:       return SDL_LOGICAL_PRESENTATION_OVERSCAN;
+                case scale_mode::stretch:        return SDL_LOGICAL_PRESENTATION_STRETCH;
+            }
+            return SDL_LOGICAL_PRESENTATION_LETTERBOX;
+        }
+    }
+
     struct application::impl {
         application_config m_cfg;
 
@@ -34,6 +47,10 @@ namespace neutrino {
         // A scene faulted in update_physics this frame: its pop is already
         // enqueued, so skip its render to avoid enqueueing a second pop.
         bool m_scene_faulted = false;
+        // Last render_size() delivered via on_resize, so a window_pixel_size_changed
+        // that leaves the render space unchanged (e.g. a logical-mode resize) does
+        // not spuriously re-fire the hook.
+        dim m_last_render_size{0, 0};
 
         explicit impl(const application_config& cfg)
             : m_cfg(cfg) {
@@ -75,11 +92,19 @@ namespace neutrino {
             if (m_pimpl->m_cfg.height <= 0) m_pimpl->m_cfg.height = 720;
         }
 
+        auto flags = m_pimpl->m_cfg.flags;
+        if (m_pimpl->m_cfg.fullscreen) {
+            flags = flags | sdlpp::window_flags::fullscreen;
+        }
+        if (m_pimpl->m_cfg.high_pixel_density) {
+            flags = flags | sdlpp::window_flags::high_pixel_density;
+        }
+
         return {
             m_pimpl->m_cfg.title,
             m_pimpl->m_cfg.width,
             m_pimpl->m_cfg.height,
-            m_pimpl->m_cfg.flags,
+            flags,
             m_pimpl->m_cfg.target_fps
         };
     }
@@ -95,6 +120,17 @@ namespace neutrino {
         if (auto vs = get_renderer().set_vsync(m_pimpl->m_cfg.vsync); !vs) {
             LOG_ERROR("Failed to set vsync:", vs.error());
         }
+        // Logical presentation (if a design resolution was configured) must be set
+        // before scenes enter, so their first on_resize sees the render coordinate
+        // space, not the raw drawable size.
+        if (m_pimpl->m_cfg.logical_size) {
+            const auto ls = *m_pimpl->m_cfg.logical_size;
+            if (!SDL_SetRenderLogicalPresentation(
+                    get_renderer().get(), ls.width, ls.height, to_sdl(m_pimpl->m_cfg.scale))) {
+                LOG_ERROR("Failed to set logical presentation:", SDL_GetError());
+            }
+        }
+        m_pimpl->m_last_render_size = render_size();
         service_locator::instance().set_window(get_window());
         service_locator::instance().set_gamepads(m_pimpl->m_gamepads);
         service_locator::instance().set_sound_system(m_pimpl->m_sound_system);
@@ -182,6 +218,17 @@ namespace neutrino {
                 on_gamepad_connected(change->index);
             } else {
                 on_gamepad_disconnected(change->index);
+            }
+        }
+        // The drawable changed (resize, fullscreen toggle, HiDPI move). Recompute
+        // the render space and, if it actually changed, notify the active scene.
+        // In logical mode the render space is fixed, so this dedups to nothing.
+        if (e.type() == sdlpp::event_type::window_pixel_size_changed) {
+            const dim now = render_size();
+            if (now.width != m_pimpl->m_last_render_size.width
+                || now.height != m_pimpl->m_last_render_size.height) {
+                m_pimpl->m_last_render_size = now;
+                m_pimpl->m_scenes_manager.notify_resize(now);
             }
         }
         try {

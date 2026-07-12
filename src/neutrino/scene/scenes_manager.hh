@@ -32,6 +32,11 @@ namespace neutrino {
             void render(frame_duration time_since_last_frame);
             void handle_action(const sdlpp::event& ev);
 
+            /// @brief Deliver a render-space size change to the active (top) scene.
+            /// Called by application when the drawable changes; scene activation
+            /// fires on_resize on its own. No-op when the stack is empty.
+            void notify_resize(dim size);
+
             [[nodiscard]] bool empty() const;
 
             /// @brief Exit all scenes cleanly (called on application shutdown).
@@ -41,6 +46,8 @@ namespace neutrino {
             void apply_push(std::unique_ptr <base_scene>&& scene);
             void apply_pop();
             void apply_replace(std::unique_ptr <base_scene>&& scene);
+            /// Fire on_resize on the current top scene with the live render_size().
+            void notify_top_resized();
 
         private:
             std::vector <std::unique_ptr <base_scene>> m_stack;
