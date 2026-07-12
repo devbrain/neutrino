@@ -115,12 +115,6 @@ namespace neutrino {
     }
 
     void unregister_sprite_animation(sprite_animation_id animation) {
-        if (!animation.valid()) {
-            return;
-        }
-        // Services already torn down: the resource is gone, nothing to do.
-        if (auto* manager = maybe_sprites_manager()) {
-            manager->erase(animation);
-        }
+        erase_if_live(animation, maybe_sprites_manager());
     }
 }

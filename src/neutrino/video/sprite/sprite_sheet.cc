@@ -95,14 +95,7 @@ namespace neutrino {
     }
 
     void unregister_sprite_sheet(sprite_sheet_id sheet) {
-        if (!sheet.valid()) {
-            return;
-        }
-
-        // Services already torn down: the resource is gone, nothing to do.
-        if (auto* manager = maybe_sprites_manager()) {
-            manager->erase(sheet);
-        }
+        erase_if_live(sheet, maybe_sprites_manager());
     }
 
     sprite_visual_ref visual_ref(sprite_sheet_id sheet, std::size_t index) {

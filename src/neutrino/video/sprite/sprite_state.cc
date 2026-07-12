@@ -37,12 +37,6 @@ namespace neutrino {
     }
 
     void unregister_sprite_state(sprite_state_id state) {
-        if (!state.valid()) {
-            return;
-        }
-        // Services already torn down: the resource is gone, nothing to do.
-        if (auto* manager = maybe_sprites_manager()) {
-            manager->erase(state);
-        }
+        erase_if_live(state, maybe_sprites_manager());
     }
 }

@@ -55,4 +55,13 @@ namespace neutrino {
     [[nodiscard]] inline gamepads* maybe_gamepads() noexcept {
         return service_locator::instance().get_gamepads();
     }
+
+    /// @brief Shutdown-safe unregister: erase @p id from @p manager when the id is live and
+    ///        the manager still exists ("already torn down" means nothing to do).
+    template <class Id, class Manager>
+    inline void erase_if_live(Id id, Manager* manager) {
+        if (id.valid() && manager != nullptr) {
+            manager->erase(id);
+        }
+    }
 }

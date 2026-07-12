@@ -29,20 +29,29 @@ sweep are highest-confidence. Ordered by value ÷ risk. Check off as done.
 
 ## Tier 2 — clear dedup, moderate effort
 
-- [ ] **D. Handle/lease convergence.** `sprite_set_handle` (`sprite_cache.cc:18-70`) hand-rolls
-  the copy-retain/move/reset that `resource_lease<Bundle>` already provides; `bundle_handle`
-  restates `resource_cache_core::handle`. → make `sprite_set_handle` hold/derive `resource_lease`,
-  delete its 5 special members; alias `bundle_handle` onto the core handle.
-- [ ] **E. Self-registration RAII guard.** `sound_effect`/`music_stream` hand-roll register/
-  unregister + custom move ops (partly fixed already — see Done). A `registration_guard<T>` member
-  would let both default their move ops + dtor.
-- [ ] **F. Image-source decode across 3 files** (`tileset_bundle.cc:32`, `sprite_set.cc:30`,
-  `image_identity.cc:66`). Memory/disk arms identical; surface arm differs (borrow/clone/
-  canonicalize). → `decode_source(src, surface_policy)` with the surface arm a caller callback.
-- [ ] **G. `unregister_*` free-functions (4×)** repeat `if (!id.valid()) return; get mgr;
-  if (null) return; mgr.erase(id);` → one `erase_if_live(id, eraser)`.
-- [ ] **H. Strong-id boilerplate (5×)** → a `NEUTRINO_DEFINE_STRONG_ID(Name)` macro
-  (`sprite_visual_id` keeps its extra `m_owner`).
+- [x] **F. Image-source decode dedup.** ✅ New internal `src/…/video/sprite/image_decode.hh`
+  with `details::load_encoded_image(source)` for the identical disk/memory arms; `tileset_bundle.cc`
+  (surface_for) and `sprite_set.cc` (`decode`) both use it, keeping their differing surface-arm
+  policies local (tile borrows, sprite clones). Suite green.
+- [x] **G. `erase_if_live`.** ✅ Added `erase_if_live(id, manager)` to `service_access.hh`; the
+  three `unregister_sprite_{state,sheet,animation}` collapse to one line each. (`unregister_atlas`
+  keeps its extra `uses()` guard, so it stays explicit.) Suite green.
+
+### Deferred with rationale
+- [ ] **D. Handle/lease convergence — deferred (header architecture).** `sprite_set_handle` is in a
+  **public** header (`sprite_cache.hh`) but `resource_lease`/`resource_cache_core` are an **internal**
+  `src` template that includes the private `utils/lru.hh`. Holding a `resource_lease` member would
+  force the cache engine (and lru) public — a big API-surface cost to dedup a correct, tested ~50-line
+  bespoke lease. Reconsider only if the cache core is intentionally made public.
+- [ ] **E. `registration_guard` — deferred (doesn't fit address-keyed registration).** The audio
+  managers key on the owner's `this` pointer, which changes on move. A guard **member** can't learn
+  the containing object's new address on its own move, so the owner would still need custom move ops
+  to rebind the guard — the guard wouldn't let them default. The move ops are already correct
+  (fixed in Tier-1 review); a clean guard would require switching to a stable (heap control-block) key.
+- [ ] **H. Strong-id macro — skipped (net-negative).** The 5 id types carry per-type doxygen and are
+  public API; a `NEUTRINO_DEFINE_STRONG_ID` macro would move documentation outside the type and hurt
+  "go to definition". The boilerplate is stable; the macro indirection isn't worth it. (The pure
+  `std::hash` specializations could be macro'd, but that's ~15 lines total.)
 
 ## Tier 3 — subsystem-local (do when touching that area)
 
