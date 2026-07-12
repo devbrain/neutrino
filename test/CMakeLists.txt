@@ -38,6 +38,7 @@ add_executable(neutrino_tests
         video/test_sprite_state.cc
         video/test_cpu_texture_atlas.cc
         video/test_draw.cc
+        video/test_window_presentation.cc
         video/test_sprite_sheet.cc
         video/test_atlas_packer.cc
         video/world/test_tileset_bundle.cc

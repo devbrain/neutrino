@@ -231,19 +231,29 @@ namespace {
     };
 
     class sprite_demo_app final : public neutrino::application {
-        protected:
-            sdlpp::window_config get_window_config() override {
-                return {
-                    "Neutrino Sprite Demo",
-                    window_width,
-                    window_height,
-                    sdlpp::window_flags::resizable,
-                    60
-                };
+        public:
+            sprite_demo_app()
+                : neutrino::application(make_config()) {
             }
 
+        protected:
             std::unique_ptr <neutrino::base_scene> create_initial_scene() override {
                 return std::make_unique <sprite_demo_scene>();
+            }
+
+        private:
+            static neutrino::application_config make_config() {
+                neutrino::application_config cfg;
+                cfg.title = "Neutrino Sprite Demo";
+                cfg.width = window_width;
+                cfg.height = window_height;
+                cfg.flags = sdlpp::window_flags::resizable;
+                // Fixed 640x360 design resolution, integer-scaled to the window: the
+                // demo always draws in these coordinates and a larger window scales
+                // it up crisply (pixel-art friendly) instead of showing more.
+                cfg.logical_size = neutrino::dim{window_width, window_height};
+                cfg.scale = neutrino::scale_mode::integer_scale;
+                return cfg;
             }
     };
 }

@@ -1,8 +1,8 @@
-# Clangd configuration for warlords project
+# Clangd configuration for the neutrino project
 # https://clangd.llvm.org/config
 
 CompileFlags:
-  CompilationDatabase: build/
+  CompilationDatabase: cmake-build-debug/
   Add:
     # doctest uses the GCC/Clang `__COUNTER__` builtin to mint a
     # unique identifier per TEST_CASE (doctest/doctest.h:421). If

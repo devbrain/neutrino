@@ -137,9 +137,15 @@ namespace {
                 }
             }
 
+            void on_resize(dim render) override {
+                // The render coordinate space changed (resize / fullscreen / HiDPI):
+                // cache it so viewport() no longer polls the renderer every frame.
+                m_view = render;
+            }
+
             void render(frame_duration) override {
                 clamp_camera(); // after this frame's pan (update_physics) and wheel zoom (handle_action)
-                draw_rect_fill(rect{0, 0, window_width, window_height}, sdlpp::color{22, 22, 28, 255});
+                draw_rect_fill(viewport(), sdlpp::color{22, 22, 28, 255});
                 const draw_stats stats = m_renderer->draw(m_camera, viewport());
                 if (!m_logged_first_frame) {
                     m_logged_first_frame = true;
@@ -154,7 +160,9 @@ namespace {
                 if (const auto* wheel = ev.as <sdlpp::mouse_wheel_event>()) {
                     if (wheel->y != 0.0f) {
                         const float factor = wheel->y > 0.0f ? wheel_zoom_step : 1.0f / wheel_zoom_step;
-                        zoom_about(factor, world_point{wheel->mouse_x, wheel->mouse_y});
+                        // mouse_x/mouse_y arrive in window points; map them into render
+                        // space so zoom-to-cursor is correct under HiDPI / letterboxing.
+                        zoom_about(factor, to_render_coords(world_point{wheel->mouse_x, wheel->mouse_y}));
                     }
                 }
             }
@@ -169,10 +177,9 @@ namespace {
             }
 
             [[nodiscard]] rect viewport() const {
-                if (const auto size = get_renderer().get_output_size <dim>()) {
-                    return rect{0, 0, size->width, size->height};
-                }
-                return rect{0, 0, window_width, window_height};
+                // Kept current by on_resize (fired on scene entry and on every render-
+                // space change), so this no longer polls the renderer each frame.
+                return rect{0, 0, m_view.width, m_view.height};
             }
 
             [[nodiscard]] world_point viewport_center() const {
@@ -225,6 +232,7 @@ namespace {
             world m_world;
             std::unique_ptr <world_renderer> m_renderer;
             camera m_camera;
+            dim m_view{window_width, window_height}; // render-space viewport; updated by on_resize
             bool m_logged_first_frame{false};
             bool m_quitting{false};
     };
@@ -236,7 +244,10 @@ namespace {
                     "Neutrino Map Viewer",
                     window_width,
                     window_height,
-                    sdlpp::window_flags::resizable,
+                    // Reflow presentation at native (HiDPI) resolution: a bigger or
+                    // higher-DPI window simply shows more crisp map, and on_resize keeps
+                    // the viewport in step. Input is mapped with to_render_coords().
+                    sdlpp::window_flags::resizable | sdlpp::window_flags::high_pixel_density,
                     60
                 };
             }

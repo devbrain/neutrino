@@ -9,6 +9,7 @@
 #include <failsafe/logger.hh>
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/scene/scene_transitions.hh>
+#include <neutrino/video/globals.hh>
 #include "scenes_manager.hh"
 
 
@@ -121,6 +122,10 @@ namespace neutrino {
             // services::report_error(
             //     "An unexpected error occurred while opening that screen.");
         }
+        // Whatever ended up on top (the pushed scene, or the resumed scene below
+        // after a rolled-back on_enter) becomes active now: size it once here so
+        // it never has to poll the render size.
+        notify_top_resized();
     }
 
     void scenes_manager::apply_pop() {
@@ -133,6 +138,7 @@ namespace neutrino {
         if (!overlay && !m_stack.empty()) {
             m_stack.back()->on_resume();
         }
+        notify_top_resized();
     }
 
     void scenes_manager::apply_replace(std::unique_ptr <base_scene>&& scene) {
@@ -140,6 +146,19 @@ namespace neutrino {
         m_stack.back()->on_exit();
         m_stack.back() = std::move(scene);
         m_stack.back()->on_enter();
+        notify_top_resized();
+    }
+
+    void scenes_manager::notify_top_resized() {
+        if (!m_stack.empty()) {
+            m_stack.back()->on_resize(render_size());
+        }
+    }
+
+    void scenes_manager::notify_resize(dim size) {
+        if (!m_stack.empty()) {
+            m_stack.back()->on_resize(size);
+        }
     }
 
     void scenes_manager::update_physics(frame_duration delta_t) {
