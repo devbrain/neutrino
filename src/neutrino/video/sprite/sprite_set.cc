@@ -14,30 +14,27 @@
 
 #include <failsafe/enforce.hh>
 
-#include <neutrino/video/image_loader.hh>
 #include <neutrino/video/sprites.hh>
 #include <neutrino/video/sprite/cpu_texture_atlas.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 
 #include <sdlpp/video/surface.hh>
 
+#include "video/sprite/image_decode.hh"
+
 namespace neutrino {
     namespace {
-        // Decode a sprite_def image to an owned RGBA surface. Encoded arms load through
-        // load_image; an already-decoded surface is cloned to RGBA8888 (also the canonical
-        // upload format). (The tile path borrows the surface arm; sprites need an owned
-        // one to upload -- a small, deliberate duplication.)
+        // Decode a sprite_def image to an owned RGBA surface. The already-decoded surface
+        // arm is cloned to RGBA8888 (the canonical upload format; the tile path borrows it
+        // instead, so that policy stays here); the encoded arms share load_encoded_image.
         sdlpp::surface decode(const world_image& img) {
-            if (const auto* mem = std::get_if <image_from_memory>(&img.source)) {
-                return load_image(std::span <const std::uint8_t>(mem->bytes.data(), mem->bytes.size()));
-            }
             if (const auto* surf = std::get_if <image_from_surface>(&img.source)) {
                 ENFORCE(surf->pixels != nullptr)("build_sprite_set: image_from_surface has null pixels");
                 auto converted = surf->pixels->convert(sdlpp::pixel_format_enum::RGBA8888);
                 ENFORCE(converted.has_value())("build_sprite_set: cannot convert source surface");
                 return std::move(*converted);
             }
-            return load_image(std::get <image_from_disk>(img.source).source);
+            return details::load_encoded_image(img.source);
         }
 
         // Grid frames first (named "0".."N-1"), then explicit visuals in declared order.

@@ -78,6 +78,7 @@ add_library(neutrino ${_lib_type}
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/cpu_texture_atlas.hh
         video/sprite/cpu_texture_atlas.cc
         video/sprite/surface_lock.hh
+        video/sprite/image_decode.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/texture_atlas.hh
         video/sprite/texture_atlas.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_appearance.hh

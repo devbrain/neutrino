@@ -16,26 +16,16 @@
 
 #include <failsafe/enforce.hh>
 
-#include <neutrino/video/image_loader.hh>
 #include <neutrino/video/sprites.hh>
 #include <neutrino/video/sprite/atlas_packer.hh>
+
+#include "video/sprite/image_decode.hh"
 
 namespace neutrino {
     namespace {
         // Gutter reserved on every side of each tile, so adjacent tiles do not bleed
         // into one another under linear filtering / non-integer scale.
         constexpr int tile_gutter = 1;
-
-        // Decode an *encoded* image source (disk / memory) into an owned surface. The
-        // already-decoded `image_from_surface` arm is not handled here -- it is borrowed
-        // directly in surface_for, with no copy.
-        [[nodiscard]] sdlpp::surface decode_encoded_image(const world_image_source& src) {
-            if (const auto* m = std::get_if <image_from_memory>(&src)) {
-                return load_image(std::span <const std::uint8_t>(m->bytes.data(), m->bytes.size()));
-            }
-            const auto& disk = std::get <image_from_disk>(src);
-            return load_image(disk.source);
-        }
 
         // One packable tile: which source rectangle to pack, plus the local id and
         // draw origin to carry onto the resulting visual.
@@ -80,7 +70,7 @@ namespace neutrino {
                 ENFORCE(s->pixels != nullptr)("image_from_surface has null pixels");
                 p = s->pixels.get();
             } else {
-                surfaces.push_back(decode_encoded_image(img->source));
+                surfaces.push_back(details::load_encoded_image(img->source));
                 p = &surfaces.back();
             }
             decoded.emplace(img, p);
