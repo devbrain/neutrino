@@ -3,6 +3,7 @@
 #include <neutrino/video/world/resource_cache.hh>
 
 #include "test_application.hh"
+#include "video/test_images.hh"
 
 #include <sdlpp/video/surface.hh>
 
@@ -14,69 +15,9 @@
 #include <vector>
 
 using namespace neutrino;
+using namespace neutrino::test;
 
 namespace {
-    // A world_image whose embedded data is a BMP of a blank size*size surface. Two
-    // images of different size are guaranteed distinct content (different byte
-    // length -> different content key), which is all these tests rely on.
-    world_image bmp_image(unsigned size) {
-        auto surface = sdlpp::surface::create_rgb(
-            static_cast<int>(size), static_cast<int>(size), sdlpp::pixel_format_enum::RGBA8888);
-        REQUIRE(surface.has_value());
-        auto bytes = sdlpp::save_bmp(*surface);
-        REQUIRE(bytes.has_value());
-
-        world_image img;
-        img.width = size;
-        img.height = size;
-        img.source = image_from_memory{std::move(*bytes)};
-        return img;
-    }
-
-    // A world_image backed by an already-decoded surface, carrying an optional producer
-    // content id. Two size*size surfaces are blank, so same-id images are truly identical.
-    world_image surface_image(unsigned size, std::optional <std::uint64_t> identity) {
-        auto surface = sdlpp::surface::create_rgb(
-            static_cast<int>(size), static_cast<int>(size), sdlpp::pixel_format_enum::RGBA8888);
-        REQUIRE(surface.has_value());
-
-        world_image img;
-        img.width = size;
-        img.height = size;
-        img.source = image_from_surface{
-            std::make_shared <const sdlpp::surface>(std::move(*surface)), identity};
-        return img;
-    }
-
-    // A 16x16 surface of the given pixel format whose raw bytes are a fixed, non-symmetric
-    // 1,2,3,4 pattern -- so two different formats hold byte-identical pixels but decode to
-    // different colours (the R and B byte slots differ).
-    world_image patterned_surface(sdlpp::pixel_format_enum format) {
-        auto surface = sdlpp::surface::create_rgb(16, 16, format);
-        REQUIRE(surface.has_value());
-        SDL_Surface* raw = surface->get();
-        REQUIRE(raw != nullptr);
-        const bool must_lock = SDL_MUSTLOCK(raw);
-        if (must_lock) {
-            REQUIRE(SDL_LockSurface(raw));
-        }
-        auto* bytes = static_cast<std::uint8_t*>(raw->pixels);
-        const std::size_t total = static_cast<std::size_t>(raw->pitch) * static_cast<std::size_t>(raw->h);
-        for (std::size_t i = 0; i < total; ++i) {
-            bytes[i] = static_cast<std::uint8_t>((i % 4) + 1);
-        }
-        if (must_lock) {
-            SDL_UnlockSurface(raw);
-        }
-
-        world_image img;
-        img.width = 16;
-        img.height = 16;
-        img.source = image_from_surface{
-            std::make_shared <const sdlpp::surface>(std::move(*surface)), std::nullopt};
-        return img;
-    }
-
     // A single-tile 16x16 tileset over one image.
     world_tileset single_tile_ts(world_image img) {
         world_tileset ts;
@@ -197,8 +138,8 @@ TEST_SUITE("neutrino::video resource_cache") {
 
         // Two distinct surfaces that share one producer content id are treated as the
         // same content and dedup to a single bundle.
-        const bundle_handle a = cache.acquire(uniform_ts(surface_image(32, 777)));
-        const bundle_handle b = cache.acquire(uniform_ts(surface_image(32, 777)));
+        const bundle_handle a = cache.acquire(uniform_ts(surface_image(32, 32, 777)));
+        const bundle_handle b = cache.acquire(uniform_ts(surface_image(32, 32, 777)));
         REQUIRE(a.valid());
         CHECK(a.bundle == b.bundle);
         CHECK(cache.resident_count() == 1);
@@ -222,8 +163,8 @@ TEST_SUITE("neutrino::video resource_cache") {
         // Two distinct blank 32x32 surfaces (no producer id) have identical pixels, so a
         // content hash makes them share -- and, crucially, a freed surface's reused address
         // cannot alias a different bundle (the bug a pointer key would have).
-        const bundle_handle a = cache.acquire(uniform_ts(surface_image(32, std::nullopt)));
-        const bundle_handle b = cache.acquire(uniform_ts(surface_image(32, std::nullopt)));
+        const bundle_handle a = cache.acquire(uniform_ts(surface_image(32, 32, std::nullopt)));
+        const bundle_handle b = cache.acquire(uniform_ts(surface_image(32, 32, std::nullopt)));
         REQUIRE(a.valid());
         CHECK(a.bundle == b.bundle);
         CHECK(cache.resident_count() == 1);

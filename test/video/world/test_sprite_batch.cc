@@ -5,24 +5,12 @@
 #include <neutrino/world/world.hh>
 
 #include "test_application.hh"
+#include "video/world/test_cameras.hh"
 
 using namespace neutrino;
+using namespace neutrino::test;
 
 namespace {
-    world_layer_header plane_at(float parallax = 1.0f, world_point offset = {0.0f, 0.0f}) {
-        world_layer_header h;
-        h.parallax_x = parallax;
-        h.parallax_y = parallax;
-        h.offset = offset;
-        return h;
-    }
-
-    camera cam_at(world_point target, float zoom) {
-        camera c;
-        c.target = target;
-        c.zoom = zoom;
-        return c;
-    }
 }
 
 TEST_SUITE("neutrino::video sprite_batch") {

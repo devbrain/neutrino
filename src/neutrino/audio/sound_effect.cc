@@ -6,7 +6,7 @@
 #include "sound_system.hh"
 #include "sdl_io_stream.hh"
 #include "memory_io.hh"
-#include "services/service_locator.hh"
+#include "services/service_access.hh"
 
 #include <musac/audio_device.hh>
 #include <musac/audio_source.hh>
@@ -15,12 +15,9 @@
 #include <algorithm>
 
 namespace neutrino {
-    static sound_system* system_ptr() {
-        return service_locator::instance().get_sound_system();
-    }
 
     static void register_self(sound_effect* effect) {
-        if (auto* ss = system_ptr()) {
+        if (auto* ss = maybe_sound_system()) {
             ss->register_effect(effect);
         }
     }
@@ -46,7 +43,7 @@ namespace neutrino {
     }
 
     sound_effect::~sound_effect() {
-        if (auto* ss = system_ptr()) {
+        if (auto* ss = maybe_sound_system()) {
             ss->unregister_effect(this);
         }
         m_channels.clear();
@@ -62,7 +59,21 @@ namespace neutrino {
         register_self(this);
     }
 
-    sound_effect& sound_effect::operator=(sound_effect&& other) noexcept = default;
+    sound_effect& sound_effect::operator=(sound_effect&& other) noexcept {
+        // Effects register *unconditionally* in every constructor and by stable address,
+        // which move-assignment does not change -- so the target stays registered and only
+        // the data members move (self-assign guarded). This is behaviourally the same as a
+        // defaulted move-assign, spelled out to match the hand-written move constructor and
+        // to make the "no (un)register needed" reasoning explicit (cf. music_stream, whose
+        // registration is conditional and does need the discipline).
+        if (this != &other) {
+            m_path     = std::move(other.m_path);
+            m_data     = std::move(other.m_data);
+            m_source   = std::move(other.m_source);
+            m_channels = std::move(other.m_channels);
+        }
+        return *this;
+    }
 
     void sound_effect::apply_group_volume(float group) {
         for (auto& c : m_channels) {
@@ -73,7 +84,7 @@ namespace neutrino {
     }
 
     void sound_effect::play(float volume, std::chrono::microseconds fade_time) {
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         if (!ss || !ss->active()) {
             return;
         }

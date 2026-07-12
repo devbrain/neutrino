@@ -5,6 +5,7 @@
 #include <neutrino/video/world/render_layer.hh>
 
 #include "test_application.hh"
+#include "video/test_images.hh"
 #include "services/service_locator.hh"
 #include "video/sprite/sprites_manager.hh"
 
@@ -15,24 +16,11 @@
 #include <vector>
 
 using namespace neutrino;
+using namespace neutrino::test;
 
 namespace {
     // Embedded BMP of a w*h surface, decodable by build_bundle through load_image
     // with no on-disk asset.
-    world_image bmp_image(unsigned w, unsigned h) {
-        auto surface = sdlpp::surface::create_rgb(
-            static_cast <int>(w), static_cast <int>(h), sdlpp::pixel_format_enum::RGBA8888);
-        REQUIRE(surface.has_value());
-        auto bytes = sdlpp::save_bmp(*surface);
-        REQUIRE(bytes.has_value());
-
-        world_image img;
-        img.width = w;
-        img.height = h;
-        img.source = image_from_memory{std::move(*bytes)};
-        return img;
-    }
-
     // 16x16 tiles, a 2x2 grid in a 32x32 image (gids first_gid..first_gid+3).
     world_tileset square_ts(world_tile_id first_gid = 1) {
         world_tileset ts;

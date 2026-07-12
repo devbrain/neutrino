@@ -9,7 +9,7 @@
 #include "sound_system.hh"
 #include "sdl_io_stream.hh"
 #include "memory_io.hh"
-#include "services/service_locator.hh"
+#include "services/service_access.hh"
 
 #include <musac_backends/sdl3/sdl3_backend.hh>
 #include <musac/audio_device.hh>
@@ -177,39 +177,36 @@ namespace neutrino {
     // ------------------------------------------------------------------
     // Public free functions
     // ------------------------------------------------------------------
-    static sound_system* system_ptr() {
-        return service_locator::instance().get_sound_system();
-    }
 
     bool audio_active() {
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         return ss && ss->active();
     }
 
     void set_master_volume(float volume) {
-        if (auto* ss = system_ptr()) ss->set_master_volume(volume);
+        if (auto* ss = maybe_sound_system()) ss->set_master_volume(volume);
     }
 
     float get_master_volume() {
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         return ss ? ss->master_volume() : 1.0f;
     }
 
     void set_sfx_volume(float volume) {
-        if (auto* ss = system_ptr()) ss->set_sfx_volume(volume);
+        if (auto* ss = maybe_sound_system()) ss->set_sfx_volume(volume);
     }
 
     float get_sfx_volume() {
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         return ss ? ss->sfx_volume() : 1.0f;
     }
 
     void set_music_volume(float volume) {
-        if (auto* ss = system_ptr()) ss->set_music_volume(volume);
+        if (auto* ss = maybe_sound_system()) ss->set_music_volume(volume);
     }
 
     float get_music_volume() {
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         return ss ? ss->music_volume() : 1.0f;
     }
 
@@ -225,7 +222,7 @@ namespace neutrino {
         auto io = audio_detail::io_from_file(path);
         ENFORCE(io != nullptr)("Failed to open audio file: " + path);
 
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         if (!ss || !ss->active()) {
             return music_stream{};
         }
@@ -244,7 +241,7 @@ namespace neutrino {
         auto data = audio_detail::read_all(is);
         ENFORCE(!data->empty())("Failed to read audio data from stream");
 
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         if (!ss || !ss->active()) {
             return music_stream{};
         }
@@ -254,7 +251,7 @@ namespace neutrino {
     }
 
     pc_speaker create_pc_speaker() {
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         if (!ss || !ss->active()) {
             return pc_speaker{};
         }
@@ -264,31 +261,31 @@ namespace neutrino {
     }
 
     void play_music(const std::string& path, bool loop, std::chrono::microseconds fade_time) {
-        if (auto* ss = system_ptr()) ss->play_music(path, loop, fade_time);
+        if (auto* ss = maybe_sound_system()) ss->play_music(path, loop, fade_time);
     }
 
     void play_music(std::istream& is, bool loop, std::chrono::microseconds fade_time) {
         auto data = audio_detail::read_all(is);
         ENFORCE(!data->empty())("Failed to read audio data from stream");
-        if (auto* ss = system_ptr()) {
+        if (auto* ss = maybe_sound_system()) {
             ss->play_music(audio_detail::io_from_buffer(std::move(data)), loop, fade_time);
         }
     }
 
     void stop_music(std::chrono::microseconds fade_time) {
-        if (auto* ss = system_ptr()) ss->stop_music(fade_time);
+        if (auto* ss = maybe_sound_system()) ss->stop_music(fade_time);
     }
 
     void pause_music(std::chrono::microseconds fade_time) {
-        if (auto* ss = system_ptr()) ss->pause_music(fade_time);
+        if (auto* ss = maybe_sound_system()) ss->pause_music(fade_time);
     }
 
     void resume_music(std::chrono::microseconds fade_time) {
-        if (auto* ss = system_ptr()) ss->resume_music(fade_time);
+        if (auto* ss = maybe_sound_system()) ss->resume_music(fade_time);
     }
 
     bool is_music_playing() {
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         return ss && ss->music_playing();
     }
 
@@ -297,7 +294,7 @@ namespace neutrino {
         const std::function <std::unique_ptr <musac::decoder>()>& factory_func,
         int priority
     ) {
-        auto* ss = system_ptr();
+        auto* ss = maybe_sound_system();
         ENFORCE(ss != nullptr)("Cannot register decoder: application is not running");
         auto registry = ss->registry();
         ENFORCE(registry != nullptr)("Decoders registry is null");

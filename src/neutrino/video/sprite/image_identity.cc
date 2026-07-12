@@ -17,6 +17,8 @@
 
 #include <sdlpp/video/surface.hh>
 
+#include "video/sprite/surface_lock.hh"
+
 namespace neutrino {
     namespace {
         // Content identity of a raw image byte buffer.
@@ -34,25 +36,18 @@ namespace neutrino {
             if (!canonical) {
                 return content_key{0, 0};
             }
+            const details::surface_pixel_lock lock(*canonical);
+            if (!lock.ready()) {
+                return content_key{0, 0};
+            }
             SDL_Surface* raw = canonical->get();
-            if (raw == nullptr) {
+            if (raw == nullptr || raw->pixels == nullptr || raw->pitch <= 0 || raw->h <= 0) {
                 return content_key{0, 0};
             }
-            const bool must_lock = SDL_MUSTLOCK(raw);
-            if (must_lock && !SDL_LockSurface(raw)) {
-                return content_key{0, 0};
-            }
-            content_key key{0, 0};
-            if (raw->pixels != nullptr && raw->pitch > 0 && raw->h > 0) {
-                const std::size_t bytes =
-                    static_cast <std::size_t>(raw->pitch) * static_cast <std::size_t>(raw->h);
-                const auto* p = static_cast <const std::uint8_t*>(raw->pixels);
-                key = content_hash(std::as_bytes(std::span <const std::uint8_t>(p, bytes)));
-            }
-            if (must_lock) {
-                SDL_UnlockSurface(raw);
-            }
-            return key;
+            const std::size_t bytes =
+                static_cast <std::size_t>(raw->pitch) * static_cast <std::size_t>(raw->h);
+            const auto* p = static_cast <const std::uint8_t*>(raw->pixels);
+            return content_hash(std::as_bytes(std::span <const std::uint8_t>(p, bytes)));
         }
 
         // Content identity of a file's bytes (read whole; callers cache the result by

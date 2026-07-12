@@ -1,5 +1,7 @@
 #include <doctest/doctest.h>
 
+#include "video/test_images.hh"
+
 #include <neutrino/video/sprite/sprite_def.hh>
 #include <neutrino/video/sprite/image_identity.hh>
 
@@ -8,16 +10,9 @@
 #include <vector>
 
 using namespace neutrino;
+using namespace neutrino::test;
 
 namespace {
-    world_image mem_image(unsigned w, unsigned h, std::vector <std::uint8_t> bytes) {
-        world_image img;
-        img.width = w;
-        img.height = h;
-        img.source = image_from_memory{std::move(bytes)};
-        return img;
-    }
-
     // A small def: a 2x2 grid over a 32x32 image plus one clip.
     sprite_def basic_def() {
         sprite_def d;

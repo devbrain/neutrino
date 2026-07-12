@@ -3,6 +3,7 @@
 #include <neutrino/video/world/tileset_bundle.hh>
 
 #include "test_application.hh"
+#include "video/test_images.hh"
 
 #include <sdlpp/video/surface.hh>
 
@@ -11,39 +12,13 @@
 #include <vector>
 
 using namespace neutrino;
+using namespace neutrino::test;
 
 namespace {
     // A world_image whose embedded data is a BMP of a blank w*h surface, so
     // build_bundle can decode it through load_image with no on-disk asset.
-    world_image bmp_image(unsigned w, unsigned h) {
-        auto surface = sdlpp::surface::create_rgb(
-            static_cast <int>(w), static_cast <int>(h), sdlpp::pixel_format_enum::RGBA8888);
-        REQUIRE(surface.has_value());
-        auto bytes = sdlpp::save_bmp(*surface);
-        REQUIRE(bytes.has_value());
-
-        world_image img;
-        img.width = w;
-        img.height = h;
-        img.source = image_from_memory{std::move(*bytes)};
-        return img;
-    }
-
     // A world_image backed by an already-decoded surface (the Flavor-1 source): no
     // encode/decode round-trip, build_bundle borrows the pixels directly.
-    world_image surface_image(unsigned w, unsigned h) {
-        auto surface = sdlpp::surface::create_rgb(
-            static_cast <int>(w), static_cast <int>(h), sdlpp::pixel_format_enum::RGBA8888);
-        REQUIRE(surface.has_value());
-
-        world_image img;
-        img.width = w;
-        img.height = h;
-        img.source = image_from_surface{
-            std::make_shared <const sdlpp::surface>(std::move(*surface)), std::nullopt};
-        return img;
-    }
-
     // Uniform tileset: one shared image sliced into a tile_count grid.
     world_tileset uniform_tileset(unsigned image_wh, unsigned tile_wh, unsigned columns,
                                   unsigned tile_count, int off_x = 0, int off_y = 0) {

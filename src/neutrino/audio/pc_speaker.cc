@@ -4,7 +4,7 @@
 
 #include <neutrino/audio/pc_speaker.hh>
 #include "sound_system.hh"
-#include "services/service_locator.hh"
+#include "services/service_access.hh"
 #include <musac/pc_speaker_stream.hh>
 
 namespace neutrino {
@@ -29,7 +29,7 @@ namespace neutrino {
     void pc_speaker::play() {
         if (m_stream) {
             // Apply the sfx group volume for the PC speaker stream
-            auto* ss = service_locator::instance().get_sound_system();
+            auto* ss = maybe_sound_system();
             m_stream->set_volume(ss ? ss->sfx_volume() : 1.0f);
             m_stream->play();
         }

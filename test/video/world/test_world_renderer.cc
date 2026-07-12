@@ -4,6 +4,7 @@
 #include <neutrino/video/world/resource_cache.hh>
 
 #include "test_application.hh"
+#include "video/test_images.hh"
 #include "services/service_locator.hh"
 
 #include <sdlpp/video/surface.hh>
@@ -12,24 +13,11 @@
 #include <utility>
 
 using namespace neutrino;
+using namespace neutrino::test;
 
 namespace {
     // Embedded BMP of a size*size surface; different sizes are guaranteed distinct
     // content (different byte length -> different content key).
-    world_image bmp_image(unsigned size) {
-        auto surface = sdlpp::surface::create_rgb(
-            static_cast<int>(size), static_cast<int>(size), sdlpp::pixel_format_enum::RGBA8888);
-        REQUIRE(surface.has_value());
-        auto bytes = sdlpp::save_bmp(*surface);
-        REQUIRE(bytes.has_value());
-
-        world_image img;
-        img.width = size;
-        img.height = size;
-        img.source = image_from_memory{std::move(*bytes)};
-        return img;
-    }
-
     // A tileset whose embedded bytes are not a decodable image, so build_bundle
     // (via load_image) throws when the cache tries to acquire it.
     world_tileset broken_ts(world_tile_id first_gid) {
