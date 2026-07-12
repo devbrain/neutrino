@@ -166,7 +166,7 @@ namespace neutrino::world_tmx {
             if (node.is_json()) {
                 if (has_attribute(node, "image")) {
                     auto image = parse_image(node);
-                    if (!image.source.empty()) {
+                    if (!image.empty()) {
                         result.image = std::move(image);
                     }
                 }

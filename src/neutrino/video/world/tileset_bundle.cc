@@ -26,11 +26,15 @@ namespace neutrino {
         // into one another under linear filtering / non-integer scale.
         constexpr int tile_gutter = 1;
 
-        [[nodiscard]] sdlpp::surface decode_world_image(const world_image& img) {
-            if (!img.data.empty()) {
-                return load_image(std::span <const std::uint8_t>(img.data.data(), img.data.size()));
+        // Decode an *encoded* image source (disk / memory) into an owned surface. The
+        // already-decoded `image_from_surface` arm is not handled here -- it is borrowed
+        // directly in surface_for, with no copy.
+        [[nodiscard]] sdlpp::surface decode_encoded_image(const world_image_source& src) {
+            if (const auto* m = std::get_if <image_from_memory>(&src)) {
+                return load_image(std::span <const std::uint8_t>(m->bytes.data(), m->bytes.size()));
             }
-            return load_image(img.source);
+            const auto& disk = std::get <image_from_disk>(src);
+            return load_image(disk.source);
         }
 
         // One packable tile: which source rectangle to pack, plus the local id and
@@ -69,8 +73,16 @@ namespace neutrino {
             if (it != decoded.end()) {
                 return it->second;
             }
-            surfaces.push_back(decode_world_image(*img));
-            const sdlpp::surface* p = &surfaces.back();
+            const sdlpp::surface* p = nullptr;
+            if (const auto* s = std::get_if <image_from_surface>(&img->source)) {
+                // Already decoded: borrow the producer's surface. The world_image (and its
+                // shared_ptr) outlives this synchronous decode->pack, so no copy is needed.
+                ENFORCE(s->pixels != nullptr)("image_from_surface has null pixels");
+                p = s->pixels.get();
+            } else {
+                surfaces.push_back(decode_encoded_image(img->source));
+                p = &surfaces.back();
+            }
             decoded.emplace(img, p);
             return p;
         };

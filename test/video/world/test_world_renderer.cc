@@ -26,7 +26,7 @@ namespace {
         world_image img;
         img.width = size;
         img.height = size;
-        img.data = std::move(*bytes);
+        img.source = image_from_memory{std::move(*bytes)};
         return img;
     }
 
@@ -36,7 +36,7 @@ namespace {
         world_image img;
         img.width = 16;
         img.height = 16;
-        img.data = {std::uint8_t{1}, 2, 3, 4}; // garbage, not an image
+        img.source = image_from_memory{{std::uint8_t{1}, 2, 3, 4}}; // garbage, not an image
         world_tileset ts;
         ts.first_gid = first_gid;
         ts.tile_width = 16;

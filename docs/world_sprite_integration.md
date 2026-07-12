@@ -1039,6 +1039,573 @@ positions. The layout seam stayed exactly two functions.
 
 ---
 
+## 9. Dynamic actors — `sprite_batch` + `actor_layer` (design)
+
+Everything so far renders a **static** map: `world_renderer::draw` (world_renderer.cc:154)
+is a closed loop over `world.layers()`, drawn back-to-front. Games also need a **dynamic**
+layer — player, enemies, projectiles, falling pickups — whose positions come from the
+physics/AI systems each frame, at continuous world coordinates, and which must interleave
+at a chosen z-order among the static layers (walk *behind* a treetop layer but *in front*
+of the floor). This section designs that.
+
+### What is *not* the problem
+
+Continuous positions are already handled. `to_screen(cam, plane, viewport, world_point)`
+(camera.hh:87) maps any float world point to a screen pixel; the grid rounding is only the
+static-tile seam-free path (`draw_gid_at`). An actor is just a sprite at a continuous world
+point on some parallax plane — the engine can already draw it. The real work is **z-order
+composition** and **ownership**, not coordinates.
+
+### Ownership (locked)
+
+`world` stays const, static, and shareable (the whole cache model rests on it). Actors are
+**runtime state owned by the game** (physics bodies / ECS), rewritten every frame. So:
+
+- An actor layer is **not** baked into `world` and is **not** a `world_layer` variant member.
+- The map may *seed* actors — an object layer of spawn points (`type = "enemy"`, KE's
+  `spawn_seq`) — but live instances live in the game.
+- The actor layer depends only on `camera` + `draw_sprite` + `sprite_visual_ref` /
+  `sprite_state_id`. It never touches `world`, the tileset, gids, or the resource cache.
+  (That decoupling is a feature — map and actors meet only through spawn seeds.)
+
+### `sprite_batch` — accumulate-then-flush, depth-sorted
+
+A **pure draw sink**: a camera-aware sprite drawer you fill during a draw pass; `flush()`
+**stable**-sorts by depth and draws back-to-front. It carries only what it needs to place a
+queued sprite — `cam + viewport + plane` — and nothing about *which* sprites to draw
+(culling) or *where between physics steps* we are (interpolation); those are the layer's
+inputs, delivered via `layer_view` below. Reusable beyond actor layers (HUD, particles,
+floating damage text). One `add`, no second method: a *stable* sort means equal depths keep
+call order, so `depth`-agnostic drawing is just "give everything the same depth."
+
+```cpp
+class sprite_batch {
+public:
+    // cam + viewport + plane are all it needs to transform queued positions at flush.
+    sprite_batch(const camera& cam, rect viewport, const world_layer_header& plane);
+
+    // Queue a static visual at world `pos`, sorted by `depth` (usually pos.y for top-down).
+    // Equal depths keep call order (stable sort) => "unsorted" == all the same depth.
+    void add(world_point pos, float depth, sprite_visual_ref visual, sprite_draw_params params = {});
+    // Same, for an animated runtime state (its current frame is resolved at flush time).
+    void add(world_point pos, float depth, sprite_state_id state, sprite_draw_params params = {});
+
+    // Stable-sort the queued sprites by depth ascending, draw back-to-front, then clear.
+    // The compositor calls this at the layer boundary, so sorting is scoped to this slot.
+    void flush();
+};
+```
+
+At flush, each entry becomes a `draw_sprite(pos, visual, params)`: position via
+`to_screen(cam, plane, viewport, pos)` plus the viewport top-left; `params.scale` is
+multiplied by `cam.zoom` (the caller's scale is *on top of* zoom), exactly as the tile
+anchor path does (world_renderer.cc:199-201). A content problem on one sprite is a no-op,
+never a throw — same policy as `draw_stats`.
+
+### `actor_layer` — the game-owned slot
+
+`draw` takes the batch **and** a `layer_view`: the read-only per-frame inputs the layer needs
+to decide *what* to draw. `visible` is the camera's visible world rectangle **on this layer's
+plane** (parallax + zoom already applied), so the layer can skip off-screen actors; `alpha`
+is the fixed-step interpolation factor. Both are computed by the compositor per slot — the
+world rect is per-plane, so a parallaxed actor layer culls against *its* view, not the
+camera's raw one. (`world_rect` = `sdlpp::rect<float>`, the world-space twin of `world_point`;
+worth adding as an alias next to it in `world.hh`.)
+
+```cpp
+struct layer_view {
+    world_rect visible;      // camera's visible region in world pixels, on this slot's plane
+    float      alpha{1.0f};  // fixed-step interpolation factor, for lerp(prev, curr, alpha)
+};
+
+class actor_layer {             // a role of the shared render_layer base (see §10)
+public:
+    virtual ~actor_layer() = default;
+    world_layer_header plane;   // parallax/offset/opacity/tint — like a tile layer
+    virtual void draw(const layer_view& view, sprite_batch& batch) = 0;
+};
+```
+
+> The base is generalized in §10 to `render_layer`, shared with live backgrounds: the
+> interface is identical, and "actor" vs "background" is just what the subclass draws and
+> where the compositor slots it. Treat `actor_layer` here as the sorted-sprite role of that
+> one base.
+
+Render-only: there is **no** `update()`. Physics/AI advance entities elsewhere at a fixed
+step; `draw` reads *interpolated* positions (`lerp(prev, curr, view.alpha)`) so motion stays
+smooth when the physics rate and the frame rate differ. A subclass reads like intent — cull
+against `view.visible`, interpolate with `view.alpha`, queue into `batch`:
+
+```cpp
+void draw(const layer_view& view, sprite_batch& batch) override {
+    for (const auto& e : m_entities) {
+        const world_point p = e.render_pos(view.alpha);   // lerp(prev, curr, alpha)
+        if (view.visible.intersects(e.aabb_at(p)))        // skip off-screen actors
+            batch.add(p, p.y, e.visual, {.flip = e.flip});
+    }
+}
+```
+
+### The compositor seam
+
+`world_renderer::draw` gains a boundary-callback overload — it fires after each map layer,
+in order, and **knows nothing about actors**:
+
+```cpp
+draw_stats draw(const camera& cam, const rect& viewport,
+                const std::function<void(world_layer_id done)>& after_layer);
+```
+
+A thin `world_compositor` owns the interleave: it holds the `world_renderer` plus
+`{after: world_layer_id, actor_layer*}` insertions, wires the callback, and at each slot
+builds a `sprite_batch` on that layer's plane, computes the slot's `layer_view` (the visible
+world rect on that plane, from the camera + plane + viewport; plus the frame's `alpha`), calls
+`actor_layer::draw(view, batch)`, and flushes. Computing `visible` reuses the same plane
+transform culling already relies on (`eval_layer_origin`, camera.hh:60), so actor culling and
+tile culling never drift.
+
+```cpp
+world_compositor comp{renderer};
+comp.insert_after(ground_layer_id, enemies);
+comp.insert_after(ground_layer_id, player);   // player drawn above enemies, below treetops
+comp.draw(cam, viewport, alpha);              // static layers + actor slots, in map order
+```
+
+### Design decisions (agreed)
+
+- **One `add`, stable sort, flush at the layer boundary.** No `submit`/`sprite_sorted`
+  split: the depth argument *is* the sort/no-sort choice (ties keep call order). Flushing
+  per slot scopes sorting to that slot.
+- **`sprite_batch` is a pure draw sink; culling + interpolation are the layer's inputs.**
+  The batch holds only `cam + viewport + plane` (what it takes to place a queued sprite). The
+  visible world rect and `alpha` travel in `layer_view` to `draw`, because the layer — not the
+  batch — decides *which* actors to draw and *where between physics steps* they are.
+- **The cull rect is per-plane.** `layer_view::visible` is the camera's visible region mapped
+  onto *this slot's* plane, so a parallaxed actor layer culls against its own view. The
+  compositor computes it with the same `eval_layer_origin` transform the tile culling uses.
+- **`sprite_batch` is reusable, not actor-specific.** HUD, particles, damage numbers fill
+  the same batch. The actor layer is just one client.
+- **Actor layer is decoupled from `world`/cache** — it draws `sprite_visual_ref` /
+  `sprite_state_id` the game already resolved; no gid or tileset leaks into the API.
+- **Interpolated positions; physics stays fixed-step and out of the layer.** `alpha` is
+  optional: a game that just moves by `dt` per frame passes `alpha = 1` and ignores it.
+- **The renderer stays actor-agnostic** — it only fires a layer-done callback; the
+  `world_compositor` (not `world_renderer`) knows about `actor_layer`.
+
+### Deferred (with rationale)
+
+- **Cross-layer (tiles + actors) unified depth sort.** Current model sorts *within* a slot
+  (actor strictly above "ground", strictly below "treetops" — Tiled's standard below/above
+  split, and enough for KE and most top-down games). A true 2.5D merge — one actor behind
+  one tile and in front of its neighbour — turns the whole compose step into a single
+  y-sorted list of tiles *and* actors and is a much larger change. Do it only when a game
+  needs it.
+- **Dynamic / surface-backed backgrounds** are the read-only counterpart of this layer —
+  designed in §10. The actor layer itself needs none of that: it draws already-registered
+  visuals.
+
+---
+
+## 10. Dynamic backgrounds — image-source variant, animation, and live layers (design)
+
+Backgrounds today are static file-loaded `world_image` layers. "Dynamic background" is
+three separate needs, and they split on one line — **is the pixel content immutable after
+creation?** — because that decides whether the content-keyed cache (Phase 7) applies. None
+is a new subsystem; each lands on machinery we have or half-have, and the first step is a
+model cleanup that pays for itself.
+
+### The organizing split
+
+- **Immutable content** (from disk, from memory, or from a computed-once surface) is
+  *cacheable* — it just may not come from a file. This is a `world_image` **source**
+  problem.
+- **Mutable content** (recomputed per frame) is *not* cacheable — it must bypass the cache
+  and stay a game-owned **layer**.
+
+### Image source as a variant (replaces the `format` string)
+
+`world_image` currently holds `format` + `source` + `data` and `decode_world_image` infers
+intent from *which field is set* — a stringly-typed discriminator, the same class of bug as
+a magic `format`. Replace it with a sum type of sources; each arm owns its decode and its
+cache identity, and illegal states (raw bytes tagged as a file, etc.) become
+unrepresentable:
+
+```cpp
+// Undecoded (decoded lazily at bind, in decode_world_image):
+struct image_from_disk    { std::filesystem::path source; };          // load_image(path)
+struct image_from_memory  { std::vector<std::uint8_t> bytes; };       // encoded blob: load_image(bytes)
+// Decoded (arrives ready — a producer, not the TMX loader):
+struct image_from_surface { std::shared_ptr<const sdlpp::surface> pixels;   // procedural / decoded-once
+                            std::optional<content_key> identity; };   // producer-supplied id (below)
+
+using world_image_source = std::variant<image_from_disk, image_from_memory, image_from_surface>;
+
+struct world_image {
+    world_image_source source;
+    std::optional<sdlpp::color> transparent_color;   // shared presentation
+    unsigned width{}, height{};                       // declared (disk/memory) or from the surface
+};
+```
+
+The two field-sniffing functions become honest visits — no `format`, and no raw-vs-encoded
+collision because the *type* is part of the identity:
+
+```cpp
+sdlpp::surface decode_world_image(const world_image& img) {
+    return std::visit(overloaded{
+        [](const image_from_disk&   s) { return load_image(s.source); },
+        [](const image_from_memory& s) { return load_image(s.bytes);  },
+        [](const image_from_surface& s){ return clone(*s.pixels);     },   // create_from_pixels / copy
+    }, img.source);
+}
+```
+
+**Two axes, not three peers.** The arms sit on two distinct questions:
+
+- *Decoded yet?* — `{disk, memory}` are **undecoded** (they still need `load_image`);
+  `surface` is **decoded**. This is the categorical line.
+- *If undecoded, where do the bytes live?* — a file path (`disk`) or in RAM (`memory`).
+  This is a minor sub-axis: it changes only *how* you reach the bytes and how you identify
+  them, not *when* you decode.
+
+**Decode stays lazy, at bind.** Both undecoded arms decode in `decode_world_image` at
+bundle-build time (cache acquire / `world_renderer` construction) — not at parse. So `disk`
+and `memory` are *both lazy*; they are not a lazy-vs-eager pair. `from_surface` is the only
+*eager/decoded* form, and it is reserved for producers that genuinely arrive pre-decoded —
+the KE importer, procedural generation. The **TMX loader does not manufacture a surface from
+embedded `<data>` bytes**: it keeps them as `image_from_memory` and lets the video layer
+decode lazily, so the `world` model stays compact pure data with no image-codec dependency.
+
+**`from_sprites` was considered and dropped:** arranging sprite frames on a grid *is* a tile
+layer; the only extra it offered was baking that layer to one texture for batching, which is
+an optimization (the megatexture backlog item) whose output is a surface — so it collapses
+into `image_from_surface`, not a distinct source.
+
+`image_from_surface` is the whole immutable-*decoded* story: KE's assembled background, any
+generated-once image, a decoded BOB block. It works for image layers *and* tilesets (KE
+bricks) unchanged, because both already route images through `decode_world_image`.
+
+**Identity, per arm.** `disk` takes the cheap mtime+size stat-cache path (resource_cache.cc:69);
+`memory` hashes its encoded bytes — i.e. exactly the two identity branches that exist today,
+made explicit. Raw pixels (`surface`) have no cheap identity: either hash the whole surface
+(costly for a big image, every build) or let the **producer supply a `content_key`** ("these
+pixels are `ke_bg_level_3`") — hence the optional `identity`, the one non-obvious cost of
+raw-pixel content. `create_from_pixels` (surface.hh:720) is non-owning, so a wrapping decode
+must copy or the backing buffer must outlive the pack (it does, within `build_bundle`'s
+synchronous decode→pack).
+
+**Considered — decode as a load-phase step (rejected for now).** If the `world` model held
+decoded surfaces as its normal currency, `from_memory` would collapse into `from_surface`
+(the loader decoding embedded bytes at parse) and the variant would shrink to
+`variant<from_disk, from_surface>`. That is coherent — it moves decode off the render thread
+(the async-load backlog wants that) and fails fast at load — but it heavies the pure-data
+model (raw pixels are 4–10× the encoded size and pull `sdlpp::surface` into `world.hh`), does
+work that a parse-only tool wastes, and couples the loader to the codec. Kept lazy for now;
+if we flip, forward the encoded-byte hash as the surface `identity` so caching still dedups.
+
+### Animated backgrounds — a layer concern, over any source
+
+A looping backdrop (KE_FILL cycling its ~41 frames on a free-running counter) is a frame set
++ durations on the shared clock — which the engine already plays for tile cells (Phase 11).
+The only gap: image layers resolve `visual(0)` but not `state()`. Give `world_image_layer` an
+optional animation (frames are ordinary `world_image`s, any source), have `image_as_tileset`
+build an animated single-tile bundle, and let `draw_layer(image_layer)` resolve `state(0)`
+first — the same two-liner `draw_gid_at` uses (world_renderer.cc:182):
+
+```cpp
+sprite_visual_ref v = h.state(0).valid() ? sprite_state_appearance(h.state(0)).visual : h.visual(0);
+```
+
+Orthogonal to the source variant: an animated background of in-memory frames is just N
+`image_from_surface`s.
+
+### Live / procedural-per-frame — a game-drawn layer, same as actors
+
+A minimap, plasma/fog recomputed each frame, a live starfield: content changes every frame,
+so the content cache *cannot* apply. It is not a `world_image` source — it is a **game-drawn
+layer with a virtual `draw`, the exact interface the actor layer already has** (§9). There
+is no separate `background_layer` type: a live background is just a `render_layer` slotted
+*below* the tile layers instead of between them. `render_layer` is the shared base (§9's
+`actor_layer` generalized); "actor" and "background" are roles, not classes.
+
+```cpp
+class render_layer {            // the game-drawn slot base — actors AND live backgrounds
+public:
+    virtual ~render_layer() = default;
+    world_layer_header plane;                                    // parallax/offset/opacity/tint
+    virtual void draw(const layer_view& view, sprite_batch& batch) = 0;
+};
+```
+
+The only difference is *what the subclass draws*, not the interface:
+
+- **Actor role** — fills `batch` with depth-sorted sprites (`batch.add(...)`).
+- **Background role** — ignores `batch` and blits its own `texture_access::streaming` texture
+  (renderer.hh:86), which the game owns and updates each frame: fill the viewport, sample the
+  region `layer_view::visible` gives for scroll/parallax (`texture_address_mode::wrap`,
+  renderer.hh:97, for a tiled fill).
+
+Both are `render_layer`s at compositor slots; the compositor builds the batch and flushes it
+after each `draw`, so a background that never calls `add` simply flushes nothing. A live
+surface must **not** be smuggled in as `image_from_surface`: the cache would key it once and
+never see the updates — that immutable/mutable line is what separates a *cached source* from
+a *game-drawn layer*.
+
+*(Deferred: letting `sprite_batch` also carry a raw-texture entry, so a live texture can be
+depth-interleaved with actor sprites in one sorted flush. Usually a background is its own slot
+and needs no sorting; add it only when a game wants a live texture mid-stack.)*
+
+### Shape / build order
+
+| Need | Content | Mechanism | Builds on |
+| --- | --- | --- | --- |
+| source cleanup | — | `world_image` → `variant<disk, memory, surface>` | Phase 6/7 |
+| from-surface (KE, procedural-once) | immutable | `image_from_surface` | source cleanup |
+| animated backdrop | immutable | animated image layer | Phase 11 + a source |
+| live / procedural | **mutable** | game-drawn `render_layer` (streaming texture) + compositor slot | §9 slot seam |
+
+**Source cleanup first** — it is a refactor that also fixes the existing field-sniffing, and
+`from_surface` (the KE unblock) falls out of it. Then animation and live are independent of
+each other on top. Blast radius of the refactor is mechanical but wide: the TMX loader
+(`image.cc` builds `image_from_disk`/`from_memory`), the cache (`image_identity` visits),
+the bundle (`decode_world_image` visits), image layers, and `map_viewer`'s
+`absolutize_image_paths` (touches `image_from_disk::source`).
+
+### Design decisions (agreed)
+
+- **Image *source* is a variant; the image *layer* is not.** Drawing an image on a plane is
+  identical regardless of where the pixels came from — only decode + identity differ, which
+  is exactly what the source variant localizes. No `world_image_layer` subtypes.
+- **Three source arms on two axes — `disk`, `memory`, `surface`.** Decoded-vs-not is the
+  categorical line (`surface` is decoded; `disk`/`memory` are not); path-vs-bytes is the
+  minor sub-axis under undecoded. Both undecoded arms **decode lazily at bind**, so they are
+  not a lazy/eager pair — `surface` is the only eager form. The **TMX loader keeps embedded
+  bytes as `memory`** (no parse-time decode), so the `world` model stays compact pure data.
+  `from_sprites` collapses into a tile layer (or, when flattened for batching, into
+  `from_surface`).
+- **`from_surface` carries a producer-supplied identity** (optional), falling back to a
+  pixel hash — the one non-obvious cost of raw-pixel content.
+- **Immutable → `world_image` + cache; mutable → a game-drawn `render_layer`.** Live content
+  is never a source arm; it is the *same* virtual-`draw` layer as actors (§9), slotted below
+  the tiles. One interface (`render_layer`), two roles (actor / background) — no separate
+  `background_layer` type. The split is enforced, not incidental.
+
+---
+
+## 11. Implementation plan — dynamic actors & backgrounds (§9 + §10)
+
+Seven phases continuing the Phase-1–13 numbering. **Phase 14 is a header-split refactor** the
+rest builds on; then two independent tracks that meet at the end: **Track B (backgrounds)** =
+Phases 15–16; **Track A (actor/compositor infra)** = Phases 17–19; **Phase 20** (live
+background) needs both. Phases 15 and 17 can start in parallel once 14 lands. Each phase ships
+with its tests green and the full suite passing before the next.
+
+Design lives in §9/§10; this section is only the build sequence, deliverables, and test
+obligations.
+
+### Phase 14 — split `world.hh` into cohesive headers — prerequisite ✅ DONE
+
+`world.hh` has grown to ~500 lines spanning the entire world vocabulary, and every later phase
+edits it. Split it **first** — a pure mechanical move, no type or behavior change — so those
+edits land in focused files and the header stops being a pile. Dependency order of the split:
+common → layers → tileset → world.
+
+**Done:** `world_common.hh` / `world_layers.hh` / `world_tileset.hh` created; `world.hh` reduced
+to the `world` class + the three includes (umbrella preserved → zero downstream `#include`
+changes). Each header compiles standalone; suite 568/568 unchanged. Also marked the two
+behavior-bearing data structs (`world_tile_layer`, `world_tileset` — they have out-of-line
+methods in `world.cc`) `NEUTRINO_EXPORT`, so a future global hidden-visibility build still links
+(no-op today; `-fvisibility=hidden` is currently scoped only to `decompressor.cc`).
+
+- **Depends on:** nothing. Do it before everything else.
+- **Deliverables (new headers under `include/neutrino/world/`):**
+  - `world_common.hh` — the shared vocabulary: the enums (`world_orientation`, render order,
+    stagger axis/index, object draw order, text align), the id aliases (`world_tile_id` …
+    `world_point`), the property system (`world_typed_string`, `world_object_reference`,
+    `world_property`, `world_property_map`, `world_component`), and `world_image`.
+  - `world_layers.hh` — `world_layer_header`, `world_tile_cell`, `world_tile_chunk`, the object
+    model (`world_object_base`, the shape structs, the `world_object` variant), and the layer
+    types (`world_tile_layer`, `world_image_layer`, `world_object_layer`, the `world_layer`
+    variant). Includes `world_common.hh`.
+  - `world_tileset.hh` — `world_tile_animation_frame`, `world_tile`, `world_tileset_grid`,
+    `tile_drawable`, `world_tileset`. Includes `world_layers.hh` (a `world_tile` owns an optional
+    `world_object_layer`).
+  - `world.hh` — keeps only the `world` class and includes the three above, staying the umbrella
+    so **no downstream `#include` changes**. Split `world.cc` to match (or leave it one .cc) —
+    cutter's choice.
+- **Tests:** none new — the suite must stay byte-for-byte green (only declarations moved). Fix
+  any TU that relied on a lost transitive include by adding the explicit one.
+- **Done when:** `world.hh` is just the `world` class + three includes, and each split header
+  compiles standalone.
+
+### Phase 15 — `world_image` source variant (model refactor + Flavor 1) — Track B ✅ DONE
+
+Replace the `format`/`source`/`data` field-sniffing with `variant<image_from_disk,
+image_from_memory, image_from_surface>` (§10). Behavior-preserving for disk/memory; adds the
+decoded `surface` arm (Flavor 1) end to end.
+
+**Done:** `world_common.hh` holds `world_image_source` + `world_image::empty()`; `decode_encoded_image`
+and `image_identity` visit the variant; the `surface` arm is *borrowed* in `surface_for` (no
+copy); the cache key folds `source.index()` (arm discriminator). Loader builds
+`image_from_disk`/`image_from_memory` (dropped the dead `format`); `map_viewer` rewrites only the
+disk arm; all tests migrated. `world_rect` deferred to Phase 17 (unused until then). A
+no-identity `image_from_surface` is keyed by a content hash of the **canonical RGBA8888** the
+packer uploads (`hash_surface_identity` converts then hashes, locking directly per the risks
+note), *not* the surface address or raw source bytes — an address could be reused after the
+surface is freed while a bundle lingers cold (stale pixels), and raw bytes under a different
+format/palette render differently yet would collide. Suite 570/570 (+2), later +2 (no-identity
+surfaces dedup by content; identical bytes in different formats key distinctly). map_viewer
+verified (island, 2528 tiles).
+
+- **Depends on:** 14 (edits `world_common.hh`).
+- **Deliverables:**
+  - `world_common.hh` — `world_image` holds `world_image_source`; add `using world_rect =
+    sdlpp::rect<float>;` next to `world_point` while here (Track A needs it too).
+  - `tileset_bundle.cc` — `decode_world_image` becomes a `std::visit`; `surface` arm wraps via
+    `create_from_pixels` then **copies** (non-owning lifetime, surface.hh:720).
+  - `resource_cache.cc` — `image_identity` becomes a `std::visit` (disk = stat-cache,
+    memory = byte hash, surface = producer `content_key` or pixel hash); the key fold gains the
+    arm discriminator so raw-vs-encoded byte-identical buffers cannot collide.
+  - `tmx/image.cc` — `parse_image` builds `image_from_disk` (path) or `image_from_memory`
+    (embedded `<data>`); **no** parse-time decode. Drop the now-dead `format` field.
+  - `world_renderer.cc` `image_as_tileset`, `map_viewer.cc` `absolutize_image_paths` (touches
+    `image_from_disk::source`), and any other `world_image` constructors updated.
+- **Tests:** whole suite stays green (mechanical refactor). Add: a bundle built from an
+  `image_from_surface` (raw pixels) resolves a valid visual; a `surface` and a `memory` image
+  with byte-identical buffers get **distinct** cache keys (arm discriminator).
+- **Done when:** no code constructs a `world_image` by setting fields; every consumer visits.
+
+### Phase 16 — Animated image layers (Flavor 2) — Track B ✅ DONE
+
+Let an image layer resolve an animation, reusing the Phase-11 shared-clock machinery.
+
+**Done:** `world_image_layer` gains `std::vector<world_image_frame> frames`;
+`image_layer_as_tileset` builds one tile per frame with tile 0 carrying the animation (so the
+bundle exposes `state(0)`); `draw_layer(image_layer)` resolves `state(0)` first, else
+`visual(0)`. The anchor uses the **current frame's** height (`current_image_visual` matches the
+resolved visual back to its frame), so frames of different heights keep a common top-left rather
+than jumping as the animation advances. Added `world_renderer::image_layer_handle` and
+`image_layer_current_height` accessors. Suite 571/571 (+1: an animated image layer advances its
+shared state 0→1, its anchor height tracks the frame 32→24, and it still draws).
+
+- **Depends on:** 15 (frames are `world_image`s of any arm).
+- **Deliverables:** `world_image_layer` gains optional animation frames + durations;
+  `image_as_tileset` builds an animated single-tile bundle; `draw_layer(image_layer)` resolves
+  `state(0)` first, falling back to `visual(0)` (world_renderer.cc:182 pattern).
+- **Tests:** an animated image layer advances frames off the shared clock; a static image
+  layer is unaffected.
+
+### Phase 17 — `sprite_batch` + `world_rect` — Track A ✅ DONE
+
+The pure draw sink (§9).
+
+**Done:** `world_rect = sdlpp::rect<float>` in `world_common.hh`. New
+`video/world/sprite_batch.{hh,cc}`: `sprite_batch{cam, viewport, plane}` with two `add`
+overloads (`sprite_visual_ref` / `sprite_state_id`), `plan()` (stable-sort by depth → screen-space
+`sprite_draw` list, position `to_screen` + viewport top-left, `scale × zoom`) and `flush()`
+(plan → draw valid → clear). `flush` **skips invalid content** — an invalid `sprite_state_id`
+trips `draw_sprite`'s registry enforcement, so validity is checked in the batch, not delegated.
+Suite 574/574 (+3: stable depth sort with ties, transform, flush no-throw).
+
+- **Depends on:** 14; `world_rect` (landed in 15; if Track A starts first, add the alias here).
+- **Deliverables:** `sprite_batch{cam, viewport, plane}` with `add(pos, depth, visual|state,
+  params)` and `flush()` — **stable** sort by depth ascending, draw back-to-front, position via
+  `to_screen(cam, plane, viewport, pos)` + viewport top-left, `params.scale * cam.zoom`; a
+  per-sprite content error is a no-op (draw_stats policy).
+- **Tests:** depth ordering (back-to-front); **stable** ties keep call order (the property that
+  lets one `add` cover unsorted); transform matches the tile anchor path; a bad visual doesn't
+  throw.
+
+### Phase 18 — `render_layer` + `layer_view` + renderer boundary seam — Track A ✅ DONE
+
+The game-drawn layer interface and the hook the compositor drives.
+
+**Done:** new `video/world/render_layer.hh` — `render_layer` base (`plane` + `virtual draw(const
+layer_view&, sprite_batch&)`) and `layer_view{visible, alpha, viewport}`. `world_renderer::draw`
+gains a `const std::function<void(world_layer_id)>& after_layer` overload (the no-arg form
+delegates to it with an empty callback); it fires after each layer in map order via a
+`world_layer_header`-visiting lambda. Suite 576/576 (+2: callback fires once per layer in order
+with the right ids; a `render_layer` fills a batch through its interface).
+
+- **Depends on:** 17.
+- **Deliverables:** `render_layer` base (`plane` + `virtual void draw(const layer_view&,
+  sprite_batch&)`); `layer_view{world_rect visible; float alpha;}`; a `world_renderer::draw`
+  overload taking `const std::function<void(world_layer_id done)>& after_layer` fired after
+  each map layer in order — the renderer stays actor-agnostic.
+- **Tests:** the callback fires once per layer, in map order, with the right ids; a
+  `render_layer` fed a batch draws its sprites.
+
+### Phase 19 — `world_compositor` — Track A ✅ DONE
+
+Interleave static layers and `render_layer`s by z-slot (§9).
+
+**Done:** new `video/world/world_compositor.{hh,cc}` — `insert_after(world_layer_id, render_layer&)`
+and `insert_bottom(render_layer&)` (backgrounds, before all layers). `draw(cam, viewport, alpha)`
+wires the `after_layer` callback and, per slot, builds a `sprite_batch` on the plane, computes
+`layer_view` (`visible` via the same `eval_layer_origin` as tile culling, plus viewport) and
+flushes. Exposed `world_renderer::parallax_rest()` so the batches sit on the map's parallax
+planes. Suite 579/579 (+3: slot placement/alpha, per-plane visible rect vs `eval_layer_origin`,
+parallax planes cull differently / no-match never draws).
+
+- **Depends on:** 18.
+- **Deliverables:** `world_compositor{renderer}`; `insert_after(world_layer_id, render_layer&)`;
+  `draw(cam, viewport, alpha)` wires the callback, and at each slot builds a `sprite_batch` on
+  the slot's plane, computes `layer_view::visible` via the **same** `eval_layer_origin`
+  transform tile culling uses (camera.hh:60 — no drift), calls `draw`, and flushes.
+- **Tests:** an actor layer slotted between two tile layers draws above one and below the
+  other; two layers at the same slot preserve insertion order; the per-plane `visible` rect
+  matches the tile cull for parallax 1 and shifts correctly for a parallaxed plane.
+
+### Phase 20 — Live / procedural background (Flavor 3) — needs A + B ✅ DONE
+
+A `render_layer` that blits a game-owned streaming texture (§10).
+
+**Done:** `layer_view` gained `viewport`; `world_compositor::insert_bottom` draws beneath the map.
+New `video/world/texture_layer.hh` — `texture_layer : render_layer` blits a game-owned
+`const sdlpp::texture*` (streaming; the game updates it) to fill the viewport via
+`get_renderer().copy` (optional `source` sub-rect), ignoring the batch; a null texture is a
+no-op. No separate `draw_texture` primitive was needed — `get_renderer().copy` is the blit.
+Suite 581/581 (+2: a bottom slot draws before the after-slots and `layer_view` carries the
+viewport; a `texture_layer` blits a real streaming texture with `failed==0`, null is a no-op).
+
+- **Depends on:** 19 (slot/compositor) and a texture-blit primitive.
+- **Deliverables:** if absent, a `draw_texture(dst, texture, src, ...)` primitive analogous to
+  `draw_sprite` (the sprite path already blits through the renderer; expose the raw-texture
+  case); an example `render_layer` driving a `texture_access::streaming` texture, filling the
+  viewport and sampling the region from `layer_view::visible` (`texture_address_mode::wrap` for
+  a tiled fill), slotted *below* the tile layers.
+- **Tests:** a live background draws beneath the tiles; the sampled region tracks the camera
+  under pan/zoom; updating the texture between frames changes the output (proving it bypasses
+  the content cache).
+
+### Build order
+
+          ┌ 15 → 16                       (Track B)
+    14 ───┤
+          └ 17 → 18 → 19 ┐                (Track A)
+                         └ 20
+
+14 first (header split). Then 15 (Track B) ∥ 17 (Track A) → 16 on B, 18→19 on A → 20 once 19
+and the blit primitive land.
+
+### Plan-specific watch-items
+
+- **Phase 14 is declarations-only.** Move code between headers; change no types or behavior, so
+  the suite stays byte-for-byte green. The `world_image` variant is Phase 15, not here.
+- **Phase 15 blast radius is wide but mechanical.** Land it behavior-preserving; the suite is
+  the guardrail. Do not mix the refactor with new behavior beyond the `surface` arm.
+- **`create_from_pixels` is non-owning** — the `surface` decode must copy (or guarantee the
+  buffer outlives the pack); `build_bundle`'s decode→pack is synchronous, so a copy is the safe
+  default.
+- **`sprite_batch` sort must be stable** — the whole one-`add` design rests on ties keeping
+  call order.
+- **Compositor `visible` must reuse `eval_layer_origin`** — never recompute the plane
+  transform, or actor and tile culling drift.
+- **Live textures never enter `world_image`** — a mutable surface smuggled in as
+  `image_from_surface` is keyed once and never updates. Enforce the immutable/mutable line.
+
+---
+
 ## 6. Risks / watch-items
 
 - **Silent wrong-texture on hash collision.** Mitigated by the length

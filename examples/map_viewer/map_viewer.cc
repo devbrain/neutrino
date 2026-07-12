@@ -54,10 +54,11 @@ namespace {
     // viewer runs from anywhere.
     void absolutize_image_paths(world& w, const fs::path& base) {
         auto fix = [&](world_image& img) {
-            if (img.data.empty() && !img.source.empty()) {
-                const fs::path p{img.source};
-                if (p.is_relative()) {
-                    img.source = (base / p).lexically_normal().string();
+            // Only a disk-backed image carries a rewritable path; memory/surface images
+            // already hold their pixels.
+            if (auto* disk = std::get_if <image_from_disk>(&img.source)) {
+                if (!disk->source.empty() && disk->source.is_relative()) {
+                    disk->source = (base / disk->source).lexically_normal();
                 }
             }
         };

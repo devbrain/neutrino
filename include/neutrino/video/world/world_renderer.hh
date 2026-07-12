@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <unordered_map>
 #include <vector>
 
@@ -89,6 +90,15 @@ namespace neutrino {
             [[nodiscard]] std::size_t tileset_count() const noexcept { return m_handles.size(); }
 
             /**
+             * @brief The map's parallax rest point (its @ref world::parallax_origin),
+             *        which @ref draw injects into the camera.
+             *
+             * A compositor needs it to place game-drawn layers on the same parallax
+             * planes as the tile layers. Returns the origin, or (0,0) if moved-from.
+             */
+            [[nodiscard]] world_point parallax_rest() const noexcept;
+
+            /**
              * @brief The bundle handle for tileset @p index (aligned with
              *        @ref world::tilesets).
              * @throws std::out_of_range if @p index is past the tileset count.
@@ -96,6 +106,26 @@ namespace neutrino {
             [[nodiscard]] const bundle_handle& handle_for_tileset(std::size_t index) const {
                 return m_handles.at(index);
             }
+
+            /**
+             * @brief The synthetic bundle backing an image layer's picture (static or
+             *        animated), or nullptr if the layer carries no image.
+             *
+             * Mirrors @ref handle_for_tileset for the per-image-layer bundles. An
+             * animated image layer's current frame is @c state(0); a static one is
+             * @c visual(0).
+             */
+            [[nodiscard]] const bundle_handle* image_layer_handle(const world_image_layer& layer) const noexcept;
+
+            /**
+             * @brief The pixel height of the frame an image layer currently shows -- the
+             *        height the draw path anchors that frame by.
+             *
+             * For an animated layer this tracks the current frame (so mixed-height frames
+             * stay top-left aligned); for a static one it is the image height. 0 if the
+             * layer carries no image.
+             */
+            [[nodiscard]] unsigned image_layer_current_height(const world_image_layer& layer) const;
 
 
             /**
@@ -111,6 +141,16 @@ namespace neutrino {
              * see @ref draw_stats.
              */
             draw_stats draw(const camera& cam, const rect& viewport);
+
+            /**
+             * @brief Draw as @ref draw, firing @p after_layer after each map layer is
+             *        drawn, in map order, with that layer's id.
+             *
+             * The seam a compositor uses to interleave game-drawn content between static
+             * layers. The renderer stays agnostic of what the callback draws.
+             */
+            draw_stats draw(const camera& cam, const rect& viewport,
+                            const std::function <void(world_layer_id done)>& after_layer);
 
         private:
             void draw_layer(const world_tile_layer& layer, const camera& cam, const rect& viewport, draw_stats& stats) const;

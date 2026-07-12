@@ -8,6 +8,8 @@
 
 #include <filesystem>
 #include <fstream>
+#include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -27,8 +29,64 @@ namespace {
         world_image img;
         img.width = size;
         img.height = size;
-        img.data = std::move(*bytes);
+        img.source = image_from_memory{std::move(*bytes)};
         return img;
+    }
+
+    // A world_image backed by an already-decoded surface, carrying an optional producer
+    // content id. Two size*size surfaces are blank, so same-id images are truly identical.
+    world_image surface_image(unsigned size, std::optional <std::uint64_t> identity) {
+        auto surface = sdlpp::surface::create_rgb(
+            static_cast<int>(size), static_cast<int>(size), sdlpp::pixel_format_enum::RGBA8888);
+        REQUIRE(surface.has_value());
+
+        world_image img;
+        img.width = size;
+        img.height = size;
+        img.source = image_from_surface{
+            std::make_shared <const sdlpp::surface>(std::move(*surface)), identity};
+        return img;
+    }
+
+    // A 16x16 surface of the given pixel format whose raw bytes are a fixed, non-symmetric
+    // 1,2,3,4 pattern -- so two different formats hold byte-identical pixels but decode to
+    // different colours (the R and B byte slots differ).
+    world_image patterned_surface(sdlpp::pixel_format_enum format) {
+        auto surface = sdlpp::surface::create_rgb(16, 16, format);
+        REQUIRE(surface.has_value());
+        SDL_Surface* raw = surface->get();
+        REQUIRE(raw != nullptr);
+        const bool must_lock = SDL_MUSTLOCK(raw);
+        if (must_lock) {
+            REQUIRE(SDL_LockSurface(raw));
+        }
+        auto* bytes = static_cast<std::uint8_t*>(raw->pixels);
+        const std::size_t total = static_cast<std::size_t>(raw->pitch) * static_cast<std::size_t>(raw->h);
+        for (std::size_t i = 0; i < total; ++i) {
+            bytes[i] = static_cast<std::uint8_t>((i % 4) + 1);
+        }
+        if (must_lock) {
+            SDL_UnlockSurface(raw);
+        }
+
+        world_image img;
+        img.width = 16;
+        img.height = 16;
+        img.source = image_from_surface{
+            std::make_shared <const sdlpp::surface>(std::move(*surface)), std::nullopt};
+        return img;
+    }
+
+    // A single-tile 16x16 tileset over one image.
+    world_tileset single_tile_ts(world_image img) {
+        world_tileset ts;
+        ts.first_gid = 1;
+        ts.tile_width = 16;
+        ts.tile_height = 16;
+        ts.columns = 1;
+        ts.tile_count = 1;
+        ts.image = std::move(img);
+        return ts;
     }
 
     // A uniform 2-column, 4-tile tileset over the given image.
@@ -133,6 +191,65 @@ TEST_SUITE("neutrino::video resource_cache") {
         cache.release(b);
     }
 
+    TEST_CASE("surface images dedup by producer identity and never collide with other arms") {
+        neutrino::test::test_application app("resource_cache surface identity");
+        resource_cache cache;
+
+        // Two distinct surfaces that share one producer content id are treated as the
+        // same content and dedup to a single bundle.
+        const bundle_handle a = cache.acquire(uniform_ts(surface_image(32, 777)));
+        const bundle_handle b = cache.acquire(uniform_ts(surface_image(32, 777)));
+        REQUIRE(a.valid());
+        CHECK(a.bundle == b.bundle);
+        CHECK(cache.resident_count() == 1);
+
+        // A memory-backed image at the same declared dimensions is a different source
+        // arm, so the arm discriminator keeps it a distinct bundle -- no false share.
+        const bundle_handle c = cache.acquire(uniform_ts(bmp_image(32)));
+        REQUIRE(c.valid());
+        CHECK(c.bundle != a.bundle);
+        CHECK(cache.resident_count() == 2);
+
+        cache.release(a);
+        cache.release(b);
+        cache.release(c);
+    }
+
+    TEST_CASE("surface images without an identity are keyed by pixel content, not address") {
+        neutrino::test::test_application app("resource_cache surface content");
+        resource_cache cache;
+
+        // Two distinct blank 32x32 surfaces (no producer id) have identical pixels, so a
+        // content hash makes them share -- and, crucially, a freed surface's reused address
+        // cannot alias a different bundle (the bug a pointer key would have).
+        const bundle_handle a = cache.acquire(uniform_ts(surface_image(32, std::nullopt)));
+        const bundle_handle b = cache.acquire(uniform_ts(surface_image(32, std::nullopt)));
+        REQUIRE(a.valid());
+        CHECK(a.bundle == b.bundle);
+        CHECK(cache.resident_count() == 1);
+
+        cache.release(a);
+        cache.release(b);
+    }
+
+    TEST_CASE("no-identity surfaces with identical bytes but different formats do not share") {
+        neutrino::test::test_application app("resource_cache surface format");
+        resource_cache cache;
+
+        // Same raw bytes, different pixel format: the packer converts each to RGBA8888, so
+        // they render as different colours and must key distinctly. Hashing the raw source
+        // bytes would collide them and serve the wrong (cold) bundle.
+        const bundle_handle a = cache.acquire(single_tile_ts(patterned_surface(sdlpp::pixel_format_enum::RGBA8888)));
+        const bundle_handle b = cache.acquire(single_tile_ts(patterned_surface(sdlpp::pixel_format_enum::BGRA8888)));
+        REQUIRE(a.valid());
+        REQUIRE(b.valid());
+        CHECK(a.bundle != b.bundle);
+        CHECK(cache.resident_count() == 2);
+
+        cache.release(a);
+        cache.release(b);
+    }
+
     TEST_CASE("changing a file-backed image yields a new bundle") {
         neutrino::test::test_application app("resource_cache mtime");
         resource_cache cache;
@@ -148,7 +265,7 @@ TEST_SUITE("neutrino::video resource_cache") {
         ts.columns = 2;
         ts.tile_count = 4;
         ts.image = world_image{};
-        ts.image->source = path;
+        ts.image->source = image_from_disk{path};
         ts.image->width = 32;  // declared tile-grid extent; the file may be larger
         ts.image->height = 32;
 

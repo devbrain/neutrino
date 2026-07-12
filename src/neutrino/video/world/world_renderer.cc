@@ -55,19 +55,64 @@ namespace neutrino {
             return (overhang_px + cell - 1) / cell; // ceil
         }
 
-        // Wrap a standalone image (an image layer's picture) as a one-tile collection
-        // tileset so it flows through build_bundle/the cache unchanged: one visual over
-        // the whole image, content-keyed so identical images across levels share a
-        // bundle and survive switches.
-        world_tileset image_as_tileset(const world_image& img) {
+        // Wrap an image layer's picture as a collection tileset so it flows through
+        // build_bundle/the cache unchanged, content-keyed so identical pictures across
+        // levels share a bundle and survive switches. A static layer is one tile (the
+        // whole image); an animated layer is one tile per frame, with tile 0 carrying an
+        // animation over them all -- so the bundle exposes state(0), exactly like an
+        // animated tile cell.
+        world_tileset image_layer_as_tileset(const world_image_layer& layer) {
             world_tileset ts;
             ts.first_gid = 1;
-            ts.tile_count = 1;
-            world_tile t;
-            t.id = 0;
-            t.image = img; // copy the bytes; the content key dedups identical images
-            ts.tiles.push_back(std::move(t));
+            if (layer.frames.empty()) {
+                ts.tile_count = 1;
+                world_tile t;
+                t.id = 0;
+                t.image = *layer.image;
+                ts.tiles.push_back(std::move(t));
+                return ts;
+            }
+            ts.tile_count = static_cast <unsigned>(layer.frames.size());
+            ts.tiles.reserve(layer.frames.size());
+            for (std::size_t i = 0; i < layer.frames.size(); ++i) {
+                world_tile t;
+                t.id = static_cast <world_local_tile_id>(i);
+                t.image = layer.frames[i].image;
+                ts.tiles.push_back(std::move(t));
+            }
+            for (std::size_t i = 0; i < layer.frames.size(); ++i) {
+                ts.tiles[0].animation.push_back(world_tile_animation_frame{
+                    static_cast <world_local_tile_id>(i), layer.frames[i].duration});
+            }
             return ts;
+        }
+
+        // The declared height of an image layer's picture (first frame for an animated
+        // one), used as a fallback. 0 for an empty layer.
+        unsigned image_layer_height(const world_image_layer& layer) {
+            if (!layer.frames.empty()) {
+                return layer.frames.front().image.height;
+            }
+            return layer.image ? layer.image->height : 0u;
+        }
+
+        // The visual an image layer currently shows, plus that frame's pixel height. For
+        // an animated layer the resolved visual is matched back to its frame so the anchor
+        // uses THAT frame's height -- otherwise frames of different heights would shift the
+        // layer's top-left as the animation advances (the visual origin is baked from each
+        // frame's own height).
+        std::pair <sprite_visual_ref, unsigned> current_image_visual(
+                const world_image_layer& layer, const bundle_handle& handle) {
+            if (handle.state(0).valid()) {
+                const sprite_visual_ref v = sprite_state_appearance(handle.state(0)).visual;
+                for (std::size_t i = 0; i < layer.frames.size(); ++i) {
+                    if (handle.visual(static_cast <world_local_tile_id>(i)) == v) {
+                        return {v, layer.frames[i].image.height};
+                    }
+                }
+                return {v, image_layer_height(layer)};
+            }
+            return {handle.visual(0), image_layer_height(layer)};
         }
     } // namespace
 
@@ -88,10 +133,11 @@ namespace neutrino {
             for (const world_tileset& ts : tilesets) {
                 m_handles.push_back(cache.acquire(ts));
             }
-            // Each image layer's picture becomes its own content-keyed bundle.
+            // Each image layer's picture (static or animated) becomes its own
+            // content-keyed bundle.
             for (const world_image_layer* il : w.image_layers()) {
-                if (il->image) {
-                    m_image_handles.emplace(il, cache.acquire(image_as_tileset(*il->image)));
+                if (il->image || !il->frames.empty()) {
+                    m_image_handles.emplace(il, cache.acquire(image_layer_as_tileset(*il)));
                 }
             }
         } catch (...) {
@@ -144,7 +190,26 @@ namespace neutrino {
         *this = world_renderer(next, *m_cache);
     }
 
+    const bundle_handle* world_renderer::image_layer_handle(const world_image_layer& layer) const noexcept {
+        const auto it = m_image_handles.find(&layer);
+        return it == m_image_handles.end() ? nullptr : &it->second;
+    }
+
+    world_point world_renderer::parallax_rest() const noexcept {
+        return m_world ? m_world->parallax_origin() : world_point{0.0f, 0.0f};
+    }
+
+    unsigned world_renderer::image_layer_current_height(const world_image_layer& layer) const {
+        const bundle_handle* handle = image_layer_handle(layer);
+        return handle == nullptr ? 0u : current_image_visual(layer, *handle).second;
+    }
+
     draw_stats world_renderer::draw(const camera& cam, const rect& viewport) {
+        return draw(cam, viewport, {});
+    }
+
+    draw_stats world_renderer::draw(const camera& cam, const rect& viewport,
+                                    const std::function <void(world_layer_id)>& after_layer) {
         ENFORCE(m_world);
         // Inject the map's parallax rest point so parallax layers align as authored;
         // the caller's camera doesn't need to carry it.
@@ -155,6 +220,11 @@ namespace neutrino {
             std::visit([&](const auto& concrete_layer) {
                 draw_layer(concrete_layer, view, viewport, stats);
             }, layer);
+            if (after_layer) {
+                const world_layer_id id = std::visit(
+                    [](const world_layer_header& header) { return header.id; }, layer);
+                after_layer(id);
+            }
         }
         return stats;
     }
@@ -312,21 +382,30 @@ namespace neutrino {
 
     void world_renderer::draw_layer(const world_image_layer& layer, const camera& cam,
                                     const rect& viewport, draw_stats& stats) const {
-        if (!layer.visible || !layer.image) {
+        if (!layer.visible || (!layer.image && layer.frames.empty())) {
             return;
         }
         const auto it = m_image_handles.find(&layer);
-        if (it == m_image_handles.end() || !it->second.visual(0).valid()) {
+        if (it == m_image_handles.end()) {
             ++stats.skipped;
             return;
         }
-        // The image's bottom-left sits at world (0, height) in the layer's own space;
-        // the bundle's baked bottom-left origin then lands the image top-left at the
-        // layer origin. Parallax/offset ride through to_screen.
-        const world_point anchor{0.0f, static_cast <float>(layer.image->height)};
+        // Animated image layers resolve the current frame off the shared clock (state 0),
+        // like an animated tile cell; static ones use the single visual. The height is the
+        // *current* frame's, so mixed-height frames keep a common top-left.
+        const bundle_handle& handle = it->second;
+        const auto [visual, height] = current_image_visual(layer, handle);
+        if (!visual.valid()) {
+            ++stats.skipped;
+            return;
+        }
+        // The image's bottom-left sits at world (0, frame height) in the layer's own space;
+        // the bundle's baked bottom-left origin then lands the image top-left at the layer
+        // origin. Parallax/offset ride through to_screen.
+        const world_point anchor{0.0f, static_cast <float>(height)};
         const point sp = to_screen(cam, layer, viewport.dimensions(), anchor);
         const point pos{viewport.x + sp.x, viewport.y + sp.y};
-        if (draw_sprite(pos, it->second.visual(0), {cam.zoom}).has_value()) {
+        if (draw_sprite(pos, visual, {cam.zoom}).has_value()) {
             ++stats.drawn;
         } else {
             ++stats.failed;

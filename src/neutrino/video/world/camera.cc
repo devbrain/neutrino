@@ -37,8 +37,8 @@ namespace neutrino {
     }
 
     world_point cell_to_world(const world& w, int cx, int cy) {
-        const float tw = static_cast <float>(w.tile_width());
-        const float th = static_cast <float>(w.tile_height());
+        const auto tw = static_cast <float>(w.tile_width());
+        const auto th = static_cast <float>(w.tile_height());
         switch (w.orientation()) {
         case world_orientation::isometric: {
             // Diamond projection (Tiled IsometricRenderer): tileToScreenCoords is the
@@ -76,8 +76,8 @@ namespace neutrino {
                                             layer.offset, viewport);
 
         // World-x/y at the viewport's left/top (screen 0) and right/bottom edges.
-        const auto wr = o.x + viewport.width / cam.zoom;
-        const auto wb = o.y + viewport.height / cam.zoom;
+        const auto wr = o.x + static_cast<float>(viewport.width) / cam.zoom;
+        const auto wb = o.y + static_cast<float>(viewport.height) / cam.zoom;
 
         const auto orient = w.orientation();
         if (orient == world_orientation::hexagonal || orient == world_orientation::staggered) {
@@ -86,8 +86,8 @@ namespace neutrino {
             // shift and the full tile bounding box. Over-included cells clip off-screen.
             // (Staggered is hex with side length 0.)
             const hex_layout h = hex_of(w);
-            const float sx = static_cast <float>(h.stagger_x ? h.col_w : h.tile_w);
-            const float sy = static_cast <float>(h.stagger_x ? h.tile_h : h.row_h);
+            const auto sx = static_cast <float>(h.stagger_x ? h.col_w : h.tile_w);
+            const auto sy = static_cast <float>(h.stagger_x ? h.tile_h : h.row_h);
             const int mx = 2 + h.tile_w / std::max(1, static_cast <int>(sx));
             const int my = 2 + h.tile_h / std::max(1, static_cast <int>(sy));
             return {
@@ -102,8 +102,8 @@ namespace neutrino {
             // Invert the diamond projection at the four view-rect corners and take the
             // bounding cell box. cx = (a+b)/2, cy = (b-a)/2 with a = 2*(x-originX)/tw,
             // b = 2*y/th. Inflate for tiles taller than the diamond (vertical overhang).
-            const float tw = static_cast <float>(w.tile_width());
-            const float th = static_cast <float>(w.tile_height());
+            const auto tw = static_cast <float>(w.tile_width());
+            const auto th = static_cast <float>(w.tile_height());
             const float origin_x = static_cast <float>(w.height()) * tw / 2.0f;
             int cx_lo = std::numeric_limits <int>::max(), cy_lo = std::numeric_limits <int>::max();
             int cx_hi = std::numeric_limits <int>::min(), cy_hi = std::numeric_limits <int>::min();
