@@ -10,7 +10,7 @@
 
 #include <failsafe/enforce.hh>
 
-#include "services/service_locator.hh"
+#include "services/service_access.hh"
 #include "video/sprite/sprites_manager.hh"
 
 namespace neutrino {
@@ -111,20 +111,16 @@ namespace neutrino {
     }
 
     sprite_animation_id register_sprite_animation(sprite_animation animation) {
-        auto* manager = service_locator::instance().get_sprites_manager();
-        ENFORCE(manager != nullptr);
-        return manager->create(std::move(animation));
+        return require_sprites_manager().create(std::move(animation));
     }
 
     void unregister_sprite_animation(sprite_animation_id animation) {
         if (!animation.valid()) {
             return;
         }
-
-        auto* manager = service_locator::instance().get_sprites_manager();
-        if (manager == nullptr) {
-            return; // services already torn down: the resource is gone, nothing to do
+        // Services already torn down: the resource is gone, nothing to do.
+        if (auto* manager = maybe_sprites_manager()) {
+            manager->erase(animation);
         }
-        manager->erase(animation);
     }
 }

@@ -77,6 +77,7 @@ add_library(neutrino ${_lib_type}
         video/sprite/bitmask.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/cpu_texture_atlas.hh
         video/sprite/cpu_texture_atlas.cc
+        video/sprite/surface_lock.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/texture_atlas.hh
         video/sprite/texture_atlas.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_appearance.hh
@@ -131,6 +132,7 @@ add_library(neutrino ${_lib_type}
         # -------------------------------------------------------
         # World
         # -------------------------------------------------------
+        services/service_access.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/world/content_key.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/world/world_common.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/world/world_layers.hh

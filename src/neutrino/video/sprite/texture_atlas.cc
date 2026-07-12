@@ -5,7 +5,7 @@
 #include <neutrino/video/sprite/texture_atlas.hh>
 #include <failsafe/enforce.hh>
 
-#include "services/service_locator.hh"
+#include "services/service_access.hh"
 #include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
 
@@ -13,26 +13,22 @@ namespace neutrino {
     gpu_texture_atlas_id register_atlas(
         const cpu_texture_atlas& atlas,
         atlas_texture_format format) {
-        auto* registry = service_locator::instance().get_texture_registry();
-        ENFORCE(registry != nullptr);
-        return registry->create(service_locator::instance().get_renderer(), atlas, format);
+        return require_texture_registry().create(
+            service_locator::instance().get_renderer(), atlas, format);
     }
 
     void unregister_atlas(gpu_texture_atlas_id atlas) {
         if (!atlas.valid()) {
             return;
         }
-
-        auto& services = service_locator::instance();
-        auto* registry = services.get_texture_registry();
+        // Services already torn down: the GPU texture is gone, nothing to do.
+        auto* registry = maybe_texture_registry();
         if (registry == nullptr) {
-            return; // services already torn down: the GPU texture is gone, nothing to do
+            return;
         }
-
-        if (auto* sprites = services.get_sprites_manager()) {
+        if (auto* sprites = maybe_sprites_manager()) {
             ENFORCE(!sprites->uses(atlas))("Cannot unregister texture atlas while a sprite sheet still uses it");
         }
-
         registry->erase(atlas);
     }
 }

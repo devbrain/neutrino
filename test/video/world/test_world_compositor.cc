@@ -10,10 +10,12 @@
 #include <neutrino/world/world.hh>
 
 #include "test_application.hh"
+#include "video/world/test_cameras.hh"
 
 #include <sdlpp/video/texture.hh>
 
 using namespace neutrino;
+using namespace neutrino::test;
 
 namespace {
     // A 1x1 tile layer with a single empty cell: it needs no tileset, draws nothing,
@@ -25,13 +27,6 @@ namespace {
         l.height = 1;
         l.cells.resize(1);
         return l;
-    }
-
-    camera cam_at(world_point target, float zoom) {
-        camera c;
-        c.target = target;
-        c.zoom = zoom;
-        return c;
     }
 
     // Records each draw's view; a render_layer used as a probe.

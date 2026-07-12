@@ -4,6 +4,7 @@
 #include <neutrino/video/sprite/sprite_def.hh>
 
 #include "test_application.hh"
+#include "video/test_images.hh"
 
 #include <sdlpp/video/surface.hh>
 
@@ -11,21 +12,9 @@
 #include <vector>
 
 using namespace neutrino;
+using namespace neutrino::test;
 
 namespace {
-    world_image bmp_image(unsigned w, unsigned h) {
-        auto surface = sdlpp::surface::create_rgb(
-            static_cast <int>(w), static_cast <int>(h), sdlpp::pixel_format_enum::RGBA8888);
-        REQUIRE(surface.has_value());
-        auto bytes = sdlpp::save_bmp(*surface);
-        REQUIRE(bytes.has_value());
-        world_image img;
-        img.width = w;
-        img.height = h;
-        img.source = image_from_memory{std::move(*bytes)};
-        return img;
-    }
-
     // A size x size image sliced into a 16px grid, with two clips over frames 0 and 1.
     sprite_def grid_def(unsigned size) {
         sprite_def d;

@@ -12,10 +12,19 @@
 #include <cmath>
 #include <optional>
 
-#include "services/service_locator.hh"
+#include "services/service_access.hh"
 
 namespace neutrino {
     namespace {
+
+        // Open the renderer, set the draw colour under a scope guard, and run `fn(renderer)`.
+        // Collapses the repeated get_renderer() + draw_color_guard + forward boilerplate.
+        template <class Fn>
+        [[nodiscard]] auto with_draw_color(const sdlpp::color& c, Fn&& fn) {
+            auto& renderer = get_renderer();
+            sdlpp::renderer::draw_color_guard guard(renderer, c);
+            return fn(renderer);
+        }
         [[nodiscard]] bool has_flip(sprite_flip flags, sprite_flip flag) noexcept {
             return static_cast <std::uint8_t>(flags & flag) != 0;
         }
@@ -213,18 +222,6 @@ namespace neutrino {
             return renderer.render_geometry(atlas.texture.get(), vertices, indices);
         }
 
-        [[nodiscard]] texture_registry& require_texture_registry() {
-            auto* registry = service_locator::instance().get_texture_registry();
-            ENFORCE(registry != nullptr);
-            return *registry;
-        }
-
-        [[nodiscard]] sprites_manager& require_sprites_manager() {
-            auto* manager = service_locator::instance().get_sprites_manager();
-            ENFORCE(manager != nullptr);
-            return *manager;
-        }
-
         sdlpp::expected <void, std::string> draw_visual_impl(
             const texture_registry& registry,
             const sprite_sheet& sheet,
@@ -325,9 +322,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_point(int x, int y, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_point(x, y);
+        return with_draw_color(c, [&](auto& r) { return r.draw_point(x, y); });
     }
 
     sdlpp::expected<void, std::string> draw_point(const point& p) {
@@ -335,9 +330,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_point(const point& p, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_point(p);
+        return with_draw_color(c, [&](auto& r) { return r.draw_point(p); });
     }
 
     // --- Lines ---
@@ -347,9 +340,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_line(x1, y1, x2, y2);
+        return with_draw_color(c, [&](auto& r) { return r.draw_line(x1, y1, x2, y2); });
     }
 
     sdlpp::expected<void, std::string> draw_line(const point& p1, const point& p2) {
@@ -357,9 +348,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line(const point& p1, const point& p2, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_line(p1, p2);
+        return with_draw_color(c, [&](auto& r) { return r.draw_line(p1, p2); });
     }
 
     sdlpp::expected<void, std::string> draw_line(const line& l) {
@@ -367,9 +356,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line(const line& l, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_line(l.start(), l.end());
+        return with_draw_color(c, [&](auto& r) { return r.draw_line(l.start(), l.end()); });
     }
 
     // --- Rectangles ---
@@ -383,9 +370,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_rect(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return draw_rect(x1, y1, x2, y2);
+        return with_draw_color(c, [&](auto&) { return draw_rect(x1, y1, x2, y2); });
     }
 
     sdlpp::expected<void, std::string> draw_rect(const rect& r) {
@@ -393,9 +378,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_rect(const rect& r, const sdlpp::color& c) {
-        auto& r_dev = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r_dev, c);
-        return r_dev.draw_rect(r);
+        return with_draw_color(c, [&](auto& r_dev) { return r_dev.draw_rect(r); });
     }
 
     sdlpp::expected<void, std::string> draw_rect_fill(int x1, int y1, int x2, int y2) {
@@ -407,9 +390,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_rect_fill(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return draw_rect_fill(x1, y1, x2, y2);
+        return with_draw_color(c, [&](auto&) { return draw_rect_fill(x1, y1, x2, y2); });
     }
 
     sdlpp::expected<void, std::string> draw_rect_fill(const rect& r) {
@@ -417,9 +398,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_rect_fill(const rect& r, const sdlpp::color& c) {
-        auto& r_dev = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r_dev, c);
-        return r_dev.fill_rect(r);
+        return with_draw_color(c, [&](auto& r_dev) { return r_dev.fill_rect(r); });
     }
 
     sdlpp::expected <void, std::string> draw_sprite(
@@ -496,9 +475,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_aa(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return draw_line_aa(x1, y1, x2, y2);
+        return with_draw_color(c, [&](auto&) { return draw_line_aa(x1, y1, x2, y2); });
     }
 
     sdlpp::expected<void, std::string> draw_line_aa(const point& p1, const point& p2) {
@@ -506,9 +483,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_aa(const point& p1, const point& p2, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_line_aa(p1, p2);
+        return with_draw_color(c, [&](auto& r) { return r.draw_line_aa(p1, p2); });
     }
 
     sdlpp::expected<void, std::string> draw_line_aa(const line& l) {
@@ -516,9 +491,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_aa(const line& l, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_line_aa(l.start(), l.end());
+        return with_draw_color(c, [&](auto& r) { return r.draw_line_aa(l.start(), l.end()); });
     }
 
     // --- Thick Lines ---
@@ -529,9 +502,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_thick(int x1, int y1, int x2, int y2, float w, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return draw_line_thick(x1, y1, x2, y2, w);
+        return with_draw_color(c, [&](auto&) { return draw_line_thick(x1, y1, x2, y2, w); });
     }
 
     sdlpp::expected<void, std::string> draw_line_thick(const point& p1, const point& p2, float w) {
@@ -539,9 +510,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_thick(const point& p1, const point& p2, float w, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_line_thick(p1, p2, w);
+        return with_draw_color(c, [&](auto& r) { return r.draw_line_thick(p1, p2, w); });
     }
 
     sdlpp::expected<void, std::string> draw_line_thick(const line& l, float w) {
@@ -549,9 +518,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_thick(const line& l, float w, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_line_thick(l.start(), l.end(), w);
+        return with_draw_color(c, [&](auto& r) { return r.draw_line_thick(l.start(), l.end(), w); });
     }
 
     // --- Dashed Lines ---
@@ -561,9 +528,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_dashed(const point& p1, const point& p2, int dash, int gap, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return draw_line_dashed(p1, p2, dash, gap);
+        return with_draw_color(c, [&](auto&) { return draw_line_dashed(p1, p2, dash, gap); });
     }
 
     sdlpp::expected<void, std::string> draw_line_dashed(const line& l, int dash, int gap) {
@@ -571,9 +536,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_dashed(const line& l, int dash, int gap, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_line_dashed(l.start(), l.end(), static_cast<float>(dash), static_cast<float>(gap));
+        return with_draw_color(c, [&](auto& r) { return r.draw_line_dashed(l.start(), l.end(), static_cast<float>(dash), static_cast<float>(gap)); });
     }
 
     // --- Dotted Lines ---
@@ -583,9 +546,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_dotted(const point& p1, const point& p2, int spacing, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return draw_line_dotted(p1, p2, spacing);
+        return with_draw_color(c, [&](auto&) { return draw_line_dotted(p1, p2, spacing); });
     }
 
     sdlpp::expected<void, std::string> draw_line_dotted(const line& l, int spacing) {
@@ -593,9 +554,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_line_dotted(const line& l, int spacing, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_line_dotted(l.start(), l.end(), static_cast<float>(spacing));
+        return with_draw_color(c, [&](auto& r) { return r.draw_line_dotted(l.start(), l.end(), static_cast<float>(spacing)); });
     }
 
     // --- Circles ---
@@ -605,9 +564,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_circle(int x1, int y1, int radius, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_circle(x1, y1, radius);
+        return with_draw_color(c, [&](auto& r) { return r.draw_circle(x1, y1, radius); });
     }
 
     sdlpp::expected<void, std::string> draw_circle(const circle& c) {
@@ -615,9 +572,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_circle(const circle& shape, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_circle(point{shape.x, shape.y}, shape.radius);
+        return with_draw_color(c, [&](auto& r) { return r.draw_circle(point{shape.x, shape.y}, shape.radius); });
     }
 
     // --- Filled Circles ---
@@ -627,9 +582,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_circle_fill(int x1, int y1, int radius, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.fill_circle(x1, y1, radius);
+        return with_draw_color(c, [&](auto& r) { return r.fill_circle(x1, y1, radius); });
     }
 
     sdlpp::expected<void, std::string> draw_circle_fill(const circle& c) {
@@ -637,9 +590,7 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_circle_fill(const circle& shape, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.fill_circle(point{shape.x, shape.y}, shape.radius);
+        return with_draw_color(c, [&](auto& r) { return r.fill_circle(point{shape.x, shape.y}, shape.radius); });
     }
 
     // --- Arrows ---
@@ -649,15 +600,11 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_arrow(const point& from, const point& to, int head_size, float head_angle, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_arrow(from, to, static_cast<float>(head_size), head_angle);
+        return with_draw_color(c, [&](auto& r) { return r.draw_arrow(from, to, static_cast<float>(head_size), head_angle); });
     }
 
     sdlpp::expected<void, std::string> draw_arrow(const point& from, const point& to, int head_size, float head_angle, float thickness, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_arrow(from, to, static_cast<float>(head_size), head_angle, thickness);
+        return with_draw_color(c, [&](auto& r) { return r.draw_arrow(from, to, static_cast<float>(head_size), head_angle, thickness); });
     }
 
     sdlpp::expected<void, std::string> draw_arrow(const line& l, int head_size, float head_angle, float thickness) {
@@ -665,15 +612,11 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_arrow(const line& l, int head_size, float head_angle, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_arrow(l.start(), l.end(), static_cast<float>(head_size), head_angle);
+        return with_draw_color(c, [&](auto& r) { return r.draw_arrow(l.start(), l.end(), static_cast<float>(head_size), head_angle); });
     }
 
     sdlpp::expected<void, std::string> draw_arrow(const line& l, int head_size, float head_angle, float thickness, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_arrow(l.start(), l.end(), static_cast<float>(head_size), head_angle, thickness);
+        return with_draw_color(c, [&](auto& r) { return r.draw_arrow(l.start(), l.end(), static_cast<float>(head_size), head_angle, thickness); });
     }
 
     // --- Crosses ---
@@ -683,14 +626,10 @@ namespace neutrino {
     }
 
     sdlpp::expected<void, std::string> draw_cross(const point& center, int size, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_cross(center, static_cast<float>(size));
+        return with_draw_color(c, [&](auto& r) { return r.draw_cross(center, static_cast<float>(size)); });
     }
 
     sdlpp::expected<void, std::string> draw_cross(const point& center, int size, float thickness, const sdlpp::color& c) {
-        auto& r = get_renderer();
-        sdlpp::renderer::draw_color_guard guard(r, c);
-        return r.draw_cross(center, static_cast<float>(size), thickness);
+        return with_draw_color(c, [&](auto& r) { return r.draw_cross(center, static_cast<float>(size), thickness); });
     }
 }

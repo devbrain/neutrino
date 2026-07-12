@@ -6,10 +6,12 @@
 #include <neutrino/video/sprite/cpu_texture_atlas.hh>
 #include <failsafe/enforce.hh>
 
-
+#include "video/sprite/surface_lock.hh"
 
 namespace neutrino {
     namespace {
+        using details::surface_pixel_lock;
+
         bool has_alpha_channel(sdlpp::pixel_format_enum format) {
             return SDL_ISPIXELFORMAT_ALPHA(static_cast <SDL_PixelFormat>(format));
         }
@@ -17,38 +19,6 @@ namespace neutrino {
         bool same_rgb(const sdlpp::color& lhs, const sdlpp::color& rhs) {
             return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b;
         }
-
-        class surface_pixel_lock {
-            public:
-                explicit surface_pixel_lock(const sdlpp::surface& s)
-                    : m_surface(s.get()) {
-                    if (!m_surface) {
-                        m_ready = false;
-                        return;
-                    }
-
-                    if (SDL_MUSTLOCK(m_surface)) {
-                        m_locked = SDL_LockSurface(m_surface);
-                        m_ready = m_locked;
-                    }
-                }
-
-                ~surface_pixel_lock() {
-                    if (m_locked) {
-                        SDL_UnlockSurface(m_surface);
-                    }
-                }
-
-                surface_pixel_lock(const surface_pixel_lock&) = delete;
-                surface_pixel_lock& operator=(const surface_pixel_lock&) = delete;
-
-                [[nodiscard]] bool ready() const noexcept { return m_ready; }
-
-            private:
-                SDL_Surface* m_surface{nullptr};
-                bool m_locked{false};
-                bool m_ready{true};
-        };
     }
 
     std::optional <bitmask> cpu_texture_atlas_frame::evaluate_bitmask(

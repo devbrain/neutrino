@@ -7,7 +7,7 @@
 #include <failsafe/enforce.hh>
 #include <neutrino/video/sprite/sprite_sheet.hh>
 
-#include "services/service_locator.hh"
+#include "services/service_access.hh"
 #include "video/sprite/sprites_manager.hh"
 
 namespace neutrino {
@@ -85,9 +85,7 @@ namespace neutrino {
     }
 
     sprite_sheet_id register_sprite_sheet(sprite_sheet sheet) {
-        auto* manager = service_locator::instance().get_sprites_manager();
-        ENFORCE(manager != nullptr);
-        return manager->create(std::move(sheet));
+        return require_sprites_manager().create(std::move(sheet));
     }
 
     sprite_sheet_id register_sprite_sheet(
@@ -101,26 +99,19 @@ namespace neutrino {
             return;
         }
 
-        auto* manager = service_locator::instance().get_sprites_manager();
-        if (manager == nullptr) {
-            return; // services already torn down: the resource is gone, nothing to do
+        // Services already torn down: the resource is gone, nothing to do.
+        if (auto* manager = maybe_sprites_manager()) {
+            manager->erase(sheet);
         }
-        manager->erase(sheet);
     }
 
     sprite_visual_ref visual_ref(sprite_sheet_id sheet, std::size_t index) {
-        auto* manager = service_locator::instance().get_sprites_manager();
-        ENFORCE(manager != nullptr);
-
-        const auto& registered = manager->get(sheet);
+        const auto& registered = require_sprites_manager().get(sheet);
         return sprite_visual_ref{sheet, registered.visual_id(index)};
     }
 
     std::optional <sprite_visual_ref> find_visual_ref(sprite_sheet_id sheet, std::string_view name) {
-        auto* manager = service_locator::instance().get_sprites_manager();
-        ENFORCE(manager != nullptr);
-
-        const auto& registered = manager->get(sheet);
+        const auto& registered = require_sprites_manager().get(sheet);
         const auto visual = registered.find(name);
         if (!visual) {
             return std::nullopt;
