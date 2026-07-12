@@ -101,6 +101,12 @@ add_library(neutrino ${_lib_type}
         video/world/world_renderer.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/camera.hh
         video/world/camera.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/sprite_batch.hh
+        video/world/sprite_batch.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/render_layer.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/texture_layer.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/world_compositor.hh
+        video/world/world_compositor.cc
         utils/lru.hh
         # -------------------------------------------------------
         # Utils
@@ -113,6 +119,9 @@ add_library(neutrino ${_lib_type}
         # World
         # -------------------------------------------------------
         ${PROJECT_SOURCE_DIR}/include/neutrino/world/content_key.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/world/world_common.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/world/world_layers.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/world/world_tileset.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/world/world.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/world/tmx_loader.hh
         world/world.cc

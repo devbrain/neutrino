@@ -64,8 +64,8 @@ namespace neutrino {
             const float eff_x = cam.parallax_rest.x + parallax.x * (cam.target.x - cam.parallax_rest.x);
             const float eff_y = cam.parallax_rest.y + parallax.y * (cam.target.y - cam.parallax_rest.y);
             return world_point{
-                eff_x - viewport.width / (2.0f * cam.zoom),
-                eff_y - viewport.height / (2.0f * cam.zoom)
+                eff_x - static_cast<float>(viewport.width) / (2.0f * cam.zoom),
+                eff_y - static_cast<float>(viewport.height) / (2.0f * cam.zoom)
             } - layer_offs;
         }
     }

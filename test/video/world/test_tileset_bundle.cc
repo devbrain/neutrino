@@ -7,6 +7,7 @@
 #include <sdlpp/video/surface.hh>
 
 #include <chrono>
+#include <memory>
 #include <vector>
 
 using namespace neutrino;
@@ -24,7 +25,22 @@ namespace {
         world_image img;
         img.width = w;
         img.height = h;
-        img.data = std::move(*bytes);
+        img.source = image_from_memory{std::move(*bytes)};
+        return img;
+    }
+
+    // A world_image backed by an already-decoded surface (the Flavor-1 source): no
+    // encode/decode round-trip, build_bundle borrows the pixels directly.
+    world_image surface_image(unsigned w, unsigned h) {
+        auto surface = sdlpp::surface::create_rgb(
+            static_cast <int>(w), static_cast <int>(h), sdlpp::pixel_format_enum::RGBA8888);
+        REQUIRE(surface.has_value());
+
+        world_image img;
+        img.width = w;
+        img.height = h;
+        img.source = image_from_surface{
+            std::make_shared <const sdlpp::surface>(std::move(*surface)), std::nullopt};
         return img;
     }
 
@@ -95,6 +111,28 @@ TEST_SUITE("neutrino::video tileset bundle") {
             CHECK(bundle.visual(15).valid());
             destroy_bundle(bundle);
         }
+    }
+
+    TEST_CASE("a surface-backed image builds a bundle without a decode round-trip (Flavor 1)") {
+        neutrino::test::test_application app("tileset bundle from surface");
+
+        // A uniform tileset whose shared image is an already-decoded surface (procedural
+        // or an in-memory importer). It must slice and register exactly like a file image.
+        world_tileset ts;
+        ts.first_gid = 1;
+        ts.tile_width = 16;
+        ts.tile_height = 16;
+        ts.columns = 4;
+        ts.tile_count = 16;
+        ts.image = surface_image(64, 64);
+
+        tileset_bundle bundle = build_bundle(ts);
+
+        CHECK(bundle.visuals.size() == 16);
+        for (world_local_tile_id id = 0; id < 16; ++id) {
+            CHECK(bundle.visual(id).valid());
+        }
+        destroy_bundle(bundle);
     }
 
     TEST_CASE("collection tileset resolves present tiles and leaves gaps invalid") {

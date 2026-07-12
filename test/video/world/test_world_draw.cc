@@ -2,6 +2,7 @@
 
 #include <neutrino/video/world/world_renderer.hh>
 #include <neutrino/video/world/resource_cache.hh>
+#include <neutrino/video/world/render_layer.hh>
 
 #include "test_application.hh"
 #include "services/service_locator.hh"
@@ -28,7 +29,7 @@ namespace {
         world_image img;
         img.width = w;
         img.height = h;
-        img.data = std::move(*bytes);
+        img.source = image_from_memory{std::move(*bytes)};
         return img;
     }
 
@@ -476,6 +477,97 @@ TEST_SUITE("neutrino::video world draw") {
 
         CHECK(stats.drawn == 1);
         CHECK(stats.failed == 0);
+    }
+
+    TEST_CASE("an animated image layer cycles frames off the shared clock") {
+        neutrino::test::test_application app("world draw animated image layer");
+        resource_cache cache;
+
+        // Two frames of distinct sizes, so their visuals differ and a frame change is
+        // observable through the shared state.
+        world w;
+        w.set_tile_size(16, 16);
+        world_image_layer img;
+        img.visible = true;
+        img.frames = {
+            {bmp_image(32, 32), std::chrono::milliseconds{100}},
+            {bmp_image(24, 24), std::chrono::milliseconds{150}},
+        };
+        w.add_layer(std::move(img));
+
+        world_renderer r(w, cache);
+        const world_image_layer& layer = *w.image_layers().at(0);
+
+        const bundle_handle* handle = r.image_layer_handle(layer);
+        REQUIRE(handle != nullptr);
+        const sprite_state_id st = handle->state(0);
+        REQUIRE(st.valid());                                   // frame 0 carries the animation
+
+        // t=0 -> first frame. The anchor height must be THAT frame's height (32), not a
+        // fixed one, or a differently-sized next frame would shift the layer's top-left.
+        CHECK(sprite_state_appearance(st).visual == handle->visual(0));
+        CHECK(r.image_layer_current_height(layer) == 32);
+        // Advance past the 100ms first frame -> second frame (24 tall): the anchor height
+        // tracks it, so the picture stays top-left aligned instead of jumping.
+        manager().update(sprite_animation_duration{std::chrono::milliseconds{120}});
+        CHECK(sprite_state_appearance(st).visual == handle->visual(1));
+        CHECK(r.image_layer_current_height(layer) == 24);
+
+        // It still draws through the resolved state, without error.
+        const draw_stats stats = r.draw(origin_camera(rect{0, 0, 64, 64}), rect{0, 0, 64, 64});
+        CHECK(stats.drawn == 1);
+        CHECK(stats.failed == 0);
+    }
+
+    TEST_CASE("draw fires the after-layer callback once per layer in map order") {
+        neutrino::test::test_application app("world draw layer callback");
+        resource_cache cache;
+
+        // Three layers with distinct ids: two tile layers around an image layer.
+        world w;
+        w.set_tile_size(16, 16);
+        w.set_size(1, 1);
+        w.add_tileset(square_ts());
+        world_tile_layer a = filled_layer(1, 1, 1);
+        a.id = 10;
+        world_image_layer b;
+        b.visible = true;
+        b.image = bmp_image(16, 16);
+        b.id = 20;
+        world_tile_layer c = filled_layer(1, 1, 1);
+        c.id = 30;
+        w.add_layer(std::move(a));
+        w.add_layer(std::move(b));
+        w.add_layer(std::move(c));
+
+        world_renderer r(w, cache);
+        std::vector <world_layer_id> seen;
+        r.draw(origin_camera(rect{0, 0, 64, 64}), rect{0, 0, 64, 64},
+               [&](world_layer_id id) { seen.push_back(id); });
+
+        REQUIRE(seen.size() == 3);          // once per layer
+        CHECK(seen[0] == 10);               // in map order
+        CHECK(seen[1] == 20);
+        CHECK(seen[2] == 30);
+    }
+
+    TEST_CASE("a render_layer fills a batch through its draw interface") {
+        struct spawner final : render_layer {
+            int count{0};
+            void draw(const layer_view&, sprite_batch& batch) override {
+                for (int i = 0; i < count; ++i) {
+                    batch.add(world_point{static_cast <float>(i), 0.0f}, 0.0f, sprite_visual_ref{});
+                }
+            }
+        };
+
+        spawner layer;
+        layer.count = 3;
+        const camera cam = origin_camera(rect{0, 0, 64, 64});
+        sprite_batch batch(cam, rect{0, 0, 64, 64}, layer.plane);
+        layer.draw(layer_view{world_rect{0.0f, 0.0f, 64.0f, 64.0f}, 1.0f}, batch);
+
+        CHECK(batch.size() == 3);
     }
 
     TEST_CASE("an infinite map draws only the chunks the camera intersects") {

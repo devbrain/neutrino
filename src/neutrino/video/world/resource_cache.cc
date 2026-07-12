@@ -4,6 +4,7 @@
 
 #include <neutrino/video/world/resource_cache.hh>
 
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -19,6 +20,8 @@
 
 #include <neutrino/detail/hash.hh>
 
+#include <sdlpp/video/surface.hh>
+
 #include "utils/lru.hh"
 
 namespace neutrino {
@@ -26,6 +29,42 @@ namespace neutrino {
         // Content identity of a raw image byte buffer.
         content_key hash_bytes_identity(const std::vector<std::uint8_t>& data) {
             return content_hash(std::as_bytes(std::span<const std::uint8_t>(data)));
+        }
+
+        // Content identity of a decoded surface. Used for an image_from_surface that
+        // carries no producer id.
+        //
+        // A pointer/address key could be reused after the surface is freed while a bundle
+        // still sits in the cold pool, serving stale pixels for a later distinct surface;
+        // a content hash cannot. And we hash the *canonical RGBA8888* the packer will
+        // actually upload (atlas_packer converts every source), not the raw source bytes:
+        // identical bytes under a different pixel format or palette render differently and
+        // must get a different key. Locks directly (sdlpp's surface::lock_guard misreads
+        // SDL3's bool return; see the risks note).
+        content_key hash_surface_identity(const sdlpp::surface& surf) {
+            const auto canonical = surf.convert(sdlpp::pixel_format_enum::RGBA8888);
+            if (!canonical) {
+                return content_key{0, 0};
+            }
+            SDL_Surface* raw = canonical->get();
+            if (raw == nullptr) {
+                return content_key{0, 0};
+            }
+            const bool must_lock = SDL_MUSTLOCK(raw);
+            if (must_lock && !SDL_LockSurface(raw)) {
+                return content_key{0, 0};
+            }
+            content_key key{0, 0};
+            if (raw->pixels != nullptr && raw->pitch > 0 && raw->h > 0) {
+                const std::size_t bytes =
+                    static_cast <std::size_t>(raw->pitch) * static_cast <std::size_t>(raw->h);
+                const auto* p = static_cast <const std::uint8_t*>(raw->pixels);
+                key = content_hash(std::as_bytes(std::span <const std::uint8_t>(p, bytes)));
+            }
+            if (must_lock) {
+                SDL_UnlockSurface(raw);
+            }
+            return key;
         }
 
         // Content identity of a file's bytes (read whole; callers cache the result by
@@ -63,21 +102,34 @@ namespace neutrino {
         std::unordered_map<std::string, stat_id> stat_cache;
         std::uint64_t                          next_token = 1; ///< Monotonic; stamps each fresh build.
 
-        // Identify one image: embedded bytes hash directly; a file is identified by
-        // its (mtime, size) stat key mapped to a cached content hash, recomputed only
-        // when the file changes. An image with no bytes contributes an empty identity.
+        // Identify one image by source arm: memory bytes hash directly; a decoded
+        // surface uses the producer's content id (or, absent one, the surface instance
+        // so the same shared surface dedups and distinct surfaces do not collide); a
+        // file is identified by its (mtime, size) stat key mapped to a cached content
+        // hash, recomputed only when the file changes. An empty image is empty identity.
         content_key image_identity(const world_image& img) {
-            if (!img.data.empty()) {
-                return hash_bytes_identity(img.data);
+            if (const auto* mem = std::get_if <image_from_memory>(&img.source)) {
+                return hash_bytes_identity(mem->bytes);
             }
-            if (img.source.empty()) {
+            if (const auto* surf = std::get_if <image_from_surface>(&img.source)) {
+                if (surf->identity) {
+                    const std::uint64_t len = static_cast <std::uint64_t>(img.width) * img.height;
+                    return content_key{*surf->identity, len};
+                }
+                // No producer id: hash the pixels. A pointer key would be unsafe -- a
+                // freed surface's address can be reused, colliding with a cold-pool entry.
+                return surf->pixels ? hash_surface_identity(*surf->pixels) : content_key{0, 0};
+            }
+
+            const std::filesystem::path& source = std::get <image_from_disk>(img.source).source;
+            if (source.empty()) {
                 return content_key{0, 0};
             }
 
             std::error_code ec;
-            const auto mtime = std::filesystem::last_write_time(img.source, ec);
-            const auto size = std::filesystem::file_size(img.source, ec);
-            const std::string key = img.source.string();
+            const auto mtime = std::filesystem::last_write_time(source, ec);
+            const auto size = std::filesystem::file_size(source, ec);
+            const std::string key = source.string();
             if (!ec) {
                 const auto it = stat_cache.find(key);
                 if (it != stat_cache.end() && it->second.mtime == mtime && it->second.size == size) {
@@ -85,7 +137,7 @@ namespace neutrino {
                 }
             }
 
-            const content_key content = hash_file_identity(img.source);
+            const content_key content = hash_file_identity(source);
             if (!ec) {
                 stat_cache[key] = stat_id{mtime, size, content};
             }
@@ -105,6 +157,9 @@ namespace neutrino {
             };
             const auto fold_image = [&] (const world_image& img) {
                 const content_key id = image_identity(img);
+                // Fold the source arm (disk/memory/surface) so two images with
+                // byte-identical identities but different kinds cannot collide.
+                details::hash_combine64(digest, img.source.index());
                 details::hash_combine64(digest, id.hash);
                 details::hash_combine64(digest, id.length);
                 // Declared dimensions drive src-rect and column math in world_tileset

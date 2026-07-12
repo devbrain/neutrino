@@ -193,7 +193,7 @@ TEST_CASE("tmx loader reads simple json maps") {
     CHECK(tileset.margin == 0);
     CHECK(tileset.columns == 8);
     REQUIRE(tileset.image);
-    CHECK(tileset.image->source == "../demo-tileset.png");
+    CHECK(std::get <neutrino::image_from_disk>(tileset.image->source).source == "../demo-tileset.png");
     CHECK(tileset.image->width == 128);
     CHECK(tileset.image->height == 96);
 
@@ -1216,10 +1216,10 @@ TEST_CASE("tmx loader preserves tiled documentation tileset tile properties") {
     CHECK(tileset.tile_height == 32);
     CHECK(has_property(tileset, "myProperty1", std::string{"myProperty1_value"}));
     REQUIRE(tileset.image);
-    CHECK(tileset.image->data.empty());
+    CHECK(std::holds_alternative <neutrino::image_from_disk>(tileset.image->source)); // external file, not embedded
     CHECK(tileset.image->width == 640);
     CHECK(tileset.image->height == 480);
-    CHECK(tileset.image->source == "../image/fishbaddie_parts.png");
+    CHECK(std::get <neutrino::image_from_disk>(tileset.image->source).source == "../image/fishbaddie_parts.png");
 
     const auto* tile = tileset.tile(11);
     REQUIRE(tile);
@@ -1260,7 +1260,7 @@ TEST_CASE("tmx loader reads image layers") {
         const auto& second = image_layer(world, 1);
         CHECK(second.name == "Image Layer 2");
         REQUIRE(second.image);
-        CHECK(second.image->source == "tilesheet.png");
+        CHECK(std::get <neutrino::image_from_disk>(second.image->source).source == "tilesheet.png");
         if (second.image->width != 0) {
             CHECK(second.image->width == 448);
         }
@@ -1364,7 +1364,7 @@ TEST_CASE("tmx loader reads complex example objects and tilesets") {
     CHECK(second_tileset.tile_width == 32);
     CHECK(second_tileset.tile_height == 32);
     REQUIRE(second_tileset.image);
-    CHECK(second_tileset.image->source == "../flappyman/docs/marioobjects.png");
+    CHECK(std::get <neutrino::image_from_disk>(second_tileset.image->source).source == "../flappyman/docs/marioobjects.png");
     CHECK(second_tileset.image->width == 576);
     CHECK(second_tileset.image->height == 336);
 

@@ -41,6 +41,8 @@ add_executable(neutrino_tests
         video/world/test_world_renderer.cc
         video/world/test_world_camera.cc
         video/world/test_world_draw.cc
+        video/world/test_sprite_batch.cc
+        video/world/test_world_compositor.cc
 
         world/test_tmx_loader.cc
         world/test_tile_resolution.cc
