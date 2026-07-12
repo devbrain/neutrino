@@ -93,6 +93,19 @@ add_library(neutrino ${_lib_type}
         video/sprite/texture_registry.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/atlas_packer.hh
         video/sprite/atlas_packer.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/render_bundle.hh
+        video/sprite/render_bundle.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/image_identity.hh
+        video/sprite/image_identity.cc
+        video/sprite/resource_cache_core.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_def.hh
+        video/sprite/sprite_def.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_set.hh
+        video/sprite/sprite_set.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_cache.hh
+        video/sprite/sprite_cache.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/atlas_loader.hh
+        video/sprite/atlas_loader.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/tileset_bundle.hh
         video/world/tileset_bundle.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/resource_cache.hh

@@ -7,7 +7,8 @@
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/draw.hh>
-#include <neutrino/video/sprites.hh>
+#include <neutrino/video/sprite/sprite_cache.hh>
+#include <neutrino/video/sprite/sprite_def.hh>
 
 #include <failsafe/enforce.hh>
 #include <sdlpp/app/entry_point.hh>
@@ -17,6 +18,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -78,88 +80,47 @@ namespace {
         return std::move(*converted);
     }
 
-    [[nodiscard]] neutrino::cpu_texture_atlas load_demo_atlas() {
-        std::vector <neutrino::cpu_texture_atlas_frame> frames;
-        frames.reserve(demo_frames.size());
-        for (const auto& frame : demo_frames) {
-            frames.emplace_back(frame.rect);
-        }
-
-        return neutrino::cpu_texture_atlas(load_demo_sheet(), std::move(frames));
+    // Frame duration helper for readability.
+    [[nodiscard]] neutrino::sprite_animation_duration ms(float v) {
+        return neutrino::sprite_animation_duration{v};
     }
 
-    struct sprite_resources {
-        neutrino::gpu_texture_atlas_id atlas;
-        neutrino::sprite_sheet_id sheet;
-        neutrino::sprite_animation_id walk;
-        neutrino::sprite_animation_id jump;
-        neutrino::sprite_animation_id torch;
-        neutrino::sprite_animation_id coin;
-        neutrino::sprite_state_id player;
-        neutrino::sprite_state_id torch_state;
-        neutrino::sprite_state_id coin_state;
-        neutrino::sprite_appearance idle;
-    };
+    [[nodiscard]] neutrino::sprite_frame_def frame(std::string_view visual, float duration) {
+        return neutrino::sprite_frame_def{std::string(visual), ms(duration), neutrino::sprite_flip::none};
+    }
 
-    [[nodiscard]] sprite_resources load_sprites() {
-        auto cpu_atlas = load_demo_atlas();
-        const auto atlas = neutrino::register_atlas(cpu_atlas, neutrino::atlas_texture_format::rgba);
+    // The whole sprite asset as pure data: the matted sheet as the atlas image, the named
+    // frames as explicit visuals, and the animations as named clips. build_sprite_set (via
+    // the cache) turns this into registered resources -- no manual register/unregister.
+    [[nodiscard]] neutrino::sprite_def make_demo_def() {
+        auto sheet = load_demo_sheet();
 
-        neutrino::sprite_sheet sheet(atlas);
-        for (const auto& frame : demo_frames) {
-            sheet.add_visual(
-                std::string(frame.name),
-                neutrino::sprite_visual{
-                    .texture_rect = frame.rect,
-                    .origin = frame.origin
-                });
+        neutrino::sprite_def def;
+        def.image.width = static_cast <unsigned>(sheet.get()->w);
+        def.image.height = static_cast <unsigned>(sheet.get()->h);
+        def.image.source = neutrino::image_from_surface{
+            std::make_shared <const sdlpp::surface>(std::move(sheet)), std::nullopt};
+
+        def.visuals.reserve(demo_frames.size());
+        for (const auto& f : demo_frames) {
+            def.visuals.push_back(neutrino::sprite_visual_def{
+                std::string(f.name), f.rect, f.origin, std::nullopt, std::nullopt});
         }
 
-        const auto sheet_id = neutrino::register_sprite_sheet(std::move(sheet));
-        const auto walk = neutrino::register_sprite_animation(neutrino::make_sprite_animation(
-            sheet_id,
-            {"player.walk.0", "player.walk.1", "player.walk.2", "player.walk.1"},
-            neutrino::sprite_animation_duration{90.0f}));
-        const auto jump = neutrino::register_sprite_animation(neutrino::make_sprite_animation(
-            sheet_id,
-            {"player.jump", "player.idle"},
-            neutrino::sprite_animation_duration{140.0f},
-            false));
-        const auto torch = neutrino::register_sprite_animation(neutrino::make_sprite_animation(
-            sheet_id,
-            {"spark.0", "spark.1", "spark.2", "spark.1"},
-            neutrino::sprite_animation_duration{120.0f}));
-        const auto coin = neutrino::register_sprite_animation(neutrino::make_sprite_animation(
-            sheet_id,
-            {"coin.0", "coin.1"},
-            neutrino::sprite_animation_duration{160.0f}));
-
-        auto idle = neutrino::make_sprite_appearance(sheet_id, "player.idle");
-
-        return sprite_resources{
-            .atlas = atlas,
-            .sheet = sheet_id,
-            .walk = walk,
-            .jump = jump,
-            .torch = torch,
-            .coin = coin,
-            .player = neutrino::create_sprite_state(idle),
-            .torch_state = neutrino::create_sprite_state(torch),
-            .coin_state = neutrino::create_sprite_state(coin),
-            .idle = idle
+        def.clips = {
+            neutrino::sprite_clip_def{"idle", {frame("player.idle", 1000.0f)}, true},
+            neutrino::sprite_clip_def{"walk",
+                {frame("player.walk.0", 90.0f), frame("player.walk.1", 90.0f),
+                 frame("player.walk.2", 90.0f), frame("player.walk.1", 90.0f)}, true},
+            neutrino::sprite_clip_def{"jump",
+                {frame("player.jump", 140.0f), frame("player.idle", 140.0f)}, /*loop=*/false},
+            neutrino::sprite_clip_def{"torch",
+                {frame("spark.0", 120.0f), frame("spark.1", 120.0f),
+                 frame("spark.2", 120.0f), frame("spark.1", 120.0f)}, true},
+            neutrino::sprite_clip_def{"coin",
+                {frame("coin.0", 160.0f), frame("coin.1", 160.0f)}, true},
         };
-    }
-
-    void unload_sprites(sprite_resources& sprites) {
-        neutrino::unregister_sprite_state(sprites.player);
-        neutrino::unregister_sprite_state(sprites.torch_state);
-        neutrino::unregister_sprite_state(sprites.coin_state);
-        neutrino::unregister_sprite_animation(sprites.walk);
-        neutrino::unregister_sprite_animation(sprites.jump);
-        neutrino::unregister_sprite_animation(sprites.torch);
-        neutrino::unregister_sprite_animation(sprites.coin);
-        neutrino::unregister_sprite_sheet(sprites.sheet);
-        neutrino::unregister_atlas(sprites.atlas);
+        return def;
     }
 
     enum class player_mode {
@@ -171,11 +132,12 @@ namespace {
     class sprite_demo_scene final : public neutrino::base_scene {
         public:
             void on_enter() override {
-                m_sprites = load_sprites();
-            }
-
-            void on_exit() override {
-                unload_sprites(m_sprites);
+                // Data -> one acquire -> spawn per actor. No manual register/unregister:
+                // the instances (states + leases) and the handle release by RAII on exit.
+                m_set = m_cache.acquire(make_demo_def());
+                m_player = m_set.spawn("idle");
+                m_torch = m_set.spawn("torch");
+                m_coin = m_set.spawn("coin");
             }
 
             void update_physics(neutrino::frame_duration dt) override {
@@ -197,7 +159,7 @@ namespace {
                     m_on_ground = false;
                     m_player_vy = -210.0f;
                     m_mode = player_mode::jump;
-                    neutrino::restart_sprite_animation(m_sprites.player, m_sprites.jump);
+                    m_player.restart("jump");
                 }
 
                 if (!m_on_ground) {
@@ -213,10 +175,10 @@ namespace {
                 if (m_on_ground) {
                     if (left != right) {
                         m_mode = player_mode::walk;
-                        neutrino::switch_sprite_animation(m_sprites.player, m_sprites.walk);
+                        m_player.switch_to("walk");
                     } else if (m_mode != player_mode::idle) {
                         m_mode = player_mode::idle;
-                        neutrino::set_sprite_state_appearance(m_sprites.player, m_sprites.idle);
+                        m_player.switch_to("idle");
                     }
                 }
             }
@@ -224,13 +186,13 @@ namespace {
             void render(neutrino::frame_duration) override {
                 draw_background();
 
-                neutrino::draw_sprite(neutrino::point{430, ground_y - 4}, m_sprites.torch_state, {.scale = prop_scale});
-                neutrino::draw_sprite(neutrino::point{470, ground_y - 4}, m_sprites.coin_state, {.scale = prop_scale});
+                neutrino::draw_sprite(neutrino::point{430, ground_y - 4}, m_torch.state(), {.scale = prop_scale});
+                neutrino::draw_sprite(neutrino::point{470, ground_y - 4}, m_coin.state(), {.scale = prop_scale});
 
                 const auto player_flip = m_facing_left ? neutrino::sprite_flip::horizontal : neutrino::sprite_flip::none;
                 neutrino::draw_sprite(
                     neutrino::point{static_cast <int>(m_player_x), static_cast <int>(m_player_y)},
-                    m_sprites.player,
+                    m_player.state(),
                     {.scale = player_scale, .flip = player_flip});
             }
 
@@ -253,7 +215,13 @@ namespace {
                 neutrino::draw_rect_fill(neutrino::rect{418, ground_y - 48, 16, 32}, sdlpp::color{86, 55, 32, 255});
             }
 
-            sprite_resources m_sprites;
+            // Declared cache -> handle -> instances, so destruction runs in reverse:
+            // instances (unregister states, drop leases), then the handle, then the cache.
+            neutrino::sprite_cache m_cache;
+            neutrino::sprite_set_handle m_set;
+            neutrino::sprite_instance m_player;
+            neutrino::sprite_instance m_torch;
+            neutrino::sprite_instance m_coin;
             float m_player_x{120.0f};
             float m_player_y{static_cast <float>(ground_y)};
             float m_player_vy{0.0f};
