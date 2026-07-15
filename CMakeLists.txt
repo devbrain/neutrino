@@ -147,6 +147,9 @@ if(NEUTRINO_NEUTRINO_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+
+add_subdirectory(games/ke)
+
 # ============================================================================
 # Summary
 # ============================================================================
