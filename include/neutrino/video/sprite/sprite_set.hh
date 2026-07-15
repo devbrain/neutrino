@@ -11,9 +11,9 @@
  * A name facade over a @ref render_bundle (which owns the atlas, sheet, and clip
  * animations and tears them down in order). @ref build_sprite_set uploads the def's
  * image as one atlas, creates a sheet with each named visual (grid-expanded + explicit,
- * trim/origin baked), and registers one animation per clip. Unlike @ref tileset_bundle
- * it bakes **no** states -- sprites use per-instance playheads (a `sprite_state` an actor
- * spawns from a clip), so @ref render_bundle::states stays empty.
+ * trim/origin baked), and registers one animation per clip. It bakes **no** shared states
+ * -- sprites use per-instance playheads (a `sprite_state` an actor spawns from a clip), so
+ * @ref render_bundle::states stays empty.
  */
 
 #include <optional>

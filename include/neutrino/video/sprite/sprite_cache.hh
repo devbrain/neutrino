@@ -8,12 +8,11 @@
  * @file sprite_cache.hh
  * @brief Content-keyed, refcounted cache of built @ref sprite_set assets.
  *
- * The sprite counterpart of the tile @ref resource_cache: `acquire(sprite_def)` builds
- * on a miss and shares on a hit, keyed by @ref key_for content, with a bounded LRU cold
- * pool. Unlike the tile side, the handle it returns -- @ref sprite_set_handle -- is a
- * **RAII refcounting lease** (copy retains, destruction releases), so a per-instance
- * playhead (§S6) can hold one and keep its set resident: the animations a `sprite_state`
- * plays can never be unregistered under a live instance.
+ * `acquire(sprite_def)` builds on a miss and shares on a hit, keyed by @ref key_for
+ * content, with a bounded LRU cold pool. The handle it returns -- @ref sprite_set_handle --
+ * is a **RAII refcounting lease** (copy retains, destruction releases), so a per-instance
+ * playhead can hold one and keep its set resident: the animations a `sprite_state` plays
+ * can never be unregistered under a live instance.
  *
  * The cache must outlive every handle it issues.
  */

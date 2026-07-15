@@ -48,7 +48,7 @@ namespace neutrino::physics::detail {
         material_props material; ///< Surface response.
         filter_props filter;     ///< Collision layers.
         entity_id_t eid{};       ///< Game entity id (event payload).
-        bool mergeable{false};   ///< Opted into boundary-compilation (§19 #4).
+        bool mergeable{false};   ///< Opted into boundary-compilation (adjacent solids merged into spans).
     };
 
     /// @brief The internal classification of a resident body (set by @ref world::add).

@@ -6,7 +6,7 @@
 
 /**
  * @file atlas_loader.hh
- * @brief Populate a @ref sprite_def from an exported atlas (§S7).
+ * @brief Populate a @ref sprite_def from an exported atlas.
  *
  * The loadable-asset payoff: an exported sprite atlas becomes a `sprite_def` with no
  * hand code, which the sprite cache then builds. v1 ships one format -- Aseprite's JSON

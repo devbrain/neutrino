@@ -152,7 +152,7 @@ namespace neutrino {
      * @brief An image whose pixels come from a file on disk (decoded lazily at bind).
      */
     struct image_from_disk {
-        std::filesystem::path source;
+        std::filesystem::path source; ///< Path to the image file (decoded lazily at bind).
     };
 
     /**
@@ -160,7 +160,7 @@ namespace neutrino {
      *        at bind). This is what an embedded TMX `<data>` image becomes.
      */
     struct image_from_memory {
-        std::vector <std::uint8_t> bytes;
+        std::vector <std::uint8_t> bytes; ///< Encoded (PNG/BMP/...) image bytes, decoded lazily at bind.
     };
 
     /**
@@ -174,8 +174,8 @@ namespace neutrino {
      * is keyed once and never re-uploaded; live content belongs to a render layer, not here.
      */
     struct image_from_surface {
-        std::shared_ptr <const sdlpp::surface> pixels;
-        std::optional <std::uint64_t> identity;
+        std::shared_ptr <const sdlpp::surface> pixels; ///< The already-decoded, immutable pixels.
+        std::optional <std::uint64_t> identity;        ///< Stable content id for cache dedup; unset keys on the surface itself.
     };
 
     /// @brief Where an image's pixels come from. See @ref world_image.
@@ -189,10 +189,10 @@ namespace neutrino {
      * resources is handled by the texture/sprite layer, which visits @ref source.
      */
     struct world_image {
-        world_image_source source{image_from_disk{}};
-        std::optional <sdlpp::color> transparent_color;
-        unsigned width{};
-        unsigned height{};
+        world_image_source source{image_from_disk{}}; ///< Where the pixels come from (disk/memory/surface).
+        std::optional <sdlpp::color> transparent_color; ///< Colour keyed out as transparent, if any.
+        unsigned width{};  ///< Declared image width in pixels.
+        unsigned height{}; ///< Declared image height in pixels.
 
         /// @brief True when no pixels are referenced (empty path / no bytes / null surface).
         [[nodiscard]] bool empty() const noexcept {

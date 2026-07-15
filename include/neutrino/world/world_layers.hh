@@ -50,11 +50,11 @@ namespace neutrino {
      * @brief Infinite-map tile chunk.
      */
     struct world_tile_chunk {
-        int x{};
-        int y{};
-        int width{};
-        int height{};
-        std::vector <world_tile_cell> cells;
+        int x{};      ///< Chunk origin x, in cells.
+        int y{};      ///< Chunk origin y, in cells.
+        int width{};  ///< Chunk width in cells.
+        int height{}; ///< Chunk height in cells.
+        std::vector <world_tile_cell> cells; ///< Row-major cells of the chunk.
     };
 
     /**
@@ -88,8 +88,8 @@ namespace neutrino {
      * @brief One frame of an animated image layer.
      */
     struct world_image_frame {
-        world_image image;
-        std::chrono::milliseconds duration{};
+        world_image image;                    ///< The frame's picture.
+        std::chrono::milliseconds duration{}; ///< How long the frame is shown.
     };
 
     /**
@@ -107,16 +107,16 @@ namespace neutrino {
      * @brief Shared geometry and presentation data for world objects.
      */
     struct world_object_base : world_component {
-        world_object_id id{-1};
-        std::string name;
-        std::string type;
-        world_point origin{0.0f, 0.0f};
-        double width{};
-        double height{};
+        world_object_id id{-1}; ///< Object id (-1 = unset).
+        std::string name;       ///< Object name.
+        std::string type;       ///< Author-assigned type/class string.
+        world_point origin{0.0f, 0.0f}; ///< Position in world pixels (a tile object anchors bottom-left here).
+        double width{};         ///< Object width in pixels.
+        double height{};        ///< Object height in pixels.
         double rotation{}; ///< Clockwise degrees; a TMX hex-120 tile object folds +120 in here.
-        bool visible{true};
-        world_tile_id gid{};
-        sprite_flip flip{sprite_flip::none};
+        bool visible{true};     ///< Whether the object is drawn.
+        world_tile_id gid{};    ///< Tile gid for a tile object; 0 for a shape/text object.
+        sprite_flip flip{sprite_flip::none}; ///< Flip applied to a tile object's graphic.
     };
 
     struct world_rectangle_object : world_object_base {};

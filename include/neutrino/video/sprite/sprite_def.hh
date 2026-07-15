@@ -6,10 +6,11 @@
 
 /**
  * @file sprite_def.hh
- * @brief Pure, loadable description of a sprite asset (§S3).
+ * @brief Pure, loadable description of a sprite asset.
  *
- * A @ref sprite_def is to sprites what @ref world_tileset is to tiles: a value with no
- * GPU state that a builder/cache turns into a registered @ref sprite_set. It reuses the
+ * A @ref sprite_def is a value with no GPU state: it names an atlas image and the frames
+ * and animations to build from it, so it can be authored, serialized, and content-hashed,
+ * while a builder/cache turns it into a registered @ref sprite_set. It reuses the
  * @ref world_image source variant (disk/memory/surface) as its atlas source, so sprites
  * load from a file, embedded bytes, or a procedural surface.
  *
@@ -52,13 +53,13 @@ namespace neutrino {
      * 0 columns => from the image width, 0 count => columns * rows.
      */
     struct sprite_grid {
-        unsigned           cell_w{};
-        unsigned           cell_h{};
-        unsigned           columns{}; ///< 0 => derive from the image width.
-        unsigned           count{};   ///< 0 => derive (columns * rows).
-        unsigned           margin{};
-        unsigned           spacing{};
-        sprite_origin_rule origin{sprite_origin_rule::top_left};
+        unsigned           cell_w{};   ///< Cell width in pixels.
+        unsigned           cell_h{};   ///< Cell height in pixels.
+        unsigned           columns{};  ///< 0 => derive from the image width.
+        unsigned           count{};    ///< 0 => derive (columns * rows).
+        unsigned           margin{};   ///< Pixels skipped at the image edges before the first cell.
+        unsigned           spacing{};  ///< Gap in pixels between adjacent cells.
+        sprite_origin_rule origin{sprite_origin_rule::top_left}; ///< Pivot rule applied to every cell.
     };
 
     /**
@@ -66,36 +67,37 @@ namespace neutrino {
      *
      * @ref origin is the pivot in the *untrimmed* frame; @ref source_size / @ref trim_offset
      * describe how the packed @ref src was trimmed from that frame (both unset = untrimmed).
-     * The build bakes `packed origin = origin - trim_offset` (§2 trim formula).
+     * The build bakes `packed origin = origin - trim_offset`.
      */
     struct sprite_visual_def {
-        std::string          name;
-        rect                 src{};
-        point                origin{0, 0};
+        std::string          name;        ///< Frame name; referenced by clips and looked up on the built set.
+        rect                 src{};       ///< Sub-rect of the (packed) atlas image this frame occupies.
+        point                origin{0, 0}; ///< Pivot in the *untrimmed* frame's local space.
         std::optional <dim>   source_size; ///< Untrimmed frame size (default = @ref src size).
         std::optional <point> trim_offset; ///< Trimmed rect's top-left in the untrimmed frame (default 0,0).
     };
 
     /// @brief One step of a clip: a visual (by name) shown for @ref duration, with @ref flip.
     struct sprite_frame_def {
-        std::string               visual;
-        sprite_animation_duration duration{0.0f};
-        sprite_flip               flip{sprite_flip::none};
+        std::string               visual;               ///< Name of the visual shown for this step.
+        sprite_animation_duration duration{0.0f};       ///< How long the frame is shown.
+        sprite_flip               flip{sprite_flip::none}; ///< Flip applied to the visual this step.
     };
 
     /// @brief A named animation over visuals.
     struct sprite_clip_def {
-        std::string                    name;
-        std::vector <sprite_frame_def> frames;
-        bool                           loop{true};
+        std::string                    name;        ///< Clip name; looked up on the built set.
+        std::vector <sprite_frame_def> frames;      ///< Ordered animation steps.
+        bool                           loop{true};  ///< Whether playback repeats after the last frame.
     };
 
-    /// @brief The pure sprite asset description. See @ref sprite_def.hh.
+    /// @brief The pure sprite asset description: an atlas image plus the frames and
+    /// animations built from it.
     struct sprite_def {
-        world_image                     image;
-        std::optional <sprite_grid>     grid;
-        std::vector <sprite_visual_def> visuals;
-        std::vector <sprite_clip_def>   clips;
+        world_image                     image;   ///< Atlas source (disk/memory/surface); the shared pixels every visual references.
+        std::optional <sprite_grid>     grid;    ///< Optional uniform slicing into frames named "0".."N-1".
+        std::vector <sprite_visual_def> visuals; ///< Explicit named frames (may override grid names).
+        std::vector <sprite_clip_def>   clips;   ///< Named animations over the visuals.
     };
 
     /**
