@@ -9,8 +9,8 @@
  * @brief A live / procedural background: a @ref render_layer that blits a
  *        game-owned texture across the viewport.
  *
- * This is the mutable counterpart of a static image layer (§10): the content
- * changes every frame, so it cannot be content-keyed or cached. The game creates
+ * Its content changes every frame, so -- unlike a static image layer -- it cannot be
+ * content-keyed or cached. The game creates
  * and updates the texture (typically @c texture_access::streaming) and points this
  * layer at it; the layer just draws it each frame, beneath the map when slotted with
  * @ref world_compositor::insert_bottom. It ignores the @ref sprite_batch -- there is

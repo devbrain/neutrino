@@ -43,7 +43,8 @@ namespace neutrino {
     };
 
     /**
-     * @brief A camera-aware, depth-sorted sprite draw sink. See @ref sprite_batch.hh.
+     * @brief A camera-aware, depth-sorted sprite draw sink: fill it with @ref add during
+     *        a draw pass, then @ref flush sorts by depth and draws back-to-front.
      */
     class NEUTRINO_EXPORT sprite_batch {
         public:

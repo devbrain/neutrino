@@ -202,7 +202,7 @@ namespace neutrino::physics {
     };
 
     /**
-     * @brief The result of @ref world::ground_support (§19 #4): the WALKABLE ground under three
+     * @brief The result of @ref world::ground_support: the WALKABLE ground under three
      *        footprint probes -- left edge, centre, right edge.
      *
      * The left/right pair is exactly Sonic's twin floor sensors. Each member is the probe's contact,

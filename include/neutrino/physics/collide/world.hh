@@ -856,7 +856,7 @@ namespace neutrino::physics {
              * @param exclude_idx   A body slot to skip (the mover itself, when in the tree); @c INVALID = none.
              * @param exclude_idx2  A second body slot to skip; defaults to @c INVALID.
              * @return The nearest accepted @ref contact (normalized toi in [0,1]), or @c std::nullopt.
-             *         Residents are treated as stationary (per-mover CCD, §8c).
+             *         Residents are treated as stationary (per-mover CCD).
              */
             template<class Accept>
             [[nodiscard]] std::optional <contact> cast_core(const moving_shape_t& mover,
@@ -925,7 +925,7 @@ namespace neutrino::physics {
 
         public:
             // ====================================================================================
-            // Public queries & §19 controller helpers: cast / cast_all / raycast / raycast_all /
+            // Public queries & controller helpers: cast / cast_all / raycast / raycast_all /
             // swept_triggers / dedup_by_entity / line_of_sight / snap_to_ground / step_up /
             // ground_support. All const except the snap/step helpers, which move the actor.
             // ====================================================================================
@@ -1145,7 +1145,7 @@ namespace neutrino::physics {
             }
 
             /**
-             * @brief Ground snapping (§19 #2) -- keep a grounded actor glued to a floor that receded
+             * @brief Ground snapping -- keep a grounded actor glued to a floor that receded
              *        beneath it this frame, so it hugs a downhill slope / staircase instead of
              *        launching off each lip.
              *
@@ -1191,7 +1191,7 @@ namespace neutrino::physics {
             }
 
             /**
-             * @brief Step-up / ledge forgiveness (§19 #3) -- a mover walking into a small lip (a low
+             * @brief Step-up / ledge forgiveness -- a mover walking into a small lip (a low
              *        step riser, a curb, a tile edge) rides up over it rather than jamming against it.
              *
              * Lifts the actor up to @c max_step (capped by headroom), re-casts the horizontal @c step
@@ -1275,7 +1275,7 @@ namespace neutrino::physics {
             }
 
             /**
-             * @brief Footing / edge sensors (§19 #4) -- report the solid ground under three points of
+             * @brief Footing / edge sensors -- report the solid ground under three points of
              *        the actor's footprint (left edge, centre, right edge) by probing straight down.
              *
              * A STATE the game reads to drive teeter/balance, edge-stop, coyote-time and ledge-grab;
@@ -1533,7 +1533,7 @@ namespace neutrino::physics {
             }
 
             /**
-             * @brief Boundary-compile the static grid (§19 #4): merge adjacent opted-in solid tiles
+             * @brief Boundary-compile the static grid: merge adjacent opted-in solid tiles
              *        into bigger AABB residents so a run of tiles has no internal seams to snag fast
              *        movers.
              *
@@ -2042,7 +2042,7 @@ namespace neutrino::physics {
     inline const std::vector <world_event>& world::run(const aabb& active_region, float dt) {
         m_events.clear();
         compile_static_grid(); // one-shot tile boundary-bake, before anything queries
-        carrier_pass(active_region, dt); // §19 #1: carry (MP1) + push (MP2) + crush (MP3)
+        carrier_pass(active_region, dt); // carry (MP1) + push (MP2) + crush (MP3)
         movement_pass(active_region, dt); // kinematic move-and-slide -> COLLISION events
         bullet_pass(active_region, dt); // bullets -> BULLET_HIT / BULLET_EXPIRED
         trigger_pass(); // sensor overlap diff -> TRIGGER_BEGIN / END

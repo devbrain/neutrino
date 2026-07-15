@@ -19,31 +19,31 @@ namespace neutrino {
      * @brief One frame of a tile animation.
      */
     struct world_tile_animation_frame {
-        world_local_tile_id tile{};
-        std::chrono::milliseconds duration{};
+        world_local_tile_id tile{};           ///< Local tile id shown for this frame.
+        std::chrono::milliseconds duration{}; ///< How long the frame is shown.
     };
 
     /**
      * @brief Per-tile metadata inside a tileset.
      */
     struct world_tile : world_component {
-        world_local_tile_id id{};
-        std::optional <world_image> image;
+        world_local_tile_id id{};          ///< Tileset-local tile id.
+        std::optional <world_image> image; ///< The tile's own image (collection tilesets); unset for a uniform grid tile.
         /// Sub-rectangle of @ref image this tile occupies. Used by image-collection
         /// tilesets that slice one shared image into per-tile regions; when unset the
         /// tile is the whole image.
         std::optional <rect> source_rect;
-        std::optional <world_object_layer> objects;
-        std::vector <world_tile_animation_frame> animation;
+        std::optional <world_object_layer> objects; ///< Per-tile collision/anchor objects, if any.
+        std::vector <world_tile_animation_frame> animation; ///< Animation frames; empty for a static tile.
     };
 
     /**
      * @brief Optional grid metadata for isometric tilesets.
      */
     struct world_tileset_grid {
-        bool orthogonal{true};
-        unsigned width{};
-        unsigned height{};
+        bool orthogonal{true}; ///< true = orthogonal grid; false = isometric.
+        unsigned width{};      ///< Grid cell width in pixels.
+        unsigned height{};     ///< Grid cell height in pixels.
     };
 
     /**
@@ -69,19 +69,19 @@ namespace neutrino {
      * @brief Tileset metadata and tile rectangles.
      */
     struct NEUTRINO_EXPORT world_tileset : world_component {
-        unsigned first_gid{};
-        std::string name;
-        unsigned tile_width{};
-        unsigned tile_height{};
-        unsigned spacing{};
-        unsigned margin{};
-        unsigned tile_count{};
-        unsigned columns{};
-        int offset_x{};
-        int offset_y{};
-        std::optional <world_image> image;
-        std::optional <world_tileset_grid> grid;
-        std::vector <world_tile> tiles;
+        unsigned first_gid{};   ///< Global id of this tileset's local tile 0.
+        std::string name;       ///< Tileset name.
+        unsigned tile_width{};  ///< Tile width in pixels (uniform grid).
+        unsigned tile_height{}; ///< Tile height in pixels (uniform grid).
+        unsigned spacing{};     ///< Gap in pixels between tiles in the shared image.
+        unsigned margin{};      ///< Border in pixels around the shared image before the first tile.
+        unsigned tile_count{};  ///< Number of tiles (0 => derive from the shared image).
+        unsigned columns{};     ///< Columns in the shared image (0 => derive from its width).
+        int offset_x{};         ///< Per-tile draw offset in x, in pixels.
+        int offset_y{};         ///< Per-tile draw offset in y, in pixels.
+        std::optional <world_image> image;       ///< Shared image for a uniform grid tileset; unset for a collection.
+        std::optional <world_tileset_grid> grid; ///< Optional grid metadata (isometric tilesets).
+        std::vector <world_tile> tiles;          ///< Per-tile metadata; sparse for collection tilesets.
 
         [[nodiscard]] const world_tile* tile(world_local_tile_id id) const noexcept;
         [[nodiscard]] rect tile_rect(world_local_tile_id id) const;
