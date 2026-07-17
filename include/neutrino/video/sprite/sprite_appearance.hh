@@ -25,21 +25,25 @@ namespace neutrino {
         diagonal = 1u << 2u
     };
 
+    /// @brief Union of two flip sets (set every flag present in either).
     [[nodiscard]] constexpr sprite_flip operator |(sprite_flip lhs, sprite_flip rhs) noexcept {
         return static_cast <sprite_flip>(
             static_cast <std::uint8_t>(lhs) | static_cast <std::uint8_t>(rhs));
     }
 
+    /// @brief Intersection of two flip sets (keep only flags present in both).
     [[nodiscard]] constexpr sprite_flip operator &(sprite_flip lhs, sprite_flip rhs) noexcept {
         return static_cast <sprite_flip>(
             static_cast <std::uint8_t>(lhs) & static_cast <std::uint8_t>(rhs));
     }
 
+    /// @brief Add @p rhs's flags to @p lhs in place (see operator|).
     constexpr sprite_flip& operator |=(sprite_flip& lhs, sprite_flip rhs) noexcept {
         lhs = lhs | rhs;
         return lhs;
     }
 
+    /// @brief Restrict @p lhs to the flags it shares with @p rhs in place (see operator&).
     constexpr sprite_flip& operator &=(sprite_flip& lhs, sprite_flip rhs) noexcept {
         lhs = lhs & rhs;
         return lhs;

@@ -9,6 +9,8 @@
 #include <neutrino/video/geometry_types.hh>
 
 namespace neutrino {
+    /// @brief Duration type used across the scene interface: floating-point
+    /// milliseconds. Carries frame deltas to update_physics() and render().
     using frame_duration = std::chrono::duration <float, std::milli>;
 
     /// @brief Abstract scene interface with lifecycle hooks and per-frame callbacks.

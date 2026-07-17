@@ -6,8 +6,8 @@
 
 /**
  * @file camera.hh
- * @brief A 2D render-space camera plus visibility culling for finite orthogonal
- *        tile layers.
+ * @brief A 2D render-space camera plus visibility culling for tile layers --
+ *        finite or infinite/chunked, orthogonal, isometric, or hexagonal.
  *
  * The camera lives in tile-pixel space (@ref world_point), deliberately separate
  * from the physics module's world-unit coordinate model: the tile world is
@@ -141,7 +141,7 @@ namespace neutrino {
      * @param cam      Active camera. Its zoom must be positive and finite.
      * @param viewport Viewport size in screen pixels.
      * @return The visible cell rectangle, half-open and unclamped.
-     * @throws when `cam.zoom` is not positive and finite.
+     * @throws std::runtime_error when `cam.zoom` is not positive and finite.
      */
     [[nodiscard]] NEUTRINO_EXPORT cell_range visible_cell_bounds(const world& w, const world_layer_header& layer, const camera& cam, dim viewport);
 
@@ -157,7 +157,7 @@ namespace neutrino {
      * @param cam      Active camera. Its zoom must be positive and finite.
      * @param viewport Viewport size in screen pixels.
      * @return The visible cell rectangle, half-open and clamped to the layer.
-     * @throws when `cam.zoom` is not positive and finite.
+     * @throws std::runtime_error when `cam.zoom` is not positive and finite.
      */
     [[nodiscard]] NEUTRINO_EXPORT cell_range visible_cell_range(const world& w, const world_tile_layer& layer, const camera& cam, dim viewport);
 

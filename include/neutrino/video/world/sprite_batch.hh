@@ -74,7 +74,9 @@ namespace neutrino {
             ///        A per-sprite content error is a no-op (never throws).
             void flush();
 
+            /// @brief True when no sprites are queued (nothing added since construction/flush).
             [[nodiscard]] bool empty() const noexcept { return m_entries.empty(); }
+            /// @brief Number of sprites currently queued (awaiting @ref flush).
             [[nodiscard]] std::size_t size() const noexcept { return m_entries.size(); }
 
         private:

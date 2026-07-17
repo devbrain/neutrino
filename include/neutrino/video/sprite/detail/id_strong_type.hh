@@ -24,6 +24,14 @@ namespace neutrino::details {
         }
     };
 
+    /**
+     * @brief Phantom-typed opaque wrapper over a 32-bit id, the base of every strong handle.
+     *
+     * The @p Tag parameter distinguishes otherwise-identical id types so handles of different
+     * kinds cannot be mixed. A default-constructed value is the null sentinel (@ref valid is
+     * false); values are comparable, ordered, and hashable, but the raw integer stays hidden.
+     * Ids are minted only through @ref id_access.
+     */
     template <typename Tag>
     class id_strong_type {
         friend struct std::hash <id_strong_type<Tag>>;

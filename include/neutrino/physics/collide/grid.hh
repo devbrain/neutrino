@@ -52,8 +52,8 @@ namespace neutrino::physics {
          */
         struct grid_coord {
             static constexpr auto INVALID = std::numeric_limits <uint32_t>::max(); ///< Out-of-grid / null sentinel.
-            uint32_t x;
-            uint32_t y;
+            uint32_t x; ///< Column index (0-based), or @ref INVALID when out of grid.
+            uint32_t y; ///< Row index (0-based), or @ref INVALID when out of grid.
 
             /// @brief Construct the INVALID (null) coord.
             grid_coord()

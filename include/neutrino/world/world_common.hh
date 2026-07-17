@@ -37,29 +37,33 @@ namespace neutrino {
     };
 
     /**
-     * @brief Tile render order for tile worlds.
+     * @brief Order in which a tile layer's cells are traversed and drawn.
+     *
+     * Names the starting corner and horizontal-then-vertical sweep direction; it
+     * fixes draw order so overlapping tiles (e.g. tall isometric tiles) stack
+     * correctly.
      */
     enum class world_render_order {
-        right_down,
-        right_up,
-        left_down,
-        left_up
+        right_down, ///< Start top-left; sweep right, then down a row. Tiled's default.
+        right_up,   ///< Start bottom-left; sweep right, then up a row.
+        left_down,  ///< Start top-right; sweep left, then down a row.
+        left_up     ///< Start bottom-right; sweep left, then up a row.
     };
 
     /**
-     * @brief Staggered or hexagonal map stagger axis.
+     * @brief Which axis carries the half-cell stagger offset in staggered/hexagonal maps.
      */
     enum class world_stagger_axis {
-        x,
-        y
+        x, ///< Columns are staggered (offset applied along the x axis).
+        y  ///< Rows are staggered (offset applied along the y axis).
     };
 
     /**
-     * @brief Staggered or hexagonal map stagger index.
+     * @brief Which indices along the stagger axis are shifted by a half cell.
      */
     enum class world_stagger_index {
-        odd,
-        even
+        odd, ///< Odd-numbered rows/columns are shifted.
+        even ///< Even-numbered rows/columns are shifted.
     };
 
     /**
@@ -94,14 +98,14 @@ namespace neutrino {
     using world_layer_id = std::uint32_t;
     using world_object_id = std::int64_t;
     using world_point = sdlpp::point <float>;
-    using world_rect = sdlpp::rect <float>; ///< A rectangle in world pixels (float twin of @ref rect).
+    using world_rect = sdlpp::rect <float>; ///< A rectangle in world pixels; the floating-point counterpart of the integer @ref rect.
 
     /**
      * @brief Property value with an explicit type name for custom property kinds.
      */
     struct world_typed_string {
-        std::string type;
-        std::string value;
+        std::string type;  ///< Name of the custom property kind (e.g. an enum or class name) this value belongs to.
+        std::string value; ///< The value's textual payload, interpreted according to @ref type.
 
         [[nodiscard]] bool operator ==(const world_typed_string&) const = default;
     };
@@ -110,7 +114,7 @@ namespace neutrino {
      * @brief Reference to another object stored as a property value.
      */
     struct world_object_reference {
-        world_object_id id{};
+        world_object_id id{}; ///< Id of the referenced object; 0 is the default and, by Tiled convention, means "no object".
 
         [[nodiscard]] bool operator ==(const world_object_reference&) const = default;
     };

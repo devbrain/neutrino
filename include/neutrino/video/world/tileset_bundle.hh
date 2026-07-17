@@ -4,6 +4,20 @@
 
 #pragma once
 
+/**
+ * @file tileset_bundle.hh
+ * @brief Render resources for one tileset: a local-tile-id facade over a
+ *        @ref render_bundle, plus the @ref build_bundle / @ref destroy_bundle
+ *        routines that pack, register, and tear those resources down.
+ *
+ * A @ref tileset_bundle maps each @ref world_local_tile_id to a registered
+ * @ref sprite_visual_ref (and, for animated tiles, a shared @ref sprite_state_id),
+ * so the tile-draw hot path resolves a tile to a drawable with a single indexed
+ * load. @ref build_bundle does the throwing packing/decoding work up front and
+ * registers atomically; @ref destroy_bundle (or the bundle's RAII destructor)
+ * releases in dependency order.
+ */
+
 #include <vector>
 
 #include <neutrino/neutrino_export.h>
@@ -77,7 +91,8 @@ namespace neutrino {
      *
      * @pre An application must be initialized (registration touches the sprite
      *      resource manager).
-     * @throws (via @ref load_image) when a source image cannot be decoded.
+     * @throws std::runtime_error (via @ref load_image) when a source image
+     *         cannot be decoded.
      */
     [[nodiscard]] NEUTRINO_EXPORT tileset_bundle build_bundle(const world_tileset& tileset);
 

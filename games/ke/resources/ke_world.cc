@@ -12,7 +12,7 @@
 
 #include <sdlpp/video/blend_mode.hh>
 
-#include "resources/ke_assets.hh"
+#include "ke_assets.hh"
 
 namespace rs {
     namespace {

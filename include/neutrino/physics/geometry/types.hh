@@ -191,13 +191,16 @@ namespace neutrino::physics {
     /**
      * @brief Result of a swept continuous-collision query (@ref swept_intersection).
      *
-     * `entry_time` / `exit_time` are absolute times in seconds within [0, time], where
-     * `time` is the query duration passed to the swept query. Unlike @ref line_hit these
-     * are NOT normalized parameters and may not be compared against 1.0.
+     * `entry_time` / `exit_time` lie within [0, `time`], where `time` is the query-window
+     * argument passed to the swept query -- and they carry the SAME unit as that argument.
+     * Pass a duration in seconds and they come back in seconds; pass a normalized window of
+     * 1.0 (as the collision @ref neutrino::physics::world does on its unit-step sweeps) and
+     * they come back as a [0, 1] time-of-impact. This differs from @ref line_hit, whose
+     * params are measured along the query segment's infinite line and can fall outside [0, 1].
      */
     struct swept_hit {
-        float entry_time{}; ///< Time of first contact (seconds), within [0, time]
-        float exit_time{}; ///< Time of separation (seconds), within [0, time]
+        float entry_time{}; ///< Time of first contact, within [0, time] (same unit as the query window)
+        float exit_time{}; ///< Time of separation, within [0, time] (same unit as the query window)
         vec entry_normal{}; ///< Unit normal pointing outwards at first contact, or {0,0} when undefined
         vec exit_normal{}; ///< Unit normal pointing outwards at separation, or {0,0} when undefined
     };

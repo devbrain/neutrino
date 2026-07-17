@@ -17,7 +17,7 @@
 #include <neutrino/world/world_common.hh>
 #include <neutrino/world/world_layers.hh>
 #include <neutrino/world/world_tileset.hh>
-
+#include "resources/game_resources.hh"
 #include "resources/ke_cell.hh"
 #include "resources/ke_loader.hh"
 

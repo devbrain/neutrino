@@ -24,7 +24,7 @@
 #include <neutrino/video/sprite/cpu_texture_atlas.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 
-#include "resources/ke_sprites_def.hh"
+#include "../resources/ke_sprites_def.hh"
 
 namespace {
     using neutrino::point;

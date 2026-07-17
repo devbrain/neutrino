@@ -28,6 +28,14 @@
 #include <neutrino/video/sprite/sprite_sheet.hh>
 
 namespace neutrino {
+    /**
+     * @brief Built render resources for one @ref sprite_def, addressed by name.
+     *
+     * A name facade over the owning @ref render_bundle: it maps visual and clip names to
+     * the registered @ref sprite_visual_ref / @ref sprite_animation_id ids that
+     * @ref build_sprite_set populated. The bundle owns the atlas, sheet, and animations
+     * and tears them down in order.
+     */
     class NEUTRINO_EXPORT sprite_set : public render_bundle {
         public:
             /// @brief The registered visual bound to @p name, or nullopt.

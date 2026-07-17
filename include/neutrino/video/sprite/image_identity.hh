@@ -25,6 +25,14 @@
 #include <neutrino/world/world_common.hh>
 
 namespace neutrino {
+    /**
+     * @brief Resolves a @ref world_image to a stable content key, shared by every render cache.
+     *
+     * Hashes memory bytes directly, identifies a decoded surface by its producer id (or a
+     * canonical-RGBA pixel hash when it has none), and keys a file by a (path, mtime, size)
+     * stat entry that maps to a content hash recomputed only when the file changes. Holds
+     * that stat cache, so it is stateful and not thread-safe.
+     */
     class NEUTRINO_EXPORT image_identifier {
         public:
             /**

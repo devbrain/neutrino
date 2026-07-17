@@ -37,7 +37,7 @@ namespace neutrino::physics {
     struct node_ptr {
         using value_t = int32_t;                        ///< Underlying index type.
         static constexpr value_t INVALID_NODE = -1;     ///< Null-handle sentinel.
-        value_t value;
+        value_t value;                                  ///< The raw arena index, or @ref INVALID_NODE for the null handle.
 
         /// @brief Construct the null handle (@ref INVALID_NODE).
         constexpr node_ptr()

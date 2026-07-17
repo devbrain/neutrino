@@ -84,6 +84,13 @@ namespace neutrino {
             const sprite_set* m_set{nullptr};
     };
 
+    /**
+     * @brief Content-keyed, refcounted store of built @ref sprite_set assets.
+     *
+     * @ref acquire builds a set on a miss and shares it on a hit, keyed by @ref key_for
+     * content; idle sets linger in a bounded LRU cold pool before eviction. Each hit hands
+     * back a @ref sprite_set_handle lease, and the cache must outlive every handle it issues.
+     */
     class NEUTRINO_EXPORT sprite_cache {
         public:
             /// @brief Default number of idle sets the cold pool retains.

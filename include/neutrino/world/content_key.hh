@@ -13,9 +13,16 @@
 #include <neutrino/detail/hash.hh>
 
 namespace neutrino {
+    /**
+     * @brief Content-addressed identity of a byte buffer: a hash paired with its length.
+     *
+     * Used as a map/set key to dedup identical byte content (e.g. decoded images in
+     * the resource cache). Construct one with @ref content_hash. Equality and ordering
+     * compare both fields, so distinct-length inputs never collide.
+     */
     struct content_key {
-        std::uint64_t hash;
-        std::uint64_t length;
+        std::uint64_t hash;   ///< Platform-stable 64-bit digest of the bytes (@ref details::hash_bytes).
+        std::uint64_t length; ///< Byte length; collision discriminator so unequal-length inputs never compare equal.
         std::strong_ordering operator<=>(const content_key&) const = default;
     };
 

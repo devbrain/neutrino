@@ -7,40 +7,51 @@
 
 namespace neutrino {
 
+    /// @brief Keyboard modifier flags, combinable with the bitwise operators below.
+    ///
+    /// Each physical key has its own bit (l*/r*); the side-agnostic values
+    /// (@ref shift, @ref ctrl, @ref alt, @ref gui) are the OR of their left and
+    /// right bits and match either side. Used to qualify @ref hotkey and
+    /// @ref mouse_click queries.
     enum class modifier : std::uint32_t {
-        none       = 0,
-        lshift     = 1 << 0,
-        rshift     = 1 << 1,
-        shift      = lshift | rshift,
+        none       = 0,        ///< No modifier held.
+        lshift     = 1 << 0,   ///< Left Shift only.
+        rshift     = 1 << 1,   ///< Right Shift only.
+        shift      = lshift | rshift,  ///< Either Shift key.
 
-        lctrl      = 1 << 2,
-        rctrl      = 1 << 3,
-        ctrl       = lctrl | rctrl,
+        lctrl      = 1 << 2,   ///< Left Ctrl only.
+        rctrl      = 1 << 3,   ///< Right Ctrl only.
+        ctrl       = lctrl | rctrl,    ///< Either Ctrl key.
 
-        lalt       = 1 << 4,
-        ralt       = 1 << 5,
-        alt        = lalt | ralt,
+        lalt       = 1 << 4,   ///< Left Alt only.
+        ralt       = 1 << 5,   ///< Right Alt (AltGr) only.
+        alt        = lalt | ralt,      ///< Either Alt key.
 
-        lgui       = 1 << 6,
-        rgui       = 1 << 7,
-        gui        = lgui | rgui
+        lgui       = 1 << 6,   ///< Left GUI key (Windows/Command/Super).
+        rgui       = 1 << 7,   ///< Right GUI key (Windows/Command/Super).
+        gui        = lgui | rgui       ///< Either GUI key.
     };
 
-    // Bitwise operators for modifier flags
+    /// @brief Bitwise OR: combine modifier flags (e.g. @c ctrl|shift).
     inline modifier operator|(modifier lhs, modifier rhs) {
         return static_cast<modifier>(static_cast<std::uint32_t>(lhs) | static_cast<std::uint32_t>(rhs));
     }
 
+    /// @brief Bitwise AND: mask/test modifier flags.
     inline modifier operator&(modifier lhs, modifier rhs) {
         return static_cast<modifier>(static_cast<std::uint32_t>(lhs) & static_cast<std::uint32_t>(rhs));
     }
 
+    /// @brief Bitwise NOT: complement of a modifier flag set (used to clear bits, e.g. @c x & ~shift).
     inline modifier operator~(modifier mod) {
         return static_cast<modifier>(~static_cast<std::uint32_t>(mod));
     }
 
-    // Ergonomic aliases, scoped to avoid collisions with user code and
-    // platform headers (SHIFT/CTRL/... are common macro/constant names).
+    /// @brief Lower-case aliases for the @c modifier enumerators.
+    ///
+    /// Ergonomic aliases (e.g. @c mods::ctrl) scoped in their own namespace to
+    /// avoid collisions with user code and platform headers, where SHIFT/CTRL/...
+    /// are common macro and constant names.
     namespace mods {
         inline constexpr modifier none   = modifier::none;
         inline constexpr modifier lshift = modifier::lshift;
@@ -68,26 +79,30 @@ namespace neutrino {
     ///   that key's own modifier bit when matching.
     class NEUTRINO_EXPORT hotkey {
     public:
-        // Scancode constructors
+        /// @brief Match a physical key by scancode (layout-independent position), no modifier required.
         hotkey(sdlpp::scancode key)
             : m_mods(modifier::none), m_key(key) {}
 
+        /// @brief Match a scancode only while @p mods is held.
         hotkey(modifier mods, sdlpp::scancode key)
             : m_mods(mods), m_key(key) {}
 
-        // Keycode constructors
+        /// @brief Match a logical key by keycode (current layout); resolved to a scancode at query time.
         hotkey(sdlpp::keycode key)
             : m_mods(modifier::none), m_key(key) {}
 
+        /// @brief Match a keycode only while @p mods is held.
         hotkey(modifier mods, sdlpp::keycode key)
             : m_mods(mods), m_key(key) {}
 
-        // Checking methods
+        /// @brief True on the frame the key transitions to down (edge) with the modifier set matching.
         [[nodiscard]] bool pressed() const noexcept;
+        /// @brief True on every frame the key is down (level) with the modifier set matching.
         [[nodiscard]] bool held() const noexcept;
+        /// @brief True on the frame the key transitions to up (edge) with the modifier set matching.
         [[nodiscard]] bool released() const noexcept;
 
-        // Default operator bool maps to pressed()
+        /// @brief Equivalent to pressed(); lets a hotkey be used directly in a condition.
         [[nodiscard]] explicit operator bool() const noexcept {
             return pressed();
         }

@@ -83,7 +83,25 @@ namespace neutrino {
         std::optional <world_tileset_grid> grid; ///< Optional grid metadata (isometric tilesets).
         std::vector <world_tile> tiles;          ///< Per-tile metadata; sparse for collection tilesets.
 
+        /**
+         * @brief Per-tile metadata for a local id, or nullptr if the tileset has no
+         *        entry for it (uniform-grid tiles are usually absent from @ref tiles).
+         */
         [[nodiscard]] const world_tile* tile(world_local_tile_id id) const noexcept;
+
+        /**
+         * @brief Source sub-rectangle of the shared image for a uniform-grid tile.
+         *
+         * Computes the tile's pixel rect from @ref tile_width / @ref tile_height,
+         * @ref margin, @ref spacing and the (possibly derived) column count. Only
+         * meaningful for uniform-grid tilesets that own a shared @ref image.
+         *
+         * @throws std::logic_error when the tileset has no shared image, its tile size
+         *         is zero, the image is too small for the tile size plus margin, or no
+         *         columns can be derived.
+         * @throws std::out_of_range when @p id is at or beyond @ref tile_count, or the
+         *         computed rect falls outside the shared image.
+         */
         [[nodiscard]] rect tile_rect(world_local_tile_id id) const;
 
         /**
@@ -104,8 +122,10 @@ namespace neutrino {
          * @ref tile_drawable::src is @ref tile_rect(id). Collection tileset (the
          * tile owns an image): its image, with @c src covering the whole image.
          *
-         * @throws (via @ref tile_rect) for a uniform tile with no shared image or
-         *         an out-of-range id.
+         * @throws std::logic_error (via @ref tile_rect) for a uniform tile whose
+         *         tileset has no shared image or a zero/too-small tile size.
+         * @throws std::out_of_range (via @ref tile_rect) for a uniform tile whose id
+         *         is out of range for the shared image.
          */
         [[nodiscard]] tile_drawable drawable(world_local_tile_id id) const;
 
