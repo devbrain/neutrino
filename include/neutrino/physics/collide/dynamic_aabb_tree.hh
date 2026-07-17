@@ -254,7 +254,7 @@ namespace neutrino::physics {
         // the shorter moves down to A, resolving both the outer (LL) and inner (LR) cases.
         auto& a = t[aptr];
         const auto bptr = a.left;
-        ENFORCE(bptr && !is_leaf(t[bptr])); // right-heavy ⇒ B is internal
+        ENFORCE(bptr && !is_leaf(t[bptr])); // left-heavy ⇒ B is internal
         auto& b = t[bptr];
         const auto fptr = b.left;
         const auto gptr = b.right;

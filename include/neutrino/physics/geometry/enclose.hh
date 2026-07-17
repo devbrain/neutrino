@@ -16,7 +16,8 @@
  * exactly (modulo floating-point representation). The @ref neutrino::physics::aabb overload is the
  * identity, present so generic code can call @c enclose() uniformly regardless of shape type.
  *
- * @note No @c enclose() overload is provided for @ref neutrino::physics::triangle here.
+ * @note The @c enclose() overload for @ref neutrino::physics::triangle lives in @ref triangle.hh
+ *       (alongside the rest of the solid-triangle narrow-phase), not here.
  * @see translate.hh for moving these same shapes by a vector.
  */
 

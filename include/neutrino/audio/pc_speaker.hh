@@ -14,9 +14,17 @@ namespace musac {
 }
 
 namespace neutrino {
+    /// @brief Retro PC-speaker style tone generator, obtained from create_pc_speaker().
+    ///
+    /// Tones, beeps and silences are appended to an internal queue and played
+    /// back in order. Move-only, non-copyable. A default-constructed (inert)
+    /// speaker, as returned when audio is inactive, accepts every call as a
+    /// silent no-op. Its volume follows the sfx group volume.
     class NEUTRINO_EXPORT pc_speaker {
     public:
+        /// @brief Construct an inert speaker (no backing stream; all calls are no-ops).
         pc_speaker();
+        /// @brief Wrap an opened backing stream; used internally by create_pc_speaker().
         explicit pc_speaker(std::unique_ptr<musac::pc_speaker_stream> stream);
         ~pc_speaker();
 
@@ -26,32 +34,39 @@ namespace neutrino {
         pc_speaker(const pc_speaker&) = delete;
         pc_speaker& operator=(const pc_speaker&) = delete;
 
-        // Play the speaker queue.
+        /// @brief Start (or resume) playing the queued tones, applying the current sfx group volume.
         void play();
 
-        // Pause playback.
+        /// @brief Pause playback; the queue and playback position are preserved for the next play().
         void pause();
 
-        // Stop playback and clear the queue.
+        /// @brief Stop playback and discard the queue.
         void stop();
 
-        // Queue a tone.
+        /// @brief Append a tone of @p frequency_hz lasting @p duration to the queue.
         void sound(float frequency_hz, std::chrono::milliseconds duration);
 
-        // Play a quick beep (convenience method).
+        /// @brief Convenience: queue a short fixed-length beep at @p frequency_hz.
         void beep(float frequency_hz = 1000.0f);
 
-        // Queue a silence period.
+        /// @brief Append a silent gap of @p duration to the queue.
         void silence(std::chrono::milliseconds duration);
 
-        // Clear all pending commands in the queue.
+        /// @brief Discard all pending queued commands without stopping current playback.
         void clear_queue();
 
-        // Play an MML sequence.
+        /// @brief Parse an MML (Music Macro Language) string and append the
+        /// resulting tones and rests to the queue.
+        /// @param strict when true, any syntax error aborts parsing and the call
+        /// fails; when false (default), the parser is lenient and skips over
+        /// malformed tokens.
+        /// @return true if parsing succeeded and commands were queued; false on a
+        /// parse failure (in strict mode) or on an inert speaker.
         bool play_mml(const std::string& mml, bool strict = false);
 
-        // Queue queries.
+        /// @brief True if no commands are pending (also true for an inert speaker).
         [[nodiscard]] bool is_queue_empty() const;
+        /// @brief Number of commands currently pending in the queue (0 for an inert speaker).
         [[nodiscard]] size_t queue_size() const;
 
     private:

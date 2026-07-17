@@ -196,6 +196,12 @@ namespace neutrino {
         std::span <const sdlpp::surface> images, int margin,
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 
+    /**
+     * @brief Convenience @ref pack_surfaces: explicit @p format, per-page cap from the
+     *        renderer. Use when the pages must be a canonical format (e.g. RGBA) rather
+     *        than whatever the first image happens to be — a palettized source would
+     *        otherwise yield a palettized page the GPU sprite path cannot sample.
+     */
     [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_surfaces(
         std::span <const sdlpp::surface> images,
         sdlpp::pixel_format_enum format,
@@ -235,6 +241,12 @@ namespace neutrino {
         std::span <const cpu_texture_atlas> atlases, int margin,
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 
+    /**
+     * @brief Convenience @ref pack_atlases: explicit @p format, per-page cap from the
+     *        renderer. Use when the pages must be a canonical format (e.g. RGBA) rather
+     *        than whatever the first atlas's surface happens to be — a palettized source
+     *        would otherwise yield a palettized page the GPU sprite path cannot sample.
+     */
     [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_atlases(
         std::span <const cpu_texture_atlas> atlases,
         sdlpp::pixel_format_enum format,

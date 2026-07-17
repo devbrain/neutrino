@@ -1,6 +1,6 @@
 //
 // Public value types and handles that the `world` class is built on.
-// Split out of world.hh for navigability (see COLLISION_WORLD_IMPLEMENTATION_PLAN refactor).
+// Split out of world.hh for navigability.
 //
 
 /**
@@ -202,7 +202,7 @@ namespace neutrino::physics {
     };
 
     /**
-     * @brief The result of @ref world::ground_support: the WALKABLE ground under three
+     * @brief The result of @ref world::ground_support -- the WALKABLE ground under three
      *        footprint probes -- left edge, centre, right edge.
      *
      * The left/right pair is exactly Sonic's twin floor sensors. Each member is the probe's contact,

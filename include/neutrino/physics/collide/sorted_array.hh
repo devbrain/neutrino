@@ -2,6 +2,30 @@
 // Created by igor on 7/22/24.
 //
 
+/**
+ * @file sorted_array.hh
+ * @brief A flat sorted set -- elements kept in ascending order in contiguous storage with
+ *        binary-search lookup and no duplicates (the cache-friendly flat_set pattern).
+ *
+ * The container logic (ordering, uniqueness, search, removal) lives once in
+ * @ref neutrino::physics::sorted_set "sorted_set<Storage>"; the only things that differ between
+ * a growable and a fixed-capacity set are the storage layout and whether an insert can fail when
+ * full -- both captured by the Storage policy. The public aliases are:
+ *   - @ref neutrino::physics::sorted_array "sorted_array<T>" -- dynamic, heap-backed (never "full").
+ *   - @ref neutrino::physics::fixed_sorted_array "fixed_sorted_array<T, N>" -- inline @c std::array,
+ *     capacity @c N.
+ *
+ * Requirements on the element type @c T:
+ *   - a strict-weak ordering via @c operator< and equality via @c operator== (the two may key on
+ *     the same field while @c T carries a payload, i.e. @c == compares only the key; @c remove()'s
+ *     out-parameter then returns the full stored element);
+ *   - copy-constructible and copy-assignable (insert/remove/pop_back copy values);
+ *   - @c fixed_sorted_array additionally requires @c T to be default-constructible (the inline
+ *     @c std::array value-initialises all @c N slots).
+ * For resource-owning @c T (e.g. @c shared_ptr), @c fixed_sorted_array releases vacated slots
+ * promptly (resets them to @c T{}) so erased/cleared elements don't linger.
+ */
+
 #pragma once
 
 #include <algorithm>
@@ -16,27 +40,6 @@
 #include <failsafe/enforce.hh>
 
 namespace neutrino::physics {
-    // ------------------------------------------------------------------------------
-    // A flat sorted set: elements kept in ascending order in contiguous storage, with
-    // binary-search lookup and no duplicates (the cache-friendly flat_set pattern).
-    //
-    // The container logic (ordering, uniqueness, search, removal) lives once in
-    // sorted_set<Storage>; the only things that differ between a growable and a
-    // fixed-capacity set are the storage layout and whether an insert can fail when
-    // full -- both captured by the Storage policy below. The public aliases are:
-    //   sorted_array<T>            -- dynamic, heap-backed (never "full")
-    //   fixed_sorted_array<T, N>   -- inline std::array, capacity N
-    //
-    // Requirements on T:
-    //   * a strict-weak ordering via operator< and equality via operator== (the two may
-    //     key on the same field while T carries a payload, i.e. == compares only the key;
-    //     remove()'s out-parameter then returns the full stored element);
-    //   * copy-constructible and copy-assignable (insert/remove/pop_back copy values);
-    //   * fixed_sorted_array<T, N> additionally requires T to be default-constructible
-    //     (the inline std::array value-initialises all N slots).
-    // For resource-owning T (e.g. shared_ptr), fixed_sorted_array releases vacated slots
-    // promptly (resets them to T{}) so erased/cleared elements don't linger.
-    // ------------------------------------------------------------------------------
     namespace detail {
         // Storage policy: dynamic, heap-backed (std::vector). Never full.
         template <typename T>
@@ -152,6 +155,14 @@ namespace neutrino::physics {
         };
     } // namespace detail
 
+    /**
+     * @brief A unique, ascending, contiguous set with binary-search lookup, parameterised over a
+     *        @p Storage policy (dynamic or fixed-capacity).
+     *
+     * All the set semantics (ordering, de-duplication, search, erase) live here; @p Storage only
+     * supplies the backing buffer and, for a bounded storage, whether an insert can fail when full.
+     * Iteration is const-only because the elements must stay sorted.
+     */
     template <class Storage>
     class sorted_set {
             Storage m_storage;
@@ -165,9 +176,9 @@ namespace neutrino::physics {
 
             sorted_set() = default;
 
-            // Forward storage-specific construction (e.g. the dynamic capacity / [min,max)
-            // range constructors). Constrained so it never hijacks copy/move and only
-            // participates when the chosen Storage actually supports the arguments.
+            /// @brief Forward storage-specific construction (e.g. the dynamic capacity / [min,max)
+            ///        range constructors). Constrained so it never hijacks copy/move and only
+            ///        participates when the chosen Storage actually supports the arguments.
             template <class... Args>
                 requires (sizeof...(Args) >= 1)
                       && std::constructible_from<Storage, Args...>
@@ -175,8 +186,8 @@ namespace neutrino::physics {
                           || (!std::same_as<std::remove_cvref_t<Args>, sorted_set> && ...))
             explicit sorted_set(Args&&... args) : m_storage(std::forward<Args>(args)...) {}
 
-            // Inserts `value`. Returns false (no change) if an equal element is already
-            // present, or -- for a bounded storage -- if the set is full (see full()).
+            /// @brief Insert @p value. Returns false (no change) if an equal element is already
+            ///        present, or -- for a bounded storage -- if the set is full (see @ref full).
             bool insert(const value_type& value) {
                 const std::size_t pos = lower_bound_index(value);
                 if (pos < m_storage.size() && m_storage[pos] == value) {
@@ -185,8 +196,9 @@ namespace neutrino::physics {
                 return m_storage.insert_at(pos, value); // false only when a fixed set is full
             }
 
-            // Removes the element equal to `value`. Returns false if absent. When present
-            // and `old_val` is non-null, the removed element is copied into *old_val first.
+            /// @brief Remove the element equal to @p value. Returns false if absent. When present
+            ///        and @p old_val is non-null, the removed element is copied into @c *old_val
+            ///        first (recovering the full payload of a key-only match).
             bool remove(const value_type& value, value_type* old_val = nullptr) {
                 const std::size_t pos = index_of(value);
                 if (pos == size()) {
@@ -199,13 +211,13 @@ namespace neutrino::physics {
                 return true;
             }
 
-            // Removes the element at `idx`. Precondition: idx < size().
+            /// @brief Remove the element at @p idx. Precondition: @c idx < @ref size.
             void remove_by_index(std::size_t idx) {
                 ENFORCE(idx < size());
                 m_storage.erase_at(idx);
             }
 
-            // Removes and returns the largest element. Precondition: !empty().
+            /// @brief Remove and return the largest element. Precondition: @c !empty().
             value_type pop_back() {
                 ENFORCE(!empty());
                 const std::size_t last = size() - 1;
@@ -214,27 +226,34 @@ namespace neutrino::physics {
                 return out;
             }
 
+            /// @brief Remove all elements.
             void clear() { m_storage.clear(); }
 
+            /// @brief Number of elements currently held.
             [[nodiscard]] std::size_t size() const { return m_storage.size(); }
+            /// @brief True when the set holds no elements.
             [[nodiscard]] bool empty() const { return size() == 0; }
+            /// @brief True when a bounded storage is at capacity (always false for dynamic storage).
             [[nodiscard]] bool full() const { return m_storage.full(); }
+            /// @brief Maximum element count the storage can hold (unbounded storages report their limit).
             [[nodiscard]] static constexpr std::size_t capacity() { return Storage::capacity(); }
 
+            /// @brief True if an element equal to @p value is present (binary search).
             [[nodiscard]] bool exists(const value_type& value) const {
                 return std::binary_search(begin(), end(), value);
             }
 
-            // Index of the element equal to `value`, or size() if absent.
+            /// @brief Index of the element equal to @p value, or @ref size if absent.
             [[nodiscard]] std::size_t index_of(const value_type& value) const {
                 const std::size_t pos = lower_bound_index(value);
                 return (pos < size() && m_storage[pos] == value) ? pos : size();
             }
 
+            /// @brief True if @p index addresses a live element (i.e. @c index < @ref size).
             [[nodiscard]] bool is_valid_index(std::size_t index) const { return index < size(); }
 
-            // Element access. Precondition: index < size(). The non-const overload allows
-            // mutating a keyed element's payload -- do NOT change the ordering key.
+            /// @brief Element access. Precondition: @c index < @ref size. The non-const overload
+            ///        allows mutating a keyed element's payload -- do NOT change the ordering key.
             [[nodiscard]] const value_type& get(std::size_t index) const {
                 ENFORCE(index < size());
                 return m_storage[index];
@@ -245,13 +264,13 @@ namespace neutrino::physics {
                 return m_storage[index];
             }
 
-            // Pre-reserve (only available when the storage supports it, i.e. dynamic).
+            /// @brief Pre-reserve capacity (only available when the storage supports it, i.e. dynamic).
             void reserve(std::size_t n)
                 requires requires(Storage& s, std::size_t k) { s.reserve(k); } {
                 m_storage.reserve(n);
             }
 
-            // Read-only ordered iteration (const-only: mutating order would break it).
+            /// @brief Read-only ordered iteration (const-only: mutating order would break it).
             [[nodiscard]] const_iterator begin() const { return m_storage.begin(); }
             [[nodiscard]] const_iterator end() const { return m_storage.end(); }
             [[nodiscard]] const_iterator cbegin() const { return begin(); }
@@ -263,9 +282,12 @@ namespace neutrino::physics {
             }
     };
 
+    /// @brief A dynamic, heap-backed sorted set (grows on demand; never reports @c full).
     template <typename T>
     using sorted_array = sorted_set<detail::dynamic_array_storage<T>>;
 
+    /// @brief A fixed-capacity sorted set of at most @c N elements, stored inline (no heap); an
+    ///        insert past @c N fails rather than growing. Requires a default-constructible @c T.
     template <typename T, std::size_t N>
     using fixed_sorted_array = sorted_set<detail::fixed_array_storage<T, N>>;
 }

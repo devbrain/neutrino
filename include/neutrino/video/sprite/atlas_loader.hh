@@ -32,7 +32,7 @@ namespace neutrino {
      * relative path the caller resolves against the export's directory); `meta.size` fills
      * the declared dimensions.
      *
-     * @throws (nlohmann::json) on malformed JSON or a missing required field.
+     * @throws (via nlohmann::json) on malformed JSON or a missing required field.
      */
     [[nodiscard]] NEUTRINO_EXPORT sprite_def load_aseprite_atlas(std::string_view json);
 }

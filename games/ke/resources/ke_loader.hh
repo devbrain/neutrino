@@ -47,17 +47,5 @@ namespace rs {
 
     load_result load_resource(std::istream& is);
 
-    struct tile_sheet_def {
-        sdlpp::surface image;
-        std::vector<neutrino::rect> source_rects;
-        std::vector<neutrino::point> origins;
-    };
 
-    struct game_resources {
-        std::map<std::string, neutrino::cpu_texture_atlas> backdrops;
-        std::map<std::string, tile_sheet_def> tile_sheets;
-        std::vector<ke_level> levels;
-    };
-
-    std::optional<game_resources> parse(std::istream& is);
 }

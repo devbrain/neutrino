@@ -15,7 +15,8 @@
  * state.
  *
  * Conversions to/from display-space (@c simplex::point / @c rect / @c circle, which are dp-based)
- * live in @ref bridge.hh and are the @e only place that bridges the two coordinate systems.
+ * are performed by a dedicated display<->world bridge layer outside this module, which is the
+ * @e only place that crosses between the two coordinate systems. Nothing in this header does.
  *
  * Include this header for the full API, or include a part directly:
  *   - @c <neutrino/physics/geometry/types.hh>     value types + result types

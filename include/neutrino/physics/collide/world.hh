@@ -59,7 +59,6 @@ namespace neutrino::physics {
      * @brief An actors-and-solids 2D collision world: owns every collider, steps them a frame at a
      *        time, and answers spatial queries.
      *
-     * See the @ref world.hh file overview for the collider taxonomy and the per-frame pass order.
      * Construct with a @ref world_config (extent, skin, up-axis, optional tile grid), populate via
      * the @ref add overloads, advance with @ref run, and read results back through the @ref get_shape
      * / @ref get_velocity getters or the const query API.

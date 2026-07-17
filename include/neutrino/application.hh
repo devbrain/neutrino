@@ -25,11 +25,20 @@ namespace neutrino {
         stretch,        ///< fill the drawable, ignoring aspect
     };
 
+    /// @brief Startup configuration for @ref application -- window geometry,
+    /// presentation, and frame pacing. Passed once to the application
+    /// constructor; every field has a usable default.
     struct application_config {
+        /// Window title bar text.
         std::string title = "Neutrino Application";
+        /// Initial window width, in window points.
         int width = 1280;
+        /// Initial window height, in window points.
         int height = 720;
+        /// SDL window flags applied at creation (resizable by default). Composes
+        /// with @ref fullscreen and @ref high_pixel_density.
         sdlpp::window_flags flags = sdlpp::window_flags::resizable;
+        /// Target frame rate the main loop paces to, in frames per second.
         int target_fps = 60;
         /// Present in lock-step with the display: 1 = on (default, no tearing),
         /// 0 = off, -1 = adaptive. Applied to the renderer at ready time.
@@ -51,6 +60,15 @@ namespace neutrino {
         bool high_pixel_density = false;
     };
 
+    /// @brief Base class for a Neutrino game: owns the window, renderer, main
+    /// loop, input state, and the scene stack.
+    ///
+    /// Subclass it and override the protected template-method hooks (@ref ready,
+    /// @ref update, @ref event, the gamepad callbacks, and
+    /// @ref create_initial_scene) to supply game logic; the engine drives them.
+    /// Most games run entirely through scenes (see base_scene) and leave
+    /// @ref update / @ref event empty. Construct with an @ref application_config
+    /// to customize the window and presentation.
     class NEUTRINO_EXPORT application : public sdlpp::game_application {
         public:
             application();
@@ -74,9 +92,19 @@ namespace neutrino {
         protected:
             sdlpp::window_config get_window_config() override;
 
-            // Template method overrides for game logic
+            /// @brief One-time setup hook, called once after the window,
+            /// renderer, services, and input subsystems are up but before the
+            /// first frame and before create_initial_scene(). Override to load
+            /// assets or configure global state. Default: no-op.
             virtual void ready() {}
+            /// @brief Per-frame logic hook, called every frame after the scene
+            /// stack's physics update. @p dt is the frame delta in seconds.
+            /// Runs whether or not scenes are active; override for global,
+            /// scene-independent update logic. Default: no-op.
             virtual void update([[maybe_unused]] float dt) {}
+            /// @brief Raw SDL event hook, called for every event after the engine
+            /// has handled gamepad connect/disconnect and resize. Override to
+            /// handle input not routed through a scene. Default: no-op.
             virtual void event([[maybe_unused]] const sdlpp::event& e) {}
 
             /// @brief Called when a gamepad is connected (also once per pad

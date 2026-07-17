@@ -11,7 +11,7 @@
 #include <failsafe/enforce.hh>
 #include <failsafe/logger.hh>
 
-#include "resources/ke_assets.hh"
+#include "ke_assets.hh"
 #include "resources/ke_world.hh"
 
 namespace rs {

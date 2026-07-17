@@ -11,7 +11,9 @@
 #include <sdlpp/video/window.hh>
 
 namespace neutrino {
+    /// @brief The active application's renderer, the target every draw call issues to.
     NEUTRINO_EXPORT [[nodiscard]] sdlpp::renderer& get_renderer();
+    /// @brief The active application's window (the renderer's presentation surface).
     NEUTRINO_EXPORT [[nodiscard]] sdlpp::window& get_window();
 
     /// @brief The size of the coordinate space scenes draw in: the logical size

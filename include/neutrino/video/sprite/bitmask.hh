@@ -23,11 +23,16 @@ namespace neutrino {
              */
             bitmask(int width, int height);
 
+            /// @brief Width of the mask in pixels.
             [[nodiscard]] int width() const noexcept { return m_width; }
+            /// @brief Height of the mask in pixels.
             [[nodiscard]] int height() const noexcept { return m_height; }
 
             /**
              * @brief Set the collision bit at coordinates (x, y).
+             * @param x Column of the bit to set.
+             * @param y Row of the bit to set.
+             * @param val true marks the pixel solid, false transparent.
              */
             void set(int x, int y, bool val);
 

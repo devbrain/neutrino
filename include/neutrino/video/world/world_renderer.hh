@@ -59,13 +59,13 @@ namespace neutrino {
             /**
              * @brief Bind to @p w, acquiring bundles from the application-wide cache.
              * @pre The application is ready (the service locator publishes a cache).
-             * @throws (via @ref resource_cache::acquire) if a tileset cannot build.
+             * @throws std::runtime_error (via @ref resource_cache::acquire) if a tileset cannot build.
              */
             explicit world_renderer(const world& w);
 
             /**
              * @brief Bind to @p w, acquiring bundles from an explicit @p cache.
-             * @throws (via @ref resource_cache::acquire) if a tileset cannot build.
+             * @throws std::runtime_error (via @ref resource_cache::acquire) if a tileset cannot build.
              */
             world_renderer(const world& w, resource_cache& cache);
 

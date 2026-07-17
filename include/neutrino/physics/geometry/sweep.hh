@@ -18,7 +18,9 @@
  *     shapes with their velocities and a time window, reduces the pair to a single moving point
  *     vs. a static Minkowski-sum shape (in the RELATIVE frame, only @c avel-bvel matters), runs
  *     the relevant @ref intersect_param primitive(s), and returns a @ref neutrino::physics::swept_hit:
- *     entry/exit TIMES in absolute seconds within [0, @c time], plus entry/exit normals.
+ *     entry/exit times within [0, @c time] carrying the SAME unit as @c time (seconds if @c time is
+ *     in seconds; a [0,1] time-of-impact when the caller passes a normalized window of 1.0, as the
+ *     collision world does), plus entry/exit normals.
  *
  * The bridge between the two is @ref neutrino::physics::to_swept_hit, which clamps the raw
  * line-parameter interval to a finite [0,1] and scales it by @c time.
@@ -37,14 +39,15 @@
  * Because each Minkowski sum is convex, the swept point's crossing is a single interval whose
  * entry comes from the earliest-entering sub-shape and exit from the latest-exiting one.
  *
- * @note @ref intersect_param returns line PARAMETERS; @ref swept_intersection returns absolute
- *       TIMES (seconds) within [0, time]. Do not confuse the two unit systems.
+ * @note @ref intersect_param returns line PARAMETERS along the query segment (which may fall
+ *       outside [0,1]); @ref swept_intersection returns TIMES clamped to [0, @c time], expressed in
+ *       @c time's own unit. Do not confuse the two.
  */
 
 // =============================================================================
 // Parametric intersection (intersect_param) and continuous collision detection
 // (swept_intersection). intersect_param returns line_hit (segment parameters);
-// swept_intersection returns swept_hit (absolute seconds in [0, time]).
+// swept_intersection returns swept_hit (times in [0, time], in time's own unit).
 // =============================================================================
 
 #include <cmath>
@@ -56,7 +59,7 @@
 
 namespace neutrino::physics {
     /**
-     * @brief Convert a raw line_hit interval (segment parameters) into a swept_hit (seconds).
+     * @brief Convert a raw line_hit interval (segment parameters) into a swept_hit (times in @p time 's unit).
      *
      * Entry comes from @p entry_src, exit from @p exit_src (the same hit for a single convex
      * shape; distinct sub-shape hits for a composite/convex query). Each parameter is clamped

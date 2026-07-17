@@ -24,14 +24,15 @@ namespace neutrino {
      * @ref release can find it.
      */
     struct bundle_handle {
-        content_key           key{};
-        const tileset_bundle* bundle{nullptr};
+        content_key           key{};              ///< Content key naming the cache entry; used by @ref resource_cache::release.
+        const tileset_bundle* bundle{nullptr};    ///< Cache-owned bundle to resolve tiles through, or null if invalid.
         /// Identifies the exact cache entry this handle was issued for. Content keys
         /// recycle (same content -> same key), so a rebuilt entry reuses the old key;
         /// the token lets @ref resource_cache::release reject a stale handle whose
         /// entry was torn down and rebuilt rather than decrement the new entry.
         std::uint64_t         token{0};
 
+        /// @brief True when the handle points at a live cached bundle.
         [[nodiscard]] bool valid() const noexcept { return bundle != nullptr; }
 
         /// @brief Registered visual for a local tile (invalid ref if absent).
@@ -86,7 +87,8 @@ namespace neutrino {
              * needed); a miss calls @ref build_bundle and inserts it at refcount 1.
              *
              * @pre An application must be initialized.
-             * @throws (via @ref build_bundle / image loading) when a miss cannot build.
+             * @throws std::runtime_error (via @ref build_bundle / image loading)
+             *         when a miss cannot build.
              */
             [[nodiscard]] bundle_handle acquire(const world_tileset& tileset);
 

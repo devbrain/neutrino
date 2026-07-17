@@ -7,17 +7,17 @@
 #include <neutrino/application.hh>
 #include <sdlpp/app/entry_point.hh>
 
-#include "resources/ke_assets.hh"
+#include "ke_assets.hh"
 #include "resources/ke_loader.hh"
 #include "resources/ke_sprites_def.hh"
-#include "play_game_scene.hh"
-#include "sprite_gallery_scene.hh"
+#include "scenes/play_game_scene.hh"
+#include "resources/game_resources.hh"
 
 namespace {
     // The sprite-gallery debug scene needs room for names, so the app runs larger than the
     // game's 320x200 (switch these back with play_game_scene).
-    constexpr int window_width = 640;
-    constexpr int window_height = 480;
+    constexpr int window_width = 320;
+    constexpr int window_height = 200;
 }
 
 class ke : public neutrino::application {
@@ -30,7 +30,7 @@ class ke : public neutrino::application {
         // Default to the sprite gallery (built from m_res, loaded in ready()). Swap for
         // play_game_scene to run the game.
         std::unique_ptr <neutrino::base_scene> create_initial_scene() override {
-            return std::make_unique <sprite_gallery_scene>(m_res);
+            return std::make_unique <play_game_scene>();
         }
 
         void on_config(int argc, char* argv[]) override {
@@ -61,6 +61,7 @@ class ke : public neutrino::application {
             }
             rs::set_ke_assets(m_assets);
             rs::define_sprites(m_res);
+            m_assets.m_resources = &m_res;
         }
     private:
         static neutrino::application_config make_config() {

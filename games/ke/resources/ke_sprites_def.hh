@@ -10,8 +10,8 @@
 #include <string_view>
 
 #include <neutrino/video/sprite/sprite_def.hh>
-
 #include "resources/ke_loader.hh"
+#include "resources/game_resources.hh"
 
 namespace rs {
     // KE_RACK paddle layout: the size frames run consecutively -- size 1 is frame 5, and

@@ -37,8 +37,9 @@ namespace neutrino::physics::units {
     /**
      * @brief A time span: a frame's dt, or a swept-query window.
      *
-     * Unit-agnostic on purpose -- the engine never commits to seconds; dt is whatever the caller
-     * integrates in.
+     * Unit-agnostic on purpose -- the arithmetic in this header never assumes seconds; dt is
+     * whatever unit the caller integrates in. (The world's public frame API happens to document
+     * its dt as seconds, but nothing here depends on that choice.)
      */
     struct duration {
         float value{0.0f}; ///< The span magnitude, in the caller's time unit.

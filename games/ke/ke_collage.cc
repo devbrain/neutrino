@@ -19,7 +19,7 @@
 #include <onyx_image/codecs/png.hpp>
 #include <onyx_image/surface.hpp>
 
-#include "resources/ke_loader.hh"
+#include "resources/game_resources.hh"
 
 namespace {
     struct rgba {
