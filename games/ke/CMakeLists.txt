@@ -1,25 +1,31 @@
-add_library(ke_resources STATIC
-        resources/binary_reader.hh
-        resources/ke_cell.cc
-        resources/ke_cell.hh
-        resources/ke_bob.cc
-        resources/ke_bob.hh
-        resources/ke_loader.hh
-        resources/ke_loader.cc
-        resources/ke_world.cc
-        resources/ke_world.hh
-        resources/ke_sprites_def.cc
-        resources/ke_sprites_def.hh
-        resources/ke_tab.cc
-        resources/ke_tab.hh
-        resources/game_resources.cc
-        resources/game_resources.hh
-)
+# -- ke_format: decode the on-disk KE files into plain data. Knows byte layouts and
+#    images; knows nothing about neutrino's world/sprite systems. --
+add_library(ke_format STATIC
+        format/binary_reader.hh
+        format/archive.cc
+        format/archive.hh
+        format/bob.cc
+        format/bob.hh
+        format/tab.cc
+        format/tab.hh
 
-target_include_directories(ke_resources PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(ke_resources PUBLIC neutrino)
+)
+target_include_directories(ke_format PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(ke_format PUBLIC neutrino)
 
 add_executable(ke
+        assets/world.cc
+        assets/world.hh
+        assets/sprites.cc
+        assets/sprites.hh
+        assets/registry.cc
+        assets/registry.hh
+
+        resources/resources.cc
+        resources/resources.hh
+        resources/cell.cc
+        resources/cell.hh
+
         scenes/play_game_scene.cc
         scenes/play_game_scene.hh
         scenes/sprite_gallery_scene.cc
@@ -27,18 +33,17 @@ add_executable(ke
 
         game/actors_layer.cc
         game/actors_layer.hh
+        game/model.cc
+        game/model.hh
 
-        ke_assets.cc
-        ke_assets.hh
         krypton_egg.cc
 )
+target_link_libraries(ke PRIVATE ke_format neutrino)
 
-target_link_libraries(ke PRIVATE ke_resources neutrino)
-target_include_directories(ke PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-
-# Debug tool: labeled contact sheets of KE_SPELL / KE_NMY (needs only the loader chain).
+# Debug tool: labeled contact sheets of KE_SPELL / KE_NMY. Decodes the BOB sheets
+# straight from the archive, so it links only ke_format (not the resource container
+# or the world/sprite layers).
 add_executable(ke_collage
         ke_collage.cc
 )
-target_link_libraries(ke_collage PRIVATE neutrino ke_resources)
-target_include_directories(ke_collage PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ke_collage PRIVATE ke_format neutrino)

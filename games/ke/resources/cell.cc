@@ -4,7 +4,7 @@
 // suite for this module (the standalone `ke` target has no doctest harness).
 //
 
-#include "resources/ke_cell.hh"
+#include <ke/resources/cell.hh>
 
 namespace rs {
 

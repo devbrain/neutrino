@@ -2,7 +2,7 @@
 // TAB level parser.
 //
 
-#include "resources/ke_tab.hh"
+#include <ke/format/tab.hh>
 
 namespace rs {
     namespace {

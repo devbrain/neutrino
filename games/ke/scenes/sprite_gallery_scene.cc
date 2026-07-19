@@ -2,7 +2,7 @@
 // See sprite_gallery_scene.hh.
 //
 
-#include "sprite_gallery_scene.hh"
+#include <ke/scenes/sprite_gallery_scene.hh>
 
 #include <algorithm>
 #include <chrono>
@@ -24,7 +24,7 @@
 #include <neutrino/video/sprite/cpu_texture_atlas.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 
-#include "../resources/ke_sprites_def.hh"
+#include <ke/assets/sprites.hh>
 
 namespace {
     using neutrino::point;

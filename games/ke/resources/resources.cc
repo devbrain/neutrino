@@ -5,9 +5,9 @@
 #include <failsafe/logger.hh>
 #include <neutrino/video/image_loader.hh>
 
-#include "game_resources.hh"
-#include "ke_loader.hh"
-#include "ke_bob.hh"
+#include <ke/resources/resources.hh>
+#include <ke/format/archive.hh>
+#include <ke/format/bob.hh>
 
 namespace rs {
     namespace {

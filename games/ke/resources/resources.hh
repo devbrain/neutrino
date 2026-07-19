@@ -7,7 +7,7 @@
 #include <sdlpp/video/surface.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprites.hh>
-#include "resources/ke_cell.hh"
+#include <ke/resources/cell.hh>
 
 
 namespace rs {

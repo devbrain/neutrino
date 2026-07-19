@@ -7,11 +7,11 @@
 #include <neutrino/application.hh>
 #include <sdlpp/app/entry_point.hh>
 
-#include "ke_assets.hh"
-#include "resources/ke_loader.hh"
-#include "resources/ke_sprites_def.hh"
-#include "scenes/play_game_scene.hh"
-#include "resources/game_resources.hh"
+#include <ke/assets/registry.hh>
+#include <ke/format/archive.hh>
+#include <ke/assets/sprites.hh>
+#include <ke/scenes/play_game_scene.hh>
+#include <ke/resources/resources.hh>
 
 namespace {
     // The sprite-gallery debug scene needs room for names, so the app runs larger than the
@@ -59,6 +59,7 @@ class ke : public neutrino::application {
                 quit();
                 return;
             }
+            m_assets.levels = std::move(m_res.levels);
             rs::set_ke_assets(m_assets);
             rs::define_sprites(m_res);
             m_assets.m_resources = &m_res;

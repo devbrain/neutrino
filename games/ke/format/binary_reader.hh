@@ -24,7 +24,7 @@ concept endian_scalar = std::is_arithmetic_v <T> || std::is_enum_v <T>;
 
 class binary_reader {
     public:
-        explicit binary_reader(std::istream& is, std::endian endian = std::endian::native)
+        explicit binary_reader(std::istream& is, std::endian endian = std::endian::little)
             : is_(is), endian_(endian) {
         }
 

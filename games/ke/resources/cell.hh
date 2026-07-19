@@ -11,7 +11,7 @@
 #include <chrono>
 #include <cstdint>
 
-#include "resources/ke_tab.hh"
+#include <ke/format/tab.hh>
 
 namespace rs {
     // One original game tick. Krypton Egg runs in VGA mode 13h off the ~70 Hz
