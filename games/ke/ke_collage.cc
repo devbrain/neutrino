@@ -1,7 +1,12 @@
 //
-// Debug tool: render a labeled contact sheet of KE_SPELL and KE_NMY, each frame with its
-// block number written below in the BIOS 8x8 font. For verifying the frame->number tables
-// (bonus_capsule / enemy_anim). Writes ke_spell.png and ke_nmy.png in the working directory.
+// Debug tool: dump every image resource in a KE archive to PNG in the working directory.
+//   * each BOB sheet  -> a labeled contact sheet <base>.png (every frame with its block
+//     number below it in the BIOS 8x8 font; for verifying the frame->number tables);
+//   * each GIF        -> a plain decoded <base>.png.
+//
+// Uses only the format layer (ke_format): it reads the archive directory and decodes the
+// BOB sheets directly, without the engine-facing resource container. GIFs are decoded with
+// onyx_image's own gif codec.
 //
 
 #include <algorithm>
@@ -10,16 +15,29 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <SDL3/SDL.h>
 
 #include <onyx_font/bios_font.hh>
+#include <onyx_image/codecs/gif.hpp>
 #include <onyx_image/codecs/png.hpp>
 #include <onyx_image/surface.hpp>
+#include <onyx_image/types.hpp>
 
-#include "resources/game_resources.hh"
+#include <sdlpp/video/color.hh>
+#include <sdlpp/video/palette.hh>
+#include <sdlpp/video/surface.hh>
+#include <sdlpp/image/sdl_surface_adapter.hh>
+
+#include <neutrino/video/geometry_types.hh>
+
+#include <ke/format/archive.hh>
+#include <ke/format/bob.hh>
 
 namespace {
     struct rgba {
@@ -78,14 +96,43 @@ namespace {
         }
     }
 
-    bool make_collage(const rs::tile_sheet_def& sheet, const std::filesystem::path& out) {
-        const std::size_t n = sheet.source_rects.size();
+    // Read a resource's raw bytes from the archive stream.
+    std::vector <std::uint8_t> read_bytes(std::istream& is, const rs::resource& r) {
+        std::vector <std::uint8_t> data(r.size);
+        is.seekg(r.offset, std::ios::beg);
+        is.read(reinterpret_cast <std::istream::char_type*>(data.data()), r.size);
+        return data;
+    }
+
+    // Build a 256-colour SDL palette from a KE .pal resource (256 RGB triples).
+    std::optional <sdlpp::palette> palette_from_rgb(std::span <const std::uint8_t> rgb) {
+        if (rgb.size() < 256 * 3) {
+            return std::nullopt;
+        }
+        std::vector <sdlpp::color> colors;
+        colors.reserve(256);
+        for (std::size_t i = 0; i < 256; ++i) {
+            colors.emplace_back(rgb[i * 3 + 0], rgb[i * 3 + 1], rgb[i * 3 + 2], 255);
+        }
+        auto pal = sdlpp::palette::create(256);
+        if (!pal) {
+            return std::nullopt;
+        }
+        if (!pal->set_colors(colors)) {
+            return std::nullopt;
+        }
+        return std::move(*pal);
+    }
+
+    bool make_collage(const sdlpp::surface& image, const std::vector <neutrino::rect>& rects,
+                      const std::filesystem::path& out) {
+        const std::size_t n = rects.size();
         if (n == 0) {
             return false;
         }
         int max_w = 0;
         int max_h = 0;
-        for (const auto& r : sheet.source_rects) {
+        for (const auto& r : rects) {
             max_w = std::max(max_w, r.w);
             max_h = std::max(max_h, r.h);
         }
@@ -109,9 +156,9 @@ namespace {
             const int row = static_cast <int>(i / cols);
             const int cx = col * cell_w;
             const int cy = row * cell_h;
-            const auto& r = sheet.source_rects[i];
+            const auto& r = rects[i];
 
-            blit_frame(collage, cx + pad + (max_w - r.w) / 2, cy + pad, sheet.image, r);
+            blit_frame(collage, cx + pad + (max_w - r.w) / 2, cy + pad, image, r);
 
             const std::string num = std::to_string(i);
             const int tw = static_cast <int>(num.size()) * 8;
@@ -136,21 +183,84 @@ int main(int argc, char** argv) {
         std::cerr << "cannot open " << path << "\n";
         return 1;
     }
-    auto res = rs::parse(ifs);
-    if (!res) {
-        std::cerr << "failed to parse resources\n";
+
+    const rs::load_result lr = rs::load_resource(ifs);
+    for (const auto& d : lr.diagnostics) {
+        std::cerr << (d.severity == rs::diagnostic::severity_level::error ? "error: " : "warning: ")
+                  << d.message << "\n";
+    }
+    if (lr.has_errors()) {
         return 1;
     }
 
-    bool ok = true;
-    for (const auto* name : {"ke_spell", "ke_nmy"}) {
-        const auto it = res->tile_sheets.find(name);
-        if (it == res->tile_sheets.end()) {
-            std::cerr << "no " << name << " sheet\n";
-            ok = false;
-            continue;
+    const auto find = [&](std::string_view name) -> const rs::resource* {
+        for (const auto& r : lr.resources) {
+            if (r.name == name) {
+                return &r;
+            }
         }
-        ok &= make_collage(it->second, std::string(name) + ".png");
+        return nullptr;
+    };
+
+    // Palette for a sheet: sibling <base>.pal, else the gameplay palette, else grayscale.
+    const auto palette_for = [&](const std::string& base) -> sdlpp::palette {
+        for (const std::string& cand : {base + ".pal", std::string("ke_play.pal")}) {
+            if (const auto* pr = find(cand)) {
+                if (auto p = palette_from_rgb(read_bytes(ifs, *pr))) {
+                    return std::move(*p);
+                }
+            }
+        }
+        return rs::bob_grayscale_palette();
+    };
+
+    bool ok = true;
+    for (const auto& r : lr.resources) {
+        if (r.name.ends_with(".bob")) {
+            // BOB sprite sheet -> labeled contact sheet.
+            const std::string base = r.name.substr(0, r.name.size() - 4);
+
+            rs::bob_image bob;
+            std::string err;
+            if (const auto data = read_bytes(ifs, r); !bob.parse(data, err)) {
+                std::cerr << "parse " << r.name << ": " << err << "\n";
+                ok = false;
+                continue;
+            }
+
+            sdlpp::surface image;
+            sdlpp::image::sdl_surface_adapter adaptor(image);
+            std::vector <neutrino::rect> rects;
+            if (const sdlpp::palette pal = palette_for(base);
+                !bob.decode_atlas(pal, adaptor, err, rects)) {
+                std::cerr << "decode " << r.name << ": " << err << "\n";
+                ok = false;
+                continue;
+            }
+
+            // Keep the source extension in the output name: the archive has both a
+            // <base>.bob and a <base>.gif for some names (ke_menu, ke_monst), so
+            // <base>.png alone would collide.
+            ok &= make_collage(image, rects, r.name + ".png");
+        } else if (r.name.ends_with(".gif")) {
+            // GIF -> plain PNG.
+            const auto data = read_bytes(ifs, r);
+            onyx_image::memory_surface surf;
+            onyx_image::decode_options opts;
+            opts.output = onyx_image::color_output::rgba;
+            if (const auto dr = onyx_image::gif_decoder::decode(data, surf, opts); !dr) {
+                std::cerr << "decode " << r.name << ": " << dr.message << "\n";
+                ok = false;
+                continue;
+            }
+            const std::filesystem::path out = r.name + ".png";
+            if (!onyx_image::save_png(surf, out)) {
+                std::cerr << "failed to save " << out << "\n";
+                ok = false;
+                continue;
+            }
+            std::cerr << "wrote " << out << " (" << surf.width() << "x" << surf.height() << ")\n";
+        }
     }
     return ok ? 0 : 1;
 }

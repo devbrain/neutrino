@@ -3,7 +3,7 @@
 // ke_assets, like neutrino's service_locator holds pointers to app-owned services.
 //
 
-#include "ke_assets.hh"
+#include <ke/assets/registry.hh>
 
 #include <failsafe/enforce.hh>
 

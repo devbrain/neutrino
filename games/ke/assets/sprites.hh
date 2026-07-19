@@ -10,19 +10,46 @@
 #include <string_view>
 
 #include <neutrino/video/sprite/sprite_def.hh>
-#include "resources/ke_loader.hh"
-#include "resources/game_resources.hh"
+#include <ke/format/archive.hh>
+#include <ke/resources/resources.hh>
 
 namespace rs {
-    // KE_RACK paddle layout: the size frames run consecutively -- size 1 is frame 5, and
-    // there are 15 sizes (frames 5..19). The default/start size is 7 (frame 11).
-    inline constexpr std::size_t ke_paddle_first_frame  = 5;
-    inline constexpr int         ke_paddle_size_count   = 15;
-    inline constexpr int         ke_paddle_default_size = 7;
+    // KE_RACK paddle sprites, grouped by the paddle's power-up state. Within a state the
+    // per-size (form) frames run consecutively; a paddle's `size` (1-based) selects one.
+    // Frame ranges in the KE_RACK sheet (inclusive):
+    //   simple 6..20 (15 forms) | armed 21..27 (7) | caged 28..34 (7) | turbo 35..47 (13).
+    enum class ke_paddle_state {
+        simple,
+        armed,
+        caged,
+        turbo,
+    };
 
-    // Visual index of a paddle @p size (1..ke_paddle_size_count).
-    [[nodiscard]] constexpr std::size_t ke_paddle_frame(int size) noexcept {
-        return ke_paddle_first_frame + static_cast <std::size_t>(size - 1);
+    // The consecutive KE_RACK frames one paddle state occupies.
+    struct ke_paddle_frame_range {
+        std::size_t first; ///< first KE_RACK frame (inclusive)
+        std::size_t count; ///< number of form frames in the state
+    };
+
+    [[nodiscard]] constexpr ke_paddle_frame_range ke_paddle_range(ke_paddle_state state) noexcept {
+        switch (state) {
+            case ke_paddle_state::simple: return {6, 15};
+            case ke_paddle_state::armed:  return {21, 7};
+            case ke_paddle_state::caged:  return {28, 7};
+            case ke_paddle_state::turbo:  return {35, 13};
+        }
+        return {6, 15};
+    }
+
+    // The default/start form (size) within a state.
+    inline constexpr int ke_paddle_default_size = 7;
+
+    // KE_RACK frame for a paddle (@p state, @p size). `size` is 1-based; a size past the
+    // state's range clamps to its last frame.
+    [[nodiscard]] constexpr std::size_t ke_paddle_frame(ke_paddle_state state, int size) noexcept {
+        const ke_paddle_frame_range r = ke_paddle_range(state);
+        const std::size_t i = size <= 1 ? 0u : static_cast <std::size_t>(size - 1);
+        return r.first + (i < r.count ? i : r.count - 1);
     }
 
     // A KE sprite animation extracted from ke.exe: the exact BOB block sequence (looping),
@@ -128,5 +155,5 @@ namespace rs {
     // Build every KE object definition from @p gr into the published ke_assets: the brick
     // tileset + background (define_blocks) and the paddle sprite def (define_paddle).
     // @pre set_ke_assets() has been called and the application is ready.
-    void define_sprites(const game_resources& gr);
+    void define_sprites(game_resources& gr);
 }

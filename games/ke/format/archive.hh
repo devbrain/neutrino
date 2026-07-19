@@ -8,11 +8,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
-#include <map>
-#include <optional>
 
-#include <neutrino/video/sprite/cpu_texture_atlas.hh>
-#include "resources/ke_cell.hh"
 
 namespace rs {
     struct resource {

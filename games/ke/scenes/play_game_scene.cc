@@ -2,8 +2,6 @@
 // Created by igor on 12/07/2026.
 //
 
-#include "play_game_scene.hh"
-
 #include <algorithm>
 #include <cstddef>
 #include <fstream>
@@ -17,10 +15,11 @@
 
 #include <neutrino/video/globals.hh>
 
-#include "resources/ke_sprites_def.hh"
-#include "resources/ke_world.hh"
-
-#include "ke_assets.hh"
+#include <ke/assets/sprites.hh>
+#include <ke/assets/world.hh>
+#include <ke/scenes/play_game_scene.hh>
+#include <ke/assets/registry.hh>
+#include <ke/game/model.hh>
 
 namespace {
     // Playfield wall x the paddle rides between (tab.md §6/§7).
@@ -28,8 +27,8 @@ namespace {
     constexpr float wall_right = 304.0f;
     // Paddle bottom edge in the empty bottom band.
     constexpr float paddle_bottom_y = 190.0f;
-    // The default paddle form: KE_RACK size 7 (frame 11).
-    constexpr std::size_t paddle_frame = rs::ke_paddle_frame(rs::ke_paddle_default_size);
+    // The default paddle form: simple state, size 7.
+    constexpr std::size_t paddle_frame = rs::ke_paddle_frame(rs::ke_paddle_state::simple, rs::ke_paddle_default_size);
 }
 
 
@@ -37,17 +36,17 @@ namespace {
 void play_game_scene::on_enter() {
 
     auto& assets = rs::require_ke_assets();
+    model::instance().load_level();
 
     // The background is per-level, parametrized by its fill_block (block 6 for now).
-    auto background = rs::build_background(*assets.m_resources, rs::ke_default_fill_block);
-    m_world = rs::build_world(assets.m_resources->levels.front(), std::move(background));
-    m_renderer = std::make_unique <neutrino::world_renderer>(m_world);
+
+    m_renderer = std::make_unique <neutrino::world_renderer>(model::instance().get_visual_world());
     m_compositor = std::make_unique <neutrino::world_compositor>(*m_renderer);
     m_compositor->insert_after(rs::ke_bricks_layer_id, m_actors); // actors above bricks
 
     // Paddle: a visual from the leased paddle set (origins baked by the sprite pipeline).
     if (auto v = assets.paddle.visual(std::to_string(paddle_frame))) {
-        m_actors.paddle = *v;
+        //m_actors.paddle = *v;
         if (auto rack = assets.m_resources->tile_sheets.find("ke_rack");
             rack != assets.m_resources->tile_sheets.end() && paddle_frame < rack->second.source_rects.size()) {
             m_paddle_w = rack->second.source_rects[paddle_frame].w;
@@ -73,7 +72,7 @@ void play_game_scene::update_physics(neutrino::frame_duration) {
     }
     const auto w = static_cast <float>(m_paddle_w);
     const float left = std::clamp(m_paddle_center_x - w * 0.5f, wall_left, wall_right - w);
-    m_actors.paddle_pos = {left, paddle_bottom_y - static_cast <float>(m_paddle_h)};
+ //   m_actors.paddle_pos = {left, paddle_bottom_y - static_cast <float>(m_paddle_h)};
 }
 
 void play_game_scene::render(neutrino::frame_duration) {

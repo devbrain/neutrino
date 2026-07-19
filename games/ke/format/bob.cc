@@ -2,7 +2,7 @@
 // BOB sprite decoder (flag 0x0305) -> onyx_image surface.
 //
 
-#include "resources/ke_bob.hh"
+#include <ke/format/bob.hh>
 
 #include <algorithm>
 #include <cstring>

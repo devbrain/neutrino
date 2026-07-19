@@ -11,8 +11,8 @@
 #include <neutrino/video/sprite/render_bundle.hh>
 #include <neutrino/video/sprite/sprite_sheet.hh>
 #include <neutrino/video/sprite/sprite_state.hh>
-#include "resources/game_resources.hh"
-#include "resources/ke_loader.hh"
+#include <ke/resources/resources.hh>
+#include <ke/format/archive.hh>
 
 class sprite_gallery_scene : public neutrino::base_scene {
     public:

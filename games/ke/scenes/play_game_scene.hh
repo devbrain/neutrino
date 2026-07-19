@@ -11,7 +11,7 @@
 #include <neutrino/video/world/world_renderer.hh>
 #include <neutrino/world/world.hh>
 
-#include "game/actors_layer.hh"
+#include <ke/game/actors_layer.hh>
 
 // Experiment: show the first KE level via the ke_assets framework, with a mouse-movable
 // paddle drawn through the sprite-def pipeline.
@@ -25,7 +25,6 @@ class play_game_scene : public neutrino::base_scene {
         [[nodiscard]] bool is_opaque() const override;
 
     private:
-        neutrino::world m_world;
         std::unique_ptr <neutrino::world_renderer> m_renderer;
         actors_layer m_actors;
         std::unique_ptr <neutrino::world_compositor> m_compositor;

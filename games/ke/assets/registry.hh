@@ -8,7 +8,8 @@
 #include <neutrino/video/sprite/sprite_cache.hh>
 #include <neutrino/video/sprite/sprite_def.hh>
 #include <neutrino/world/world_tileset.hh>
-#include "resources/game_resources.hh"
+#include <ke/resources/resources.hh>
+#include <ke/resources/cell.hh>
 
 namespace rs {
     // Level-invariant assets: the brick tileset, the actor sprite defs, and the cache their
@@ -21,6 +22,11 @@ namespace rs {
         neutrino::world_tileset     blocks;     ///< KE_BRICK collection tileset (world-drawn)
         neutrino::sprite_def        paddle_def; ///< KE_RACK sprite def (visuals with baked origins)
         neutrino::sprite_set_handle paddle;     ///< the built + leased paddle set
+
+        tile_sheet_def              board;
+        tile_sheet_def              fill_rects;
+
+        std::vector<ke_level>       levels;
 
         game_resources*             m_resources{nullptr};
 
