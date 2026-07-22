@@ -6,18 +6,25 @@
 
 /**
  * @file sprite_batch.hh
- * @brief A camera-aware, depth-sorted sprite draw sink.
+ * @brief A depth-sorted sprite draw sink, screen-space or camera-aware.
  *
  * Fill a batch with @ref sprite_batch::add during a draw pass, then @ref
  * sprite_batch::flush stable-sorts the queued sprites by depth and draws them
- * back-to-front through the camera. A single @c add covers both sorted and
- * unsorted use: equal depths keep call order (the sort is stable), so "unsorted"
- * is just "give everything the same depth". It is a pure draw sink -- it holds
- * only the transform (camera + viewport + plane) and never decides *which*
- * sprites to draw. Reusable beyond actor layers (HUD, particles, floating text).
+ * back-to-front. A single @c add covers both sorted and unsorted use: equal depths
+ * keep call order (the sort is stable), so "unsorted" is just "give everything the
+ * same depth". It is a pure draw sink -- it holds only the transform and never
+ * decides *which* sprites to draw.
+ *
+ * Two modes. The **default** constructor makes a *screen-space* batch: @c add
+ * positions are literal renderer pixels -- no camera, parallax plane, or zoom. That
+ * is the natural sink for a HUD, floating text, or compositing into a
+ * @ref render_texture. The **camera** constructor makes a *world-space* batch that
+ * runs each position through @ref to_screen for a camera + parallax plane, for actor
+ * layers over a scrolling map.
  */
 
 #include <cstddef>
+#include <optional>
 #include <variant>
 #include <vector>
 
@@ -43,12 +50,21 @@ namespace neutrino {
     };
 
     /**
-     * @brief A camera-aware, depth-sorted sprite draw sink: fill it with @ref add during
-     *        a draw pass, then @ref flush sorts by depth and draws back-to-front.
+     * @brief A depth-sorted sprite draw sink: fill it with @ref add during a draw pass,
+     *        then @ref flush sorts by depth and draws back-to-front.
      */
     class NEUTRINO_EXPORT sprite_batch {
         public:
             /**
+             * @brief A screen-space batch: @ref add positions are literal renderer pixels,
+             *        with no camera, parallax plane, or zoom applied.
+             */
+            sprite_batch() = default;
+
+            /**
+             * @brief A world-space batch: each @ref add position is transformed by the
+             *        camera and parallax plane before drawing.
+             *
              * @param cam      Active camera (copied; small).
              * @param viewport Destination rectangle in renderer pixels.
              * @param plane    Layer whose parallax/offset this batch draws on. Must
@@ -56,8 +72,14 @@ namespace neutrino {
              */
             sprite_batch(const camera& cam, rect viewport, const world_layer_header& plane);
 
-            /// @brief Queue a static visual at world @p pos, sorted by @p depth (usually pos.y).
+            /// @brief Queue a static visual at @p pos (world or screen space per the ctor),
+            ///        sorted by @p depth (usually pos.y).
             void add(world_point pos, float depth, sprite_visual_ref visual, sprite_draw_params params = {});
+            /// @brief Queue a static visual, or do nothing when @p visual is nullopt. Lets a
+            ///        caller forward a lookup result -- @c set.visual(i), @ref find_visual_ref --
+            ///        straight to the batch without unwrapping or guarding the optional.
+            void add(world_point pos, float depth, std::optional <sprite_visual_ref> visual,
+                     sprite_draw_params params = {});
             /// @brief Queue an animated runtime state; its current frame resolves at flush/plan.
             void add(world_point pos, float depth, sprite_state_id state, sprite_draw_params params = {});
 
@@ -87,9 +109,14 @@ namespace neutrino {
                 sprite_draw_params params;
             };
 
-            camera                    m_cam;
-            rect                      m_viewport;
-            const world_layer_header* m_plane;
-            std::vector <entry>       m_entries;
+            /// @brief The world-space transform, present only for a camera batch.
+            struct world_transform {
+                camera                    cam;
+                rect                      viewport;
+                const world_layer_header* plane;
+            };
+
+            std::optional <world_transform> m_world;   ///< nullopt => screen-space (identity).
+            std::vector <entry>             m_entries;
     };
 }

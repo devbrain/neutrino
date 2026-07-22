@@ -104,8 +104,18 @@ struct sprite_def {
 ```cpp
 class sprite_set {                                    // reached through a sprite_set_handle
 public:
+    // What to draw — by name or by zero-based frame index.
     [[nodiscard]] std::optional<sprite_visual_ref>   visual(std::string_view name) const;
+    [[nodiscard]] std::optional<sprite_visual_ref>   visual(std::size_t index) const;
     [[nodiscard]] std::optional<sprite_animation_id> clip(std::string_view name) const;
+    [[nodiscard]] std::size_t                        visual_count() const;
+    // Frame geometry — read a frame's size/pivot without keeping the source def alive.
+    [[nodiscard]] std::optional<rect>  frame_rect(std::string_view name) const;
+    [[nodiscard]] std::optional<rect>  frame_rect(std::size_t index) const;
+    [[nodiscard]] std::optional<point> origin(std::string_view name) const;
+    [[nodiscard]] std::optional<point> origin(std::size_t index) const;
+    [[nodiscard]] dim bounding_size(std::size_t first = 0) const;          // whole set / first..end
+    [[nodiscard]] dim bounding_size(std::size_t first, std::size_t count) const;
 private:
     render_bundle m_bundle;                          // owns atlas/sheet/animations
     /* name -> visual_ref, name -> animation_id */
@@ -113,8 +123,8 @@ private:
 ```
 
 The caller never sees an atlas or sheet id, and never a bare `sprite_set` — only a
-`sprite_set_handle` from the cache. Spawning lives on the handle so an instance can hold a
-lease (below), not on the bare set.
+`sprite_set_handle` from the cache (which forwards every accessor above). Spawning lives on
+the handle so an instance can hold a lease (below), not on the bare set.
 
 ### Per-instance state — a leased `sprite_instance` (lifetime contract)
 
@@ -363,3 +373,31 @@ path's borrow, and a per-visual pivot in the loader (basic exports carry none).
 
 S1/S2 are behavior-preserving refactors the rest builds on; S3–S6 are the new pipeline; S7's
 one-fixture loader is part of v1 (the loadable-asset claim), broader format support deferred.
+
+## 5. Post-v1 — querying the built set (2026-07)
+
+Battle-testing the pipeline in a real game (Krypton Egg, `games/ke`) surfaced that the built
+set was **draw-only**: `visual(name)` handed back an opaque `sprite_visual_ref` (two ids, no
+geometry), so any consumer that needed a frame's *size* — a collision box, a paddle extent, a
+layout cell — had to keep the whole source `sprite_def` alive just to read
+`visuals[i].src`. That is a blueprint retained purely as a runtime lookup table. Two additive
+changes close it (no existing behavior changed):
+
+- **The built set answers geometry.** `frame_rect(name|index)` and `origin(name|index)` resolve
+  a frame's atlas rect and pivot straight from the registered sheet. Backed by a new public
+  free function `neutrino::find_visual(sprite_visual_ref) → std::optional<sprite_visual>` (in
+  `sprite_sheet.hh`) — the ref→geometry lookup the draw path already did privately, now public —
+  plus a non-throwing `sprites_manager::contains(sheet_id)` so a stale/foreign ref resolves to
+  `nullopt` instead of tripping a precondition. A consumer stores only the `sprite_set_handle`
+  and drops the def.
+
+- **Index addressing + a bounding aggregate.** Sheets are index-ordered but were only
+  name-addressable, so callers stringified frame numbers (`visual(std::to_string(i))`) on every
+  draw. Added `visual_count()` and by-index overloads `visual(i)` / `frame_rect(i)` /
+  `origin(i)`, plus `bounding_size(first = 0)` / `bounding_size(first, count) → dim` (the max
+  width × max height over a frame range — a cell that fits any frame in range). The aggregate
+  moved a "scan the form frames for the widest" loop out of the game and into the engine.
+
+The `sprite_set_handle` forwards all of these, so game code reaches them through its lease. In
+KE this let `ke_assets` drop three retained `sprite_def`s (down to `cache` + three handles) and
+deleted every `std::to_string(frame)` from its draw/collision paths.

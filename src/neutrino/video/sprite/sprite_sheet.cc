@@ -112,4 +112,16 @@ namespace neutrino {
 
         return sprite_visual_ref{sheet, *visual};
     }
+
+    std::optional <sprite_visual> find_visual(sprite_visual_ref ref) {
+        sprites_manager* manager = maybe_sprites_manager();
+        if (!manager || !ref.valid() || !manager->contains(ref.sheet)) {
+            return std::nullopt;
+        }
+        const sprite_sheet& sheet = manager->get(ref.sheet);
+        if (!sheet.contains(ref.visual)) {
+            return std::nullopt;
+        }
+        return sheet.visual(ref.visual);
+    }
 }

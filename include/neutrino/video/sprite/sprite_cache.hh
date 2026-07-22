@@ -57,6 +57,46 @@ namespace neutrino {
                 return m_set ? m_set->visual(name) : std::nullopt;
             }
 
+            /// @brief Number of visuals in the leased set.
+            [[nodiscard]] std::size_t visual_count() const {
+                return m_set ? m_set->visual_count() : 0;
+            }
+
+            /// @brief The visual at zero-based frame @p index, or nullopt.
+            [[nodiscard]] std::optional <sprite_visual_ref> visual(std::size_t index) const {
+                return m_set ? m_set->visual(index) : std::nullopt;
+            }
+
+            /// @brief Atlas rect (frame size + position) of the visual @p name, or nullopt.
+            [[nodiscard]] std::optional <rect> frame_rect(std::string_view name) const {
+                return m_set ? m_set->frame_rect(name) : std::nullopt;
+            }
+
+            /// @brief Atlas rect of the visual at frame @p index, or nullopt.
+            [[nodiscard]] std::optional <rect> frame_rect(std::size_t index) const {
+                return m_set ? m_set->frame_rect(index) : std::nullopt;
+            }
+
+            /// @brief Pivot/origin of the visual @p name, or nullopt.
+            [[nodiscard]] std::optional <point> origin(std::string_view name) const {
+                return m_set ? m_set->origin(name) : std::nullopt;
+            }
+
+            /// @brief Pivot/origin of the visual at frame @p index, or nullopt.
+            [[nodiscard]] std::optional <point> origin(std::size_t index) const {
+                return m_set ? m_set->origin(index) : std::nullopt;
+            }
+
+            /// @brief Bounding size (max width x max height) over frames [@p first, end).
+            [[nodiscard]] dim bounding_size(std::size_t first = 0) const {
+                return m_set ? m_set->bounding_size(first) : dim{0, 0};
+            }
+
+            /// @brief Bounding size over the frame range [@p first, @p first + @p count).
+            [[nodiscard]] dim bounding_size(std::size_t first, std::size_t count) const {
+                return m_set ? m_set->bounding_size(first, count) : dim{0, 0};
+            }
+
             /// @brief The registered animation bound to clip @p name, or nullopt.
             [[nodiscard]] std::optional <sprite_animation_id> clip(std::string_view name) const {
                 return m_set ? m_set->clip(name) : std::nullopt;

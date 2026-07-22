@@ -5,15 +5,23 @@
 #include <neutrino/video/world/sprite_batch.hh>
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 
 namespace neutrino {
     sprite_batch::sprite_batch(const camera& cam, rect viewport, const world_layer_header& plane)
-        : m_cam(cam), m_viewport(viewport), m_plane(&plane) {
+        : m_world(world_transform{cam, viewport, &plane}) {
     }
 
     void sprite_batch::add(world_point pos, float depth, sprite_visual_ref visual, sprite_draw_params params) {
         m_entries.push_back(entry{pos, depth, batch_visual{visual}, params});
+    }
+
+    void sprite_batch::add(world_point pos, float depth, std::optional <sprite_visual_ref> visual,
+                           sprite_draw_params params) {
+        if (visual) {
+            add(pos, depth, *visual, params);
+        }
     }
 
     void sprite_batch::add(world_point pos, float depth, sprite_state_id state, sprite_draw_params params) {
@@ -27,16 +35,24 @@ namespace neutrino {
         std::stable_sort(ordered.begin(), ordered.end(),
                          [](const entry& a, const entry& b) { return a.depth < b.depth; });
 
-        const dim vp = m_viewport.dimensions();
         std::vector <sprite_draw> out;
         out.reserve(ordered.size());
         for (const entry& e : ordered) {
-            const point sp = to_screen(m_cam, *m_plane, vp, e.pos);
-            const point pos{m_viewport.x + sp.x, m_viewport.y + sp.y};
-            // The caller's scale composes on top of the camera zoom (the tile anchor path
-            // does the same: it passes {cam.zoom}).
-            const sprite_draw_params params{e.params.scale * m_cam.zoom, e.params.flip, e.params.rotation_degrees};
-            out.push_back(sprite_draw{pos, e.visual, params});
+            if (m_world) {
+                const dim vp = m_world->viewport.dimensions();
+                const point sp = to_screen(m_world->cam, *m_world->plane, vp, e.pos);
+                const point pos{m_world->viewport.x + sp.x, m_world->viewport.y + sp.y};
+                // The caller's scale composes on top of the camera zoom (the tile anchor path
+                // does the same: it passes {cam.zoom}).
+                const sprite_draw_params params{
+                    e.params.scale * m_world->cam.zoom, e.params.flip, e.params.rotation_degrees};
+                out.push_back(sprite_draw{pos, e.visual, params});
+            } else {
+                // Screen-space: the position is a literal renderer pixel; no transform, no zoom.
+                const point pos{static_cast <int>(std::lround(e.pos.x)),
+                                static_cast <int>(std::lround(e.pos.y))};
+                out.push_back(sprite_draw{pos, e.visual, e.params});
+            }
         }
         return out;
     }

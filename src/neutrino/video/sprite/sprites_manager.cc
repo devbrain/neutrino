@@ -81,6 +81,10 @@ namespace neutrino {
         return m_sheets.get(id);
     }
 
+    bool sprites_manager::contains(sprite_sheet_id id) const {
+        return id.valid() && m_sheets.contains(id);
+    }
+
     void sprites_manager::erase(sprite_sheet_id id) {
         if (!id.valid() || !m_sheets.contains(id)) {
             return;

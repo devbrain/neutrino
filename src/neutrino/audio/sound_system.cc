@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <istream>
+#include <optional>
+#include <vector>
 
 #include <neutrino/audio/audio.hh>
 #include "sound_system.hh"
@@ -231,9 +233,83 @@ namespace neutrino {
         return music_stream(std::make_unique <musac::audio_stream>(std::move(stream)));
     }
 
+    namespace {
+        struct captured_pcm {
+            std::shared_ptr<const std::vector<float>> pcm;
+            unsigned rate;
+            unsigned channels;
+        };
+
+        // Decode @p data and resample it to the output device rate ONCE, returning the
+        // interleaved device-rate float PCM. Runs the SFX through musac's normal decode +
+        // auto-resample pipeline a single time and captures its output; playback then needs
+        // no per-channel decode or resampler. Returns nullopt if audio is inactive or the
+        // sample can't be pre-rendered (no decoder, empty) -- the caller falls back to
+        // on-demand decoding. Music is never routed here (see load_music).
+        std::optional<captured_pcm> capture_device_pcm(const std::shared_ptr<const std::vector<uint8_t>>& data) {
+            auto* ss = maybe_sound_system();
+            if (!ss || !ss->active() || !ss->device()) {
+                return std::nullopt;
+            }
+            const musac::sample_rate_t rate = ss->device()->get_freq();
+            const musac::channels_t channels = ss->device()->get_channels();
+            if (rate == 0 || channels == 0) {
+                return std::nullopt;
+            }
+            auto io = audio_detail::io_from_buffer(data);
+            if (!io) {
+                return std::nullopt;
+            }
+
+            // The one-time resample logs an INFO per sample ("Automatic resampling enabled");
+            // raise the log threshold across the capture so bulk-loading a sound bank stays
+            // quiet, and restore it afterwards.
+            const int prev_log_level = failsafe::logger::get_config().min_level.load();
+            failsafe::logger::set_min_level(LOGGER_LEVEL_WARN);
+            struct log_level_guard {
+                int prev;
+                ~log_level_guard() { failsafe::logger::set_min_level(prev); }
+            } guard{prev_log_level};
+
+            try {
+                musac::audio_source src(std::move(io), ss->registry().get()); // real decoder + auto-resampler
+                constexpr std::size_t frame_size = 4096;
+                src.open(rate, channels, frame_size);
+
+                auto pcm = std::make_shared<std::vector<float>>();
+                std::vector<float> chunk(frame_size * channels);
+                const std::size_t cap = static_cast<std::size_t>(rate) * channels * 30; // 30s guard
+                for (;;) {
+                    std::size_t pos = 0;
+                    src.read_samples(chunk.data(), pos, chunk.size(), channels);
+                    if (pos == 0) {
+                        break; // drained
+                    }
+                    pcm->insert(pcm->end(), chunk.begin(), chunk.begin() + static_cast<std::ptrdiff_t>(pos));
+                    if (pcm->size() >= cap) {
+                        break; // too long for an SFX cache -- load_music is the streamed path
+                    }
+                }
+                if (pcm->empty()) {
+                    return std::nullopt;
+                }
+                return captured_pcm{std::const_pointer_cast<const std::vector<float>>(pcm),
+                                    static_cast<unsigned>(rate), static_cast<unsigned>(channels)};
+            } catch (const std::exception&) {
+                return std::nullopt; // e.g. no decoder for the format -> decode on demand instead
+            }
+        }
+    }
+
     sound_effect load_sfx(std::istream& is) {
         auto data = audio_detail::read_all(is);
         ENFORCE(!data->empty())("Failed to read audio data from stream");
+        // Short SFX are decoded + resampled to the device rate once and cached, so replays
+        // (and overlapping channels) cost no decode or resampler. Falls back to on-demand
+        // decoding when audio is off or the sample can't be pre-rendered.
+        if (auto cached = capture_device_pcm(data)) {
+            return sound_effect(cached->pcm, cached->rate, cached->channels);
+        }
         return sound_effect(std::move(data));
     }
 

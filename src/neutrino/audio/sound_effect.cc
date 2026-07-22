@@ -11,8 +11,58 @@
 #include <musac/audio_device.hh>
 #include <musac/audio_source.hh>
 #include <musac/stream.hh>
+#include <musac/sdk/decoder.hh>
 #include <musac/sdk/decoders_registry.hh>
 #include <algorithm>
+#include <cstring>
+
+namespace {
+    // A musac decoder over a pre-decoded, device-rate, interleaved-float buffer: it hands
+    // the samples straight back, so an audio_source built on it needs no decoding and (since
+    // its rate equals the device rate) no resampler. The buffer is shared read-only, so each
+    // concurrent channel gets its own decoder -- its own playback cursor -- over one copy.
+    // This is neutrino's own codec; the musac library is untouched.
+    class pcm_decoder final : public musac::decoder {
+        public:
+            pcm_decoder(std::shared_ptr<const std::vector<float>> pcm,
+                        musac::sample_rate_t rate, musac::channels_t channels)
+                : m_pcm(std::move(pcm)), m_rate(rate), m_channels(channels) {}
+
+            [[nodiscard]] const char* get_name() const override { return "neutrino cached PCM"; }
+            void open(musac::io_stream*) override { m_pos = 0; set_is_open(true); }
+            [[nodiscard]] musac::channels_t get_channels() const override { return m_channels; }
+            [[nodiscard]] musac::sample_rate_t get_rate() const override { return m_rate; }
+            bool rewind() override { m_pos = 0; return true; }
+
+            [[nodiscard]] std::chrono::microseconds duration() const override {
+                const std::size_t frames = m_channels ? m_pcm->size() / m_channels : 0;
+                return std::chrono::microseconds(
+                    m_rate ? static_cast<std::int64_t>(frames) * 1'000'000 / m_rate : 0);
+            }
+            bool seek_to_time(std::chrono::microseconds t) override {
+                const std::int64_t frame = m_rate ? t.count() * static_cast<std::int64_t>(m_rate) / 1'000'000 : 0;
+                const std::size_t s = static_cast<std::size_t>(std::max<std::int64_t>(0, frame)) * m_channels;
+                m_pos = std::min(s, m_pcm->size());
+                return true;
+            }
+
+        protected:
+            std::size_t do_decode(float* buf, std::size_t len, bool& call_again) override {
+                const std::size_t remaining = m_pcm->size() - m_pos;
+                const std::size_t todo = std::min(len, remaining);
+                std::memcpy(buf, m_pcm->data() + m_pos, todo * sizeof(float));
+                m_pos += todo;
+                call_again = m_pos < m_pcm->size();
+                return todo;
+            }
+
+        private:
+            std::shared_ptr<const std::vector<float>> m_pcm; // interleaved, device rate/channels
+            musac::sample_rate_t m_rate;
+            musac::channels_t m_channels;
+            std::size_t m_pos = 0; // interleaved-sample cursor
+    };
+}
 
 namespace neutrino {
 
@@ -42,6 +92,11 @@ namespace neutrino {
         register_self(this);
     }
 
+    sound_effect::sound_effect(std::shared_ptr<const std::vector<float>> pcm, unsigned rate, unsigned channels)
+        : m_pcm(std::move(pcm)), m_pcm_rate(rate), m_pcm_channels(channels) {
+        register_self(this);
+    }
+
     sound_effect::~sound_effect() {
         if (auto* ss = maybe_sound_system()) {
             ss->unregister_effect(this);
@@ -52,6 +107,9 @@ namespace neutrino {
     sound_effect::sound_effect(sound_effect&& other) noexcept
         : m_path(std::move(other.m_path)),
           m_data(std::move(other.m_data)),
+          m_pcm(std::move(other.m_pcm)),
+          m_pcm_rate(other.m_pcm_rate),
+          m_pcm_channels(other.m_pcm_channels),
           m_source(std::move(other.m_source)),
           m_channels(std::move(other.m_channels)) {
         // other stays registered until its destructor runs; its channel
@@ -67,10 +125,13 @@ namespace neutrino {
         // to make the "no (un)register needed" reasoning explicit (cf. music_stream, whose
         // registration is conditional and does need the discipline).
         if (this != &other) {
-            m_path     = std::move(other.m_path);
-            m_data     = std::move(other.m_data);
-            m_source   = std::move(other.m_source);
-            m_channels = std::move(other.m_channels);
+            m_path         = std::move(other.m_path);
+            m_data         = std::move(other.m_data);
+            m_pcm          = std::move(other.m_pcm);
+            m_pcm_rate     = other.m_pcm_rate;
+            m_pcm_channels = other.m_pcm_channels;
+            m_source       = std::move(other.m_source);
+            m_channels     = std::move(other.m_channels);
         }
         return *this;
     }
@@ -114,6 +175,20 @@ namespace neutrino {
             idle_channel->stream->rewind();
             idle_channel->stream->set_volume(volume * group);
             idle_channel->stream->play(1, fade_time);
+        } else if (m_pcm) {
+            // Pre-decoded device-rate PCM: play it straight through neutrino's own PCM
+            // decoder -- no per-channel decode, and no resampler (rate == device rate). The
+            // decoder ignores the io_stream, but the source ctor still wants one.
+            static const auto s_dummy_io = std::make_shared<const std::vector<uint8_t>>(1, uint8_t{0});
+            auto decoder = std::make_unique<pcm_decoder>(
+                m_pcm, static_cast<musac::sample_rate_t>(m_pcm_rate),
+                static_cast<musac::channels_t>(m_pcm_channels));
+            musac::audio_source source(std::move(decoder), audio_detail::io_from_buffer(s_dummy_io));
+            auto stream = ss->device()->create_stream(std::move(source));
+            stream.open();
+            stream.set_volume(volume * group);
+            stream.play(1, fade_time);
+            m_channels.push_back({std::make_unique<musac::audio_stream>(std::move(stream)), volume});
         } else {
             // Create a new channel: each concurrent channel decodes its own
             // view of the source (a fresh file handle or memory-buffer view).

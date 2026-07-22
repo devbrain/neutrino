@@ -4,6 +4,8 @@
 
 #include <neutrino/video/sprite/sprite_set.hh>
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <span>
 #include <string>
@@ -20,7 +22,9 @@
 
 #include <sdlpp/video/surface.hh>
 
+#include "services/service_access.hh"
 #include "video/sprite/image_decode.hh"
+#include "video/sprite/sprites_manager.hh"
 
 namespace neutrino {
     namespace {
@@ -66,11 +70,95 @@ namespace neutrino {
             }
             return resolved;
         }
+
+        // The set's single registered sheet, or nullptr if the set is empty or its sheet is
+        // no longer registered (e.g. the app is torn down). A sprite_set built by
+        // build_sprite_set holds exactly one sheet.
+        const sprite_sheet* sheet_of(const render_bundle& bundle) {
+            if (bundle.sheets.empty()) {
+                return nullptr;
+            }
+            sprites_manager* manager = maybe_sprites_manager();
+            return (manager && manager->contains(bundle.sheets.front()))
+                       ? &manager->get(bundle.sheets.front())
+                       : nullptr;
+        }
     } // namespace
 
     std::optional <sprite_visual_ref> sprite_set::visual(std::string_view name) const {
         const auto it = visuals_by_name.find(std::string(name));
         return it == visuals_by_name.end() ? std::nullopt : std::optional{it->second};
+    }
+
+    std::size_t sprite_set::visual_count() const {
+        const sprite_sheet* sheet = sheet_of(*this);
+        return sheet ? sheet->visual_count() : 0;
+    }
+
+    std::optional <sprite_visual_ref> sprite_set::visual(std::size_t index) const {
+        const sprite_sheet* sheet = sheet_of(*this);
+        if (!sheet || index >= sheet->visual_count()) {
+            return std::nullopt;
+        }
+        return sprite_visual_ref{sheets.front(), sheet->visual_id(index)};
+    }
+
+    std::optional <rect> sprite_set::frame_rect(std::string_view name) const {
+        if (const auto ref = visual(name)) {
+            if (const auto v = find_visual(*ref)) {
+                return v->texture_rect;
+            }
+        }
+        return std::nullopt;
+    }
+
+    std::optional <rect> sprite_set::frame_rect(std::size_t index) const {
+        const sprite_sheet* sheet = sheet_of(*this);
+        if (!sheet || index >= sheet->visual_count()) {
+            return std::nullopt;
+        }
+        return sheet->visual(sheet->visual_id(index)).texture_rect;
+    }
+
+    std::optional <point> sprite_set::origin(std::string_view name) const {
+        if (const auto ref = visual(name)) {
+            if (const auto v = find_visual(*ref)) {
+                return v->origin;
+            }
+        }
+        return std::nullopt;
+    }
+
+    std::optional <point> sprite_set::origin(std::size_t index) const {
+        const sprite_sheet* sheet = sheet_of(*this);
+        if (!sheet || index >= sheet->visual_count()) {
+            return std::nullopt;
+        }
+        return sheet->visual(sheet->visual_id(index)).origin;
+    }
+
+    dim sprite_set::bounding_size(std::size_t first) const {
+        return bounding_size(first, visual_count());
+    }
+
+    dim sprite_set::bounding_size(std::size_t first, std::size_t count) const {
+        const sprite_sheet* sheet = sheet_of(*this);
+        if (!sheet) {
+            return dim{0, 0};
+        }
+        const std::size_t n = sheet->visual_count();
+        if (first >= n) {
+            return dim{0, 0};
+        }
+        const std::size_t last = first + std::min(count, n - first); // clamped to [first, n)
+        int w = 0;
+        int h = 0;
+        for (std::size_t i = first; i < last; ++i) {
+            const rect& r = sheet->visual(sheet->visual_id(i)).texture_rect;
+            w = std::max(w, r.w);
+            h = std::max(h, r.h);
+        }
+        return dim{w, h};
     }
 
     std::optional <sprite_animation_id> sprite_set::clip(std::string_view name) const {

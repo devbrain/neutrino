@@ -297,6 +297,20 @@ namespace neutrino {
     NEUTRINO_EXPORT std::optional <sprite_visual_ref> find_visual_ref(
         sprite_sheet_id sheet,
         std::string_view name);
+
+    /**
+     * @brief Resolve a registered visual reference to its static geometry.
+     *
+     * Returns the visual's atlas @ref sprite_visual::texture_rect and
+     * @ref sprite_visual::origin -- the frame's size and pivot -- so a caller that stored
+     * only a @ref sprite_visual_ref can answer "how big is this frame / where is its
+     * pivot" without keeping the source @ref sprite_def alive. This is the public form of
+     * the lookup the draw path performs internally.
+     *
+     * @return The geometry, or std::nullopt when @p ref is invalid or does not resolve to
+     *         a live sheet/visual (e.g. after the owning set was released).
+     */
+    [[nodiscard]] NEUTRINO_EXPORT std::optional <sprite_visual> find_visual(sprite_visual_ref ref);
 }
 
 /**

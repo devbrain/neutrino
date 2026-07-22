@@ -53,6 +53,14 @@ namespace neutrino {
             const sprite_sheet& get(sprite_sheet_id id) const;
 
             /**
+             * @brief Is @p id a sheet currently stored in this manager?
+             *
+             * The non-throwing existence check @ref get lacks: lets a resolver return an
+             * empty result for a stale/foreign handle instead of tripping get's precondition.
+             */
+            [[nodiscard]] bool contains(sprite_sheet_id id) const;
+
+            /**
              * @brief Remove a registered sheet if present.
              *
              * @pre No registered animation frame or fixed runtime state may reference it.

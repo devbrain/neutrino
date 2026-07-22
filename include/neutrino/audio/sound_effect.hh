@@ -41,6 +41,11 @@ namespace neutrino {
         /// @brief Effect backed by an in-memory encoded file (e.g. slurped from an
         /// istream); each concurrent channel decodes its own view of the data.
         explicit sound_effect(std::shared_ptr<const std::vector<uint8_t>> data);
+        /// @brief Effect backed by pre-decoded, device-rate PCM (interleaved float),
+        /// as produced by load_sfx once at load. Channels play it back with no decode
+        /// and no resampler. @p rate must equal the output device rate and @p channels
+        /// its interleave; the buffer is shared read-only across concurrent channels.
+        sound_effect(std::shared_ptr<const std::vector<float>> pcm, unsigned rate, unsigned channels);
         ~sound_effect();
 
         sound_effect(sound_effect&&) noexcept;
@@ -74,6 +79,9 @@ namespace neutrino {
 
         std::string m_path;
         std::shared_ptr<const std::vector<uint8_t>> m_data;
+        std::shared_ptr<const std::vector<float>> m_pcm; // pre-decoded device-rate PCM (interleaved)
+        unsigned m_pcm_rate = 0;
+        unsigned m_pcm_channels = 0;
         std::shared_ptr<musac::audio_source> m_source;
         std::vector<channel> m_channels;
     };
