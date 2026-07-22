@@ -76,6 +76,9 @@ FetchContent_Declare(pugixml
     GIT_REPOSITORY https://github.com/zeux/pugixml.git
     GIT_TAG v1.14
     GIT_SHALLOW TRUE
+    # pugixml pins cmake_minimum_required(VERSION 3.5); CMake >= 4 deprecates < 3.10.
+    # Bump it to 3.10...3.31, like the other deps (see neutrino-cmake xsimd/SDL2).
+    PATCH_COMMAND ${CMAKE_COMMAND} -P ${NEUTRINO_CMAKE_DIR}/patches/patch_cmake_minimum.cmake
 )
 FetchContent_MakeAvailable(pugixml)
 
@@ -109,6 +112,10 @@ if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)
         GIT_TAG v1.5.6
         GIT_SHALLOW TRUE
         SOURCE_SUBDIR build/cmake
+        # zstd's build system lives in build/cmake and pins
+        # cmake_minimum_required(VERSION 3.5 FATAL_ERROR); CMake >= 4 deprecates < 3.10.
+        PATCH_COMMAND ${CMAKE_COMMAND} -DPATCH_FILE=build/cmake/CMakeLists.txt
+                      -P ${NEUTRINO_CMAKE_DIR}/patches/patch_cmake_minimum.cmake
     )
     FetchContent_MakeAvailable(zstd)
 
