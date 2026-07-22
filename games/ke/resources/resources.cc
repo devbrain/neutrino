@@ -143,8 +143,15 @@ namespace rs {
                 }
             }
         }
+        // DIG sound banks: kept as raw bytes; a rs::dig_decoder plays samples from them.
+        for (const auto& r : result.resources) {
+            if (r.name.find(".dig") != std::string::npos) {
+                gr.audio.emplace(r.name, read_resource(is, r));
+            }
+        }
         LOG_DEBUG("Loaded ", gr.backdrops.size(), "backdrops");
         LOG_DEBUG("Loaded ", pals.size(), "palettes");
+        LOG_DEBUG("Loaded ", gr.audio.size(), "sound banks");
         return gr;
     }
 }

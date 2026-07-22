@@ -52,6 +52,23 @@ namespace rs {
         return r.first + (i < r.count ? i : r.count - 1);
     }
 
+    // KE_SPELL ball sprites, grouped by ball kind. Each kind has ke_ball_size_count
+    // consecutive size frames. Frame ranges in the KE_SPELL sheet (inclusive):
+    //   ordinary 0..5 | sticky 6..11 | super 12..17.
+    enum class ke_ball_kind {
+        ordinary,
+        sticky,
+        super,
+    };
+
+    inline constexpr int ke_ball_size_count = 6; // sizes 0..5 per kind
+
+    // KE_SPELL frame for a ball (@p kind, @p size). `size` is 0-based (0..5), clamped.
+    [[nodiscard]] constexpr std::size_t ke_ball_frame(ke_ball_kind kind, int size) noexcept {
+        const int s = size < 0 ? 0 : (size >= ke_ball_size_count ? ke_ball_size_count - 1 : size);
+        return static_cast <std::size_t>(kind) * ke_ball_size_count + static_cast <std::size_t>(s);
+    }
+
     // A KE sprite animation extracted from ke.exe: the exact BOB block sequence (looping),
     // with a single per-frame duration in game ticks (ke_tick, 70 Hz). count == 1 is a
     // static sprite (its `ticks` is just a long hold). Capacity fits the longest sequence
@@ -148,12 +165,15 @@ namespace rs {
     }
 
     // Convert a decoded BOB sheet into a sprite_def: an image plus one visual per frame,
-    // named "0".."N-1", each carrying its BOB per-frame offset as the pivot origin (so
-    // variable-size animation frames stay aligned). Clips are layered on by define_*.
-    [[nodiscard]] neutrino::sprite_def to_sprite_def(const tile_sheet_def& sheet);
+    // named "0".."N-1". Each visual's pivot is its BOB per-frame offset (so variable-size
+    // animation frames stay aligned) unless @p top_left_origin, which pins the pivot to
+    // (0,0) for tiles placed by their top-left corner (the backdrop). Clips are layered on
+    // by define_*.
+    [[nodiscard]] neutrino::sprite_def to_sprite_def(const tile_sheet_def& sheet,
+                                                     bool top_left_origin = false);
 
-    // Build every KE object definition from @p gr into the published ke_assets: the brick
-    // tileset + background (define_blocks) and the paddle sprite def (define_paddle).
+    // Build the KE actor sprite sets (paddle / bricks / balls) from @p gr into the published
+    // ke_assets. The backdrop sheets stay in @p gr for the backdrop module to read.
     // @pre set_ke_assets() has been called and the application is ready.
-    void define_sprites(game_resources& gr);
+    void define_sprites(const game_resources& gr);
 }

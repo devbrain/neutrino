@@ -4,17 +4,15 @@
 
 #pragma once
 
-#include <memory>
+#include <optional>
 
 #include <neutrino/scene/base_scene.hh>
-#include <neutrino/video/world/world_compositor.hh>
-#include <neutrino/video/world/world_renderer.hh>
-#include <neutrino/world/world.hh>
+#include <neutrino/video/render_texture.hh>  // the composed backdrop
 
-#include <ke/game/actors_layer.hh>
+#include <ke/game/mechanics.hh>
 
-// Experiment: show the first KE level via the ke_assets framework, with a mouse-movable
-// paddle drawn through the sprite-def pipeline.
+// The KE gameplay scene: draws the static backdrop texture, then the game's sprites
+// (bricks, paddle, balls) through a screen-space sprite_batch. Physics runs in game_mechanics.
 class play_game_scene : public neutrino::base_scene {
     public:
         void on_enter() override;
@@ -25,13 +23,9 @@ class play_game_scene : public neutrino::base_scene {
         [[nodiscard]] bool is_opaque() const override;
 
     private:
-        std::unique_ptr <neutrino::world_renderer> m_renderer;
-        actors_layer m_actors;
-        std::unique_ptr <neutrino::world_compositor> m_compositor;
+        std::optional <neutrino::render_texture> m_backdrop; // the composed level backdrop
+        game_mechanics m_mechanics;
 
-        float m_paddle_center_x{160.0f}; // render-space x driven by the mouse
-        int m_paddle_w{32};
-        int m_paddle_h{8};
+        int m_paddle_target_x{160}; // desired paddle centre (render x), driven by the mouse
         bool m_ready{false};
-        bool m_logged_first_frame{false};
 };

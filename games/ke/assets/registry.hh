@@ -1,30 +1,28 @@
 //
 // Game-wide built render assets, published through a KE-local service accessor so
-// define_sprites / build_world / the scene / the actors layer reach them without threading.
+// define_sprites / the scene / the actors layer reach them without threading.
 //
 
 #pragma once
 
 #include <neutrino/video/sprite/sprite_cache.hh>
-#include <neutrino/video/sprite/sprite_def.hh>
-#include <neutrino/world/world_tileset.hh>
 #include <ke/resources/resources.hh>
 #include <ke/resources/cell.hh>
 
 namespace rs {
-    // Level-invariant assets: the brick tileset, the actor sprite defs, and the cache their
-    // instances lease from. (The background is per-level -- parametrized by fill_block -- so
-    // it is built with each level's world, not stored here.) Owned by the scene, populated
-    // by define_sprites(), published via set_ke_assets. Non-copyable/non-movable (holds a
-    // live sprite_cache), so it is constructed in place and referenced.
+    // Level-invariant render assets: the leased sprite sets drawn through the sprite_batch
+    // (actors + the backdrop's walls/fill), and the cache they lease from. Each set answers
+    // its own frame geometry (frame_rect / origin), so no source sprite_def is retained.
+    // Owned by the scene, populated by define_sprites(), published via set_ke_assets.
+    // Non-copyable/non-movable (holds a live sprite_cache), so it is constructed in place.
     struct ke_assets {
-        neutrino::sprite_cache      cache;      ///< actors lease their built sets from here
-        neutrino::world_tileset     blocks;     ///< KE_BRICK collection tileset (world-drawn)
-        neutrino::sprite_def        paddle_def; ///< KE_RACK sprite def (visuals with baked origins)
-        neutrino::sprite_set_handle paddle;     ///< the built + leased paddle set
+        neutrino::sprite_cache      cache;   ///< sprites lease their built sets from here
 
-        tile_sheet_def              board;
-        tile_sheet_def              fill_rects;
+        neutrino::sprite_set_handle paddle;  ///< the built + leased KE_RACK paddle set
+        neutrino::sprite_set_handle bricks;  ///< the built + leased KE_BRICK set
+        neutrino::sprite_set_handle balls;   ///< the built + leased KE_SPELL ball set
+        neutrino::sprite_set_handle board;   ///< KE_BORD wall pillars (backdrop, top-left pivot)
+        neutrino::sprite_set_handle fill;    ///< KE_FILL score/fill tiles (backdrop, top-left pivot)
 
         std::vector<ke_level>       levels;
 
