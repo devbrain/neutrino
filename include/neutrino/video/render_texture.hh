@@ -61,9 +61,15 @@ namespace neutrino {
             void compose(Fn&& draw, const sdlpp::color& clear = sdlpp::color{0, 0, 0, 0}) {
                 sdlpp::renderer& r = get_renderer();
                 const sdlpp::renderer::target_guard guard(r, m_texture);
+                // clear() / draw() mutate the renderer's shared draw colour; the target_guard
+                // restores the render target but not the colour, so scope it here.
+                const auto prev_color = r.get_draw_color();
                 (void) r.set_draw_color(clear);
                 (void) r.clear();
                 std::forward <Fn>(draw)();
+                if (prev_color) {
+                    (void) r.set_draw_color(*prev_color);
+                }
             }
 
             /// @brief Blit the whole texture to @p dst on the current render target.

@@ -28,7 +28,7 @@ namespace {
         }
         // Alive and flung bricks both draw at their current pos (flung ones slide off-screen).
         for (const brick& b : model::instance().get_level_info().bricks) {
-            batch.add(b.pos, b.pos.y, assets.bricks.visual(static_cast<std::size_t>(b.frame)));
+            batch.add(b.pos, b.pos.y, assets.bricks.visual(static_cast <std::size_t>(b.frame)));
         }
     }
 
@@ -38,7 +38,7 @@ namespace {
             return;
         }
         const paddle_info& p = model::instance().get_paddle();
-        const neutrino::world_point pos{static_cast<float>(p.x), static_cast<float>(p.y)};
+        const neutrino::world_point pos{static_cast <float>(p.x), static_cast <float>(p.y)};
         batch.add(pos, pos.y, assets.paddle.visual(rs::ke_paddle_frame(p.state, p.size)));
     }
 
@@ -51,9 +51,36 @@ namespace {
             if (!ball.active) {
                 continue;
             }
-            // +1000 depth: balls draw above bricks/paddle.
-            batch.add(ball.pos, ball.pos.y + 1000.0f,
-                      assets.balls.visual(rs::ke_ball_frame(ball.kind, ball.size)));
+            // ball.pos is the collider CENTRE; the sprite pivots top-left, so shift by half the
+            // frame to centre the graphic on the body. +1000 depth: above bricks/paddle.
+            const std::size_t frame = rs::ke_ball_frame(ball.kind, ball.size);
+            const neutrino::rect fr = assets.balls.frame_rect(frame).value_or(neutrino::rect{});
+            const neutrino::world_point pos{
+                ball.pos.x - static_cast <float>(fr.w) * 0.5f,
+                ball.pos.y - static_cast <float>(fr.h) * 0.5f
+            };
+            batch.add(pos, ball.pos.y + 1000.0f, assets.balls.visual(frame));
+        }
+    }
+
+    void draw_effects(neutrino::sprite_batch& batch) {
+        const auto& assets = rs::require_ke_assets();
+        if (!assets.balls.valid()) { return; } // both anims live in KE_SPELL
+        for (const hit_effect& fx : model::instance().get_level_info().effects) {
+            const rs::ke_anim& a = rs::hit_anim(fx.kind);
+            const float frame_secs = a.ticks * rs::ke_tick_seconds;
+            const std::size_t idx = std::min <std::size_t>(a.count - 1,
+                                                           frame_secs > 0.0f
+                                                               ? static_cast <std::size_t>(fx.elapsed / frame_secs)
+                                                               : 0);
+            const std::size_t block = a.frames[idx]; // block == frame index in the set
+
+            const neutrino::rect fr = assets.balls.frame_rect(block).value_or(neutrino::rect{});
+            const neutrino::world_point pos{
+                fx.pos.x - static_cast <float>(fr.w) * 0.5f,
+                fx.pos.y - static_cast <float>(fr.h) * 0.5f
+            };
+            batch.add(pos, fx.pos.y + 2000.0f, assets.balls.visual(block)); // +2000: above balls
         }
     }
 }
@@ -83,8 +110,8 @@ void play_game_scene::update_physics(neutrino::frame_duration dt) {
     if (!m_ready) {
         return;
     }
-    model::instance().set_paddle_target(m_paddle_target_x);     // input -> domain intent
-    m_mechanics.tick(model::instance(), dt.count() / 1000.0f);  // physics resolves it vs the walls
+    model::instance().set_paddle_target(m_paddle_target_x); // input -> domain intent
+    m_mechanics.tick(model::instance(), dt.count() / 1000.0f); // physics resolves it vs the walls
 }
 
 void play_game_scene::render(neutrino::frame_duration) {
@@ -103,12 +130,18 @@ void play_game_scene::render(neutrino::frame_duration) {
     draw_bricks(batch);
     draw_paddle(batch);
     draw_balls(batch);
+    draw_effects(batch);
     batch.flush();
 }
 
 void play_game_scene::handle_action(const sdlpp::event& ev) {
     if (const auto* m = ev.as <sdlpp::mouse_motion_event>()) {
         m_paddle_target_x = neutrino::to_render_coords({m->x, m->y}).x;
+    }
+    if (const auto* m = ev.as <sdlpp::mouse_button_event>()) {
+        if (m->down && m->get_button() == sdlpp::mouse_button::left) {
+            LOG_ERROR("Down");
+        }
     }
 }
 

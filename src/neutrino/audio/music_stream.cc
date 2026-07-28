@@ -4,6 +4,7 @@
 
 #include <neutrino/audio/music_stream.hh>
 #include "sound_system.hh"
+#include "callback_relay.hh"
 #include "services/service_access.hh"
 #include <musac/stream.hh>
 
@@ -22,6 +23,9 @@ namespace neutrino {
         : m_stream(std::move(stream)) {
         if (m_stream) {
             m_stream->open();
+            m_relay = std::make_shared<audio_detail::callback_relay>();
+            audio_detail::arm_finish(*m_stream, m_relay);
+            audio_detail::arm_loop(*m_stream, m_relay);
             if (auto* ss = maybe_sound_system()) {
                 ss->register_music(this);
             }
@@ -37,9 +41,13 @@ namespace neutrino {
 
     music_stream::music_stream(music_stream&& other) noexcept
         : m_stream(std::move(other.m_stream)),
-          m_caller_volume(other.m_caller_volume) {
-        // other stays registered until its destructor runs; its stream is
-        // null now, so that registration is harmless.
+          m_caller_volume(other.m_caller_volume),
+          m_relay(std::move(other.m_relay)),
+          m_on_finished(std::move(other.m_on_finished)),
+          m_on_looped(std::move(other.m_on_looped)) {
+        // The armed musac callback captured m_relay by shared_ptr, so it keeps counting into
+        // the same relay after the stream moves here. other stays registered until its
+        // destructor runs; its stream is null now, so that registration is harmless.
         if (m_stream) {
             if (auto* ss = maybe_sound_system()) {
                 ss->register_music(this);
@@ -60,6 +68,9 @@ namespace neutrino {
             }
             m_stream = std::move(other.m_stream);
             m_caller_volume = other.m_caller_volume;
+            m_relay = std::move(other.m_relay);
+            m_on_finished = std::move(other.m_on_finished);
+            m_on_looped = std::move(other.m_on_looped);
             if (m_stream) {
                 if (auto* ss = maybe_sound_system()) {
                     ss->register_music(this);
@@ -122,5 +133,21 @@ namespace neutrino {
         if (m_stream) {
             m_stream->rewind();
         }
+    }
+
+    void music_stream::on_finished(std::function<void()> cb) {
+        m_on_finished = std::move(cb);
+    }
+
+    void music_stream::on_looped(std::function<void()> cb) {
+        m_on_looped = std::move(cb);
+    }
+
+    void music_stream::dispatch_pending() {
+        if (!m_relay) {
+            return;
+        }
+        audio_detail::drain_finished(*m_relay, m_on_finished);
+        audio_detail::drain_looped(*m_relay, m_on_looped);
     }
 }

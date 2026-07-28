@@ -9,6 +9,7 @@
 #include <vector>
 #include <chrono>
 #include <string>
+#include <functional>
 #include <neutrino/neutrino_export.h>
 
 namespace musac {
@@ -18,6 +19,7 @@ namespace musac {
 
 namespace neutrino {
     class sound_system;
+    namespace audio_detail { struct callback_relay; }
 
     /// @brief A short, replayable sound effect that can sound several overlapping
     /// instances at once, returned by load_sfx().
@@ -39,7 +41,11 @@ namespace neutrino {
         /// than overlapping.
         explicit sound_effect(std::shared_ptr<musac::audio_source> source);
         /// @brief Effect backed by an in-memory encoded file (e.g. slurped from an
-        /// istream); each concurrent channel decodes its own view of the data.
+        /// istream). The first play() decodes + resamples it to device-rate PCM once and
+        /// caches that, so that play and every later one (and overlapping channels) need no
+        /// decode or resampler; an effect that is never played is never resampled. Falls
+        /// back to per-channel streaming if the sample can't be pre-rendered (unknown
+        /// format, or too long to be a short effect).
         explicit sound_effect(std::shared_ptr<const std::vector<uint8_t>> data);
         /// @brief Effect backed by pre-decoded, device-rate PCM (interleaved float),
         /// as produced by load_sfx once at load. Channels play it back with no decode
@@ -66,11 +72,23 @@ namespace neutrino {
         /// @brief True if any channel of this effect is currently playing.
         [[nodiscard]] bool is_playing() const;
 
+        /// @brief Set a callback invoked when a channel of this effect finishes playing.
+        /// It runs on the main thread during the app's per-frame update -- not on the audio
+        /// thread -- so it may freely touch game state, at up to one frame of latency. Because
+        /// an effect can sound several overlapping channels, it fires once per channel that
+        /// ends. stop() does not trigger it. Replaces any previous callback; pass {} to clear.
+        void on_finished(std::function<void()> cb);
+
     private:
         friend class sound_system;
         /// @brief Re-apply the sfx group volume as (caller volume × @p group) to
         /// all live channels; invoked by sound_system when the group volume changes.
         void apply_group_volume(float group);
+        /// @brief Wire @p stream's finish callback to this effect's relay (audio-thread safe).
+        void arm_channel(musac::audio_stream& stream);
+        /// @brief Drain relayed finish events and invoke the callback; called on the main
+        /// thread by sound_system once per frame.
+        void dispatch_pending();
 
         struct channel {
             std::unique_ptr<musac::audio_stream> stream;
@@ -79,10 +97,13 @@ namespace neutrino {
 
         std::string m_path;
         std::shared_ptr<const std::vector<uint8_t>> m_data;
-        std::shared_ptr<const std::vector<float>> m_pcm; // pre-decoded device-rate PCM (interleaved)
+        std::shared_ptr<const std::vector<float>> m_pcm; // device-rate PCM (interleaved): pcm ctor or first-play capture
         unsigned m_pcm_rate = 0;
         unsigned m_pcm_channels = 0;
+        bool m_pcm_tried = false; // has the first-play lazy capture of m_data been attempted?
         std::shared_ptr<musac::audio_source> m_source;
         std::vector<channel> m_channels;
+        std::shared_ptr<audio_detail::callback_relay> m_relay; // audio-thread finish counters
+        std::function<void()> m_on_finished;
     };
 }

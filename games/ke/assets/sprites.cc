@@ -32,8 +32,9 @@ namespace rs {
             neutrino::sprite_visual_def v;
             v.name = std::to_string(i);
             v.src = sheet.source_rects[i];
-            // Actors keep the BOB per-frame offset as the pivot (aligns variable-size animation
-            // frames); backdrop tiles want top-left placement, so their pivot is (0,0).
+            // top_left_origin pins the pivot to (0,0) so a sprite lines up with the physics
+            // coordinate it is drawn at (KE places everything this way). Otherwise the BOB
+            // per-frame offset is the pivot, aligning variable-size frames to a shared anchor.
             v.origin = top_left_origin || i >= sheet.origins.size()
                            ? neutrino::point{0, 0}
                            : sheet.origins[i];
@@ -47,26 +48,32 @@ namespace rs {
         // (frame index); callers resolve them via ke_paddle_frame / ke_ball_frame. The
         // source def is transient -- the built set answers its own frame geometry, so
         // nothing keeps the def alive past the acquire.
-        void define_set(const game_resources& gr, const char* sheet_name,
+        neutrino::sprite_def define_set(const game_resources& gr, const char* sheet_name,
                         neutrino::sprite_set_handle& set, bool top_left_origin = false) {
             const auto it = gr.tile_sheets.find(sheet_name);
-            if (it == gr.tile_sheets.end()) {
-                LOG_ERROR("ke: no", sheet_name, "sheet -- set undefined");
-                return;
-            }
+            ENFORCE (it != gr.tile_sheets.end()) ("ke: no", sheet_name, "sheet -- set undefined");
+
+
             ke_assets& a = require_ke_assets();
             const neutrino::sprite_def def = to_sprite_def(it->second, top_left_origin);
             set = a.cache.acquire(def);
+            return def;
         }
+
     } // namespace
+
+
 
     void define_sprites(const game_resources& gr) {
         ke_assets& a = require_ke_assets();
 
-        // Actor sets keep the BOB pivot; the backdrop sets (walls / fill) place by top-left.
-        define_set(gr, "ke_rack", a.paddle);
-        define_set(gr, "ke_brick", a.bricks);
-        define_set(gr, "ke_spell", a.balls);
+        // All sets place by top-left (pivot (0,0)) so a sprite lines up with the physics
+        // coordinate the game draws it at: the paddle/brick collider top-left, or -- via the
+        // centred draw in play_game_scene -- the ball collider centre. Keeping the BOB
+        // per-frame offset as the pivot would shift each sprite off its body and the walls.
+        define_set(gr, "ke_rack", a.paddle, /*top_left=*/true);
+        define_set(gr, "ke_brick", a.bricks, /*top_left=*/true);
+        auto spell_def = define_set(gr, "ke_spell", a.balls, /*top_left=*/true);
         define_set(gr, "ke_bord", a.board, /*top_left=*/true);
         define_set(gr, "ke_fill", a.fill, /*top_left=*/true);
     }

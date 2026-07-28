@@ -15,6 +15,8 @@
 struct paddle_info {
     int x; // resolved left-edge position, written back from the physics each tick
     int y;
+    int w;
+    int h;
     int size;
     rs::ke_paddle_state state{rs::ke_paddle_state::simple};
     int target_x{160}; // desired centre (render x) the player aims at; mechanics moves toward it
@@ -47,9 +49,17 @@ struct ball_state {
     bool active{false};
 };
 
+struct hit_effect {
+      neutrino::world_point pos;      // impact point
+      rs::hit_kind          kind;
+      float                 elapsed{0.0f};   // seconds since spawn
+  };
+
+
 struct level_info {
     std::vector<brick> bricks;
     std::vector<ball_state> balls;
+    std::vector<hit_effect> effects;
 };
 
 // The inner playfield extent (from the level background), in world pixels.
@@ -67,6 +77,8 @@ class model {
         [[nodiscard]] int get_level() const;
         void load_level();
 
+        void set_paddle_size(int size);
+        void set_paddle_state(rs::ke_paddle_state state);
         // Aim the paddle: record where the player wants its centre (render pixels). The
         // mechanics moves the paddle toward it, and the playfield walls (static bodies) stop
         // it -- there is no clamp here.
@@ -82,6 +94,8 @@ class model {
 
     private:
         model();
+
+        void set_paddle_dims_from_frame(std::size_t frame);
 
     private:
         int m_level = 0;

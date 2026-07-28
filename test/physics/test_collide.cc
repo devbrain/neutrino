@@ -435,6 +435,16 @@ TEST_SUITE("neutrino::physics") {
     // CCD: moving AABB vs moving AABB
     // ------------------------------------------------------------------
     TEST_CASE("swept_intersection(aabb, aabb)") {
+        SUBCASE("thin wall passed through is reported, not filtered as resting (no tunnel)") {
+            // A small box already overlapping a thin wall, sweeping far THROUGH it: the exit is a
+            // tiny FRACTION of the long sweep but a real DISTANCE, so it must be reported (toi 0),
+            // not filtered as a flush resting contact. A fractional threshold tunnels here.
+            aabb wall{{5.0f, 0.0f}, {5.001f, 1.0f}};                 // 0.001 thick
+            aabb mover{{4.9999f, 0.4f}, {5.0001f, 0.6f}};            // 0.0002 wide, overlapping the wall
+            auto h = swept_intersection(mover, vec{20.0f, 0.0f}, wall, vec{0.0f, 0.0f}, 1.0f);
+            REQUIRE(h.has_value());                                  // NOT tunnelled
+            CHECK(h->entry_time == doctest::Approx(0.0f));           // already overlapping -> toi 0
+        }
         SUBCASE("head-on approach collides partway through") {
             aabb a{{0.0f, 0.0f}, {2.0f, 2.0f}};
             aabb b{{5.0f, 0.0f}, {7.0f, 2.0f}};
@@ -1057,7 +1067,7 @@ TEST_SUITE("neutrino::physics") {
             CHECK_FALSE(intersects(miss, c));
         }
 
-        SUBCASE("swept_intersection(aabb, circle) matches the canonical (circle, aabb) form") {
+        SUBCASE("swept_intersection(aabb, circle) is the canonical form with the normal flipped") {
             circle c{{0.0f, 0.0f}, 1.0f};
             aabb b{{5.0f, -1.0f}, {7.0f, 1.0f}};
             // Same physical scenario, arguments swapped (and velocities with them).
@@ -1067,8 +1077,21 @@ TEST_SUITE("neutrino::physics") {
             REQUIRE(swapped.has_value());
             CHECK(swapped->entry_time == doctest::Approx(canon->entry_time));
             CHECK(swapped->exit_time == doctest::Approx(canon->exit_time));
-            CHECK(vapprox(swapped->entry_normal, canon->entry_normal));   // outward from the AABB either way
-            CHECK(vapprox(swapped->exit_normal, canon->exit_normal));
+            // Swapping mover<->target flips which shape the normal points out of: canon points
+            // out of the AABB (its target); swapped points out of the circle (its target).
+            CHECK(vapprox(swapped->entry_normal, vec{-canon->entry_normal.x(), -canon->entry_normal.y()}));
+            CHECK(vapprox(swapped->exit_normal, vec{-canon->exit_normal.x(), -canon->exit_normal.y()}));
+        }
+
+        SUBCASE("aabb mover landing on a circle gets an upward (out-of-circle) normal") {
+            // Grounding case: an AABB falls onto a circle below it. The contact normal must point
+            // UP -- out of the circle TARGET, toward the mover -- so is_walkable / ground detection
+            // works. Before the fix the reversed overload returned it out of the AABB mover (-1).
+            circle ground{{0.0f, 0.0f}, 1.0f};
+            aabb faller{{-0.5f, 1.5f}, {0.5f, 2.5f}};      // just above the circle's top (y=1)
+            auto h = swept_intersection(faller, vec{0.0f, -10.0f}, ground, vec{0.0f, 0.0f}, 1.0f);
+            REQUIRE(h.has_value());
+            CHECK(h->entry_normal.y() > 0.5f);              // points up, out of the circle
         }
     }
 

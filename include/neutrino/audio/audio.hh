@@ -94,6 +94,15 @@ namespace neutrino {
     /// @brief True if the music slot currently holds a playing (non-paused) track.
     NEUTRINO_EXPORT bool is_music_playing();
 
+    /// @brief Set a callback invoked when the shared music slot's track finishes on its own
+    /// (a non-looping track reaching its end). It runs on the main thread during the app's
+    /// per-frame update, so it may freely start the next track or touch game state. stop_music()
+    /// and replacing the track do not trigger it. Replaces any previous callback; pass {} to clear.
+    NEUTRINO_EXPORT void on_music_finished(std::function<void()> cb);
+    /// @brief Set a callback invoked each time the music slot's looping track wraps to its start.
+    /// Same main-thread dispatch as on_music_finished(); pass {} to clear.
+    NEUTRINO_EXPORT void on_music_looped(std::function<void()> cb);
+
     /// @brief Register a game-specific custom decoder/codec.
     NEUTRINO_EXPORT void register_decoder(
         const std::function<bool(musac::io_stream*)>& accept_func,

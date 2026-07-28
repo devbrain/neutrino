@@ -4,6 +4,7 @@
 
 #include <fstream>
 
+#include <failsafe/logger.hh>
 #include <neutrino/application.hh>
 #include <sdlpp/app/entry_point.hh>
 
@@ -24,6 +25,10 @@ class ke : public neutrino::application {
     public:
         ke()
             : application(make_config()) {
+            // Run the console at INFO and up. Warming the SFX cache opens dozens of audio
+            // sources, each emitting a one-time resampling notice at DEBUG; INFO hides that
+            // (and other debug/trace spam) by default. Lower it when debugging.
+            failsafe::logger::set_min_level(LOGGER_LEVEL_INFO);
         }
 
     protected:

@@ -128,6 +128,87 @@ TEST_SUITE("world::run -- bullet pass") {
         }
     }
 
+    // Regression: a circle bullet that rests exactly on a wall's Minkowski boundary and then
+    // moves AWAY must separate, not re-graze at toi 0 and get pinned (delta*0). Before the
+    // to_swept_hit_forward filter this stuck the ball to walls/paddle in KE, vibrating with a
+    // repeated bounce sound.
+    TEST_CASE("resting circle bullet moving away separates (no toi-0 pin)") {
+        world w;
+        w.add(1, mk_static(aabb{{4, -5}, {5, 5}}));                        // left face x=4
+        // Tangent to the wall (center.x = 4 - r), velocity pointing AWAY from it.
+        bullet bx; bx.shape = circle{{3.75f, 0}, 0.25f}; bx.velocity = vec{-20, 0};
+        const collider_id b = w.add(2, bx);
+        const auto& ev = w.run(BIG_REGION, 0.5f);                          // delta = -10
+        CHECK(count_kind(ev, event_kind::BULLET_HIT) == 0);                // separating, not a collision
+        CHECK(std::get<circle>(w.get_shape(b)).center.x() == doctest::Approx(-6.25f).epsilon(1e-3)); // full delta
+    }
+
+    TEST_CASE("bounced circle bullet leaves the wall the next frame") {
+        world w;
+        const collider_id wall = w.add(1, mk_static(aabb{{4, -5}, {5, 5}}));
+        bullet bx; bx.shape = circle{{0, 0}, 0.25f}; bx.velocity = vec{20, 0};
+        const collider_id b = w.add(2, bx);
+        // Frame 1: approach + hit, stops at the contact (center.x = 3.75).
+        REQUIRE(count_kind(w.run(BIG_REGION, 0.5f), event_kind::BULLET_HIT) == 1);
+        REQUIRE(std::get<circle>(w.get_shape(b)).center.x() == doctest::Approx(3.75f).epsilon(1e-3));
+        (void) wall;
+        // The game reflects on BULLET_HIT: velocity now points away from the wall.
+        w.set_velocity(b, vec{-20, 0});
+        // Frame 2: must actually move away, not pin at toi 0 re-grazing the resting contact.
+        const auto& ev2 = w.run(BIG_REGION, 0.5f);
+        CHECK(count_kind(ev2, event_kind::BULLET_HIT) == 0);
+        CHECK(std::get<circle>(w.get_shape(b)).center.x() < 3.0f);        // advanced away from 3.75
+    }
+
+    // Regression: a bullet that STARTS engulfed in a solid (e.g. a fast paddle swung onto it)
+    // must be ejected along the MTV, not pinned at toi 0 deep inside. In KE this stuck the ball
+    // in the middle of the paddle, vibrating with repeated hit sounds until the paddle moved.
+    TEST_CASE("engulfed circle bullet is depenetrated, not pinned inside a solid") {
+        world w;
+        w.add(1, mk_static(aabb{{-5, -1}, {5, 1}}));                       // solid slab, top face y=1
+        bullet bx; bx.shape = circle{{0, 0.3f}, 0.5f}; bx.velocity = vec{0, 8}; // spawned INSIDE it
+        const collider_id b = w.add(2, bx);
+        const auto& ev = w.run(BIG_REGION, 0.1f);
+        CHECK(count_kind(ev, event_kind::BULLET_HIT) == 1);               // reported so the game can bounce
+        const circle after = std::get<circle>(w.get_shape(b));
+        // Ejected through the nearest face (top) instead of pinning: the circle clears the slab.
+        CHECK(after.center.y() - after.radius >= 1.0f - 1e-3f);
+    }
+
+    // The resting-leave filter must also cover segment and triangle obstacles: their sweeps set
+    // entry_time=0 in a separate start-overlap branch that bypassed to_swept_hit_forward, so a
+    // bounced bullet pinned flush on a segment wall or triangle slope. Bounce off it, then check
+    // the reflected bullet leaves instead of re-grazing at toi 0.
+    TEST_CASE("bounced bullet leaves a segment/triangle surface (no flush pin)") {
+        SUBCASE("segment") {
+            world w;
+            w.add(1, mk_static(segment{{-5, 0}, {5, 0}}));                 // horizontal wall at y=0
+            bullet bx; bx.shape = aabb{{-0.5f, 2.0f}, {0.5f, 3.0f}};       // above, falling toward it
+            bx.velocity = vec{0, -20};
+            const collider_id b = w.add(2, bx);
+            // Frame 1: fall onto the segment, stopping flush (bottom at y=0).
+            REQUIRE(count_kind(w.run(BIG_REGION, 0.5f), event_kind::BULLET_HIT) == 1);
+            REQUIRE(std::get<aabb>(w.get_shape(b)).min.y() == doctest::Approx(0.0f).epsilon(1e-3));
+            w.set_velocity(b, vec{0, 20});                                 // the game reflects
+            // Frame 2: must leave, not pin flush at toi 0.
+            const auto& ev2 = w.run(BIG_REGION, 0.5f);
+            CHECK(count_kind(ev2, event_kind::BULLET_HIT) == 0);
+            CHECK(std::get<aabb>(w.get_shape(b)).min.y() > 1.0f);
+        }
+        SUBCASE("triangle") {
+            world w;
+            w.add(1, mk_static(triangle{{-5, 0}, {5, 0}, {0, -5}}));       // top edge along y=0
+            bullet bx; bx.shape = circle{{0, 2.0f}, 0.5f};                 // above, falling toward it
+            bx.velocity = vec{0, -20};
+            const collider_id b = w.add(2, bx);
+            REQUIRE(count_kind(w.run(BIG_REGION, 0.5f), event_kind::BULLET_HIT) == 1);
+            w.set_velocity(b, vec{0, 20});                                 // the game reflects
+            const auto& ev2 = w.run(BIG_REGION, 0.5f);
+            CHECK(count_kind(ev2, event_kind::BULLET_HIT) == 0);
+            CHECK(std::get<circle>(w.get_shape(b)).center.y() > 1.0f);
+        }
+    }
+
     TEST_CASE("region cull: off-region bullet skips the cast but still flies") {
         world w;
         const aabb region{{-10, -10}, {10, 10}};

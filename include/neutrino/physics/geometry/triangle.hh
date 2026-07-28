@@ -334,6 +334,18 @@ namespace neutrino::physics {
             if (!start_overlap && !end_overlap && !any) {
                 return std::nullopt; // never meets the triangle
             }
+            // Resting-and-leaving: overlapping at t=0 but the overlap ENDS by ~t=0 (the mover is
+            // flush and separating), so it is not a forward collision -- don't pin a mover resting
+            // flush on the triangle (analogue of to_swept_hit_forward's `exit_param <= eps`). A
+            // mover DEEPLY inside that leaves later (exit well after 0) still reports toi 0, which
+            // move_and_slide needs to resolve the penetration. `exit` is NEG_INF when no edge was
+            // crossed (a shallow flush touch), which likewise filters. (time == 1 in every physics
+            // call, but scale the threshold by it to stay correct if a caller passes another.)
+            if (start_overlap && !end_overlap
+                && (!any || exit * exit * euler::length_squared(mv - tv)
+                               <= constants::LEAVING_REST_EPS * constants::LEAVING_REST_EPS)) {
+                return std::nullopt;
+            }
 
             swept_hit out;
             if (start_overlap) { // already penetrating at t=0 -> entry 0, push-out normal

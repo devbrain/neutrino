@@ -6,6 +6,7 @@
 
 #include <neutrino/video/world/sprite_batch.hh>
 #include <neutrino/world/world_common.hh>   // world_point
+#include <ke/assets/sprites.hh>             // ke_paddle_frame (active form)
 
 namespace rs {
     playfield_geometry compute_playfield_geometry(const neutrino::sprite_set_handle& board,
@@ -23,10 +24,12 @@ namespace rs {
         geo.top_margin = score_h + bar.h;
         geo.bottom_margin = ke_screen_h;
 
-        // Centre the paddle to the cell that fits any of its forms (frames 7..end), so the
-        // start position is stable across power-ups, resting its bottom on the paddle row.
-        const neutrino::dim form = paddle.bounding_size(7);
-        geo.paddle_start = {(ke_screen_w - form.width) / 2, ke_paddle_bottom_y - form.height};
+        // Centre + bottom-align the paddle to its ACTIVE (default) form. game_mechanics builds
+        // the collider from this exact frame and launches the ball off it, so using the
+        // bounding cell of all forms would start the paddle off-centre and above the paddle row.
+        const neutrino::rect form = paddle.frame_rect(
+            rs::ke_paddle_frame(rs::ke_paddle_state::simple, rs::ke_paddle_default_size)).value_or(neutrino::rect{});
+        geo.paddle_start = {(ke_screen_w - form.w) / 2, ke_paddle_bottom_y - form.h};
         return geo;
     }
 

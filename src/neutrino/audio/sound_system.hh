@@ -9,6 +9,7 @@
 #pragma once
 
 #include <chrono>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,6 +25,7 @@ namespace musac {
 namespace neutrino {
     class sound_effect;
     class music_stream;
+    namespace audio_detail { struct callback_relay; }
 
     /// Fail-soft: if the backend or device cannot be initialized, the
     /// instance stays constructible with active() == false and every
@@ -57,6 +59,16 @@ namespace neutrino {
             void resume_music(std::chrono::microseconds fade_time);
             [[nodiscard]] bool music_playing() const;
 
+            // Music-slot callbacks: invoked on the main thread (see dispatch_callbacks) when
+            // the current slot track finishes on its own / wraps a loop. Pass {} to clear.
+            void set_music_finished_callback(std::function<void()> cb);
+            void set_music_looped_callback(std::function<void()> cb);
+
+            // Main-thread pump: drain the relayed audio-thread finish/loop events of every
+            // registered effect / music_stream and the music slot, invoking their callbacks.
+            // Called once per frame by application::on_update.
+            void dispatch_callbacks();
+
             // Live-volume registry: sound_effect / music_stream instances
             // register themselves so group volume changes reach their
             // streams. Registration is idempotent.
@@ -81,5 +93,10 @@ namespace neutrino {
 
             std::vector <sound_effect*> m_effects;
             std::vector <music_stream*> m_musics;
+
+            // Finish/loop relay + consumer callbacks for the music slot (m_music_slot).
+            std::shared_ptr <audio_detail::callback_relay> m_slot_relay;
+            std::function <void()> m_on_music_finished;
+            std::function <void()> m_on_music_looped;
     };
 }

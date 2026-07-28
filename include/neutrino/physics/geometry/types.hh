@@ -53,6 +53,16 @@ namespace neutrino::physics {
         /// Vector length below which a computed normal is considered undefined and
         /// returned as {0,0} rather than normalized (guards against divide-by-zero).
         inline constexpr auto NORMALIZE_EPS = 1e-6f;
+
+        /// Swept-exit DISTANCE (world units) below which an already-overlapping contact counts
+        /// as "resting and leaving" rather than a forward collision: the mover starts inside
+        /// (entry_param < 0) and its overlap ends within this distance of the sweep start. An
+        /// ABSOLUTE distance (exit_param x sweep length), NOT a fraction of travel -- otherwise a
+        /// thin obstacle a mover passes through (exit a tiny fraction of a long sweep but a real
+        /// distance) would be mistaken for a resting contact and tunnelled. Large enough to clear
+        /// float error in the contact position at typical world coordinates, small enough not to
+        /// swallow a genuine thin wall. See to_swept_hit_forward (and the segment/triangle analogues).
+        inline constexpr auto LEAVING_REST_EPS = 1e-4f;
     }
 
     /**

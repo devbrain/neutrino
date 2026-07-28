@@ -50,6 +50,7 @@
 
 #include <neutrino/physics/geometry/shapes.hh>
 #include <neutrino/physics/geometry/units.hh>
+#include <neutrino/physics/geometry/overlap.hh> // overlap() MTV for bullet depenetration
 #include <neutrino/physics/collide/grid.hh>
 #include <neutrino/physics/collide/dynamic_aabb_tree.hh>
 #include <neutrino/physics/collide/world_internal.hh> // detail:: internals + (transitively) world_types.hh
@@ -346,11 +347,11 @@ namespace neutrino::physics {
                             // The carrier pushes only if it is SOLID for this contact -- same rule as
                             // riding (a SENSOR/IGNORE carrier pushes nothing; a one-way carrier only
                             // from its blocked face). Use the ACTUAL swept contact normal, oriented to
-                            // point in the carrier's motion hemisphere (its push side): this normalizes
-                            // the per-shape-pair convention difference (swept's outward side is the aabb
-                            // for aabb-vs-circle but the target for aabb-vs-aabb) while keying one-way on
-                            // the real contact face -- a motion-direction guess mis-evaluates diagonal
-                            // carriers (a face hit can differ from the velocity direction).
+                            // point in the carrier's motion hemisphere (its push side): the swept
+                            // normal points out of the target, but the carrier is the MOVER here, so we
+                            // re-orient into the motion direction to key one-way on the real contact
+                            // face -- a motion-direction guess mis-evaluates diagonal carriers (a face
+                            // hit can differ from the velocity direction).
                             vec n = swept->entry_normal;
                             if (euler::dot(n, body_delta) < 0.0f) {
                                 n = vec{-n.x(), -n.y()};
@@ -407,6 +408,27 @@ namespace neutrino::physics {
             }
 
             /**
+             * @brief Minimum translation to push a mover shape out of an obstacle it overlaps, or
+             *        nullopt if they do not strictly overlap (or the obstacle is a segment/triangle,
+             *        which have no overlap() routine). The normal points the way to move the MOVER.
+             */
+            [[nodiscard]] static std::optional <penetration> mtv_out(const moving_shape_t& mover,
+                                                                     const shape_t& obstacle) noexcept {
+                return std::visit([](const auto& mv, const auto& ob) -> std::optional <penetration> {
+                    using M = std::decay_t <decltype(mv)>;
+                    using O = std::decay_t <decltype(ob)>;
+                    if constexpr ((std::is_same_v <M, aabb> || std::is_same_v <M, circle>)
+                                  && (std::is_same_v <O, aabb> || std::is_same_v <O, circle>)) {
+                        // Qualify: world has a member overlap() that would otherwise hide the
+                        // free shape-vs-shape overlap() here.
+                        return ::neutrino::physics::overlap(mv, ob); // normal pushes the mover out
+                    } else {
+                        return std::nullopt;
+                    }
+                }, mover, obstacle);
+            }
+
+            /**
              * @brief Frame pass 3 -- bullets: integrate every live bullet, cast it against the solids,
              *        and emit @c BULLET_HIT / @c BULLET_EXPIRED events.
              * @param active_region Off-region bullets keep flying (so they can re-enter) but skip the
@@ -424,13 +446,44 @@ namespace neutrino::physics {
                         // Bullets hit only solids -- a sensor/ignored body must not stop them
                         // (sensors detect via the trigger pass; bullets are not in the tree anyway).
                         if (auto hit = cast(bullet_itr.index(), collider_id::BULLET, delta_s, solid_acceptor())) {
+                            delta_s = delta_s * units::fraction{hit->toi}; // toi is the fraction ALONG delta_s
+                            vec event_normal = hit->normal;
+
+                            // Depenetration: if the bullet STARTED engulfed in the obstacle (a fast
+                            // kinematic body moved onto it this frame, before the bullet pass), the
+                            // swept cast pins it at toi 0 inside -- it cannot sweep its way out. Eject
+                            // it along the minimum-translation vector so it separates this frame; the
+                            // game reflects on the BULLET_HIT and it leaves next frame. mtv_out only
+                            // returns a value on a real start-overlap, so a normal approach (the bullet
+                            // outside the obstacle at the sweep start) is untouched.
+                            if (const auto pen = mtv_out(bullet_itr->shape, get_shape(hit->who))) {
+                                // Report the MTV axis actually resolved along, not the swept slab
+                                // normal (which is a velocity artifact for a start-overlap) -- so a
+                                // game reflecting on the event bounces off the face it was pushed out of.
+                                event_normal = pen->normal;
+                                const float push = pen->depth + constants::POINT_EPS;
+                                units::displacement eject{vec{pen->normal.x() * push, pen->normal.y() * push}};
+                                // Don't drive the ejected bullet into ANOTHER solid: cast the eject
+                                // and clamp to the first solid in the way. cast_core can only exclude
+                                // the engulfing collider when it is a BODY (by index); for a tile it
+                                // has no exclusion, so casting would immediately re-hit that same tile
+                                // at toi 0 and zero the ejection. So skip the clamp for a tile obstacle
+                                // (tiles are static and rarely engulf, so the unclamped eject is fine).
+                                if (hit->who.type_id == collider_id::BODY) {
+                                    if (const auto block = cast_core(bullet_itr->shape, eject, bullet_itr->filter,
+                                                                     solid_acceptor(), hit->who.value)) {
+                                        eject = eject * units::fraction{block->toi};
+                                    }
+                                }
+                                delta_s = delta_s + eject;
+                            }
+
                             m_events.emplace_back(
                                 event_kind::BULLET_HIT,
                                 collider_id{bullet_itr.index(), bullet_itr->generation, collider_id::BULLET},
                                 hit->who,
-                                hit->normal,
+                                event_normal,
                                 hit->toi);
-                            delta_s = delta_s * units::fraction{hit->toi}; // toi is the fraction ALONG delta_s
                         }
                     }
                     translate(*bullet_itr, delta_s.value);

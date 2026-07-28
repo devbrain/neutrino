@@ -32,6 +32,7 @@ void model::load_level() {
     m_paddle.state = rs::ke_paddle_state::simple;
     m_paddle.x = geometry.paddle_start.x;
     m_paddle.y = geometry.paddle_start.y;
+    set_paddle_dims_from_frame(rs::ke_paddle_frame(m_paddle.state, m_paddle.size));
 
     // Domain bricks from the level, on the same grid the sprites are drawn at. The physical
     // world (colliders, ball) is built from this by game_mechanics::load().
@@ -58,6 +59,19 @@ void model::load_level() {
     }
 }
 
+void model::set_paddle_size(int size) {
+    m_paddle.size = size;
+    auto frame = rs::ke_paddle_frame(m_paddle.state, m_paddle.size);
+    set_paddle_dims_from_frame(frame);
+}
+
+void model::set_paddle_state(rs::ke_paddle_state state) {
+    m_paddle.state = state;
+    auto frame = rs::ke_paddle_frame(m_paddle.state, m_paddle.size);
+    set_paddle_dims_from_frame(frame);
+}
+
+
 void model::set_paddle_target(int center_x) {
     m_paddle.target_x = center_x;
 }
@@ -83,3 +97,14 @@ playfield_bounds model::get_bounds() const {
 }
 
 model::model() = default;
+
+void model::set_paddle_dims_from_frame(std::size_t frame) {
+    const auto& assets = rs::require_ke_assets();
+    if (const auto r = assets.paddle.frame_rect(frame)) {
+        m_paddle.h = r->h;
+        m_paddle.w = r->w;
+    } else {
+        m_paddle.h = 1;
+        m_paddle.w = 1;
+    }
+}

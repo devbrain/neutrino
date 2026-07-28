@@ -27,6 +27,13 @@ class game_mechanics {
         void tick(model& m, float dt);
 
     private:
+        void build_world_bounds(const model& m);
+        void build_bricks(const model& m);
+        void build_paddle(const model& m);
+
+        void handle_paddle(model& m, float dt);
+        void handle_balls(model& m, const neutrino::physics::world_event& e);
+    private:
         neutrino::physics::world m_world;
         neutrino::physics::collider_id m_paddle{};
         std::vector <neutrino::physics::collider_id> m_balls;           // parallel to model balls

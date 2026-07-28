@@ -4,6 +4,7 @@
 
 #include <neutrino/audio/sound_effect.hh>
 #include "sound_system.hh"
+#include "callback_relay.hh"
 #include "sdl_io_stream.hh"
 #include "memory_io.hh"
 #include "services/service_access.hh"
@@ -15,6 +16,8 @@
 #include <musac/sdk/decoders_registry.hh>
 #include <algorithm>
 #include <cstring>
+#include <optional>
+#include <vector>
 
 namespace {
     // A musac decoder over a pre-decoded, device-rate, interleaved-float buffer: it hands
@@ -66,6 +69,65 @@ namespace {
 
 namespace neutrino {
 
+    namespace {
+        struct captured_pcm {
+            std::shared_ptr<const std::vector<float>> pcm;
+            unsigned rate;
+            unsigned channels;
+        };
+
+        // Decode @p data and resample it to the output device rate ONCE, returning the
+        // interleaved device-rate float PCM. Runs the effect through musac's normal decode +
+        // auto-resample pipeline a single time and captures its output; playback then needs no
+        // per-channel decode or resampler. Returns nullopt if audio is inactive or the sample
+        // can't be pre-rendered (no decoder, empty, or longer than a short effect) -- the
+        // caller then falls back to per-play streaming. Music is never routed here (load_music).
+        std::optional<captured_pcm> capture_device_pcm(sound_system& ss,
+                                                       const std::shared_ptr<const std::vector<uint8_t>>& data) {
+            if (!ss.active() || !ss.device()) {
+                return std::nullopt;
+            }
+            const musac::sample_rate_t rate = ss.device()->get_freq();
+            const musac::channels_t channels = ss.device()->get_channels();
+            if (rate == 0 || channels == 0) {
+                return std::nullopt;
+            }
+            auto io = audio_detail::io_from_buffer(data);
+            if (!io) {
+                return std::nullopt;
+            }
+            try {
+                musac::audio_source src(std::move(io), ss.registry().get()); // real decoder + auto-resampler
+                constexpr std::size_t frame_size = 4096;
+                src.open(rate, channels, frame_size);
+
+                auto pcm = std::make_shared<std::vector<float>>();
+                std::vector<float> chunk(frame_size * channels);
+                const std::size_t cap = static_cast<std::size_t>(rate) * channels * 30; // 30s guard
+                for (;;) {
+                    std::size_t pos = 0;
+                    src.read_samples(chunk.data(), pos, chunk.size(), channels);
+                    if (pos == 0) {
+                        break; // drained
+                    }
+                    pcm->insert(pcm->end(), chunk.begin(), chunk.begin() + static_cast<std::ptrdiff_t>(pos));
+                    if (pcm->size() >= cap) {
+                        // Too long to be a short effect: discard the partial capture and fall
+                        // back to per-play streaming rather than caching a truncated effect.
+                        return std::nullopt;
+                    }
+                }
+                if (pcm->empty()) {
+                    return std::nullopt;
+                }
+                return captured_pcm{std::const_pointer_cast<const std::vector<float>>(pcm),
+                                    static_cast<unsigned>(rate), static_cast<unsigned>(channels)};
+            } catch (const std::exception&) {
+                return std::nullopt; // e.g. no decoder for the format -> stream on demand instead
+            }
+        }
+    } // namespace
+
     static void register_self(sound_effect* effect) {
         if (auto* ss = maybe_sound_system()) {
             ss->register_effect(effect);
@@ -110,8 +172,11 @@ namespace neutrino {
           m_pcm(std::move(other.m_pcm)),
           m_pcm_rate(other.m_pcm_rate),
           m_pcm_channels(other.m_pcm_channels),
+          m_pcm_tried(other.m_pcm_tried),
           m_source(std::move(other.m_source)),
-          m_channels(std::move(other.m_channels)) {
+          m_channels(std::move(other.m_channels)),
+          m_relay(std::move(other.m_relay)),
+          m_on_finished(std::move(other.m_on_finished)) {
         // other stays registered until its destructor runs; its channel
         // list is empty now, so that registration is harmless.
         register_self(this);
@@ -130,8 +195,11 @@ namespace neutrino {
             m_pcm          = std::move(other.m_pcm);
             m_pcm_rate     = other.m_pcm_rate;
             m_pcm_channels = other.m_pcm_channels;
+            m_pcm_tried    = other.m_pcm_tried;
             m_source       = std::move(other.m_source);
             m_channels     = std::move(other.m_channels);
+            m_relay        = std::move(other.m_relay);
+            m_on_finished  = std::move(other.m_on_finished);
         }
         return *this;
     }
@@ -152,6 +220,19 @@ namespace neutrino {
         // The effect may predate the application (registration is idempotent).
         ss->register_effect(this);
         const float group = ss->sfx_volume();
+
+        // Lazy resample-and-cache: the first time a data-backed effect plays, decode +
+        // resample it to device-rate PCM once, so this and every later play (and overlapping
+        // channels) need no resampler. Attempted at most once -- if it can't be pre-rendered,
+        // m_data is kept and we fall through to the per-play streaming branch below.
+        if (!m_pcm && m_data && !m_pcm_tried) {
+            m_pcm_tried = true;
+            if (auto cap = capture_device_pcm(*ss, m_data)) {
+                m_pcm          = cap->pcm;
+                m_pcm_rate     = cap->rate;
+                m_pcm_channels = cap->channels;
+            }
+        }
 
         // Clean up finished streams if there are any that were destroyed/invalidated
         m_channels.erase(
@@ -186,6 +267,7 @@ namespace neutrino {
             musac::audio_source source(std::move(decoder), audio_detail::io_from_buffer(s_dummy_io));
             auto stream = ss->device()->create_stream(std::move(source));
             stream.open();
+            arm_channel(stream);
             stream.set_volume(volume * group);
             stream.play(1, fade_time);
             m_channels.push_back({std::make_unique<musac::audio_stream>(std::move(stream)), volume});
@@ -198,6 +280,7 @@ namespace neutrino {
                 musac::audio_source source(std::move(io), ss->registry().get());
                 auto stream = ss->device()->create_stream(std::move(source));
                 stream.open();
+                arm_channel(stream);
                 stream.set_volume(volume * group);
                 stream.play(1, fade_time);
 
@@ -208,6 +291,7 @@ namespace neutrino {
                 if (m_channels.empty()) {
                     auto stream = ss->device()->create_stream(std::move(*m_source));
                     stream.open();
+                    arm_channel(stream);
                     stream.set_volume(volume * group);
                     stream.play(1, fade_time);
 
@@ -242,5 +326,23 @@ namespace neutrino {
             }
         }
         return false;
+    }
+
+    void sound_effect::on_finished(std::function<void()> cb) {
+        m_on_finished = std::move(cb);
+    }
+
+    void sound_effect::arm_channel(musac::audio_stream& stream) {
+        if (!m_relay) {
+            m_relay = std::make_shared<audio_detail::callback_relay>();
+        }
+        audio_detail::arm_finish(stream, m_relay);
+    }
+
+    void sound_effect::dispatch_pending() {
+        if (!m_relay) {
+            return;
+        }
+        audio_detail::drain_finished(*m_relay, m_on_finished);
     }
 }

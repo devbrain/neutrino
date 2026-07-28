@@ -9,9 +9,12 @@
 
 #include <neutrino/audio/audio.hh>
 #include "sound_system.hh"
+#include "callback_relay.hh"
 #include "sdl_io_stream.hh"
 #include "memory_io.hh"
 #include "services/service_access.hh"
+#include <neutrino/audio/sound_effect.hh>
+#include <neutrino/audio/music_stream.hh>
 
 #include <musac_backends/sdl3/sdl3_backend.hh>
 #include <musac/audio_device.hh>
@@ -124,11 +127,21 @@ namespace neutrino {
 
         if (m_music_slot) {
             m_music_slot->stop(fade_time);
+            // Detach callbacks so the retiring track's fade-out doesn't fire a spurious
+            // finished/looped for a slot the caller has already replaced.
+            m_music_slot->remove_finish_callback();
+            m_music_slot->remove_loop_callback();
             // Keep the old track alive so its fade-out is audible; it is
             // released on the next replacement.
             m_retiring_music = std::move(m_music_slot);
         }
         m_music_slot = std::move(next);
+        // Route the new slot's finish/loop through the shared slot relay (see dispatch_callbacks).
+        if (!m_slot_relay) {
+            m_slot_relay = std::make_shared<audio_detail::callback_relay>();
+        }
+        audio_detail::arm_finish(*m_music_slot, m_slot_relay);
+        audio_detail::arm_loop(*m_music_slot, m_slot_relay);
         m_music_slot->set_volume(m_music_volume);
         m_music_slot->play(loop ? 0 : 1, fade_time);
     }
@@ -136,6 +149,9 @@ namespace neutrino {
     void sound_system::stop_music(std::chrono::microseconds fade_time) {
         if (m_music_slot) {
             m_music_slot->stop(fade_time);
+            // An explicit stop is not a natural finish -- detach so it stays silent.
+            m_music_slot->remove_finish_callback();
+            m_music_slot->remove_loop_callback();
             m_retiring_music = std::move(m_music_slot);
         }
     }
@@ -174,6 +190,29 @@ namespace neutrino {
 
     void sound_system::unregister_music(music_stream* music) {
         m_musics.erase(std::remove(m_musics.begin(), m_musics.end(), music), m_musics.end());
+    }
+
+    void sound_system::set_music_finished_callback(std::function<void()> cb) {
+        m_on_music_finished = std::move(cb);
+    }
+
+    void sound_system::set_music_looped_callback(std::function<void()> cb) {
+        m_on_music_looped = std::move(cb);
+    }
+
+    void sound_system::dispatch_callbacks() {
+        // All on the main thread: drain the lock-free relay counters the audio thread bumped
+        // and fire each owner's consumer callback. Registries only mutate on this thread too.
+        for (auto* music : m_musics) {
+            music->dispatch_pending();
+        }
+        for (auto* effect : m_effects) {
+            effect->dispatch_pending();
+        }
+        if (m_slot_relay) {
+            audio_detail::drain_finished(*m_slot_relay, m_on_music_finished);
+            audio_detail::drain_looped(*m_slot_relay, m_on_music_looped);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -233,83 +272,13 @@ namespace neutrino {
         return music_stream(std::make_unique <musac::audio_stream>(std::move(stream)));
     }
 
-    namespace {
-        struct captured_pcm {
-            std::shared_ptr<const std::vector<float>> pcm;
-            unsigned rate;
-            unsigned channels;
-        };
-
-        // Decode @p data and resample it to the output device rate ONCE, returning the
-        // interleaved device-rate float PCM. Runs the SFX through musac's normal decode +
-        // auto-resample pipeline a single time and captures its output; playback then needs
-        // no per-channel decode or resampler. Returns nullopt if audio is inactive or the
-        // sample can't be pre-rendered (no decoder, empty) -- the caller falls back to
-        // on-demand decoding. Music is never routed here (see load_music).
-        std::optional<captured_pcm> capture_device_pcm(const std::shared_ptr<const std::vector<uint8_t>>& data) {
-            auto* ss = maybe_sound_system();
-            if (!ss || !ss->active() || !ss->device()) {
-                return std::nullopt;
-            }
-            const musac::sample_rate_t rate = ss->device()->get_freq();
-            const musac::channels_t channels = ss->device()->get_channels();
-            if (rate == 0 || channels == 0) {
-                return std::nullopt;
-            }
-            auto io = audio_detail::io_from_buffer(data);
-            if (!io) {
-                return std::nullopt;
-            }
-
-            // The one-time resample logs an INFO per sample ("Automatic resampling enabled");
-            // raise the log threshold across the capture so bulk-loading a sound bank stays
-            // quiet, and restore it afterwards.
-            const int prev_log_level = failsafe::logger::get_config().min_level.load();
-            failsafe::logger::set_min_level(LOGGER_LEVEL_WARN);
-            struct log_level_guard {
-                int prev;
-                ~log_level_guard() { failsafe::logger::set_min_level(prev); }
-            } guard{prev_log_level};
-
-            try {
-                musac::audio_source src(std::move(io), ss->registry().get()); // real decoder + auto-resampler
-                constexpr std::size_t frame_size = 4096;
-                src.open(rate, channels, frame_size);
-
-                auto pcm = std::make_shared<std::vector<float>>();
-                std::vector<float> chunk(frame_size * channels);
-                const std::size_t cap = static_cast<std::size_t>(rate) * channels * 30; // 30s guard
-                for (;;) {
-                    std::size_t pos = 0;
-                    src.read_samples(chunk.data(), pos, chunk.size(), channels);
-                    if (pos == 0) {
-                        break; // drained
-                    }
-                    pcm->insert(pcm->end(), chunk.begin(), chunk.begin() + static_cast<std::ptrdiff_t>(pos));
-                    if (pcm->size() >= cap) {
-                        break; // too long for an SFX cache -- load_music is the streamed path
-                    }
-                }
-                if (pcm->empty()) {
-                    return std::nullopt;
-                }
-                return captured_pcm{std::const_pointer_cast<const std::vector<float>>(pcm),
-                                    static_cast<unsigned>(rate), static_cast<unsigned>(channels)};
-            } catch (const std::exception&) {
-                return std::nullopt; // e.g. no decoder for the format -> decode on demand instead
-            }
-        }
-    }
-
     sound_effect load_sfx(std::istream& is) {
         auto data = audio_detail::read_all(is);
         ENFORCE(!data->empty())("Failed to read audio data from stream");
-        // Short SFX are decoded + resampled to the device rate once and cached, so replays
-        // (and overlapping channels) cost no decode or resampler. Falls back to on-demand
-        // decoding when audio is off or the sample can't be pre-rendered.
-        if (auto cached = capture_device_pcm(data)) {
-            return sound_effect(cached->pcm, cached->rate, cached->channels);
-        }
+        // Lazy cache: the effect's first play() decodes + resamples it to the device rate once
+        // and caches that, so replays (and overlapping channels) cost no decode or resampler,
+        // while an effect that is never played is never resampled. Long or undecodable samples
+        // fall back to per-play streaming. Music is never routed here (see load_music).
         return sound_effect(std::move(data));
     }
 
@@ -363,6 +332,14 @@ namespace neutrino {
     bool is_music_playing() {
         auto* ss = maybe_sound_system();
         return ss && ss->music_playing();
+    }
+
+    void on_music_finished(std::function<void()> cb) {
+        if (auto* ss = maybe_sound_system()) ss->set_music_finished_callback(std::move(cb));
+    }
+
+    void on_music_looped(std::function<void()> cb) {
+        if (auto* ss = maybe_sound_system()) ss->set_music_looped_callback(std::move(cb));
     }
 
     void register_decoder(

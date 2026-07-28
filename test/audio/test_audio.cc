@@ -1,11 +1,15 @@
 #include <doctest/doctest.h>
 #include <neutrino/audio/audio.hh>
+#include <neutrino/audio/sound_effect.hh>
+#include <neutrino/audio/music_stream.hh>
 
 #include "test_application.hh"
 
+#include <chrono>
 #include <cstdint>
 #include <sstream>
 #include <string>
+#include <thread>
 
 // Minimal valid WAV: 8000 Hz, mono, 16-bit PCM, 200 samples of silence.
 static std::string make_test_wav() {
@@ -92,6 +96,57 @@ TEST_SUITE("neutrino::audio") {
             CHECK(neutrino::is_music_playing());
             neutrino::stop_music();
             CHECK_FALSE(neutrino::is_music_playing());
+        }
+    }
+
+    // Finish callbacks are relayed off the audio thread and fired on the main thread by
+    // sound_system::dispatch_callbacks (driven here via test_application::iterate, which runs
+    // one on_update). The dummy audio driver advances the ~25 ms silent clip in real time.
+    TEST_CASE("audio finish callbacks dispatch on the main thread") {
+        neutrino::test::test_application test_app("Audio callback test");
+        REQUIRE(neutrino::audio_active());
+
+        const auto wav = make_test_wav();
+
+        // Pump frames until pred() holds or we time out (~2 s).
+        auto pump_until = [&](auto pred) {
+            for (int i = 0; i < 400 && !pred(); ++i) {
+                test_app.iterate();
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            }
+            return pred();
+        };
+
+        SUBCASE("music slot: on_music_finished") {
+            int finished = 0;
+            neutrino::on_music_finished([&] { ++finished; });
+            {
+                std::istringstream in(wav);
+                neutrino::play_music(in, /*loop=*/false);
+            }
+            CHECK(pump_until([&] { return finished > 0; }));
+            CHECK(finished == 1);
+            neutrino::on_music_finished({});
+        }
+
+        SUBCASE("music_stream::on_finished") {
+            int finished = 0;
+            std::istringstream in(wav);
+            auto music = neutrino::load_music(in);
+            music.on_finished([&] { ++finished; });
+            music.play(/*loop=*/false);
+            CHECK(pump_until([&] { return finished > 0; }));
+            CHECK(finished == 1);
+        }
+
+        SUBCASE("sound_effect::on_finished") {
+            int finished = 0;
+            std::istringstream in(wav);
+            auto sfx = neutrino::load_sfx(in);
+            sfx.on_finished([&] { ++finished; });
+            sfx.play();
+            CHECK(pump_until([&] { return finished > 0; }));
+            CHECK(finished >= 1);
         }
     }
 }

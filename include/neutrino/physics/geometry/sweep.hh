@@ -83,6 +83,35 @@ namespace neutrino::physics {
     }
 
     /**
+     * @brief Like @ref to_swept_hit, but returns nullopt for a "resting-and-leaving" contact.
+     *
+     * A mover that already overlaps the target at the sweep start (@c entry_param < 0) whose
+     * overlap ends within a tiny ABSOLUTE distance of the start (@c exit_param * @p sweep_len
+     * ~ 0) is flush and SEPARATING, not entering. The raw query still reports it (with a
+     * negative entry clamped to toi 0), which pins a mover resting exactly on the Minkowski
+     * boundary: it re-grazes at toi 0 every frame and advances by delta*0 = 0. A circle bullet
+     * bounced off a wall does exactly this. Filtering it lets the mover separate.
+     *
+     * @param sweep_len_sq The SQUARED world-space length of the sweep (|to - from|^2). Using an
+     *        ABSOLUTE exit distance rather than a fraction of travel is essential: a thin obstacle
+     *        a mover PASSES THROUGH has an exit that is a small *fraction* of a long sweep but a
+     *        real *distance*, so a fractional threshold would filter it and let it tunnel. Passed
+     *        squared so this stays constexpr (no sqrt) -- the test is done in squared form.
+     * Genuine forward hits (entry_param >= 0, or a deeper overlap still ongoing so the exit is
+     * well past the start) are untouched -- the mover still stops AT its first real contact.
+     */
+    [[nodiscard]] constexpr std::optional <swept_hit> to_swept_hit_forward(
+        const line_hit& entry_src, const line_hit& exit_src, float time, float sweep_len_sq) noexcept {
+        // (exit_param * sweep_len)^2 <= EPS^2, with a non-positive exit already ended by the start.
+        if (const float e = exit_src.exit_param; entry_src.entry_param < 0.0f
+            && (e <= 0.0f
+                || e * e * sweep_len_sq <= constants::LEAVING_REST_EPS * constants::LEAVING_REST_EPS)) {
+            return std::nullopt;
+        }
+        return to_swept_hit(entry_src, exit_src, time);
+    }
+
+    /**
      * @brief Computes raw line-parameter intersection and normals for an AABB and a line segment.
      *
      * This function uses the slab method (Kay and Kajiya) to calculate where the line
@@ -172,6 +201,20 @@ namespace neutrino::physics {
         // The governing axis is whichever slab produced the entry (max) / exit (min)
         // bound. Derive it from the comparison that selects the bound rather than
         // re-deriving by float equality on the result (ties go to x, matching std::max/min).
+        //
+        // KNOWN LIMITATION (exact tangency): if the ray starts EXACTLY on one face and moves
+        // purely PARALLEL to it (e.g. from.y == a.max.y with dy == 0), that face's slab
+        // degenerates to the whole line (NEG_INF/INF), so the entry is attributed to the motion
+        // axis and the returned normal is parallel to the motion rather than the resting face.
+        // A mover exactly tangent and sliding along the face can then get a spurious toi-0 hit
+        // with the wrong normal -- a bullet (which, unlike move_and_slide, keeps no `skin` gap
+        // and stops exactly at contact) sliding along a wall would pin. This is MEASURE-ZERO
+        // float-exact tangency: the moment the mover is a hair off the face (a near-tangent bullet
+        // is either separated -> clean miss, or overlapping -> depenetrated by the bullet-pass
+        // eject) it behaves correctly, so it does not arise from normal motion. A real fix needs
+        // the true contact normal from a closest-point/separation query rather than the slab
+        // normal; that is deferred (it would touch this hot, well-tested routine for a case that
+        // does not occur in practice) and left documented.
         const bool entry_on_x = t_min_x >= t_min_y;
         const bool exit_on_x = t_max_x <= t_max_y;
         const float t_entry = entry_on_x ? t_min_x : t_min_y;
@@ -234,7 +277,7 @@ namespace neutrino::physics {
         if (!it || !it->segment_overlaps()) {
             return std::nullopt;
         }
-        return to_swept_hit(*it, *it, time);
+        return to_swept_hit_forward(*it, *it, time, euler::length_squared(avel - bvel) * time * time);
     }
 
     /**
@@ -544,7 +587,7 @@ namespace neutrino::physics {
         if (!it || !it->segment_overlaps()) {
             return std::nullopt;
         }
-        return to_swept_hit(*it, *it, time);
+        return to_swept_hit_forward(*it, *it, time, euler::length_squared(avel - bvel) * time * time);
     }
 
     /**
@@ -646,21 +689,29 @@ namespace neutrino::physics {
         }
         // Entry/normal come from the earliest-entering sub-shape; exit/normal from the
         // latest-exiting one (valid because the composite Minkowski shape is convex).
-        return to_swept_hit(*entry_hit, *exit_hit, time);
+        return to_swept_hit_forward(*entry_hit, *exit_hit, time, euler::length_squared(avel - bvel) * time * time);
     }
 
     /**
-     * @brief Argument-order-independent overload of swept_intersection(circle, aabb).
+     * @brief Argument-order overload: an AABB mover vs a circle target.
      *
-     * The physical query is symmetric (only the relative velocity matters), so this simply
-     * forwards with the shapes/velocities reordered. Normals still point outward from the
-     * AABB obstacle, exactly as in the canonical (circle, aabb) overload.
+     * Forwards to the canonical (circle, aabb) form with the shapes/velocities reordered, then
+     * NEGATES the normals. The delegate points its normal out of the AABB, but here the AABB is
+     * the MOVER, so "out of the target" means out of the circle. This keeps the whole family's
+     * convention -- the normal points outward from the SECOND (target) argument -- which
+     * move_and_slide / is_walkable and the emitted COLLISION / BULLET_HIT / cast contact normals
+     * all rely on (they push the mover back, so the normal must face the mover).
      */
     [[nodiscard]] inline std::optional <swept_hit> swept_intersection(
         const aabb& abox, const vec& avel,
         const circle& ccirc, const vec& cvel,
         float time) noexcept {
-        return swept_intersection(ccirc, cvel, abox, avel, time);
+        auto h = swept_intersection(ccirc, cvel, abox, avel, time);
+        if (h) {
+            h->entry_normal = vec{-h->entry_normal.x(), -h->entry_normal.y()};
+            h->exit_normal = vec{-h->exit_normal.x(), -h->exit_normal.y()};
+        }
+        return h;
     }
 
     /**
@@ -693,7 +744,7 @@ namespace neutrino::physics {
             if (!h || !h->segment_overlaps()) {
                 return std::nullopt;
             }
-            return to_swept_hit(*h, *h, time);
+            return to_swept_hit_forward(*h, *h, time, euler::length_squared(rel) * time * time);
         }
 
         // Local frame: x along the segment, y across it.
@@ -722,7 +773,7 @@ namespace neutrino::physics {
         const auto to_world = [&](const vec& n) { return n.x() * ux + n.y() * uy; };
         entry_hit->entry_normal = to_world(entry_hit->entry_normal);
         exit_hit->exit_normal = to_world(exit_hit->exit_normal);
-        return to_swept_hit(*entry_hit, *exit_hit, time);
+        return to_swept_hit_forward(*entry_hit, *exit_hit, time, euler::length_squared(rel) * time * time);
     }
 
     /**
@@ -782,6 +833,19 @@ namespace neutrino::physics {
 
         if (!start_overlap && !end_overlap && !entry_hit) {
             return std::nullopt; // never overlap within the window
+        }
+        // Resting-and-leaving: overlapping at t=0 but the overlap ENDS by ~t=0 (the mover is
+        // flush and separating), so it is not a forward collision. Filter it -- otherwise a
+        // mover resting flush on the segment re-grazes at toi 0 every frame and pins. This is
+        // the segment-path analogue of to_swept_hit_forward's `exit_param <= LEAVING_REST_EPS`.
+        // A mover that DEEPLY overlaps and leaves later (exit well after 0) still reports toi 0,
+        // matching the box overloads + what move_and_slide needs to resolve the penetration.
+        if (start_overlap && !end_overlap
+            && (!exit_hit
+                || exit_hit->exit_param <= 0.0f
+                || exit_hit->exit_param * exit_hit->exit_param * euler::length_squared(d)
+                       <= constants::LEAVING_REST_EPS * constants::LEAVING_REST_EPS)) {
+            return std::nullopt;
         }
 
         // Unit segment normal oriented toward `toward`, the push-out direction used for an

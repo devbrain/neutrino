@@ -157,6 +157,10 @@ namespace neutrino {
     }
 
     void application::on_update(float dt) {
+        // Fire any audio finish/loop callbacks (relayed from the audio thread) on the main
+        // thread, before this frame's simulation so a callback can affect it same-frame.
+        m_pimpl->m_sound_system.dispatch_callbacks();
+
         m_pimpl->m_sprites.update(sprite_animation_duration{dt * 1000.0f});
 
         if (!m_pimpl->m_scenes_manager.empty()) {

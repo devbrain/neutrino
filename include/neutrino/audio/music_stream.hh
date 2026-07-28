@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <chrono>
+#include <functional>
 #include <neutrino/neutrino_export.h>
 
 namespace musac {
@@ -14,6 +15,7 @@ namespace musac {
 
 namespace neutrino {
     class sound_system;
+    namespace audio_detail { struct callback_relay; }
 
     /// @brief A standalone, independently-controllable music track, returned by load_music().
     ///
@@ -67,13 +69,30 @@ namespace neutrino {
         /// @brief Reset playback to the start of the track.
         void rewind();
 
+        /// @brief Set a callback invoked when the track finishes on its own (a non-looping
+        /// track reaching its end). It runs on the main thread during the app's per-frame
+        /// update -- not on the audio thread -- so it may freely touch game state, at up to
+        /// one frame of latency. stop() does not trigger it. Replaces any previous callback;
+        /// pass {} to clear. No-op on an inert stream.
+        void on_finished(std::function<void()> cb);
+
+        /// @brief Set a callback invoked each time a looping track wraps back to its start.
+        /// Same main-thread dispatch and semantics as on_finished(); pass {} to clear.
+        void on_looped(std::function<void()> cb);
+
     private:
         friend class sound_system;
         /// @brief Re-apply the music group volume as (caller factor × @p group);
         /// invoked by sound_system when the group volume changes.
         void apply_group_volume(float group);
+        /// @brief Drain relayed finish/loop events and invoke the callbacks; called on the
+        /// main thread by sound_system once per frame.
+        void dispatch_pending();
 
         std::unique_ptr<musac::audio_stream> m_stream;
         float m_caller_volume = 1.0f;
+        std::shared_ptr<audio_detail::callback_relay> m_relay; // audio-thread finish/loop counters
+        std::function<void()> m_on_finished;
+        std::function<void()> m_on_looped;
     };
 }
