@@ -25,6 +25,7 @@ add_executable(neutrino_tests
         physics/test_world_swept_triggers.cc
 
         test_main.cc
+        test_world_space.cc
 
         audio/test_audio.cc
         input/test_input.cc
