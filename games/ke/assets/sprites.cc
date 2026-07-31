@@ -5,6 +5,7 @@
 #include <ke/assets/sprites.hh>
 
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 
@@ -14,6 +15,9 @@
 #include <ke/assets/registry.hh>
 
 namespace rs {
+    std::ostream& operator<<(std::ostream& os, bonus b) {
+        return os << bonus_name(b);
+    }
 
     neutrino::sprite_def to_sprite_def(const tile_sheet_def& sheet, bool top_left_origin) {
         auto dup = sheet.image.duplicate();
@@ -48,21 +52,33 @@ namespace rs {
         // (frame index); callers resolve them via ke_paddle_frame / ke_ball_frame. The
         // source def is transient -- the built set answers its own frame geometry, so
         // nothing keeps the def alive past the acquire.
-        neutrino::sprite_def define_set(const game_resources& gr, const char* sheet_name,
+        void define_set(const game_resources& gr, const char* sheet_name,
                         neutrino::sprite_set_handle& set, bool top_left_origin = false) {
             const auto it = gr.tile_sheets.find(sheet_name);
-            ENFORCE (it != gr.tile_sheets.end()) ("ke: no", sheet_name, "sheet -- set undefined");
-
+            ENFORCE(it != gr.tile_sheets.end())("ke: no", sheet_name, "sheet -- set undefined");
 
             ke_assets& a = require_ke_assets();
             const neutrino::sprite_def def = to_sprite_def(it->second, top_left_origin);
             set = a.cache.acquire(def);
-            return def;
         }
 
+        neutrino::sprite_animation_id register_ke_anim(const ke_anim& a, const neutrino::sprite_set_handle& set,
+                                                       bool loop) {
+            std::vector <neutrino::sprite_animation_frame> frames;
+            frames.reserve(a.count);
+            const neutrino::sprite_animation_duration per{static_cast<float>(a.ticks) * 1000.0f / 70.0f}; // 70 Hz -> ms
+            for (std::size_t i = 0; i < a.count; ++i) {
+                neutrino::sprite_appearance app{};
+                // The frame indices are hard-coded from ke.exe, so a sheet that lacks one means the
+                // archive does not match the game -- a configuration invariant. require_visual
+                // reports which block is missing; the old `*set.visual(...)` dereferenced an empty
+                // optional (undefined behaviour) on any alternate or truncated RSC.
+                app.visual = set.require_visual(a.frames[i]);
+                frames.push_back({app, per});
+            }
+            return neutrino::register_sprite_animation(neutrino::sprite_animation{std::move(frames), loop});
+        }
     } // namespace
-
-
 
     void define_sprites(const game_resources& gr) {
         ke_assets& a = require_ke_assets();
@@ -73,8 +89,15 @@ namespace rs {
         // per-frame offset as the pivot would shift each sprite off its body and the walls.
         define_set(gr, "ke_rack", a.paddle, /*top_left=*/true);
         define_set(gr, "ke_brick", a.bricks, /*top_left=*/true);
-        auto spell_def = define_set(gr, "ke_spell", a.balls, /*top_left=*/true);
+        define_set(gr, "ke_spell", a.balls, /*top_left=*/true);
         define_set(gr, "ke_bord", a.board, /*top_left=*/true);
         define_set(gr, "ke_fill", a.fill, /*top_left=*/true);
+
+        a.hit_wall_anim_id = register_ke_anim(rs::hit_wall_anim, a.balls, /*loop=*/ false);
+        a.hit_brick_anim_id = register_ke_anim(rs::hit_brick_anim, a.balls, /*loop=*/ false);
+
+        for (int i = 0; i < 28; i++) {
+            a.capsule_anim_id[i] = register_ke_anim(rs::ke_spell_capsule_anim[i], a.balls, /*loop=*/true);
+        }
     }
 }

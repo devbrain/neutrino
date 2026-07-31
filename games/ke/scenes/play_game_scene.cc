@@ -54,7 +54,7 @@ namespace {
             // ball.pos is the collider CENTRE; the sprite pivots top-left, so shift by half the
             // frame to centre the graphic on the body. +1000 depth: above bricks/paddle.
             const std::size_t frame = rs::ke_ball_frame(ball.kind, ball.size);
-            const neutrino::rect fr = assets.balls.frame_rect(frame).value_or(neutrino::rect{});
+            const neutrino::rect fr = assets.balls.require_frame_rect(frame);
             const neutrino::world_point pos{
                 ball.pos.x - static_cast <float>(fr.w) * 0.5f,
                 ball.pos.y - static_cast <float>(fr.h) * 0.5f
@@ -67,20 +67,15 @@ namespace {
         const auto& assets = rs::require_ke_assets();
         if (!assets.balls.valid()) { return; } // both anims live in KE_SPELL
         for (const hit_effect& fx : model::instance().get_level_info().effects) {
-            const rs::ke_anim& a = rs::hit_anim(fx.kind);
-            const float frame_secs = a.ticks * rs::ke_tick_seconds;
-            const std::size_t idx = std::min <std::size_t>(a.count - 1,
-                                                           frame_secs > 0.0f
-                                                               ? static_cast <std::size_t>(fx.elapsed / frame_secs)
-                                                               : 0);
-            const std::size_t block = a.frames[idx]; // block == frame index in the set
+            batch.add(fx.pos, fx.pos.y + 2000.0f, fx.state);
+        }
+    }
 
-            const neutrino::rect fr = assets.balls.frame_rect(block).value_or(neutrino::rect{});
-            const neutrino::world_point pos{
-                fx.pos.x - static_cast <float>(fr.w) * 0.5f,
-                fx.pos.y - static_cast <float>(fr.h) * 0.5f
-            };
-            batch.add(pos, fx.pos.y + 2000.0f, assets.balls.visual(block)); // +2000: above balls
+    void draw_capsules(neutrino::sprite_batch& batch) {
+        const auto& assets = rs::require_ke_assets();
+        if (!assets.balls.valid()) { return; }
+        for (const capsule& c : model::instance().get_level_info().capsules) {
+            batch.add(c.pos, c.pos.y + 1500.0f, c.state); // above bricks/paddle, below sparks (2000)
         }
     }
 }
@@ -102,19 +97,29 @@ void play_game_scene::on_enter() {
 }
 
 void play_game_scene::on_exit() {
+    model::instance().get_level_info().clear(); // unregisters the effect states first
     m_backdrop.reset(); // destroy the texture while the renderer is still live
     rs::clear_ke_assets();
 }
 
-void play_game_scene::update_physics(neutrino::frame_duration dt) {
+void play_game_scene::fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) {
     if (!m_ready) {
         return;
     }
-    model::instance().set_paddle_target(m_paddle_target_x); // input -> domain intent
-    m_mechanics.tick(model::instance(), dt.count() / 1000.0f); // physics resolves it vs the walls
+    // Poll the frame's render-space pointer (no event gating, no manual coord conversion) and hand
+    // it to the domain as the paddle-centre target; physics resolves it against the walls. dt is a
+    // constant seconds tick -- no ms/1000 conversion any more.
+    //
+    // Only when the pointer is actually over the window: off-screen the reported position is not
+    // meaningful, and steering from it would drag the paddle to the left wall before the player has
+    // touched the mouse. The paddle simply holds its last target instead.
+    if (in.pointer().on_screen) {
+        model::instance().set_paddle_target(static_cast <int>(in.pointer().render.x));
+    }
+    m_mechanics.tick(model::instance(), dt.count());
 }
 
-void play_game_scene::render(neutrino::frame_duration) {
+void play_game_scene::render() {
     if (!m_ready || !m_backdrop) {
         return;
     }
@@ -131,18 +136,13 @@ void play_game_scene::render(neutrino::frame_duration) {
     draw_paddle(batch);
     draw_balls(batch);
     draw_effects(batch);
+    draw_capsules(batch);
     batch.flush();
 }
 
-void play_game_scene::handle_action(const sdlpp::event& ev) {
-    if (const auto* m = ev.as <sdlpp::mouse_motion_event>()) {
-        m_paddle_target_x = neutrino::to_render_coords({m->x, m->y}).x;
-    }
-    if (const auto* m = ev.as <sdlpp::mouse_button_event>()) {
-        if (m->down && m->get_button() == sdlpp::mouse_button::left) {
-            LOG_ERROR("Down");
-        }
-    }
+void play_game_scene::handle_action(const sdlpp::event&) {
+    // Continuous input (the paddle-tracking mouse position) is polled from the frame's
+    // input_snapshot in fixed_update; only discrete one-shot events would be handled here.
 }
 
 bool play_game_scene::is_opaque() const {

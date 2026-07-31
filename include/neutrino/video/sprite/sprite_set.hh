@@ -82,8 +82,51 @@ namespace neutrino {
             /// clamped to the set.
             [[nodiscard]] dim bounding_size(std::size_t first, std::size_t count) const;
 
+            /// @brief Resolved geometry of the visual @p name, or nullopt. Unlike @ref frame_rect
+            /// (packed pixels only) this also answers the untrimmed authored frame and the pivot in
+            /// both spaces, so a caller can align gameplay to art that the packer may re-trim.
+            [[nodiscard]] std::optional <sprite_metrics> metrics(std::string_view name) const;
+
+            /// @brief Resolved geometry of the visual at frame @p index, or nullopt if out of range.
+            [[nodiscard]] std::optional <sprite_metrics> metrics(std::size_t index) const;
+
             /// @brief The registered animation bound to clip @p name, or nullopt.
             [[nodiscard]] std::optional <sprite_animation_id> clip(std::string_view name) const;
+
+            // ---- required lookups -------------------------------------------------------
+            // The nullopt-returning accessors above model a genuine question ("does this set
+            // have such a frame?"). A CONFIGURATION INVARIANT -- "this sheet must contain the
+            // frame this game is built around" -- is not a question, and answering it with
+            // `.value_or(rect{})` yields zero geometry that propagates as a silently wrong
+            // collision box or layout instead of a diagnosable failure. These abort at the
+            // lookup, naming what was missing.
+
+            /// @brief The registered visual bound to @p name. @throws if the set has no such visual.
+            [[nodiscard]] sprite_visual_ref require_visual(std::string_view name) const;
+
+            /// @brief The visual at zero-based frame @p index. @throws if out of range.
+            [[nodiscard]] sprite_visual_ref require_visual(std::size_t index) const;
+
+            /// @brief Atlas rect of the visual @p name. @throws if the set has no such visual.
+            [[nodiscard]] rect require_frame_rect(std::string_view name) const;
+
+            /// @brief Atlas rect of the visual at frame @p index. @throws if out of range.
+            [[nodiscard]] rect require_frame_rect(std::size_t index) const;
+
+            /// @brief Pivot/origin of the visual @p name. @throws if the set has no such visual.
+            [[nodiscard]] point require_origin(std::string_view name) const;
+
+            /// @brief Pivot/origin of the visual at frame @p index. @throws if out of range.
+            [[nodiscard]] point require_origin(std::size_t index) const;
+
+            /// @brief Resolved geometry of the visual @p name. @throws if the set has no such visual.
+            [[nodiscard]] sprite_metrics require_metrics(std::string_view name) const;
+
+            /// @brief Resolved geometry of the visual at frame @p index. @throws if out of range.
+            [[nodiscard]] sprite_metrics require_metrics(std::size_t index) const;
+
+            /// @brief The registered animation bound to clip @p name. @throws if there is no such clip.
+            [[nodiscard]] sprite_animation_id require_clip(std::string_view name) const;
 
             /// Name lookups. Populated by @ref build_sprite_set; the animations are also
             /// owned (for teardown) in @ref render_bundle::animations.

@@ -140,8 +140,8 @@ namespace {
                 m_coin = m_set.spawn("coin");
             }
 
-            void update_physics(neutrino::frame_duration dt) override {
-                const float seconds = dt.count() / 1000.0f;
+            void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot&) override {
+                const float seconds = dt.count();
                 const bool left = neutrino::hotkey{sdlpp::scancode::left}.held()
                     || neutrino::hotkey{sdlpp::scancode::a}.held();
                 const bool right = neutrino::hotkey{sdlpp::scancode::right}.held()
@@ -183,7 +183,7 @@ namespace {
                 }
             }
 
-            void render(neutrino::frame_duration) override {
+            void render() override {
                 draw_background();
 
                 neutrino::draw_sprite(neutrino::point{430, ground_y - 4}, m_torch.state(), {.scale = prop_scale});

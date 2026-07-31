@@ -28,6 +28,7 @@ add_executable(neutrino_tests
 
         audio/test_audio.cc
         input/test_input.cc
+        input/test_input_snapshot.cc
         video/test_bitmask.cc
         video/test_sprites.cc
         video/test_sprite_def.cc

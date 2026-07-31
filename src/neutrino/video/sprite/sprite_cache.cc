@@ -8,12 +8,68 @@
 #include <memory>
 #include <utility>
 
+#include <failsafe/enforce.hh>
+
 #include <neutrino/video/sprite/image_identity.hh>
 
 #include "video/sprite/resource_cache_core.hh"
 
 namespace neutrino {
+    namespace {
+        // An empty lease answers every optional lookup with nullopt, so a require_* on one would
+        // otherwise report "no such frame" for a set that was simply never acquired. Separate the
+        // two failures: this one means the HANDLE is wrong, not the key.
+        void enforce_leased(const void* set, const char* what) {
+            ENFORCE(set != nullptr)("sprite_set_handle: ", what, " on an empty lease (no set acquired)");
+        }
+    } // namespace
+
     // --- sprite_set_handle: a lease over sprite_cache's retain/release primitives ---
+
+    sprite_visual_ref sprite_set_handle::require_visual(std::string_view name) const {
+        enforce_leased(m_set, "require_visual");
+        return m_set->require_visual(name);
+    }
+
+    sprite_visual_ref sprite_set_handle::require_visual(std::size_t index) const {
+        enforce_leased(m_set, "require_visual");
+        return m_set->require_visual(index);
+    }
+
+    rect sprite_set_handle::require_frame_rect(std::string_view name) const {
+        enforce_leased(m_set, "require_frame_rect");
+        return m_set->require_frame_rect(name);
+    }
+
+    rect sprite_set_handle::require_frame_rect(std::size_t index) const {
+        enforce_leased(m_set, "require_frame_rect");
+        return m_set->require_frame_rect(index);
+    }
+
+    point sprite_set_handle::require_origin(std::string_view name) const {
+        enforce_leased(m_set, "require_origin");
+        return m_set->require_origin(name);
+    }
+
+    point sprite_set_handle::require_origin(std::size_t index) const {
+        enforce_leased(m_set, "require_origin");
+        return m_set->require_origin(index);
+    }
+
+    sprite_metrics sprite_set_handle::require_metrics(std::string_view name) const {
+        enforce_leased(m_set, "require_metrics");
+        return m_set->require_metrics(name);
+    }
+
+    sprite_metrics sprite_set_handle::require_metrics(std::size_t index) const {
+        enforce_leased(m_set, "require_metrics");
+        return m_set->require_metrics(index);
+    }
+
+    sprite_animation_id sprite_set_handle::require_clip(std::string_view name) const {
+        enforce_leased(m_set, "require_clip");
+        return m_set->require_clip(name);
+    }
 
     sprite_set_handle::sprite_set_handle(const sprite_set_handle& other)
         : m_cache(other.m_cache), m_key(other.m_key), m_token(other.m_token), m_set(other.m_set) {

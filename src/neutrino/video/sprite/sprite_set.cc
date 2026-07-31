@@ -87,7 +87,15 @@ namespace neutrino {
 
     std::optional <sprite_visual_ref> sprite_set::visual(std::string_view name) const {
         const auto it = visuals_by_name.find(std::string(name));
-        return it == visuals_by_name.end() ? std::nullopt : std::optional{it->second};
+        if (it == visuals_by_name.end()) {
+            return std::nullopt;
+        }
+        // The name maps survive release() (they are plain members, not registered resources), so a
+        // torn-down set would otherwise keep handing out ids pointing at unregistered resources --
+        // while the INDEXED accessors, which consult the live sheet, correctly report nothing.
+        // Validate against the live resource so both paths agree, and so require_visual on a dead
+        // set fails loudly instead of returning a dangling id.
+        return find_visual(it->second).has_value() ? std::optional{it->second} : std::nullopt;
     }
 
     std::size_t sprite_set::visual_count() const {
@@ -161,9 +169,90 @@ namespace neutrino {
         return dim{w, h};
     }
 
+    std::optional <sprite_metrics> sprite_set::metrics(std::string_view name) const {
+        if (const auto ref = visual(name)) {
+            if (const auto v = find_visual(*ref)) {
+                return v->metrics();
+            }
+        }
+        return std::nullopt;
+    }
+
+    std::optional <sprite_metrics> sprite_set::metrics(std::size_t index) const {
+        const sprite_sheet* sheet = sheet_of(*this);
+        if (!sheet || index >= sheet->visual_count()) {
+            return std::nullopt;
+        }
+        return sheet->visual(sheet->visual_id(index)).metrics();
+    }
+
     std::optional <sprite_animation_id> sprite_set::clip(std::string_view name) const {
         const auto it = clips_by_name.find(std::string(name));
-        return it == clips_by_name.end() ? std::nullopt : std::optional{it->second};
+        if (it == clips_by_name.end()) {
+            return std::nullopt;
+        }
+        // Same staleness guard as visual(): clips_by_name outlives release(). A set's animations
+        // are registered and torn down together with its sheet, so the sheet's liveness is the
+        // set's liveness -- no live sheet means these animation ids no longer address anything.
+        return sheet_of(*this) != nullptr ? std::optional{it->second} : std::nullopt;
+    }
+
+    // ---- required lookups: a missing entry is a build/config error, not an answer ----------
+    // Each reports the SET SIZE alongside the failed key: a wrong sheet (count 0 -- torn down or
+    // never built) and an out-of-range index look identical without it.
+
+    sprite_visual_ref sprite_set::require_visual(std::string_view name) const {
+        const auto v = visual(name);
+        ENFORCE(v.has_value())("sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
+        return *v;
+    }
+
+    sprite_visual_ref sprite_set::require_visual(std::size_t index) const {
+        const auto v = visual(index);
+        ENFORCE(v.has_value())("sprite_set: visual index ", index, " out of range (", visual_count(), ")");
+        return *v;
+    }
+
+    rect sprite_set::require_frame_rect(std::string_view name) const {
+        const auto r = frame_rect(name);
+        ENFORCE(r.has_value())("sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
+        return *r;
+    }
+
+    rect sprite_set::require_frame_rect(std::size_t index) const {
+        const auto r = frame_rect(index);
+        ENFORCE(r.has_value())("sprite_set: visual index ", index, " out of range (", visual_count(), ")");
+        return *r;
+    }
+
+    point sprite_set::require_origin(std::string_view name) const {
+        const auto o = origin(name);
+        ENFORCE(o.has_value())("sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
+        return *o;
+    }
+
+    point sprite_set::require_origin(std::size_t index) const {
+        const auto o = origin(index);
+        ENFORCE(o.has_value())("sprite_set: visual index ", index, " out of range (", visual_count(), ")");
+        return *o;
+    }
+
+    sprite_metrics sprite_set::require_metrics(std::string_view name) const {
+        const auto m = metrics(name);
+        ENFORCE(m.has_value())("sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
+        return *m;
+    }
+
+    sprite_metrics sprite_set::require_metrics(std::size_t index) const {
+        const auto m = metrics(index);
+        ENFORCE(m.has_value())("sprite_set: visual index ", index, " out of range (", visual_count(), ")");
+        return *m;
+    }
+
+    sprite_animation_id sprite_set::require_clip(std::string_view name) const {
+        const auto c = clip(name);
+        ENFORCE(c.has_value())("sprite_set: no clip named '", name, "'");
+        return *c;
     }
 
     sprite_set build_sprite_set(const sprite_def& def) {
@@ -194,7 +283,23 @@ namespace neutrino {
 
         sprite_sheet sheet(atlas);
         for (const sprite_visual_def& v : resolved) {
-            sheet.add_visual(v.name, sprite_visual{v.src, baked_visual_origin(v)});
+            // Carry the trim metadata through to the runtime visual, not just the packed rect and
+            // baked pivot: without source_size/trim_offset the authored frame is unrecoverable, and
+            // consumers are forced to treat packed pixel sizes as gameplay dimensions.
+            const dim source = v.source_size.value_or(dim{v.src.w, v.src.h});
+            const point trim = v.trim_offset.value_or(point{0, 0});
+            // The trimmed patch must FIT the frame it was trimmed from. The invariant catches
+            // incoherent authoring that would otherwise produce silently wrong metrics -- most
+            // easily a trim_offset given without a source_size, which leaves the authored size
+            // defaulted to the packed size, so trimmed() reads false and logical_bounds_at() no
+            // longer contains the visible pixels it is supposed to enclose.
+            ENFORCE(trim.x >= 0 && trim.y >= 0
+                    && trim.x + v.src.w <= source.width && trim.y + v.src.h <= source.height)
+                ("sprite visual '", v.name, "': trimmed rect ", v.src.w, "x", v.src.h,
+                 " at offset (", trim.x, ",", trim.y, ") does not fit its source_size ",
+                 source.width, "x", source.height,
+                 " (a trim_offset requires a matching source_size)");
+            sheet.add_visual(v.name, sprite_visual{v.src, baked_visual_origin(v), source, trim});
         }
         const sprite_sheet_id sheet_id = register_sprite_sheet(std::move(sheet));
         set.sheets.push_back(sheet_id);

@@ -28,8 +28,8 @@ namespace neutrino {
             /// application to install the initial scene before the first frame.
             void push_scene_sync(std::unique_ptr <base_scene>&& scene);
 
-            void update_physics(frame_duration delta_t);
-            void render(frame_duration time_since_last_frame);
+            void fixed_update(sim_duration dt, const input_snapshot& in);
+            void render();
             void handle_action(const sdlpp::event& ev);
 
             /// @brief Deliver a render-space size change to the active (top) scene.

@@ -25,6 +25,16 @@ namespace neutrino {
         stretch,        ///< fill the drawable, ignoring aspect
     };
 
+    /// @brief Fixed-timestep pacing for the simulation. The sim advances in constant @ref period
+    /// ticks, decoupled from the render/display rate: an accumulator runs as many ticks as the frame
+    /// delta accrued. @ref max_substeps caps the catch-up after a stall (spiral-of-death guard) and
+    /// @ref max_frame clamps a huge frame delta before it feeds the accumulator.
+    struct fixed_step_config {
+        sim_duration period{1.0f / 120.0f}; ///< Simulation tick length, in seconds.
+        int          max_substeps = 5;      ///< Max sim steps per frame.
+        sim_duration max_frame{0.25f};      ///< Per-frame dt clamp, in seconds.
+    };
+
     /// @brief Startup configuration for @ref application -- window geometry,
     /// presentation, and frame pacing. Passed once to the application
     /// constructor; every field has a usable default.
@@ -58,6 +68,9 @@ namespace neutrino {
         /// scaled window points. Input still arrives in window points — map it into
         /// render space with neutrino::to_render_coords().
         bool high_pixel_density = false;
+        /// Fixed-timestep pacing for the simulation (see @ref fixed_step_config). The default
+        /// 120 Hz tick decouples the sim from the display rate and keeps physics deterministic.
+        fixed_step_config fixed{};
     };
 
     /// @brief Base class for a Neutrino game: owns the window, renderer, main
@@ -128,6 +141,9 @@ namespace neutrino {
             void on_render(sdlpp::renderer& r) final;
             void handle_event(const sdlpp::event& e) final;
             void on_quit() noexcept final;
+            /// @brief Build this frame's input snapshot from the tracked input state (pointer mapped
+            /// into render space, mouse-button edge/held), sampled once per frame for fixed_update.
+            [[nodiscard]] input_snapshot sample_input();
         private:
             struct impl;
             std::unique_ptr <impl> m_pimpl;

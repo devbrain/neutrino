@@ -190,6 +190,77 @@ namespace neutrino::physics {
             void set_surface_velocity(collider_id cid, const vec& v);
 
             /**
+             * @brief Drive a kinematic actor toward an absolute world @p target, resolved by
+             *        move-and-slide on the next @ref run -- the positional mirror of @ref set_velocity.
+             *
+             * The body carries a target instead of a velocity: @ref run derives the per-step motion
+             * itself and clamps it to what geometry allows, so a target on the far side of a wall stops
+             * AT the wall rather than producing a huge velocity.
+             *
+             * @ref get_velocity then reports the EFFECTIVE velocity -- the displacement actually
+             * applied this step, divided by dt -- which is the value a ricochet or "english" response
+             * should use. Note what that does and does not mean: a body pinned against a wall reads
+             * ~0 (it covered no ground), but a body that travelled most of the way to that wall
+             * before stopping reads the speed it genuinely moved at, NOT 0 and NOT the requested
+             * rate. (The surface-projected outgoing velocity that move-and-slide computes would say
+             * 0 on the blocked axis for both cases, which is why target mode overrides it.)
+             *
+             * The target persists across frames until changed, until @ref clear_target, or until an
+             * immediate @ref move_by / @ref move_to takes manual control; @p target is the body's
+             * tight-box centre.
+             * @param cid    Handle to a kinematic actor (aborts for static/carrier/bullet/tile).
+             * @param target Absolute world position the body's centre should reach.
+             */
+            void set_target(collider_id cid, const vec& target);
+
+            /**
+             * @brief Drop a kinematic actor's positional target, reverting it to @ref set_velocity control.
+             * @param cid Handle to a kinematic actor; a no-op if it has no target.
+             */
+            void clear_target(collider_id cid);
+
+            /**
+             * @brief Does this collider currently carry a positional target (@ref set_target)?
+             * @param cid Handle to a live collider (@c false for any non-body).
+             */
+            [[nodiscard]] bool has_target(collider_id cid) const;
+
+            /**
+             * @brief Immediately move a kinematic actor by @p delta, resolved by move-and-slide -- the
+             *        out-of-@ref run counterpart to @ref set_target.
+             *
+             * Resolves NOW (like @ref snap_to_ground / @ref step_up, which also mutate the actor) and
+             * returns the outcome. The body is left genuinely at rest: its stored velocity is zeroed
+             * AND any standing @ref set_target is cleared, so a subsequent @ref run neither re-applies
+             * this move nor resumes walking toward an older target. Read the effective velocity from
+             * the result instead.
+             *
+             * @note Taking an explicit move ENDS target mode -- the two are alternative ways to drive
+             *       a body. Re-arm it with @ref set_target if you want the body seeking again (a
+             *       controller that sets a target every frame does this automatically).
+             * @param cid   Handle to a kinematic actor.
+             * @param delta The displacement to attempt.
+             * @param dt    The time this move represents (for the effective-velocity read-back).
+             * @pre @p dt > 0. A non-positive duration would apply no displacement yet still clear a
+             *      standing target -- silently doing nothing while cancelling intent -- so it aborts.
+             * @return Where it ended up, its effective velocity, the blocked remainder, and contact count.
+             */
+            move_result move_by(collider_id cid, units::displacement delta, units::duration dt);
+
+            /**
+             * @brief Immediately move a kinematic actor so its centre reaches @p target, resolved by
+             *        move-and-slide -- the absolute-target form of @ref move_by.
+             *
+             * A one-shot move, not a standing intent: unlike @ref set_target this resolves now and
+             * does not persist (and, like @ref move_by, it clears any standing target).
+             * @param cid    Handle to a kinematic actor.
+             * @param target Absolute world position the body's centre should reach.
+             * @param dt     The time this move represents (for the effective-velocity read-back).
+             * @return See @ref move_by.
+             */
+            move_result move_to(collider_id cid, const vec& target, units::duration dt);
+
+            /**
              * @brief Is this handle still live -- alive AND matching the current generation?
              * @param cid Handle to test (the null sentinel @c collider_id{} reads false).
              * @return @c true iff the referenced body/bullet/tile exists and has not been
@@ -387,15 +458,44 @@ namespace neutrino::physics {
                     if (it->kind != detail::body_kind::KINEMATIC) {
                         continue;
                     }
+                    // Positional intent (set_target): derive THIS step's velocity from the gap to the
+                    // target, so move-and-slide clamps it to geometry. This is the fix for a
+                    // position-driven controller (e.g. a mouse paddle) fabricating a velocity of
+                    // (target-current)/dt that explodes when the target is unreachable.
+                    const bool target_mode = it->target.has_value() && dt > 0.0f;
+                    const vec start = target_mode ? detail::tight_box(it->shape).center() : vec{};
+                    if (target_mode) {
+                        it->velocity = vec{(it->target->x() - start.x()) / dt,
+                                           (it->target->y() - start.y()) / dt};
+                    }
+                    // In target mode the velocity above is only a REQUEST. Whatever happens below --
+                    // full move, clamped at a surface, or skipped entirely -- it must be replaced by
+                    // the EFFECTIVE velocity (applied displacement / dt) before any reader sees it:
+                    //   * move_and_slide would otherwise leave the surface-PROJECTED outgoing
+                    //     velocity, reporting ~0 on a blocked axis for a body that in fact travelled
+                    //     most of the way to the wall;
+                    //   * the early-outs would otherwise leave the raw request, so a dormant
+                    //     off-region body would claim to be moving at the full requested rate.
+                    // get_velocity is documented as the effective velocity -- what a bounce or
+                    // "english" response should read -- so it must mean "distance actually covered".
+                    const auto settle_target_velocity = [&] {
+                        if (target_mode) {
+                            const vec end = detail::tight_box(it->shape).center();
+                            it->velocity = vec{(end.x() - start.x()) / dt, (end.y() - start.y()) / dt};
+                        }
+                    };
                     const units::displacement delta = units::velocity{it->velocity} * units::duration{dt};
                     if (near_zero(delta.value)) {
+                        settle_target_velocity();
                         continue; // not moving this frame
                     }
                     if (!intersects(swept_bound(detail::narrow(it->shape), delta), active_region)) {
+                        settle_target_velocity();
                         continue; // off-region: dormant
                     }
                     const uint32_t mover_idx = it.index();
                     const slide_result res = move_and_slide(mover_idx, units::duration{dt}, solid_acceptor());
+                    settle_target_velocity();
                     for (int i = 0; i < res.count; ++i) {
                         m_events.emplace_back(
                             event_kind::COLLISION,
@@ -441,52 +541,110 @@ namespace neutrino::physics {
                 // can re-enter, they just skip the expensive tree query). The game despawns
                 // out-of-bounds bullets so they do not accumulate. toi is reported normalized.
                 for (auto bullet_itr = m_bullets_storage.begin(); bullet_itr != m_bullets_storage.end(); ++bullet_itr) {
-                    units::displacement delta_s = units::velocity{bullet_itr->velocity} * units::duration{dt};
-                    if (intersects(swept_bound(bullet_itr->shape, delta_s), active_region)) {
-                        // Bullets hit only solids -- a sensor/ignored body must not stop them
-                        // (sensors detect via the trigger pass; bullets are not in the tree anyway).
-                        if (auto hit = cast(bullet_itr.index(), collider_id::BULLET, delta_s, solid_acceptor())) {
-                            delta_s = delta_s * units::fraction{hit->toi}; // toi is the fraction ALONG delta_s
-                            vec event_normal = hit->normal;
+                    // The step is a TIME BUDGET, consumed by however many responses the bullet's
+                    // policy allows. A `stop` bullet spends at most one contact's worth and forfeits
+                    // the rest (historic behaviour); a `bounce`/`slide` bullet re-aims and keeps
+                    // spending, so it leaves the surface within THIS step instead of resting on it
+                    // until the next one.
+                    units::displacement remaining = units::velocity{bullet_itr->velocity} * units::duration{dt};
+                    // Fraction of the STEP's time already spent by earlier responses. Each cast
+                    // reports its toi along the CURRENT remaining segment, so a second contact at
+                    // local 0.2 after a first at 0.75 is really at 0.75 + 0.25*0.2 = 0.8 of the
+                    // step. Events must carry that cumulative value or a consumer cannot order
+                    // impacts or reconstruct when they happened. (Time, not distance: after a
+                    // bounce the remaining displacement points elsewhere, so a fraction "along the
+                    // original delta" would not even be meaningful.)
+                    float consumed = 0.0f;
+                    for (int response = 0;; ++response) {
+                        units::displacement delta_s = remaining;
+                        bool responded = false;
+                        if (intersects(swept_bound(bullet_itr->shape, delta_s), active_region)) {
+                            // Bullets hit only solids -- a sensor/ignored body must not stop them
+                            // (sensors detect via the trigger pass; bullets are not in the tree anyway).
+                            if (auto hit = cast(bullet_itr.index(), collider_id::BULLET, delta_s,
+                                                solid_acceptor())) {
+                                delta_s = delta_s * units::fraction{hit->toi}; // fraction ALONG delta_s
+                                vec event_normal = hit->normal;
 
-                            // Depenetration: if the bullet STARTED engulfed in the obstacle (a fast
-                            // kinematic body moved onto it this frame, before the bullet pass), the
-                            // swept cast pins it at toi 0 inside -- it cannot sweep its way out. Eject
-                            // it along the minimum-translation vector so it separates this frame; the
-                            // game reflects on the BULLET_HIT and it leaves next frame. mtv_out only
-                            // returns a value on a real start-overlap, so a normal approach (the bullet
-                            // outside the obstacle at the sweep start) is untouched.
-                            if (const auto pen = mtv_out(bullet_itr->shape, get_shape(hit->who))) {
-                                // Report the MTV axis actually resolved along, not the swept slab
-                                // normal (which is a velocity artifact for a start-overlap) -- so a
-                                // game reflecting on the event bounces off the face it was pushed out of.
-                                event_normal = pen->normal;
-                                const float push = pen->depth + constants::POINT_EPS;
-                                units::displacement eject{vec{pen->normal.x() * push, pen->normal.y() * push}};
-                                // Don't drive the ejected bullet into ANOTHER solid: cast the eject
-                                // and clamp to the first solid in the way. cast_core can only exclude
-                                // the engulfing collider when it is a BODY (by index); for a tile it
-                                // has no exclusion, so casting would immediately re-hit that same tile
-                                // at toi 0 and zero the ejection. So skip the clamp for a tile obstacle
-                                // (tiles are static and rarely engulf, so the unclamped eject is fine).
-                                if (hit->who.type_id == collider_id::BODY) {
-                                    if (const auto block = cast_core(bullet_itr->shape, eject, bullet_itr->filter,
-                                                                     solid_acceptor(), hit->who.value)) {
-                                        eject = eject * units::fraction{block->toi};
+                                // Depenetration: if the bullet STARTED engulfed in the obstacle (a fast
+                                // kinematic body moved onto it this frame, before the bullet pass), the
+                                // swept cast pins it at toi 0 inside -- it cannot sweep its way out. Eject
+                                // it along the minimum-translation vector so it separates this frame; the
+                                // game reflects on the BULLET_HIT and it leaves next frame. mtv_out only
+                                // returns a value on a real start-overlap, so a normal approach (the bullet
+                                // outside the obstacle at the sweep start) is untouched.
+                                if (const auto pen = mtv_out(bullet_itr->shape, get_shape(hit->who))) {
+                                    // Report the MTV axis actually resolved along, not the swept slab
+                                    // normal (a velocity artifact for a start-overlap) -- so a game
+                                    // reflecting on the event bounces off the face it was pushed out of.
+                                    event_normal = pen->normal;
+                                    const float push = pen->depth + constants::POINT_EPS;
+                                    units::displacement eject{
+                                        vec{pen->normal.x() * push, pen->normal.y() * push}};
+                                    // Don't drive the ejected bullet into ANOTHER solid: cast the eject
+                                    // and clamp to the first solid in the way. cast_core can only exclude
+                                    // the engulfing collider when it is a BODY (by index); for a tile it
+                                    // has no exclusion, so casting would immediately re-hit that same tile
+                                    // at toi 0 and zero the ejection. So skip the clamp for a tile obstacle
+                                    // (tiles are static and rarely engulf, so the unclamped eject is fine).
+                                    if (hit->who.type_id == collider_id::BODY) {
+                                        if (const auto block = cast_core(bullet_itr->shape, eject,
+                                                                         bullet_itr->filter,
+                                                                         solid_acceptor(), hit->who.value)) {
+                                            eject = eject * units::fraction{block->toi};
+                                        }
                                     }
+                                    delta_s = delta_s + eject;
                                 }
-                                delta_s = delta_s + eject;
-                            }
 
-                            m_events.emplace_back(
-                                event_kind::BULLET_HIT,
-                                collider_id{bullet_itr.index(), bullet_itr->generation, collider_id::BULLET},
-                                hit->who,
-                                event_normal,
-                                hit->toi);
+                                // Lift the segment-local toi into step time before reporting it.
+                                consumed += (1.0f - consumed) * hit->toi;
+                                m_events.emplace_back(
+                                    event_kind::BULLET_HIT,
+                                    collider_id{bullet_itr.index(), bullet_itr->generation,
+                                                collider_id::BULLET},
+                                    hit->who,
+                                    event_normal,
+                                    consumed);
+
+                                // Spend the leftover time under the bullet's policy. The cap makes a
+                                // bullet trapped between two near-parallel surfaces terminate
+                                // deterministically instead of grinding through the whole frame.
+                                if (bullet_itr->on_hit != bullet_on_hit::stop
+                                    && response + 1 < m_cfg.max_bullet_responses
+                                    && !near_zero(event_normal)) {
+                                    const vec n = event_normal;
+                                    // Re-aim BOTH the stored velocity (what the bullet flies at next
+                                    // step, and what the game reads back) and the leftover displacement
+                                    // (what it flies through for the rest of this one).
+                                    const units::displacement left =
+                                        remaining * units::fraction{1.0f - hit->toi};
+                                    const auto redirect = [&](const vec& v) {
+                                        const float vn = euler::dot(v, n);
+                                        return bullet_itr->on_hit == bullet_on_hit::bounce
+                                                   ? vec{v.x() - 2.0f * vn * n.x(),
+                                                         v.y() - 2.0f * vn * n.y()}
+                                                   : vec{v.x() - vn * n.x(), v.y() - vn * n.y()};
+                                    };
+                                    bullet_itr->velocity = redirect(bullet_itr->velocity);
+                                    remaining = units::displacement{redirect(left.value)};
+                                    // Back off along the normal by the skin before continuing, the
+                                    // same cushion move_and_slide keeps. Without it the bullet
+                                    // resumes from exactly ON the surface: a bounce separates so it
+                                    // is fine, but a SLIDE moves tangentially -- neither approaching
+                                    // nor separating -- so the next cast re-hits the same surface at
+                                    // toi 0 and reports a second contact for one physical touch.
+                                    delta_s = delta_s + units::displacement{
+                                                  vec{n.x() * m_cfg.skin, n.y() * m_cfg.skin}};
+                                    responded = true;
+                                }
+                            }
+                        }
+                        translate(*bullet_itr, delta_s.value);
+                        if (!responded || near_zero(remaining.value)) {
+                            break; // budget spent, or forfeited by a `stop` bullet
                         }
                     }
-                    translate(*bullet_itr, delta_s.value);
 
                     // Out-of-bounds: a bullet that no longer overlaps the world bounds has left
                     // the level -> report it (the game despawns in reaction; the handle is still
@@ -1929,6 +2087,7 @@ namespace neutrino::physics {
         stored.filter = body.filter;
         stored.material = body.material;
         stored.velocity = body.velocity;
+        stored.on_hit = body.on_hit;
         stored.eid = eid;
         return {idx, m_bullets_storage.generation(idx), collider_id::BULLET};
     }
@@ -2040,6 +2199,68 @@ namespace neutrino::physics {
         auto& stored = m_bodies_storage[cid.value];
         ENFORCE(stored.kind == detail::body_kind::CARRIER)("surface_velocity is carrier-only");
         stored.surface_velocity = v;
+    }
+
+    inline void world::set_target(collider_id cid, const vec& target) {
+        ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
+        auto& stored = m_bodies_storage[cid.value];
+        ENFORCE(stored.kind == detail::body_kind::KINEMATIC)("set_target is for kinematic actors");
+        stored.target = target;
+    }
+
+    inline void world::clear_target(collider_id cid) {
+        ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
+        m_bodies_storage[cid.value].target.reset();
+    }
+
+    inline bool world::has_target(collider_id cid) const {
+        ENFORCE(is_valid(cid));
+        return cid.type_id == collider_id::BODY && m_bodies_storage[cid.value].target.has_value();
+    }
+
+    inline move_result world::move_by(collider_id cid, units::displacement delta, units::duration dt) {
+        ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
+        auto& stored = m_bodies_storage[cid.value];
+        ENFORCE(stored.kind == detail::body_kind::KINEMATIC)("move_by is for kinematic actors");
+        // A non-positive dt has no meaningful reading: the move would apply no displacement (the
+        // solver integrates velocity*dt) yet still clear a standing target, so the call would
+        // silently do nothing WHILE cancelling existing intent -- the worst of both. dt scales the
+        // effective-velocity read-back; if you want a pure teleport, use set_shape.
+        ENFORCE(dt.value > 0.0f)("move_by/move_to needs dt > 0 (got ", dt.value, ")");
+        const vec before = detail::tight_box(stored.shape).center();
+        // Drive the move through the same solver run() uses: set the step velocity so velocity*dt
+        // == delta, slide (which clamps to geometry), then zero it so a later run() won't re-apply
+        // the move. The effective velocity is returned in the result, not left on the body.
+        stored.velocity = vec{delta.value.x() / dt.value, delta.value.y() / dt.value};
+        const slide_result res = move_and_slide(cid.value, dt, solid_acceptor());
+        stored.velocity = vec{0, 0};
+        // Zeroing the velocity is NOT enough to leave the body at rest: a standing set_target would
+        // survive this call, and the next run() would recompute a velocity toward that old target
+        // and walk the body away from where this move just put it -- the opposite of an "immediate"
+        // move. An explicit move takes manual control, so it ENDS target mode. (Clearing rather than
+        // rejecting the combination: a controller that calls set_target every frame -- the normal
+        // pattern -- simply re-establishes it on the next frame, whereas an abort would forbid a
+        // one-off nudge outright. Observable via has_target().)
+        stored.target.reset();
+        const vec after = detail::tight_box(stored.shape).center();
+        const vec applied{after.x() - before.x(), after.y() - before.y()};
+        move_result out;
+        out.position = after;
+        // Effective velocity = APPLIED displacement / dt, not the slide's outgoing velocity. The
+        // two differ whenever a move is clamped: a body that travels most of the way to a wall has
+        // its into-surface velocity component projected to zero by the slide response, which would
+        // report "did not move" for a move that covered real distance. Callers use this to know how
+        // fast the body actually went during the interval (e.g. imparting it to something it hit).
+        out.velocity = vec{applied.x() / dt.value, applied.y() / dt.value};
+        out.remaining = vec{delta.value.x() - applied.x(), delta.value.y() - applied.y()};
+        out.contacts = res.count;
+        return out;
+    }
+
+    inline move_result world::move_to(collider_id cid, const vec& target, units::duration dt) {
+        ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
+        const vec c = detail::tight_box(m_bodies_storage[cid.value].shape).center();
+        return move_by(cid, units::displacement{vec{target.x() - c.x(), target.y() - c.y()}}, dt);
     }
 
     inline bool world::is_valid(collider_id cid) const {

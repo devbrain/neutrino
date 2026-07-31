@@ -12,6 +12,9 @@
 #include <vector>
 
 #include <neutrino/physics/collide/world.hh>
+#include <neutrino/video/geometry_types.hh> // world_point
+
+#include <ke/resources/cell.hh> // rs::bonus
 
 class model;
 
@@ -31,8 +34,13 @@ class game_mechanics {
         void build_bricks(const model& m);
         void build_paddle(const model& m);
 
-        void handle_paddle(model& m, float dt);
+        void handle_paddle(model& m);
         void handle_balls(model& m, const neutrino::physics::world_event& e);
+
+        // Add a ball (bullet) at pos moving vel; shared by load() and the extra-ball bonus.
+        void spawn_ball(model& m, neutrino::world_point pos, neutrino::world_point vel);
+        // Apply a caught capsule's effect (ball speed, multiball, paddle resize, life/score).
+        void apply_bonus(model& m, rs::bonus b, int mag);
     private:
         neutrino::physics::world m_world;
         neutrino::physics::collider_id m_paddle{};

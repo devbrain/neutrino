@@ -175,6 +175,7 @@ add_library(neutrino ${_lib_type}
         input/modifier_match.hh
 
         application.cc
+        input/edge_gate.cc
         input/hotkey.cc
         input/mouse_click.cc
         input/gamepad_button.cc

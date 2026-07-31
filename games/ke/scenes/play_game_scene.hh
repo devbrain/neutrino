@@ -17,8 +17,8 @@ class play_game_scene : public neutrino::base_scene {
     public:
         void on_enter() override;
         void on_exit() override;
-        void update_physics(neutrino::frame_duration delta_t) override;
-        void render(neutrino::frame_duration time_since_last_frame) override;
+        void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override;
+        void render() override;
         void handle_action(const sdlpp::event& ev) override;
         [[nodiscard]] bool is_opaque() const override;
 
@@ -26,6 +26,5 @@ class play_game_scene : public neutrino::base_scene {
         std::optional <neutrino::render_texture> m_backdrop; // the composed level backdrop
         game_mechanics m_mechanics;
 
-        int m_paddle_target_x{160}; // desired paddle centre (render x), driven by the mouse
         bool m_ready{false};
 };

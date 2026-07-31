@@ -6,7 +6,9 @@
 
 #include <vector>
 
-#include <neutrino/world/world_common.hh> // world_point
+#include <neutrino/video/geometry_types.hh> // world_point
+#include <neutrino/physics/geometry/shapes.hh>
+#include <neutrino/video/sprite/sprite_state.hh>
 #include <ke/assets/sprites.hh>
 
 // The KE domain model: pure game state. It owns no engine subsystems -- game_mechanics
@@ -20,6 +22,9 @@ struct paddle_info {
     int size;
     rs::ke_paddle_state state{rs::ke_paddle_state::simple};
     int target_x{160}; // desired centre (render x) the player aims at; mechanics moves toward it
+    [[nodiscard]] neutrino::physics::aabb box() const {
+        return {{x, y}, {x + w, y + h}};
+    }
 };
 
 struct brick {
@@ -34,6 +39,7 @@ struct brick {
     enum class motion { ALIVE, FLUNG } m = motion::ALIVE;
 
     neutrino::world_point vel{}; // set when flung
+
 };
 
 // A ball. `pos` is written back by the mechanics each frame for drawing; `vel` is the
@@ -41,25 +47,40 @@ struct brick {
 // sprite (rs::ke_ball_frame). There can be several balls (e.g. a split bonus).
 struct ball_state {
     rs::ke_ball_kind kind{rs::ke_ball_kind::ordinary};
-    int size{3};    // 0..5, selects the sprite within the kind's range
+    int size{3}; // 0..5, selects the sprite within the kind's range
 
     neutrino::world_point pos{};
     neutrino::world_point vel{};
-    int half{2};    // collision half-extent of the (square) ball, world pixels
+    int half{2}; // collision half-extent of the (square) ball, world pixels
     bool active{false};
 };
 
 struct hit_effect {
-      neutrino::world_point pos;      // impact point
-      rs::hit_kind          kind;
-      float                 elapsed{0.0f};   // seconds since spawn
-  };
+    neutrino::world_point pos; // impact point
+    neutrino::sprite_state_id state;
+};
 
+struct capsule {
+    rs::bonus bonus;
+    int mag{};
+    neutrino::world_point pos;
+    neutrino::sprite_state_id state;
+    int w{};
+    int h{};
+    bool active{false};
+
+    [[nodiscard]] neutrino::physics::aabb box() const {
+        return {{pos.x, pos.y}, {pos.x + w, pos.y + h}};
+    }
+};
 
 struct level_info {
-    std::vector<brick> bricks;
-    std::vector<ball_state> balls;
-    std::vector<hit_effect> effects;
+    std::vector <brick> bricks;
+    std::vector <ball_state> balls;
+    std::vector <hit_effect> effects;
+    std::vector <capsule> capsules;
+
+    void clear();
 };
 
 // The inner playfield extent (from the level background), in world pixels.
@@ -92,6 +113,13 @@ class model {
 
         [[nodiscard]] playfield_bounds get_bounds() const;
 
+        // Player progress. Bonuses mutate these; a HUD + life-loss loop (future work) make them
+        // visible. Lives/score persist across levels (not reset by load_level).
+        [[nodiscard]] int get_lives() const;
+        [[nodiscard]] long get_score() const;
+        void add_life(int n);
+        void add_score(long n);
+
     private:
         model();
 
@@ -99,8 +127,10 @@ class model {
 
     private:
         int m_level = 0;
+        int m_lives = 3;
+        long m_score = 0;
 
         playfield_bounds m_bounds{};
         paddle_info m_paddle;
-        level_info  m_level_info;
+        level_info m_level_info;
 };

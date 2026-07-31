@@ -19,8 +19,8 @@ class sprite_gallery_scene : public neutrino::base_scene {
         explicit sprite_gallery_scene(const rs::game_resources& res) : m_res(res) {}
 
         void on_enter() override;
-        void update_physics(neutrino::frame_duration delta_t) override;
-        void render(neutrino::frame_duration time_since_last_frame) override;
+        void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override;
+        void render() override;
         void handle_action(const sdlpp::event& ev) override;
         [[nodiscard]] bool is_opaque() const override;
 

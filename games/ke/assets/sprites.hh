@@ -7,6 +7,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
 #include <string_view>
 
 #include <neutrino/video/sprite/sprite_def.hh>
@@ -175,6 +176,10 @@ namespace rs {
         const auto i = static_cast <std::size_t>(b);
         return i < 28 ? names[i] : "none";
     }
+
+    // Stream a bonus by its short debug name (see bonus_name), e.g. LOG_INFO("caught ", b).
+    // Found by ADL; defined in sprites.cc so this header need not pull in <ostream>.
+    std::ostream& operator<<(std::ostream& os, bonus b);
 
     [[nodiscard]] constexpr std::string_view enemy_name(enemy e) noexcept {
         constexpr std::string_view names[8] = {

@@ -26,6 +26,11 @@ namespace rs {
 
         std::vector<ke_level>       levels;
 
+        neutrino::sprite_animation_id hit_wall_anim_id;  // sparks when the ball hits the wall
+        neutrino::sprite_animation_id hit_brick_anim_id; // sparks when the ball hits the brick
+
+        std::array<neutrino::sprite_animation_id, 28> capsule_anim_id;
+
         game_resources*             m_resources{nullptr};
 
         ke_assets() = default;

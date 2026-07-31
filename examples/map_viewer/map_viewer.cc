@@ -100,7 +100,7 @@ namespace {
                 m_renderer.reset(); // release bundles while the render services are still live
             }
 
-            void update_physics(frame_duration dt) override {
+            void fixed_update(sim_duration dt, const input_snapshot&) override {
                 // Edge-triggered actions belong here (once per frame), not in
                 // handle_action (once per event): a per-event pressed() check posts one
                 // request per queued event, and popping the last scene more than once
@@ -114,7 +114,7 @@ namespace {
                     reset_camera();
                 }
 
-                const float seconds = dt.count() / 1000.0f;
+                const float seconds = dt.count();
                 const float pan = pan_speed * seconds / m_camera.zoom; // constant screen-space speed
 
                 if (key_held(sdlpp::scancode::a, sdlpp::scancode::left)) {
@@ -143,8 +143,8 @@ namespace {
                 m_view = render;
             }
 
-            void render(frame_duration) override {
-                clamp_camera(); // after this frame's pan (update_physics) and wheel zoom (handle_action)
+            void render() override {
+                clamp_camera(); // after this frame's pan (fixed_update) and wheel zoom (handle_action)
                 draw_rect_fill(viewport(), sdlpp::color{22, 22, 28, 255});
                 const draw_stats stats = m_renderer->draw(m_camera, viewport());
                 if (!m_logged_first_frame) {

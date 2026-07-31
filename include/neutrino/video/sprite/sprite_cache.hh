@@ -97,6 +97,51 @@ namespace neutrino {
                 return m_set ? m_set->bounding_size(first, count) : dim{0, 0};
             }
 
+            // ---- required lookups (see sprite_set) --------------------------------------
+            // For a configuration invariant, where a missing entry means the asset is wrong
+            // rather than absent. Each aborts naming the missing key -- as does an EMPTY
+            // lease, which would otherwise answer every optional lookup with nullopt and
+            // silently degrade to zero geometry. Defined out-of-line to keep the abort
+            // machinery out of this header.
+
+            /// @brief Resolved geometry of the visual @p name (packed + untrimmed + pivots), or nullopt.
+            [[nodiscard]] std::optional <sprite_metrics> metrics(std::string_view name) const {
+                return m_set ? m_set->metrics(name) : std::nullopt;
+            }
+
+            /// @brief Resolved geometry of the visual at frame @p index, or nullopt.
+            [[nodiscard]] std::optional <sprite_metrics> metrics(std::size_t index) const {
+                return m_set ? m_set->metrics(index) : std::nullopt;
+            }
+
+            /// @brief Resolved geometry of the visual @p name. @throws if absent or the lease is empty.
+            [[nodiscard]] sprite_metrics require_metrics(std::string_view name) const;
+
+            /// @brief Resolved geometry of the visual at frame @p index. @throws if out of range
+            /// or the lease is empty.
+            [[nodiscard]] sprite_metrics require_metrics(std::size_t index) const;
+
+            /// @brief The registered visual bound to @p name. @throws if absent or the lease is empty.
+            [[nodiscard]] sprite_visual_ref require_visual(std::string_view name) const;
+
+            /// @brief The visual at zero-based frame @p index. @throws if out of range or the lease is empty.
+            [[nodiscard]] sprite_visual_ref require_visual(std::size_t index) const;
+
+            /// @brief Atlas rect of the visual @p name. @throws if absent or the lease is empty.
+            [[nodiscard]] rect require_frame_rect(std::string_view name) const;
+
+            /// @brief Atlas rect of the visual at frame @p index. @throws if out of range or the lease is empty.
+            [[nodiscard]] rect require_frame_rect(std::size_t index) const;
+
+            /// @brief Pivot/origin of the visual @p name. @throws if absent or the lease is empty.
+            [[nodiscard]] point require_origin(std::string_view name) const;
+
+            /// @brief Pivot/origin of the visual at frame @p index. @throws if out of range or the lease is empty.
+            [[nodiscard]] point require_origin(std::size_t index) const;
+
+            /// @brief The registered animation bound to clip @p name. @throws if absent or the lease is empty.
+            [[nodiscard]] sprite_animation_id require_clip(std::string_view name) const;
+
             /// @brief The registered animation bound to clip @p name, or nullopt.
             [[nodiscard]] std::optional <sprite_animation_id> clip(std::string_view name) const {
                 return m_set ? m_set->clip(name) : std::nullopt;

@@ -1,5 +1,6 @@
 #include <neutrino/input/hotkey.hh>
 #include <neutrino/application.hh>
+#include "input/edge_gate.hh"
 #include "modifier_match.hh"
 #include "services/service_locator.hh"
 #include <SDL3/SDL_keyboard.h>
@@ -36,7 +37,9 @@ namespace neutrino {
                 return false;
             }
 
-            auto state = app->get_key(scan);
+            // gate_edges: on a follow-up fixed substep the pressed/released transitions are masked,
+            // so a polled one-shot fires once per physical press, not once per substep.
+            auto state = input_detail::gate_edges(app->get_key(scan));
             if (!(state.*member)) {
                 return false;
             }

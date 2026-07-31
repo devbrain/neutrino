@@ -21,8 +21,8 @@ namespace {
     struct probe_scene : base_scene {
         std::vector <dim> resizes;
 
-        void update_physics(frame_duration) override {}
-        void render(frame_duration) override {}
+        void fixed_update(sim_duration, const input_snapshot&) override {}
+        void render() override {}
         void handle_action(const sdlpp::event&) override {}
         [[nodiscard]] bool is_opaque() const override { return true; }
         void on_resize(dim render) override { resizes.push_back(render); }

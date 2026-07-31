@@ -65,6 +65,9 @@ namespace neutrino::physics::detail {
         filter_props filter;        ///< Collision layers.
         vec velocity{0, 0};         ///< Per-frame velocity (kinematic/carrier).
         vec surface_velocity{0, 0}; ///< CARRIER only: tangential drag imparted to riders (conveyor).
+        std::optional <vec> target{}; ///< KINEMATIC positional intent (world::set_target): when set,
+                                    ///< the movement pass derives velocity from the gap to it and
+                                    ///< clamps to geometry, instead of using @c velocity directly.
         entity_id_t eid{};          ///< Game entity id (event payload).
         body_kind kind{body_kind::STATIC}; ///< Static / kinematic / carrier.
         node_ptr proxy{};           ///< Broadphase tree handle.
@@ -78,6 +81,7 @@ namespace neutrino::physics::detail {
         material_props material;      ///< Surface response.
         filter_props filter;          ///< Collision layers.
         vec velocity{0, 0};           ///< Velocity.
+        bullet_on_hit on_hit{bullet_on_hit::stop}; ///< Leftover-time policy after a hit.
         entity_id_t eid{};            ///< Game entity id (event payload).
         uint32_t generation{0};       ///< Slot recycle counter (handle staleness).
         bool alive{true};             ///< False while the slot is on the free list.

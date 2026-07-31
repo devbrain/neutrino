@@ -144,11 +144,11 @@ void sprite_gallery_scene::on_enter() {
     m_ready = true;
 }
 
-void sprite_gallery_scene::update_physics(neutrino::frame_duration) {
+void sprite_gallery_scene::fixed_update(neutrino::sim_duration, const neutrino::input_snapshot&) {
     // States advance from the application update loop; nothing to do here.
 }
 
-void sprite_gallery_scene::render(neutrino::frame_duration) {
+void sprite_gallery_scene::render() {
     if (!m_ready) {
         return;
     }

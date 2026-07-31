@@ -161,10 +161,10 @@ namespace neutrino {
         }
     }
 
-    void scenes_manager::update_physics(frame_duration delta_t) {
+    void scenes_manager::fixed_update(sim_duration dt, const input_snapshot& in) {
         if (m_stack.empty()) return;
 
-        // Propagate physics to every scene from the first opaque one upward,
+        // Propagate the fixed-step update to every scene from the first opaque one upward,
         // mirroring render(). This keeps scenes beneath a non-opaque overlay
         // (e.g. busy_scene) alive: their async_task::poll() keeps running,
         // so completion callbacks fire while a spinner is shown on top.
@@ -175,12 +175,19 @@ namespace neutrino {
                 break;
             }
         }
+        // ONLY the top scene receives live input. A covered scene keeps updating (that is the
+        // point of running it under an overlay) but must not act on the pointer or buttons: raw
+        // events already go to the top scene alone, so handing the real snapshot downward would
+        // let a background scene react to clicks *through* a modal or busy overlay. Covered
+        // scenes get a neutral snapshot -- nothing held, nothing pressed, pointer off-screen.
+        static const input_snapshot no_input{};
         for (size_t i = index; i < m_stack.size(); i++) {
-            m_stack[i]->update_physics(delta_t);
+            const bool is_top = (i + 1 == m_stack.size());
+            m_stack[i]->fixed_update(dt, is_top ? in : no_input);
         }
     }
 
-    void scenes_manager::render(frame_duration time_since_last_frame) {
+    void scenes_manager::render() {
         if (m_stack.empty()) return;
 
         size_t index = 0;
@@ -192,7 +199,7 @@ namespace neutrino {
         }
 
         for (size_t i = index; i < m_stack.size(); i++) {
-            m_stack[i]->render(time_since_last_frame);
+            m_stack[i]->render();
         }
     }
 

@@ -1,4 +1,8 @@
+#include <algorithm>
+#include <cmath>
+
 #include <neutrino/application.hh>
+#include <neutrino/input/input_snapshot.hh>
 #include <neutrino/scene/scene_transitions.hh>
 #include <sdlpp/video/display.hh>
 #include <SDL3/SDL.h>
@@ -7,6 +11,7 @@
 #include <failsafe/logger/backend/sdl_backend.hh>
 
 #include "audio/sound_system.hh"
+#include "input/edge_gate.hh"
 #include "input/gamepads.hh"
 #include "scene/scenes_manager.hh"
 #include "services/service_locator.hh"
@@ -51,6 +56,9 @@ namespace neutrino {
         // that leaves the render space unchanged (e.g. a logical-mode resize) does
         // not spuriously re-fire the hook.
         dim m_last_render_size{0, 0};
+        // Fixed-step accumulator: unconsumed real time (seconds) carried between frames.
+        // on_update adds the clamped frame delta and drains it in whole `fixed.period` ticks.
+        float m_accum = 0.0f;
 
         explicit impl(const application_config& cfg)
             : m_cfg(cfg) {
@@ -66,6 +74,25 @@ namespace neutrino {
         auto& services = service_locator::instance();
         ENFORCE(!services.get_application())("neutrino::application was already initialized");
 
+        // Validate the scheduler ONCE, here, rather than per frame: every one of these silently
+        // breaks the simulation in a way that is hard to trace back to the config.
+        //   period <= 0    -> `accum >= period` is always true, so the loop runs the full substep
+        //                     cap every frame handing physics a zero (or negative!) dt;
+        //   max_substeps<=0-> the loop body never runs, so the simulation never advances at all;
+        //   max_frame <= 0 -> nothing is ever added to the accumulator, likewise never advancing.
+        // Non-finite values are rejected too: a NaN period makes every comparison false, which
+        // presents as a silently frozen game.
+        const fixed_step_config& fx = m_pimpl->m_cfg.fixed;
+        ENFORCE(std::isfinite(fx.period.count()) && fx.period.count() > 0.0f)
+            ("application_config.fixed.period must be finite and > 0 (got ", fx.period.count(), ")");
+        ENFORCE(fx.max_substeps > 0)
+            ("application_config.fixed.max_substeps must be > 0 (got ", fx.max_substeps, ")");
+        // Only positivity is required. A clamp SMALLER than the period is legitimate -- e.g. a
+        // 120 Hz render cadence driving a 60 Hz simulation -- because the accumulator carries
+        // across frames: successive clamped deltas still add up to a step. Only a non-positive
+        // clamp truly starves it.
+        ENFORCE(std::isfinite(fx.max_frame.count()) && fx.max_frame.count() > 0.0f)
+            ("application_config.fixed.max_frame must be finite and > 0 (got ", fx.max_frame.count(), ")");
     }
 
     application::~application() {
@@ -165,13 +192,44 @@ namespace neutrino {
 
         if (!m_pimpl->m_scenes_manager.empty()) {
             m_pimpl->m_had_scenes = true;
-            // Safety net: an exception escaping to SDL would become
-            // SDL_APP_FAILURE and terminate the process. Log it and drop the
-            // top scene (it's clearly broken) so the next frame runs a
-            // known-good one. The pop is enqueued via the SDL event queue and
-            // takes effect when the next handle_event drains it.
+            // Fixed-step scheduler: the sim advances in constant `period` ticks decoupled from the
+            // display rate. Clamp the frame delta (a stall must not spiral) into the accumulator, then
+            // run whole ticks -- up to max_substeps -- each with the SAME dt and the SAME input
+            // snapshot (sampled once per frame, below). Physics thus always sees a constant dt, so it
+            // is deterministic and framerate-independent.
+            const fixed_step_config& fx = m_pimpl->m_cfg.fixed;
+            const float period = fx.period.count();
+            const input_snapshot in = sample_input();
+            // Edges belong to ONE substep. A 120 Hz sim on a 60 Hz display runs 2 substeps per
+            // frame, so passing `in` to both would fire every one-shot action twice per click.
+            // The first substep sees the transitions, the rest see held-only.
+            const input_snapshot held_only = in.without_edges();
+            m_pimpl->m_accum += std::min(dt, fx.max_frame.count());
+            // Safety net: an exception escaping to SDL would become SDL_APP_FAILURE and terminate the
+            // process. Log it and drop the top scene (it's clearly broken) so the next frame runs a
+            // known-good one. The pop is enqueued via the SDL event queue and takes effect when the
+            // next handle_event drains it.
             try {
-                m_pimpl->m_scenes_manager.update_physics(frame_duration{dt * 1000.0f});
+                int step = 0;
+                for (; m_pimpl->m_accum >= period && step < fx.max_substeps; ++step) {
+                    // Edges belong to substep 0 only -- for the snapshot (held_only) AND for the
+                    // polled APIs (hotkey/mouse_click/gamepad_button), which read SDL transients
+                    // cleared once per frame rather than per step. Scoped, so a throwing scene
+                    // cannot leave edges masked.
+                    const input_detail::edge_suppression gate(step > 0);
+                    m_pimpl->m_scenes_manager.fixed_update(sim_duration{period},
+                                                           step == 0 ? in : held_only);
+                    m_pimpl->m_accum -= period;
+                }
+                // Hit the substep cap with time still owed: the machine cannot keep up. DROP the
+                // backlog instead of carrying it -- otherwise, at any frame rate below
+                // max_substeps/period (24 FPS with the defaults), the debt grows every frame and
+                // simulation plus input fall ever further behind, which is precisely the
+                // spiral-of-death the cap exists to prevent. The game runs in slow motion for the
+                // stall rather than accumulating an unpayable debt.
+                if (step == fx.max_substeps && m_pimpl->m_accum >= period) {
+                    m_pimpl->m_accum = 0.0f;
+                }
             } catch (const std::exception& ex) {
                 LOG_ERROR("Scene update threw:", ex.what());
                 pop_scene();
@@ -189,6 +247,29 @@ namespace neutrino {
         update(dt);
     }
 
+    input_snapshot application::sample_input() {
+        // Position comes from SDL directly, NOT from the event-tracked position: the latter starts
+        // at {0,0} and stays there until the first mouse event, so the opening frames would report
+        // the top-left corner as a real pointer position (a scene steering from it would snap to
+        // the origin before the player ever moved the mouse). SDL_GetMouseState answers the live
+        // position from frame one; mouse FOCUS says whether that position means anything at all.
+        float mx = 0.0f;
+        float my = 0.0f;
+        SDL_GetMouseState(&mx, &my);
+        const sdlpp::point <float> window{mx, my};
+        const pointer_state pointer{window, to_render_coords(window),
+                                    SDL_GetMouseFocus() != nullptr};
+        // Buttons still come from the tracked state -- it carries the per-frame edges, which a
+        // stateless SDL query cannot.
+        const auto conv = [](sdlpp::button_state b) {
+            return button_state{b.pressed, b.released, b.held};
+        };
+        return input_snapshot{pointer,
+                              conv(get_mouse(sdlpp::mouse_button::left)),
+                              conv(get_mouse(sdlpp::mouse_button::middle)),
+                              conv(get_mouse(sdlpp::mouse_button::right))};
+    }
+
     void application::on_render(sdlpp::renderer& r) {
         r.set_draw_color(sdlpp::colors::black);
         r.clear();
@@ -196,7 +277,7 @@ namespace neutrino {
             m_pimpl->m_scene_faulted = false;
         } else {
             try {
-                m_pimpl->m_scenes_manager.render(frame_duration{delta_time() * 1000.0f});
+                m_pimpl->m_scenes_manager.render();
             } catch (const std::exception& ex) {
                 LOG_ERROR("Scene render threw:", ex.what());
                 pop_scene();

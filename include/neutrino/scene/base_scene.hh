@@ -6,12 +6,17 @@
 #include <chrono>
 #include <sdlpp/events/event_category.hh>
 #include <neutrino/neutrino_export.h>
+#include <neutrino/input/input_snapshot.hh>
 #include <neutrino/video/geometry_types.hh>
 
 namespace neutrino {
-    /// @brief Duration type used across the scene interface: floating-point
-    /// milliseconds. Carries frame deltas to update_physics() and render().
+    /// @brief Floating-point milliseconds. Wall-clock frame delta for render-rate cosmetics; the
+    /// simulation itself runs on @ref sim_duration, not this.
     using frame_duration = std::chrono::duration <float, std::milli>;
+
+    /// @brief The one simulation-time duration, seconds-based. Physics speaks this end to end; it is
+    /// the fixed tick handed to @ref base_scene::fixed_update.
+    using sim_duration = std::chrono::duration <float>;
 
     /// @brief Abstract scene interface with lifecycle hooks and per-frame callbacks.
     /// Scenes are managed in a stack by scenes_manager.
@@ -44,10 +49,14 @@ namespace neutrino {
             virtual void on_resize([[maybe_unused]] dim size) {
             }
 
-            /// @brief Fixed-timestep logic update (input processing, state changes, polling).
-            virtual void update_physics(frame_duration delta_t) = 0;
-            /// @brief Render the scene; called every frame after update_physics.
-            virtual void render(frame_duration time_since_last_frame) = 0;
+            /// @brief Fixed-timestep logic update. Called 0..N times per frame with a CONSTANT @p dt
+            /// and the frame's @p in input snapshot (sampled once per frame, the same instance shared
+            /// across every substep of that frame). This is where input is polled and state advances.
+            virtual void fixed_update(sim_duration dt, const input_snapshot& in) = 0;
+            /// @brief Render the scene; called every frame after fixed_update. Draws the latest
+            /// committed state -- no time argument and no interpolation factor (KE is integer-scaled
+            /// pixel-art, where sub-step interpolation rounds away; see roadmap 0B).
+            virtual void render() = 0;
             /// @brief Handle an SDL event (input, window, etc.).
             virtual void handle_action(const sdlpp::event& ev) = 0;
             /// @brief Return true if this scene fully covers the screen (no need to render below).

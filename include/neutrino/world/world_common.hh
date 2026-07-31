@@ -97,8 +97,9 @@ namespace neutrino {
     using world_local_tile_id = std::uint32_t;
     using world_layer_id = std::uint32_t;
     using world_object_id = std::int64_t;
-    using world_point = sdlpp::point <float>;
-    using world_rect = sdlpp::rect <float>; ///< A rectangle in world pixels; the floating-point counterpart of the integer @ref rect.
+    // world_point / world_rect now live in <neutrino/video/geometry_types.hh> (included above):
+    // they are needed almost everywhere, and this header is the heavy tile-world vocabulary.
+    // Consumers that want only a float point should include that light header directly.
 
     /**
      * @brief Property value with an explicit type name for custom property kinds.

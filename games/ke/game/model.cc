@@ -8,6 +8,20 @@
 
 static model* s_instance = nullptr;
 
+void level_info::clear() {
+    balls.clear();
+    for (const auto& fx : effects) {
+        neutrino::unregister_sprite_state(fx.state);
+    }
+
+    for (const auto& cp : capsules) {
+        neutrino::unregister_sprite_state(cp.state);
+    }
+
+    capsules.clear();
+    effects.clear();
+}
+
 model& model::instance() {
     if (!s_instance) {
         s_instance = new model;
@@ -20,6 +34,7 @@ int model::get_level() const {
 }
 
 void model::load_level() {
+
     auto& assets = rs::require_ke_assets();
 
     // Playfield geometry (walls + paddle start) from the backdrop sprite sets. The backdrop
@@ -40,6 +55,7 @@ void model::load_level() {
 
     m_level_info.balls.clear();
     m_level_info.bricks.clear();
+
     for (int y = 0; y < rs::ke_level::rows; ++y) {
         for (int x = 0; x < rs::ke_level::cols; ++x) {
             const auto& c = level.at(x, y);
@@ -96,15 +112,31 @@ playfield_bounds model::get_bounds() const {
     return m_bounds;
 }
 
+int model::get_lives() const {
+    return m_lives;
+}
+
+long model::get_score() const {
+    return m_score;
+}
+
+void model::add_life(int n) {
+    m_lives += n;
+}
+
+void model::add_score(long n) {
+    m_score += n;
+}
+
+
 model::model() = default;
 
 void model::set_paddle_dims_from_frame(std::size_t frame) {
     const auto& assets = rs::require_ke_assets();
-    if (const auto r = assets.paddle.frame_rect(frame)) {
-        m_paddle.h = r->h;
-        m_paddle.w = r->w;
-    } else {
-        m_paddle.h = 1;
-        m_paddle.w = 1;
-    }
+    // The paddle's collider is sized from this frame, so a missing one used to fall back to a
+    // 1x1 paddle: physically present, visually absent, and unplayable. A KE_RACK form the game
+    // asks for must exist -- fail at the lookup instead.
+    const neutrino::rect r = assets.paddle.require_frame_rect(frame);
+    m_paddle.h = r.h;
+    m_paddle.w = r.w;
 }

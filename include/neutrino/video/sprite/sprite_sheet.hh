@@ -130,6 +130,46 @@ namespace neutrino {
     };
 
     /**
+     * @brief Fully resolved geometry of one visual -- everything needed to place it without
+     *        re-deriving trim/pivot arithmetic at the call site.
+     *
+     * A packed atlas frame is often *trimmed*: transparent margins are cut away, so the pixels
+     * stored in the atlas (@ref texture_rect) are smaller than, and offset within, the frame the
+     * artist authored (@ref source_size). Keeping only the packed rect makes the authored frame
+     * unrecoverable, which forces consumers to treat packed pixel sizes as gameplay dimensions
+     * and to hand-roll centring offsets. This carries both, plus the pivot in each space.
+     */
+    struct sprite_metrics {
+        rect  texture_rect{0, 0, 0, 0}; ///< Packed atlas rect -- the VISIBLE pixels.
+        dim   source_size{0, 0};        ///< Untrimmed (authored) frame size.
+        point trim_offset{0, 0};        ///< Visible rect's top-left within the untrimmed frame.
+        point pivot{0, 0};              ///< Draw anchor in PACKED local space (what draw_sprite uses).
+        point logical_pivot{0, 0};      ///< Draw anchor in UNTRIMMED frame space (@c pivot + @c trim_offset).
+
+        /// @brief Was this frame trimmed (packed pixels smaller than the authored frame)?
+        [[nodiscard]] bool trimmed() const noexcept {
+            return source_size.width != texture_rect.w || source_size.height != texture_rect.h;
+        }
+
+        /// @brief The untrimmed logical box relative to the pivot (pivot at the origin).
+        [[nodiscard]] rect local_bounds() const noexcept {
+            return rect{-logical_pivot.x, -logical_pivot.y, source_size.width, source_size.height};
+        }
+
+        /// @brief The VISIBLE (packed) pixels, placed with the pivot at @p anchor.
+        [[nodiscard]] rect visible_bounds_at(point anchor) const noexcept {
+            return rect{anchor.x - pivot.x, anchor.y - pivot.y, texture_rect.w, texture_rect.h};
+        }
+
+        /// @brief The UNTRIMMED logical frame, placed with the pivot at @p anchor. This is the box
+        /// gameplay should align to -- it does not change when the packer re-trims the art.
+        [[nodiscard]] rect logical_bounds_at(point anchor) const noexcept {
+            return rect{anchor.x - logical_pivot.x, anchor.y - logical_pivot.y,
+                        source_size.width, source_size.height};
+        }
+    };
+
+    /**
      * @brief Static metadata that turns one texture rectangle into a logical sprite visual.
      *
      * @ref texture_rect is copied from the CPU atlas frame so higher sprite layers do
@@ -144,9 +184,30 @@ namespace neutrino {
         rect texture_rect{0, 0, 0, 0};
 
         /**
-         * @brief Draw anchor in frame-local pixels.
+         * @brief Draw anchor in frame-local pixels (packed space).
          */
         point origin{0, 0};
+
+        /**
+         * @brief Untrimmed (authored) frame size. @c {0,0} means "untrimmed" -- i.e. the same
+         * size as @ref texture_rect. Read it through @ref metrics, which resolves the sentinel,
+         * so no consumer has to know about it.
+         */
+        dim source_size{0, 0};
+
+        /**
+         * @brief The visible rect's top-left within the untrimmed frame (@c {0,0} = untrimmed).
+         */
+        point trim_offset{0, 0};
+
+        /// @brief This visual's resolved geometry, with the untrimmed defaults filled in.
+        [[nodiscard]] sprite_metrics metrics() const noexcept {
+            const dim logical = (source_size.width > 0 && source_size.height > 0)
+                                    ? source_size
+                                    : dim{texture_rect.w, texture_rect.h};
+            return sprite_metrics{texture_rect, logical, trim_offset, origin,
+                                  point{origin.x + trim_offset.x, origin.y + trim_offset.y}};
+        }
     };
 
     /**

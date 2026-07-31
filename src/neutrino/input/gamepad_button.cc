@@ -1,4 +1,5 @@
 #include <neutrino/input/gamepad_button.hh>
+#include "input/edge_gate.hh"
 #include "services/service_locator.hh"
 
 namespace neutrino {
@@ -9,7 +10,9 @@ namespace neutrino {
             if (!pads) {
                 return false;
             }
-            auto state = pads->get_gamepad_button_state(gamepad_index, button);
+            // See hotkey.cc: edges are masked on follow-up fixed substeps, so a polled one-shot
+            // fires once per physical press rather than once per simulation step.
+            auto state = input_detail::gate_edges(pads->get_gamepad_button_state(gamepad_index, button));
             return state.*member;
         }
     }

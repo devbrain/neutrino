@@ -1,5 +1,6 @@
 #include <neutrino/input/mouse_click.hh>
 #include <neutrino/application.hh>
+#include "input/edge_gate.hh"
 #include "modifier_match.hh"
 #include "services/service_locator.hh"
 
@@ -16,7 +17,8 @@ namespace neutrino {
                 return false;
             }
 
-            auto state = app->get_mouse(button);
+            // See hotkey.cc: edges are masked on follow-up fixed substeps.
+            auto state = input_detail::gate_edges(app->get_mouse(button));
             if (!(state.*member)) {
                 return false;
             }

@@ -123,12 +123,45 @@ namespace neutrino::physics {
         vec surface_velocity{};  ///< Tangential drag imparted to riders without moving the carrier.
     };
 
+    /**
+     * @brief What a bullet does with the REST of its step after hitting a solid.
+     *
+     * A bullet's frame movement is a time budget, and a hit happens partway through it. This picks
+     * whether the leftover time is spent or discarded -- the difference between a ricochet that
+     * leaves the surface *this* step and one that visibly rests on it for a frame first.
+     */
+    enum class bullet_on_hit : std::uint8_t {
+        /**
+         * @brief Stop at the impact and discard the leftover time (the default).
+         *
+         * The @c BULLET_HIT event is the game's cue to respond after @ref world::run; the bullet
+         * departs on the following step. Historic behaviour, so existing games are unaffected.
+         */
+        stop,
+        /**
+         * @brief Reflect about the contact normal and keep travelling with the leftover time.
+         *
+         * A speed-preserving geometric bounce (@c v - 2(v.n)n) -- an arcade ricochet, independent of
+         * the surface's restitution, so no material tuning is needed to get a clean bounce. The
+         * @c BULLET_HIT event is still emitted; the game reacts to it as usual, and may override the
+         * post-bounce velocity afterwards (KE does, to add paddle "english").
+         */
+        bounce,
+        /**
+         * @brief Remove the into-surface component and graze along the surface with the leftover time.
+         */
+        slide,
+    };
+
     /// @brief Input DTO for a bullet -- a swept projectile resolved by one-way CCD (not in the tree).
     struct bullet {
         moving_shape_t shape;    ///< Mover shape (aabb|circle).
         material_props material; ///< Surface response.
         filter_props filter;     ///< Collision layers.
         vec velocity;            ///< Velocity (world units / second).
+        /// @brief What to do with the leftover step time after a hit. Default @c stop preserves the
+        /// classic "report and let the game respond next frame" behaviour.
+        bullet_on_hit on_hit{bullet_on_hit::stop};
     };
 
     /**
@@ -201,6 +234,18 @@ namespace neutrino::physics {
         float toi;       ///< Time of impact, normalized [0,1] along the query delta.
     };
 
+    /// @brief Outcome of a resolved positional move (@ref world::move_to / @ref world::move_by): where
+    ///        the body ended up, its EFFECTIVE velocity, and how much of the request geometry blocked.
+    struct move_result {
+        vec position{};   ///< Post-move shape centre (tight-box centre).
+        vec velocity{};   ///< Effective velocity = applied displacement / dt; 0 on a fully blocked axis.
+        vec remaining{};  ///< Requested-but-unapplied displacement ({0,0} == the move fully applied).
+        int contacts{0};  ///< Number of solids touched during the move.
+
+        /// @brief Did the move touch anything solid (i.e. was it clamped)?
+        [[nodiscard]] bool blocked() const noexcept { return contacts > 0; }
+    };
+
     /**
      * @brief The result of @ref world::ground_support -- the WALKABLE ground under three
      *        footprint probes -- left edge, centre, right edge.
@@ -268,6 +313,15 @@ namespace neutrino::physics {
         float fatten_margin = 0.1f; ///< Broadphase fat-AABB margin for moving bodies.
         float skin = 0.01f;         ///< Back-off so the mover never quite touches (anti-jitter).
         int max_slide_iter = 4;     ///< Move-and-slide corner passes (a floor+wall corner needs 2).
+        /**
+         * @brief Cap on responses a single bullet may make within ONE step (see @ref bullet_on_hit).
+         *
+         * A bullet that bounces into a tight corner can keep finding surfaces within the same
+         * frame; this bounds the work (and any degenerate ping-pong) deterministically. On reaching
+         * the cap the bullet stops for the rest of the step, exactly as @c bullet_on_hit::stop would.
+         * Ignored by @c stop bullets, which never respond in-step.
+         */
+        int max_bullet_responses = 4;
         vec up = {0, 1};            ///< Up-axis for grounded detection (matches @c block_normal default).
         /**
          * @brief Play-field extent; unset = unbounded.
