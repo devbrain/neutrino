@@ -91,6 +91,16 @@ namespace neutrino::physics {
             /// @brief Grants the test harness access to the private query helpers (see @ref world_types.hh).
             friend struct world_test_access;
 
+            /// @brief Lift an untyped @ref move_result into the gameplay-space vocabulary.
+            [[nodiscard]] static world_move_result to_world(const move_result& r) noexcept {
+                return world_move_result{
+                    world_pos{r.position.x(), r.position.y()},
+                    world_velocity{r.velocity.x(), r.velocity.y()},
+                    world_delta{r.remaining.x(), r.remaining.y()},
+                    r.contacts
+                };
+            }
+
             /**
              * @brief Add an immovable, free-form static body to the broadphase.
              * @param eid  Game entity id carried as payload (echoed back by @ref get_eid and in events).
@@ -259,6 +269,44 @@ namespace neutrino::physics {
              * @return See @ref move_by.
              */
             move_result move_to(collider_id cid, const vec& target, units::duration dt);
+
+            // ---- typed gameplay-space boundary (roadmap Tier 3) -------------------------------
+            // The same operations in the strong vocabulary of <neutrino/world_space.hh>, so intent
+            // is carried by the type rather than by the parameter name: a world_pos cannot be
+            // handed to set_velocity, and an effective world_velocity cannot be mistaken for a
+            // requested one. Thin delegations to the vec-based forms above -- ADDITIVE, so
+            // untyped call sites keep compiling and migrate one at a time.
+            //
+            // Migration note: these are the intended long-term signatures. Once every caller is
+            // converted, the vec-based overloads become the internal detail.
+
+            /// @brief @ref set_target in gameplay-space types. @p target is the body's centre.
+            void set_target(collider_id cid, world_pos target) {
+                set_target(cid, vec{target.x, target.y});
+            }
+
+            /// @brief @ref move_by in gameplay-space types.
+            [[nodiscard]] world_move_result move_by(collider_id cid, world_delta delta, world_seconds dt) {
+                return to_world(move_by(cid, units::displacement{vec{delta.x, delta.y}},
+                                        units::duration{dt.count()}));
+            }
+
+            /// @brief @ref move_to in gameplay-space types.
+            [[nodiscard]] world_move_result move_to(collider_id cid, world_pos target, world_seconds dt) {
+                return to_world(move_to(cid, vec{target.x, target.y}, units::duration{dt.count()}));
+            }
+
+            /// @brief @ref get_velocity as a typed rate.
+            [[nodiscard]] world_velocity velocity_of(collider_id cid) const {
+                const vec v = get_velocity(cid);
+                return world_velocity{v.x(), v.y()};
+            }
+
+            /// @brief The collider's centre as a typed position (the point @ref set_target steers).
+            [[nodiscard]] world_pos position_of(collider_id cid) const {
+                const vec c = detail::tight_box(get_shape(cid)).center();
+                return world_pos{c.x(), c.y()};
+            }
 
             /**
              * @brief Is this handle still live -- alive AND matching the current generation?

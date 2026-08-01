@@ -44,6 +44,8 @@
 #include <vector>
 #include <optional>
 
+#include <neutrino/world_space.hh> // strong gameplay-space vocabulary (roadmap Tier 3)
+
 #include <neutrino/physics/geometry/shapes.hh>
 #include <neutrino/physics/geometry/units.hh>
 #include <neutrino/physics/collide/grid.hh>
@@ -232,6 +234,23 @@ namespace neutrino::physics {
         collider_id who; ///< The collider hit.
         vec normal;      ///< Outward surface normal at impact (for slide / ricochet).
         float toi;       ///< Time of impact, normalized [0,1] along the query delta.
+    };
+
+    /// @brief @ref move_result in the strong gameplay-space vocabulary -- what the typed
+    ///        @ref world::move_to / @ref world::move_by overloads return.
+    ///
+    /// Same values as @ref move_result, with each field carrying its meaning in the type:
+    /// @c position is a place, @c remaining is an unapplied offset, and @c velocity is a rate --
+    /// specifically the EFFECTIVE one (@c applied_displacement / dt), which is easy to conflate
+    /// with a requested rate while both are bare float pairs.
+    struct world_move_result {
+        world_pos      position{};  ///< Post-move shape centre.
+        world_velocity velocity{};  ///< Effective velocity = applied displacement / dt.
+        world_delta    remaining{}; ///< Requested-but-unapplied displacement.
+        int            contacts{0}; ///< Number of solids touched during the move.
+
+        /// @brief Did the move touch anything solid (i.e. was it clamped)?
+        [[nodiscard]] bool blocked() const noexcept { return contacts > 0; }
     };
 
     /// @brief Outcome of a resolved positional move (@ref world::move_to / @ref world::move_by): where

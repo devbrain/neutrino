@@ -19,6 +19,12 @@
 #include <neutrino/physics/collide/world.hh>
 
 using namespace neutrino::physics;
+// Gameplay-space vocabulary lives in neutrino::, not neutrino::physics::. Pulled in by name rather
+// than wholesale -- `using namespace neutrino` would make `circle` ambiguous with the int-space one.
+using neutrino::world_pos;
+using neutrino::world_delta;
+using neutrino::world_velocity;
+using neutrino::world_seconds;
 
 namespace {
     const aabb BIG_REGION{{-100000, -100000}, {100000, 100000}}; // "everything is active"
@@ -288,6 +294,47 @@ TEST_SUITE("world::run -- positional intent (set_target / move_to)") {
         // The rejected calls must not have half-applied: intent and position both intact.
         CHECK(w.has_target(k));
         CHECK(std::fabs(aabb_min_x(w.get_shape(k))) < 1e-4f);
+    }
+
+    // The typed boundary (roadmap Tier 3): same behaviour, with intent carried by the type. Added
+    // as OVERLOADS, so untyped callers keep working and migrate one at a time.
+    TEST_CASE("the typed gameplay-space overloads agree with the vec-based ones") {
+        world w;
+        w.add(1, mk_static(aabb{{6, -10}, {7, 10}}));                            // wall, face x=6
+        const collider_id k = w.add(2, mk_kine(aabb{{0, 0}, {1, 1}}, vec{0, 0})); // centre 0.5
+
+        SUBCASE("set_target(world_pos) steers exactly like set_target(vec)") {
+            w.set_target(k, world_pos{5.5f, 0.5f});
+            (void) w.run(BIG_REGION, 1.0f);
+            CHECK(w.position_of(k).x == doctest::Approx(5.5f).epsilon(1e-2));
+            // It COVERED 5 units this step, so the effective velocity is 5 -- not 0. The "at rest"
+            // reading belongs to the next step, once there is nowhere left to go.
+            CHECK(w.velocity_of(k).x == doctest::Approx(5.0f).epsilon(1e-2));
+            (void) w.run(BIG_REGION, 1.0f);
+            CHECK(std::fabs(w.velocity_of(k).x) < 1e-2f);   // arrived: no residual drive
+        }
+
+        SUBCASE("move_to(world_pos) reports the travelled rate, blocked at the wall") {
+            const world_move_result r = w.move_to(k, world_pos{100.0f, 0.5f}, world_seconds{0.5f});
+            CHECK(r.blocked());
+            CHECK(r.remaining.x > 90.0f);                    // most of the request was refused
+            const float travelled = r.position.x - 0.5f;
+            REQUIRE(travelled > 4.0f);
+            // The typed velocity is applied/dt -- the same effective-velocity contract, now
+            // expressible as a world_delta divided by a world_seconds.
+            CHECK(r.velocity.x == doctest::Approx(travelled / 0.5f).epsilon(1e-2));
+            CHECK(r.velocity.x > 8.0f);                      // NOT the projected ~0
+        }
+
+        SUBCASE("move_by(world_delta) applies a clear offset in full") {
+            world w2;
+            const collider_id k2 = w2.add(1, mk_kine(aabb{{0, 0}, {1, 1}}, vec{0, 0}));
+            const world_move_result r = w2.move_by(k2, world_delta{4.0f, 0.0f}, world_seconds{2.0f});
+            CHECK_FALSE(r.blocked());
+            CHECK(r.position.x == doctest::Approx(4.5f).epsilon(1e-3));
+            CHECK(r.velocity.x == doctest::Approx(2.0f).epsilon(1e-3)); // 4 units / 2 s
+            CHECK(std::fabs(r.remaining.x) < 1e-3f);
+        }
     }
 
     TEST_CASE("move_to resolves immediately, clamps at a wall, leaves the body at rest") {
