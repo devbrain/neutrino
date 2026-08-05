@@ -1,14 +1,14 @@
 name: Documentation
 
-# Builds the Docusaurus site and publishes it to GitHub Pages.
+# Builds the Docusaurus site to check it still compiles. It does NOT publish anywhere.
 #
-# Pull requests build but do not deploy: a docs build failure is worth catching before merge
-# (onBrokenLinks is 'throw', so a dead cross-link fails here rather than shipping), while
-# publishing from an unmerged branch would let any PR overwrite the live site.
+# The site's own build is the test: onBrokenLinks and onBrokenAnchors are both set to 'throw',
+# so a dead cross-link or a renamed heading fails here rather than being discovered by a reader.
+# That is the whole value of running this in CI -- the docs cross-link heavily, and those links
+# are exactly the kind of thing that rots silently.
 #
-# The API reference is not wired in yet. When it is, a Doxygen step runs before the upload and
-# writes into website/build/api/, so the two ship as one artifact and the navbar's /api/ link
-# resolves. Until then that link 404s -- see the Phase 4 note in the plan.
+# Publishing is deliberately not automated. Where (and whether) this site is hosted has not been
+# decided; when it is, that is a separate change and a deliberate one.
 
 on:
   push:
@@ -20,18 +20,17 @@ on:
     paths:
       - 'website/**'
       - '.github/workflows/docs.yml'
-  # Allows publishing without a docs change, e.g. after fixing Pages settings.
   workflow_dispatch:
 
-# Least privilege: only the deploy job needs to write Pages, and it declares that itself.
+# Read-only. Nothing here writes to the repository or to any deployment target.
 permissions:
   contents: read
 
 concurrency:
-  # One deploy at a time. Do NOT cancel in-progress runs on the default branch: a cancelled
-  # deploy can leave Pages serving a half-published site.
-  group: pages
-  cancel-in-progress: false
+  # Supersede an in-flight run for the same ref -- this only validates, so an older result is
+  # never worth waiting for.
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -50,31 +49,9 @@ jobs:
           cache-dependency-path: website/package-lock.json
 
       # `npm ci` rather than `npm install`: it installs exactly the lockfile, so a transitive
-      # release cannot change what the published site was built from.
+      # release cannot change what is being validated.
       - name: Install dependencies
         run: npm ci
 
       - name: Build
         run: npm run build
-
-      - name: Upload artifact
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: website/build
-
-  deploy:
-    name: Deploy to GitHub Pages
-    # Pull requests stop after build; only the default branch publishes.
-    if: github.event_name != 'pull_request'
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
