@@ -110,6 +110,32 @@ namespace neutrino {
             /// first frame and before create_initial_scene(). Override to load
             /// assets or configure global state. Default: no-op.
             virtual void ready() {}
+
+            /// @brief One-time release hook -- the counterpart to @ref ready.
+            ///
+            /// Called once during shutdown, **after** the scene stack has been finished (so no
+            /// scene can still reach what is released here) and **before** the engine's own
+            /// resource cache, renderer, window and audio go away. This is the only point at
+            /// which a subclass can destroy GPU- or audio-backed resources it owns with the
+            /// services those resources unregister through still alive.
+            ///
+            /// Without it, anything a subclass holds *by value as a member* is destroyed in its
+            /// own destructor -- which runs after the base class has already torn the renderer
+            /// down, so a texture handle is released against a dead device. That failure is
+            /// silent on a clean exit path and only shows up under valgrind or as a crash on
+            /// quit, so releasing here rather than in the destructor is not optional for
+            /// anything holding GPU or audio resources.
+            ///
+            /// Called on every shutdown path that reached @ref ready, including @ref quit -- and
+            /// only those. Startup can fail before that point (a window or renderer that could not
+            /// be created), and SDL calls the quit path regardless; this hook is skipped then,
+            /// because the services it promises were never published and the subclass never built
+            /// anything to release. Default: no-op. Must not throw; an escaping exception is
+            /// logged and swallowed.
+            ///
+            /// @note @ref ready having thrown partway does NOT skip it: whatever that call
+            ///       allocated before failing still needs releasing, and the services are up.
+            virtual void teardown() {}
             /// @brief Per-frame logic hook, called every frame after the scene
             /// stack's physics update. @p dt is the frame delta in seconds.
             /// Runs whether or not scenes are active; override for global,

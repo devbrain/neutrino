@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
 #include <neutrino/physics/collide/world.hh>
@@ -334,6 +335,169 @@ TEST_SUITE("world::run -- positional intent (set_target / move_to)") {
             CHECK(r.position.x == doctest::Approx(4.5f).epsilon(1e-3));
             CHECK(r.velocity.x == doctest::Approx(2.0f).epsilon(1e-3)); // 4 units / 2 s
             CHECK(std::fabs(r.remaining.x) < 1e-3f);
+        }
+
+        // Regression: adding the typed forms as plain overloads made `set_velocity(cid, {x, y})`
+        // ambiguous -- the braced list initializes vec and world_velocity equally well -- so a
+        // long-legal call pattern stopped compiling, which is exactly what an ADDITIVE migration
+        // must not do. The typed forms are templates precisely so a braced-init-list (a
+        // non-deduced context) cannot select them. This case is a COMPILE-time assertion: if the
+        // guard is ever removed, the suite fails to build rather than failing at run time.
+        SUBCASE("the untyped call patterns still compile: braces resolve to the vec overloads") {
+            world w2;
+            const collider_id k2 = w2.add(1, mk_kine(aabb{{0, 0}, {1, 1}}, vec{0, 0}));
+
+            w2.set_velocity(k2, {3.0f, 0.0f});     // no `vec` spelled out -- must still work
+            CHECK(w2.get_velocity(k2).x() == doctest::Approx(3.0f));
+
+            w2.set_target(k2, {9.5f, 0.5f});
+            REQUIRE(w2.has_target(k2));
+            (void) w2.run(BIG_REGION, 1.0f);
+            CHECK(w2.position_of(k2).x == doctest::Approx(9.5f).epsilon(1e-2));
+
+            // ...and the typed forms still bind when the type is named explicitly.
+            w2.clear_target(k2);
+            w2.set_velocity(k2, world_velocity{-2.0f, 0.0f});
+            CHECK(w2.get_velocity(k2).x() == doctest::Approx(-2.0f));
+            w2.set_target(k2, world_pos{0.5f, 0.5f});
+            CHECK(w2.has_target(k2));
+        }
+
+        // Same class of regression on run(): widening the region parameter to optional<aabb>
+        // broke `run({{0,0},{10,10}}, dt)` outright and, worse, left `run({}, dt)` compiling
+        // while silently inverting its meaning -- from "an empty region, so nothing simulates"
+        // to "no region, so everything does". The optional is private; both public forms below
+        // must keep their original semantics.
+        SUBCASE("the region overload keeps its brace semantics; run(dt) is the unculled form") {
+            world w2;
+            const collider_id k2 = w2.add(1, mk_kine(aabb{{100, 0}, {101, 1}}, vec{10, 0}));
+
+            (void) w2.run({{0, 0}, {10, 10}}, 1.0f);   // braced aabb region, far from the mover
+            CHECK(w2.position_of(k2).x == doctest::Approx(100.5f)); // culled: did not move
+
+            (void) w2.run({}, 1.0f);                   // a DEFAULT region is empty, not absent
+            CHECK(w2.position_of(k2).x == doctest::Approx(100.5f)); // still culled
+
+            (void) w2.run(1.0f);                       // no region at all
+            CHECK(w2.position_of(k2).x == doctest::Approx(110.5f)); // simulated
+        }
+
+        // The concept is the advertised contract, so it must not accept a type that then fails
+        // to compile inside owner_as. from_user_data default-constructs before memcpy-ing, and
+        // returns by value.
+        SUBCASE("collider_owner admits exactly what owner_as can actually decode") {
+            struct ok {
+                std::uint32_t a;
+                std::uint32_t b;
+            };
+            struct no_default {
+                std::uint32_t a;
+                no_default() = delete;
+            };
+            struct too_big {
+                std::uint64_t a;
+                std::uint32_t b;
+            };
+            static_assert(collider_owner<ok>);
+            static_assert(!collider_owner<no_default>); // would break `T value{}`
+            static_assert(!collider_owner<int[2]>);     // trivially copyable, but unreturnable
+            static_assert(!collider_owner<too_big>);    // wider than the slot
+            static_assert(!collider_owner<std::string>);// not trivially copyable
+
+            CHECK(from_user_data<ok>(to_user_data(ok{7, 9})).a == 7u);
+            CHECK(from_user_data<ok>(to_user_data(ok{7, 9})).b == 9u);
+        }
+
+        SUBCASE("set_velocity(world_velocity) drives exactly like set_velocity(vec)") {
+            // A REQUESTED rate, unlike the effective one velocity_of() reports back. The typed
+            // overload must not be a different code path -- same body, same step, same result.
+            world w2;
+            const collider_id a = w2.add(1, mk_kine(aabb{{0, 0}, {1, 1}}, vec{0, 0}));
+            const collider_id b = w2.add(2, mk_kine(aabb{{0, 4}, {1, 5}}, vec{0, 0}));
+            w2.set_velocity(a, world_velocity{3.0f, 0.0f});
+            w2.set_velocity(b, vec{3.0f, 0.0f});
+            (void) w2.run(BIG_REGION, 1.0f);
+            CHECK(w2.position_of(a).x == doctest::Approx(w2.position_of(b).x).epsilon(1e-4));
+            CHECK(w2.position_of(a).x == doctest::Approx(3.5f).epsilon(1e-3));
+        }
+
+        SUBCASE("position_of reads the centre for every shape, not just an aabb") {
+            // This is what replaced KE's hand-rolled shape_center(): a get_if<aabb> read-back
+            // silently froze the position the moment a body was modelled as a circle.
+            world w2;
+            const collider_id c = w2.add(1, [] {
+                kinematic_body x;
+                x.shape = circle{{7.0f, -2.0f}, 0.5f};
+                x.velocity = vec{0, 0};
+                return x;
+            }());
+            CHECK(w2.position_of(c).x == doctest::Approx(7.0f));
+            CHECK(w2.position_of(c).y == doctest::Approx(-2.0f));
+        }
+
+        SUBCASE("the owner slot rides the collider and answers what an event hit") {
+            // The point of the slot: identify a hit WITHOUT carving reserved numeric ranges out
+            // of entity_id and subtracting a base to recover an index.
+            enum class kind : std::uint32_t { wall, actor };
+            struct owner {
+                kind k{};
+                std::uint32_t index{};
+            };
+            static_assert(collider_owner<owner>);
+
+            world w2;
+            static_body s;
+            s.shape = aabb{{6, -10}, {7, 10}};
+            s.user_data = to_user_data(owner{kind::wall, 7});
+            const collider_id wall = w2.add(1, s);
+
+            const collider_id a = w2.add(1, mk_kine(aabb{{0, 0}, {1, 1}}, vec{0, 0})); // SAME eid
+            w2.set_owner(a, owner{kind::actor, 3});
+
+            // Two colliders sharing an entity id are still told apart -- the id was never an
+            // identity in the first place.
+            CHECK(w2.owner_as<owner>(wall).k == kind::wall);
+            CHECK(w2.owner_as<owner>(wall).index == 7);
+            CHECK(w2.owner_as<owner>(a).k == kind::actor);
+            CHECK(w2.owner_as<owner>(a).index == 3);
+
+            SUBCASE("an unstamped collider reads as a zeroed owner, not as garbage") {
+                const collider_id plain = w2.add(9, mk_kine(aabb{{20, 20}, {21, 21}}, vec{0, 0}));
+                CHECK(w2.get_user_data(plain) == 0u);
+                CHECK(w2.owner_as<owner>(plain).index == 0);
+            }
+
+            SUBCASE("a stale handle is rejected rather than read from a recycled slot") {
+                w2.remove(a);
+                CHECK_THROWS((void) w2.owner_as<owner>(a));
+            }
+        }
+
+        SUBCASE("run(dt) simulates the whole world; a region is an opt-in that freezes it") {
+            // The region is a GAMEPLAY choice (dormant far-away actors), not a draw optimization.
+            // run(dt) says "simulate everything", which is what a game without dormancy wants --
+            // and what KE previously spelled as a hand-built box the size of the screen.
+            world far_away;
+            const collider_id m1 = far_away.add(1, mk_kine(aabb{{500, 500}, {501, 501}}, vec{10, 0}));
+
+            (void) far_away.run(1.0f);
+            CHECK(far_away.position_of(m1).x == doctest::Approx(510.5f).epsilon(1e-3)); // moved
+
+            const aabb near_origin{{-10, -10}, {10, 10}};
+            (void) far_away.run(near_origin, 1.0f);
+            CHECK(far_away.position_of(m1).x == doctest::Approx(510.5f).epsilon(1e-3)); // frozen
+        }
+
+        SUBCASE("bounds_of gives the corners exactly, without a round trip via the centre") {
+            // A caller anchored on a corner (KE's paddle: the model holds the top-left, the world
+            // steers the centre) must not have to reconstruct it from centre minus half-size.
+            world w2;
+            const collider_id p = w2.add(1, mk_kine(aabb{{3.0f, 11.0f}, {35.0f, 15.0f}}, vec{0, 0}));
+            const neutrino::world_bounds b = w2.bounds_of(p);
+            CHECK(b.min == neutrino::world_pos{3.0f, 11.0f});
+            CHECK(b.max == neutrino::world_pos{35.0f, 15.0f});
+            CHECK(b.centre() == w2.position_of(p));
+            CHECK(b.size() == neutrino::world_delta{32.0f, 4.0f});
         }
     }
 

@@ -6,13 +6,19 @@
 
 #include <vector>
 
-#include <neutrino/video/geometry_types.hh> // world_point
+#include <neutrino/world_space.hh> // world_pos / world_velocity
 #include <neutrino/physics/geometry/shapes.hh>
 #include <neutrino/video/sprite/sprite_state.hh>
 #include <ke/assets/sprites.hh>
 
 // The KE domain model: pure game state. It owns no engine subsystems -- game_mechanics
 // drives the physics from this data, and the renderer/actors read it to draw.
+//
+// Positions and velocities are the STRONG gameplay types (neutrino::world_pos /
+// neutrino::world_velocity), not bare float pairs. That is what stops a position being handed
+// where a rate belongs -- the mismatch behind the paddle freeze -- and it makes the integration
+// steps read as physics: `pos += vel * dt`. The untyped neutrino::world_point survives only at
+// the drawing edge (to_world_point, in the scene).
 
 struct paddle_info {
     int x; // resolved left-edge position, written back from the physics each tick
@@ -28,7 +34,7 @@ struct paddle_info {
 };
 
 struct brick {
-    neutrino::world_point pos; // world pixels (cell -> grid origin + cell*tile)
+    neutrino::world_pos pos; // world pixels (cell -> grid origin + cell*tile)
     int frame; // KE_BRICK sprite frame (0-based local index)
     int hits;
 
@@ -38,7 +44,7 @@ struct brick {
     // lifecycle: alive (a solid), or flung (dead debris sliding off-screen).
     enum class motion { ALIVE, FLUNG } m = motion::ALIVE;
 
-    neutrino::world_point vel{}; // set when flung
+    neutrino::world_velocity vel{}; // set when flung
 
 };
 
@@ -49,21 +55,21 @@ struct ball_state {
     rs::ke_ball_kind kind{rs::ke_ball_kind::ordinary};
     int size{3}; // 0..5, selects the sprite within the kind's range
 
-    neutrino::world_point pos{};
-    neutrino::world_point vel{};
+    neutrino::world_pos pos{};
+    neutrino::world_velocity vel{};
     int half{2}; // collision half-extent of the (square) ball, world pixels
     bool active{false};
 };
 
 struct hit_effect {
-    neutrino::world_point pos; // impact point
+    neutrino::world_pos pos; // impact point
     neutrino::sprite_state_id state;
 };
 
 struct capsule {
     rs::bonus bonus;
     int mag{};
-    neutrino::world_point pos;
+    neutrino::world_pos pos;
     neutrino::sprite_state_id state;
     int w{};
     int h{};

@@ -192,6 +192,14 @@ namespace neutrino {
         m_musics.erase(std::remove(m_musics.begin(), m_musics.end(), music), m_musics.end());
     }
 
+    bool sound_system::claim_codec_id(const std::string& codec_id) {
+        if (std::find(m_codec_ids.begin(), m_codec_ids.end(), codec_id) != m_codec_ids.end()) {
+            return false;
+        }
+        m_codec_ids.push_back(codec_id);
+        return true;
+    }
+
     void sound_system::set_music_finished_callback(std::function<void()> cb) {
         m_on_music_finished = std::move(cb);
     }
@@ -352,5 +360,21 @@ namespace neutrino {
         auto registry = ss->registry();
         ENFORCE(registry != nullptr)("Decoders registry is null");
         registry->register_decoder(accept_func, factory_func, priority);
+    }
+
+    bool register_decoder_once(
+        const std::string& codec_id,
+        const std::function <bool(musac::io_stream*)>& accept_func,
+        const std::function <std::unique_ptr <musac::decoder>()>& factory_func,
+        int priority
+    ) {
+        ENFORCE(!codec_id.empty())("register_decoder_once needs a non-empty codec id");
+        auto* ss = maybe_sound_system();
+        ENFORCE(ss != nullptr)("Cannot register decoder: application is not running");
+        if (!ss->claim_codec_id(codec_id)) {
+            return false; // already registered under this id -- nothing to do
+        }
+        register_decoder(accept_func, factory_func, priority);
+        return true;
     }
 }

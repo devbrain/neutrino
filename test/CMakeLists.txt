@@ -28,6 +28,7 @@ add_executable(neutrino_tests
         test_world_space.cc
 
         audio/test_audio.cc
+        scene/test_scenes_manager.cc
         input/test_input.cc
         input/test_input_snapshot.cc
         video/test_bitmask.cc

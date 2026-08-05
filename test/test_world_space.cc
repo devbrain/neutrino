@@ -9,6 +9,7 @@
 #include <doctest/doctest.h>
 
 #include <neutrino/world_space.hh>
+#include <neutrino/video/geometry_types.hh>
 
 #include <type_traits>
 
@@ -118,6 +119,25 @@ TEST_SUITE("neutrino world_space") {
 
         CHECK(box.intersects(world_bounds{world_pos{9.0f, 3.0f}, world_pos{20.0f, 20.0f}}));
         CHECK_FALSE(box.intersects(world_bounds{world_pos{11.0f, 0.0f}, world_pos{20.0f, 4.0f}}));
+    }
+
+    // The untyped world_point survives at the DRAWING edge, where the renderer wants a bare pair.
+    // The crossing is by named function only -- neither direction is implicit, so a gameplay
+    // position cannot slip into a draw call (or back out of one) without saying so.
+    TEST_CASE("crossing to the untyped world_point is explicit and round-trips") {
+        static_assert(!std::is_convertible_v<world_pos, world_point>);
+        static_assert(!std::is_convertible_v<world_point, world_pos>);
+        static_assert(!std::is_convertible_v<world_delta, world_point>);
+
+        constexpr world_pos p{12.5f, -3.25f};
+        const world_point wp = to_world_point(p);
+        CHECK(wp.x == doctest::Approx(12.5f));
+        CHECK(wp.y == doctest::Approx(-3.25f));
+        CHECK(to_world_pos(wp) == p);
+
+        // Offsets cross too -- a sprite pivot shift is a delta, and stays one until it is applied.
+        CHECK(to_world_point(world_delta{-4.0f, -4.0f}) == world_point{-4.0f, -4.0f});
+        CHECK(to_world_point(p + world_delta{-4.0f, -4.0f}) == world_point{8.5f, -7.25f});
     }
 
     // render and window space are related by a NON-identity mapping (presentation scale +

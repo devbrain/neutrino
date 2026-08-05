@@ -35,6 +35,8 @@
 #include <compare>
 #include <cstddef>
 #include <cstdint>
+#include <concepts>
+#include <cstring>
 #include <functional>
 #include <iterator>
 #include <type_traits>
@@ -91,11 +93,55 @@ namespace neutrino::physics {
     // Client DTOs (transient input to world::add). No inheritance: a kinematic/bullet shape is
     // a *narrower* type than a static one, so they are independent structs.
 
+    /**
+     * @brief What may live in a collider's owner slot: any trivially-copyable value of at most 8
+     *        bytes -- typically a small struct naming the game object the collider belongs to.
+     *
+     * The slot exists so a game does not have to smuggle ownership through @c entity_id_t. An
+     * entity id is one flat @c uint32_t namespace, so a game with several kinds of object ends up
+     * carving reserved numeric ranges out of it and recovering the kind by comparison and the
+     * index by subtraction (KE: @c EID_BALL_BASE + i, then @c mover - EID_BALL_BASE). Nothing
+     * checks those ranges, unrelated namespaces silently compare equal, and it pushes the game
+     * towards index-parallel arrays. A struct in the owner slot says what it is.
+     *
+     * @note The requirements beyond trivially-copyable are what @ref from_user_data actually
+     *       needs, spelled out rather than left implicit. It default-constructs the result before
+     *       memcpy-ing into it, so a type with a deleted default constructor would satisfy a
+     *       looser concept and then fail to compile inside @c owner_as -- an error blaming the
+     *       engine's internals for a constraint the concept claimed not to have. Arrays are
+     *       excluded for the same reason: @c int[2] is trivially copyable and 8 bytes wide, but
+     *       cannot be returned by value.
+     */
+    template<typename T>
+    concept collider_owner = std::is_trivially_copyable_v <T>
+                             && std::default_initializable <T>
+                             && !std::is_array_v <T>
+                             && sizeof(T) <= sizeof(std::uint64_t);
+
+    /// @brief Pack an owner value into the raw slot representation -- for the @c user_data field
+    ///        on the @c add() DTOs, so a collider can be stamped at construction.
+    template<collider_owner T>
+    [[nodiscard]] inline std::uint64_t to_user_data(const T& value) noexcept {
+        std::uint64_t bits = 0;
+        std::memcpy(&bits, &value, sizeof(T));
+        return bits;
+    }
+
+    /// @brief Unpack a raw owner slot as @p T. See @c world::owner_as for the type caveat.
+    template<collider_owner T>
+    [[nodiscard]] inline T from_user_data(std::uint64_t bits) noexcept {
+        T value{};
+        std::memcpy(&value, &bits, sizeof(T));
+        return value;
+    }
+
     /// @brief Input DTO for an immovable, free-form static body (any shape), stored in the BVH.
     struct static_body {
         shape_t shape;          ///< Any shape.
         material_props material; ///< Surface response.
         filter_props filter;     ///< Collision layers.
+        /// @brief Opaque game-owned payload; see @ref collider_owner and @c world::set_owner.
+        std::uint64_t user_data{};
     };
 
     /// @brief Input DTO for a kinematic body (an "actor": player/enemy mover) resolved by move-and-slide.
@@ -104,6 +150,8 @@ namespace neutrino::physics {
         material_props material; ///< Surface response.
         filter_props filter;     ///< Collision layers.
         vec velocity;            ///< Initial velocity (world units / second).
+        /// @brief Opaque game-owned payload; see @ref collider_owner and @c world::set_owner.
+        std::uint64_t user_data{};
     };
 
     /**
@@ -123,6 +171,8 @@ namespace neutrino::physics {
         filter_props filter;     ///< Collision layers.
         vec velocity{};          ///< The carrier's own rigid motion.
         vec surface_velocity{};  ///< Tangential drag imparted to riders without moving the carrier.
+        /// @brief Opaque game-owned payload; see @ref collider_owner and @c world::set_owner.
+        std::uint64_t user_data{};
     };
 
     /**
@@ -164,6 +214,8 @@ namespace neutrino::physics {
         /// @brief What to do with the leftover step time after a hit. Default @c stop preserves the
         /// classic "report and let the game respond next frame" behaviour.
         bullet_on_hit on_hit{bullet_on_hit::stop};
+        /// @brief Opaque game-owned payload; see @ref collider_owner and @c world::set_owner.
+        std::uint64_t user_data{};
     };
 
     /**

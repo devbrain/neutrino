@@ -13,7 +13,11 @@ namespace rs {
     // Level-invariant render assets: the leased sprite sets drawn through the sprite_batch
     // (actors + the backdrop's walls/fill), and the cache they lease from. Each set answers
     // its own frame geometry (frame_rect / origin), so no source sprite_def is retained.
-    // Owned by the scene, populated by define_sprites(), published via set_ke_assets.
+    //
+    // Owned by the APPLICATION for the whole run, populated by define_sprites(), published via
+    // set_ke_assets and injected into the gameplay scene. Not scene-owned: a scene that cleared
+    // them on exit would break the next scene that needs them (level transition, restart).
+    // Released in application::teardown(), while the renderer is still alive.
     // Non-copyable/non-movable (holds a live sprite_cache), so it is constructed in place.
     struct ke_assets {
         neutrino::sprite_cache      cache;   ///< sprites lease their built sets from here

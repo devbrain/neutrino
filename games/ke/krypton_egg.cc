@@ -3,6 +3,7 @@
 //
 
 #include <fstream>
+#include <memory>
 #include <array>       // TEMP: bonus-map dump
 #include <cstdio>      // TEMP: bonus-map dump
 #include <cstdlib>     // TEMP: bonus-map dump (getenv)
@@ -93,14 +94,19 @@ class ke : public neutrino::application {
         // Default to the sprite gallery (built from m_res, loaded in ready()). Swap for
         // play_game_scene to run the game.
         std::unique_ptr <neutrino::base_scene> create_initial_scene() override {
-            // TEMP (bonus-map dump): quit() only flags the app as stopping -- on_ready() still asks
-            // for the initial scene afterwards. The dump path returns before set_ke_assets, so
-            // building the gameplay scene here would throw "ke_assets has not been published" and
-            // print a spurious scene-initialization error on the advertised dump-and-quit path.
-            if (m_dump_only) {
-                return nullptr;
+            // quit() only FLAGS the app as stopping -- on_ready() still asks for the initial scene
+            // afterwards. So every path where ready() bailed out early reaches here: a resource
+            // file that would not open, a parse failure, an archive with no levels, and the
+            // bonus-map dump. In all of them m_assets was never built, and the gameplay scene
+            // takes it by reference -- dereferencing the empty pointer to bind that reference is
+            // undefined behaviour, on the most ordinary failure a player can hit.
+            //
+            // Gate on the assets themselves rather than on a separate "did we bail" flag: the
+            // pointer IS the record of whether ready() got far enough, so the two cannot drift.
+            if (!m_assets) {
+                return nullptr; // ready() already logged why and asked to quit
             }
-            return std::make_unique <play_game_scene>();
+            return std::make_unique <play_game_scene>(*m_assets);
         }
 
         void on_config(int argc, char* argv[]) override {
@@ -110,10 +116,13 @@ class ke : public neutrino::application {
         }
 
         void ready() override {
-            constexpr auto* ke_rsc_path = "/home/igor/games/ke/Krypton-Egg_DOS_EN/ke.rsc";
-            std::ifstream ifs(m_path_to_rs.empty() ? ke_rsc_path : m_path_to_rs.c_str(), std::ios::binary);
+            constexpr auto* ke_rsc_default = "/home/igor/games/ke/Krypton-Egg_DOS_EN/ke.rsc";
+            const std::string path = m_path_to_rs.empty() ? ke_rsc_default : m_path_to_rs;
+            std::ifstream ifs(path.c_str(), std::ios::binary);
             if (!ifs) {
-                LOG_ERROR("ke: cannot open", ke_rsc_path);
+                // The path that was actually tried, not the default -- naming the built-in path
+                // while a command-line one failed sends the reader after the wrong file.
+                LOG_ERROR("ke: cannot open", path);
                 quit();
                 return;
             }
@@ -129,16 +138,28 @@ class ke : public neutrino::application {
                 quit();
                 return;
             }
-            m_assets.levels = std::move(m_res.levels);
             if (std::getenv("KE_DUMP_BONUS")) { // TEMP: dump bonus map + quit
-                dump_bonus_map(m_assets.levels);
-                m_dump_only = true; // suppress create_initial_scene (see there)
-                quit();
+                dump_bonus_map(m_res.levels);
+                quit(); // m_assets stays empty -> create_initial_scene builds nothing
                 return;
             }
-            rs::set_ke_assets(m_assets);
+            m_assets = std::make_unique <rs::ke_assets>();
+            m_assets->levels = std::move(m_res.levels);
+            rs::set_ke_assets(*m_assets);
             rs::define_sprites(m_res);
-            m_assets.m_resources = &m_res;
+            m_assets->m_resources = &m_res;
+        }
+
+        // The counterpart to ready(): release the assets HERE, not by letting the member die in
+        // ~ke(). ke_assets owns a sprite_cache holding GPU textures, and ~ke() runs after the
+        // base class has already taken the renderer down -- releasing them there frees texture
+        // handles against a dead device. This hook runs while the renderer is still alive.
+        void teardown() override {
+            if (m_assets) {
+                rs::release_sprites(); // unregister the animations that reference the sheets
+                rs::clear_ke_assets(); // unpublish before the storage goes
+                m_assets.reset();
+            }
         }
     private:
         static neutrino::application_config make_config() {
@@ -156,8 +177,11 @@ class ke : public neutrino::application {
     private:
         std::string m_path_to_rs;
         rs::game_resources m_res;
-        rs::ke_assets m_assets; // owned; published via set_ke_assets
-        bool m_dump_only = false; // TEMP: KE_DUMP_BONUS ran; skip building the gameplay scene
+        // Owned here for the whole run, published via set_ke_assets and injected into the
+        // gameplay scene. Indirect so teardown() can release it at the right moment -- ke_assets
+        // is non-copyable/non-movable (it holds a live sprite_cache), so a by-value member could
+        // only be destroyed with the application itself, which is too late.
+        std::unique_ptr <rs::ke_assets> m_assets;
 };
 
 SDLPP_MAIN(ke)

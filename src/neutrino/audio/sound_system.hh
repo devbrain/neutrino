@@ -77,6 +77,12 @@ namespace neutrino {
             void register_music(music_stream* music);
             void unregister_music(music_stream* music);
 
+            // Codec ids already handed to the musac registry, for register_decoder_once().
+            // musac's registry appends unconditionally and offers no unregister, so
+            // de-duplication has to happen on this side. Returns true if @p codec_id was new
+            // (the caller should register); false if it is already present.
+            [[nodiscard]] bool claim_codec_id(const std::string& codec_id);
+
         private:
             std::shared_ptr <musac::audio_backend> m_backend;
             std::shared_ptr <musac::decoders_registry> m_codecs;
@@ -93,6 +99,7 @@ namespace neutrino {
 
             std::vector <sound_effect*> m_effects;
             std::vector <music_stream*> m_musics;
+            std::vector <std::string>   m_codec_ids; // see claim_codec_id
 
             // Finish/loop relay + consumer callbacks for the music slot (m_music_slot).
             std::shared_ptr <audio_detail::callback_relay> m_slot_relay;

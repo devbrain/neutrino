@@ -8,16 +8,21 @@
 
 #pragma once
 
-#include <sdlpp/events/mouse_codes.hh>     // sdlpp::mouse_button
-#include <sdlpp/utility/geometry_types.hh> // sdlpp::point<float>
+#include <sdlpp/events/mouse_codes.hh> // sdlpp::mouse_button
+
+#include <neutrino/world_space.hh>    // window_pos / render_pos
 
 namespace neutrino {
     /// @brief The pointer position this frame, in BOTH window and render space. @c render is the one
     ///        scenes want: window input already mapped through to_render_coords() (so HiDPI scaling
     ///        and logical-presentation letterboxing are accounted for), so a scene never re-derives it.
+    ///
+    /// The two carry DIFFERENT types on purpose. They were both a bare @c point<float>, which made
+    /// them interchangeable at every call -- and a window coordinate used as a render one is right
+    /// on an unscaled 1:1 display and wrong everywhere else, so the mistake survives local testing.
     struct pointer_state {
-        sdlpp::point <float> window{}; ///< Window pixels, as SDL delivers mouse coordinates.
-        sdlpp::point <float> render{}; ///< Render / logical-presentation space.
+        window_pos window{}; ///< Window pixels, as SDL delivers mouse coordinates.
+        render_pos render{}; ///< Render / logical-presentation space.
         /// @brief Is the pointer actually over this application's window?
         ///
         /// **A scene that steers something from the pointer must check this.** When false the

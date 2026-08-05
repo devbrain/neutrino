@@ -201,4 +201,19 @@ namespace rs {
     // ke_assets. The backdrop sheets stay in @p gr for the backdrop module to read.
     // @pre set_ke_assets() has been called and the application is ready.
     void define_sprites(const game_resources& gr);
+
+    // The counterpart to define_sprites: unregister the 30 animations it registered (the two hit
+    // effects + the 28 capsule loops).
+    //
+    // This is not optional bookkeeping. A registered animation counts as a USER of the sprite
+    // sheet its frames come from, so releasing the sprite sets while the animations are still
+    // registered trips "Cannot unregister sprite sheet while it is still used" -- and that abort
+    // comes out of a destructor, which is noexcept, so it terminates rather than throwing.
+    //
+    // Call from application::teardown(), before the ke_assets storage goes away and while the
+    // sprite services are still published. (The longer-term fix is to move these animations into
+    // sprite_def::clips, which the engine already supports, so the sets own them and there is
+    // nothing to hand-unregister -- see the roadmap's "not an engine gap" section.)
+    // @pre set_ke_assets() has been called.
+    void release_sprites();
 }

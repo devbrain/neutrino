@@ -10,6 +10,7 @@
 #include "input/edge_gate.hh" // internal: the same rule for the POLLED input APIs
 
 #include <stdexcept>
+#include <type_traits>
 
 using namespace neutrino;
 
@@ -40,6 +41,17 @@ TEST_SUITE("neutrino::input input_snapshot") {
             CHECK(rest.pointer().render.x == doctest::Approx(6.0f));
             CHECK(rest.pointer().render.y == doctest::Approx(17.0f));
             CHECK(rest.pointer().on_screen);
+        }
+
+        SUBCASE("the two spaces are separate types, so one cannot stand in for the other") {
+            // These fields were both a bare point<float>: `p.window` read as a render coordinate
+            // is correct only on an unscaled, unletterboxed display, so the bug hides on the
+            // developer's own machine. Now assigning one to the other does not compile.
+            static_assert(!std::is_convertible_v<decltype(p.window), decltype(p.render)>);
+            static_assert(!std::is_convertible_v<decltype(p.render), decltype(p.window)>);
+            static_assert(std::is_same_v<decltype(p.window), window_pos>);
+            static_assert(std::is_same_v<decltype(p.render), render_pos>);
+            CHECK(p.window == window_pos{12.0f, 34.0f}); // the mapping scaled it to render {6,17}
         }
 
         SUBCASE("the original is unchanged (the copy is what gets degraded)") {

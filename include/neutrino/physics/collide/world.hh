@@ -41,6 +41,8 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <concepts>
+#include <cstring>
 #include <functional>
 #include <iterator>
 #include <type_traits>
@@ -279,9 +281,27 @@ namespace neutrino::physics {
             //
             // Migration note: these are the intended long-term signatures. Once every caller is
             // converted, the vec-based overloads become the internal detail.
+            //
+            // set_velocity/set_target are TEMPLATES, constrained to exactly the one type each
+            // accepts, and that shape is load-bearing rather than stylistic. Written as plain
+            // overloads they differ from the vec forms only in a two-float parameter, so a caller
+            // writing the long-legal `w.set_velocity(cid, {vx, vy})` becomes ambiguous -- the
+            // braced list initializes vec and world_velocity equally well -- and stops compiling.
+            // A braced-init-list is a non-deduced context, so a template is simply not a candidate
+            // for it: `{vx, vy}` resolves to the vec overload exactly as before, while an explicit
+            // `world_velocity{...}` deduces here. That keeps the migration genuinely additive.
+            // (move_by/move_to need no such guard: their duration argument already tells the two
+            // overload sets apart.) Pinned by "the untyped call patterns still compile" below.
+
+            /// @brief @ref set_velocity in gameplay-space types -- a REQUESTED rate.
+            template<std::same_as <world_velocity> V>
+            void set_velocity(collider_id cid, V v) {
+                set_velocity(cid, vec{v.x, v.y});
+            }
 
             /// @brief @ref set_target in gameplay-space types. @p target is the body's centre.
-            void set_target(collider_id cid, world_pos target) {
+            template<std::same_as <world_pos> P>
+            void set_target(collider_id cid, P target) {
                 set_target(cid, vec{target.x, target.y});
             }
 
@@ -306,6 +326,49 @@ namespace neutrino::physics {
             [[nodiscard]] world_pos position_of(collider_id cid) const {
                 const vec c = detail::tight_box(get_shape(cid)).center();
                 return world_pos{c.x(), c.y()};
+            }
+
+            // ---- the owner slot: who this collider belongs to ---------------------------------
+            // A game-owned payload attached to a collider, untouched by the simulation. Set it at
+            // add() time (the DTOs carry `user_data`) or afterwards, and read it back from an
+            // event's `mover` / `target` handle to answer "what did I just hit" with a value that
+            // says what it is -- instead of comparing an entity id against reserved numeric
+            // ranges and subtracting a base to recover an index. See @ref collider_owner.
+
+            /// @brief Store @p value in the collider's owner slot.
+            /// @tparam T Trivially copyable, at most 8 bytes (@ref collider_owner).
+            template<collider_owner T>
+            void set_owner(collider_id cid, const T& value) {
+                set_user_data(cid, to_user_data(value));
+            }
+
+            /// @brief Read the collider's owner slot back as @p T.
+            /// @warning The slot is untyped storage: nothing records which type was written, so
+            ///          reading as a different type than was stored reinterprets the bits. Use one
+            ///          owner type per world (a variant-like struct with its own tag if a game
+            ///          genuinely needs several). An unset slot reads as all-zero bits.
+            template<collider_owner T>
+            [[nodiscard]] T owner_as(collider_id cid) const {
+                return from_user_data <T>(get_user_data(cid));
+            }
+
+            /// @brief The raw owner slot. Prefer @ref set_owner / @ref owner_as.
+            void set_user_data(collider_id cid, std::uint64_t value);
+            /// @copydoc set_user_data
+            [[nodiscard]] std::uint64_t get_user_data(collider_id cid) const;
+
+            /// @brief The collider's tight axis-aligned extent in gameplay-space types.
+            ///
+            /// Both corners, so a caller anchored on a corner rather than the centre (a sprite
+            /// pivoting top-left, say) reads it directly instead of deriving it from
+            /// @ref position_of and a half-size -- which is a round trip through the centre, and
+            /// so not bit-exact. Shape-agnostic, unlike a @c get_if<aabb> on @ref get_shape.
+            [[nodiscard]] world_bounds bounds_of(collider_id cid) const {
+                const aabb b = detail::tight_box(get_shape(cid));
+                return world_bounds{
+                    world_pos{b.min.x(), b.min.y()},
+                    world_pos{b.max.x(), b.max.y()}
+                };
             }
 
             /**
@@ -351,14 +414,49 @@ namespace neutrino::physics {
              * (move-and-slide) -> bullets -> sensor triggers. On the first call it also bakes the
              * mergeable static tiles once.
              *
-             * @param active_region The camera/simulation window; movers and bullets whose swept bound
-             *                       does not touch it are left dormant (sensors are never region-culled).
-             * @param dt            Frame duration in seconds.
+             * Simulates the whole world. This is the form to reach for by default: what is
+             * simulated is then a property of the world, not of where anything happens to be.
+             *
+             * @param dt Frame duration in seconds.
              * @return A reference to the world's internal event buffer, valid until the next @ref run
              *         or @ref clear. Contains @c COLLISION, @c BULLET_HIT, @c BULLET_EXPIRED,
              *         @c TRIGGER_BEGIN / @c TRIGGER_END, and @c CRUSH events.
              */
-            [[nodiscard]] const std::vector <world_event>& run(const aabb& active_region, float dt);
+            [[nodiscard]] const std::vector <world_event>& run(float dt) {
+                return run_impl(std::nullopt, dt);
+            }
+
+            /**
+             * @brief @ref run(float), restricted to an explicit **activity region**.
+             *
+             * Movers and carriers whose swept bound misses @p active_region are left dormant, and
+             * bullets keep flying but skip the narrow phase (so they may pass through geometry
+             * while outside). Sensors are never region-culled.
+             *
+             * @warning This is a **gameplay** decision -- "enemies do not act until the player is
+             *          near" -- and NOT a rendering optimization. Passing the camera's view here
+             *          makes the simulation depend on the camera: the same play produces different
+             *          outcomes at a different window size, zoom, or aspect ratio, and a bullet
+             *          crossing off-screen geometry tunnels through it. If the intent is to avoid
+             *          *drawing* what is off-screen, cull at the renderer and call @ref run(float).
+             *
+             * The region is deliberately a separate argument rather than a stored config, so the
+             * decision to freeze part of the world is visible at every call site that makes it.
+             *
+             * @param active_region The simulation activity window.
+             * @param dt            Frame duration in seconds.
+             * @return See @ref run(float).
+             *
+             * @note Takes a plain @c aabb, NOT an @c optional. Widening the parameter would change
+             *       what existing calls mean rather than merely what they accept: @c run({}, dt)
+             *       would keep compiling while silently flipping from "an empty activity region,
+             *       so nothing simulates" to "no region, so everything does" -- and
+             *       @c run({{0,0},{10,10}}, dt) would stop compiling outright. The optional lives
+             *       on the private implementation both public forms delegate to.
+             */
+            [[nodiscard]] const std::vector <world_event>& run(const aabb& active_region, float dt) {
+                return run_impl(active_region, dt);
+            }
 
         private:
             // ====================================================================================
@@ -366,16 +464,29 @@ namespace neutrino::physics {
             // (fatten / swept_bound / material_of / tile_handle, the fan-out + narrow-phase plumbing,
             // and overlap_core / cast_core that the public queries below are built on).
             // ====================================================================================
+            /// @brief The single implementation both public @ref run overloads delegate to.
+            /// @param active_region @c nullopt means no culling -- the whole world is active.
+            const std::vector <world_event>& run_impl(const std::optional <aabb>& active_region, float dt);
+
             // ---- run() passes (each owns one phase of a step; orchestrated by run() above) -------
+
+            /// @brief Is @p box inside the activity window? An absent window means "no culling" --
+            /// the whole world is active -- rather than an all-encompassing box, which would need
+            /// sentinel coordinates whose arithmetic overflows in the sweep tests.
+            [[nodiscard]] static bool in_region(const std::optional <aabb>& active_region,
+                                                const aabb& box) noexcept {
+                return !active_region.has_value() || intersects(box, *active_region);
+            }
 
             /**
              * @brief Frame pass 1 -- carriers: move each carrier rigidly on its scripted path and
              *        carry (MP1), push (MP2), and crush (MP3) the actors it touches.
-             * @param active_region Off-region carriers stay dormant (like off-region movers).
+             * @param active_region Off-region carriers stay dormant (like off-region movers);
+             *                      @c nullopt disables culling.
              * @param dt            Frame duration. Runs BEFORE the movement pass so actors then see
              *                      carriers at their resolved positions.
              */
-            void carrier_pass(const aabb& active_region, float dt) {
+            void carrier_pass(const std::optional <aabb>& active_region, float dt) {
                 // Carrier pass (actors-and-solids): each carrier moves RIGIDLY on its scripted path
                 // and transports the actors riding it. Runs BEFORE the actor movement pass, so actors
                 // then see carriers at their resolved positions. A rider inherits
@@ -395,8 +506,8 @@ namespace neutrino::physics {
                     if (near_zero(body_delta) && near_zero(rider_delta)) {
                         continue; // a stationary carrier with no belt: nothing to do
                     }
-                    if (!intersects(swept_bound(detail::narrow(it->shape), units::displacement{body_delta}),
-                                    active_region)) {
+                    if (!in_region(active_region,
+                                   swept_bound(detail::narrow(it->shape), units::displacement{body_delta}))) {
                         continue; // off-region carrier: dormant (like off-region movers)
                     }
                     const uint32_t carrier_idx = it.index();
@@ -496,7 +607,7 @@ namespace neutrino::physics {
              * @param dt            Frame duration. Runs BEFORE the bullet pass so bullets sweep
              *                      against movers at their resolved positions.
              */
-            void movement_pass(const aabb& active_region, float dt) {
+            void movement_pass(const std::optional <aabb>& active_region, float dt) {
                 // Movement pass: resolve each kinematic mover via move-and-slide against the
                 // solid residents, in fixed slot order (deterministic). Off-region movers are
                 // culled (skipped, so they stay dormant off-screen); statics and zero-velocity
@@ -537,7 +648,7 @@ namespace neutrino::physics {
                         settle_target_velocity();
                         continue; // not moving this frame
                     }
-                    if (!intersects(swept_bound(detail::narrow(it->shape), delta), active_region)) {
+                    if (!in_region(active_region, swept_bound(detail::narrow(it->shape), delta))) {
                         settle_target_velocity();
                         continue; // off-region: dormant
                     }
@@ -583,7 +694,7 @@ namespace neutrino::physics {
              *                      expensive tree query.
              * @param dt            Frame duration. A bullet leaving @c world_config.bounds expires.
              */
-            void bullet_pass(const aabb& active_region, float dt) {
+            void bullet_pass(const std::optional <aabb>& active_region, float dt) {
                 // Bullet pass: integrate every live bullet, but only pay for the cast when its
                 // swept bound touches the active region (off-region bullets keep flying so they
                 // can re-enter, they just skip the expensive tree query). The game despawns
@@ -606,7 +717,7 @@ namespace neutrino::physics {
                     for (int response = 0;; ++response) {
                         units::displacement delta_s = remaining;
                         bool responded = false;
-                        if (intersects(swept_bound(bullet_itr->shape, delta_s), active_region)) {
+                        if (in_region(active_region, swept_bound(bullet_itr->shape, delta_s))) {
                             // Bullets hit only solids -- a sensor/ignored body must not stop them
                             // (sensors detect via the trigger pass; bullets are not in the tree anyway).
                             if (auto hit = cast(bullet_itr.index(), collider_id::BULLET, delta_s,
@@ -2088,6 +2199,7 @@ namespace neutrino::physics {
         stored.filter = body.filter;
         stored.material = body.material;
         stored.eid = eid;
+        stored.user_data = body.user_data;
 
         auto box = fatten(stored);
         stored.proxy = insert_leaf(m_space_partition, idx, box);
@@ -2104,6 +2216,7 @@ namespace neutrino::physics {
         stored.material = body.material;
         stored.velocity = body.velocity;
         stored.eid = eid;
+        stored.user_data = body.user_data;
 
         auto box = fatten(stored);
         stored.proxy = insert_leaf(m_space_partition, idx, box);
@@ -2121,6 +2234,7 @@ namespace neutrino::physics {
         stored.velocity = body.velocity;
         stored.surface_velocity = body.surface_velocity;
         stored.eid = eid;
+        stored.user_data = body.user_data;
 
         auto box = fatten(stored);
         stored.proxy = insert_leaf(m_space_partition, idx, box);
@@ -2137,6 +2251,7 @@ namespace neutrino::physics {
         stored.velocity = body.velocity;
         stored.on_hit = body.on_hit;
         stored.eid = eid;
+        stored.user_data = body.user_data;
         return {idx, m_bullets_storage.generation(idx), collider_id::BULLET};
     }
 
@@ -2349,6 +2464,32 @@ namespace neutrino::physics {
         return vec{0, 0}; // TILE: static
     }
 
+    inline void world::set_user_data(collider_id cid, std::uint64_t value) {
+        ENFORCE(is_valid(cid));
+        if (cid.type_id == collider_id::BODY) {
+            m_bodies_storage[cid.value].user_data = value;
+            return;
+        }
+        if (cid.type_id == collider_id::BULLET) {
+            m_bullets_storage[cid.value].user_data = value;
+            return;
+        }
+        // TILE: tiles are baked into merged static geometry on the first run(), so a per-tile
+        // slot would not survive the merge. Owner data belongs on a body or bullet.
+        ENFORCE(false)("a tile has no owner slot -- use a static_body for owned geometry");
+    }
+
+    inline std::uint64_t world::get_user_data(collider_id cid) const {
+        ENFORCE(is_valid(cid));
+        if (cid.type_id == collider_id::BODY) {
+            return m_bodies_storage[cid.value].user_data;
+        }
+        if (cid.type_id == collider_id::BULLET) {
+            return m_bullets_storage[cid.value].user_data;
+        }
+        return 0; // TILE: no slot; see set_user_data
+    }
+
     inline entity_id_t world::get_eid(collider_id cid) const {
         ENFORCE(is_valid(cid));
         if (cid.type_id == collider_id::BODY) {
@@ -2360,7 +2501,8 @@ namespace neutrino::physics {
         return m_static_grid->at(cid.value)->eid; // TILE: from the cell payload
     }
 
-    inline const std::vector <world_event>& world::run(const aabb& active_region, float dt) {
+    inline const std::vector <world_event>& world::run_impl(const std::optional <aabb>& active_region,
+                                                            float dt) {
         m_events.clear();
         compile_static_grid(); // one-shot tile boundary-bake, before anything queries
         carrier_pass(active_region, dt); // carry (MP1) + push (MP2) + crush (MP3)

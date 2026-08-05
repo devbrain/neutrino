@@ -39,7 +39,10 @@ namespace ke {
         }
 
         // Let neutrino's audio decode DIG streams (used per channel by load_sfx below).
-        neutrino::register_decoder(
+        // Once, by id: load() runs on every gameplay-scene entry, and the plain
+        // register_decoder appends every time -- one duplicate DIG decoder per level entered.
+        neutrino::register_decoder_once(
+            "ke.dig",
             rs::dig_decoder::accept,
             [] { return std::make_unique<rs::dig_decoder>(); },
             100);

@@ -41,6 +41,30 @@ namespace neutrino {
     using batch_visual = std::variant <sprite_visual_ref, sprite_state_id>;
 
     /**
+     * @brief A coarse ordering band, sorted before @c depth.
+     *
+     * The batch's full sort key is `(layer, depth, insertion order)`. Layers separate
+     * *categories* that must stack in a fixed order regardless of position — sparks always over
+     * capsules, capsules always over actors — while @c depth (usually `pos.y`) orders *within*
+     * a category, and the stable sort keeps call order for exact ties.
+     *
+     * Without this a caller has only the one float, so category order has to be faked by adding
+     * a constant big enough to clear the depth range: KE drew balls at `y + 1000`, capsules at
+     * `y + 1500` and sparks at `y + 2000`. Those numbers silently encode an assumption about how
+     * large `y` can get, and they collapse the moment a world is taller than the gap. A separate
+     * band cannot collide with a coordinate.
+     *
+     * Games name their own; the engine assigns no meaning beyond ordering. Default `{0}` is what
+     * the depth-only @ref sprite_batch::add overloads use, so mixing the two is well-defined.
+     */
+    struct draw_layer {
+        int value{};
+
+        [[nodiscard]] friend constexpr bool operator==(draw_layer, draw_layer) = default;
+        [[nodiscard]] friend constexpr auto operator<=>(draw_layer, draw_layer) = default;
+    };
+
+    /**
      * @brief One resolved, screen-space draw produced by @ref sprite_batch::plan.
      */
     struct sprite_draw {
@@ -83,6 +107,18 @@ namespace neutrino {
             /// @brief Queue an animated runtime state; its current frame resolves at flush/plan.
             void add(world_point pos, float depth, sprite_state_id state, sprite_draw_params params = {});
 
+            /// @brief Queue a static visual in an explicit @ref draw_layer, sorted by @p depth
+            ///        within that layer. @see draw_layer
+            void add(world_point pos, draw_layer layer, float depth, sprite_visual_ref visual,
+                     sprite_draw_params params = {});
+            /// @copydoc add(world_point, draw_layer, float, sprite_visual_ref, sprite_draw_params)
+            /// Does nothing when @p visual is nullopt.
+            void add(world_point pos, draw_layer layer, float depth, std::optional <sprite_visual_ref> visual,
+                     sprite_draw_params params = {});
+            /// @brief Queue an animated runtime state in an explicit @ref draw_layer.
+            void add(world_point pos, draw_layer layer, float depth, sprite_state_id state,
+                     sprite_draw_params params = {});
+
             /**
              * @brief Stable-sort the queued sprites by depth ascending and resolve each
              *        to a screen-space @ref sprite_draw. Does not draw or clear.
@@ -104,6 +140,7 @@ namespace neutrino {
         private:
             struct entry {
                 world_point        pos;
+                draw_layer         layer;
                 float              depth;
                 batch_visual       visual;
                 sprite_draw_params params;

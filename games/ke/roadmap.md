@@ -368,7 +368,7 @@ the unused part of the step. Visually tolerable today, so below Tiers 0–1.
 
 ---
 
-## Tier 3 — Typed world space, on a simplified surface (findings #1) · effort L · 🟡 PARTIAL
+## Tier 3 — Typed world space, on a simplified surface (findings #1) · effort L · ✅ DONE
 
 > **Header hygiene: DONE.** `world_point` / `world_rect` moved out of the heavy tile-world
 > header into `video/geometry_types.hh` (which `world_common.hh` already included, so every
@@ -376,18 +376,50 @@ the unused part of the step. Visually tolerable today, so below Tiers 0–1.
 > files that pulled in `world/world_common.hh` *purely* for one float point — `backdrop.cc`,
 > `model.hh`, `mechanics.hh` — now include the light header instead, dropping
 > `<filesystem>`, `<map>`, `<variant>`, `<vector>` and the colour header from their
-> translation units. Suite green at 638 cases; KE runs clean.
+> translation units.
 >
-> **The strong-type vocabulary: NOT STARTED.** `world_pos` / `world_delta` /
-> `world_velocity` / `world_bounds` remain to do, and that is the bulk of the **L**. It is a
-> mechanical but genuinely sweeping change — every physics call site, every KE conversion,
-> `sprite_batch`, the input edge — and it must land in one piece or the tree is left with two
-> half-applied vocabularies. Worth starting fresh with room to finish it, not appending to a
-> long session. Design guidance below is unchanged and still current.
+> **The strong-type vocabulary: DONE.** `include/neutrino/world_space.hh` defines
+> `world_seconds` / `world_delta` / `world_pos` / `world_velocity` / `world_bounds`, plus
+> `render_pos` / `window_pos` at the input edge, as **distinct structs** (aliases would compile
+> everywhere and catch nothing) with only the meaningful algebra: `pos - pos = delta`,
+> `pos + delta = pos`, `velocity * seconds = delta`, `delta / seconds = velocity`. Adding two
+> positions does not compile.
 >
-> Recommended first step when picking it up: introduce the aliases as *distinct types* next
-> to the existing `vec`/`world_point` (not `using` aliases, or the compiler catches nothing),
-> convert the physics public boundary first, and let the compiler enumerate the call sites.
+> **Correction to the earlier plan recorded here: "it must land in one piece" was wrong.**
+> Introduced as *overloads* rather than replacements, the migration is incremental — every
+> caller keeps compiling and converts one at a time, with a green build at each step. That
+> mistaken premise was the only thing making this look like a big-bang refactor.
+
+### What landed
+
+| Layer | Change |
+|---|---|
+| `world_space.hh` | The vocabulary + algebra. Header-only, `<chrono>`/`<cmath>` only. |
+| `physics::world` | Typed overloads: `set_velocity`, `set_target`, `move_by`, `move_to`, `velocity_of`, `position_of`, `bounds_of`; `world_move_result`. Thin delegations to the `vec` forms. |
+| `geometry_types.hh` | `to_world_point` / `to_world_pos` — the **named**, non-implicit crossing to the untyped point the renderer wants. |
+| `globals.hh` | `to_render_coords(window_pos) -> render_pos`, `to_window_coords(render_pos) -> window_pos`. |
+| `input_snapshot` | `pointer_state::window` is a `window_pos`, `::render` a `render_pos` — previously both a bare `point<float>`, hence interchangeable. |
+| KE model | `ball_state`, `brick`, `capsule`, `hit_effect` hold `world_pos` / `world_velocity`. Integration reads as physics: `b.pos += b.vel * dt`. |
+| KE mechanics | `reflect` / `scaled` / `rotate` / `paddle_bounce` take and return `world_velocity`; `tick` takes a `sim_duration`. |
+
+### What it deleted
+
+- **`shape_center()`** — KE's hand-rolled `get_if<aabb>` / `get_if<circle>` centre read-back,
+  which silently froze `ball.pos` for any shape it did not enumerate. `world::position_of`
+  replaces it for every shape.
+- The paddle's `get_if<aabb>` read-back, for `bounds_of(...).min` (exact corners, no round trip
+  through the centre).
+- Every `vec{v.x, v.y}` / `world_point{...}` repack in `mechanics.cc` except **one**:
+  `bullet::velocity` is a plain struct field, so construction still crosses explicitly.
+
+`world_point` now appears in KE only at the drawing edge.
+
+### Still open
+
+- **Retiring the untyped forms.** The `vec` overloads stay public while the engine's own tests
+  and any non-KE consumer use them. Nothing forces the order; convert, then delete.
+- **`sprite_batch`** still draws in `world_point`. That is the deliberate boundary today
+  (`to_world_point` at the call), not an oversight — typing the renderer is its own change.
 
 ### Original design guidance
 
@@ -408,17 +440,140 @@ use `world_pos`; do **not** introduce a separate `physics_pos`. Also move
 
 ---
 
-## Tier 4 — Architectural hygiene (real warts, no current bug)
+## Tier 4 — Architectural hygiene
 
-Do opportunistically; none blocks KE.
+Titled "real warts, no current bug" when written. **Item 12 turned out to have two.**
 
-| # | Item | Evidence | Effort | Note |
-|---|------|----------|--------|------|
-| 5 | Decouple sim from camera culling | `world.hh:374/431` — off-region actors freeze, off-region bullets skip narrow-phase | M | KE pays **zero** cost today (passes whole 320×200 as active region, `mechanics.cc:417`). Correctness smell, not KE pain. |
-| 7 | Typed collision ownership vs. numeric EID ranges | `mechanics.cc:19`, `EID_BALL_BASE` subtraction | M | Parallel-array smell; works fine. Typed/templated collider payload. |
-| 9 | General compositor independent of tile worlds | magic `+1000/+1500/+2000` depths, `play_game_scene.cc:22` | M | Named/typed layers keyed `(layer, y, insertion_order)`. |
-| 11 | Scoped codec registration + audio-bank API | DIG decoder re-registered per `audio::load` (`sfx.cc:35`, `audio.hh:106`) | M | RAII/idempotent `register_decoder` handle + `sound_bank` + PCM-with-rate loading. **Respect the musac boundary** — engine-side only. |
-| 12 | Explicit scene/application context | assets published once then cleared on scene exit (`krypton_egg.cc:125`, `play_game_scene.cc:99`) | M | Constructor injection fixes KE **today**; scene-context is the longer-term shape. |
+| # | Item | Evidence | Effort | Status |
+|---|------|----------|--------|--------|
+| 12 | Explicit scene/application context | assets published once then cleared on scene exit (`krypton_egg.cc:125`, `play_game_scene.cc:99`) | M | ✅ **DONE** — see below |
+| 9 | General compositor independent of tile worlds | magic `+1000/+1500/+2000` depths, `play_game_scene.cc:22` | M | ✅ **DONE** — see below |
+| 7 | Typed collision ownership vs. numeric EID ranges | `mechanics.cc:19`, `EID_BALL_BASE` subtraction | M | ✅ **DONE** — see below |
+| 5 | Decouple sim from camera culling | `world.hh:374/431` — off-region actors freeze, off-region bullets skip narrow-phase | M | ✅ **DONE** — see below |
+| 11 | Scoped codec registration + audio-bank API | DIG decoder re-registered per `audio::load` (`sfx.cc:35`, `audio.hh:106`) | M | 🟡 **PARTIAL** — registration fixed; bank/PCM API not started. See below |
+
+### 12 — Explicit scene/application context ✅
+
+**Two bugs, not zero.**
+
+1. **Scene cleared what it did not own.** `play_game_scene::on_exit()` called
+   `rs::clear_ke_assets()`, but the assets belong to the application and are published once, in
+   `ready()`. Any *second* gameplay scene — a level transition, or a restart after game over —
+   would hit the `ENFORCE` in `require_ke_assets()` on entry. Latent only because KE has no
+   level transition yet.
+2. **Teardown ran too late, and silently did nothing.** `ke_assets` was a by-value member, so it
+   died in `~ke()` — after `game_application::on_quit()` had taken the renderer down. It exited
+   0, but only because the sprite services were already unpublished by then, so the release path
+   no-opped. **The sheets were never actually unregistered.** Moving the release into the new
+   `teardown()` hook — where the services *are* live — made it run, and it immediately aborted
+   with *"Cannot unregister sprite sheet while it is still used"*: KE registers 30 animations
+   against the KE_SPELL sheet in `define_sprites` and never unregistered them. A registered
+   animation counts as a sheet user, and the abort surfaces from a destructor (`noexcept`), so
+   it terminates rather than throws.
+
+**What landed**
+
+| Layer | Change |
+|---|---|
+| `application` | `virtual void teardown()` — the counterpart to `ready()`. Called in `on_quit()` after the scene stack is finished and before the engine cache / renderer / audio go away. Wrapped in try/catch. |
+| `play_game_scene` | Takes `rs::ke_assets&` at construction. No longer looks the registry up in `on_enter`, no longer clears it in `on_exit`. |
+| `ke` | Owns `std::unique_ptr<rs::ke_assets>`; `teardown()` releases sprites → unpublishes → frees. The `KE_DUMP_BONUS` path now allocates nothing, so teardown no-ops there. |
+| `rs::release_sprites()` | New counterpart to `define_sprites()`: unregisters the 30 animations and invalidates the ids. |
+
+Verified: both shutdown paths exit 0, and **valgrind reports 0 errors / 0 bytes definitely lost**
+on the normal path — which is the evidence that the release now genuinely runs.
+
+> Follow-up (KE-side, not an engine gap): moving those animations into `sprite_def::clips` —
+> which the engine already supports — would make the sets own them and delete
+> `release_sprites()` entirely. See "Not an engine gap" below.
+
+### 9 — Ordering bands instead of magic depth offsets ✅
+
+`sprite_batch` had one float sort key, so a caller wanting *category* order on top of *positional*
+order had to fake it by adding a constant larger than any coordinate: KE drew balls at `y + 1000`,
+capsules at `y + 1500`, sparks at `y + 2000`. Those constants silently encode "y never exceeds
+500", an assumption nothing checked and nothing wrote down — and one taller playfield away from
+sprites crossing bands.
+
+**`neutrino::draw_layer`** — a coarse band sorted *before* depth. The batch's full key is now
+`(layer, depth, insertion order)`, with `add(pos, layer, depth, ...)` overloads alongside the
+existing depth-only ones (which are the new form at the default band `{0}`, so the two mix
+cleanly and nothing existing changed behaviour).
+
+KE now names its four bands — `layer_playfield` / `layer_balls` / `layer_capsules` /
+`layer_effects` — and passes plain `pos.y` as the depth. No magic constants remain in the draw
+path. Pinned by a test where a depth of `9999` in a low band still draws under `-999` in a high
+one, which is exactly what the old scheme could not guarantee.
+
+> The tile-world compositor is untouched. Building it on this same primitive is the rest of
+> finding #9; the ordering key it would need now exists.
+
+### 11 — Idempotent codec registration 🟡
+
+**Done: the registration defect.** `register_decoder` appends to musac's registry unconditionally
+and the registry has no unregister, so KE's `audio::load` — which runs on *every* gameplay-scene
+entry — added one more duplicate DIG decoder per level entered, and every later codec probe walked
+them all.
+
+`neutrino::register_decoder_once(codec_id, accept, factory, priority)` is the de-duplicating form:
+first call with an id registers, later calls with that id return `false` and do nothing. This lets
+a codec be registered next to the code that needs it instead of being hoisted to a one-time init
+path purely to dodge duplicates. KE registers `"ke.dig"`.
+
+De-duplication is engine-side, in `sound_system`, and the ids die with the audio system. It is
+deliberately **not** an RAII handle: musac exposes no unregister, and the standing rule is that
+neutrino consumers touch musac only to write a `musac::decoder`. A handle promising release we
+cannot deliver would be worse than an honest one-way registration. The plain `register_decoder`
+stays, now carrying a warning about exactly this.
+
+**Not done: the bank/PCM half.** `sound_bank`, PCM-with-source-rate loading, and named/indexed
+effects owned by an audio bundle. KE still opens its bank, extracts each sample into a fresh
+one-sample encoded bank, wraps that in a stream and feeds it back to `load_sfx`. That round trip
+is real waste, but it is an API *addition*, not a defect, so it did not come with this pass.
+
+### 7 — An owner slot instead of reserved entity-id ranges ✅
+
+`entity_id_t` is one flat `uint32_t` namespace, so KE carved ranges out of it to encode *kind*:
+bricks took their index `0..N-1`, the paddle and walls sat at `1<<20`, balls at `1<<21 + i`. A
+ball hit was then routed by `mover - EID_BALL_BASE`. Nothing checked those boundaries — a level
+with `1<<20` bricks would have had a brick read as the paddle — and the subtraction quietly
+depended on balls never being erased from the model.
+
+**A per-collider owner slot**: 8 bytes of opaque, game-defined payload the simulation never
+touches. Set it at `add()` time via the DTOs' `user_data` field or afterwards with `set_owner`,
+read it back from an event handle with `owner_as<T>`. The `collider_owner` concept constrains it
+to trivially-copyable values of at most 8 bytes; `to_user_data` / `from_user_data` do the packing.
+
+KE now carries `struct ke_owner { ke_kind kind; uint32_t index; }`, so routing is a switch on a
+named kind and the index travels with the collider. Entity ids remain (the physics uses them for
+its own dedup) but identify nothing. Pinned by a test where two colliders **share an entity id**
+and are still told apart.
+
+> The slot is untyped storage — nothing records which type was written, so reading as a different
+> type reinterprets the bits. Documented, and the natural discipline is one owner type per world.
+> A stale handle is still rejected by the generation check rather than read from a recycled slot.
+
+### 5 — The activity region is a gameplay choice, not a camera ✅
+
+`run()` took an `active_region` documented as "the camera/simulation window" — one argument
+serving two unrelated purposes. Off-region movers freeze and off-region bullets skip the narrow
+phase, so passing the camera's view makes the simulation depend on the camera: the same play
+yields different outcomes at a different window size or zoom, and a bullet crossing off-screen
+geometry tunnels through it.
+
+- **`run(dt)`** — no region, simulate everything. This is now the default form, and what a game
+  without dormancy actually wants.
+- **`run(active_region, dt)`** — the region is `std::optional<aabb>`, kept as an explicit argument
+  rather than stored config so the decision to freeze part of the world is visible at every call
+  site that makes it. Documented as a **gameplay** decision ("enemies do not act until the player
+  is near"), with a warning against passing a camera view and a pointer to renderer-side culling
+  for the drawing case.
+
+`nullopt` means no culling rather than an all-encompassing box — sentinel coordinates that large
+overflow in the sweep tests.
+
+KE dropped its hand-built 320×200 box: a full-world region that was spelled like a camera view,
+and only coincided with one because KE has no camera.
 
 ---
 
@@ -440,14 +595,24 @@ already ships. Worth a KE-side cleanup independent of the roadmap above:
 1. ~~**Tier 0** — paddle story (resolved `move_to` + fixed-step + input snapshot).~~ ✅ **DONE**
 2. ~~**Tier 1** — `require_*` (1a) and sprite metrics (1b).~~ ✅ **DONE**
 3. ~~**Tier 2** — multi-contact projectile.~~ ✅ **DONE**
-4. **Tier 3** — typed world space. 🟡 header hygiene done; the strong-type sweep is ← *next*
-5. **Tier 4** — hygiene, opportunistic.
+4. ~~**Tier 3** — typed world space.~~ ✅ **DONE**
+5. ~~**Tier 4** — hygiene.~~ ✅ **DONE** (item 11's bank/PCM half deferred; see there)
+
+All five roadmap tiers are now closed. What remains is listed under *Open follow-ups* below and
+in "Not an engine gap" — plus the gameplay work KE needs, which no engine change unblocks.
 
 ### Open follow-ups from the shipped tiers
 
 - **KE centre pivots** (from 1b): author centre pivots for the ball / effect / capsule sets
   so `logical_bounds_at` replaces the manual `- fr.w*0.5f` offsets in
   `play_game_scene.cc` and `mechanics.cc`. Needs the game on screen to verify alignment.
+  Note these offsets are now typed `world_delta`s, so the replacement is local.
+- **Impact point on `BULLET_HIT`** (from Tier 2): `world_event` carries the normal and the toi
+  but not the position, so KE cannot adopt `bullet_on_hit::bounce` — its post-`run` read-back
+  would see the rebound position, not the impact. Small change; unblocks removing the ball's
+  visible one-frame rest against a surface.
+- **Retire the untyped physics overloads** (from Tier 3): the `vec` forms of `set_velocity` /
+  `set_target` / `move_by` / `move_to` remain for the engine's own tests. Convert, then delete.
 - **Frame-perfect input edges** (from 0C): a one-frame `pressed` edge can be missed on a
   zero-substep frame. Add a latch if a scene ever needs it; KE does not.
 

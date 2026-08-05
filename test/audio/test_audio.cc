@@ -6,6 +6,8 @@
 #include "test_application.hh"
 
 #include <chrono>
+#include <functional>
+#include <memory>
 #include <cstdint>
 #include <sstream>
 #include <string>
@@ -33,6 +35,33 @@ static std::string make_test_wav() {
 }
 
 TEST_SUITE("neutrino::audio") {
+    // register_decoder appends unconditionally and the registry has no unregister, so a codec
+    // registered from a per-level path piles up one duplicate per level. register_decoder_once
+    // is the de-duplicating form; its whole contract is that the second call does nothing.
+    TEST_CASE("register_decoder_once registers once per id and no-ops thereafter") {
+        neutrino::test::test_application test_app("Codec registration test");
+        REQUIRE(neutrino::audio_active());
+
+        // accept never claims a stream, so the factory is never invoked -- an empty one is
+        // enough, and keeps musac::decoder out of this TU (only a codec implementation has
+        // business including it).
+        const auto accept = [](musac::io_stream*) { return false; };
+        const std::function<std::unique_ptr<musac::decoder>()> factory;
+
+        CHECK(neutrino::register_decoder_once("test.codec.a", accept, factory));
+        CHECK_FALSE(neutrino::register_decoder_once("test.codec.a", accept, factory));
+        CHECK_FALSE(neutrino::register_decoder_once("test.codec.a", accept, factory));
+
+        SUBCASE("a different id is a different codec") {
+            CHECK(neutrino::register_decoder_once("test.codec.b", accept, factory));
+            CHECK_FALSE(neutrino::register_decoder_once("test.codec.b", accept, factory));
+        }
+
+        SUBCASE("an empty id is rejected rather than silently sharing one slot") {
+            CHECK_THROWS((void) neutrino::register_decoder_once("", accept, factory));
+        }
+    }
+
     TEST_CASE("audio lifecycle and speaker creation") {
         neutrino::test::test_application test_app("Audio test scaffolding");
 

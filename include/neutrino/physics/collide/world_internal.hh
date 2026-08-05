@@ -69,6 +69,7 @@ namespace neutrino::physics::detail {
                                     ///< the movement pass derives velocity from the gap to it and
                                     ///< clamps to geometry, instead of using @c velocity directly.
         entity_id_t eid{};          ///< Game entity id (event payload).
+        std::uint64_t user_data{};  ///< Opaque game-owned owner slot (world::set_owner).
         body_kind kind{body_kind::STATIC}; ///< Static / kinematic / carrier.
         node_ptr proxy{};           ///< Broadphase tree handle.
         uint32_t generation{0};     ///< Slot recycle counter (handle staleness).
@@ -83,6 +84,7 @@ namespace neutrino::physics::detail {
         vec velocity{0, 0};           ///< Velocity.
         bullet_on_hit on_hit{bullet_on_hit::stop}; ///< Leftover-time policy after a hit.
         entity_id_t eid{};            ///< Game entity id (event payload).
+        std::uint64_t user_data{};    ///< Opaque game-owned owner slot (world::set_owner).
         uint32_t generation{0};       ///< Slot recycle counter (handle staleness).
         bool alive{true};             ///< False while the slot is on the free list.
     };

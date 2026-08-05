@@ -100,4 +100,25 @@ namespace rs {
             a.capsule_anim_id[i] = register_ke_anim(rs::ke_spell_capsule_anim[i], a.balls, /*loop=*/true);
         }
     }
+
+    void release_sprites() {
+        ke_assets& a = require_ke_assets();
+
+        // Invalidate as we go: teardown paths run once, but a double release would otherwise
+        // unregister an id the manager has already recycled.
+        const auto drop = [](neutrino::sprite_animation_id& id) {
+            if (id.valid()) {
+                neutrino::unregister_sprite_animation(id);
+                id = {};
+            }
+        };
+
+        drop(a.hit_wall_anim_id);
+        drop(a.hit_brick_anim_id);
+        for (neutrino::sprite_animation_id& id : a.capsule_anim_id) {
+            drop(id);
+        }
+        // The sets themselves are released with the ke_assets storage -- now unreferenced, so
+        // the sheets can actually be unregistered.
+    }
 }

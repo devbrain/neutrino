@@ -12,7 +12,8 @@
 #include <vector>
 
 #include <neutrino/physics/collide/world.hh>
-#include <neutrino/video/geometry_types.hh> // world_point
+#include <neutrino/scene/base_scene.hh> // sim_duration
+#include <neutrino/world_space.hh>      // world_pos / world_velocity
 
 #include <ke/resources/cell.hh> // rs::bonus
 
@@ -24,10 +25,11 @@ class game_mechanics {
         // kinematic paddle) and launch the ball. Call once per level, after model::load_level().
         void load(model& m);
 
-        // Advance one frame: sync the paddle collider to the (input-driven) model paddle, run
-        // the ball (a bullet) and drain its collisions into domain changes -- wall/paddle
-        // bounces, brick hits + flings -- then slide any flung bricks. @p dt is seconds.
-        void tick(model& m, float dt);
+        // Advance one fixed step: sync the paddle collider to the (input-driven) model paddle,
+        // run the ball (a bullet) and drain its collisions into domain changes -- wall/paddle
+        // bounces, brick hits + flings -- then slide any flung bricks. @p dt is the simulation
+        // step, taken as a duration so no bare float can arrive here in the wrong unit.
+        void tick(model& m, neutrino::sim_duration dt);
 
     private:
         void build_world_bounds(const model& m);
@@ -38,7 +40,7 @@ class game_mechanics {
         void handle_balls(model& m, const neutrino::physics::world_event& e);
 
         // Add a ball (bullet) at pos moving vel; shared by load() and the extra-ball bonus.
-        void spawn_ball(model& m, neutrino::world_point pos, neutrino::world_point vel);
+        void spawn_ball(model& m, neutrino::world_pos pos, neutrino::world_velocity vel);
         // Apply a caught capsule's effect (ball speed, multiball, paddle resize, life/score).
         void apply_bonus(model& m, rs::bonus b, int mag);
     private:

@@ -104,7 +104,34 @@ namespace neutrino {
     NEUTRINO_EXPORT void on_music_looped(std::function<void()> cb);
 
     /// @brief Register a game-specific custom decoder/codec.
+    ///
+    /// @warning Every call APPENDS to the codec registry, which has no unregister. Calling this
+    ///          from anything that runs more than once -- a level load, a scene's on_enter --
+    ///          grows the registry without bound and makes every later probe walk the duplicates.
+    ///          Prefer @ref register_decoder_once unless the duplication is genuinely wanted.
     NEUTRINO_EXPORT void register_decoder(
+        const std::function<bool(musac::io_stream*)>& accept_func,
+        const std::function<std::unique_ptr<musac::decoder>()>& factory_func,
+        int priority = 0
+    );
+
+    /// @brief Register a custom decoder/codec ONCE, keyed by a stable identifier.
+    ///
+    /// The idempotent form of @ref register_decoder: the first call with a given @p codec_id
+    /// registers, and every later call with that id is a no-op. This lets a codec be registered
+    /// from the natural place -- next to the code that needs it, which usually runs per level or
+    /// per scene -- instead of having to be hoisted to a one-time init path just to avoid piling
+    /// up duplicates.
+    ///
+    /// The id is the caller's own name for the codec (e.g. `"ke.dig"`); the engine only compares
+    /// it. De-duplication is engine-side because musac's registry appends unconditionally and
+    /// exposes no unregister, so this cannot be an RAII handle -- registration lasts as long as
+    /// the audio system, and the ids reset with it.
+    ///
+    /// @param codec_id Stable, non-empty identifier for this codec.
+    /// @return @c true if this call registered, @c false if @p codec_id was already registered.
+    NEUTRINO_EXPORT bool register_decoder_once(
+        const std::string& codec_id,
         const std::function<bool(musac::io_stream*)>& accept_func,
         const std::function<std::unique_ptr<musac::decoder>()>& factory_func,
         int priority = 0

@@ -59,6 +59,13 @@ namespace neutrino {
         // Fixed-step accumulator: unconsumed real time (seconds) carried between frames.
         // on_update adds the clamped frame delta and drains it in whole `fixed.period` ticks.
         float m_accum = 0.0f;
+        // Set once on_ready() has published the services, immediately before the subclass's
+        // ready() hook runs. SDL calls on_quit() even when startup failed before on_ready (a
+        // renderer that could not be created, say), and application::teardown() promises the
+        // subclass a live renderer/audio and a ready() that has run. Without this marker that
+        // promise is broken exactly when it matters, turning a recoverable startup failure into
+        // a crash inside the subclass's own cleanup.
+        bool m_services_published = false;
 
         explicit impl(const application_config& cfg)
             : m_cfg(cfg) {
@@ -173,6 +180,10 @@ namespace neutrino {
         if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
             LOG_ERROR("Failed to initialize gamepad subsystem:", SDL_GetError());
         }
+        // Everything teardown() promises is now true. Marked BEFORE ready() rather than after, so
+        // a ready() that allocates and then throws still gets its release hook -- the services it
+        // allocated against are up either way.
+        m_pimpl->m_services_published = true;
         ready();
         if (auto scene = create_initial_scene()) {
             m_pimpl->m_scenes_manager.push_scene_sync(std::move(scene));
@@ -256,7 +267,7 @@ namespace neutrino {
         float mx = 0.0f;
         float my = 0.0f;
         SDL_GetMouseState(&mx, &my);
-        const sdlpp::point <float> window{mx, my};
+        const window_pos window{mx, my};
         const pointer_state pointer{window, to_render_coords(window),
                                     SDL_GetMouseFocus() != nullptr};
         // Buttons still come from the tracked state -- it carries the per-frame edges, which a
@@ -333,6 +344,26 @@ namespace neutrino {
             m_pimpl->m_scenes_manager.finish();
         } catch (...) {
             LOG_ERROR("Scene teardown threw during shutdown");
+        }
+        // Then the subclass's own resources, for the same reason and in the same window: the scene
+        // stack above is now drained (finish() guards each on_exit individually, so one failure
+        // cannot leave a scene holding what we are about to release), and the renderer/audio those
+        // resources unregister through are alive. Members released here instead of in the subclass
+        // destructor, which runs long after game_application::on_quit() has taken the renderer
+        // down.
+        //
+        // Skipped entirely if startup never reached on_ready: SDL still calls on_quit() after a
+        // failed renderer/window creation, and teardown() documents that ready() has run and the
+        // services are live. Calling it anyway would have a subclass release state it never
+        // built.
+        if (m_pimpl->m_services_published) {
+            try {
+                teardown();
+            } catch (const std::exception& e) {
+                LOG_ERROR("application::teardown threw during shutdown:", e.what());
+            } catch (...) {
+                LOG_ERROR("application::teardown threw during shutdown");
+            }
         }
         // Now that scenes (and their world_renderers) have released their handles,
         // tear the cache down while the renderer, texture registry and sprite

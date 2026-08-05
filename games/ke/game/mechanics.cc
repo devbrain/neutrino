@@ -5,8 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <optional>
-#include <variant>
+#include <cstdint>
 
 #include <neutrino/physics/geometry/shapes.hh>
 
@@ -17,18 +16,38 @@
 #include <ke/assets/backdrop.hh>
 
 namespace {
-    // Physics entity ids: bricks are keyed by their index in level_info::bricks (0..N-1);
-    // the paddle, the walls and the ball take sentinels well above any brick count.
+    // What a collider belongs to, carried in the physics owner slot (world::set_owner). One
+    // value says both WHAT it is and WHICH one, so event routing is a switch on a named kind
+    // rather than range comparisons against the entity id.
+    //
+    // The entity id used to carry this: bricks took their index 0..N-1, the paddle and walls
+    // sat at 1<<20, balls at 1<<21 + i, and handling a ball hit meant `mover - EID_BALL_BASE`.
+    // Nothing checked those ranges -- a brick index that ever reached 1<<20 would have read as
+    // the paddle -- and the subtraction silently required that balls were never erased from the
+    // model, only deactivated in place. That constraint still holds (see spawn_ball) but it is
+    // no longer load-bearing for identification: the index travels with the collider.
+    enum class ke_kind : std::uint32_t { brick, paddle, wall, ball };
+
+    struct ke_owner {
+        ke_kind kind{};
+        std::uint32_t index{}; // brick / ball index; unused for the paddle and walls
+    };
+    static_assert(neutrino::physics::collider_owner <ke_owner>);
+
+    // Entity ids are still required by add(); they are no longer how anything is identified, so
+    // one shared value per category is enough (the physics only uses eid for its own dedup).
     constexpr neutrino::physics::entity_id_t EID_PADDLE = 1u << 20;
     constexpr neutrino::physics::entity_id_t EID_WALL = (1u << 20) + 1u;
     constexpr neutrino::physics::entity_id_t EID_BALL_BASE = 1u << 21; // ball i -> EID_BALL_BASE + i
 
     constexpr float ke_ball_speed = 120.0f; // px/s the ball travels (tune)
     constexpr float ke_fling_speed = 160.0f; // px/s a dead brick sails off at (tune)
-    constexpr float ke_capsule_fall_speed = 80.0f; // px/s a dropped bonus descends (catchable: < ball)
     constexpr float ke_ball_speed_min = 60.0f; // slow-ball floor: still trackable
     constexpr float ke_ball_speed_max = 240.0f; // fast-ball ceiling: still catchable
     constexpr std::size_t ke_max_balls = 8; // multiball cap so repeated splits can't explode
+
+    // A dropped bonus descends at a fixed rate (catchable: slower than the ball).
+    constexpr neutrino::world_velocity ke_capsule_fall{0.0f, 80.0f};
 
     neutrino::physics::aabb box(float x0, float y0, float x1, float y1) {
         return neutrino::physics::aabb{neutrino::physics::vec{x0, y0}, neutrino::physics::vec{x1, y1}};
@@ -41,36 +60,25 @@ namespace {
         return neutrino::physics::circle{neutrino::physics::vec{cx, cy}, r};
     }
 
-    // Centre of a ball collider whatever its shape. get_shape() returns the wide shape_t, so
-    // the read-back must handle both the box and the circle form -- otherwise a shape swap
-    // silently freezes ball.pos (get_if<aabb> is null for a circle).
-    std::optional <neutrino::world_point> shape_center(const neutrino::physics::shape_t& sh) {
-        if (const auto* bb = std::get_if <neutrino::physics::aabb>(&sh)) {
-            return neutrino::world_point{
-                (bb->min.x() + bb->max.x()) * 0.5f,
-                (bb->min.y() + bb->max.y()) * 0.5f
-            };
-        }
-        if (const auto* c = std::get_if <neutrino::physics::circle>(&sh)) {
-            return neutrino::world_point{c->center.x(), c->center.y()};
-        }
-        return std::nullopt;
-    }
+    // Ball responses. All four take and return a world_velocity: these are RATES, and none of
+    // them can now be handed where a position belongs (nor a position handed in). The centre
+    // read-back that used to live here as shape_center() is gone -- world::position_of does it,
+    // for every shape, and returns a world_pos rather than an anonymous float pair.
 
     // Reflect velocity v about surface normal n:  v - 2(v.n)n.
-    neutrino::world_point reflect(neutrino::world_point v, const neutrino::physics::vec& n) {
+    neutrino::world_velocity reflect(neutrino::world_velocity v, const neutrino::physics::vec& n) {
         const float d = v.x * n.x() + v.y * n.y();
         return {v.x - 2.0f * d * n.x(), v.y - 2.0f * d * n.y()};
     }
 
     // v rescaled to length `speed` (unchanged if v is zero).
-    neutrino::world_point scaled(neutrino::world_point v, float speed) {
-        const float len = std::hypot(v.x, v.y);
-        return len > 0.0f ? neutrino::world_point{v.x / len * speed, v.y / len * speed} : v;
+    neutrino::world_velocity scaled(neutrino::world_velocity v, float speed) {
+        const float len = v.speed();
+        return len > 0.0f ? neutrino::world_velocity{v.x / len * speed, v.y / len * speed} : v;
     }
 
     // v rotated by `deg` degrees. Used to fan split (multiball) balls apart.
-    neutrino::world_point rotate(neutrino::world_point v, float deg) {
+    neutrino::world_velocity rotate(neutrino::world_velocity v, float deg) {
         const float r = deg * 3.14159265f / 180.0f;
         const float c = std::cos(r);
         const float s = std::sin(r);
@@ -79,9 +87,9 @@ namespace {
 
     // Paddle "english": outgoing direction from where the ball struck relative to the paddle
     // centre (centre -> straight up, edges -> up to 60 deg), preserving the ball's speed.
-    neutrino::world_point paddle_bounce(float ball_x, const paddle_info& p, int pw,
-                                        neutrino::world_point vel) {
-        const float speed = std::max(1.0f, std::hypot(vel.x, vel.y));
+    neutrino::world_velocity paddle_bounce(float ball_x, const paddle_info& p, int pw,
+                                           neutrino::world_velocity vel) {
+        const float speed = std::max(1.0f, vel.speed());
         const float half = pw > 0 ? static_cast <float>(pw) * 0.5f : 1.0f;
         const float off = std::clamp((ball_x - (static_cast <float>(p.x) + half)) / half, -1.0f, 1.0f);
         const float ang = off * 1.0472f; // 60 degrees
@@ -112,11 +120,11 @@ void game_mechanics::load(model& m) {
                scaled({0.4f, -1.0f}, ke_ball_speed));
 }
 
-void game_mechanics::spawn_ball(model& m, neutrino::world_point pos, neutrino::world_point vel) {
+void game_mechanics::spawn_ball(model& m, neutrino::world_pos pos, neutrino::world_velocity vel) {
     // Add a ball (a bullet) at `pos` moving `vel`. Shared by load() and the multiball bonus.
-    // Balls are only ever APPENDED -- a lost ball is deactivated in place, never erased -- so a
-    // ball's index in level_info::balls stays equal to eid - EID_BALL_BASE, which handle_balls
-    // relies on to map an event's mover back to its ball.
+    // Balls are only ever APPENDED -- a lost ball is deactivated in place, never erased -- so the
+    // index stamped into the collider's owner slot stays valid for the level's lifetime, and
+    // m_balls stays parallel to li.balls.
     level_info& li = m.get_level_info();
 
     ball_state ball;
@@ -130,7 +138,7 @@ void game_mechanics::spawn_ball(model& m, neutrino::world_point pos, neutrino::w
     const auto hs = static_cast <float>(ball.half);
     neutrino::physics::bullet body;
     body.shape = circle(pos.x - hs, pos.y - hs, pos.x + hs, pos.y + hs);
-    body.velocity = neutrino::physics::vec{vel.x, vel.y};
+    body.velocity = neutrino::physics::vec{vel.x, vel.y}; // the one untyped crossing: a struct field
     // NOTE: deliberately left at the default `stop`, NOT bullet_on_hit::bounce.
     //
     // Same-step bounce is correct in the engine and would remove the ball's visible one-frame rest
@@ -144,7 +152,10 @@ void game_mechanics::spawn_ball(model& m, neutrino::world_point pos, neutrino::w
     // one-frame rest is the lesser artefact. See roadmap Tier 2.
     body.on_hit = neutrino::physics::bullet_on_hit::stop;
 
-    const auto eid = static_cast <neutrino::physics::entity_id_t>(EID_BALL_BASE + li.balls.size());
+    const auto index = static_cast <std::uint32_t>(li.balls.size());
+    body.user_data = neutrino::physics::to_user_data(ke_owner{ke_kind::ball, index});
+
+    const auto eid = static_cast <neutrino::physics::entity_id_t>(EID_BALL_BASE + index);
     m_balls.push_back(m_world.add(eid, body));
     li.balls.push_back(ball);
 }
@@ -167,14 +178,15 @@ void game_mechanics::build_world_bounds(const model& m) {
         // top bar
         neutrino::physics::static_body body;
         body.shape = wall;
+        body.user_data = neutrino::physics::to_user_data(ke_owner{ke_kind::wall, 0});
         m_world.add(EID_WALL, body);
     }
 }
 
 void game_mechanics::build_bricks(const model& m) {
     const auto& assets = rs::require_ke_assets();
-    // Bricks: one static body per domain brick; eid = index; handle kept parallel so the
-    // brick can be removed on death without the model knowing collider ids exist.
+    // Bricks: one static body per domain brick, owning its index; the handle is kept parallel so
+    // the brick can be removed on death without the model knowing collider ids exist.
     const level_info& li = m.get_level_info();
     m_brick_colliders.resize(li.bricks.size());
     for (std::size_t i = 0; i < li.bricks.size(); ++i) {
@@ -188,6 +200,7 @@ void game_mechanics::build_bricks(const model& m) {
         neutrino::physics::static_body body;
         body.shape = box(b.pos.x, b.pos.y, b.pos.x + static_cast <float>(tr.w),
                          b.pos.y + static_cast <float>(tr.h));
+        body.user_data = neutrino::physics::to_user_data(ke_owner{ke_kind::brick, static_cast <std::uint32_t>(i)});
         m_brick_colliders[i] = m_world.add(static_cast <neutrino::physics::entity_id_t>(i), body);
     }
 }
@@ -198,6 +211,7 @@ void game_mechanics::build_paddle(const model& m) {
     neutrino::physics::kinematic_body body;
     body.shape = box(static_cast <float>(p.x), static_cast <float>(p.y),
                      static_cast <float>(p.x + p.w), static_cast <float>(p.y + p.h));
+    body.user_data = neutrino::physics::to_user_data(ke_owner{ke_kind::paddle, 0});
     m_paddle = m_world.add(EID_PADDLE, body);
 }
 
@@ -210,31 +224,34 @@ void game_mechanics::handle_paddle(model& m) {
     // expressed. The collider keeps its load-time size (fixed until a power-up resizes it); the
     // resolved position is read back in run_step after the world steps.
     const paddle_info& p = m.get_paddle();
-    const float cx = static_cast <float>(p.target_x); // target_x is the desired paddle centre
-    const float cy = static_cast <float>(p.y) + static_cast <float>(p.h) * 0.5f;
-    m_world.set_target(m_paddle, neutrino::physics::vec{cx, cy});
+    const auto cx = static_cast <float>(p.target_x); // target_x is the desired paddle centre
+    const auto cy = static_cast <float>(p.y) + static_cast <float>(p.h) * 0.5f;
+    m_world.set_target(m_paddle, neutrino::world_pos{cx, cy});
 }
 
 void game_mechanics::handle_balls(model& m, const neutrino::physics::world_event& e) {
     level_info& li = m.get_level_info();
     const auto& assets = rs::require_ke_assets();
 
-    auto mover = m_world.get_eid(e.mover);;
-    const std::size_t bi = mover - EID_BALL_BASE;
+    const std::size_t bi = m_world.owner_as <ke_owner>(e.mover).index;
     if (bi >= li.balls.size() || !li.balls[bi].active) {
         return;
     }
     ball_state& ball = li.balls[bi];
     auto spawn_hit = [&](neutrino::sprite_animation_id anim, const rs::ke_anim& src) {
-        if (const auto c = shape_center(m_world.get_shape(m_balls[bi]))) {
-            const auto r = static_cast <float>(ball.half);
-            const neutrino::rect fr = assets.balls.require_frame_rect(src.frames[0]);
-            const neutrino::world_point pos{
-                c->x - e.normal.x() * r - static_cast <float>(fr.w) * 0.5f,
-                c->y - e.normal.y() * r - static_cast <float>(fr.h) * 0.5f
-            };
-            li.effects.push_back({pos, neutrino::create_sprite_state(anim)});
-        }
+        const auto r = static_cast <float>(ball.half);
+        const neutrino::rect fr = assets.balls.require_frame_rect(src.frames[0]);
+        // From the ball's centre: back along the contact normal to the ball's surface, then up
+        // and left by half the frame, because KE_SPELL pivots top-left. Both are OFFSETS, so
+        // they add to a position and could not be mistaken for one.
+        const neutrino::world_delta to_surface{-e.normal.x() * r, -e.normal.y() * r};
+        const neutrino::world_delta to_top_left{
+            -static_cast <float>(fr.w) * 0.5f, -static_cast <float>(fr.h) * 0.5f
+        };
+        li.effects.push_back({
+            m_world.position_of(m_balls[bi]) + to_surface + to_top_left,
+            neutrino::create_sprite_state(anim)
+        });
     };
 
     auto spawn_capsule = [&](const brick& b) {
@@ -265,29 +282,26 @@ void game_mechanics::handle_balls(model& m, const neutrino::physics::world_event
 
     // The target may already be GONE: with multiball, two balls can hit the same brick during one
     // world::run, and handling the first event removed that brick's collider -- so this event's
-    // handle is stale and get_eid would abort (taking the whole gameplay scene down with it). The
-    // bounce still physically happened against the brick during the sweep, so reflect the ball;
-    // just do not damage, re-score, or re-sound a brick that is already dead.
+    // handle is stale and reading its owner would abort (taking the whole gameplay scene down with
+    // it). The bounce still physically happened against the brick during the sweep, so reflect the
+    // ball; just do not damage, re-score, or re-sound a brick that is already dead.
     if (!m_world.is_valid(e.target)) {
         ball.vel = reflect(ball.vel, e.normal);
-        m_world.set_velocity(m_balls[bi], neutrino::physics::vec{ball.vel.x, ball.vel.y});
+        m_world.set_velocity(m_balls[bi], ball.vel);
         return;
     }
 
-    const auto tgt = m_world.get_eid(e.target);
-    if (tgt == EID_PADDLE) {
-        float ball_x = ball.pos.x;
-        if (const auto c = shape_center(m_world.get_shape(m_balls[bi]))) {
-            ball_x = c->x;
-        }
+    const ke_owner tgt = m_world.owner_as <ke_owner>(e.target);
+    if (tgt.kind == ke_kind::paddle) {
+        const float ball_x = m_world.position_of(m_balls[bi]).x;
         paddle_info& p = m.get_paddle();
         ball.vel = paddle_bounce(ball_x, p, p.w, ball.vel);
         ke::audio::instance().play(rs::ke_sfx::bounce_racket);
     } else {
         ball.vel = reflect(ball.vel, e.normal); // wall or brick
-        if (tgt < li.bricks.size()) {
+        if (tgt.kind == ke_kind::brick && tgt.index < li.bricks.size()) {
             spawn_hit(assets.hit_brick_anim_id, rs::hit_brick_anim);
-            brick& b = li.bricks[tgt];
+            brick& b = li.bricks[tgt.index];
             if (b.hits == -1) {
                 ke::audio::instance().play(rs::ke_sfx::brick_metal); // indestructible
             } else if (b.m == brick::motion::ALIVE && --b.hits <= 0) {
@@ -300,8 +314,8 @@ void game_mechanics::handle_balls(model& m, const neutrino::physics::world_event
                 }
                 b.m = brick::motion::FLUNG;
                 b.vel = scaled(ball.vel, ke_fling_speed); // fly off the way the ball went
-                m_world.remove(m_brick_colliders[tgt]);
-                m_brick_colliders[tgt] = {};
+                m_world.remove(m_brick_colliders[tgt.index]);
+                m_brick_colliders[tgt.index] = {};
                 ke::audio::instance().play(rs::ke_sfx::brick_break);
             } else {
                 // Multi-hit brick survived: drop one durability tier -- the tile id (and so
@@ -314,10 +328,10 @@ void game_mechanics::handle_balls(model& m, const neutrino::physics::world_event
             }
         } else {
             spawn_hit(assets.hit_wall_anim_id, rs::hit_wall_anim);
-            ke::audio::instance().play(rs::ke_sfx::bounce_wall); // EID_WALL
+            ke::audio::instance().play(rs::ke_sfx::bounce_wall); // ke_kind::wall
         }
     }
-    m_world.set_velocity(m_balls[bi], neutrino::physics::vec{ball.vel.x, ball.vel.y});
+    m_world.set_velocity(m_balls[bi], ball.vel);
 }
 
 void game_mechanics::apply_bonus(model& m, rs::bonus b, int mag) {
@@ -334,10 +348,10 @@ void game_mechanics::apply_bonus(model& m, rs::bonus b, int mag) {
             if (!ball.active) {
                 continue;
             }
-            const float cur = std::hypot(ball.vel.x, ball.vel.y);
-            const float next = std::clamp(cur * factor, ke_ball_speed_min, ke_ball_speed_max);
+            const float next = std::clamp(ball.vel.speed() * factor,
+                                          ke_ball_speed_min, ke_ball_speed_max);
             ball.vel = scaled(ball.vel, next);
-            m_world.set_velocity(m_balls[i], neutrino::physics::vec{ball.vel.x, ball.vel.y});
+            m_world.set_velocity(m_balls[i], ball.vel);
         }
     };
 
@@ -346,7 +360,8 @@ void game_mechanics::apply_bonus(model& m, rs::bonus b, int mag) {
     // in-flight reference), and only the pre-existing balls should split (not the new ones).
     auto split_balls = [&]() {
         struct seed {
-            neutrino::world_point pos, vel;
+            neutrino::world_pos pos;
+            neutrino::world_velocity vel;
         };
         std::vector <seed> seeds;
         std::size_t live = 0;
@@ -427,7 +442,7 @@ void game_mechanics::apply_bonus(model& m, rs::bonus b, int mag) {
     }
 }
 
-void game_mechanics::tick(model& m, float dt) {
+void game_mechanics::tick(model& m, neutrino::sim_duration dt) {
     level_info& li = m.get_level_info();
     paddle_info& p = m.get_paddle();
 
@@ -437,25 +452,27 @@ void game_mechanics::tick(model& m, float dt) {
     //    velocity, so the paddle must keep reacting even with no ball in play (game over is future
     //    work). The ball handling below already no-ops on inactive/removed balls. Each ball is a
     //    bullet, so e.mover identifies which ball hit (one hit per ball per frame at most).
-    static const neutrino::physics::aabb region =
-        box(0.0f, 0.0f, static_cast <float>(rs::ke_screen_w), static_cast <float>(rs::ke_screen_h));
-    const auto& events = m_world.run(region, dt);
+    //
+    //    No activity region: the whole playfield is always live. This used to pass a 320x200 box
+    //    -- the screen -- which was a full-world region spelled as if it were a camera view, and
+    //    the two only coincide because KE has no camera.
+    const auto& events = m_world.run(dt.count());
 
     // The paddle move-and-slid this step (a wall may have stopped it short); read its resolved
-    // position back before handling ball hits -- the ball swept against it at that position.
-    if (const auto sh = m_world.get_shape(m_paddle);
-        const auto* bb = std::get_if <neutrino::physics::aabb>(&sh)) {
-        p.x = static_cast <int>(bb->min.x());
-        p.y = static_cast <int>(bb->min.y());
-    }
+    // position back before handling ball hits -- the ball swept against it at that position. The
+    // model holds the TOP-LEFT corner while set_target steers the CENTRE, so read the extent
+    // rather than the centre: deriving one from the other would round-trip through a half-size
+    // and could land a pixel out at an integer boundary.
+    const neutrino::world_pos paddle_top_left = m_world.bounds_of(m_paddle).min;
+    p.x = static_cast <int>(paddle_top_left.x);
+    p.y = static_cast <int>(paddle_top_left.y);
 
     for (const neutrino::physics::world_event& e : events) {
         if (e.kind != neutrino::physics::event_kind::BULLET_HIT) {
             continue;
         }
-        const auto mover = m_world.get_eid(e.mover);
-        if (mover < EID_BALL_BASE) {
-            continue;
+        if (m_world.owner_as <ke_owner>(e.mover).kind != ke_kind::ball) {
+            continue; // the only bullets today are balls, but say so rather than assume it
         }
         handle_balls(m, e);
     }
@@ -466,9 +483,7 @@ void game_mechanics::tick(model& m, float dt) {
         if (!ball.active) {
             continue;
         }
-        if (const auto c = shape_center(m_world.get_shape(m_balls[i]))) {
-            ball.pos = *c;
-        }
+        ball.pos = m_world.position_of(m_balls[i]);
         if (ball.pos.y - static_cast <float>(ball.half) > static_cast <float>(m_bottom_margin)) {
             ball.active = false; // fell past the paddle -> lost
             m_world.remove(m_balls[i]);
@@ -477,16 +492,17 @@ void game_mechanics::tick(model& m, float dt) {
     }
 
     // 4. Slide any flung bricks (off-screen culling comes with the dynamic-brick rendering).
+    //    A rate integrated over the step yields an offset, which displaces a position -- the
+    //    types say so, and a stray `pos += vel` or `pos += vel * vel` no longer compiles.
     for (brick& b : li.bricks) {
         if (b.m == brick::motion::FLUNG) {
-            b.pos.x += b.vel.x * dt;
-            b.pos.y += b.vel.y * dt;
+            b.pos += b.vel * dt;
         }
     }
 
     // 5. Slide bonus capsules
     for (auto& cap : li.capsules) {
-        cap.pos.y += ke_capsule_fall_speed * dt;
+        cap.pos += ke_capsule_fall * dt;
         if (neutrino::physics::intersects(cap.box(), p.box())) {
             apply_bonus(m, cap.bonus, cap.mag);
             cap.active = false;

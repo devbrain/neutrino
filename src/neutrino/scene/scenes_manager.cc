@@ -74,10 +74,22 @@ namespace neutrino {
                 delete static_cast <base_scene*>(ev.user.data1);
             }
         }
-        // Orderly teardown of the scene stack (top to bottom)
+        // Orderly teardown of the scene stack (top to bottom).
+        //
+        // Each on_exit is guarded INDIVIDUALLY and the scene is popped either way. A single throw
+        // used to escape this loop with that scene and everything under it still on the stack --
+        // and shutdown continues regardless, so the application's own teardown would then release
+        // assets those surviving scenes still reference, leaving them to be destroyed later
+        // against dead services. One scene failing to exit cleanly must not strand the rest.
         while (!m_stack.empty()) {
-            m_stack.back()->on_exit();
-            m_stack.pop_back();
+            try {
+                m_stack.back()->on_exit();
+            } catch (const std::exception& e) {
+                LOG_ERROR("Scene on_exit threw during shutdown:", e.what());
+            } catch (...) {
+                LOG_ERROR("Scene on_exit threw an unknown exception during shutdown");
+            }
+            m_stack.pop_back(); // pop regardless: the stack must be empty when finish() returns
         }
     }
 

@@ -1,6 +1,8 @@
 //
-// See ke_assets.hh. The service accessor holds a non-owning pointer to the scene-owned
-// ke_assets, like neutrino's service_locator holds pointers to app-owned services.
+// See registry.hh. The service accessor holds a non-owning pointer to the APPLICATION-owned
+// ke_assets, like neutrino's service_locator holds pointers to app-owned services. Only the
+// owner publishes and clears it; a consumer that cleared it would leave every other consumer
+// facing the ENFORCE below.
 //
 
 #include <ke/assets/registry.hh>

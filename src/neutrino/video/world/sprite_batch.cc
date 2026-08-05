@@ -13,27 +13,46 @@ namespace neutrino {
         : m_world(world_transform{cam, viewport, &plane}) {
     }
 
+    // The depth-only overloads are the layer-aware ones at the default band, so a caller can mix
+    // the two forms in one batch and get a well-defined order rather than two disjoint schemes.
     void sprite_batch::add(world_point pos, float depth, sprite_visual_ref visual, sprite_draw_params params) {
-        m_entries.push_back(entry{pos, depth, batch_visual{visual}, params});
+        add(pos, draw_layer{}, depth, visual, params);
     }
 
     void sprite_batch::add(world_point pos, float depth, std::optional <sprite_visual_ref> visual,
                            sprite_draw_params params) {
-        if (visual) {
-            add(pos, depth, *visual, params);
-        }
+        add(pos, draw_layer{}, depth, visual, params);
     }
 
     void sprite_batch::add(world_point pos, float depth, sprite_state_id state, sprite_draw_params params) {
-        m_entries.push_back(entry{pos, depth, batch_visual{state}, params});
+        add(pos, draw_layer{}, depth, state, params);
+    }
+
+    void sprite_batch::add(world_point pos, draw_layer layer, float depth, sprite_visual_ref visual,
+                           sprite_draw_params params) {
+        m_entries.push_back(entry{pos, layer, depth, batch_visual{visual}, params});
+    }
+
+    void sprite_batch::add(world_point pos, draw_layer layer, float depth,
+                           std::optional <sprite_visual_ref> visual, sprite_draw_params params) {
+        if (visual) {
+            add(pos, layer, depth, *visual, params);
+        }
+    }
+
+    void sprite_batch::add(world_point pos, draw_layer layer, float depth, sprite_state_id state,
+                           sprite_draw_params params) {
+        m_entries.push_back(entry{pos, layer, depth, batch_visual{state}, params});
     }
 
     std::vector <sprite_draw> sprite_batch::plan() const {
         std::vector <entry> ordered = m_entries;
-        // Stable so equal depths keep call order -- that is what lets one add() cover
-        // both sorted and unsorted use.
+        // Layer first, then depth. Stable, so equal keys keep call order -- that is what lets one
+        // add() cover both sorted and unsorted use.
         std::stable_sort(ordered.begin(), ordered.end(),
-                         [](const entry& a, const entry& b) { return a.depth < b.depth; });
+                         [](const entry& a, const entry& b) {
+                             return a.layer != b.layer ? a.layer < b.layer : a.depth < b.depth;
+                         });
 
         std::vector <sprite_draw> out;
         out.reserve(ordered.size());
