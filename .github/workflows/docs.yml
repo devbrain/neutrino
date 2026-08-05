@@ -1,0 +1,80 @@
+name: Documentation
+
+# Builds the Docusaurus site and publishes it to GitHub Pages.
+#
+# Pull requests build but do not deploy: a docs build failure is worth catching before merge
+# (onBrokenLinks is 'throw', so a dead cross-link fails here rather than shipping), while
+# publishing from an unmerged branch would let any PR overwrite the live site.
+#
+# The API reference is not wired in yet. When it is, a Doxygen step runs before the upload and
+# writes into website/build/api/, so the two ship as one artifact and the navbar's /api/ link
+# resolves. Until then that link 404s -- see the Phase 4 note in the plan.
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'website/**'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    paths:
+      - 'website/**'
+      - '.github/workflows/docs.yml'
+  # Allows publishing without a docs change, e.g. after fixing Pages settings.
+  workflow_dispatch:
+
+# Least privilege: only the deploy job needs to write Pages, and it declares that itself.
+permissions:
+  contents: read
+
+concurrency:
+  # One deploy at a time. Do NOT cancel in-progress runs on the default branch: a cancelled
+  # deploy can leave Pages serving a half-published site.
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      # `npm ci` rather than `npm install`: it installs exactly the lockfile, so a transitive
+      # release cannot change what the published site was built from.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/build
+
+  deploy:
+    name: Deploy to GitHub Pages
+    # Pull requests stop after build; only the default branch publishes.
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

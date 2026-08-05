@@ -1,0 +1,33 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+.heroBanner {
+  padding: 4rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 2rem;
+  }
+}
+
+/* One paragraph of plain prose under the tagline. Capped in width because a centred line
+   running the full width of a desktop monitor is unreadable. */
+.heroBlurb {
+  max-width: 34rem;
+  margin: 0 auto 2rem;
+  opacity: 0.9;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
