@@ -8,8 +8,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 // every doc-to-doc link is relative and every asset goes through useBaseUrl()/require(), so
 // moving to a custom domain later is a change to these two lines plus a static/CNAME file.
 // Until that decision is made, the GitHub Pages project URL is the default.
-const url = 'https://devbrain.github.io';
-const baseUrl = '/neutrino/';
+const url = 'https://neutrino.igor-gutnik.workers.dev';
+const baseUrl = '/';
 
 const config: Config = {
   title: 'Neutrino',
@@ -80,7 +80,7 @@ const config: Config = {
           // Doxygen output, published beside the site rather than inside it. Not a relative
           // doc link -- it is a separate generated artefact, so it is pathname:// to stop
           // Docusaurus trying to resolve it at build time.
-          href: 'pathname:///neutrino/api/',
+          href: 'pathname:///api/',
           label: 'API',
           position: 'left',
         },
