@@ -114,20 +114,121 @@ def.clips = {
 
 ## 2. Automatic Caching & RAII Leases (`sprite_cache`)
 
-Rather than uploading textures manually and tracking their destruction, games use [`sprite_cache`](pathname:///api/).
+In traditional game engines, manual texture and asset management is fraught with subtle bugs:
+- **Redundant GPU uploads:** If two distinct systems independently load `goblin.png`, they might upload duplicate textures to VRAM.
+- **Dangling GPU resources:** If an asset manager unloads a texture while an enemy is still playing an attack animation, the engine crashes on draw.
+- **Scene transition hitching:** If a player steps through a doorway into another room and immediately steps back, freeing and re-loading art causes noticeable frame rate drops.
 
-Calling `cache.acquire(def)` computes a 64-bit content hash of the definition (`key_for(def)`):
-- **On a cache hit:** The cache returns a new lease to the already-uploaded `sprite_set`.
-- **On a cache miss:** It uploads the texture atlas to the GPU, registers the animation curves, and stores the resulting `sprite_set`.
+Neutrino eliminates these problems with [`sprite_cache`](pathname:///api/). The cache provides:
+1. **Content-keyed deduplication:** Two identical definitions share a single GPU upload.
+2. **RAII refcounting leases (`sprite_set_handle`):** The GPU resources stay resident as long as any lease lives.
+3. **A bounded LRU cold pool:** Idle assets linger in VRAM, allowing instant resurrection across scene transitions.
+
+---
+
+### The Lifecycle of a Cached Asset
+
+Every asset managed by `sprite_cache` moves through four distinct lifecycle states:
+
+```mermaid
+flowchart TD
+    Unloaded["<b>Unloaded</b><br/>Asset on disk / CPU memory"]
+    Active["<b>Active (Resident in VRAM)</b><br/>Refcount ≥ 1<br/>• Texture atlas loaded<br/>• Animation clips registered"]
+    Cold["<b>Cold Pool (Resident in VRAM)</b><br/>Refcount == 0 (Idle)<br/>• Kept in GPU memory for instant reuse<br/>• Bounded LRU queue (default: 8)"]
+    Evicted["<b>Evicted (Deallocated)</b><br/>• Texture unloaded from VRAM<br/>• Animation curves unregistered"]
+
+    Unloaded -->|"cache.acquire(def) [Miss]<br/>Uploads to GPU"| Active
+    Active -->|"Copy lease / spawn()<br/>Refcount++"| Active
+    Active -->|"Last lease dropped<br/>Refcount == 0"| Cold
+    Cold -->|"cache.acquire(def) [Hit]<br/>Instant resurrection!"| Active
+    Cold -->|"Cold budget exceeded<br/>LRU eviction"| Evicted
+    Evicted --> Unloaded
+```
+
+1. **Unloaded ➔ Active (Cache Miss):**
+   Calling `cache.acquire(def)` for the first time uploads the atlas image to GPU texture memory, bakes the visual metrics, and registers the animation clips. The entry is inserted into the cache with a reference count of 1.
+2. **Active ➔ Active (Sharing & Retaining):**
+   Any copy of a `sprite_set_handle` or call to `handle.spawn()` retains the cache entry, bumping the refcount.
+3. **Active ➔ Cold Pool (Last Lease Dropped):**
+   When the refcount reaches zero (every entity and handle referencing the set has been destroyed), the asset is **not** immediately destroyed. It transitions into the LRU cold pool.
+4. **Cold Pool ➔ Active (Resurrection):**
+   If `cache.acquire()` is called with the same definition while the asset is in the cold pool, it is resurrected instantly with **zero CPU image decoding and zero GPU reallocation**.
+5. **Cold Pool ➔ Evicted (Clean Teardown):**
+   When the cold pool exceeds its configured capacity, the least recently used idle asset is evicted. Its destructor tears down the GPU texture atlas and unregisters all associated animation clips.
+
+---
+
+### Content-Keyed Deduplication (`key_for`)
+
+Rather than relying on file paths (which fails for embedded memory bytes or procedurally generated surfaces),
+`cache.acquire(def)` computes a 64-bit content hash via `neutrino::key_for`:
+
+- The hash folds the **image identity** (file path, memory buffer hash, or surface address), the **grid slicing parameters**, and all **visuals and clips** in declared order.
+- Two definitions with identical content produce the exact same key and share the resident GPU set.
 
 ```cpp
 neutrino::sprite_cache cache;
 
-// Returns an RAII lease (sprite_set_handle):
-neutrino::sprite_set_handle hero_set = cache.acquire(hero_def);
+// def_a and def_b are separate objects in memory, but have identical content:
+neutrino::sprite_def def_a = make_enemy_def();
+neutrino::sprite_def def_b = make_enemy_def();
+
+neutrino::sprite_set_handle handle_a = cache.acquire(def_a); // Miss: uploads to GPU
+neutrino::sprite_set_handle handle_b = cache.acquire(def_b); // Hit: shares handle_a!
+
+assert(cache.resident_count() == 1); // Only 1 texture uploaded in VRAM
+assert(cache.cold_count() == 0);
+
+// A definition with different clips or frames produces a different key:
+neutrino::sprite_def boss_def = make_boss_def();
+neutrino::sprite_set_handle boss_handle = cache.acquire(boss_def); // Miss: uploads second set
+
+assert(cache.resident_count() == 2);
 ```
 
-### Shared assets across independent entities
+---
+
+### The RAII Lease Model (`sprite_set_handle`)
+
+A [`sprite_set_handle`](pathname:///api/) represents an active lease on a cached `sprite_set`. It behaves as a lightweight value object:
+
+- **Default-constructed:** An invalid, empty lease (`handle.valid() == false`).
+- **Copying:** Calls `cache.retain()`, incrementing the refcount. The asset remains resident.
+- **Moving:** Transfers ownership (`std::move`), leaving the source invalid without changing the refcount.
+- **Destruction:** Calls `cache.release()`, decrementing the refcount.
+
+```cpp
+neutrino::sprite_cache cache;
+
+{
+    // 1. Acquire lease: refcount = 1
+    neutrino::sprite_set_handle outer = cache.acquire(hero_def);
+    assert(cache.resident_count() == 1);
+    assert(cache.cold_count() == 0);
+
+    {
+        // 2. Copy lease to inner scope: refcount = 2
+        neutrino::sprite_set_handle inner = outer;
+        assert(inner.valid());
+        assert(cache.cold_count() == 0);
+    } // 3. inner is destroyed: refcount drops to 1, asset stays active!
+
+    assert(cache.cold_count() == 0);
+
+    // 4. Move lease to another variable: refcount unchanged (1)
+    neutrino::sprite_set_handle transferred = std::move(outer);
+    assert(!outer.valid());
+    assert(transferred.valid());
+    assert(cache.cold_count() == 0);
+} // 5. transferred is destroyed: refcount reaches 0 -> moves to cold pool!
+
+assert(cache.resident_count() == 1); // Still resident in VRAM
+assert(cache.cold_count() == 1);     // But idle in the cold pool
+```
+
+---
+
+### Shared Assets Across Independent Entities
 
 A `sprite_set` owns the GPU texture atlas and registered animation curves, but contains **no entity-specific state**.
 Multiple actors share the exact same `sprite_set`:
@@ -149,14 +250,82 @@ flowchart TD
     A3 -.->|"Lease keeps set alive"| Set
 ```
 
-### The LRU Cold Pool
+---
 
-When the last entity holding a `sprite_set_handle` is destroyed, the GPU asset is **not** immediately deallocated.
-Instead, it drops into a bounded **LRU cold pool** (default 8 items).
+### The LRU Cold Pool & Room Transitions
 
-If the player leaves a room and returns a moment later, acquiring the room's sprites resurrects the set
-instantly from the cold pool without re-decoding images or re-uploading textures. Only when the cold pool
-exceeds its capacity is the least-recently-used set evicted.
+The cold pool is specifically designed to eliminate stutters during scene and room transitions.
+
+Consider a game where the player moves between two rooms:
+1. In Room 1, the player encounters goblins.
+2. The player steps into Room 2. Room 1 is popped from the scene stack, destroying all goblin entities and handles.
+3. Instead of immediately deallocating the goblin texture atlas, the cache moves it to the **cold pool**.
+4. The player steps back into Room 1. When `cache.acquire(goblin_def)` is called, the cache finds the asset in the cold pool and **resurrects it instantly**, avoiding any disk I/O, image parsing, or GPU texture upload.
+
+#### Configuring the Cold Budget and Eviction
+
+The cold pool has a configurable capacity (default `8` items):
+
+```cpp
+// Create a cache that retains up to 4 idle sets before evicting:
+neutrino::sprite_cache cache(/*cold_budget=*/4);
+```
+
+When an asset's refcount drops to zero and the cold pool is already at capacity, the **least recently used (LRU)**
+idle asset is evicted from GPU memory:
+
+```cpp
+neutrino::sprite_cache cache(/*cold_budget=*/2);
+
+// Load and release assets A, B, and C:
+{ auto a = cache.acquire(asset_a); } // cold pool: [A]
+{ auto b = cache.acquire(asset_b); } // cold pool: [A, B] (at capacity)
+
+// Acquiring and releasing a third asset pushes the oldest (A) out:
+{ auto c = cache.acquire(asset_c); } // cold pool: [B, C]; asset A is evicted!
+
+assert(cache.cold_count() == 2);
+assert(cache.resident_count() == 2); // Only B and C remain in VRAM
+```
+
+---
+
+### Actor Lifetime Integration (`spawn` and Hidden Leases)
+
+When an actor creates its playhead via `set.spawn("clip_name")`, the resulting [`sprite_instance`](pathname:///api/)
+takes an internal copy of the `sprite_set_handle`:
+
+```cpp
+class enemy_spawner {
+public:
+    explicit enemy_spawner(neutrino::sprite_cache& cache, const neutrino::sprite_def& def)
+        : m_set(cache.acquire(def)) {}
+
+    std::unique_ptr<enemy> spawn_enemy(neutrino::point spawn_pos) {
+        // m_set.spawn() copies the lease into the sprite_instance:
+        neutrino::sprite_instance playhead = m_set.spawn("walk");
+        return std::make_unique<enemy>(spawn_pos, std::move(playhead));
+    }
+
+private:
+    neutrino::sprite_set_handle m_set;
+};
+```
+
+This guarantees **safe asset lifetimes by construction**:
+- Even if the `enemy_spawner` or the original `m_set` is destroyed, the enemies themselves keep the underlying `sprite_set` resident through their internal leases.
+- When an `enemy` dies, `sprite_instance::~sprite_instance()` unregisters its animation playback state from the engine *first*, and then releases its lease.
+
+---
+
+### Monotonic Tokens (Preventing Stale Handle Corruption)
+
+Under high memory turnover, an asset might be evicted and later rebuilt under the same content key.
+To prevent an ABA bug where a stale or delayed handle decrements the refcount of a newly rebuilt entry,
+every fresh cache build is stamped with a monotonic 64-bit **token**.
+
+If an old handle's token does not match the entry's current token, release operations safely ignore the stale handle,
+protecting cache integrity.
 
 ---
 
