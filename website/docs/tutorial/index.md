@@ -14,19 +14,18 @@ A platformer specifically, because it is what the engine's movement system is *f
 against level geometry, standing on ground, one-way ledges you can jump up through, moving
 platforms that carry you. Those are the parts hardest to discover from headers alone.
 
-:::info Not written yet
+:::info In progress
 
-The steps below are the planned outline, not links. This section lands after the concept pages it
-depends on. In the meantime the [examples](https://github.com/devbrain/neutrino/tree/main/examples)
-in the repository are working code you can read and run — `sprite_demo` for sprites and animation,
-`map_viewer` for Tiled maps.
+The platformer tutorial is being published step by step. Step 1 is available below. In the meantime,
+the [examples](https://github.com/devbrain/neutrino/tree/main/examples) in the repository are working
+code you can read and run — `sprite_demo` for sprites and animation, `map_viewer` for Tiled maps.
 :::
 
 ## The plan
 
 | Step | You build | You learn |
 |---|---|---|
-| 1 | A window and an empty scene | The application, the frame loop, the scene stack |
+| 1 | [A window and an empty scene](./step-01-window-and-scene.md) | The application, the frame loop, the scene stack |
 | 2 | One sprite on screen | Sprite definitions, sets, and the draw batch |
 | 3 | Moving it with the keyboard | The input snapshot; edges versus held state |
 | 4 | Standing on ground | The physics world, kinematic bodies, move-and-slide |

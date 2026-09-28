@@ -31,7 +31,9 @@ const sidebars: SidebarsConfig = {
       label: 'Tutorial',
       collapsed: false,
       link: {type: 'doc', id: 'tutorial/index'},
-      items: [],
+      items: [
+        'tutorial/step-01-window-and-scene',
+      ],
     },
     {
       type: 'category',

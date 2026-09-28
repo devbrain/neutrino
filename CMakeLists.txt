@@ -30,6 +30,10 @@ include(NeutrinoInit)
 # ============================================================================
 
 neutrino_define_library_options(neutrino)
+option(
+    NEUTRINO_NEUTRINO_BUILD_TUTORIALS
+    "Build tutorial programs"
+    ON)
 neutrino_option(
     NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD
     "Enable zstd-compressed TMX data support"
@@ -152,6 +156,10 @@ endif()
 
 if(NEUTRINO_NEUTRINO_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if(NEUTRINO_NEUTRINO_BUILD_TUTORIALS)
+    add_subdirectory(tutorials)
 endif()
 
 
