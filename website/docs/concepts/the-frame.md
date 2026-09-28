@@ -47,6 +47,30 @@ render()
 Whatever time is left over stays in the accumulator and carries into the next frame, so no time is
 lost — it is just deferred to the next whole tick.
 
+```mermaid
+flowchart TD
+    Start(["Display Frame Begins"]) --> Sample["Measure frame_delta"]
+    Sample --> Clamp["Clamp: min(frame_delta, max_frame)"]
+    Clamp --> Accum["accumulator += clamped_delta"]
+    Accum --> Check{"accumulator >= period<br/>and steps < max_substeps?"}
+    
+    Check -- Yes --> Substep{"steps == 0?"}
+    Substep -- Yes --> FullIn["fixed_update(period, in)<br/>Edges intact (pressed/released)"]
+    Substep -- No --> StripIn["fixed_update(period, in.without_edges())<br/>Held state only"]
+    FullIn --> Drain["accumulator -= period<br/>steps += 1"]
+    StripIn --> Drain
+    Drain --> Check
+    
+    Check -- No --> CapCheck{"Hit max_substeps<br/>with time still owed?"}
+    CapCheck -- "Yes (Stall)" --> Drop["Discard backlog: accumulator = 0<br/>Prevents spiral of death"]
+    CapCheck -- "No" --> Render["render()<br/>Draw latest committed state"]
+    Drop --> Render
+    Render --> Present(["Present to Display"])
+```
+
+See [Tutorial Step 1: A window and an empty scene](../tutorial/step-01-window-and-scene.md) to see this
+loop running in a minimal application.
+
 ## Configuring it
 
 ```cpp
@@ -107,6 +131,19 @@ Neutrino's first target is integer-scaled pixel art, where a sub-pixel blend rou
 at draw time. The parameter would be noise in every signature for a benefit the intended output
 cannot show. If you are drawing at continuous resolution and want it, that is a reasonable feature
 request, not a limitation you should work around by re-deriving positions in `render`.
+
+## Common pitfalls
+
+- **Advancing state in `render()`:** A frame rate variation, screen tear, or monitor refresh change
+  alters your game's speed if state moves inside `render()`. Rendering is not a clock — it is an
+  event that happens when the display hardware is ready.
+- **Stalling into slow-motion instead of catching up:** If your simulation logic exceeds
+  `max_substeps / period` (e.g. more than 24 FPS with the default 5 substeps at 120 Hz), the accumulator
+  debt is discarded rather than carried forward. The game appears in slow motion to maintain input
+  responsiveness and prevent unpayable latency queues.
+- **Measuring time inside `fixed_update`:** Do not call system clocks like
+  `std::chrono::steady_clock::now()` inside update logic. Physics and simulations rely strictly on
+  integrating the constant `dt` provided by the engine.
 
 ## What this means for your code
 

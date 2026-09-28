@@ -44,6 +44,8 @@ const sidebars: SidebarsConfig = {
         'concepts/the-frame',
         'concepts/scenes',
         'concepts/input',
+        'concepts/coordinate-spaces',
+        'concepts/sprites',
       ],
     },
   ],

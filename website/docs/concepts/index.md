@@ -10,12 +10,12 @@ These pages explain the engine's model: not what each function is called, but wh
 shaped the way they are. They are meant to be read in roughly this order the first time, and dipped
 into afterwards.
 
-For exhaustive signatures, see the [API reference](pathname:///neutrino/api/). For a single worked
+For exhaustive signatures, see the [API reference](pathname:///api/). For a single worked
 example that touches most of this, see the [tutorial](../tutorial/index.md).
 
 ## Available now
 
-Read these three in order — together they describe the shape of every frame your game runs.
+Read these in order — together they describe the shape of every frame your game runs and how space and time are structured.
 
 - **[The frame](./the-frame.md)** — one simulation clock, fixed steps, rendering as an event, and
   why `fixed_update` receives a constant `dt`.
@@ -23,6 +23,10 @@ Read these three in order — together they describe the shape of every frame yo
   transitions are queued rather than immediate.
 - **[Input](./input.md)** — the per-frame snapshot, why edges and held state are different things,
   and the two spaces a pointer position can be in.
+- **[Coordinate spaces](./coordinate-spaces.md)** — window, render, and world space; the strong quantity
+  types (`world_pos`, `world_delta`, `world_velocity`) that prevent space confusion at compile time.
+- **[Sprites](./sprites.md)** — the three-tier sprite pipeline (`sprite_def` → `sprite_set` → `sprite_instance`),
+  sheets, dynamic atlases, clips, and automatic cache leasing.
 
 ## Planned
 
@@ -32,8 +36,6 @@ directly from them.
 
 | Page | Covers | Header |
 |---|---|---|
-| Coordinate spaces | World, render and window space; the strong types that keep them apart | `world_space.hh` |
-| Sprites | `sprite_def` → `sprite_set` → instance; sheets, atlases, clips, animation | `video/sprite/` |
 | Drawing | Batches, ordering bands, cameras, render textures | `video/world/sprite_batch.hh` |
 | Tile worlds | Tiled loading, tilesets, layers, the compositor | `world/` |
 | Physics | Body kinds, the four passes, move-and-slide, targets vs velocities, owner slots, events | `physics/collide/world.hh` |

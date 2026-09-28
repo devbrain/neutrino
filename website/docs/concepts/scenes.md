@@ -9,7 +9,7 @@ description: The scene stack, lifecycle hooks, opaque versus overlay, and how tr
 A scene is one screen of your game: a menu, the gameplay, a pause overlay. The engine keeps them in
 a **stack**, and each frame it dispatches updates and drawing to some slice of that stack.
 
-You implement [`base_scene`](pathname:///neutrino/api/). Four members are pure virtual, so the
+You implement [`base_scene`](pathname:///api/). Four members are pure virtual, so the
 compiler makes you supply them:
 
 ```cpp
@@ -25,6 +25,9 @@ class my_scene : public neutrino::base_scene {
 The lifecycle hooks — `on_enter`, `on_exit`, `on_pause`, `on_resume`, `on_resize` — all have
 do-nothing defaults, so override only the ones you need.
 
+See [Tutorial Step 1: A window and an empty scene](../tutorial/step-01-window-and-scene.md) for a working
+minimal scene implementation.
+
 ## Opaque or overlay
 
 `is_opaque()` is the single most consequential thing a scene declares. It answers "does this scene
@@ -37,6 +40,25 @@ stays alive.
 
 Each frame the engine scans down from the top of the stack to the **first opaque scene**, and
 dispatches from there upward.
+
+```mermaid
+flowchart TD
+    subgraph Stack ["Scene Stack"]
+        Top["pause_overlay (is_opaque: false)"]
+        Mid["gameplay (is_opaque: true)"]
+        Bot["main_menu (is_opaque: true)"]
+        Top --- Mid
+        Mid --- Bot
+    end
+
+    Top -->|"Receives input snapshot & events"| ActiveInput["Input: Active"]
+    Mid -->|"Neutral input (pointer off-screen)"| NeutralInput["Input: Neutral"]
+    Bot -->|"Not evaluated"| Dormant["Input: None"]
+
+    Scan{"Scan down from Top"} --> OpaqueFound["First opaque: gameplay"]
+    OpaqueFound --> RenderGroup["Update & Render:\ngameplay + pause_overlay"]
+    OpaqueFound --> Prune["main_menu: Skipped"]
+```
 
 ```text
 stack (top last)     is_opaque   updated?   rendered?   gets input?
@@ -179,6 +201,17 @@ class gameplay_scene : public neutrino::base_scene {
 Note the division: **continuous** input (where the pointer is, whether a key is down) is polled
 from the snapshot in `fixed_update`; **discrete** one-shot events arrive in `handle_action`. Mixing
 them is the most common source of input bugs, and [Input](./input.md) explains why.
+
+## Common pitfalls
+
+- **Expecting immediate stack changes:** Calling `push_scene()` or `pop_scene()` queues an event;
+  it does *not* switch scenes on that exact line of code. Never write code that assumes the stack
+  has changed before the current callback finishes.
+- **Accidentally setting `is_opaque() == false` on fullscreens:** If your gameplay or title scene returns
+  `false`, the engine continues updating and rendering whatever scene was underneath it, burning CPU/GPU cycles.
+- **Polling window dimensions in `render()`:** Laying out your HUD or UI every frame is wasteful. Override
+  `on_resize(neutrino::dim size)` instead, which fires whenever the scene becomes active and whenever the render
+  canvas dimensions change.
 
 ## Next
 

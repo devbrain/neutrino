@@ -33,11 +33,13 @@ const config: Config = {
   // otherwise silently degrade those links to "lands on the page, wrong place".
   onBrokenAnchors: 'throw',
   markdown: {
+    mermaid: true,
     hooks: {
       // v4 location for what used to be the top-level onBrokenMarkdownLinks.
       onBrokenMarkdownLinks: 'throw',
     },
   },
+  themes: ['@docusaurus/theme-mermaid'],
 
   i18n: {
     defaultLocale: 'en',

@@ -17,6 +17,35 @@ The division is not stylistic. Continuous input read from events only updates *w
 happens*, so a value the player is holding steady goes stale. The snapshot is sampled every frame
 regardless, so it is always current.
 
+```mermaid
+flowchart TD
+    subgraph Sources ["Input Sources"]
+        Pointers["Pointer / Mouse"]
+        Keys["Keys / Gamepad Buttons"]
+        WindowEv["OS / Window Events"]
+    end
+
+    subgraph Sampling ["Engine Frame Processing"]
+        Sampler["Sample Continuous State once per frame\n• Map window coords → render space\n• Strip edges for substeps > 0"]
+        Pump["Drain SDL Event Queue"]
+    end
+
+    subgraph Dispatch ["Scene Dispatch"]
+        UpdateHook["fixed_update(dt, snapshot)\n• Player movement, aiming, jump edges"]
+        ActionHook["handle_action(sdlpp::event)\n• Window close, resize, text composition"]
+    end
+
+    Pointers --> Sampler
+    Keys --> Sampler
+    WindowEv --> Pump
+
+    Sampler --> UpdateHook
+    Pump --> ActionHook
+```
+
+See [Tutorial Step 1: A window and an empty scene](../tutorial/step-01-window-and-scene.md) for how
+scenes inspect input and react to actions.
+
 ## The snapshot
 
 ```cpp
@@ -154,6 +183,17 @@ running application, and a covered scene automatically receives a neutral one. T
 live global state, so a covered scene using them would still see real key presses — they are a
 convenience for cases where threading the snapshot through would be awkward, not the default.
 :::
+
+## Common pitfalls
+
+- **Steering from the pointer without checking `on_screen`:** If the cursor leaves the window or the
+  scene is covered by an overlay, `pointer.on_screen` is false. Ignoring this will snap objects to stale
+  or zero coordinates (e.g. paddles darting to the corner).
+- **Using `held` where you wanted a single trigger:** Checking `.held` for a jump or weapon fire will execute
+  every simulation substep (e.g. firing 120 bullets/sec at the default tick). Always use `.pressed()` for
+  one-shot transitions.
+- **Handling continuous motion in `handle_action()`:** Moving entities inside SDL key-down events causes jerky,
+  OS-key-repeat dependent motion. Movement belongs in `fixed_update` with `.held` or axis queries.
 
 ## Next
 
