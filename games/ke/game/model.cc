@@ -5,11 +5,17 @@
 #include <ke/game/model.hh>
 #include <ke/assets/registry.hh>
 #include <ke/assets/backdrop.hh>
+#include <algorithm>
+#include <limits>
 
 static model* s_instance = nullptr;
 
 void level_info::clear() {
     balls.clear();
+    enemies.clear();
+    animation_ticks = 0;
+    hatch_ticks = -1;
+    paddle_death_ticks = -1;
     for (const auto& fx : effects) {
         neutrino::unregister_sprite_state(fx.state);
     }
@@ -43,11 +49,7 @@ void model::load_level() {
         rs::compute_playfield_geometry(assets.board, assets.fill, assets.paddle);
     m_bounds = {geometry.left_margin, geometry.right_margin, geometry.top_margin, geometry.bottom_margin};
 
-    m_paddle.size = 7;
-    m_paddle.state = rs::ke_paddle_state::simple;
-    m_paddle.x = geometry.paddle_start.x;
-    m_paddle.y = geometry.paddle_start.y;
-    set_paddle_dims_from_frame(rs::ke_paddle_frame(m_paddle.state, m_paddle.size));
+    reset_paddle();
 
     // Domain bricks from the level, on the same grid the sprites are drawn at. The physical
     // world (colliders, ball) is built from this by game_mechanics::load().
@@ -73,6 +75,26 @@ void model::load_level() {
             m_level_info.bricks.push_back(b);
         }
     }
+}
+
+void model::reset_paddle() {
+    const auto& assets = rs::require_ke_assets();
+    const auto geometry = rs::compute_playfield_geometry(assets.board, assets.fill, assets.paddle);
+    m_paddle.size = rs::ke_paddle_default_size;
+    m_score_shift = 0;
+    m_paddle.shield = 0;
+    m_paddle.state = rs::ke_paddle_state::simple;
+    m_paddle.x = geometry.paddle_start.x;
+    m_paddle.y = geometry.paddle_start.y;
+    set_paddle_dims_from_frame(rs::ke_paddle_frame(m_paddle.state, m_paddle.size));
+    m_paddle.target_x = m_paddle.x + m_paddle.w / 2;
+}
+
+void model::restart_game() {
+    m_level = 0;
+    m_lives = 3;
+    m_score = 0;
+    load_level();
 }
 
 void model::set_paddle_size(int size) {
@@ -125,7 +147,15 @@ void model::add_life(int n) {
 }
 
 void model::add_score(long n) {
-    m_score += n;
+    // Saturate instead of overflowing C++ signed arithmetic after repeated x2 pickups.
+    const long remaining = std::numeric_limits<long>::max() - m_score;
+    if (n > 0) {
+        m_score += n > (remaining >> m_score_shift) ? remaining : n << m_score_shift;
+    }
+}
+
+void model::increase_score_multiplier(int steps) {
+    m_score_shift = std::clamp(m_score_shift + steps, 0, std::numeric_limits<long>::digits - 1);
 }
 
 

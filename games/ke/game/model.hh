@@ -26,6 +26,7 @@ struct paddle_info {
     int w;
     int h;
     int size;
+    int shield{0}; // enemy hits consume one; a hit at zero destroys the paddle
     rs::ke_paddle_state state{rs::ke_paddle_state::simple};
     int target_x{160}; // desired centre (render x) the player aims at; mechanics moves toward it
     [[nodiscard]] neutrino::physics::aabb box() const {
@@ -50,10 +51,10 @@ struct brick {
 
 // A ball. `pos` is written back by the mechanics each frame for drawing; `vel` is the
 // game-owned velocity re-applied on each bounce. `kind` + `size` select the KE_SPELL
-// sprite (rs::ke_ball_frame). There can be several balls (e.g. a split bonus).
+// sprite (rs::ke_ball_frame). There can be several balls (extra-ball bonus).
 struct ball_state {
     rs::ke_ball_kind kind{rs::ke_ball_kind::ordinary};
-    int size{3}; // 0..5, selects the sprite within the kind's range
+    int size{0}; // 0..5, selects the sprite within the kind's range
 
     neutrino::world_pos pos{};
     neutrino::world_velocity vel{};
@@ -80,11 +81,32 @@ struct capsule {
     }
 };
 
+// Original anchor coordinates, not the sprite's top-left. Animation and AI are
+// advanced together at 70 Hz so the collision box matches the displayed frame.
+struct enemy_state {
+    rs::enemy type{rs::enemy::insectoid};
+    neutrino::world_pos pos{};
+    neutrino::world_velocity vel{};
+    int turn_ticks{1};
+    int animation_ticks{0};
+    int hits{2}; // reserved for weapon damage; a ball kills in one contact
+    bool alive{true};
+
+    [[nodiscard]] std::size_t frame() const {
+        const auto& anim = alive ? rs::enemy_anim(type) : rs::enemy_death_anim;
+        return anim.frames[(animation_ticks / anim.ticks) % anim.count];
+    }
+};
+
 struct level_info {
     std::vector <brick> bricks;
     std::vector <ball_state> balls;
     std::vector <hit_effect> effects;
     std::vector <capsule> capsules;
+    std::vector <enemy_state> enemies;
+    unsigned animation_ticks{0}; // original 70 Hz clock for shared HUD/overlay animations
+    int hatch_ticks{-1}; // -1 = closed; otherwise progress through KE_NMY hatch animation
+    int paddle_death_ticks{-1}; // -1 = playing; nonnegative = death animation/game over
 
     void clear();
 };
@@ -103,6 +125,8 @@ class model {
 
         [[nodiscard]] int get_level() const;
         void load_level();
+        void reset_paddle();
+        void restart_game();
 
         void set_paddle_size(int size);
         void set_paddle_state(rs::ke_paddle_state state);
@@ -119,11 +143,13 @@ class model {
 
         [[nodiscard]] playfield_bounds get_bounds() const;
 
-        // Player progress. Bonuses mutate these; a HUD + life-loss loop (future work) make them
-        // visible. Lives/score persist across levels (not reset by load_level).
+        // Player progress, displayed by the scene. Lives/score persist across levels
+        // and lost lives; restart_game resets them.
         [[nodiscard]] int get_lives() const;
         [[nodiscard]] long get_score() const;
         void add_life(int n);
+        void increase_score_multiplier(int steps);
+        // Base points, multiplied by 2^score_shift (ke.exe's scoring convention).
         void add_score(long n);
 
     private:
@@ -135,6 +161,7 @@ class model {
         int m_level = 0;
         int m_lives = 3;
         long m_score = 0;
+        int m_score_shift = 0;
 
         playfield_bounds m_bounds{};
         paddle_info m_paddle;

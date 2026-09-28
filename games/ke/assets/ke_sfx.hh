@@ -19,11 +19,11 @@ namespace rs {
         bonus_good,     // good bonus collected
         bonus_minus,    // shrink
         bonus_plus,     // enlarge
-        bonus_create,   // multiball
+        bonus_create,   // capsule spawned (original call uses one-based sample 29)
         bonus_glue,     // catch / glue
         bonus_jao,
         bonus_dyna,     // dynamite
-        bonus_fly,      // through-ball
+        bonus_fly,      // flying paddle
         racket_death,   // paddle destroyed / life lost
         racket_birth,   // new paddle / start of life
         bounce_fire,    // fireball (through-ball) bounce

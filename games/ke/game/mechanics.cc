@@ -42,9 +42,7 @@ namespace {
 
     constexpr float ke_ball_speed = 120.0f; // px/s the ball travels (tune)
     constexpr float ke_fling_speed = 160.0f; // px/s a dead brick sails off at (tune)
-    constexpr float ke_ball_speed_min = 60.0f; // slow-ball floor: still trackable
-    constexpr float ke_ball_speed_max = 240.0f; // fast-ball ceiling: still catchable
-    constexpr std::size_t ke_max_balls = 8; // multiball cap so repeated splits can't explode
+    constexpr std::size_t ke_max_balls = 25; // original spawn_ball limit (0x2C560)
 
     // A dropped bonus descends at a fixed rate (catchable: slower than the ball).
     constexpr neutrino::world_velocity ke_capsule_fall{0.0f, 80.0f};
@@ -58,6 +56,15 @@ namespace {
         auto cy = (y0 + y1) / 2.0f;
         auto r = std::max(cx - x0, cy - y0);
         return neutrino::physics::circle{neutrino::physics::vec{cx, cy}, r};
+    }
+
+    neutrino::physics::aabb enemy_box(const enemy_state& enemy, int inset = 0) {
+        const auto r = rs::require_ke_assets().enemies.require_metrics(enemy.frame()).local_bounds();
+        // Original 0x21308 uses width/height minus 2; 0x21354 additionally
+        // insets by 3 on every side when a ball hits an enemy.
+        return box(enemy.pos.x + r.x + inset, enemy.pos.y + r.y + inset,
+                   enemy.pos.x + r.x + r.w - 2 - inset,
+                   enemy.pos.y + r.y + r.h - 2 - inset);
     }
 
     // Ball responses. All four take and return a world_velocity: these are RATES, and none of
@@ -77,14 +84,6 @@ namespace {
         return len > 0.0f ? neutrino::world_velocity{v.x / len * speed, v.y / len * speed} : v;
     }
 
-    // v rotated by `deg` degrees. Used to fan split (multiball) balls apart.
-    neutrino::world_velocity rotate(neutrino::world_velocity v, float deg) {
-        const float r = deg * 3.14159265f / 180.0f;
-        const float c = std::cos(r);
-        const float s = std::sin(r);
-        return {v.x * c - v.y * s, v.x * s + v.y * c};
-    }
-
     // Paddle "english": outgoing direction from where the ball struck relative to the paddle
     // centre (centre -> straight up, edges -> up to 60 deg), preserving the ball's speed.
     neutrino::world_velocity paddle_bounce(float ball_x, const paddle_info& p, int pw,
@@ -102,6 +101,9 @@ void game_mechanics::load(model& m) {
     m_brick_colliders.clear();
     m_balls.clear();
     m_paddle = {};
+    m_enemy_clock = 0.0;
+    m_spawn_index = 0;
+    m_spawn_ticks = rs::require_ke_assets().levels[m.get_level()].spawn_period.count();
 
     build_world_bounds(m);
     build_bricks(m);
@@ -110,13 +112,13 @@ void game_mechanics::load(model& m) {
     const paddle_info& p = m.get_paddle();
     auto& li = m.get_level_info();
     li.clear();
-    // Launch the initial ball just above the paddle, up-and-sideways. (Split/extra-ball bonuses
+    // Launch the initial ball just above the paddle, up-and-sideways. (Extra-ball bonuses
     // add more later through the same helper.)
     spawn_ball(m,
                {
                    static_cast <float>(p.x) + static_cast <float>(p.w) * 0.5f,
                    static_cast <float>(p.y) - 4.0f
-               }, // sits half (2) + 2px clear above the paddle top
+               }, // smallest ball's radius (3) + 1px clear above the paddle top
                scaled({0.4f, -1.0f}, ke_ball_speed));
 }
 
@@ -129,8 +131,10 @@ void game_mechanics::spawn_ball(model& m, neutrino::world_pos pos, neutrino::wor
 
     ball_state ball;
     ball.kind = rs::ke_ball_kind::ordinary;
-    ball.size = 3;
-    ball.half = 2;
+    ball.size = 0; // 0x2C560 creates the smallest ordinary ball
+    const auto frame = rs::require_ke_assets().balls.require_frame_rect(
+        rs::ke_ball_frame(ball.kind, ball.size));
+    ball.half = std::max(frame.w, frame.h) / 2;
     ball.pos = pos;
     ball.vel = vel;
     ball.active = true;
@@ -191,6 +195,9 @@ void game_mechanics::build_bricks(const model& m) {
     m_brick_colliders.resize(li.bricks.size());
     for (std::size_t i = 0; i < li.bricks.size(); ++i) {
         const brick& b = li.bricks[i];
+        if (b.m != brick::motion::ALIVE) {
+            continue; // rebuilding after a lost life must not resurrect destroyed bricks
+        }
         neutrino::rect tr{};
         if (b.frame >= 0) {
             if (const auto r = assets.bricks.frame_rect(static_cast <std::size_t>(b.frame))) {
@@ -255,10 +262,6 @@ void game_mechanics::handle_balls(model& m, const neutrino::physics::world_event
     };
 
     auto spawn_capsule = [&](const brick& b) {
-        // (optional, authentic) only one capsule may fall at a time:
-        // if (std::any_of(li.capsules.begin(), li.capsules.end(),
-        //                 [](const capsule& c) { return c.active; })) return;
-
         const rs::ke_anim& anim = rs::bonus_capsule(b.bonus); // frames live in KE_SPELL (assets.balls)
         const neutrino::rect fr = assets.balls.require_frame_rect(anim.frames[0]);
 
@@ -305,13 +308,13 @@ void game_mechanics::handle_balls(model& m, const neutrino::physics::world_event
             if (b.hits == -1) {
                 ke::audio::instance().play(rs::ke_sfx::brick_metal); // indestructible
             } else if (b.m == brick::motion::ALIVE && --b.hits <= 0) {
-                // Guard the anim-table bound, not just `none`: types 28-31 (attr>>2 masked to
-                // 0x1F) occur in the level data but have no capsule entry -- spawning one would
-                // index past ke_spell_capsule_anim / capsule_anim_id (both 28 wide).
+                // Decode already rejects unsupported TAB codes; retain the bound check
+                // for bricks constructed by debug tools or future generators.
                 if (b.bonus != rs::bonus::none
                     && static_cast <std::size_t>(b.bonus) < rs::ke_spell_capsule_anim.size()) {
                     spawn_capsule(b);
                 }
+                m.add_score(1); // original brick score: 1 << score_shift
                 b.m = brick::motion::FLUNG;
                 b.vel = scaled(ball.vel, ke_fling_speed); // fly off the way the ball went
                 m_world.remove(m_brick_colliders[tgt.index]);
@@ -340,55 +343,50 @@ void game_mechanics::apply_bonus(model& m, rs::bonus b, int mag) {
     auto& sfx = ke::audio::instance();
     const int strength = mag > 0 ? mag : 1; // bonus_mag is 1..4; guard a stray 0
 
-    // Rescale every active ball's speed by `factor`, clamped so it stays trackable/catchable.
-    // reflect()/paddle_bounce() preserve speed magnitude, so the new speed persists across bounces.
-    auto scale_balls = [&](float factor) {
+    // 0x2C5BC adjusts each component by 4*mag in 1/16-pixel-per-tick units.
+    // Convert once to px/s; preserve horizontal zero and the original axis limits.
+    auto change_ball_speed = [&](int delta) {
+        constexpr float unit = 70.0f / 16.0f;
+        const auto component = [&](float v, float limit, bool keep_zero) {
+            if (v == 0.0f && keep_zero) {
+                return v;
+            }
+            const float next = std::clamp(std::abs(v) + 4.0f * delta * unit,
+                                          4.0f * unit, limit * unit);
+            return v > 0.0f ? next : -next;
+        };
         for (std::size_t i = 0; i < li.balls.size(); ++i) {
             ball_state& ball = li.balls[i];
-            if (!ball.active) {
-                continue;
+            if (ball.active) {
+                ball.vel = {component(ball.vel.x, 32.0f, true),
+                            component(ball.vel.y, 40.0f, false)};
+                m_world.set_velocity(m_balls[i], ball.vel);
             }
-            const float next = std::clamp(ball.vel.speed() * factor,
-                                          ke_ball_speed_min, ke_ball_speed_max);
-            ball.vel = scaled(ball.vel, next);
-            m_world.set_velocity(m_balls[i], ball.vel);
         }
     };
 
-    // Split each currently-active ball into two extra copies fanned +/- a spread, capped at
-    // ke_max_balls. Seeds are snapshotted first: spawn_ball appends to li.balls (invalidating any
-    // in-flight reference), and only the pre-existing balls should split (not the new ones).
-    auto split_balls = [&]() {
-        struct seed {
-            neutrino::world_pos pos;
-            neutrino::world_velocity vel;
-        };
-        std::vector <seed> seeds;
-        std::size_t live = 0;
-        for (const ball_state& ball : li.balls) {
+    // IDs 4/8 change the sprite SIZE byte, not velocity. Keep the physical
+    // shape in sync so the larger/smaller ball also changes its collision area.
+    auto resize_balls = [&](int delta) {
+        const auto& assets = rs::require_ke_assets();
+        for (std::size_t i = 0; i < li.balls.size(); ++i) {
+            ball_state& ball = li.balls[i];
             if (ball.active) {
-                seeds.push_back({ball.pos, ball.vel});
-                ++live;
-            }
-        }
-        for (const seed& s : seeds) {
-            for (const float deg : {20.0f, -20.0f}) {
-                if (live >= ke_max_balls) {
-                    return;
-                }
-                spawn_ball(m, s.pos, rotate(s.vel, deg));
-                ++live;
+                ball.size = std::clamp(ball.size + delta, 0, rs::ke_ball_size_count - 1);
+                const auto frame = assets.balls.require_frame_rect(rs::ke_ball_frame(ball.kind, ball.size));
+                ball.half = std::max(frame.w, frame.h) / 2;
+                const auto r = static_cast <float>(ball.half);
+                m_world.set_shape(m_balls[i], circle(ball.pos.x - r, ball.pos.y - r,
+                                                   ball.pos.x + r, ball.pos.y + r));
             }
         }
     };
 
     // Grow/shrink the paddle by `delta` size-steps: update the model form AND the collider,
-    // keeping the centre fixed and clamping the new box inside the pillars. (Assumes higher size
-    // == wider form, KE_RACK's convention; flip the sign if a level shows it reversed.)
+    // keeping the centre fixed and clamping the new box inside the pillars.
     auto resize_paddle = [&](int delta) {
         paddle_info& p = m.get_paddle();
-        const rs::ke_paddle_frame_range range = rs::ke_paddle_range(p.state);
-        const int new_size = std::clamp(p.size + delta, 1, static_cast <int>(range.count));
+        const int new_size = std::clamp(p.size + delta, 1, rs::ke_paddle_size_count);
         if (new_size == p.size) {
             return; // already at the limit -- nothing to resize
         }
@@ -403,20 +401,46 @@ void game_mechanics::apply_bonus(model& m, rs::bonus b, int mag) {
     };
 
     switch (b) {
-        case rs::bonus::slow_ball:
+        case rs::bonus::shield:
+            m.get_paddle().shield += strength;
+            sfx.play(rs::ke_sfx::bonus_good);
+            break;
+        case rs::bonus::damage_paddle:
+            damage_paddle(m);
+            break;
+        case rs::bonus::clear_enemies:
+            for (auto& enemy : li.enemies) {
+                kill_enemy(m, enemy);
+            }
+            sfx.play(rs::ke_sfx::bonus_dyna);
+            break;
+        case rs::bonus::shrink_balls:
+            resize_balls(-strength);
+            sfx.play(rs::ke_sfx::bonus_minus);
+            break;
+        case rs::bonus::enlarge_balls:
+            resize_balls(+strength);
+            sfx.play(rs::ke_sfx::bonus_plus);
+            break;
         case rs::bonus::slow_all_balls:
-            scale_balls(1.0f - 0.12f * static_cast <float>(strength));
-            sfx.play(rs::ke_sfx::bonus_good);
+            change_ball_speed(-strength);
+            sfx.play(rs::ke_sfx::bonus_minus);
             break;
-        case rs::bonus::fast_ball:
         case rs::bonus::speed_up_all_balls:
-            scale_balls(1.0f + 0.12f * static_cast <float>(strength));
+            change_ball_speed(+strength);
+            sfx.play(rs::ke_sfx::bonus_plus);
+            break;
+        case rs::bonus::extra_ball: {
+            const auto live = std::count_if(li.balls.begin(), li.balls.end(),
+                                           [](const ball_state& ball) { return ball.active; });
+            if (live < static_cast <int>(ke_max_balls)) {
+                const auto& p = m.get_paddle();
+                // Original velocity (10,-20) / 16 pixels per 70 Hz tick.
+                spawn_ball(m, {p.x + p.w * 0.5f, p.y - 4.0f}, {43.75f, -87.5f});
+            }
             sfx.play(rs::ke_sfx::bonus_good);
             break;
-        case rs::bonus::extra_ball:
-            split_balls();
-            sfx.play(rs::ke_sfx::bonus_create);
-            break;
+        }
         case rs::bonus::enlarge_paddle:
             resize_paddle(+strength);
             sfx.play(rs::ke_sfx::bonus_plus);
@@ -427,30 +451,191 @@ void game_mechanics::apply_bonus(model& m, rs::bonus b, int mag) {
             break;
         case rs::bonus::extra_life:
             m.add_life(strength);
-            sfx.play(rs::ke_sfx::bonus_good);
+            sfx.play(rs::ke_sfx::racket_birth);
             break;
         case rs::bonus::score_multiplier:
-            m.add_score(1000L * strength);
-            sfx.play(rs::ke_sfx::bonus_good);
+            m.increase_score_multiplier(strength);
+            sfx.play(rs::ke_sfx::bonus_jao);
             break;
         default:
-            // Not yet implemented (guns/laser, transforms, warp/exit, catch/through ball, area
-            // explosion, clear effects/enemies, random, ...): acknowledge the catch so the
-            // pipeline stays complete, then no-op.
-            sfx.play(rs::ke_sfx::bonus_good);
+            // Mapping is known; these mechanics still need implementation (docs/bonuses.md).
+            LOG_DEBUG("Bonus effect not implemented:", b);
             break;
     }
+    // The original awards this AFTER dispatch, so an x2 pickup uses its new multiplier.
+    if (b != rs::bonus::none) {
+        m.add_score(2);
+    }
+}
+
+void game_mechanics::kill_enemy(model& m, enemy_state& enemy) {
+    if (!enemy.alive) {
+        return;
+    }
+    const auto bounds = enemy_box(enemy);
+    enemy.pos = {(bounds.min.x() + bounds.max.x()) * 0.5f,
+                 (bounds.min.y() + bounds.max.y()) * 0.5f + 5.0f};
+    enemy.alive = false;
+    enemy.animation_ticks = 0;
+    enemy.hits = 0;
+    m.add_score(3);
+    ke::audio::instance().play(rs::ke_sfx::enemy_death);
+}
+
+void game_mechanics::lose_life(model& m) {
+    auto& li = m.get_level_info();
+    if (li.paddle_death_ticks >= 0) {
+        return; // one life per death, even if several demons overlap
+    }
+    li.paddle_death_ticks = 0;
+    m_enemy_clock = 0.0;
+    m.add_life(-1);
+    ke::audio::instance().play(rs::ke_sfx::racket_death);
+}
+
+void game_mechanics::damage_paddle(model& m) {
+    if (m.get_level_info().paddle_death_ticks >= 0) {
+        return;
+    }
+    ke::audio::instance().play(rs::ke_sfx::bonus_minus);
+    if (m.get_paddle().shield > 0) {
+        --m.get_paddle().shield;
+    } else {
+        lose_life(m);
+    }
+}
+
+void game_mechanics::tick_enemies(model& m) {
+    auto& li = m.get_level_info();
+    ++li.animation_ticks;
+    const auto& level = rs::require_ke_assets().levels[m.get_level()];
+    constexpr auto step = neutrino::sim_duration{1.0f / 70.0f};
+
+    if (li.hatch_ticks >= 0 && ++li.hatch_ticks >= rs::enemy_hatch_anim.count * rs::enemy_hatch_anim.ticks) {
+        li.hatch_ticks = -1;
+    }
+    if (level.spawn_period.count() > 0) {
+        if (m_spawn_ticks == 55) {
+            li.hatch_ticks = 0;
+        }
+        if (--m_spawn_ticks <= 0) {
+            m_spawn_ticks = level.spawn_period.count();
+            const auto type = level.spawn_seq[m_spawn_index++ % level.spawn_seq.size()];
+            const auto count = std::count_if(li.enemies.begin(), li.enemies.end(),
+                                            [](const enemy_state& e) { return e.alive; });
+            if (count < 8) {
+                enemy_state enemy;
+                enemy.type = static_cast <rs::enemy>(std::min(static_cast <unsigned>(type), 7u));
+                enemy.pos = {160.0f, 16.0f};
+                enemy.vel = {(m_enemy_rng() & 0x100u) ? 70.0f : -70.0f, 70.0f};
+                enemy.turn_ticks = std::max(1, static_cast <int>((m_enemy_rng() & 0xFFFFu) >> 7));
+                enemy.hits = m.get_level() / 20 + 2;
+                li.enemies.push_back(enemy);
+                ke::audio::instance().play(rs::ke_sfx::enemy_create);
+            }
+        }
+    }
+
+    for (auto& enemy : li.enemies) {
+        enemy.pos += enemy.vel * step;
+        if (!enemy.alive) {
+            ++enemy.animation_ticks;
+            continue;
+        }
+        const auto& anim = rs::enemy_anim(enemy.type);
+        enemy.animation_ticks = (enemy.animation_ticks + 1) % (anim.count * anim.ticks);
+        if (--enemy.turn_ticks <= 0) {
+            const auto random = m_enemy_rng();
+            enemy.turn_ticks = std::max(1, static_cast <int>((random & 0xFFFFu) >> 7));
+            if (random & 0x20u) {
+                enemy.vel.x = -enemy.vel.x;
+            } else if (random & 8u) {
+                enemy.vel.y = -enemy.vel.y;
+            }
+        }
+        const auto bounds = enemy_box(enemy);
+        if ((bounds.min.x() <= 16.0f && enemy.vel.x < 0.0f)
+            || (bounds.max.x() >= 304.0f && enemy.vel.x > 0.0f)) {
+            enemy.vel.x = -enemy.vel.x;
+        }
+        if ((bounds.min.y() <= 24.0f && enemy.vel.y < 0.0f)
+            || (bounds.max.y() >= 200.0f && enemy.vel.y > 0.0f)) {
+            enemy.vel.y = -enemy.vel.y;
+        }
+
+        for (std::size_t i = 0; i < li.balls.size(); ++i) {
+            auto& ball = li.balls[i];
+            if (!ball.active || ball.kind == rs::ke_ball_kind::ghost) {
+                continue;
+            }
+            const float r = static_cast <float>(ball.half);
+            if (!neutrino::physics::intersects(
+                    box(ball.pos.x - r, ball.pos.y - r, ball.pos.x + r, ball.pos.y + r),
+                    enemy_box(enemy, 3))) {
+                continue;
+            }
+            // The BALL path (0x2BAF0) kills outright. The 1/4 HP damage table
+            // in 0x2CB00 belongs to fired projectiles, not ordinary balls.
+            enemy.vel.x += std::floor(ball.vel.x / 70.0f) * 70.0f;
+            enemy.vel.y += std::floor(ball.vel.y / 70.0f) * 70.0f;
+            kill_enemy(m, enemy);
+            if (ball.kind != rs::ke_ball_kind::power) {
+                if (m_enemy_rng() & 0x10u) {
+                    ball.vel.y = -ball.vel.y;
+                } else {
+                    ball.vel.x = -ball.vel.x;
+                }
+                if (ball.vel.x == 0.0f) {
+                    ball.vel.x = -17.5f;
+                } else {
+                    const float delta = (m_enemy_rng() & 1u) ? -35.0f : 35.0f;
+                    ball.vel.x = std::copysign(std::clamp(std::abs(ball.vel.x) + delta, 17.5f, 140.0f), ball.vel.x);
+                }
+                m_world.set_velocity(m_balls[i], ball.vel);
+            }
+            break;
+        }
+        const auto& paddle = m.get_paddle();
+        const auto paddle_bounds = box(paddle.x + 3.0f, paddle.y + 3.0f,
+                                       paddle.x + paddle.w - 5.0f, paddle.y + paddle.h - 5.0f);
+        if (enemy.alive && neutrino::physics::intersects(bounds, paddle_bounds)) {
+            if (enemy.type == rs::enemy::ship_demon) {
+                const bool shielded = m.get_paddle().shield > 0;
+                damage_paddle(m);
+                if (!shielded) {
+                    return; // lethal demon survives until the life reset
+                }
+            }
+            kill_enemy(m, enemy); // normal enemies are squashed; a shield also squashes demons
+        }
+    }
+    std::erase_if(li.enemies, [](const enemy_state& enemy) {
+        return !enemy.alive && enemy.animation_ticks >= rs::enemy_death_anim.count * rs::enemy_death_anim.ticks;
+    });
 }
 
 void game_mechanics::tick(model& m, neutrino::sim_duration dt) {
     level_info& li = m.get_level_info();
     paddle_info& p = m.get_paddle();
 
+    if (li.paddle_death_ticks >= 0) {
+        m_enemy_clock += dt.count();
+        const int ticks = static_cast <int>(m_enemy_clock * 70.0 + 1e-6);
+        m_enemy_clock -= ticks / 70.0;
+        li.paddle_death_ticks = std::min(li.paddle_death_ticks + ticks, 24);
+        if (li.paddle_death_ticks >= 24 && m.get_lives() > 0) {
+            m.reset_paddle();
+            load(m); // retain the surviving brick grid and score; clear actors/effects
+            ke::audio::instance().play(rs::ke_sfx::racket_birth);
+        }
+        return;
+    }
+
     handle_paddle(m);
 
     // 2. Always step the world: move-and-slide (inside run) is what actually applies the paddle's
-    //    velocity, so the paddle must keep reacting even with no ball in play (game over is future
-    //    work). The ball handling below already no-ops on inactive/removed balls. Each ball is a
+    //    velocity, so the paddle keeps reacting while the last capsules fall, even with no ball
+    //    in play. Ball handling no-ops on inactive/removed balls. Each ball is a
     //    bullet, so e.mover identifies which ball hit (one hit per ball per frame at most).
     //
     //    No activity region: the whole playfield is always live. This used to pass a 320x200 box
@@ -491,6 +676,15 @@ void game_mechanics::tick(model& m, neutrino::sim_duration dt) {
         }
     }
 
+    m_enemy_clock += dt.count();
+    while (m_enemy_clock + 1e-9 >= 1.0 / 70.0) {
+        m_enemy_clock -= 1.0 / 70.0;
+        tick_enemies(m);
+        if (li.paddle_death_ticks >= 0) {
+            return;
+        }
+    }
+
     // 4. Slide any flung bricks (off-screen culling comes with the dynamic-brick rendering).
     //    A rate integrated over the step yields an offset, which displaces a position -- the
     //    types say so, and a stray `pos += vel` or `pos += vel * vel` no longer compiles.
@@ -506,6 +700,9 @@ void game_mechanics::tick(model& m, neutrino::sim_duration dt) {
         if (neutrino::physics::intersects(cap.box(), p.box())) {
             apply_bonus(m, cap.bonus, cap.mag);
             cap.active = false;
+            if (li.paddle_death_ticks >= 0) {
+                break;
+            }
         } else if (cap.pos.y > m_bottom_margin) {
             cap.active = false; // missed
         }
@@ -525,4 +722,8 @@ void game_mechanics::tick(model& m, neutrino::sim_duration dt) {
         }
         return false;
     });
+    if (li.capsules.empty() && std::none_of(li.balls.begin(), li.balls.end(),
+                                          [](const ball_state& ball) { return ball.active; })) {
+        lose_life(m);
+    }
 }

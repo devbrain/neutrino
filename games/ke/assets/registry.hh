@@ -25,6 +25,8 @@ namespace rs {
         neutrino::sprite_set_handle paddle;  ///< the built + leased KE_RACK paddle set
         neutrino::sprite_set_handle bricks;  ///< the built + leased KE_BRICK set
         neutrino::sprite_set_handle balls;   ///< the built + leased KE_SPELL ball set
+        neutrino::sprite_set_handle enemies; ///< KE_NMY, original BOB anchors
+        neutrino::sprite_set_handle digits;  ///< KE_DIGIT score/lives
         neutrino::sprite_set_handle board;   ///< KE_BORD wall pillars (backdrop, top-left pivot)
         neutrino::sprite_set_handle fill;    ///< KE_FILL score/fill tiles (backdrop, top-left pivot)
 

@@ -10,6 +10,7 @@
 #pragma once
 
 #include <vector>
+#include <random>
 
 #include <neutrino/physics/collide/world.hh>
 #include <neutrino/scene/base_scene.hh> // sim_duration
@@ -18,6 +19,7 @@
 #include <ke/resources/cell.hh> // rs::bonus
 
 class model;
+struct enemy_state;
 
 class game_mechanics {
     public:
@@ -41,12 +43,20 @@ class game_mechanics {
 
         // Add a ball (bullet) at pos moving vel; shared by load() and the extra-ball bonus.
         void spawn_ball(model& m, neutrino::world_pos pos, neutrino::world_velocity vel);
-        // Apply a caught capsule's effect (ball speed, multiball, paddle resize, life/score).
+        // Apply implemented capsules, including shields, paddle damage and dynamite.
         void apply_bonus(model& m, rs::bonus b, int mag);
+        void tick_enemies(model& m);
+        void kill_enemy(model& m, enemy_state& enemy);
+        void damage_paddle(model& m);
+        void lose_life(model& m);
     private:
         neutrino::physics::world m_world;
         neutrino::physics::collider_id m_paddle{};
         std::vector <neutrino::physics::collider_id> m_balls;           // parallel to model balls
         std::vector <neutrino::physics::collider_id> m_brick_colliders; // parallel to model bricks
         int m_bottom_margin{}; // playfield bottom; a ball past it is lost
+        double m_enemy_clock{}; // seconds accumulated toward the original 70 Hz update
+        int m_spawn_ticks{};
+        std::size_t m_spawn_index{};
+        std::mt19937 m_enemy_rng{std::random_device{}()};
 };

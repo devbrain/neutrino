@@ -27,12 +27,11 @@ namespace {
     constexpr int window_width = 320;
     constexpr int window_height = 200;
 
-    // TEMP: dump each level's per-position bonus TYPE (attr>>2), so we can cross-reference our
-    // decoded types against what the original game actually drops. Uses the production cell.hh
-    // decode. Remove once the bonus table is corrected.
+    // Dump each level's runtime bonus IDs ((attr>>2)-1) using the production decoder.
+    // KE_DUMP_BONUS provides a visual grid to cross-check with docs/bonuses.md.
     void dump_bonus_map(const std::vector <rs::ke_level>& levels) {
         std::array <int, 32> global{};
-        std::printf("\n===== KE BONUS MAP (type = attr>>2, decoded via cell.hh) =====\n");
+        std::printf("\n===== KE BONUS MAP (ID = (attr>>2)-1, decoded via cell.hh) =====\n");
         for (std::size_t li = 0; li < levels.size(); ++li) {
             const rs::ke_level& lvl = levels[li];
             std::array <int, 32> seen{};
@@ -46,7 +45,7 @@ namespace {
                 for (int x = 0; x < rs::ke_level::cols; ++x) {
                     const rs::ke_cell& c = lvl.at(x, y);
                     if (c.drops_bonus) {
-                        const int t = static_cast <int>(c.bonus_type) & 31;
+                        const int t = static_cast <int>(c.bonus_type);
                         std::printf("%3d", t);
                         ++global[t];
                         seen[t] = 1;

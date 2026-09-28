@@ -1,14 +1,15 @@
 //
 // Semantic decode of a TAB grid cell (and level). Turns the two raw TAB bytes
 // per cell into the reverse-engineered meaning documented in
-// ~/proj/ke_dump/docs/tab.md (§4 attribute / §5 tile id), so gameplay reads
-// intent instead of re-deriving bit math at every call site.
+// docs/bonuses.md (attributes) and ~/proj/ke_dump/docs/tab.md (§5 tile id),
+// so gameplay reads intent instead of re-deriving bit math at every call site.
 //
 
 #pragma once
 
 #include <array>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 
 #include <ke/format/tab.hh>
@@ -31,41 +32,42 @@ namespace rs {
         special,        // 0xFA-0xFF   -- remaining hit count carried in the attribute
     };
 
-    // The bonus capsule a group-B brick drops when destroyed (tab.md §4). The value is
-    // (attr>>2) & 0x1F; types 0-27 are used, 28-31 are unused. NOTE: type 0 is a real bonus
-    // (enlarge paddle) -- "no bonus" is @ref bonus::none (outside the masked range), which is
-    // the default and equivalent to @ref ke_cell::drops_bonus being false.
+    // Runtime indices into ke.exe's sprite/effect tables, NOT the TAB's 1-based codes.
+    // destroy_brick (0x329BA) subtracts one; spawn_bonus (0x2D712) rejects IDs >= 28
+    // BEFORE applying its redundant 0x1F mask. See docs/bonuses.md for the evidence.
     enum class bonus : std::uint8_t {
-        enlarge_paddle     = 0,  // width += mag
-        gun_laser          = 1,  // (unconfirmed)
-        score_multiplier   = 2,  // +mag
-        open_exit          = 3,  // warp door
-        slow_ball          = 4,  // -mag
-        area_explosion     = 5,
-        extra_life         = 6,  // +mag
-        extra_ball         = 7,  // multiball
-        fast_ball          = 8,  // +mag
-        timed_paddle       = 9,  // (unconfirmed)
-        speed_up_all_balls = 10, // +mag
-        slow_all_balls     = 11, // -mag
-        clear_effects      = 12,
-        ball_relaunch      = 13, // (unconfirmed)
-        gun_directional    = 14, // (unconfirmed)
-        laser_gun          = 15, // ammo += mag
-        paddle_transform_a = 16,
-        through_ball       = 17, // fire ball
-        catch_ball         = 18, // glue
-        warp               = 19, // (unconfirmed)
-        paddle_transform_b = 20,
-        random             = 21, // picks another bonus
-        shrink_paddle      = 22, // -mag (malus)
-        paddle_transform_c = 23,
-        paddle_transform_d = 24,
-        paddle_transform_e = 25,
-        paddle_transform_f = 26,
-        clear_enemies      = 27, // skull
-        none               = 0xFF, // no bonus (default; outside the 0x1F mask range)
+        enlarge_paddle     = 0,  // size += mag, original size index clamped to 0..12
+        damage_paddle      = 1,  // consume ONE shield point; kill an unshielded paddle
+        score_multiplier   = 2,  // score shift += mag (multiplier *= 2^mag)
+        reverse_controls   = 3,  // mirror horizontal input for 64*mag ticks
+        shrink_balls       = 4,  // size -= mag for every ball, clamped to 0..5
+        glue_paddle        = 5,  // catch balls after the slime animation finishes
+        extra_life         = 6,  // lives += mag
+        extra_ball         = 7,  // launch ONE new ball from the paddle (ignores mag)
+        enlarge_balls      = 8,  // size += mag for every ball, clamped to 0..5
+        darkness           = 9,  // palette darkening, timer += 128*mag ticks
+        speed_up_all_balls = 10, // increase velocity components, not ball size
+        slow_all_balls     = 11,
+        autopilot          = 12, // JAO: automatic paddle, 1024*mag ticks
+        flying_paddle      = 13, // allow vertical movement between y=24 and y=188
+        freeze_paddle      = 14, // disable manual movement for 32*mag ticks
+        shield             = 15, // resistance += mag
+        cannon             = 16, // projectile type 2, max 1, reload 15 ticks
+        power_ball         = 17, // blue balls damage bricks without bouncing
+        ghost_balls        = 18, // green balls skip bricks/enemies, timer += 512*mag
+        extra_paddle       = 19, // stationary spectre paddle at the pickup x
+        rapid_cannon       = 20, // projectile type 2, max 5, reload 15 ticks
+        random             = 21, // dispatch another effect; excludes damage and itself
+        shrink_paddle      = 22,
+        single_gun         = 23, // projectile type 0, max 1, reload 4 ticks
+        double_gun         = 24, // projectile type 1, max 1, reload 6 ticks
+        rapid_single_gun   = 25, // projectile type 0, max 5, reload 4 ticks
+        rapid_double_gun   = 26, // projectile type 1, max 3, reload 6 ticks
+        clear_enemies      = 27, // dynamite
+        none               = 0xFF,
     };
+
+    inline constexpr std::size_t bonus_count = 28;
 
     // The 8 enemy types a level's spawn_seq cycles through (tab.md §7). Each indexes the
     // enemy animation table (ke.exe 0x496B8 / KE_NMY.BOB); see enemy_anim.
@@ -88,9 +90,9 @@ namespace rs {
         int          graphic = -1;   // KE_BRICK.BOB block (tile_id - 1); -1 when empty
         int          hits = 0;       // hits to destroy: 1-3 destructible, attr>>2 special, 0 otherwise
         std::uint8_t colour = 0;     // brick colour/family (tile low nibble), preserved across damage
-        bonus        bonus_type = bonus::none; // dropped bonus (tab.md §4); none = no bonus
+        bonus        bonus_type = bonus::none; // dropped bonus (docs/bonuses.md); none = no bonus
         // Bonus strength = (attr & 3) + 1, range 1-4. Scales the effect: paddle grow/shrink
-        // steps, extra lives, ball-speed delta, etc. (some bonuses, e.g. random, ignore it).
+        // steps, extra lives, ball-speed delta, etc. (some, e.g. extra_ball, ignore it).
         // Meaningful only with a real bonus -- 0 when drops_bonus is false.
         std::uint8_t bonus_mag = 0;
         bool         drops_bonus = false;         // spawns a capsule when destroyed (== bonus_type != none)
@@ -124,11 +126,12 @@ namespace rs {
                 c.colour = static_cast <std::uint8_t>(tile_id & 0x0F);
                 c.counts_toward_clear = true;
 
-                // A bonus capsule drops only from a group-B brick with a nonzero
-                // bonus attribute (tab.md §4).
-                if (tile_id > 0x30 && tile_id < 0x61 && (attribute & 0xFC) != 0) {
+                // TAB codes 1..28 become runtime IDs 0..27. Codes 0 and 29..63
+                // never spawn a capsule; high bits must not wrap into another effect.
+                const auto code = static_cast <std::size_t>(attribute >> 2);
+                if (tile_id > 0x30 && tile_id < 0x61 && code >= 1 && code <= bonus_count) {
                     c.drops_bonus = true;
-                    c.bonus_type = static_cast <bonus>((attribute >> 2) & 0x1F);
+                    c.bonus_type = static_cast <bonus>(code - 1);
                     c.bonus_mag = static_cast <std::uint8_t>((attribute & 0x03) + 1);
                 }
                 return c;

@@ -37,8 +37,8 @@ namespace rs {
             v.name = std::to_string(i);
             v.src = sheet.source_rects[i];
             // top_left_origin pins the pivot to (0,0) so a sprite lines up with the physics
-            // coordinate it is drawn at (KE places everything this way). Otherwise the BOB
-            // per-frame offset is the pivot, aligning variable-size frames to a shared anchor.
+            // coordinate it is drawn at. Otherwise retain the raw BOB offset here;
+            // actor sets such as enemies convert it to Neutrino's pivot below.
             v.origin = top_left_origin || i >= sheet.origins.size()
                            ? neutrino::point{0, 0}
                            : sheet.origins[i];
@@ -83,7 +83,7 @@ namespace rs {
     void define_sprites(const game_resources& gr) {
         ke_assets& a = require_ke_assets();
 
-        // All sets place by top-left (pivot (0,0)) so a sprite lines up with the physics
+        // These sets place by top-left (pivot (0,0)) so a sprite lines up with the physics
         // coordinate the game draws it at: the paddle/brick collider top-left, or -- via the
         // centred draw in play_game_scene -- the ball collider centre. Keeping the BOB
         // per-frame offset as the pivot would shift each sprite off its body and the walls.
@@ -92,6 +92,15 @@ namespace rs {
         define_set(gr, "ke_spell", a.balls, /*top_left=*/true);
         define_set(gr, "ke_bord", a.board, /*top_left=*/true);
         define_set(gr, "ke_fill", a.fill, /*top_left=*/true);
+        define_set(gr, "ke_digit", a.digits, /*top_left=*/true);
+
+        // BOB stores an offset ADDED to an actor's anchor. Neutrino stores a pivot
+        // SUBTRACTED from it. Preserve that anchor as the demon changes shape.
+        auto enemy_def = to_sprite_def(gr.tile_sheets.at("ke_nmy"));
+        for (auto& visual : enemy_def.visuals) {
+            visual.origin = {-visual.origin.x, -visual.origin.y};
+        }
+        a.enemies = a.cache.acquire(enemy_def);
 
         a.hit_wall_anim_id = register_ke_anim(rs::hit_wall_anim, a.balls, /*loop=*/ false);
         a.hit_brick_anim_id = register_ke_anim(rs::hit_brick_anim, a.balls, /*loop=*/ false);

@@ -1,6 +1,6 @@
 //
-// Compile-time verification of the ke_cell decode against the tab.md §4/§5
-// tables. ke_cell::decode is constexpr, so these static_asserts are the test
+// Compile-time verification against docs/bonuses.md and tab.md §5 (brick types).
+// ke_cell::decode is constexpr, so these static_asserts are the test
 // suite for this module (the standalone `ke` target has no doctest harness).
 //
 
@@ -43,17 +43,50 @@ namespace rs {
 
     // -- bonus drops only from group-B (0x31-0x60) with a nonzero bonus attr --
     static_assert(ke_cell::decode(0x41, 0x04).drops_bonus);
-    static_assert(ke_cell::decode(0x41, 0x04).bonus_type == bonus::gun_laser); // 0x04 >> 2 = 1
+    static_assert(ke_cell::decode(0x41, 0x04).bonus_type == bonus::enlarge_paddle); // (4 >> 2) - 1 = 0
     static_assert(ke_cell::decode(0x41, 0x04).bonus_mag == 1);        // (0x04 & 3) + 1
-    static_assert(ke_cell::decode(0x41, 0x0F).bonus_type == bonus::open_exit); // 0x0F >> 2 = 3
+    static_assert(ke_cell::decode(0x41, 0x0F).bonus_type == bonus::score_multiplier); // (15 >> 2) - 1 = 2
     static_assert(ke_cell::decode(0x41, 0x0F).bonus_mag == 4);        // (0x0F & 3) + 1
     static_assert(!ke_cell::decode(0x41, 0x00).drops_bonus);          // no bonus attr
     static_assert(!ke_cell::decode(0x01, 0x04).drops_bonus);          // group A never drops
     static_assert(!ke_cell::decode(0x61, 0x04).drops_bonus);          // group C never drops
     static_assert(ke_cell::decode(0x01, 0x04).bonus_type == bonus::none); // non-dropping => none
-    // type 0 is a REAL bonus (enlarge), not "none": attr>>2 = 0x20 masks to 0 but still drops.
-    static_assert(ke_cell::decode(0x41, 0x80).drops_bonus);
-    static_assert(ke_cell::decode(0x41, 0x80).bonus_type == bonus::enlarge_paddle);
+    static_assert(ke_cell::decode(0x31, 0x73).bonus_type == bonus::clear_enemies);
+    static_assert(ke_cell::decode(0x31, 0x73).bonus_mag == 4);
+    static_assert(!ke_cell::decode(0x41, 0x74).drops_bonus); // first rejected code
+    static_assert(!ke_cell::decode(0x41, 0x80).drops_bonus); // no wrapping to ID 0
+    static_assert(ke_cell::decode(0x41, 0x80).bonus_type == bonus::none);
+    static_assert(ke_cell::decode(0x41, 0xFF).bonus_mag == 0);
+
+    // Real KE_LDCWC.TAB level-1 fixtures (zero-based x,y): freeze at (2,0),
+    // darkness at (1,1), flight at (0,2), extra ball at (7,5), life at (12,7).
+    static_assert(ke_cell::decode(0x37, 0x3C).bonus_type == bonus::freeze_paddle);
+    static_assert(ke_cell::decode(0x37, 0x28).bonus_type == bonus::darkness);
+    static_assert(ke_cell::decode(0x37, 0x38).bonus_type == bonus::flying_paddle);
+    static_assert(ke_cell::decode(0x33, 0x22).bonus_type == bonus::extra_ball);
+    static_assert(ke_cell::decode(0x33, 0x22).bonus_mag == 3); // still only ONE extra ball
+    static_assert(ke_cell::decode(0x35, 0x1C).bonus_type == bonus::extra_life);
+
+    // Every attribute, including unused codes, on representative boundary tiles.
+    // Mirrors the two original routines: destroy_brick extracts/subtracts, then
+    // spawn_bonus rejects the unsigned byte if it is >= 28 before masking.
+    constexpr bool verify_bonus_decode() {
+        for (const auto tile : {0x00, 0x01, 0x30, 0x31, 0x40, 0x41, 0x60, 0x61, 0x90, 0xFA, 0xFF}) {
+            for (int attr = 0; attr < 256; ++attr) {
+                const auto c = ke_cell::decode(static_cast <std::uint8_t>(tile),
+                                                static_cast <std::uint8_t>(attr));
+                const auto raw_id = static_cast <std::uint8_t>((attr >> 2) - 1);
+                const bool drops = tile >= 0x31 && tile <= 0x60 && (attr & 0xFC) && raw_id < 28;
+                if (c.drops_bonus != drops
+                    || c.bonus_type != (drops ? static_cast <bonus>(raw_id & 31) : bonus::none)
+                    || c.bonus_mag != (drops ? (attr & 3) + 1 : 0)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    static_assert(verify_bonus_decode());
 
     // -- high ranges ----------------------------------------------------------
     static_assert(ke_cell::decode(0x91, 0).kind == brick_kind::indestructible);

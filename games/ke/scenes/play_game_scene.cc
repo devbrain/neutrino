@@ -2,15 +2,19 @@
 // Created by igor on 12/07/2026.
 //
 
+#include <algorithm>
 #include <cstddef>
 #include <optional>
+#include <string_view>
 
 #include <failsafe/logger.hh>
 
 #include <sdlpp/events/events.hh>
 
 #include <neutrino/video/globals.hh>
+#include <neutrino/video/draw.hh>
 #include <neutrino/video/world/sprite_batch.hh>
+#include <onyx_font/bios_font.hh>
 
 #include <ke/assets/sprites.hh>
 #include <ke/assets/backdrop.hh>
@@ -28,9 +32,11 @@ namespace {
     // playfield is 200px tall -- the offsets had to be bigger than any y the game could produce,
     // an assumption nothing checked and nothing stated.
     constexpr neutrino::draw_layer layer_playfield{0}; // bricks and the paddle, interleaved by y
-    constexpr neutrino::draw_layer layer_balls{1};
-    constexpr neutrino::draw_layer layer_capsules{2};
-    constexpr neutrino::draw_layer layer_effects{3};   // impact sparks, over everything
+    constexpr neutrino::draw_layer layer_enemies{1};
+    constexpr neutrino::draw_layer layer_balls{2};
+    constexpr neutrino::draw_layer layer_capsules{3};
+    constexpr neutrino::draw_layer layer_effects{4};
+    constexpr neutrino::draw_layer layer_hud{5};
 
     // Fill the batch with the game's sprites -- bricks, paddle, balls -- read from the model.
     //
@@ -55,8 +61,72 @@ namespace {
             return;
         }
         const paddle_info& p = model::instance().get_paddle();
+        const auto& li = model::instance().get_level_info();
+        if (li.paddle_death_ticks >= 0) {
+            const auto& anim = rs::paddle_death_anim;
+            const int index = li.paddle_death_ticks / anim.ticks;
+            if (index < anim.count) {
+                const auto frame = anim.frames[index];
+                const auto r = assets.paddle.require_frame_rect(frame);
+                batch.add({p.x + (p.w - r.w) * 0.5f, static_cast <float>(p.y)},
+                          layer_effects, p.y, assets.paddle.visual(frame));
+            }
+            return;
+        }
         const neutrino::world_point pos{static_cast <float>(p.x), static_cast <float>(p.y)};
         batch.add(pos, layer_playfield, pos.y, assets.paddle.visual(rs::ke_paddle_frame(p.state, p.size)));
+        if (p.shield > 0) {
+            const auto& anim = p.shield == 1 ? rs::hit_brick_anim : rs::hit_wall_anim;
+            const auto frame = anim.frames[(li.animation_ticks / 3) % anim.count];
+            const auto r = assets.balls.require_frame_rect(frame);
+            batch.add({p.x + 4.0f - r.w * 0.5f, p.y + p.h * 0.5f - r.h * 0.5f},
+                      layer_effects, p.y, assets.balls.visual(frame));
+        }
+    }
+
+    void draw_enemies(neutrino::sprite_batch& batch) {
+        const auto& assets = rs::require_ke_assets();
+        const auto& li = model::instance().get_level_info();
+        if (li.hatch_ticks >= 0) {
+            const auto frame = rs::enemy_hatch_anim.frames[li.hatch_ticks / rs::enemy_hatch_anim.ticks];
+            batch.add({144.0f, 16.0f}, layer_enemies, 16, assets.enemies.visual(frame));
+        }
+        for (const auto& enemy : li.enemies) {
+            batch.add(neutrino::to_world_point(enemy.pos),
+                      enemy.alive ? layer_enemies : layer_effects, enemy.pos.y,
+                      assets.enemies.visual(enemy.frame()));
+        }
+    }
+
+    void draw_number(neutrino::sprite_batch& batch, long value, int x, int digits) {
+        const auto& sheet = rs::require_ke_assets().digits;
+        for (int i = digits - 1; i >= 0; --i) {
+            batch.add({static_cast <float>(x + i * 8), 4.0f}, layer_hud, 0,
+                      sheet.visual(static_cast <std::size_t>(value % 10)));
+            value /= 10;
+        }
+    }
+
+    void draw_game_over() {
+        (void) neutrino::draw_rect_fill(neutrino::rect{52, 80, 216, 40}, sdlpp::color{0, 0, 0, 255});
+        (void) neutrino::set_draw_color(sdlpp::color{255, 235, 120, 255});
+        const auto text = [](std::string_view s, int y) {
+            int x = (320 - static_cast <int>(s.size()) * 8) / 2;
+            const auto& font = onyx_font::bios_font_8x8();
+            for (const auto ch : s) {
+                const auto glyph = font.get_glyph(static_cast <std::uint8_t>(ch));
+                for (std::uint16_t gy = 0; gy < glyph.height(); ++gy) {
+                    for (std::uint16_t gx = 0; gx < glyph.width(); ++gx) {
+                        if (glyph.pixel(gx, gy)) {
+                            (void) neutrino::draw_point(x + gx, y + gy);
+                        }
+                    }
+                }
+                x += 8;
+            }
+        };
+        text("GAME OVER", 86);
+        text("CLICK TO RESTART", 104);
     }
 
     void draw_balls(neutrino::sprite_batch& batch) {
@@ -123,6 +193,12 @@ void play_game_scene::fixed_update(neutrino::sim_duration dt, const neutrino::in
     if (!m_ready) {
         return;
     }
+    auto& m = model::instance();
+    if (m.get_lives() <= 0 && m.get_level_info().paddle_death_ticks >= 24
+        && in.mouse(sdlpp::mouse_button::left).pressed) {
+        m.restart_game();
+        m_mechanics.load(m);
+    }
     // Poll the frame's render-space pointer (no event gating, no manual coord conversion) and hand
     // it to the domain as the paddle-centre target; physics resolves it against the walls. dt is a
     // constant seconds tick -- no ms/1000 conversion any more.
@@ -150,11 +226,17 @@ void play_game_scene::render() {
     //    positions are already screen pixels -- a plain screen-space batch, no camera.
     neutrino::sprite_batch batch;
     draw_bricks(batch);
+    draw_enemies(batch);
     draw_paddle(batch);
     draw_balls(batch);
     draw_effects(batch);
     draw_capsules(batch);
+    draw_number(batch, model::instance().get_score(), 56, 6);
+    draw_number(batch, std::max(0, model::instance().get_lives()), 153, 2);
     batch.flush();
+    if (model::instance().get_lives() <= 0 && model::instance().get_level_info().paddle_death_ticks >= 24) {
+        draw_game_over();
+    }
 }
 
 void play_game_scene::handle_action(const sdlpp::event&) {
