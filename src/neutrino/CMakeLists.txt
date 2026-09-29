@@ -10,6 +10,7 @@ add_library(neutrino ${_lib_type}
         # -------------------------------------------------------
         # Input
         # -------------------------------------------------------
+        ${PROJECT_SOURCE_DIR}/include/neutrino/input/input_snapshot.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/input/hotkey.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/input/mouse_click.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/input/gamepad_button.hh
@@ -177,7 +178,7 @@ add_library(neutrino ${_lib_type}
         input/modifier_match.hh
 
         application.cc
-        input/edge_gate.cc
+        input/input_snapshot.cc
         input/hotkey.cc
         input/mouse_click.cc
         input/gamepad_button.cc

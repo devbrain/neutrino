@@ -127,8 +127,8 @@ namespace {
             m_player = m_set.spawn("idle");
         }
 
-        void fixed_update(neutrino::sim_duration, const neutrino::input_snapshot&) override {
-            if (neutrino::hotkey{sdlpp::scancode::escape}.pressed()) {
+        void fixed_update(neutrino::sim_duration, const neutrino::input_snapshot& in) override {
+            if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
                 std::cout << "[Tutorial 02] Escape pressed - exiting\n";
                 neutrino::pop_scene();
             }

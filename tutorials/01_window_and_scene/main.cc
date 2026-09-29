@@ -72,7 +72,7 @@ namespace {
             m_sim_time += dt.count();
 
             // Press Escape to pop the scene and cleanly exit the application.
-            if (neutrino::hotkey{sdlpp::scancode::escape}.pressed()) {
+            if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
                 std::cout << "[Tutorial 01] Escape pressed - popping scene to exit\n";
                 neutrino::pop_scene();
             }

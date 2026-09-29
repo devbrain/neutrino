@@ -73,7 +73,7 @@ namespace {
             m_sim_ticks++;
             m_sim_time += dt.count();
 
-            if (neutrino::hotkey{sdlpp::scancode::escape}.pressed()) {
+            if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
                 std::cout << "[Tutorial 01] Escape pressed - popping scene to exit\n";
                 neutrino::pop_scene();
             }
@@ -192,7 +192,7 @@ If the display runs at 60 Hz, the engine executes two substeps per frame. If a f
 ### 3. Transitions and quitting
 
 ```cpp
-if (neutrino::hotkey{sdlpp::scancode::escape}.pressed()) {
+if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
     neutrino::pop_scene();
 }
 ```

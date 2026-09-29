@@ -5,13 +5,11 @@
 
 namespace neutrino {
 
-    /// @brief Polled query for a single gamepad button on a specific player slot.
+    class input_snapshot;
+
+    /// @brief Query for a single gamepad button on a specific player slot.
     ///
-    /// Reports the current frame's state of one button on the pad bound to
-    /// @p gamepad_index (the stable player slot from
-    /// application::on_gamepad_connected). All queries read live state and
-    /// return false when no gamepad service is available or the slot is empty
-    /// (e.g. the pad is disconnected).
+    /// Evaluated against a frame's @ref input_snapshot. Slot 0 is Player 1.
     class NEUTRINO_EXPORT gamepad_button {
     public:
         /// @brief Query @p button on gamepad index 0 (Player 1).
@@ -23,28 +21,20 @@ namespace neutrino {
             : m_gamepad_index(gamepad_index), m_button(button) {}
 
         /// @brief True on the frame the button transitions to down (edge).
-        [[nodiscard]] bool pressed() const noexcept;
+        [[nodiscard]] bool pressed(const input_snapshot& in) const noexcept;
         /// @brief True on every frame the button is down (level).
-        [[nodiscard]] bool held() const noexcept;
+        [[nodiscard]] bool held(const input_snapshot& in) const noexcept;
         /// @brief True on the frame the button transitions to up (edge).
-        [[nodiscard]] bool released() const noexcept;
+        [[nodiscard]] bool released(const input_snapshot& in) const noexcept;
 
-        /// @brief Equivalent to pressed(); lets a gamepad_button be used directly in a condition.
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return pressed();
-        }
+        /// @brief The player slot index (0..3).
+        [[nodiscard]] int gamepad_index() const noexcept { return m_gamepad_index; }
+        /// @brief The gamepad button queried.
+        [[nodiscard]] sdlpp::gamepad_button button() const noexcept { return m_button; }
 
     private:
         int m_gamepad_index;
         sdlpp::gamepad_button m_button;
     };
-
-    /// @brief Current value of @p axis on gamepad 0, normalized to [-1, 1]
-    /// (triggers to [0, 1]); returns 0 if no gamepad service is available.
-    [[nodiscard]] NEUTRINO_EXPORT float gamepad_axis(sdlpp::gamepad_axis axis) noexcept;
-    /// @brief Current value of @p axis on the pad in slot @p gamepad_index,
-    /// normalized to [-1, 1] (triggers to [0, 1]); returns 0 if the service is
-    /// unavailable or the slot is empty.
-    [[nodiscard]] NEUTRINO_EXPORT float gamepad_axis(int gamepad_index, sdlpp::gamepad_axis axis) noexcept;
 
 } // namespace neutrino

@@ -7,6 +7,8 @@
 
 namespace neutrino {
 
+    class input_snapshot;
+
     /// @brief Keyboard modifier flags, combinable with the bitwise operators below.
     ///
     /// Each physical key has its own bit (l*/r*); the side-agnostic values
@@ -96,20 +98,20 @@ namespace neutrino {
             : m_mods(mods), m_key(key) {}
 
         /// @brief True on the frame the key transitions to down (edge) with the modifier set matching.
-        [[nodiscard]] bool pressed() const noexcept;
+        [[nodiscard]] bool pressed(const input_snapshot& in) const noexcept;
         /// @brief True on every frame the key is down (level) with the modifier set matching.
-        [[nodiscard]] bool held() const noexcept;
+        [[nodiscard]] bool held(const input_snapshot& in) const noexcept;
         /// @brief True on the frame the key transitions to up (edge) with the modifier set matching.
-        [[nodiscard]] bool released() const noexcept;
+        [[nodiscard]] bool released(const input_snapshot& in) const noexcept;
 
-        /// @brief Equivalent to pressed(); lets a hotkey be used directly in a condition.
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return pressed();
-        }
-
-    private:
+        /// @brief The modifier combination required by this hotkey.
+        [[nodiscard]] modifier modifiers() const noexcept { return m_mods; }
+        /// @brief The key (scancode or keycode) required by this hotkey.
+        [[nodiscard]] const std::variant<sdlpp::scancode, sdlpp::keycode>& key() const noexcept { return m_key; }
+        /// @brief Resolve the scancode corresponding to this key (resolving keycode to scancode if needed).
         [[nodiscard]] sdlpp::scancode resolve_scancode() const noexcept;
 
+    private:
         modifier m_mods;
         std::variant<sdlpp::scancode, sdlpp::keycode> m_key;
     };

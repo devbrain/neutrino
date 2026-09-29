@@ -1,63 +1,29 @@
 #include <neutrino/input/mouse_click.hh>
-#include <neutrino/application.hh>
-#include "input/edge_gate.hh"
+#include <neutrino/input/input_snapshot.hh>
 #include "modifier_match.hh"
-#include "services/service_locator.hh"
 
 namespace neutrino {
 
     namespace {
-        application* app_ptr() noexcept {
-            return service_locator::instance().get_application();
-        }
-
-        bool check_state(modifier mods, sdlpp::mouse_button button, bool sdlpp::button_state::*member) noexcept {
-            auto* app = app_ptr();
-            if (!app) {
-                return false;
-            }
-
-            // See hotkey.cc: edges are masked on follow-up fixed substeps.
-            auto state = input_detail::gate_edges(app->get_mouse(button));
+        bool check_state(const input_snapshot& in, modifier mods, sdlpp::mouse_button button, bool button_state::*member) noexcept {
+            auto state = in.mouse(button);
             if (!(state.*member)) {
                 return false;
             }
-
-            return input_detail::match_modifiers(mods, input_detail::current_modifiers());
+            return input_detail::match_modifiers(mods, in.modifiers());
         }
     }
 
-    bool mouse_click::pressed() const noexcept {
-        return check_state(m_mods, m_button, &sdlpp::button_state::pressed);
+    bool mouse_click::pressed(const input_snapshot& in) const noexcept {
+        return check_state(in, m_mods, m_button, &button_state::pressed);
     }
 
-    bool mouse_click::held() const noexcept {
-        return check_state(m_mods, m_button, &sdlpp::button_state::held);
+    bool mouse_click::held(const input_snapshot& in) const noexcept {
+        return check_state(in, m_mods, m_button, &button_state::held);
     }
 
-    bool mouse_click::released() const noexcept {
-        return check_state(m_mods, m_button, &sdlpp::button_state::released);
-    }
-
-    // Global helper functions
-    int mouse_x() noexcept {
-        auto* app = app_ptr();
-        return app ? app->get_mouse_x() : 0;
-    }
-
-    int mouse_y() noexcept {
-        auto* app = app_ptr();
-        return app ? app->get_mouse_y() : 0;
-    }
-
-    sdlpp::point_i mouse_pos() noexcept {
-        auto* app = app_ptr();
-        return app ? app->get_mouse_pos() : sdlpp::point_i{0, 0};
-    }
-
-    int mouse_wheel() noexcept {
-        auto* app = app_ptr();
-        return app ? app->get_mouse_wheel() : 0;
+    bool mouse_click::released(const input_snapshot& in) const noexcept {
+        return check_state(in, m_mods, m_button, &button_state::released);
     }
 
 } // namespace neutrino

@@ -25,6 +25,7 @@ namespace neutrino {
 
             sdlpp::button_state get_gamepad_button_state(int gamepad_index, sdlpp::gamepad_button button) const noexcept;
             float get_gamepad_axis(int gamepad_index, sdlpp::gamepad_axis axis) const noexcept;
+            bool is_gamepad_connected(int gamepad_index) const noexcept;
 
         private:
             // Slots are stable player indices: unplugging a pad frees its

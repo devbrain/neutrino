@@ -100,39 +100,39 @@ namespace {
                 m_renderer.reset(); // release bundles while the render services are still live
             }
 
-            void fixed_update(sim_duration dt, const input_snapshot&) override {
+            void fixed_update(sim_duration dt, const input_snapshot& in) override {
                 // Edge-triggered actions belong here (once per frame), not in
                 // handle_action (once per event): a per-event pressed() check posts one
                 // request per queued event, and popping the last scene more than once
                 // trips the scenes_manager's non-empty enforcement.
-                if (!m_quitting && hotkey{sdlpp::scancode::escape}.pressed()) {
+                if (!m_quitting && in.pressed(hotkey{sdlpp::scancode::escape})) {
                     m_quitting = true;
                     pop_scene();
                     return;
                 }
-                if (hotkey{sdlpp::scancode::r}.pressed()) {
+                if (in.pressed(hotkey{sdlpp::scancode::r})) {
                     reset_camera();
                 }
 
                 const float seconds = dt.count();
                 const float pan = pan_speed * seconds / m_camera.zoom; // constant screen-space speed
 
-                if (key_held(sdlpp::scancode::a, sdlpp::scancode::left)) {
+                if (key_held(in, sdlpp::scancode::a, sdlpp::scancode::left)) {
                     m_camera.target.x -= pan;
                 }
-                if (key_held(sdlpp::scancode::d, sdlpp::scancode::right)) {
+                if (key_held(in, sdlpp::scancode::d, sdlpp::scancode::right)) {
                     m_camera.target.x += pan;
                 }
-                if (key_held(sdlpp::scancode::w, sdlpp::scancode::up)) {
+                if (key_held(in, sdlpp::scancode::w, sdlpp::scancode::up)) {
                     m_camera.target.y -= pan;
                 }
-                if (key_held(sdlpp::scancode::s, sdlpp::scancode::down)) {
+                if (key_held(in, sdlpp::scancode::s, sdlpp::scancode::down)) {
                     m_camera.target.y += pan;
                 }
-                if (key_held(sdlpp::scancode::equals, sdlpp::scancode::kp_plus)) {
+                if (key_held(in, sdlpp::scancode::equals, sdlpp::scancode::kp_plus)) {
                     zoom_about(std::pow(key_zoom_rate, seconds), viewport_center());
                 }
-                if (key_held(sdlpp::scancode::minus, sdlpp::scancode::kp_minus)) {
+                if (key_held(in, sdlpp::scancode::minus, sdlpp::scancode::kp_minus)) {
                     zoom_about(std::pow(1.0f / key_zoom_rate, seconds), viewport_center());
                 }
             }
@@ -172,8 +172,8 @@ namespace {
             }
 
         private:
-            static bool key_held(sdlpp::scancode a, sdlpp::scancode b) {
-                return hotkey{a}.held() || hotkey{b}.held();
+            static bool key_held(const input_snapshot& in, sdlpp::scancode a, sdlpp::scancode b) {
+                return in.held(a) || in.held(b);
             }
 
             [[nodiscard]] rect viewport() const {

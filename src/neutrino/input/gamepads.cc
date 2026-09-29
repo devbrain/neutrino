@@ -109,4 +109,11 @@ namespace neutrino {
         }
         return 0.0f;
     }
+
+    bool gamepads::is_gamepad_connected(int gamepad_index) const noexcept {
+        if (gamepad_index >= 0 && static_cast <size_t>(gamepad_index) < m_gamepads.size()) {
+            return m_gamepads[gamepad_index].connected();
+        }
+        return false;
+    }
 }

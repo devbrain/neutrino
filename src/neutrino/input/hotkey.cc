@@ -1,8 +1,6 @@
 #include <neutrino/input/hotkey.hh>
-#include <neutrino/application.hh>
-#include "input/edge_gate.hh"
+#include <neutrino/input/input_snapshot.hh>
 #include "modifier_match.hh"
-#include "services/service_locator.hh"
 #include <SDL3/SDL_keyboard.h>
 
 namespace neutrino {
@@ -31,20 +29,13 @@ namespace neutrino {
             }
         }
 
-        bool check_state(modifier mods, sdlpp::scancode scan, bool sdlpp::button_state::*member) noexcept {
-            auto* app = service_locator::instance().get_application();
-            if (!app) {
-                return false;
-            }
-
-            // gate_edges: on a follow-up fixed substep the pressed/released transitions are masked,
-            // so a polled one-shot fires once per physical press, not once per substep.
-            auto state = input_detail::gate_edges(app->get_key(scan));
+        bool check_state(const input_snapshot& in, modifier mods, sdlpp::scancode scan, bool button_state::*member) noexcept {
+            auto state = in.key(scan);
             if (!(state.*member)) {
                 return false;
             }
 
-            modifier current_mods = input_detail::current_modifiers();
+            modifier current_mods = in.modifiers();
 
             // If the primary key is itself a modifier, exclude it from matching
             modifier self_mask = get_modifier_for_scancode(scan);
@@ -57,16 +48,16 @@ namespace neutrino {
         }
     }
 
-    bool hotkey::pressed() const noexcept {
-        return check_state(m_mods, resolve_scancode(), &sdlpp::button_state::pressed);
+    bool hotkey::pressed(const input_snapshot& in) const noexcept {
+        return check_state(in, m_mods, resolve_scancode(), &button_state::pressed);
     }
 
-    bool hotkey::held() const noexcept {
-        return check_state(m_mods, resolve_scancode(), &sdlpp::button_state::held);
+    bool hotkey::held(const input_snapshot& in) const noexcept {
+        return check_state(in, m_mods, resolve_scancode(), &button_state::held);
     }
 
-    bool hotkey::released() const noexcept {
-        return check_state(m_mods, resolve_scancode(), &sdlpp::button_state::released);
+    bool hotkey::released(const input_snapshot& in) const noexcept {
+        return check_state(in, m_mods, resolve_scancode(), &button_state::released);
     }
 
 } // namespace neutrino

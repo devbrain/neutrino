@@ -7,12 +7,13 @@
 
 namespace neutrino {
 
-    /// @brief Polled mouse-button query, optionally qualified by keyboard modifiers.
+    class input_snapshot;
+
+    /// @brief Mouse-button query, optionally qualified by keyboard modifiers.
     ///
-    /// Reports the current frame's state of one mouse button. When constructed
+    /// Evaluated against a frame's @ref input_snapshot. When constructed
     /// with a @ref modifier, the query only matches while exactly those modifier
-    /// groups are held (same strict matching as @ref hotkey). All queries read
-    /// live application state and return false when no application is running.
+    /// groups are held (same strict matching as @ref hotkey).
     class NEUTRINO_EXPORT mouse_click {
     public:
         /// @brief Match @p button with no modifier requirement.
@@ -24,29 +25,18 @@ namespace neutrino {
             : m_mods(mods), m_button(button) {}
 
         /// @brief True on the frame the button transitions to down (edge), with modifiers matching.
-        [[nodiscard]] bool pressed() const noexcept;
+        [[nodiscard]] bool pressed(const input_snapshot& in) const noexcept;
         /// @brief True on every frame the button is down (level), with modifiers matching.
-        [[nodiscard]] bool held() const noexcept;
+        [[nodiscard]] bool held(const input_snapshot& in) const noexcept;
         /// @brief True on the frame the button transitions to up (edge), with modifiers matching.
-        [[nodiscard]] bool released() const noexcept;
+        [[nodiscard]] bool released(const input_snapshot& in) const noexcept;
 
-        /// @brief Equivalent to pressed(); lets a mouse_click be used directly in a condition.
-        [[nodiscard]] explicit operator bool() const noexcept {
-            return pressed();
-        }
+        [[nodiscard]] modifier modifiers() const noexcept { return m_mods; }
+        [[nodiscard]] sdlpp::mouse_button button() const noexcept { return m_button; }
 
     private:
         modifier m_mods;
         sdlpp::mouse_button m_button;
     };
-
-    /// @brief Current mouse X position, in window coordinates (0 if no application is running).
-    [[nodiscard]] NEUTRINO_EXPORT int mouse_x() noexcept;
-    /// @brief Current mouse Y position, in window coordinates (0 if no application is running).
-    [[nodiscard]] NEUTRINO_EXPORT int mouse_y() noexcept;
-    /// @brief Current mouse position as a point, in window coordinates ({0,0} if no application is running).
-    [[nodiscard]] NEUTRINO_EXPORT sdlpp::point_i mouse_pos() noexcept;
-    /// @brief Mouse wheel delta accumulated for the current frame (0 if no application is running).
-    [[nodiscard]] NEUTRINO_EXPORT int mouse_wheel() noexcept;
 
 } // namespace neutrino

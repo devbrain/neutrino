@@ -109,13 +109,13 @@ namespace {
             m_player = m_set.spawn("idle");
         }
 
-        void fixed_update(neutrino::sim_duration, const neutrino::input_snapshot&) override {
+        void fixed_update(neutrino::sim_duration, const neutrino::input_snapshot& in) override {
             // Note: We do NOT need to call an update method on m_player!
             // The Neutrino application loop automatically advances registered sprite
             // animation states during its update cycle.
 
             // Press Escape to pop the scene and cleanly exit.
-            if (neutrino::hotkey{sdlpp::scancode::escape}.pressed()) {
+            if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
                 std::cout << "[Tutorial 02] Escape pressed - exiting\n";
                 neutrino::pop_scene();
             }

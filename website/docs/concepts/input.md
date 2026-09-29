@@ -155,18 +155,38 @@ if (in.pointer().on_screen) {
 // else: hold the last target. Do not steer from a meaningless position.
 ```
 
-## The polled APIs
+## Keyboard, Gamepad, and Query Matchers
 
-For keyboard and gamepad there are also polled query objects, usable anywhere:
+The `input_snapshot` provides complete coverage of all continuous inputs across pointer, mouse buttons, keyboard keys, and gamepads.
+
+You can query keys, buttons, and axes directly from the snapshot:
+
+```cpp
+// Direct keyboard queries
+if (in.pressed(sdlpp::scancode::space)) { fire(); }     // edge
+if (in.held(sdlpp::scancode::a))        { move_left(); } // state
+
+// Direct gamepad queries (slot 0 = Player 1)
+if (in.gamepad_button_state(0, sdlpp::gamepad_button::south).pressed) { jump(); }
+const float move_x = in.gamepad_axis(0, sdlpp::gamepad_axis::leftx);
+```
+
+### Expressive matchers: `hotkey`, `mouse_click`, `gamepad_button`
+
+For shortcuts, modifiers, or complex key matching, use query matchers. Matchers are pure query specifications evaluated against the frame snapshot:
 
 ```cpp
 neutrino::hotkey jump{sdlpp::scancode::SPACE};
 neutrino::hotkey save{neutrino::modifier::ctrl, sdlpp::scancode::S};
 neutrino::mouse_click ctrl_click{neutrino::modifier::ctrl, sdlpp::mouse_button::left};
+neutrino::gamepad_button shoot{sdlpp::gamepad_button::right_trigger};
 
-if (jump.pressed())    { ... }   // edge
-if (jump.held())       { ... }   // state
-if (save)              { ... }   // operator bool == pressed()
+// Symmetric evaluation:
+if (in.pressed(jump))         { ... } // or: jump.pressed(in)
+if (in.held(jump))            { ... } // or: jump.held(in)
+if (in.pressed(save))         { ... } // or: save.pressed(in)
+if (in.pressed(ctrl_click))   { ... } // or: ctrl_click.pressed(in)
+if (in.pressed(shoot))        { ... } // or: shoot.pressed(in)
 ```
 
 A `hotkey` can match either a **scancode** (physical key position, layout-independent — right for
@@ -174,14 +194,12 @@ WASD movement) or a **keycode** (the logical key in the current layout — right
 player thinks of as "S"). Modifiers match strictly: `modifier::ctrl` requires Ctrl, and
 side-specific values like `lctrl` require that particular key.
 
-These obey the same one-substep edge rule as the snapshot, so mixing the two styles is safe.
+:::tip[Architectural guarantees of the snapshot]
 
-:::tip[Which should you use?]
-
-Prefer the snapshot. It is explicit about where input comes from, it works in tests without a
-running application, and a covered scene automatically receives a neutral one. The polled APIs read
-live global state, so a covered scene using them would still see real key presses — they are a
-convenience for cases where threading the snapshot through would be awkward, not the default.
+Because queries are strictly evaluated against the `input_snapshot`:
+1. **Scene stack isolation:** When a scene is covered by a pause menu or modal dialog, it automatically receives a neutral snapshot (`no_input`). Key and button presses cannot accidentally leak into background scenes.
+2. **Headless testability:** You can construct a synthetic `input_snapshot` in a unit test and simulate any combination of keys, clicks, or gamepad axes without needing a running SDL application.
+3. **Multi-substep determinism:** One-shot edges (`pressed`, `released`) fire exclusively on substep 0, while continuous states (`held`, axes) survive across all substeps via `in.without_edges()`.
 :::
 
 ## Common pitfalls

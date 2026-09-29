@@ -11,7 +11,7 @@
 #include <failsafe/logger/backend/sdl_backend.hh>
 
 #include "audio/sound_system.hh"
-#include "input/edge_gate.hh"
+#include "input/modifier_match.hh"
 #include "input/gamepads.hh"
 #include "scene/scenes_manager.hh"
 #include "services/service_locator.hh"
@@ -228,11 +228,6 @@ namespace neutrino {
             try {
                 int step = 0;
                 for (; m_pimpl->m_accum >= period && step < fx.max_substeps; ++step) {
-                    // Edges belong to substep 0 only -- for the snapshot (held_only) AND for the
-                    // polled APIs (hotkey/mouse_click/gamepad_button), which read SDL transients
-                    // cleared once per frame rather than per step. Scoped, so a throwing scene
-                    // cannot leave edges masked.
-                    const input_detail::edge_suppression gate(step > 0);
                     m_pimpl->m_scenes_manager.fixed_update(sim_duration{period},
                                                            step == 0 ? in : held_only);
                     m_pimpl->m_accum -= period;
@@ -280,10 +275,49 @@ namespace neutrino {
         const auto conv = [](sdlpp::button_state b) {
             return button_state{b.pressed, b.released, b.held};
         };
-        return input_snapshot{pointer,
-                              conv(get_mouse(sdlpp::mouse_button::left)),
-                              conv(get_mouse(sdlpp::mouse_button::middle)),
-                              conv(get_mouse(sdlpp::mouse_button::right))};
+
+        input_snapshot snap;
+        snap.set_pointer(pointer);
+        snap.set_mouse(sdlpp::mouse_button::left, conv(get_mouse(sdlpp::mouse_button::left)));
+        snap.set_mouse(sdlpp::mouse_button::middle, conv(get_mouse(sdlpp::mouse_button::middle)));
+        snap.set_mouse(sdlpp::mouse_button::right, conv(get_mouse(sdlpp::mouse_button::right)));
+        snap.set_mouse(sdlpp::mouse_button::x1, conv(get_mouse(sdlpp::mouse_button::x1)));
+        snap.set_mouse(sdlpp::mouse_button::x2, conv(get_mouse(sdlpp::mouse_button::x2)));
+        snap.set_wheel(get_mouse_wheel());
+
+        // Keyboard
+        snap.set_modifiers(input_detail::current_modifiers());
+        for (std::size_t i = 0; i < input_snapshot::max_scancodes; ++i) {
+            const auto scan = static_cast<sdlpp::scancode>(i);
+            const auto state = get_key(scan);
+            if (state.held || state.pressed || state.released) {
+                snap.set_key(scan, conv(state));
+            }
+        }
+
+        // Gamepads
+        for (int slot = 0; slot < static_cast<int>(input_snapshot::max_gamepad_slots); ++slot) {
+            if (!m_pimpl->m_gamepads.is_gamepad_connected(slot)) {
+                continue;
+            }
+            snap.set_gamepad_connected(slot, true);
+            for (std::size_t b = 0; b < input_snapshot::max_gamepad_buttons; ++b) {
+                const auto btn = static_cast<sdlpp::gamepad_button>(b);
+                const auto bs = m_pimpl->m_gamepads.get_gamepad_button_state(slot, btn);
+                if (bs.held || bs.pressed || bs.released) {
+                    snap.set_gamepad_button(slot, btn, conv(bs));
+                }
+            }
+            for (std::size_t a = 0; a < input_snapshot::max_gamepad_axes; ++a) {
+                const auto axis = static_cast<sdlpp::gamepad_axis>(a);
+                const float val = m_pimpl->m_gamepads.get_gamepad_axis(slot, axis);
+                if (val != 0.0f) {
+                    snap.set_gamepad_axis(slot, axis, val);
+                }
+            }
+        }
+
+        return snap;
     }
 
     void application::on_render(sdlpp::renderer& r) {

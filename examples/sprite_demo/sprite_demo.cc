@@ -140,14 +140,19 @@ namespace {
                 m_coin = m_set.spawn("coin");
             }
 
-            void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot&) override {
+            void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
+                if (in.pressed(sdlpp::scancode::escape)) {
+                    neutrino::pop_scene();
+                    return;
+                }
+
                 const float seconds = dt.count();
-                const bool left = neutrino::hotkey{sdlpp::scancode::left}.held()
-                    || neutrino::hotkey{sdlpp::scancode::a}.held();
-                const bool right = neutrino::hotkey{sdlpp::scancode::right}.held()
-                    || neutrino::hotkey{sdlpp::scancode::d}.held();
-                const bool jump_pressed = neutrino::hotkey{sdlpp::scancode::space}.pressed()
-                    || neutrino::hotkey{sdlpp::scancode::up}.pressed();
+                const bool left = in.held(sdlpp::scancode::left)
+                    || in.held(sdlpp::scancode::a);
+                const bool right = in.held(sdlpp::scancode::right)
+                    || in.held(sdlpp::scancode::d);
+                const bool jump_pressed = in.pressed(sdlpp::scancode::space)
+                    || in.pressed(sdlpp::scancode::up);
 
                 if (left != right) {
                     m_player_x += (right ? 1.0f : -1.0f) * 90.0f * seconds;
@@ -196,11 +201,7 @@ namespace {
                     {.scale = player_scale, .flip = player_flip});
             }
 
-            void handle_action(const sdlpp::event&) override {
-                if (neutrino::hotkey{sdlpp::scancode::escape}.pressed()) {
-                    neutrino::pop_scene();
-                }
-            }
+            void handle_action(const sdlpp::event&) override {}
 
             [[nodiscard]] bool is_opaque() const override {
                 return true;
