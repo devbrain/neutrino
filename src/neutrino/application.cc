@@ -18,6 +18,7 @@
 #include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
 #include <neutrino/video/globals.hh>
+#include <neutrino/video/sprite/sprite_cache.hh>
 #include <neutrino/video/world/resource_cache.hh>
 
 namespace neutrino {
@@ -45,6 +46,7 @@ namespace neutrino {
         // torn down explicitly in ~application while m_textures/m_sprites are still
         // published, since destroy_bundle unregisters through the service_locator.
         std::unique_ptr<resource_cache> m_resource_cache;
+        std::unique_ptr<sprite_cache> m_sprite_cache;
         // Set once the first scene enters the stack; an empty stack after
         // that means the game is over, while a scene-less application keeps
         // running on the plain update()/render() callbacks.
@@ -106,6 +108,7 @@ namespace neutrino {
         // Normally on_quit() already reset the cache while the render services were
         // live; this is an idempotent fallback for an abnormal teardown path.
         m_pimpl->m_resource_cache.reset();
+        m_pimpl->m_sprite_cache.reset();
         service_locator::instance().clear_application(*this);
     }
 
@@ -173,6 +176,8 @@ namespace neutrino {
         service_locator::instance().set_sprites_manager(m_pimpl->m_sprites);
         m_pimpl->m_resource_cache = std::make_unique<resource_cache>();
         service_locator::instance().set_resource_cache(*m_pimpl->m_resource_cache);
+        m_pimpl->m_sprite_cache = std::make_unique<sprite_cache>();
+        service_locator::instance().set_sprite_cache(*m_pimpl->m_sprite_cache);
 
         // sdlpp initializes SDL with video|events only; without the gamepad
         // subsystem SDL emits no gamepad events at all. Ref-counted, and
@@ -370,6 +375,7 @@ namespace neutrino {
         // manager are still alive — destroy_bundle destroys GPU textures and
         // unregisters through the still-published services.
         m_pimpl->m_resource_cache.reset();
+        m_pimpl->m_sprite_cache.reset();
         game_application::on_quit();
         service_locator::instance().clear_application(*this);
     }

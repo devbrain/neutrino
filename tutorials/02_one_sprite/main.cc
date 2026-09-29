@@ -16,16 +16,18 @@
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/draw.hh>
-#include <neutrino/video/sprite/sprite_cache.hh>
-#include <neutrino/video/sprite/sprite_def.hh>
+#include <neutrino/video/sprites.hh>
 
 #include <sdlpp/app/entry_point.hh>
 #include <sdlpp/video/color.hh>
 
+#include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
+
+using namespace std::chrono_literals;
 
 namespace {
 
@@ -62,55 +64,28 @@ namespace {
     // Pure Asset Definition (CPU Data): make_player_def
     // =========================================================================
     // A `sprite_def` is pure data with zero GPU dependency.
-    // It specifies the image source, frame rectangles, pivots, and animation clips.
+    // We construct it fluently using `neutrino::sprite_def_builder`.
     [[nodiscard]] neutrino::sprite_def make_player_def() {
-        neutrino::sprite_def def;
+        return neutrino::sprite_def_builder{}
+            // 1. The Atlas Image
+            // Point to the spritesheet on disk with declared atlas dimensions.
+            .from_file(asset_path("arcade_platformer.png"), 352, 320)
 
-        // 1. The Atlas Image
-        // Point to the spritesheet on disk.
-        def.image.source = neutrino::image_from_disk{asset_path("arcade_platformer.png")};
-        def.image.width  = 352;
-        def.image.height = 320;
+            // 2. Named Visuals (Frame Rectangles and Pivots)
+            // Each frame occupies a 32x32 cell in the atlas.
+            // We set origin = {16, 32} (bottom-center pivot).
+            // By placing the pivot at the bottom center of the sprite, placing the sprite
+            // at (x, ground_y) rests the character's feet directly on the ground.
+            .add_visual("player.idle",   neutrino::rect{0, 0, 32, 32},  neutrino::point{16, 32})
+            .add_visual("player.walk.0", neutrino::rect{0, 0, 32, 32},  neutrino::point{16, 32})
+            .add_visual("player.walk.1", neutrino::rect{32, 0, 32, 32}, neutrino::point{16, 32})
+            .add_visual("player.walk.2", neutrino::rect{64, 0, 32, 32}, neutrino::point{16, 32})
 
-        // 2. Named Visuals (Frame Rectangles and Pivots)
-        // Each frame occupies a 32x32 cell in the atlas.
-        // We set origin = {16, 32} (bottom-center pivot).
-        // By placing the pivot at the bottom center of the sprite, placing the sprite
-        // at (x, ground_y) rests the character's feet directly on the ground.
-        def.visuals = {
-            neutrino::sprite_visual_def{"player.idle",   neutrino::rect{0, 0, 32, 32},  neutrino::point{16, 32}},
-            neutrino::sprite_visual_def{"player.walk.0", neutrino::rect{0, 0, 32, 32},  neutrino::point{16, 32}},
-            neutrino::sprite_visual_def{"player.walk.1", neutrino::rect{32, 0, 32, 32}, neutrino::point{16, 32}},
-            neutrino::sprite_visual_def{"player.walk.2", neutrino::rect{64, 0, 32, 32}, neutrino::point{16, 32}},
-        };
-
-        // 3. Named Animation Clips
-        // Clips bind visual frames into timed sequences.
-        def.clips = {
-            neutrino::sprite_clip_def{
-                .name = "idle",
-                .frames = {
-                    neutrino::sprite_frame_def{
-                        .visual = "player.idle",
-                        .duration = neutrino::sprite_animation_duration{1000.0f},
-                        .flip = neutrino::sprite_flip::none
-                    },
-                },
-                .loop = true,
-            },
-            neutrino::sprite_clip_def{
-                .name = "walk",
-                .frames = {
-                    neutrino::sprite_frame_def{.visual = "player.walk.0", .duration = neutrino::sprite_animation_duration{100.0f}},
-                    neutrino::sprite_frame_def{.visual = "player.walk.1", .duration = neutrino::sprite_animation_duration{100.0f}},
-                    neutrino::sprite_frame_def{.visual = "player.walk.2", .duration = neutrino::sprite_animation_duration{100.0f}},
-                    neutrino::sprite_frame_def{.visual = "player.walk.1", .duration = neutrino::sprite_animation_duration{100.0f}},
-                },
-                .loop = true,
-            },
-        };
-
-        return def;
+            // 3. Named Animation Clips
+            // Clips bind visual frames into timed sequences.
+            .add_clip("idle", {"player.idle"}, 1000ms, true)
+            .add_clip("walk", {"player.walk.0", "player.walk.1", "player.walk.2", "player.walk.1"}, 100ms, true)
+            .build();
     }
 
     // =========================================================================
@@ -123,10 +98,10 @@ namespace {
         void on_enter() override {
             std::cout << "[Tutorial 02] Acquiring player sprite set from cache...\n";
 
-            // 1. Acquire the GPU resources from the cache.
-            // If the set is already resident in GPU memory, acquire() shares it instantly;
+            // 1. Acquire the GPU resources from the engine sprite cache.
+            // If the set is already resident in GPU memory, acquire_sprite() shares it instantly;
             // if not, it decodes the image and uploads the atlas to the GPU.
-            m_set = m_cache.acquire(make_player_def());
+            m_set = neutrino::acquire_sprite(make_player_def());
 
             // 2. Spawn a runtime playhead for our player actor.
             // Spawning an instance creates an independent animation clock and retains
@@ -193,11 +168,12 @@ namespace {
         }
 
     private:
-        // C++ destructors run in reverse declaration order:
-        // 1. m_player is destroyed FIRST (unregisters state from engine, drops internal lease)
-        // 2. m_set is destroyed SECOND (drops the scene's lease)
-        // 3. m_cache is destroyed LAST (owns the cold pool and core entries)
-        neutrino::sprite_cache      m_cache;
+        // The sprite cache is managed globally at the application level by neutrino::application.
+        // Scenes only hold lightweight RAII handles and instances:
+        // 1. m_set holds an RAII lease on the uploaded GPU sprite atlas.
+        // 2. m_player is an active playhead bound to an animation clip.
+        // Because the cache lives at the engine service level, scenes are free of fragile
+        // member destruction ordering dependencies.
         neutrino::sprite_set_handle m_set;
         neutrino::sprite_instance   m_player;
 

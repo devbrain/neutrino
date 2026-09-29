@@ -215,6 +215,7 @@ Neutrino eliminates these problems with [`sprite_cache`](pathname:///api/). The 
 1. **Content-keyed deduplication:** Two identical definitions share a single GPU upload.
 2. **RAII refcounting leases (`sprite_set_handle`):** The GPU resources stay resident as long as any lease lives.
 3. **A bounded LRU cold pool:** Idle assets linger in VRAM, allowing instant resurrection across scene transitions.
+4. **Engine-level service lifecycle:** Hosted globally by `neutrino::application`, eliminating scene-level cache lifetime management and member destruction ordering fragility.
 
 ---
 
@@ -317,6 +318,43 @@ neutrino::sprite_cache cache;
 assert(cache.resident_count() == 1); // Still resident in VRAM
 assert(cache.cold_count() == 1);     // But idle in the cold pool
 ```
+
+---
+
+### Application-Level Cache Service (`neutrino::acquire_sprite`)
+
+In a clean game architecture, scenes should not own asset caches. If each scene instantiates its own cache, assets cannot be shared across scene transitions, and scenes become vulnerable to fragile C++ member declaration order dependencies (where destroying a cache before active instances or leases causes crashes).
+
+To eliminate this fragility entirely, Neutrino hosts `sprite_cache` as an application-level service registered with `service_locator` and managed by `neutrino::application`:
+
+```cpp
+#include <neutrino/video/sprites.hh>
+
+void my_scene::on_enter() {
+    // Acquire a resident GPU lease directly from the engine-level cache:
+    m_set = neutrino::acquire_sprite(make_hero_def());
+
+    // Spawn an actor playhead:
+    m_player = m_set.spawn("idle");
+}
+```
+
+```cpp
+class my_scene final : public neutrino::base_scene {
+private:
+    // Scenes only hold lightweight handles and instances.
+    // Zero cache members, zero member destruction order bugs!
+    neutrino::sprite_set_handle m_set;
+    neutrino::sprite_instance   m_player;
+};
+```
+
+#### Two-Layer Safety Design
+
+Neutrino enforces two layers of safety around sprite cache lifecycles:
+
+1. **Architectural Safety:** `neutrino::application` outlives all scenes. When a scene transitions or pops, its actors and leases drop cleanly while textures linger in the engine cache's cold pool. Even if `m_player` is declared before `m_set` or vice-versa, `sprite_instance` unregisters its animation state before releasing its lease copy, preventing any use-after-free.
+2. **Implementation Safety (Weak Pointer Back-Reference):** Each `sprite_set_handle` retains a `std::weak_ptr` to the cache's implementation. If a developer or test creates a local `sprite_cache` and destroys it before its handles, `handle.valid()` safely evaluates to `false`, and subsequent operations or handle destructions safely no-op instead of invoking undefined behavior.
 
 ---
 

@@ -33,6 +33,7 @@
 namespace neutrino {
     class sprite_cache;
     class sprite_instance;
+    struct sprite_cache_impl;
 
     /**
      * @brief RAII lease on a cache-owned @ref sprite_set, addressed by name.
@@ -50,7 +51,7 @@ namespace neutrino {
             sprite_set_handle& operator=(sprite_set_handle&& other) noexcept;
             ~sprite_set_handle();
 
-            [[nodiscard]] bool valid() const noexcept { return m_set != nullptr; }
+            [[nodiscard]] bool valid() const noexcept;
 
             /// @brief The registered visual bound to @p name in the set, or nullopt.
             [[nodiscard]] std::optional <sprite_visual_ref> visual(std::string_view name) const {
@@ -158,15 +159,15 @@ namespace neutrino {
 
         private:
             friend class sprite_cache;
-            sprite_set_handle(sprite_cache* cache, content_key key, std::uint64_t token,
+            sprite_set_handle(std::weak_ptr <sprite_cache_impl> cache, content_key key, std::uint64_t token,
                               const sprite_set* set) noexcept
-                : m_cache(cache), m_key(key), m_token(token), m_set(set) {
+                : m_cache(std::move(cache)), m_key(key), m_token(token), m_set(set) {
             }
 
-            sprite_cache*     m_cache{nullptr};
-            content_key       m_key{};
-            std::uint64_t     m_token{0};
-            const sprite_set* m_set{nullptr};
+            std::weak_ptr <sprite_cache_impl> m_cache;
+            content_key                       m_key{};
+            std::uint64_t                     m_token{0};
+            const sprite_set*                 m_set{nullptr};
     };
 
     /**
@@ -188,14 +189,14 @@ namespace neutrino {
             sprite_cache& operator=(const sprite_cache&) = delete;
 
             /**
-             * @brief Acquire the set for @p def, building it on a miss.
-             *
-             * A hit resurrects/shares the entry; a miss calls @ref build_sprite_set. The
-             * returned lease owns one reference.
-             *
-             * @pre An application must be initialized.
-             * @throws (via @ref build_sprite_set) when a miss cannot build.
-             */
+              * @brief Acquire the set for @p def, building it on a miss.
+              *
+              * A hit resurrects/shares the entry; a miss calls @ref build_sprite_set. The
+              * returned lease owns one reference.
+              *
+              * @pre An application must be initialized.
+              * @throws (via @ref build_sprite_set) when a miss cannot build.
+              */
             [[nodiscard]] sprite_set_handle acquire(const sprite_def& def);
 
             /// @brief Number of resident sets (leased plus cold).
@@ -209,8 +210,8 @@ namespace neutrino {
             void retain(const sprite_set_handle& handle);
             void release(const sprite_set_handle& handle);
 
-            struct impl;
-            std::unique_ptr <impl> m_impl;
+            using impl = sprite_cache_impl;
+            std::shared_ptr <impl> m_impl;
     };
 
     /**
@@ -252,4 +253,25 @@ namespace neutrino {
             sprite_set_handle m_lease;
             sprite_state_id   m_state;
     };
+
+    /**
+     * @brief The active application's shared sprite cache.
+     *
+     * Shared across scenes and actors for content-keyed deduplication and cold-pool reuse.
+     * Owned by the application and torn down during application shutdown.
+     *
+     * @pre An application must be initialized.
+     */
+    [[nodiscard]] NEUTRINO_EXPORT sprite_cache& get_sprite_cache();
+
+    /**
+     * @brief Convenience helper: acquire a sprite set from the application's shared sprite cache.
+     *
+     * Equivalent to `get_sprite_cache().acquire(def)`.
+     *
+     * @pre An application must be initialized.
+     */
+    [[nodiscard]] inline sprite_set_handle acquire_sprite(const sprite_def& def) {
+        return get_sprite_cache().acquire(def);
+    }
 }

@@ -156,4 +156,86 @@ TEST_SUITE("neutrino::video sprite_instance") {
 
         CHECK(cache.cold_count() == 1);       // now the set is cold
     }
+
+    TEST_CASE("application-level get_sprite_cache and acquire_sprite helper") {
+        neutrino::test::test_application app("global sprite cache");
+
+        auto& cache = neutrino::get_sprite_cache();
+        CHECK(cache.resident_count() == 0);
+
+        sprite_set_handle a = neutrino::acquire_sprite(grid_def(64));
+        REQUIRE(a.valid());
+        CHECK(cache.resident_count() == 1);
+
+        sprite_set_handle b = neutrino::acquire_sprite(grid_def(64));
+        REQUIRE(b.valid());
+        CHECK(cache.resident_count() == 1); // Content shared in engine cache
+
+        sprite_instance inst = a.spawn("idle");
+        REQUIRE(inst.valid());
+        CHECK(inst.switch_to("walk"));
+    }
+
+    TEST_CASE("sprite_set_handle safely outlives sprite_cache") {
+        neutrino::test::test_application app("handle outlives cache");
+
+        sprite_set_handle leaked_handle;
+
+        {
+            sprite_cache local_cache;
+            leaked_handle = local_cache.acquire(grid_def(64));
+            REQUIRE(leaked_handle.valid());
+            CHECK(local_cache.resident_count() == 1);
+        } // local_cache is destroyed here before leaked_handle
+
+        // Handle detects that owner cache has expired
+        CHECK_FALSE(leaked_handle.valid());
+        CHECK_FALSE(leaked_handle.clip("idle").has_value());
+        CHECK_FALSE(leaked_handle.visual("0").has_value());
+        CHECK_FALSE(leaked_handle.spawn("idle").valid());
+
+        // Destruction of leaked_handle at function exit must not crash or UAF
+    }
+
+    TEST_CASE("scene member destruction order independence: instance destroyed after handle") {
+        neutrino::test::test_application app("order independence: inst after handle");
+
+        struct scene_mock {
+            // Declared in order where set is destroyed BEFORE player:
+            sprite_instance   player;
+            sprite_set_handle set;
+        };
+
+        {
+            scene_mock scene;
+            scene.set = neutrino::acquire_sprite(grid_def(64));
+            scene.player = scene.set.spawn("idle");
+            REQUIRE(scene.player.valid());
+            REQUIRE(scene.set.valid());
+        } // scene destroyed: set destroyed first, then player. No crash, clean teardown!
+
+        CHECK(neutrino::get_sprite_cache().cold_count() == 1);
+    }
+
+    TEST_CASE("scene member destruction order independence: handle destroyed after instance") {
+        neutrino::test::test_application app("order independence: handle after inst");
+
+        struct scene_mock {
+            // Declared in order where player is destroyed BEFORE set:
+            sprite_set_handle set;
+            sprite_instance   player;
+        };
+
+        {
+            scene_mock scene;
+            scene.set = neutrino::acquire_sprite(grid_def(64));
+            scene.player = scene.set.spawn("idle");
+            REQUIRE(scene.player.valid());
+            REQUIRE(scene.set.valid());
+        } // scene destroyed: player destroyed first, then set. No crash, clean teardown!
+
+        CHECK(neutrino::get_sprite_cache().cold_count() == 1);
+    }
 }
+
+

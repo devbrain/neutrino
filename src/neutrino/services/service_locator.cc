@@ -54,6 +54,10 @@ namespace neutrino {
         m_resource_cache = &c;
     }
 
+    void service_locator::set_sprite_cache(sprite_cache& c) {
+        m_sprite_cache = &c;
+    }
+
     void service_locator::clear_application(application& a) noexcept {
         if (m_application != &a) {
             return;
@@ -68,6 +72,7 @@ namespace neutrino {
         m_texture_registry = nullptr;
         m_sprites_manager = nullptr;
         m_resource_cache = nullptr;
+        m_sprite_cache = nullptr;
         m_max_texture_size = 0;
     }
 }

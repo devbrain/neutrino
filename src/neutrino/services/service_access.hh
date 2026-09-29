@@ -56,6 +56,15 @@ namespace neutrino {
         return service_locator::instance().get_gamepads();
     }
 
+    [[nodiscard]] inline sprite_cache& require_sprite_cache() {
+        auto* c = service_locator::instance().get_sprite_cache();
+        ENFORCE(c != nullptr)("sprite_cache is not available; is the application ready?");
+        return *c;
+    }
+    [[nodiscard]] inline sprite_cache* maybe_sprite_cache() noexcept {
+        return service_locator::instance().get_sprite_cache();
+    }
+
     /// @brief Shutdown-safe unregister: erase @p id from @p manager when the id is live and
     ///        the manager still exists ("already torn down" means nothing to do).
     template <class Id, class Manager>

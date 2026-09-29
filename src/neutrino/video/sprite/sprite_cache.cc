@@ -12,79 +12,96 @@
 
 #include <neutrino/video/sprite/image_identity.hh>
 
+#include "services/service_access.hh"
 #include "video/sprite/resource_cache_core.hh"
 
 namespace neutrino {
+    struct sprite_cache_impl {
+        explicit sprite_cache_impl(std::size_t cold_budget)
+            : core(cold_budget) {
+        }
+
+        resource_cache_core <sprite_set> core;
+        image_identifier                 identifier;
+    };
+
     namespace {
         // An empty lease answers every optional lookup with nullopt, so a require_* on one would
         // otherwise report "no such frame" for a set that was simply never acquired. Separate the
         // two failures: this one means the HANDLE is wrong, not the key.
-        void enforce_leased(const void* set, const char* what) {
-            ENFORCE(set != nullptr)("sprite_set_handle: ", what, " on an empty lease (no set acquired)");
+        void enforce_leased(const void* set, bool expired, const char* what) {
+            ENFORCE(set != nullptr && !expired)("sprite_set_handle: ", what, " on an empty or expired lease (no set acquired)");
         }
     } // namespace
 
     // --- sprite_set_handle: a lease over sprite_cache's retain/release primitives ---
 
+    bool sprite_set_handle::valid() const noexcept {
+        return m_set != nullptr && !m_cache.expired();
+    }
+
     sprite_visual_ref sprite_set_handle::require_visual(std::string_view name) const {
-        enforce_leased(m_set, "require_visual");
+        enforce_leased(m_set, m_cache.expired(), "require_visual");
         return m_set->require_visual(name);
     }
 
     sprite_visual_ref sprite_set_handle::require_visual(std::size_t index) const {
-        enforce_leased(m_set, "require_visual");
+        enforce_leased(m_set, m_cache.expired(), "require_visual");
         return m_set->require_visual(index);
     }
 
     rect sprite_set_handle::require_frame_rect(std::string_view name) const {
-        enforce_leased(m_set, "require_frame_rect");
+        enforce_leased(m_set, m_cache.expired(), "require_frame_rect");
         return m_set->require_frame_rect(name);
     }
 
     rect sprite_set_handle::require_frame_rect(std::size_t index) const {
-        enforce_leased(m_set, "require_frame_rect");
+        enforce_leased(m_set, m_cache.expired(), "require_frame_rect");
         return m_set->require_frame_rect(index);
     }
 
     point sprite_set_handle::require_origin(std::string_view name) const {
-        enforce_leased(m_set, "require_origin");
+        enforce_leased(m_set, m_cache.expired(), "require_origin");
         return m_set->require_origin(name);
     }
 
     point sprite_set_handle::require_origin(std::size_t index) const {
-        enforce_leased(m_set, "require_origin");
+        enforce_leased(m_set, m_cache.expired(), "require_origin");
         return m_set->require_origin(index);
     }
 
     sprite_metrics sprite_set_handle::require_metrics(std::string_view name) const {
-        enforce_leased(m_set, "require_metrics");
+        enforce_leased(m_set, m_cache.expired(), "require_metrics");
         return m_set->require_metrics(name);
     }
 
     sprite_metrics sprite_set_handle::require_metrics(std::size_t index) const {
-        enforce_leased(m_set, "require_metrics");
+        enforce_leased(m_set, m_cache.expired(), "require_metrics");
         return m_set->require_metrics(index);
     }
 
     sprite_animation_id sprite_set_handle::require_clip(std::string_view name) const {
-        enforce_leased(m_set, "require_clip");
+        enforce_leased(m_set, m_cache.expired(), "require_clip");
         return m_set->require_clip(name);
     }
 
     sprite_set_handle::sprite_set_handle(const sprite_set_handle& other)
         : m_cache(other.m_cache), m_key(other.m_key), m_token(other.m_token), m_set(other.m_set) {
-        if (m_cache && m_set) {
-            m_cache->retain(*this);
+        if (auto cache = m_cache.lock()) {
+            cache->core.retain(
+                resource_cache_core <sprite_set>::handle{m_key, m_set, m_token});
         }
     }
 
     sprite_set_handle& sprite_set_handle::operator=(const sprite_set_handle& other) {
         if (this != &other) {
-            if (other.m_cache && other.m_set) {
-                other.m_cache->retain(other); // retain the new entry before releasing the old
+            if (auto other_cache = other.m_cache.lock()) {
+                other_cache->core.retain(
+                    resource_cache_core <sprite_set>::handle{other.m_key, other.m_set, other.m_token});
             }
-            if (m_cache && m_set) {
-                m_cache->release(*this);
+            if (auto cache = m_cache.lock()) {
+                cache->core.release(
+                    resource_cache_core <sprite_set>::handle{m_key, m_set, m_token});
             }
             m_cache = other.m_cache;
             m_key   = other.m_key;
@@ -95,8 +112,7 @@ namespace neutrino {
     }
 
     sprite_set_handle::sprite_set_handle(sprite_set_handle&& other) noexcept
-        : m_cache(other.m_cache), m_key(other.m_key), m_token(other.m_token), m_set(other.m_set) {
-        other.m_cache = nullptr;
+        : m_cache(std::move(other.m_cache)), m_key(other.m_key), m_token(other.m_token), m_set(other.m_set) {
         other.m_set   = nullptr;
         other.m_token = 0;
         other.m_key   = content_key{};
@@ -104,14 +120,14 @@ namespace neutrino {
 
     sprite_set_handle& sprite_set_handle::operator=(sprite_set_handle&& other) noexcept {
         if (this != &other) {
-            if (m_cache && m_set) {
-                m_cache->release(*this);
+            if (auto cache = m_cache.lock()) {
+                cache->core.release(
+                    resource_cache_core <sprite_set>::handle{m_key, m_set, m_token});
             }
-            m_cache = other.m_cache;
+            m_cache = std::move(other.m_cache);
             m_key   = other.m_key;
             m_token = other.m_token;
             m_set   = other.m_set;
-            other.m_cache = nullptr;
             other.m_set   = nullptr;
             other.m_token = 0;
             other.m_key   = content_key{};
@@ -120,8 +136,9 @@ namespace neutrino {
     }
 
     sprite_set_handle::~sprite_set_handle() {
-        if (m_cache && m_set) {
-            m_cache->release(*this);
+        if (auto cache = m_cache.lock()) {
+            cache->core.release(
+                resource_cache_core <sprite_set>::handle{m_key, m_set, m_token});
         }
     }
 
@@ -182,17 +199,8 @@ namespace neutrino {
 
     // --- sprite_cache ---
 
-    struct sprite_cache::impl {
-        explicit impl(std::size_t cold_budget)
-            : core(cold_budget) {
-        }
-
-        resource_cache_core <sprite_set> core;
-        image_identifier                 identifier;
-    };
-
     sprite_cache::sprite_cache(std::size_t cold_budget)
-        : m_impl(std::make_unique <impl>(cold_budget)) {
+        : m_impl(std::make_shared <impl>(cold_budget)) {
     }
 
     // Destroying the impl drops the core's entries, whose sprite_sets unregister themselves.
@@ -202,7 +210,7 @@ namespace neutrino {
         const content_key key = key_for(def, m_impl->identifier);
         // build runs only on a miss; a throwing build leaves the cache untouched.
         const auto h = m_impl->core.acquire(key, [&] { return build_sprite_set(def); });
-        return sprite_set_handle{this, h.key, h.token, h.bundle}; // adopts acquire's refcount
+        return sprite_set_handle{m_impl, h.key, h.token, h.bundle}; // adopts acquire's refcount
     }
 
     void sprite_cache::retain(const sprite_set_handle& handle) {
@@ -221,5 +229,9 @@ namespace neutrino {
 
     std::size_t sprite_cache::cold_count() const noexcept {
         return m_impl->core.cold_count();
+    }
+
+    sprite_cache& get_sprite_cache() {
+        return require_sprite_cache();
     }
 }
