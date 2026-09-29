@@ -15,10 +15,14 @@
  * later addition on the same `sprite_def` target.
  */
 
+#include <cstdint>
+#include <span>
 #include <string_view>
+#include <vector>
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/sprite/sprite_def.hh>
+#include <neutrino/video/sprite/sprite_def_builder.hh>
 
 namespace neutrino {
     /**
@@ -35,4 +39,27 @@ namespace neutrino {
      * @throws (via nlohmann::json) on malformed JSON or a missing required field.
      */
     [[nodiscard]] NEUTRINO_EXPORT sprite_def load_aseprite_atlas(std::string_view json);
+
+    /**
+     * @brief Parse an Aseprite JSON export, overriding the image source with in-memory bytes
+     *        (e.g. read from a resource file or archive).
+     */
+    [[nodiscard]] NEUTRINO_EXPORT sprite_def load_aseprite_atlas(
+        std::string_view json,
+        std::vector <std::uint8_t> image_bytes);
+
+    /**
+     * @brief Parse an Aseprite JSON export, overriding the image source with an in-memory byte span.
+     */
+    [[nodiscard]] NEUTRINO_EXPORT sprite_def load_aseprite_atlas(
+        std::string_view json,
+        std::span <const std::uint8_t> image_bytes);
+
+    /**
+     * @brief Parse an Aseprite JSON export, resolving the atlas image bytes via a callback
+     *        from a resource file or archive.
+     */
+    [[nodiscard]] NEUTRINO_EXPORT sprite_def load_aseprite_atlas(
+        std::string_view json,
+        const sprite_resource_resolver& resolver);
 }

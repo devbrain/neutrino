@@ -110,6 +110,98 @@ def.clips = {
   };
   ```
 
+### Fluent Authoring with `sprite_def_builder`
+
+Instead of verbose manual aggregate initialization, Neutrino provides [`sprite_def_builder`](pathname:///api/) (`<neutrino/video/sprite/sprite_def_builder.hh>`), allowing you to chain image configuration, grid slicing, custom frames, and animation clips fluently:
+
+```cpp
+#include <neutrino/video/sprites.hh>
+
+using namespace std::chrono_literals;
+
+// Construct a sprite definition fluently:
+neutrino::sprite_def hero_def = neutrino::sprite_def_builder()
+    .from_file("assets/hero.png")
+    .with_grid(32, 32, neutrino::sprite_origin_rule::bottom_center)
+    .add_clip("idle", {"0", "1"}, 200ms, /*loop=*/true)
+    .add_clip_range("walk", /*first_index=*/2, /*count=*/4, 100ms, /*loop=*/true)
+    .clip("attack", /*loop=*/false)
+        .frame("6", 80ms)
+        .frame("7", 120ms, neutrino::sprite_flip::horizontal)
+        .frame("8", 80ms)
+        .end_clip()
+    .build();
+
+// Direct acquisition into the cache:
+auto handle = cache.acquire(hero_def);
+```
+
+### Resource Files, Archives & Memory-Backed Sprites (PAK, ZIP, VFS)
+
+In production games, art and metadata are rarely stored as loose individual files on disk. Instead, assets are packaged into archive files (e.g., custom `.pak` files, `.zip` archives, virtual filesystems, or embedded binary blobs in the executable).
+
+`sprite_def_builder` natively supports in-memory buffers and streaming inputs:
+
+#### 1. In-Memory Image Buffers & Streams
+
+When your virtual filesystem or archive reader extracts an image entry into memory (as raw encoded PNG/BMP bytes), pass it directly via `.from_memory(...)` or `.from_stream(...)`:
+
+```cpp
+// 1. Read binary image payload from your custom archive / PAK file:
+std::vector<std::uint8_t> png_bytes = my_archive.read_entry("sprites/player.png");
+
+// 2. Build directly from memory bytes without writing temporary files to disk:
+neutrino::sprite_def def = neutrino::sprite_def_builder()
+    .from_memory(std::move(png_bytes))
+    .with_grid(16, 16, neutrino::sprite_origin_rule::bottom_center)
+    .add_clip_range("walk", 0, 4, 100ms)
+    .build();
+```
+
+#### 2. Bundled Aseprite Metadata + In-Memory Image
+
+If your resource archive stores exported Aseprite JSON metadata along with the atlas texture, you can load the metadata while pointing to the in-memory texture bytes:
+
+```cpp
+std::string json_text = my_archive.read_text("sprites/hero.json");
+std::vector<std::uint8_t> texture_bytes = my_archive.read_entry("sprites/hero.png");
+
+// Parse frames, trim metadata, and tags from JSON, while supplying in-memory pixels:
+neutrino::sprite_def def = neutrino::sprite_def_builder::from_aseprite_json(
+    json_text, std::move(texture_bytes)).build();
+```
+
+#### 3. Automatic Archive Resolvers
+
+When an exported metadata file references an image filename (such as `"image": "hero_atlas.png"` inside `meta`), you can pass a resolver callback to `from_aseprite_json` or `load_aseprite_atlas`. The loader queries your resolver to locate the corresponding bytes within the archive:
+
+```cpp
+// The resolver callback looks up the referenced image inside the archive:
+auto archive_resolver = [&](std::string_view filename) -> std::vector<std::uint8_t> {
+    return my_archive.read_entry(std::string("assets/") + std::string(filename));
+};
+
+// One-liner to load complete atlas and image directly from the archive:
+neutrino::sprite_def def = neutrino::sprite_def_builder::from_aseprite_json(
+    json_text, archive_resolver).build();
+
+// Or via load_aseprite_atlas:
+neutrino::sprite_def def2 = neutrino::load_aseprite_atlas(json_text, archive_resolver);
+```
+
+#### 4. Procedural & In-Memory Surfaces (`from_surface`)
+
+For procedurally generated textures or images decoded by an external library:
+
+```cpp
+auto procedural_surface = generate_minimap_surface();
+
+neutrino::sprite_def def = neutrino::sprite_def_builder()
+    .from_surface(std::move(procedural_surface))
+    .add_visual("full", neutrino::rect{0, 0, 128, 128})
+    .build();
+```
+
 ---
 
 ## 2. Automatic Caching & RAII Leases (`sprite_cache`)

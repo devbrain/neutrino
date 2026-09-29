@@ -174,6 +174,7 @@
 #include <neutrino/video/sprite/sprite_appearance.hh>
 #include <neutrino/video/sprite/sprite_cache.hh>
 #include <neutrino/video/sprite/sprite_def.hh>
+#include <neutrino/video/sprite/sprite_def_builder.hh>
 #include <neutrino/video/sprite/sprite_set.hh>
 #include <neutrino/video/sprite/sprite_sheet.hh>
 #include <neutrino/video/sprite/sprite_state.hh>

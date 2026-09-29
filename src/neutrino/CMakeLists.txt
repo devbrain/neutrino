@@ -104,6 +104,8 @@ add_library(neutrino ${_lib_type}
         video/sprite/resource_cache_core.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_def.hh
         video/sprite/sprite_def.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_def_builder.hh
+        video/sprite/sprite_def_builder.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_set.hh
         video/sprite/sprite_set.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_cache.hh

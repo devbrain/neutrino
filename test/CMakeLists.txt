@@ -34,6 +34,7 @@ add_executable(neutrino_tests
         video/test_bitmask.cc
         video/test_sprites.cc
         video/test_sprite_def.cc
+        video/test_sprite_def_builder.cc
         video/test_sprite_set.cc
         video/test_sprite_cache.cc
         video/test_atlas_loader.cc
