@@ -33,6 +33,7 @@ const sidebars: SidebarsConfig = {
       link: {type: 'doc', id: 'tutorial/index'},
       items: [
         'tutorial/step-01-window-and-scene',
+        'tutorial/step-02-one-sprite',
       ],
     },
     {

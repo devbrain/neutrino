@@ -16,7 +16,7 @@ platforms that carry you. Those are the parts hardest to discover from headers a
 
 :::info In progress
 
-The platformer tutorial is being published step by step. Step 1 is available below. In the meantime,
+The platformer tutorial is being published step by step. Steps 1 and 2 are available below. In the meantime,
 the [examples](https://github.com/devbrain/neutrino/tree/main/examples) in the repository are working
 code you can read and run — `sprite_demo` for sprites and animation, `map_viewer` for Tiled maps.
 :::
@@ -26,7 +26,7 @@ code you can read and run — `sprite_demo` for sprites and animation, `map_view
 | Step | You build | You learn |
 |---|---|---|
 | 1 | [A window and an empty scene](./step-01-window-and-scene.md) | The application, the frame loop, the scene stack |
-| 2 | One sprite on screen | Sprite definitions, sets, and the draw batch |
+| 2 | [One sprite on screen](./step-02-one-sprite.md) | Sprite definitions, sets, and the draw batch |
 | 3 | Moving it with the keyboard | The input snapshot; edges versus held state |
 | 4 | Standing on ground | The physics world, kinematic bodies, move-and-slide |
 | 5 | A real level | Loading a Tiled map; the camera following the player |
