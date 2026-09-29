@@ -34,6 +34,9 @@ const config: Config = {
   onBrokenAnchors: 'throw',
   markdown: {
     mermaid: true,
+    mdx1Compat: {
+      admonitions: true,
+    },
     hooks: {
       // v4 location for what used to be the top-level onBrokenMarkdownLinks.
       onBrokenMarkdownLinks: 'throw',

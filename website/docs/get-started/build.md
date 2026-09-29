@@ -33,7 +33,7 @@ cmake --build build -j
 The configure step is the slow one — it clones and configures every dependency, which took about
 two minutes on a warm network. Subsequent configures reuse what it fetched.
 
-:::note What gets downloaded
+:::note[What gets downloaded]
 
 Configuring pulls in [neutrino-cmake](https://github.com/devbrain/neutrino-cmake) (the shared build
 infrastructure), then SDL3 and sdlpp, euler, the onyx image/font/animation libraries, musac for
@@ -56,7 +56,7 @@ The test suite is a good second check that the build is sound:
 ./build/bin/neutrino_tests
 ```
 
-:::caution The `ke` target needs assets it does not ship
+:::caution[The `ke` target needs assets it does not ship]
 
 `ke` (Krypton Egg) also builds, but it reads game data from a commercial resource file that is not
 in the repository, and it currently looks for it at a path hard-coded for the author's machine. It

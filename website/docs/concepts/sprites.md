@@ -496,7 +496,7 @@ private:
 
 ### Automatic animation clock
 
-:::tip You do not need to tick sprites manually
+:::tip[You do not need to tick sprites manually]
 Unlike engines where you must call `sprite.update(delta_time)` inside your entity's update loop,
 Neutrino's engine loop **automatically ticks all registered runtime sprite states** during `application::on_update`.
 Drawing the state automatically resolves the active frame corresponding to the current time.

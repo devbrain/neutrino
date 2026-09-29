@@ -14,7 +14,7 @@ A platformer specifically, because it is what the engine's movement system is *f
 against level geometry, standing on ground, one-way ledges you can jump up through, moving
 platforms that carry you. Those are the parts hardest to discover from headers alone.
 
-:::info In progress
+:::info[In progress]
 
 The platformer tutorial is being published step by step. Steps 1 and 2 are available below. In the meantime,
 the [examples](https://github.com/devbrain/neutrino/tree/main/examples) in the repository are working

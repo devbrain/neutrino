@@ -83,7 +83,7 @@ dialog and the button behind it also fires. Because covered scenes get a genuine
 rather than being skipped, they need no "am I on top?" checks: code that steers from the pointer
 simply sees `on_screen == false` and does nothing.
 
-:::tip This is why `pointer_state::on_screen` exists
+:::tip[This is why `pointer_state::on_screen` exists]
 
 A scene that moves something to follow the pointer **must** check `on_screen` before acting on the
 position. It is false both when the cursor is outside the window and when the scene is covered.
@@ -152,7 +152,7 @@ way, so one scene failing to exit cannot strand the rest. This matters more than
 application's `teardown()` runs immediately after and may release assets the scenes were using, so
 a scene surviving shutdown would be holding freed resources.
 
-:::warning `replace_scene` and `pop_scene` are not rolled back
+:::warning[`replace_scene` and `pop_scene` are not rolled back]
 
 The rollback above applies to `push_scene` only. On the other two paths an exception is caught one
 level up — logged, so the application survives — but the stack is **not** repaired:

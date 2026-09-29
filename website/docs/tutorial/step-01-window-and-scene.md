@@ -10,10 +10,12 @@ In this first step, we create the platformer executable from scratch: an opening
 
 By the end of this step, you will have a running window showing a letterboxed design canvas, an active scene receiving simulation ticks, and a clean shutdown path on <kbd>Escape</kbd>.
 
-:::tip Concept pages
+:::tip[Concept pages]
 This tutorial is the fast, hands-on path through the engine. For in-depth design rationale and edge cases, see:
+
 - [The frame](../concepts/the-frame.md) — simulation vs. presentation, the accumulator, and fixed-timestep guarantees
 - [Scenes](../concepts/scenes.md) — the scene stack, opaque vs. overlay, and lifecycle transitions
+
 :::
 
 ---

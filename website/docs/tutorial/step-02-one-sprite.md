@@ -12,10 +12,12 @@ In this step, we bring our platformer character into the world: loading the spri
 
 By the end of this step, you will have an animated character standing naturally on the ground, breathing with an idle animation, and ready for player movement controls in Step 3.
 
-:::tip Concept pages
+:::tip[Concept pages]
 For the deep architectural reasoning behind Neutrino's sprite system and coordinate transformations, see:
+
 - [Sprites](../concepts/sprites.md) — pure data definitions (`sprite_def`), GPU atlases (`sprite_set`), and automatic cache leasing (`sprite_cache`)
 - [Coordinate spaces](../concepts/coordinate-spaces.md) — logical render coordinates and pivot placement
+
 :::
 
 ---

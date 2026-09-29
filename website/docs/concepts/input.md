@@ -105,7 +105,7 @@ You do not have to do anything to get this; it is worth knowing because it expla
 the edges behave differently across a frame, and why you must not cache a snapshot and re-read it
 later.
 
-:::note One honest gap
+:::note[One honest gap]
 
 A press that begins *and ends* within a frame that runs **zero** substeps is seen only if the
 button is still down on the next stepping frame. In practice that requires a frame rate far above
@@ -176,7 +176,7 @@ side-specific values like `lctrl` require that particular key.
 
 These obey the same one-substep edge rule as the snapshot, so mixing the two styles is safe.
 
-:::tip Which should you use?
+:::tip[Which should you use?]
 
 Prefer the snapshot. It is explicit about where input comes from, it works in tests without a
 running application, and a covered scene automatically receives a neutral one. The polled APIs read
