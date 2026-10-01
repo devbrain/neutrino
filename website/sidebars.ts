@@ -28,12 +28,32 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Tutorial',
+      label: 'Tutorials',
       collapsed: false,
       link: {type: 'doc', id: 'tutorial/index'},
       items: [
-        'tutorial/step-01-window-and-scene',
-        'tutorial/step-02-one-sprite',
+        {
+          type: 'category',
+          label: 'Platformer',
+          collapsed: false,
+          items: [
+            'tutorial/step-01-window-and-scene',
+            'tutorial/step-02-one-sprite',
+            'tutorial/step-03-moving-with-keyboard',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Drawing',
+          collapsed: false,
+          link: {type: 'doc', id: 'tutorial/drawing/index'},
+          items: [
+            'tutorial/drawing/primitives-and-ui',
+            'tutorial/drawing/batches-and-ordering',
+            'tutorial/drawing/camera-and-parallax',
+            'tutorial/drawing/render-textures',
+          ],
+        },
       ],
     },
     {
@@ -47,6 +67,7 @@ const sidebars: SidebarsConfig = {
         'concepts/input',
         'concepts/coordinate-spaces',
         'concepts/sprites',
+        'concepts/drawing',
       ],
     },
   ],

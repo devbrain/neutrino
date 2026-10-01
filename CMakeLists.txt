@@ -164,6 +164,8 @@ endif()
 
 
 add_subdirectory(games/ke)
+add_subdirectory(games/it)
+add_subdirectory(demos)
 
 # ============================================================================
 # Summary

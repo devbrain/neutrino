@@ -1,0 +1,4 @@
+add_subdirectory(01_primitives_and_ui)
+add_subdirectory(02_batches_and_ordering)
+add_subdirectory(03_camera_and_parallax)
+add_subdirectory(04_render_textures)

@@ -1,0 +1,10 @@
+add_executable(it_res_parser
+        it_res_parser.cc
+        binary_reader.hh
+        lzss.hh
+        lzss.cc
+        it_blocks.hh
+        it_blocks.cc
+        it_vm.hh
+        it_vm.cc
+)

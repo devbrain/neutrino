@@ -9,7 +9,7 @@ description: Window, render, and world space — and the compile-time type syste
 In many 2D game engines, every coordinate, offset, and rate is represented as a plain pair of floats
 (`vec2`, `point`, or `float x, y`). This simplicity comes with subtle, silent bugs:
 
-- **Adding two positions:** Adding position $(100, 50)$ to $(200, 30)$ produces $(300, 80)$, which has no
+- **Adding two positions:** Adding position (100, 50) to (200, 30) produces (300, 80), which has no
   geometric meaning, but compiles without warning.
 - **Conflating position and velocity:** Passing a target position where a velocity was expected, or
   fabricating `(target - current) / dt` without clamping, causing catastrophic velocity spikes or wall-pinning freezes.
@@ -81,7 +81,7 @@ flowchart TD
 
 Suppose your game has a logical design canvas of `640 x 360` (16:9 aspect ratio), and runs on a laptop screen with a window size of `1280 x 800` (16:10 aspect ratio) under `scale_mode::letterbox`:
 
-1. **Calculate the Uniform Scale Factor ($S$):**
+1. **Calculate the Uniform Scale Factor (S):**
    The canvas expands to fill the width (`1280 px`):
    ```text
    S = 1280 / 640 = 2.0
@@ -176,8 +176,8 @@ flowchart TD
 | **Displacement of a Place** | `world_pos + world_delta` | `world_pos` | Moving a place by an offset produces a new place. |
 | **Combining Offsets** | `world_delta + world_delta` | `world_delta` | Combining two displacements. |
 | **Scaling an Offset** | `world_delta * float` | `world_delta` | Stretching or shortening a displacement vector. |
-| **Rate Integration** | `world_velocity * world_seconds` | `world_delta` | Speed $\times$ Time $=$ Distance traveled. |
-| **Rate Differentiation** | `world_delta / world_seconds` | `world_velocity` | Distance $\div$ Time $=$ Effective speed. |
+| **Rate Integration** | `world_velocity * world_seconds` | `world_delta` | Speed × Time = Distance traveled. |
+| **Rate Differentiation** | `world_delta / world_seconds` | `world_velocity` | Distance ÷ Time = Effective speed. |
 
 ### Operations Rejected at Compile Time
 
@@ -209,7 +209,7 @@ world_seconds dt{1.0f / 60.0f};
 Let's walk through concrete physics numbers for a character moving toward a target in a top-down game.
 
 ### Step 1: Calculating Distance and Direction
-A character is at position $A$, aiming toward target $B$:
+A character is at position A, aiming toward target B:
 ```text
 A = world_pos{100.0f, 50.0f}
 B = world_pos{140.0f, 80.0f}
@@ -333,12 +333,12 @@ flowchart LR
    ```text
    offset_world = enemy_pos - camera_pos = {1280.0 - 1200.0, 490.0 - 450.0} = world_delta{+80.0f, +40.0f}
    ```
-3. **Apply Camera Zoom ($Z = 1.0\times$):**
+3. **Apply Camera Zoom (Z = 1.0×):**
    ```text
    render_pos = center_render + (offset_world * Z) = {320.0 + 80.0, 180.0 + 40.0} = render_pos{400.0f, 220.0f}
    ```
-4. **Effect of $2.0\times$ Zoom:**
-   Under $2.0\times$ zoom, the relative offset doubles:
+4. **Effect of 2.0× Zoom:**
+   Under 2.0× zoom, the relative offset doubles:
    ```text
    render_pos = {320.0 + (80.0 * 2.0), 180.0 + (40.0 * 2.0)} = render_pos{480.0f, 260.0f}
    ```
@@ -404,7 +404,7 @@ assert(room.contains(outside_point) == false);
 
 - **Bypassing Strong Types with Raw Floats:** Storing `float x, y` in entity structs eliminates all compile-time protection. Always store `world_pos` for location, `world_velocity` for movement speed, and `world_delta` for frame steps.
 - **Assuming Window Pixels Equal Render Pixels:** On standard 1080p monitors with 1:1 window scaling, `window_pos` and `render_pos` may happen to have identical numerical values during development. As soon as the game runs on a 4K display, a Steam Deck, or in a resized window with letterboxing, the coordinates diverge. Always convert via `to_render_coords()`.
-- **Dividing by Zero Duration:** In `world_delta / world_seconds`, Neutrino safely returns `world_velocity{}` if $dt \le 0$, preventing `NaN` and `Inf` from contaminating physics state.
+- **Dividing by Zero Duration:** In `world_delta / world_seconds`, Neutrino safely returns `world_velocity{}` if `dt <= 0`, preventing `NaN` and `Inf` from contaminating physics state.
 
 ---
 

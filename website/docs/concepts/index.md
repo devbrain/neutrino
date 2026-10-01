@@ -27,6 +27,8 @@ Read these in order — together they describe the shape of every frame your gam
   types (`world_pos`, `world_delta`, `world_velocity`) that prevent space confusion at compile time.
 - **[Sprites](./sprites.md)** — the three-tier sprite pipeline (`sprite_def` → `sprite_set` → `sprite_instance`),
   sheets, dynamic atlases, clips, and automatic cache leasing.
+- **[Drawing](./drawing.md)** — immediate-mode primitives, depth-sorted batches, coarse ordering bands,
+  look-at cameras with parallax alignment, and offscreen render textures.
 
 ## Planned
 
@@ -36,7 +38,6 @@ directly from them.
 
 | Page | Covers | Header |
 |---|---|---|
-| Drawing | Batches, ordering bands, cameras, render textures | `video/world/sprite_batch.hh` |
 | Tile worlds | Tiled loading, tilesets, layers, the compositor | `world/` |
 | Physics | Body kinds, the four passes, move-and-slide, targets vs velocities, owner slots, events | `physics/collide/world.hh` |
 | Audio | Effects, music, the PC speaker, codec registration | `audio/audio.hh` |

@@ -340,7 +340,7 @@ Press <kbd>Escape</kbd> to exit cleanly.
 
 ## Next step
 
-Now that our character is in the world, in **[Step 3: Moving it with the keyboard](./index.md)** we will wire up player controls:
+Now that our character is in the world, in **[Step 3: Moving with the keyboard](./step-03-moving-with-keyboard.md)** we will wire up player controls:
 - Inspecting the input snapshot in `fixed_update`
 - Running left and right with <kbd>A</kbd> / <kbd>D</kbd> or arrow keys
 - Flipping the sprite horizontally based on movement direction

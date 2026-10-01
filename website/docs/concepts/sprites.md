@@ -7,7 +7,7 @@ description: How Neutrino structures 2D sprite graphics — pure data definition
 # Sprites
 
 In many 2D game frameworks, a "Sprite" is a monolithic class that bundles together an image file, a GPU texture,
-an animation clock, an $(x, y)$ world position, and rendering code.
+an animation clock, an (x, y) world position, and rendering code.
 
 In a non-trivial game, that coupling quickly causes architectural friction:
 - **Redundant GPU Memory:** Spawning 50 goblin enemies reloads or duplicates texture memory unless wrapped in custom managers.
@@ -568,7 +568,7 @@ The `sprite_set` API provides two flavors of accessors:
 - `set.require_visual("name")` / `set.require_clip("name")` / `set.require_frame_rect("name")`: **Throws immediately** if the name does not exist.
 
 Always use `require_*` for core gameplay frames. If a required frame is missing, failing immediately with a clear error
-message (`missing visual: player.idle`) prevents silent degradations like $0 \times 0$ collision boxes.
+message (`missing visual: player.idle`) prevents silent degradations like 0 × 0 collision boxes.
 
 ---
 
