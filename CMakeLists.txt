@@ -163,8 +163,7 @@ if(NEUTRINO_NEUTRINO_BUILD_TUTORIALS)
 endif()
 
 
-add_subdirectory(games/ke)
-add_subdirectory(games/it)
+add_subdirectory(games)
 add_subdirectory(demos)
 
 # ============================================================================
