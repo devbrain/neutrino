@@ -18,7 +18,7 @@ namespace neutrino::test {
                 SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, "dummy", SDL_HINT_OVERRIDE);
                 SDL_SetHintWithPriority(SDL_HINT_VIDEO_DRIVER, "dummy", SDL_HINT_OVERRIDE);
 
-                auto* app = static_cast <sdlpp::abstract_application*>(&m_app);
+                auto* app = neutrino::detail::application_access::base(m_app);
                 app->init_sdl_();
                 app->on_init(0, nullptr);
                 m_started = true;
@@ -42,7 +42,7 @@ namespace neutrino::test {
             }
 
             void iterate() {
-                auto* app = static_cast <sdlpp::abstract_application*>(&m_app);
+                auto* app = neutrino::detail::application_access::base(m_app);
                 app->on_iterate();
             }
 
@@ -51,7 +51,7 @@ namespace neutrino::test {
                     return;
                 }
 
-                auto* app = static_cast <sdlpp::abstract_application*>(&m_app);
+                auto* app = neutrino::detail::application_access::base(m_app);
                 app->on_quit();
                 app->shutdown_sdl_();
                 m_started = false;

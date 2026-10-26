@@ -21,7 +21,7 @@ In this tutorial, you will learn how to use [`neutrino::render_texture`](pathnam
 
 In GPU architectures, textures typically reside in VRAM as read-only image data sampled by shaders.
 
-A **render texture** (or offscreen render target) is a GPU texture configured with *target access* (`sdlpp::texture_access::target`). This allows the GPU to redirect drawing commands into the texture's pixel buffer instead of the screen window.
+A **render texture** (or offscreen render target) is a GPU texture configured with *target access* (SDL's *target* texture access). This allows the GPU to redirect drawing commands into the texture's pixel buffer instead of the screen window.
 
 ```mermaid
 flowchart TD
@@ -61,7 +61,7 @@ neutrino::render_texture backdrop = std::move(*rt_opt);
 
 When created, `render_texture`:
 - Allocates an `RGBA8888` texture on the active GPU renderer.
-- Automatically enables `sdlpp::blend_mode::blend`, so transparent areas in the texture will composite over whatever lies beneath when blitted.
+- Automatically enables `neutrino::blend_mode::blend`, so transparent areas in the texture will composite over whatever lies beneath when blitted.
 - Is movable but non-copyable (strictly owns its GPU texture handle).
 
 ---
@@ -81,24 +81,24 @@ Neutrino's `compose()` solves all three by wrapping execution in an RAII target 
 // Render into the texture:
 backdrop.compose([&] {
     // 1. Fill entire texture with deep midnight blue
-    neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, sdlpp::color{10, 15, 30, 255});
+    neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, neutrino::color{10, 15, 30, 255});
 
     // 2. Draw 200 random stars
     for (int i = 0; i < 200; ++i) {
         int x = std::rand() % 640;
         int y = std::rand() % 240;
         uint8_t brightness = static_cast<uint8_t>(150 + std::rand() % 105);
-        neutrino::draw_point(x, y, sdlpp::color{brightness, brightness, brightness, 255});
+        neutrino::draw_point(x, y, neutrino::color{brightness, brightness, brightness, 255});
     }
 
     // 3. Draw mountain silhouettes
-    neutrino::draw_circle_fill(neutrino::circle{neutrino::point{160, 360}, 180}, sdlpp::color{20, 25, 45, 255});
-    neutrino::draw_circle_fill(neutrino::circle{neutrino::point{480, 360}, 220}, sdlpp::color{15, 20, 38, 255});
-}, /* clear_color = */ sdlpp::colors::transparent);
+    neutrino::draw_circle_fill(neutrino::circle{neutrino::point{160, 360}, 180}, neutrino::color{20, 25, 45, 255});
+    neutrino::draw_circle_fill(neutrino::circle{neutrino::point{480, 360}, 220}, neutrino::color{15, 20, 38, 255});
+}, /* clear_color = */ neutrino::colors::transparent);
 ```
 
 ### What `compose()` does behind the scenes:
-1. **Target Guard:** Uses `sdlpp::renderer::target_guard` to bind `m_texture` as the active target and guarantees the previous target is restored when the lambda exits.
+1. **Target Guard:** Uses `neutrino::renderer::target_guard` to bind `m_texture` as the active target and guarantees the previous target is restored when the lambda exits.
 2. **Color Restoration:** Reads `get_draw_color()`, clears the texture to the requested `clear_color` (defaulting to `{0, 0, 0, 0}` transparent), runs your lambda, and restores the previous draw color.
 3. **Arbitrary Draws:** Any Neutrino drawing code executed inside the lambda — immediate primitives, `draw_sprite`, or `sprite_batch::flush()` — automatically renders into the texture!
 
@@ -156,15 +156,15 @@ public:
             // Bake static dungeon walls into the minimap texture ONCE:
             m_minimap->compose([&] {
                 // Background
-                neutrino::draw_rect_fill(neutrino::rect{0, 0, 120, 120}, sdlpp::color{20, 20, 25, 200});
+                neutrino::draw_rect_fill(neutrino::rect{0, 0, 120, 120}, neutrino::color{20, 20, 25, 200});
 
                 // Static dungeon room outlines (scaled 1:10)
-                neutrino::draw_rect(neutrino::rect{10, 10, 40, 30}, sdlpp::colors::light_gray);
-                neutrino::draw_rect(neutrino::rect{45, 20, 30, 50}, sdlpp::colors::light_gray);
-                neutrino::draw_rect(neutrino::rect{70, 50, 40, 40}, sdlpp::colors::light_gray);
+                neutrino::draw_rect(neutrino::rect{10, 10, 40, 30}, neutrino::colors::light_gray);
+                neutrino::draw_rect(neutrino::rect{45, 20, 30, 50}, neutrino::colors::light_gray);
+                neutrino::draw_rect(neutrino::rect{70, 50, 40, 40}, neutrino::colors::light_gray);
 
                 // Minimap outer border
-                neutrino::draw_rect(neutrino::rect{0, 0, 120, 120}, sdlpp::colors::gold);
+                neutrino::draw_rect(neutrino::rect{0, 0, 120, 120}, neutrino::colors::gold);
             });
         }
     }
@@ -185,10 +185,10 @@ public:
                                             static_cast<float>(minimap_dst.y) + p.y * 0.1f};
             };
             // Player blip (green dot)
-            neutrino::draw_circle_fill(to_minimap(m_player_pos), 2.0f, sdlpp::colors::lime_green);
+            neutrino::draw_circle_fill(to_minimap(m_player_pos), 2.0f, neutrino::colors::lime_green);
 
             // Enemy blip (red dot)
-            neutrino::draw_circle_fill(to_minimap(m_enemy_pos), 2.0f, sdlpp::colors::red);
+            neutrino::draw_circle_fill(to_minimap(m_enemy_pos), 2.0f, neutrino::colors::red);
         }
     }
 

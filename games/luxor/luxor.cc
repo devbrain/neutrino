@@ -73,4 +73,4 @@ int main(int argc, char* argv[]) {
 }
 #endif
 
-SDLPP_MAIN(luxor_app)
+NEUTRINO_MAIN(luxor_app)

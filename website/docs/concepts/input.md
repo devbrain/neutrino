@@ -68,7 +68,7 @@ public:
     input_demo() : application(320, 200, "Input demo", 3.0f) {}
 
     bool on_update(float, const neutrino::input_snapshot& input) override {
-        return !input.pressed(sdlpp::scancode::escape);
+        return !input.pressed(neutrino::key::escape);
     }
 };
 
@@ -84,10 +84,10 @@ void my_scene::fixed_update(neutrino::sim_duration dt, const neutrino::input_sna
     if (in.pointer().on_screen) {
         m_cursor = in.pointer().render;
     }
-    if (in.mouse(sdlpp::mouse_button::left).pressed) {
+    if (in.mouse(neutrino::mouse_button::left).pressed) {
         fire();                                   // only on a delivered press edge
     }
-    if (in.mouse(sdlpp::mouse_button::right).held) {
+    if (in.mouse(neutrino::mouse_button::right).held) {
         aim();                                    // every step the button is down
     }
 }
@@ -133,10 +133,9 @@ The default scene scheduler therefore delivers edges to **at most one substep**:
 - **Later substeps** get `input.without_edges()`: `pressed`, `released`, and wheel movement
   are cleared; held state, axes, modifiers, and pointer position remain available.
 
-This applies to the snapshot supplied to `fixed_update()`. Live polling through
-`application::get_key()` or `get_mouse()` keeps its frame-level edges until frame completion,
-so it can report the same `pressed` edge in multiple substeps. Read the supplied snapshot
-inside simulation code.
+This applies to the snapshot supplied to `fixed_update()`, which is the engine's input API:
+there is no separate live-polling call that could report the same `pressed` edge in several
+substeps.
 
 :::caution[Frames with no simulation steps]
 
@@ -201,13 +200,13 @@ as well when deciding whether a click should interact with it.
 Query keys, mouse buttons, wheel movement, and gamepad buttons or axes from the snapshot:
 
 ```cpp
-if (in.pressed(sdlpp::scancode::space)) { fire(); }      // edge
-if (in.held(sdlpp::scancode::a))        { move_left(); } // state
+if (in.pressed(neutrino::key::space)) { fire(); }      // edge
+if (in.held(neutrino::key::a))        { move_left(); } // state
 
 // Gamepad slot 0 is Player 1.
-if (in.gamepad_button_state(0, sdlpp::gamepad_button::south).pressed) { jump(); }
-const float move_x = in.gamepad_axis(0, sdlpp::gamepad_axis::leftx);
-const float trigger = in.gamepad_axis(0, sdlpp::gamepad_axis::right_trigger);
+if (in.gamepad_button_state(0, neutrino::pad_button::south).pressed) { jump(); }
+const float move_x = in.gamepad_axis(0, neutrino::pad_axis::leftx);
+const float trigger = in.gamepad_axis(0, neutrino::pad_axis::right_trigger);
 ```
 
 Triggers are **axes**, not `gamepad_button` values. A trigger threshold tests a level;
@@ -219,10 +218,10 @@ Matchers describe which key or button to query and, for keyboard and mouse short
 which modifiers must be present:
 
 ```cpp
-const neutrino::hotkey jump_key{sdlpp::scancode::space};
-const neutrino::hotkey save_key{neutrino::modifier::ctrl, sdlpp::scancode::s};
-const neutrino::mouse_click ctrl_click{neutrino::modifier::ctrl, sdlpp::mouse_button::left};
-const neutrino::gamepad_button shoot_button{sdlpp::gamepad_button::right_shoulder};
+const neutrino::hotkey jump_key{neutrino::key::space};
+const neutrino::hotkey save_key{neutrino::modifier::ctrl, neutrino::key::s};
+const neutrino::mouse_click ctrl_click{neutrino::modifier::ctrl, neutrino::mouse_button::left};
+const neutrino::gamepad_button shoot_button{neutrino::pad_button::right_shoulder};
 
 if (in.pressed(jump_key))     { jump(); }          // equivalent to jump_key.pressed(in)
 if (in.held(jump_key))        { charge_jump(); }   // equivalent to jump_key.held(in)

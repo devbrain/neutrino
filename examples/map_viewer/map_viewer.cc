@@ -96,35 +96,43 @@ namespace {
                 // handle_action (once per event): a per-event pressed() check posts one
                 // request per queued event, and popping the last scene more than once
                 // trips the scenes_manager's non-empty enforcement.
-                if (!m_quitting && in.pressed(hotkey{sdlpp::scancode::escape})) {
+                if (!m_quitting && in.pressed(hotkey{neutrino::key::escape})) {
                     m_quitting = true;
                     pop_scene();
                     return;
                 }
-                if (in.pressed(hotkey{sdlpp::scancode::r})) {
+                if (in.pressed(hotkey{neutrino::key::r})) {
                     reset_camera();
                 }
 
                 const float seconds = dt.count();
                 const float pan = pan_speed * seconds / m_camera.zoom; // constant screen-space speed
 
-                if (key_held(in, sdlpp::scancode::a, sdlpp::scancode::left)) {
+                if (key_held(in, neutrino::key::a, neutrino::key::left)) {
                     m_camera.target.x -= pan;
                 }
-                if (key_held(in, sdlpp::scancode::d, sdlpp::scancode::right)) {
+                if (key_held(in, neutrino::key::d, neutrino::key::right)) {
                     m_camera.target.x += pan;
                 }
-                if (key_held(in, sdlpp::scancode::w, sdlpp::scancode::up)) {
+                if (key_held(in, neutrino::key::w, neutrino::key::up)) {
                     m_camera.target.y -= pan;
                 }
-                if (key_held(in, sdlpp::scancode::s, sdlpp::scancode::down)) {
+                if (key_held(in, neutrino::key::s, neutrino::key::down)) {
                     m_camera.target.y += pan;
                 }
-                if (key_held(in, sdlpp::scancode::equals, sdlpp::scancode::kp_plus)) {
+                if (key_held(in, neutrino::key::equals, neutrino::key::kp_plus)) {
                     zoom_about(std::pow(key_zoom_rate, seconds), viewport_center());
                 }
-                if (key_held(in, sdlpp::scancode::minus, sdlpp::scancode::kp_minus)) {
+                if (key_held(in, neutrino::key::minus, neutrino::key::kp_minus)) {
                     zoom_about(std::pow(1.0f / key_zoom_rate, seconds), viewport_center());
+                }
+
+                // Mouse wheel zooms about the cursor. The snapshot already maps the pointer into
+                // render space, so zoom-to-cursor is correct under HiDPI / letterboxing.
+                if (in.wheel() != 0) {
+                    const float factor = in.wheel() > 0 ? wheel_zoom_step : 1.0f / wheel_zoom_step;
+                    const render_pos cursor = in.pointer().render;
+                    zoom_about(factor, world_point{cursor.x, cursor.y});
                 }
             }
 
@@ -135,8 +143,8 @@ namespace {
             }
 
             void render() override {
-                clamp_camera(); // after this frame's pan (fixed_update) and wheel zoom (handle_action)
-                draw_rect_fill(viewport(), sdlpp::color{22, 22, 28, 255});
+                clamp_camera(); // after this frame's pan and zoom (fixed_update)
+                draw_rect_fill(viewport(), neutrino::color{22, 22, 28, 255});
                 const draw_stats stats = m_renderer->draw(m_camera, viewport());
                 if (!m_logged_first_frame) {
                     m_logged_first_frame = true;
@@ -145,25 +153,8 @@ namespace {
                 }
             }
 
-            void handle_action(const sdlpp::event& ev) override {
-                // Only genuinely event-carried input here (the wheel delta + cursor);
-                // edge-triggered keys are handled once per frame in update_physics.
-                if (const auto* wheel = ev.as <sdlpp::mouse_wheel_event>()) {
-                    if (wheel->y != 0.0f) {
-                        const float factor = wheel->y > 0.0f ? wheel_zoom_step : 1.0f / wheel_zoom_step;
-                        // mouse_x/mouse_y arrive in window points; map them into render
-                        // space so zoom-to-cursor is correct under HiDPI / letterboxing.
-                        zoom_about(factor, to_render_coords(world_point{wheel->mouse_x, wheel->mouse_y}));
-                    }
-                }
-            }
-
-            [[nodiscard]] bool is_opaque() const override {
-                return true;
-            }
-
         private:
-            static bool key_held(const input_snapshot& in, sdlpp::scancode a, sdlpp::scancode b) {
+            static bool key_held(const input_snapshot& in, neutrino::key a, neutrino::key b) {
                 return in.held(a) || in.held(b);
             }
 
@@ -228,20 +219,25 @@ namespace {
             bool m_quitting{false};
     };
 
+    [[nodiscard]] application_config make_config() {
+        application_config cfg;
+        cfg.title = "Neutrino Map Viewer";
+        cfg.width = window_width;
+        cfg.height = window_height;
+        // Reflow presentation at native (HiDPI) resolution: a bigger or higher-DPI window
+        // simply shows more crisp map, and on_resize keeps the viewport in step. Input is
+        // mapped with to_render_coords().
+        cfg.flags = window_flags::resizable;
+        cfg.high_pixel_density = true;
+        cfg.target_fps = 60;
+        return cfg;
+    }
+
     class map_viewer_app final : public application {
+        public:
+            map_viewer_app() : application(make_config()) {}
+
         protected:
-            sdlpp::window_config get_window_config() override {
-                return {
-                    "Neutrino Map Viewer",
-                    window_width,
-                    window_height,
-                    // Reflow presentation at native (HiDPI) resolution: a bigger or
-                    // higher-DPI window simply shows more crisp map, and on_resize keeps
-                    // the viewport in step. Input is mapped with to_render_coords().
-                    sdlpp::window_flags::resizable | sdlpp::window_flags::high_pixel_density,
-                    60
-                };
-            }
 
             std::unique_ptr <base_scene> create_initial_scene() override {
                 return std::make_unique <map_viewer_scene>();

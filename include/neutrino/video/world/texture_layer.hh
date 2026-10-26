@@ -24,7 +24,7 @@
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/world/render_layer.hh>
 
-#include <sdlpp/video/texture.hh>
+#include <neutrino/video/globals.hh>
 
 namespace neutrino {
     /**
@@ -33,7 +33,7 @@ namespace neutrino {
     class NEUTRINO_EXPORT texture_layer : public render_layer {
         public:
             /// @brief The texture to draw. Owned and updated by the game; may be null (no-op).
-            const sdlpp::texture* texture{nullptr};
+            const neutrino::texture* texture{nullptr};
 
             /// @brief Optional source sub-rectangle; unset draws the whole texture.
             std::optional <rect> source;

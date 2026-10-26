@@ -124,8 +124,9 @@ namespace neutrino::simplex::detail {
         }
     }
 
-    void application_adapter::render_scene(sdlpp::renderer& renderer) {
+    void application_adapter::render_scene() {
         if (m_state != lifecycle::running || !is_running()) return;
+        auto& renderer = get_renderer();
         const sdlpp::rect<float> destination{0.0f, 0.0f, static_cast<float>(m_canvas_size.width),
                                               static_cast<float>(m_canvas_size.height)};
 

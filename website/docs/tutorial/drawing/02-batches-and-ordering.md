@@ -128,7 +128,7 @@ class depth_sorting_scene final : public neutrino::base_scene {
 public:
     void render() override {
         // Clear background to dark grass green
-        neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, sdlpp::color{34, 139, 34, 255});
+        neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, neutrino::color{34, 139, 34, 255});
 
         // 1. Create a screen-space batch for this frame
         // (In Part 3, we will connect this to a world camera)

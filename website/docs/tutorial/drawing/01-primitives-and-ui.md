@@ -44,19 +44,19 @@ A professional health bar consists of three visual layers:
 
 ```cpp
 #include <neutrino/video/draw.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/video/color.hh>
 #include <algorithm>
 
 void draw_gauge(int x, int y, int width, int height, 
                 float current, float maximum, 
-                const sdlpp::color& fill_color) 
+                const neutrino::color& fill_color) 
 {
     // Clamp fraction between 0.0 and 1.0 to prevent underflow/overflow
     const float fraction = std::clamp(maximum > 0.0f ? current / maximum : 0.0f, 0.0f, 1.0f);
     const int fill_width = static_cast<int>(fraction * (width - 4));
 
     // 1. Outer background tray (dark charcoal)
-    neutrino::draw_rect_fill(neutrino::rect{x, y, width, height}, sdlpp::color{25, 25, 25, 220});
+    neutrino::draw_rect_fill(neutrino::rect{x, y, width, height}, neutrino::color{25, 25, 25, 220});
 
     // 2. Filled gauge bar (with 2px inner padding)
     if (fill_width > 0) {
@@ -67,7 +67,7 @@ void draw_gauge(int x, int y, int width, int height,
     }
 
     // 3. Crisp outer border (semi-transparent white)
-    neutrino::draw_rect(neutrino::rect{x, y, width, height}, sdlpp::color{200, 200, 200, 255});
+    neutrino::draw_rect(neutrino::rect{x, y, width, height}, neutrino::color{200, 200, 200, 255});
 }
 ```
 
@@ -78,12 +78,12 @@ When the player's health drops below 25%, we can draw a flashing red warning out
 ```cpp
 void draw_hud(float health, float max_health, float stamina, float max_stamina, float total_time_sec) {
     // Health Bar (Emerald green)
-    sdlpp::color health_color = sdlpp::color{46, 204, 113, 255};
+    neutrino::color health_color = neutrino::color{46, 204, 113, 255};
 
     if (health / max_health < 0.25f) {
         // Pulse between bright red and dark red at 4 Hz
         const float pulse = (std::sin(total_time_sec * 8.0f) + 1.0f) * 0.5f;
-        health_color = sdlpp::color{
+        health_color = neutrino::color{
             static_cast<uint8_t>(200 + pulse * 55),
             static_cast<uint8_t>(40 * (1.0f - pulse)),
             static_cast<uint8_t>(40 * (1.0f - pulse)),
@@ -94,7 +94,7 @@ void draw_hud(float health, float max_health, float stamina, float max_stamina, 
     draw_gauge(16, 16, 180, 18, health, max_health, health_color);
 
     // Stamina Bar (Sky blue, slightly narrower)
-    draw_gauge(16, 38, 140, 12, stamina, max_stamina, sdlpp::color{52, 152, 219, 255});
+    draw_gauge(16, 38, 140, 12, stamina, max_stamina, neutrino::color{52, 152, 219, 255});
 }
 ```
 
@@ -125,7 +125,7 @@ void draw_velocity_vector(neutrino::render_pos actor_pos, float vx, float vy) {
         /* head_size = */ 8.0f, 
         /* head_angle = */ 30.0f, 
         /* thickness = */ 1.5f, 
-        sdlpp::colors::orange
+        neutrino::colors::orange
     );
 }
 ```
@@ -136,14 +136,14 @@ When debugging sprite pivot offsets and bounding box alignment, `draw_cross` pla
 
 ```cpp
 // Draw a 5-pixel radius white cross centered directly on the actor's anchor
-neutrino::draw_cross(actor_pos, /* size = */ 5.0f, /* thickness = */ 1.0f, sdlpp::colors::white);
+neutrino::draw_cross(actor_pos, /* size = */ 5.0f, /* thickness = */ 1.0f, neutrino::colors::white);
 ```
 
 ### 3. Hitbox Outlines (`draw_rect`)
 
 ```cpp
 // Visualize an axis-aligned bounding box (AABB) in translucent yellow
-neutrino::draw_rect(neutrino::rect{actor_pos.x - 16, actor_pos.y - 32, 32, 32}, sdlpp::colors::yellow);
+neutrino::draw_rect(neutrino::rect{actor_pos.x - 16, actor_pos.y - 32, 32, 32}, neutrino::colors::yellow);
 ```
 
 ---
@@ -165,19 +165,19 @@ const neutrino::point start{50, 200};
 const neutrino::point end{250, 200};
 
 // 1. Standard thin line
-neutrino::draw_line(start, end, sdlpp::colors::gray);
+neutrino::draw_line(start, end, neutrino::colors::gray);
 
 // 2. Smooth anti-aliased diagonal
-neutrino::draw_line_aa(neutrino::point{50, 220}, neutrino::point{250, 260}, sdlpp::colors::light_blue);
+neutrino::draw_line_aa(neutrino::point{50, 220}, neutrino::point{250, 260}, neutrino::colors::light_blue);
 
 // 3. Thick 4-pixel stroke
-neutrino::draw_line_thick(neutrino::point{50, 280}, neutrino::point{250, 280}, 4.0f, sdlpp::colors::red);
+neutrino::draw_line_thick(neutrino::point{50, 280}, neutrino::point{250, 280}, 4.0f, neutrino::colors::red);
 
 // 4. Dashed line: 10px marks separated by 5px gaps
-neutrino::draw_line_dashed(neutrino::point{50, 300}, neutrino::point{250, 300}, 10, 5, sdlpp::colors::yellow);
+neutrino::draw_line_dashed(neutrino::point{50, 300}, neutrino::point{250, 300}, 10, 5, neutrino::colors::yellow);
 
 // 5. Dotted line: dots spaced every 8 pixels
-neutrino::draw_line_dotted(neutrino::point{50, 320}, neutrino::point{250, 320}, 8, sdlpp::colors::white);
+neutrino::draw_line_dotted(neutrino::point{50, 320}, neutrino::point{250, 320}, 8, neutrino::colors::white);
 ```
 
 ---
@@ -188,13 +188,13 @@ To draw radar ranges, blast radiuses, or detection zones, use `draw_circle` (out
 
 ```cpp
 void draw_detection_radius(neutrino::render_pos center, float radius, bool player_detected) {
-    const sdlpp::color fill_color = player_detected 
-        ? sdlpp::color{231, 76, 60, 60}    // Translucent red when triggered
-        : sdlpp::color{52, 152, 219, 40};   // Translucent blue when idle
+    const neutrino::color fill_color = player_detected 
+        ? neutrino::color{231, 76, 60, 60}    // Translucent red when triggered
+        : neutrino::color{52, 152, 219, 40};   // Translucent blue when idle
 
-    const sdlpp::color border_color = player_detected 
-        ? sdlpp::color{231, 76, 60, 200} 
-        : sdlpp::color{52, 152, 219, 180};
+    const neutrino::color border_color = player_detected 
+        ? neutrino::color{231, 76, 60, 200} 
+        : neutrino::color{52, 152, 219, 180};
 
     // 1. Semi-transparent filled area
     neutrino::draw_circle_fill(center, radius, fill_color);
@@ -214,8 +214,8 @@ Here is a complete, self-contained scene demonstrating all of these primitives w
 #include <neutrino/application.hh>
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/video/draw.hh>
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 #include <cmath>
 
 class primitives_demo_scene final : public neutrino::base_scene {
@@ -238,7 +238,7 @@ public:
 
     void render() override {
         // Clear canvas with dark slate
-        neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, sdlpp::color{20, 24, 30, 255});
+        neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, neutrino::color{20, 24, 30, 255});
 
         // 1. Draw detection sensor centered on screen
         const neutrino::render_pos sensor_center{320.0f, 180.0f};
@@ -246,12 +246,12 @@ public:
         draw_detection_radius(sensor_center, 100.0f, in_range);
 
         // 2. Draw trajectory path (dashed line from center to actor)
-        neutrino::draw_line_dashed(sensor_center, m_actor_pos, 8.0f, 4.0f, sdlpp::colors::dark_gray);
+        neutrino::draw_line_dashed(sensor_center, m_actor_pos, 8.0f, 4.0f, neutrino::colors::dark_gray);
 
         // 3. Draw actor collision box and center cross
         neutrino::draw_rect(neutrino::render_rect{m_actor_pos.x - 16.0f, m_actor_pos.y - 16.0f, 32.0f, 32.0f},
-                            sdlpp::colors::yellow);
-        neutrino::draw_cross(m_actor_pos, 4.0f, 1.0f, sdlpp::colors::white);
+                            neutrino::colors::yellow);
+        neutrino::draw_cross(m_actor_pos, 4.0f, 1.0f, neutrino::colors::white);
 
         // 4. Draw actor velocity arrow
         draw_velocity_vector(m_actor_pos, m_actor_vel_x, m_actor_vel_y);
@@ -292,7 +292,7 @@ cmake --build cmake-build-debug --target neutrino_tutorial_drawing_01_primitives
 ## Best Practices & Pitfalls
 
 :::tip[Color Scoping is Automatic]
-Always prefer overloads that take an explicit trailing `sdlpp::color` (e.g. `draw_rect(r, color)`). These functions save the renderer's previous draw color, apply your color, and restore the previous color upon return. This keeps isolated drawing routines from corrupting each other's colors.
+Always prefer overloads that take an explicit trailing `neutrino::color` (e.g. `draw_rect(r, color)`). These functions save the renderer's previous draw color, apply your color, and restore the previous color upon return. This keeps isolated drawing routines from corrupting each other's colors.
 :::
 
 :::caution[Don't Draw Millions of Immediate Shapes]

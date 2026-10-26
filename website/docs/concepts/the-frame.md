@@ -124,9 +124,8 @@ So the engine splits the snapshot:
 - **Later substeps** receive `without_edges()`: edges and wheel movement are cleared, while
   held state, axes, modifiers, and pointer position are preserved.
 
-Live polling APIs such as `application::get_key()` and `get_mouse()` retain their frame-level
-edges until frame completion. They do **not** receive this filtering and can repeat an edge
-across substeps. Scene updates should read the supplied snapshot.
+The snapshot is the engine's only input API, so there is no live-polling path that could bypass
+this filtering and repeat an edge across substeps.
 
 If a frame runs zero substeps, its edges and wheel movement are cleared without reaching a
 scene update. Holding a key into the next stepping frame preserves `held`, but does not

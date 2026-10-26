@@ -8,7 +8,7 @@
  * @file render_texture.hh
  * @brief An offscreen render target: compose neutrino draws into a texture once, blit it many.
  *
- * Wraps a target-access @c sdlpp::texture and the renderer's target guard. @ref compose binds
+ * Wraps a target-access @c texture and the renderer's target guard. @ref compose binds
  * the texture as the render target, so anything drawn inside it -- a @ref sprite_batch flush,
  * @c draw_* primitives -- lands in the texture instead of on screen; @ref blit then draws that
  * texture wherever needed. This is the missing primitive for composited *static* content: a
@@ -22,6 +22,7 @@
 
 #include <sdlpp/video/renderer.hh>
 #include <sdlpp/video/texture.hh>
+#include <neutrino/video/color.hh>
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/geometry_types.hh>
@@ -58,9 +59,9 @@ namespace neutrino {
              * not every frame.
              */
             template <typename Fn>
-            void compose(Fn&& draw, const sdlpp::color& clear = sdlpp::color{0, 0, 0, 0}) {
-                sdlpp::renderer& r = get_renderer();
-                const sdlpp::renderer::target_guard guard(r, m_texture);
+            void compose(Fn&& draw, const color& clear = color{0, 0, 0, 0}) {
+                renderer& r = get_renderer();
+                const renderer::target_guard guard(r, m_texture);
                 // clear() / draw() mutate the renderer's shared draw colour; the target_guard
                 // restores the render target but not the colour, so scope it here.
                 const auto prev_color = r.get_draw_color();
@@ -78,14 +79,14 @@ namespace neutrino {
             /// @brief Blit the texture 1:1 at the origin (dst == its own size).
             void blit() const;
 
-            [[nodiscard]] const sdlpp::texture& texture() const noexcept { return m_texture; }
+            [[nodiscard]] const neutrino::texture& texture() const noexcept { return m_texture; }
             [[nodiscard]] dim size() const noexcept { return m_size; }
 
         private:
-            render_texture(sdlpp::texture tex, dim size) noexcept
+            render_texture(neutrino::texture tex, dim size) noexcept
                 : m_texture(std::move(tex)), m_size(size) {}
 
-            sdlpp::texture m_texture;
+            neutrino::texture m_texture;
             dim m_size{0, 0};
     };
 }

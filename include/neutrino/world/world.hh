@@ -11,7 +11,7 @@
 #include <neutrino/world/world_layers.hh>
 #include <neutrino/world/world_tileset.hh>
 
-#include <sdlpp/video/color.hh>
+#include <neutrino/video/color.hh>
 
 namespace neutrino {
     /**
@@ -48,8 +48,8 @@ namespace neutrino {
             void set_tile_size(unsigned width, unsigned height) noexcept;
 
             /// @brief Map background colour (defaults to opaque black).
-            [[nodiscard]] sdlpp::color background_color() const noexcept;
-            void set_background_color(sdlpp::color color) noexcept;
+            [[nodiscard]] neutrino::color background_color() const noexcept;
+            void set_background_color(neutrino::color color) noexcept;
 
             /// @brief Hex edge length in pixels; used only for hexagonal orientation.
             [[nodiscard]] unsigned hex_side_length() const noexcept;
@@ -121,7 +121,7 @@ namespace neutrino {
             unsigned m_height{};
             unsigned m_tile_width{};
             unsigned m_tile_height{};
-            sdlpp::color m_background_color{0, 0, 0, 255};
+            neutrino::color m_background_color{0, 0, 0, 255};
             unsigned m_hex_side_length{};
             world_stagger_axis m_stagger_axis{world_stagger_axis::y};
             world_stagger_index m_stagger_index{world_stagger_index::odd};

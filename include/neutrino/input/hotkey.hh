@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <variant>
 #include <neutrino/neutrino_export.h>
-#include <sdlpp/events/keyboard_codes.hh>
+#include <neutrino/input/keys.hh>
 
 namespace neutrino {
 
@@ -82,19 +82,19 @@ namespace neutrino {
     class NEUTRINO_EXPORT hotkey {
     public:
         /// @brief Match a physical key by scancode (layout-independent position), no modifier required.
-        hotkey(sdlpp::scancode key)
+        hotkey(neutrino::key key)
             : m_mods(modifier::none), m_key(key) {}
 
         /// @brief Match a scancode only while @p mods is held.
-        hotkey(modifier mods, sdlpp::scancode key)
+        hotkey(modifier mods, neutrino::key key)
             : m_mods(mods), m_key(key) {}
 
         /// @brief Match a logical key by keycode (current layout); resolved to a scancode at query time.
-        hotkey(sdlpp::keycode key)
+        hotkey(neutrino::keycode key)
             : m_mods(modifier::none), m_key(key) {}
 
         /// @brief Match a keycode only while @p mods is held.
-        hotkey(modifier mods, sdlpp::keycode key)
+        hotkey(modifier mods, neutrino::keycode key)
             : m_mods(mods), m_key(key) {}
 
         /// @brief True on the frame the key transitions to down (edge) with the modifier set matching.
@@ -107,13 +107,13 @@ namespace neutrino {
         /// @brief The modifier combination required by this hotkey.
         [[nodiscard]] modifier modifiers() const noexcept { return m_mods; }
         /// @brief The key (scancode or keycode) required by this hotkey.
-        [[nodiscard]] const std::variant<sdlpp::scancode, sdlpp::keycode>& key() const noexcept { return m_key; }
+        [[nodiscard]] const std::variant<neutrino::key, neutrino::keycode>& key() const noexcept { return m_key; }
         /// @brief Resolve the scancode corresponding to this key (resolving keycode to scancode if needed).
-        [[nodiscard]] sdlpp::scancode resolve_scancode() const noexcept;
+        [[nodiscard]] neutrino::key resolve_scancode() const noexcept;
 
     private:
         modifier m_mods;
-        std::variant<sdlpp::scancode, sdlpp::keycode> m_key;
+        std::variant<neutrino::key, neutrino::keycode> m_key;
     };
 
 } // namespace neutrino

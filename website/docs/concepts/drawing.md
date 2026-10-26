@@ -34,7 +34,7 @@ flowchart TD
     end
 
     subgraph Presentation ["Global Renderer / Target Canvas"]
-        Target["sdlpp::renderer (640x360 Render Space)"]
+        Target["neutrino::renderer (640x360 Render Space)"]
     end
 
     StaticMap -->|"Bake once"| RT
@@ -71,23 +71,23 @@ Neutrino provides immediate-mode free functions for points, lines, rectangles, c
 
 ```cpp
 #include <neutrino/video/draw.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/video/color.hh>
 
 // Draw filled and outlined geometry in render-space coordinates
-neutrino::draw_rect_fill(neutrino::rect{10, 10, 120, 20}, sdlpp::colors::dark_gray);
-neutrino::draw_rect_fill(neutrino::rect{12, 12, 80, 16},  sdlpp::colors::forest_green);
-neutrino::draw_rect(neutrino::rect{10, 10, 120, 20},      sdlpp::colors::white);
+neutrino::draw_rect_fill(neutrino::rect{10, 10, 120, 20}, neutrino::colors::dark_gray);
+neutrino::draw_rect_fill(neutrino::rect{12, 12, 80, 16},  neutrino::colors::forest_green);
+neutrino::draw_rect(neutrino::rect{10, 10, 120, 20},      neutrino::colors::white);
 
 // Specialized line styles for debugging vectors and paths
-neutrino::draw_line(neutrino::point{0, 0}, neutrino::point{100, 100}, sdlpp::colors::red);
-neutrino::draw_line_aa(neutrino::point{0, 10}, neutrino::point{100, 110}, sdlpp::colors::yellow);
-neutrino::draw_line_thick(neutrino::point{0, 20}, neutrino::point{100, 120}, 3.0f, sdlpp::colors::cyan);
-neutrino::draw_line_dashed(neutrino::point{0, 30}, neutrino::point{100, 130}, 8, 4, sdlpp::colors::magenta);
-neutrino::draw_line_dotted(neutrino::point{0, 40}, neutrino::point{100, 140}, 6, sdlpp::colors::white);
+neutrino::draw_line(neutrino::point{0, 0}, neutrino::point{100, 100}, neutrino::colors::red);
+neutrino::draw_line_aa(neutrino::point{0, 10}, neutrino::point{100, 110}, neutrino::colors::yellow);
+neutrino::draw_line_thick(neutrino::point{0, 20}, neutrino::point{100, 120}, 3.0f, neutrino::colors::cyan);
+neutrino::draw_line_dashed(neutrino::point{0, 30}, neutrino::point{100, 130}, 8, 4, neutrino::colors::magenta);
+neutrino::draw_line_dotted(neutrino::point{0, 40}, neutrino::point{100, 140}, 6, neutrino::colors::white);
 
 // Directional vectors and markers
-neutrino::draw_arrow(neutrino::point{50, 50}, neutrino::point{80, 20}, 8, 30.0f, 1.5f, sdlpp::colors::orange);
-neutrino::draw_cross(neutrino::point{50, 50}, 4, 1.0f, sdlpp::colors::white);
+neutrino::draw_arrow(neutrino::point{50, 50}, neutrino::point{80, 20}, 8, 30.0f, 1.5f, neutrino::colors::orange);
+neutrino::draw_cross(neutrino::point{50, 50}, 4, 1.0f, neutrino::colors::white);
 ```
 
 ### Float coordinates & pixel snapping
@@ -95,7 +95,7 @@ neutrino::draw_cross(neutrino::point{50, 50}, 4, 1.0f, sdlpp::colors::white);
 SDL3 draws in floats, and so does Neutrino: every primitive is implemented once on float render-space coordinates, and the integer `point` / `rect` overloads above forward to it. Use `render_pos` and `render_rect` to draw at fractional positions, which under a scaled presentation (say, a 640×360 logical canvas in a 1920×1080 window) land on distinct physical pixels for smooth sub-pixel motion:
 
 ```cpp
-neutrino::draw_rect_fill(neutrino::render_rect{x, y, 24.0f, 4.0f}, sdlpp::colors::red);
+neutrino::draw_rect_fill(neutrino::render_rect{x, y, 24.0f, 4.0f}, neutrino::colors::red);
 neutrino::draw_sprite(neutrino::render_pos{m_player_x, m_player_y}, m_player.state());
 ```
 
@@ -120,16 +120,16 @@ Drawing is fire-and-forget: draw and set functions in `draw.hh` return `void`, s
 - **SDL failures are logged and counted.** If SDL rejects a draw (e.g. an invalidated graphics context), the engine logs SDL's error, rate-limited per call site so a broken renderer cannot flood the log, and increments `neutrino::draw_failure_count()`. Tests and tools can compare the count before and after a span of draws.
 - **Getters return values directly.** `get_draw_color()`, `get_draw_blend_mode()` and `get_line_style()` throw only if the renderer can no longer report its state.
 
-Calls that take a trailing `sdlpp::color` apply that color for the single call and **automatically restore the previous draw color**:
+Calls that take a trailing `neutrino::color` apply that color for the single call and **automatically restore the previous draw color**:
 
 ```cpp
 // 1. Explicitly sets global draw color for subsequent color-less calls:
-neutrino::set_draw_color(sdlpp::colors::red);
+neutrino::set_draw_color(neutrino::colors::red);
 neutrino::draw_point(10, 10);
 neutrino::draw_point(11, 10);
 
 // 2. Trailing color overload: sets green, draws, and restores red:
-neutrino::draw_line(0, 0, 50, 50, sdlpp::colors::green);
+neutrino::draw_line(0, 0, 50, 50, neutrino::colors::green);
 
 // Still draws red!
 neutrino::draw_point(12, 10);
@@ -360,10 +360,10 @@ neutrino::render_texture rt = std::move(*rt_opt);
 // 2. Compose into the texture once (e.g. during level load or on resize)
 rt.compose([&] {
     // Everything drawn inside this lambda renders into the offscreen texture!
-    neutrino::draw_rect_fill(neutrino::rect{0, 0, 320, 240}, sdlpp::colors::dark_slate_gray);
-    neutrino::draw_circle_fill(neutrino::circle{160, 120, 80}, sdlpp::colors::goldenrod);
-    neutrino::draw_line(neutrino::point{0, 0}, neutrino::point{320, 240}, sdlpp::colors::white);
-}, /* clear_color = */ sdlpp::colors::transparent);
+    neutrino::draw_rect_fill(neutrino::rect{0, 0, 320, 240}, neutrino::colors::dark_slate_gray);
+    neutrino::draw_circle_fill(neutrino::circle{160, 120, 80}, neutrino::colors::goldenrod);
+    neutrino::draw_line(neutrino::point{0, 0}, neutrino::point{320, 240}, neutrino::colors::white);
+}, /* clear_color = */ neutrino::colors::transparent);
 
 // 3. Blit the cached texture every frame during scene rendering
 // 1:1 blit at origin:
@@ -378,9 +378,9 @@ rt.blit(neutrino::rect{50, 50, 160, 120});
 Rendering to an offscreen texture typically requires tedious bookkeeping: binding the target, setting blend modes, resetting draw colors, and remembering to restore the window backbuffer.
 
 `render_texture::compose` handles this via RAII:
-- Uses `sdlpp::renderer::target_guard` to guarantee the original render target is restored even if an exception is thrown.
+- Uses `neutrino::renderer::target_guard` to guarantee the original render target is restored even if an exception is thrown.
 - Scopes the renderer's draw color: records `get_draw_color()`, clears the texture to the requested clear color, executes the callback, and restores the previous draw color.
-- Sets `sdlpp::blend_mode::blend` on the target texture, so transparent regions composite naturally over whatever background exists when blitted.
+- Sets `neutrino::blend_mode::blend` on the target texture, so transparent regions composite naturally over whatever background exists when blitted.
 
 ---
 
@@ -448,7 +448,7 @@ public:
         if (m_show_debug) {
             for (const auto& enemy : m_enemies) {
                 const auto sp = neutrino::to_screen(m_cam, viewport.dimensions(), neutrino::to_world_point(enemy.position));
-                neutrino::draw_rect(neutrino::rect{sp.x - 16, sp.y - 32, 32, 32}, sdlpp::colors::red);
+                neutrino::draw_rect(neutrino::rect{sp.x - 16, sp.y - 32, 32, 32}, neutrino::colors::red);
             }
         }
 
@@ -458,15 +458,15 @@ public:
 
 private:
     void bake_static_level_art() {
-        neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, sdlpp::colors::midnight_blue);
+        neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, neutrino::colors::midnight_blue);
         // ... draw mountains, distant stars, etc. ...
     }
 
     void draw_hud() {
         // Literal render pixels: top-left HUD health bar
-        neutrino::draw_rect_fill(neutrino::rect{20, 20, 200, 16}, sdlpp::colors::dark_gray);
-        neutrino::draw_rect_fill(neutrino::rect{22, 22, 150, 12}, sdlpp::colors::crimson);
-        neutrino::draw_rect(neutrino::rect{20, 20, 200, 16}, sdlpp::colors::white);
+        neutrino::draw_rect_fill(neutrino::rect{20, 20, 200, 16}, neutrino::colors::dark_gray);
+        neutrino::draw_rect_fill(neutrino::rect{22, 22, 150, 12}, neutrino::colors::crimson);
+        neutrino::draw_rect(neutrino::rect{20, 20, 200, 16}, neutrino::colors::white);
     }
 
     neutrino::camera m_cam;

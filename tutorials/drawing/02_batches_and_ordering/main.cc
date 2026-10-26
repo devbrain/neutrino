@@ -16,8 +16,8 @@
 #include <neutrino/video/sprites.hh>
 #include <neutrino/video/world/sprite_batch.hh>
 
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 
 #include <algorithm>
 #include <cmath>
@@ -99,13 +99,13 @@ namespace {
         }
 
         void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
-            if (in.pressed(sdlpp::scancode::escape)) {
+            if (in.pressed(neutrino::key::escape)) {
                 neutrino::pop_scene();
                 return;
             }
 
             // Toggle between sorted sprite_batch and naive unsorted order
-            if (in.pressed(sdlpp::scancode::tab) || in.pressed(sdlpp::scancode::space)) {
+            if (in.pressed(neutrino::key::tab) || in.pressed(neutrino::key::space)) {
                 m_use_batch = !m_use_batch;
             }
 
@@ -214,29 +214,29 @@ namespace {
 
     private:
         void render_floor_grid() {
-            neutrino::draw_rect_fill(neutrino::rect{0, 0, logical_width, logical_height}, sdlpp::color{40, 50, 60, 255});
+            neutrino::draw_rect_fill(neutrino::rect{0, 0, logical_width, logical_height}, neutrino::color{40, 50, 60, 255});
 
             // Grid lines to visualize ground depth
             for (int y = 80; y <= 300; y += 40) {
-                neutrino::draw_line(neutrino::point{40, y}, neutrino::point{600, y}, sdlpp::color{55, 68, 82, 255});
+                neutrino::draw_line(neutrino::point{40, y}, neutrino::point{600, y}, neutrino::color{55, 68, 82, 255});
             }
             for (int x = 80; x <= 560; x += 60) {
-                neutrino::draw_line(neutrino::point{x, 80}, neutrino::point{x, 300}, sdlpp::color{50, 62, 75, 255});
+                neutrino::draw_line(neutrino::point{x, 80}, neutrino::point{x, 300}, neutrino::color{50, 62, 75, 255});
             }
         }
 
         void render_hud() {
             // Mode banner
-            const sdlpp::color banner_col = m_use_batch
-                ? sdlpp::color{39, 174, 96, 220} // Green: Sorted Batch
-                : sdlpp::color{192, 57, 43, 220}; // Red: Naive Unsorted
+            const neutrino::color banner_col = m_use_batch
+                ? neutrino::color{39, 174, 96, 220} // Green: Sorted Batch
+                : neutrino::color{192, 57, 43, 220}; // Red: Naive Unsorted
 
             neutrino::draw_rect_fill(neutrino::rect{16, 16, 360, 28}, banner_col);
-            neutrino::draw_rect(neutrino::rect{16, 16, 360, 28}, sdlpp::colors::white);
+            neutrino::draw_rect(neutrino::rect{16, 16, 360, 28}, neutrino::colors::white);
 
             // Instructions text box
-            neutrino::draw_rect_fill(neutrino::rect{16, 320, 420, 24}, sdlpp::color{0, 0, 0, 180});
-            neutrino::draw_rect(neutrino::rect{16, 320, 420, 24}, sdlpp::colors::light_gray);
+            neutrino::draw_rect_fill(neutrino::rect{16, 320, 420, 24}, neutrino::color{0, 0, 0, 180});
+            neutrino::draw_rect(neutrino::rect{16, 320, 420, 24}, neutrino::colors::light_gray);
         }
 
         neutrino::sprite_set_handle m_set;
@@ -265,7 +265,7 @@ namespace {
             cfg.title = "Neutrino Drawing Tutorial 02 - Batches & Ordering Bands";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
             cfg.logical_size = neutrino::dim{logical_width, logical_height};
             cfg.scale = neutrino::scale_mode::letterbox;
             return cfg;
@@ -274,4 +274,4 @@ namespace {
 
 } // namespace
 
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)

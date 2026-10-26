@@ -58,7 +58,7 @@ namespace neutrino {
          * @return The layer origin in world pixels (drawn at the viewport top-left).
          */
         inline world_point eval_layer_origin(const camera& cam,
-                                             const sdlpp::point <float>& parallax,
+                                             const fpoint& parallax,
                                              const world_point& layer_offs,
                                              dim viewport) {
             const float eff_x = cam.parallax_rest.x + parallax.x * (cam.target.x - cam.parallax_rest.x);

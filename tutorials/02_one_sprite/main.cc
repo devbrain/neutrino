@@ -18,8 +18,8 @@
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/sprites.hh>
 
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 
 #include <chrono>
 #include <filesystem>
@@ -115,7 +115,7 @@ namespace {
             // animation states during its update cycle.
 
             // Press Escape to pop the scene and cleanly exit.
-            if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
+            if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
                 std::cout << "[Tutorial 02] Escape pressed - exiting\n";
                 neutrino::pop_scene();
             }
@@ -125,7 +125,7 @@ namespace {
             // 1. Draw sky background.
             neutrino::draw_rect_fill(
                 neutrino::rect{0, 0, logical_width, logical_height},
-                sdlpp::color{90, 160, 230, 255}
+                neutrino::color{90, 160, 230, 255}
             );
 
             // 2. Draw ground strip.
@@ -135,12 +135,12 @@ namespace {
             // Green grass layer
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y, logical_width, 10},
-                sdlpp::color{80, 185, 95, 255}
+                neutrino::color{80, 185, 95, 255}
             );
             // Brown soil layer
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y + 10, logical_width, ground_height - 10},
-                sdlpp::color{110, 75, 45, 255}
+                neutrino::color{110, 75, 45, 255}
             );
 
             // 3. Draw the player sprite standing on the ground!
@@ -193,7 +193,7 @@ namespace {
             cfg.title = "Neutrino Tutorial 02 - One Sprite on Screen";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
 
             // Fixed 640x360 virtual design resolution, letterboxed to the window.
             cfg.logical_size = neutrino::dim{logical_width, logical_height};
@@ -206,4 +206,4 @@ namespace {
 } // namespace
 
 // SDL entry point macro linking the application to SDL's main loop.
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)

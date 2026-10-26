@@ -15,7 +15,7 @@
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprite/sprite_appearance.hh>
 
-#include <sdlpp/video/color.hh>
+#include <neutrino/video/color.hh>
 
 namespace neutrino {
     /**
@@ -72,7 +72,7 @@ namespace neutrino {
         world_point offset{0.0f, 0.0f};  ///< Layer draw offset in world pixels, added to every element's position.
         float parallax_x{1.0f};          ///< Horizontal parallax factor relative to the camera (1 = moves with the map).
         float parallax_y{1.0f};          ///< Vertical parallax factor relative to the camera (1 = moves with the map).
-        std::optional <sdlpp::color> tint; ///< Optional colour multiplied into the layer's pixels; unset leaves colour unchanged.
+        std::optional <neutrino::color> tint; ///< Optional colour multiplied into the layer's pixels; unset leaves colour unchanged.
     };
 
     /**
@@ -157,7 +157,7 @@ namespace neutrino {
         std::string font_family{"sans-serif"};                  ///< Font family name.
         int pixel_size{16};                                     ///< Font size in pixels.
         bool wrap{};                                            ///< Whether text wraps within the object's width.
-        sdlpp::color color{0, 0, 0, 255};                       ///< Text colour.
+        neutrino::color color{0, 0, 0, 255};                       ///< Text colour.
         bool bold{};                                            ///< Bold styling.
         bool italic{};                                          ///< Italic styling.
         bool underline{};                                       ///< Underline styling.
@@ -182,7 +182,7 @@ namespace neutrino {
      * @brief An object layer.
      */
     struct world_object_layer : world_layer_header {
-        sdlpp::color color{160, 160, 164, 255};
+        neutrino::color color{160, 160, 164, 255};
         world_object_draw_order draw_order{world_object_draw_order::top_down};
         std::vector <world_object> objects;
     };

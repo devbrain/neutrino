@@ -29,6 +29,6 @@ namespace neutrino::simplex {
     }
 
     sdlpp::abstract_application* application::get_application() noexcept {
-        return m_pimpl->m_app.get();
+        return neutrino::detail::application_access::base(*m_pimpl->m_app);
     }
 }

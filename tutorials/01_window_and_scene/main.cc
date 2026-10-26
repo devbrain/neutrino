@@ -6,7 +6,7 @@
 //    and presentation scaling.
 // 2. A subclass of neutrino::base_scene to implement our game screen.
 // 3. The scene lifecycle, fixed-timestep simulation tick, and rendering.
-// 4. SDLPP_MAIN entry point macro.
+// 4. NEUTRINO_MAIN entry point macro.
 //
 
 #include <neutrino/application.hh>
@@ -15,8 +15,8 @@
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/draw.hh>
 
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 
 #include <iostream>
 #include <memory>
@@ -72,7 +72,7 @@ namespace {
             m_sim_time += dt.count();
 
             // Press Escape to pop the scene and cleanly exit the application.
-            if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
+            if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
                 std::cout << "[Tutorial 01] Escape pressed - popping scene to exit\n";
                 neutrino::pop_scene();
             }
@@ -85,7 +85,7 @@ namespace {
             // Draw a calm sky-blue background across the logical screen.
             neutrino::draw_rect_fill(
                 neutrino::rect{0, 0, logical_width, logical_height},
-                sdlpp::color{90, 160, 230, 255}
+                neutrino::color{90, 160, 230, 255}
             );
 
             // Draw a placeholder ground strip where our platformer level will be built in later steps.
@@ -95,13 +95,13 @@ namespace {
             // Green grass layer
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y, logical_width, 10},
-                sdlpp::color{80, 185, 95, 255}
+                neutrino::color{80, 185, 95, 255}
             );
 
             // Earth / dirt layer
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y + 10, logical_width, ground_height - 10},
-                sdlpp::color{110, 75, 45, 255}
+                neutrino::color{110, 75, 45, 255}
             );
         }
 
@@ -141,7 +141,7 @@ namespace {
             cfg.title = "Neutrino Tutorial 01: Window and Scene";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
 
             // Set fixed 640x360 design resolution with letterbox scaling.
             // When the user resizes the window, the 16:9 canvas scales cleanly with black bars.
@@ -161,6 +161,6 @@ namespace {
 
 } // namespace
 
-// SDLPP_MAIN macro expands to the platform entry point (e.g. main / WinMain / SDL_main)
+// NEUTRINO_MAIN macro expands to the platform entry point (e.g. main / WinMain / SDL_main)
 // and handles initializing the application instance.
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)

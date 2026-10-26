@@ -14,6 +14,7 @@
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprite/cpu_texture_atlas.hh>
+#include <neutrino/video/image.hh>
 
 namespace neutrino {
     /**
@@ -109,7 +110,7 @@ namespace neutrino {
      * @ref pack_atlases (existing atlas frames) build.
      */
     struct pack_region {
-        const sdlpp::surface* surface;        ///< Source pixels (not owned).
+        const image* surface;        ///< Source pixels (not owned).
         rect                  src;            ///< Sub-rect to pack; its {w,h} is the tile size.
         const bitmask*        mask = nullptr; ///< Optional mask copied onto the output frame.
     };
@@ -136,7 +137,7 @@ namespace neutrino {
      */
     [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_regions(
         std::span <const pack_region> regions,
-        sdlpp::pixel_format_enum format,
+        pixel_format format,
         int max_width, int max_height, int margin,
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 
@@ -156,7 +157,7 @@ namespace neutrino {
      */
     [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_regions(
         std::span <const pack_region> regions,
-        sdlpp::pixel_format_enum format, int margin,
+        pixel_format format, int margin,
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 
     /**
@@ -183,8 +184,8 @@ namespace neutrino {
      *         page cap; also if a page allocation or source conversion fails.
      */
     [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_surfaces(
-        std::span <const sdlpp::surface> images,
-        sdlpp::pixel_format_enum format,
+        std::span <const image> images,
+        pixel_format format,
         int max_width, int max_height, int margin,
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 
@@ -193,7 +194,7 @@ namespace neutrino {
      *        cap from the renderer (default 2048). Empty input -> empty.
      */
     [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_surfaces(
-        std::span <const sdlpp::surface> images, int margin,
+        std::span <const image> images, int margin,
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 
     /**
@@ -203,8 +204,8 @@ namespace neutrino {
      *        otherwise yield a palettized page the GPU sprite path cannot sample.
      */
     [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_surfaces(
-        std::span <const sdlpp::surface> images,
-        sdlpp::pixel_format_enum format,
+        std::span <const image> images,
+        pixel_format format,
         int margin,
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 
@@ -229,7 +230,7 @@ namespace neutrino {
      */
     [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_atlases(
         std::span <const cpu_texture_atlas> atlases,
-        sdlpp::pixel_format_enum format,
+        pixel_format format,
         int max_width, int max_height, int margin,
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 
@@ -249,7 +250,7 @@ namespace neutrino {
      */
     [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_atlases(
         std::span <const cpu_texture_atlas> atlases,
-        sdlpp::pixel_format_enum format,
+        pixel_format format,
         int margin,
         std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
 

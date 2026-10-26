@@ -36,8 +36,8 @@ Here is the complete source code for Step 1, located in `tutorials/01_window_and
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/draw.hh>
 
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 
 #include <iostream>
 #include <memory>
@@ -73,7 +73,7 @@ namespace {
             m_sim_ticks++;
             m_sim_time += dt.count();
 
-            if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
+            if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
                 std::cout << "[Tutorial 01] Escape pressed - popping scene to exit\n";
                 neutrino::pop_scene();
             }
@@ -83,7 +83,7 @@ namespace {
             // Draw a calm sky-blue background across the logical screen.
             neutrino::draw_rect_fill(
                 neutrino::rect{0, 0, logical_width, logical_height},
-                sdlpp::color{90, 160, 230, 255}
+                neutrino::color{90, 160, 230, 255}
             );
 
             // Draw a placeholder ground strip.
@@ -92,11 +92,11 @@ namespace {
 
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y, logical_width, 10},
-                sdlpp::color{80, 185, 95, 255}
+                neutrino::color{80, 185, 95, 255}
             );
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y + 10, logical_width, ground_height - 10},
-                sdlpp::color{110, 75, 45, 255}
+                neutrino::color{110, 75, 45, 255}
             );
         }
 
@@ -122,7 +122,7 @@ namespace {
             cfg.title = "Neutrino Tutorial 01: Window and Scene";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
 
             // Design resolution and scale mode:
             cfg.logical_size = neutrino::dim{logical_width, logical_height};
@@ -134,7 +134,7 @@ namespace {
 
 } // namespace
 
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)
 ```
 
 ---
@@ -152,7 +152,7 @@ neutrino::application_config cfg;
 cfg.title = "Neutrino Tutorial 01: Window and Scene";
 cfg.width = 1280;
 cfg.height = 720;
-cfg.flags = sdlpp::window_flags::resizable;
+cfg.flags = neutrino::window_flags::resizable;
 
 cfg.logical_size = neutrino::dim{640, 360};
 cfg.scale = neutrino::scale_mode::letterbox;
@@ -194,7 +194,7 @@ runs no substeps; see [Input](../concepts/input.md#input-across-simulation-subst
 ### 3. Transitions and quitting
 
 ```cpp
-if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
+if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
     neutrino::pop_scene();
 }
 ```
@@ -206,10 +206,10 @@ These calls do not mutate the stack immediately inline; they post an event to th
 ### 4. Application entry point
 
 ```cpp
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)
 ```
 
-SDL3 requires managing platform-specific entry points (e.g. standard `main` on POSIX, `WinMain` on Windows, or custom lifecycle callbacks on Android/iOS/WebAssembly). `SDLPP_MAIN` handles this boilerplate transparently.
+SDL3 requires managing platform-specific entry points (e.g. standard `main` on POSIX, `WinMain` on Windows, or custom lifecycle callbacks on Android/iOS/WebAssembly). `NEUTRINO_MAIN` handles this boilerplate transparently.
 
 ---
 

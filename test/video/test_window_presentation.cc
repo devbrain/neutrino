@@ -59,7 +59,7 @@ namespace {
                 ++updates;
                 if (tick) tick(dt, input);
             }
-            void render_scene(sdlpp::renderer& renderer) override { if (draw) draw(renderer); }
+            void render_scene() override { if (draw) draw(get_renderer()); }
     };
 
     class event_probe_app : public render_probe_app {
@@ -106,9 +106,9 @@ namespace {
             int scene_render_passes = 0;
 
         protected:
-            void render_scene(sdlpp::renderer& renderer) override {
+            void render_scene() override {
                 for (int i = 0; i < scene_render_passes; ++i) {
-                    application::render_scene(renderer);
+                    application::render_scene();
                 }
             }
     };
@@ -121,7 +121,25 @@ namespace {
             (app.*tick)(dt);
             (app.*draw)(neutrino::get_renderer());
         }
+
+        // The live (frame-level) input state of the SDL base. Not engine API -- application
+        // inherits it privately -- but the event tests check it is updated before event() runs.
+        static sdlpp::button_state key(sdlpp::game_application& app, sdlpp::scancode scan) {
+            const auto get = &frame_driver::get_key;
+            return (app.*get)(scan);
+        }
+
+        static sdlpp::button_state mouse(sdlpp::game_application& app, sdlpp::mouse_button button) {
+            const auto get = static_cast <sdlpp::button_state (sdlpp::game_application::*)(sdlpp::mouse_button) const noexcept>(
+                &frame_driver::get_mouse);
+            return (app.*get)(button);
+        }
     };
+
+    template <typename App>
+    [[nodiscard]] sdlpp::game_application& sdl_base(App& app) {
+        return static_cast <sdlpp::game_application&>(*neutrino::detail::application_access::base(app));
+    }
 
     // Drives an application through its real SDL lifecycle on the dummy drivers,
     // so get_renderer()/render_size() and the scene pipeline are all live.
@@ -132,7 +150,7 @@ namespace {
                 : m_app(cfg) {
                 SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, "dummy", SDL_HINT_OVERRIDE);
                 SDL_SetHintWithPriority(SDL_HINT_VIDEO_DRIVER, "dummy", SDL_HINT_OVERRIDE);
-                auto* base = static_cast <sdlpp::abstract_application*>(&m_app);
+                auto* base = neutrino::detail::application_access::base(m_app);
                 base->init_sdl_();
                 base->on_init(0, nullptr);
                 m_started = true;
@@ -146,21 +164,21 @@ namespace {
             [[nodiscard]] App& app() noexcept { return m_app; }
 
             void iterate() {
-                static_cast<sdlpp::abstract_application*>(&m_app)->on_iterate();
+                neutrino::detail::application_access::base(m_app)->on_iterate();
             }
 
-            void frame(float dt) { frame_driver::frame(m_app, dt); }
+            void frame(float dt) { frame_driver::frame(sdl_base(m_app), dt); }
 
             // Deliver one synthetic SDL event through the real handle_event path.
             void feed(const SDL_Event& ev) {
-                static_cast <sdlpp::abstract_application*>(&m_app)->on_event(sdlpp::event(ev));
+                neutrino::detail::application_access::base(m_app)->on_event(sdlpp::event(ev));
             }
 
             void shutdown() noexcept {
                 if (!m_started) {
                     return;
                 }
-                auto* base = static_cast <sdlpp::abstract_application*>(&m_app);
+                auto* base = neutrino::detail::application_access::base(m_app);
                 base->on_quit();
                 base->shutdown_sdl_();
                 m_started = false;
@@ -538,7 +556,7 @@ TEST_SUITE("neutrino::application event hooks") {
         key.key.down = true;
         CHECK_NOTHROW(h.feed(key));
         CHECK(calls == 1);
-        CHECK(h.app().get_key(sdlpp::scancode::space).pressed);
+        CHECK(frame_driver::key(sdl_base(h.app()), sdlpp::scancode::space).pressed);
     }
 
     TEST_CASE("event overrides replace scene dispatch after input tracking") {
@@ -549,10 +567,10 @@ TEST_SUITE("neutrino::application event hooks") {
         h.app().dispatch = [&](const sdlpp::event& e) {
             ++app_events;
             if (e.type() == sdlpp::event_type::key_down) {
-                CHECK(h.app().get_key(sdlpp::scancode::space).pressed == (app_events == 1));
-                CHECK(h.app().get_key(sdlpp::scancode::space).held);
+                CHECK(frame_driver::key(sdl_base(h.app()), sdlpp::scancode::space).pressed == (app_events == 1));
+                CHECK(frame_driver::key(sdl_base(h.app()), sdlpp::scancode::space).held);
             } else if (e.type() == sdlpp::event_type::mouse_button_down) {
-                CHECK(h.app().get_mouse(sdlpp::mouse_button::left).pressed);
+                CHECK(frame_driver::mouse(sdl_base(h.app()), sdlpp::mouse_button::left).pressed);
             }
         };
         SDL_Event key{};

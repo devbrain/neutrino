@@ -7,7 +7,7 @@
 /**
  * @file image_loader.hh
  * @brief Throwing wrappers over sdlpp's image decode that yield a
- *        @c sdlpp::surface directly.
+ *        @c image (decoded pixels) directly.
  *
  * The rest of the engine loads images as a value, not an @c expected: these
  * thin adapters call sdlpp's image loader and turn a decode failure into a
@@ -20,6 +20,7 @@
 #include <span>
 #include <sdlpp/image/image.hh>
 #include <failsafe/exception.hh>
+#include <neutrino/video/image.hh>
 
 
 namespace neutrino {
@@ -31,8 +32,8 @@ namespace neutrino {
      * @throws std::runtime_error carrying the decoder error if the file cannot
      *         be opened or decoded.
      */
-    [[nodiscard]] inline sdlpp::surface load_image(const std::filesystem::path& pth) {
-        auto v = sdlpp::image::load(pth);
+    [[nodiscard]] inline image load_image(const std::filesystem::path& pth) {
+        auto v = sdlpp::image::load(pth); // sdlpp-ok: implementation
         if (v) {
             return std::move(*v);
         }
@@ -51,8 +52,8 @@ namespace neutrino {
      * @throws std::runtime_error carrying the decoder error if the bytes cannot
      *         be decoded.
      */
-    [[nodiscard]] inline sdlpp::surface load_image(std::span<const uint8_t> data) {
-        auto v = sdlpp::image::load(data);
+    [[nodiscard]] inline image load_image(std::span<const uint8_t> data) {
+        auto v = sdlpp::image::load(data); // sdlpp-ok: implementation
         if (v) {
             return std::move(*v);
         }

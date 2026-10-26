@@ -37,7 +37,12 @@ namespace neutrino {
         sim_duration max_frame{0.25f};      ///< Per-frame dt clamp, in seconds.
     };
 
-    using window_flags = sdlpp::window_flags;
+    using window_flags = sdlpp::window_flags; // sdlpp-ok
+
+    class application;
+    namespace detail {
+        struct application_access;
+    }
     /// @brief Startup configuration for @ref application -- window geometry,
     /// presentation, and frame pacing. Passed once to the application
     /// constructor; every field has a usable default.
@@ -88,28 +93,39 @@ namespace neutrino {
     /// Most games run entirely through scenes (see base_scene) and use the default
     /// update/render hooks. Construct with an @ref application_config
     /// to customize the window and presentation.
-    class NEUTRINO_EXPORT application : public sdlpp::game_application {
+    ///
+    /// The SDL application machinery is a PRIVATE base (roadmap P1.7): its API is not part of
+    /// neutrino's. Input is read from the @ref input_snapshot handed to update_scene() /
+    /// base_scene::fixed_update(); the entry point (NEUTRINO_MAIN) and test harnesses reach the
+    /// base through detail::application_access.
+    class NEUTRINO_EXPORT application : private sdlpp::game_application { // sdlpp-ok
+        friend struct detail::application_access;
+
         public:
             application();
             explicit application(const application_config& cfg);
             ~application() override;
 
-            using sdlpp::game_application::get_key;
-            using sdlpp::game_application::get_mouse;
-            using sdlpp::game_application::get_mouse_x;
-            using sdlpp::game_application::get_mouse_y;
-            using sdlpp::game_application::get_mouse_pos;
-            using sdlpp::game_application::get_mouse_wheel;
+            // The few base members that ARE engine API, re-exported by the base's injected name.
 
-            // Fullscreen control (defined protected on game_application; re-exported
-            // here as public engine API). Each returns success; a resulting drawable
-            // change drives base_scene::on_resize like any other resize.
-            using sdlpp::game_application::is_fullscreen;
-            using sdlpp::game_application::set_fullscreen;
-            using sdlpp::game_application::toggle_fullscreen;
+            /// Ask the application to stop: flags it as stopping; the main loop ends after the
+            /// current callback and shutdown (teardown(), then the engine) follows.
+            using game_application::quit;
+            /// True until quit() has been requested (or startup failed).
+            using game_application::is_running;
+            /// Fullscreen control. Each returns success; a resulting drawable change drives
+            /// base_scene::on_resize like any other resize.
+            using game_application::is_fullscreen;
+            using game_application::set_fullscreen;
+            using game_application::toggle_fullscreen;
 
         protected:
-            sdlpp::window_config get_window_config() override;
+            // Inside a class derived from application, an unqualified get_renderer()/get_window()
+            // finds these base members by class-scope lookup BEFORE the free neutrino:: functions;
+            // were they left private, such calls would fail access checking instead of falling
+            // back. Re-exported here: they return the same objects as the free functions.
+            using game_application::get_renderer;
+            using game_application::get_window;
 
             /// @brief One-time setup hook, called once after the window,
             /// renderer, services, and input subsystems are up but before the
@@ -157,14 +173,14 @@ namespace neutrino {
             /// if the scene stack should also be drawn. The engine owns clearing, presentation,
             /// and end-of-frame input bookkeeping. Exceptions from overrides propagate to the
             /// application entry point.
-            virtual void render_scene(sdlpp::renderer& renderer);
+            virtual void render_scene();
             /// @brief Raw SDL event hook, called after input/gamepad bookkeeping and
             /// render-space resize delivery. Default: dispatch scene transitions and
             /// events to the scene stack, containing scene exceptions. Override to
             /// replace scene dispatch; explicitly call application::event(e) to retain it.
             /// Ignored scene-transition requests are reclaimed at shutdown. Exceptions
             /// from overrides propagate to the application entry point.
-            virtual void event(const sdlpp::event& e);
+            virtual void event(const neutrino::event& e);
             /// @brief Render-space size change, deduplicated by the final event wrapper.
             /// Default: notify the active scene, containing scene exceptions. Override
             /// to replace that delivery; call the base implementation to retain it.
@@ -189,10 +205,13 @@ namespace neutrino {
             /// scenes manually from ready() via neutrino::push_scene().
             virtual std::unique_ptr <base_scene> create_initial_scene() { return nullptr; }
         private:
+            // SDL application plumbing (overrides of the private base), configured through
+            // application_config rather than by subclasses.
+            sdlpp::window_config get_window_config() final; // sdlpp-ok
             void on_ready() final;
             void on_update(float dt) final;
-            void on_render(sdlpp::renderer& r) final;
-            void handle_event(const sdlpp::event& e) final;
+            void on_render(renderer& r) final;
+            void handle_event(const neutrino::event& e) final;
             void on_quit() noexcept final;
             /// @brief Build this frame's input snapshot from the tracked input state (pointer mapped
             /// into render space, mouse-button edge/held), sampled once per frame for update_scene.
@@ -201,4 +220,14 @@ namespace neutrino {
             struct impl;
             std::unique_ptr <impl> m_pimpl;
     };
+
+    namespace detail {
+        /// @brief Reaches an application's private SDL base. For the entry point (NEUTRINO_MAIN),
+        ///        the simplex adapter and test harnesses only -- not game code.
+        struct application_access {
+            [[nodiscard]] static sdlpp::abstract_application* base(application& app) noexcept { // sdlpp-ok
+                return &app;
+            }
+        };
+    }
 }

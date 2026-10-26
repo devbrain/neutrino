@@ -46,6 +46,6 @@ namespace neutrino::simplex {
             struct impl;
             std::unique_ptr<impl> m_pimpl;
 
-            [[nodiscard]] sdlpp::abstract_application* get_application() noexcept;
+            [[nodiscard]] sdlpp::abstract_application* get_application() noexcept;  // sdlpp-ok: SDL callback plumbing
     };
 }

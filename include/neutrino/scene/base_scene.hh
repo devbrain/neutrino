@@ -18,6 +18,10 @@ namespace neutrino {
     /// the fixed tick handed to @ref base_scene::fixed_update.
     using sim_duration = std::chrono::duration <float>;
 
+    /// @brief A raw SDL event (keyboard, mouse, window, text input, ...), as delivered to
+    ///        @ref base_scene::handle_action and application::event.
+    using event = sdlpp::event; // sdlpp-ok
+
     /// @brief Abstract scene interface with lifecycle hooks and per-frame callbacks.
     /// Scenes are managed in a stack by scenes_manager.
     class NEUTRINO_EXPORT base_scene {
@@ -58,7 +62,7 @@ namespace neutrino {
             /// pixel-art, where sub-step interpolation rounds away; see roadmap 0B).
             virtual void render() = 0;
             /// @brief Handle an SDL event (input, window, etc.).
-            virtual void handle_action(const sdlpp::event& ev);
+            virtual void handle_action(const event& ev);
             /// @brief Return true if this scene fully covers the screen (no need to render below).
             [[nodiscard]] virtual bool is_opaque() const;
     };

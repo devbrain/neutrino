@@ -17,8 +17,8 @@
 #include <neutrino/video/world/camera.hh>
 #include <neutrino/video/world/sprite_batch.hh>
 
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 
 #include <algorithm>
 #include <cmath>
@@ -80,7 +80,7 @@ namespace {
         }
 
         void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
-            if (in.pressed(sdlpp::scancode::escape)) {
+            if (in.pressed(neutrino::key::escape)) {
                 neutrino::pop_scene();
                 return;
             }
@@ -89,14 +89,14 @@ namespace {
             constexpr float move_speed = 220.0f;
 
             // 1. Player horizontal & vertical controls
-            if (in.held(sdlpp::scancode::right) || in.held(sdlpp::scancode::d)) m_player_pos.x += move_speed * dt_sec;
-            if (in.held(sdlpp::scancode::left)  || in.held(sdlpp::scancode::a)) m_player_pos.x -= move_speed * dt_sec;
-            if (in.held(sdlpp::scancode::down)  || in.held(sdlpp::scancode::s)) m_player_pos.y += move_speed * dt_sec;
-            if (in.held(sdlpp::scancode::up)    || in.held(sdlpp::scancode::w)) m_player_pos.y -= move_speed * dt_sec;
+            if (in.held(neutrino::key::right) || in.held(neutrino::key::d)) m_player_pos.x += move_speed * dt_sec;
+            if (in.held(neutrino::key::left)  || in.held(neutrino::key::a)) m_player_pos.x -= move_speed * dt_sec;
+            if (in.held(neutrino::key::down)  || in.held(neutrino::key::s)) m_player_pos.y += move_speed * dt_sec;
+            if (in.held(neutrino::key::up)    || in.held(neutrino::key::w)) m_player_pos.y -= move_speed * dt_sec;
 
             // 2. Zoom controls: Q to zoom out, E to zoom in
-            if (in.held(sdlpp::scancode::q)) m_cam.zoom = std::max(0.5f, m_cam.zoom - 0.7f * dt_sec);
-            if (in.held(sdlpp::scancode::e)) m_cam.zoom = std::min(2.5f, m_cam.zoom + 0.7f * dt_sec);
+            if (in.held(neutrino::key::q)) m_cam.zoom = std::max(0.5f, m_cam.zoom - 0.7f * dt_sec);
+            if (in.held(neutrino::key::e)) m_cam.zoom = std::min(2.5f, m_cam.zoom + 0.7f * dt_sec);
 
             // 3. Smooth camera tracking with exponential decay
             const float blend = 1.0f - std::exp(-6.0f * dt_sec);
@@ -108,7 +108,7 @@ namespace {
             const neutrino::rect viewport{0, 0, logical_width, logical_height};
 
             // Deep twilight sky (Plane 0: static background, parallax = 0.0)
-            neutrino::draw_rect_fill(viewport, sdlpp::color{15, 20, 36, 255});
+            neutrino::draw_rect_fill(viewport, neutrino::color{15, 20, 36, 255});
 
             // 1. Distant Mountains (Plane 1: parallax_x = 0.25, parallax_y = 0.05)
             neutrino::world_layer_header mountain_plane;
@@ -160,7 +160,7 @@ namespace {
                 const neutrino::world_point peak{static_cast<float>(x), 160.0f};
                 const auto sp = neutrino::to_screen(m_cam, plane, viewport.dimensions(), peak);
                 const int rad = static_cast<int>(120.0f * m_cam.zoom);
-                neutrino::draw_circle_fill(neutrino::circle{sp, rad}, sdlpp::color{28, 38, 58, 255});
+                neutrino::draw_circle_fill(neutrino::circle{sp, rad}, neutrino::color{28, 38, 58, 255});
             }
         }
 
@@ -169,7 +169,7 @@ namespace {
                 const neutrino::world_point peak{static_cast<float>(x), 220.0f};
                 const auto sp = neutrino::to_screen(m_cam, plane, viewport.dimensions(), peak);
                 const int rad = static_cast<int>(90.0f * m_cam.zoom);
-                neutrino::draw_circle_fill(neutrino::circle{sp, rad}, sdlpp::color{38, 55, 75, 255});
+                neutrino::draw_circle_fill(neutrino::circle{sp, rad}, neutrino::color{38, 55, 75, 255});
             }
         }
 
@@ -181,18 +181,18 @@ namespace {
             const auto p1 = neutrino::to_screen(m_cam, plane, viewport.dimensions(), g_left);
             const auto p2 = neutrino::to_screen(m_cam, plane, viewport.dimensions(), g_right);
 
-            neutrino::draw_line_thick(p1, p2, 6.0f * m_cam.zoom, sdlpp::color{46, 204, 113, 255});
+            neutrino::draw_line_thick(p1, p2, 6.0f * m_cam.zoom, neutrino::color{46, 204, 113, 255});
         }
 
         void render_hud() {
             // HUD panel showing camera position and zoom
-            neutrino::draw_rect_fill(neutrino::rect{12, 12, 340, 24}, sdlpp::color{0, 0, 0, 180});
-            neutrino::draw_rect(neutrino::rect{12, 12, 340, 24}, sdlpp::colors::white);
+            neutrino::draw_rect_fill(neutrino::rect{12, 12, 340, 24}, neutrino::color{0, 0, 0, 180});
+            neutrino::draw_rect(neutrino::rect{12, 12, 340, 24}, neutrino::colors::white);
 
             // Small indicator lamps for zoom level
             const int zoom_bar_w = static_cast<int>((m_cam.zoom / 2.5f) * 60.0f);
-            neutrino::draw_rect_fill(neutrino::rect{20, 18, zoom_bar_w, 12}, sdlpp::colors::cyan);
-            neutrino::draw_rect(neutrino::rect{20, 18, 60, 12}, sdlpp::colors::light_gray);
+            neutrino::draw_rect_fill(neutrino::rect{20, 18, zoom_bar_w, 12}, neutrino::colors::cyan);
+            neutrino::draw_rect(neutrino::rect{20, 18, 60, 12}, neutrino::colors::light_gray);
         }
 
         neutrino::sprite_set_handle m_set;
@@ -220,7 +220,7 @@ namespace {
             cfg.title = "Neutrino Drawing Tutorial 03 - Camera & Parallax";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
             cfg.logical_size = neutrino::dim{logical_width, logical_height};
             cfg.scale = neutrino::scale_mode::letterbox;
             return cfg;
@@ -229,4 +229,4 @@ namespace {
 
 } // namespace
 
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)

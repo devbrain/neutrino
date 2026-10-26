@@ -15,8 +15,8 @@
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/render_texture.hh>
 
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 
 #include <algorithm>
 #include <cmath>
@@ -53,13 +53,13 @@ namespace {
         }
 
         void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
-            if (in.pressed(sdlpp::scancode::escape)) {
+            if (in.pressed(neutrino::key::escape)) {
                 neutrino::pop_scene();
                 return;
             }
 
             // Spacebar: Re-compose the procedural scenery with new random stars!
-            if (in.pressed(sdlpp::scancode::space)) {
+            if (in.pressed(neutrino::key::space)) {
                 m_star_seed += 13;
                 bake_scenery();
             }
@@ -69,10 +69,10 @@ namespace {
 
             // Move player with arrow keys or WASD
             constexpr float move_speed = 180.0f;
-            if (in.held(sdlpp::scancode::right) || in.held(sdlpp::scancode::d)) m_player_pos.x += move_speed * dt_sec;
-            if (in.held(sdlpp::scancode::left)  || in.held(sdlpp::scancode::a)) m_player_pos.x -= move_speed * dt_sec;
-            if (in.held(sdlpp::scancode::down)  || in.held(sdlpp::scancode::s)) m_player_pos.y += move_speed * dt_sec;
-            if (in.held(sdlpp::scancode::up)    || in.held(sdlpp::scancode::w)) m_player_pos.y -= move_speed * dt_sec;
+            if (in.held(neutrino::key::right) || in.held(neutrino::key::d)) m_player_pos.x += move_speed * dt_sec;
+            if (in.held(neutrino::key::left)  || in.held(neutrino::key::a)) m_player_pos.x -= move_speed * dt_sec;
+            if (in.held(neutrino::key::down)  || in.held(neutrino::key::s)) m_player_pos.y += move_speed * dt_sec;
+            if (in.held(neutrino::key::up)    || in.held(neutrino::key::w)) m_player_pos.y -= move_speed * dt_sec;
 
             m_player_pos.x = std::clamp(m_player_pos.x, 16.0f, static_cast<float>(logical_width) - 16.0f);
             m_player_pos.y = std::clamp(m_player_pos.y, 16.0f, static_cast<float>(logical_height) - 16.0f);
@@ -101,17 +101,17 @@ namespace {
             // =================================================================
             // Draw patrolling drones
             for (const auto& drone : m_drones) {
-                neutrino::draw_circle_fill(drone, 10.0f, sdlpp::color{231, 76, 60, 255});
-                neutrino::draw_circle(drone, 10.0f, sdlpp::colors::white);
-                neutrino::draw_circle(drone, 16.0f, sdlpp::color{231, 76, 60, 100});
+                neutrino::draw_circle_fill(drone, 10.0f, neutrino::color{231, 76, 60, 255});
+                neutrino::draw_circle(drone, 10.0f, neutrino::colors::white);
+                neutrino::draw_circle(drone, 16.0f, neutrino::color{231, 76, 60, 100});
             }
 
             // Draw player avatar (emerald diamond)
             const neutrino::render_pos p{m_player_pos.x, m_player_pos.y};
             const neutrino::render_rect body{p.x - 12.0f, p.y - 12.0f, 24.0f, 24.0f};
-            neutrino::draw_rect_fill(body, sdlpp::color{46, 204, 113, 255});
-            neutrino::draw_rect(body, sdlpp::colors::white);
-            neutrino::draw_cross(p, 4.0f, 1.0f, sdlpp::colors::black);
+            neutrino::draw_rect_fill(body, neutrino::color{46, 204, 113, 255});
+            neutrino::draw_rect(body, neutrino::colors::white);
+            neutrino::draw_cross(p, 4.0f, 1.0f, neutrino::colors::black);
 
             // =================================================================
             // PASS 3: Render Cached Minimap at Top-Right
@@ -131,7 +131,7 @@ namespace {
             // Use compose() to bind the texture as render target, clear, and draw:
             m_backdrop->compose([&] {
                 // 1. Deep space background
-                neutrino::draw_rect_fill(neutrino::rect{0, 0, logical_width, logical_height}, sdlpp::color{12, 16, 28, 255});
+                neutrino::draw_rect_fill(neutrino::rect{0, 0, logical_width, logical_height}, neutrino::color{12, 16, 28, 255});
 
                 // 2. Procedural starfield
                 std::srand(m_star_seed);
@@ -139,7 +139,7 @@ namespace {
                     const int x = std::rand() % logical_width;
                     const int y = std::rand() % (logical_height - 60);
                     const uint8_t b = static_cast<uint8_t>(140 + std::rand() % 115);
-                    const sdlpp::color star_col{b, b, static_cast<uint8_t>(std::min(255, b + 20)), 255};
+                    const neutrino::color star_col{b, b, static_cast<uint8_t>(std::min(255, b + 20)), 255};
 
                     if (i % 8 == 0) {
                         neutrino::draw_cross(neutrino::point{x, y}, 2, 1.0f, star_col);
@@ -152,19 +152,19 @@ namespace {
                 for (int x = -60; x <= logical_width + 60; x += 140) {
                     neutrino::draw_circle_fill(
                         neutrino::circle{neutrino::point{x, logical_height + 40}, 160},
-                        sdlpp::color{20, 26, 45, 255}
+                        neutrino::color{20, 26, 45, 255}
                     );
                 }
                 for (int x = 20; x <= logical_width + 40; x += 180) {
                     neutrino::draw_circle_fill(
                         neutrino::circle{neutrino::point{x, logical_height + 60}, 180},
-                        sdlpp::color{15, 20, 36, 255}
+                        neutrino::color{15, 20, 36, 255}
                     );
                 }
 
                 // 4. Ground landing strip
-                neutrino::draw_rect_fill(neutrino::rect{0, logical_height - 30, logical_width, 30}, sdlpp::color{30, 40, 60, 255});
-                neutrino::draw_line(neutrino::point{0, logical_height - 30}, neutrino::point{logical_width, logical_height - 30}, sdlpp::colors::cyan);
+                neutrino::draw_rect_fill(neutrino::rect{0, logical_height - 30, logical_width, 30}, neutrino::color{30, 40, 60, 255});
+                neutrino::draw_line(neutrino::point{0, logical_height - 30}, neutrino::point{logical_width, logical_height - 30}, neutrino::colors::cyan);
             });
         }
 
@@ -174,15 +174,15 @@ namespace {
             // Bake static room borders into the minimap texture
             m_minimap->compose([&] {
                 // Semi-transparent charcoal tray
-                neutrino::draw_rect_fill(neutrino::rect{0, 0, 120, 120}, sdlpp::color{10, 12, 18, 210});
+                neutrino::draw_rect_fill(neutrino::rect{0, 0, 120, 120}, neutrino::color{10, 12, 18, 210});
 
                 // Static room zones
-                neutrino::draw_rect(neutrino::rect{10, 10, 35, 30}, sdlpp::color{120, 130, 150, 255});
-                neutrino::draw_rect(neutrino::rect{45, 20, 40, 45}, sdlpp::color{120, 130, 150, 255});
-                neutrino::draw_rect(neutrino::rect{70, 60, 40, 40}, sdlpp::color{120, 130, 150, 255});
+                neutrino::draw_rect(neutrino::rect{10, 10, 35, 30}, neutrino::color{120, 130, 150, 255});
+                neutrino::draw_rect(neutrino::rect{45, 20, 40, 45}, neutrino::color{120, 130, 150, 255});
+                neutrino::draw_rect(neutrino::rect{70, 60, 40, 40}, neutrino::color{120, 130, 150, 255});
 
                 // Minimap outer border
-                neutrino::draw_rect(neutrino::rect{0, 0, 120, 120}, sdlpp::color{200, 210, 230, 255});
+                neutrino::draw_rect(neutrino::rect{0, 0, 120, 120}, neutrino::color{200, 210, 230, 255});
             });
         }
 
@@ -201,21 +201,21 @@ namespace {
                 return neutrino::render_pos{static_cast<float>(minimap_dst.x) + x * scale_x,
                                             static_cast<float>(minimap_dst.y) + y * scale_y};
             };
-            neutrino::draw_circle_fill(to_minimap(m_player_pos.x, m_player_pos.y), 2.0f, sdlpp::colors::lime_green);
+            neutrino::draw_circle_fill(to_minimap(m_player_pos.x, m_player_pos.y), 2.0f, neutrino::colors::lime_green);
 
             // 3. Draw live drone blips (red dots)
             for (const auto& drone : m_drones) {
-                neutrino::draw_circle_fill(to_minimap(drone.x, drone.y), 2.0f, sdlpp::colors::crimson);
+                neutrino::draw_circle_fill(to_minimap(drone.x, drone.y), 2.0f, neutrino::colors::crimson);
             }
         }
 
         void render_hud() {
             // Instructions banner at top-left
-            neutrino::draw_rect_fill(neutrino::rect{16, 16, 360, 28}, sdlpp::color{0, 0, 0, 180});
-            neutrino::draw_rect(neutrino::rect{16, 16, 360, 28}, sdlpp::colors::white);
+            neutrino::draw_rect_fill(neutrino::rect{16, 16, 360, 28}, neutrino::color{0, 0, 0, 180});
+            neutrino::draw_rect(neutrino::rect{16, 16, 360, 28}, neutrino::colors::white);
 
             // Seed indicator
-            neutrino::draw_circle_fill(neutrino::circle{neutrino::point{30, 30}, 5}, sdlpp::colors::cyan);
+            neutrino::draw_circle_fill(neutrino::circle{neutrino::point{30, 30}, 5}, neutrino::colors::cyan);
         }
 
         std::optional<neutrino::render_texture> m_backdrop;
@@ -245,7 +245,7 @@ namespace {
             cfg.title = "Neutrino Drawing Tutorial 04 - Offscreen Render Textures";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
             cfg.logical_size = neutrino::dim{logical_width, logical_height};
             cfg.scale = neutrino::scale_mode::letterbox;
             return cfg;
@@ -254,4 +254,4 @@ namespace {
 
 } // namespace
 
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)

@@ -80,35 +80,21 @@ flowchart TD
 
 #### 1.1 First-Class Engine Colors (`neutrino::color`)
 * **Location**: `<neutrino/video/color.hh>` (and re-exported by `<neutrino/neutrino.hh>`).
-* **Implementation**:
+* **Implementation**: aliases, per the P1.7 decision (engine-owned *names*, not new types):
   ```cpp
   namespace neutrino {
       using color = sdlpp::color;
       using fcolor = sdlpp::fcolor;
-
-      namespace colors {
-          inline constexpr color transparent{0, 0, 0, 0};
-          inline constexpr color black{0, 0, 0, 255};
-          inline constexpr color white{255, 255, 255, 255};
-          inline constexpr color red{255, 0, 0, 255};
-          inline constexpr color green{0, 255, 0, 255};
-          inline constexpr color blue{0, 0, 255, 255};
-          inline constexpr color yellow{255, 255, 0, 255};
-          inline constexpr color cyan{0, 255, 255, 255};
-          inline constexpr color magenta{255, 0, 255, 255};
-          inline constexpr color dark_gray{64, 64, 64, 255};
-          inline constexpr color gray{128, 128, 128, 255};
-          inline constexpr color light_gray{192, 192, 192, 255};
-          inline constexpr color cornflower_blue{100, 149, 237, 255};
-      }
+      namespace colors = sdlpp::colors;   // the full named palette, not a hand-picked subset
   }
   ```
-* **Client Impact**: Clients write `neutrino::colors::white` and `neutrino::color{r, g, b, a}` without including `sdlpp/video/color.hh`.
+  A namespace alias keeps every named colour clients already use (`forest_green`, `coral`, `crimson`, ...); a hand-copied subset would have broken them.
+* **Client Impact**: Clients write `neutrino::colors::white` and `neutrino::color{r, g, b, a}` without including `sdlpp/video/color.hh`. Public neutrino headers use the same spelling.
 
 #### 1.2 Native Input Enums & Fluent Queries
 * **Location**: `<neutrino/input/keys.hh>` and `<neutrino/input/input_snapshot.hh>`.
 * **Implementation**:
-  * Provide `neutrino::key` (aliasing `sdlpp::scancode` for physical layout-independent keys) and `neutrino::mouse_button`.
+  * Provide `neutrino::key` (aliasing `sdlpp::scancode` for physical layout-independent keys), `neutrino::keycode`, `neutrino::mouse_button`, `neutrino::gamepad_button` and `neutrino::gamepad_axis` -- aliases, per P1.7.
   * Add direct convenience queries on `input_snapshot`:
     ```cpp
     // Direct key queries without wrapping in hotkey{}
@@ -178,6 +164,29 @@ flowchart TD
   * Optional resources: `std::optional` (`render_texture::create`).
   * If a future public API has a failure the caller can genuinely act on, introduce `<neutrino/expected.hh>` (aliasing `failsafe::expected`) at that point, not before.
 * **Client impact**: none for normal code. A call written as a statement compiles unchanged when its return type becomes `void`; only code that inspects the result (`.has_value()`, `return draw_...(...)`) must change, and none exists outside `world_renderer.cc`. Phase 2's float `render_pos` overloads (§2.1) are specified as `void` already and stay that way.
+
+#### 1.7 Seal sdlpp Out of the Client-Facing API
+* **Goal (option A)**: client code never needs to *spell* `sdlpp`. sdlpp stays compiled in and reachable through transitive includes; what is sealed is the documented API and its spelling, enforced by a check. Making sdlpp unreachable (wrapper types, no sdlpp in any public header) was considered and rejected: it is a large rewrite with conversion cost at every boundary, for a library we own.
+* **Baseline** (2026-10-26): client code (games, demos, examples, tutorials) names `sdlpp::` ~600 times (~450 keys, ~120 colours, window flags, low-level video) and 18 client files include `<sdlpp/...>`; the website teaches the same spellings; neutrino's public headers name sdlpp ~180 times.
+* **1. Vocabulary aliases** (engine-owned names, not new types -- these are SDL-shaped value types, so wrapping them would only add conversions):
+  * `color`, `fcolor`, `colors` (P1.1); `key`, `keycode`, `mouse_button`, `gamepad_button`, `gamepad_axis` (P1.2)
+  * `blend_mode`, `line_style`, `event`, and `image` (= `sdlpp::surface`, for `image_loader.hh` and the sprite-atlas constructors)
+  * `window_flags` is already aliased; only its users need migrating.
+  * Public neutrino headers are then rewritten in these names, so docs and IDE tooltips show neutrino types.
+* **2. `application` inherits `sdlpp::game_application` privately.**
+  * Drop the nine `using sdlpp::game_application::...` re-exports. The raw mouse/key getters are superseded by `input_snapshot`; fullscreen gets neutrino methods.
+  * `render_scene(sdlpp::renderer&)` becomes `render_scene()` (there is one renderer).
+  * Private inheritance makes the derived-to-base conversion inaccessible outside the class, which `SDLPP_MAIN` and the test harnesses rely on (`static_cast<sdlpp::abstract_application*>(&app)`). So `NEUTRINO_MAIN` gets its own expansion that reaches the base through a friend accessor (`neutrino::detail::application_access`), the pattern `simplex/entry_point.hh` already uses; the harnesses switch to it.
+* **3. Raw SDL access stays where it is.** `get_renderer()` / `get_window()` remain in `globals.hh`: calling them does not make a client spell `sdlpp`, so a separate interop header would buy nothing under option A. They are documented as the escape hatch (they bypass `pixel_snap`, `DRAW_CHECK` and `draw_failure_count()`) and carry a marker the guard accepts.
+* **4. Guard** (CTest, CMake script, no extra dependencies): flags `sdlpp::` / `<sdlpp/` in public headers (except marked lines and `detail/`), tutorials, examples and website snippets. `demos/` and `games/` are allowlisted (the VGA canvas and KE asset loading are genuine low-level code). Starts **warning-only**, reporting the remaining count, and flips to failing once the migration lands.
+* **5. Migration**: move clients and docs off `sdlpp::` (mostly mechanical: keys and colours), then flip the guard to fail.
+* **As implemented** (refinements found while doing it):
+  * The gamepad enums are `pad_button` / `pad_axis`: `gamepad_button` was already the per-slot button matcher class (as `key` feeds `hotkey` and `mouse_button` feeds `mouse_click`).
+  * `renderer`, `window` and `texture` got aliases too (in `globals.hh`), so `get_renderer()` / `get_window()` need no guard marker: the only `sdlpp-ok` lines are alias definitions and the entry-point plumbing. Added `fpoint` (untyped float point) for the window/render coordinate mapping and camera parallax.
+  * Members of the private base that are engine API are re-exported by the base's injected name, so the header spells no `sdlpp::`: `quit`, `is_running`, the fullscreen trio (public), and `get_renderer` / `get_window` (protected -- otherwise an unqualified `get_renderer()` inside an application subclass finds the private base member by class-scope lookup and fails access checking instead of reaching the free function).
+  * `get_window_config()` became private `final` plumbing: `map_viewer` overrode it only to restate `application_config` fields and now uses `application(cfg)`.
+  * Every client entry point moved from `SDLPP_MAIN` to `NEUTRINO_MAIN` (required: `SDLPP_MAIN` cannot convert to the private base). `map_viewer`'s wheel zoom moved from `handle_action` + `mouse_wheel_event` to the snapshot (`in.wheel()`, `in.pointer().render`); `sprite_demo` loads through `neutrino::load_image()`.
+  * Result: 459 flagged lines -> 0; the `sdlpp_seal` CTest runs in fail mode. `games/` and `demos/` still spell sdlpp in places (allowlisted).
 
 ---
 
@@ -343,6 +352,7 @@ flowchart TD
 | **P1.4** | Default stubs in `base_scene` | **S** (1 hr) | `include/neutrino/scene/base_scene.hh` | No (additive) |
 | **P1.5** | Umbrella header `<neutrino/neutrino.hh>` | **S** (2 hrs) | `include/neutrino/neutrino.hh` | No (additive) |
 | **P1.6** | Draw calls return `void`; getters return values; failures logged + counted | **S** (½ day) | `include/neutrino/video/draw.hh`, `src/neutrino/video/draw.cc`, `video/world/world_renderer.*` | No for callers that ignore results (all client code) |
+| **P1.7** | Seal sdlpp out of the client-facing API: vocabulary aliases, private `application` inheritance + own `NEUTRINO_MAIN`, guard (warn → fail), migration | **M+** (1-2 days) | `include/neutrino/**`, `src/neutrino/application.cc`, `entry_point.hh`, `test/`, clients, docs | No for clients (aliases name the same types); yes for code calling the dropped `application` re-exports / `render_scene(renderer&)` |
 | **P2.1** | Float render-space drawing: float `render_pos` overloads, int overloads forward to float, optional `pixel_snap` policy | **M+** (1-2 days) | `include/neutrino/video/draw.hh`, `src/neutrino/video/draw.cc`, presentation config | No for source (overloads); output changes for sprites with a fractional `scale` (size/origin no longer rounded) |
 | **P2.2** | Camera-aware world drawing (`to_render`, `sprite_batch::add(world_pos)`) | **S** (½ day) | `video/world/camera.hh`, `video/world/sprite_batch.hh` | No (additive) |
 | **P2.3** | Physics boundary helpers (`to_vec`, `to_aabb`) | **S** (2 hrs) | `include/neutrino/physics/geometry/types.hh` | No (additive) |

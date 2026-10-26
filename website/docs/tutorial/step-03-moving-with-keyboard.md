@@ -36,8 +36,8 @@ Here is the complete source code for Step 3, located in `tutorials/03_keyboard_m
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/sprites.hh>
 
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 
 #include <algorithm>
 #include <chrono>
@@ -125,7 +125,7 @@ namespace {
 
         void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
             // 1. Exit cleanly on Escape press
-            if (in.pressed(sdlpp::scancode::escape)) {
+            if (in.pressed(neutrino::key::escape)) {
                 std::cout << "[Tutorial 03] Escape pressed - exiting\n";
                 neutrino::pop_scene();
                 return;
@@ -134,8 +134,8 @@ namespace {
             const float dt_sec = dt.count();
 
             // 2. Read continuous horizontal movement (Held State)
-            const bool move_left = in.held(sdlpp::scancode::left) || in.held(sdlpp::scancode::a);
-            const bool move_right = in.held(sdlpp::scancode::right) || in.held(sdlpp::scancode::d);
+            const bool move_left = in.held(neutrino::key::left) || in.held(neutrino::key::a);
+            const bool move_right = in.held(neutrino::key::right) || in.held(neutrino::key::d);
 
             if (move_left != move_right) {
                 const float dir = move_right ? 1.0f : -1.0f;
@@ -151,9 +151,9 @@ namespace {
             );
 
             // 3. Read discrete jump impulse (Edge Transition)
-            const bool jump_pressed = in.pressed(sdlpp::scancode::space) 
-                                   || in.pressed(sdlpp::scancode::up) 
-                                   || in.pressed(sdlpp::scancode::w);
+            const bool jump_pressed = in.pressed(neutrino::key::space) 
+                                   || in.pressed(neutrino::key::up) 
+                                   || in.pressed(neutrino::key::w);
 
             if (jump_pressed && m_on_ground) {
                 m_player_vy = jump_velocity;
@@ -195,18 +195,18 @@ namespace {
             // Sky background
             neutrino::draw_rect_fill(
                 neutrino::rect{0, 0, logical_width, logical_height},
-                sdlpp::color{90, 160, 230, 255}
+                neutrino::color{90, 160, 230, 255}
             );
 
             // Ground strip
             constexpr int ground_height = logical_height - ground_y;
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y, logical_width, 10},
-                sdlpp::color{80, 185, 95, 255}
+                neutrino::color{80, 185, 95, 255}
             );
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y + 10, logical_width, ground_height - 10},
-                sdlpp::color{110, 75, 45, 255}
+                neutrino::color{110, 75, 45, 255}
             );
 
             // Draw player sprite with horizontal flipping
@@ -260,7 +260,7 @@ namespace {
             cfg.title = "Neutrino Tutorial 03 - Moving with the Keyboard";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
 
             cfg.logical_size = neutrino::dim{logical_width, logical_height};
             cfg.scale = neutrino::scale_mode::letterbox;
@@ -271,7 +271,7 @@ namespace {
 
 } // namespace
 
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)
 ```
 
 ---
@@ -345,8 +345,8 @@ flowchart TD
 Horizontal running is a continuous process. As long as the player holds `D` or `Right`, the character moves forward every tick:
 
 ```cpp
-const bool move_left  = in.held(sdlpp::scancode::left)  || in.held(sdlpp::scancode::a);
-const bool move_right = in.held(sdlpp::scancode::right) || in.held(sdlpp::scancode::d);
+const bool move_left  = in.held(neutrino::key::left)  || in.held(neutrino::key::a);
+const bool move_right = in.held(neutrino::key::right) || in.held(neutrino::key::d);
 
 if (move_left != move_right) {
     m_player_x += (move_right ? 1.0f : -1.0f) * run_speed * dt_sec;
@@ -360,8 +360,8 @@ Using `in.pressed()` makes a delivered press trigger **at most one jump**. A pre
 airborne is ignored by this example's `m_on_ground` check:
 
 ```cpp
-const bool jump_pressed = in.pressed(sdlpp::scancode::space) 
-                       || in.pressed(sdlpp::scancode::up);
+const bool jump_pressed = in.pressed(neutrino::key::space) 
+                       || in.pressed(neutrino::key::up);
 
 if (jump_pressed && m_on_ground) {
     m_player_vy = jump_velocity;
@@ -392,8 +392,8 @@ flowchart TD
 :::note[Why edge stripping matters]
 Without edge stripping, a one-shot action could run again in each substep. The jump code here
 also checks `m_on_ground`, which prevents a second airborne jump, but other actions such as
-firing a projectile need the edge to be delivered only once. Read the supplied snapshot;
-`application::get_key()` retains frame-level edges and does not perform substep filtering.
+firing a projectile need the edge to be delivered only once. The supplied snapshot is the only
+input source a scene needs, and it already carries this filtering.
 :::
 
 ---

@@ -34,6 +34,7 @@
 #include <neutrino/video/sprite/sprite_appearance.hh>
 #include <neutrino/video/sprite/sprite_def.hh>
 #include <neutrino/world/world_common.hh>
+#include <neutrino/video/image.hh>
 
 namespace neutrino {
     class sprite_def_builder;
@@ -124,9 +125,9 @@ namespace neutrino {
             }
 
             /// @brief Set the image from an already-decoded surface.
-            sprite_def_builder& from_surface(std::shared_ptr <const sdlpp::surface> surface,
+            sprite_def_builder& from_surface(std::shared_ptr <const image> surface,
                                              std::optional <std::uint64_t> identity = std::nullopt);
-            sprite_def_builder& from_surface(sdlpp::surface surface,
+            sprite_def_builder& from_surface(image surface,
                                              std::optional <std::uint64_t> identity = std::nullopt);
 
             /// @brief Set raw @ref world_image_source directly.
@@ -140,7 +141,7 @@ namespace neutrino {
             sprite_def_builder& image_size(dim size) noexcept;
 
             /// @brief Color keyed out as transparent, if any.
-            sprite_def_builder& transparent_color(sdlpp::color color) noexcept;
+            sprite_def_builder& transparent_color(neutrino::color color) noexcept;
 
             // ------------------------------------------------------------------------
             // Grid slicing

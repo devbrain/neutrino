@@ -15,8 +15,8 @@
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/draw.hh>
 
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 
 #include <algorithm>
 #include <cmath>
@@ -32,12 +32,12 @@ namespace {
 
     void draw_gauge(int x, int y, int width, int height,
                     float current, float maximum,
-                    const sdlpp::color& fill_color) {
+                    const neutrino::color& fill_color) {
         const float fraction = std::clamp(maximum > 0.0f ? current / maximum : 0.0f, 0.0f, 1.0f);
         const int fill_width = static_cast<int>(fraction * (width - 4));
 
         // 1. Dark background tray
-        neutrino::draw_rect_fill(neutrino::rect{x, y, width, height}, sdlpp::color{25, 25, 25, 220});
+        neutrino::draw_rect_fill(neutrino::rect{x, y, width, height}, neutrino::color{25, 25, 25, 220});
 
         // 2. Value fill with inner padding
         if (fill_width > 0) {
@@ -48,15 +48,15 @@ namespace {
         }
 
         // 3. Outer border
-        neutrino::draw_rect(neutrino::rect{x, y, width, height}, sdlpp::color{200, 200, 200, 255});
+        neutrino::draw_rect(neutrino::rect{x, y, width, height}, neutrino::color{200, 200, 200, 255});
     }
 
     void draw_hud(float health, float max_health, float stamina, float max_stamina, float total_time_sec) {
-        sdlpp::color health_color = sdlpp::color{46, 204, 113, 255};
+        neutrino::color health_color = neutrino::color{46, 204, 113, 255};
 
         if (health / max_health < 0.25f) {
             const float pulse = (std::sin(total_time_sec * 8.0f) + 1.0f) * 0.5f;
-            health_color = sdlpp::color{
+            health_color = neutrino::color{
                 static_cast<uint8_t>(200 + pulse * 55),
                 static_cast<uint8_t>(40 * (1.0f - pulse)),
                 static_cast<uint8_t>(40 * (1.0f - pulse)),
@@ -65,17 +65,17 @@ namespace {
         }
 
         draw_gauge(16, 16, 180, 18, health, max_health, health_color);
-        draw_gauge(16, 38, 140, 12, stamina, max_stamina, sdlpp::color{52, 152, 219, 255});
+        draw_gauge(16, 38, 140, 12, stamina, max_stamina, neutrino::color{52, 152, 219, 255});
     }
 
     void draw_detection_radius(neutrino::render_pos center, float radius, bool player_detected) {
-        const sdlpp::color fill_color = player_detected
-            ? sdlpp::color{231, 76, 60, 60}
-            : sdlpp::color{52, 152, 219, 40};
+        const neutrino::color fill_color = player_detected
+            ? neutrino::color{231, 76, 60, 60}
+            : neutrino::color{52, 152, 219, 40};
 
-        const sdlpp::color border_color = player_detected
-            ? sdlpp::color{231, 76, 60, 200}
-            : sdlpp::color{52, 152, 219, 180};
+        const neutrino::color border_color = player_detected
+            ? neutrino::color{231, 76, 60, 200}
+            : neutrino::color{52, 152, 219, 180};
 
         neutrino::draw_circle_fill(center, radius, fill_color);
         neutrino::draw_circle(center, radius, border_color);
@@ -93,14 +93,14 @@ namespace {
             /* head_size = */ 8.0f,
             /* head_angle = */ 30.0f,
             /* thickness = */ 1.5f,
-            sdlpp::colors::orange
+            neutrino::colors::orange
         );
     }
 
     class primitives_demo_scene final : public neutrino::base_scene {
     public:
         void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
-            if (in.pressed(sdlpp::scancode::escape)) {
+            if (in.pressed(neutrino::key::escape)) {
                 neutrino::pop_scene();
                 return;
             }
@@ -121,7 +121,7 @@ namespace {
 
         void render() override {
             // Dark navy background
-            neutrino::draw_rect_fill(neutrino::rect{0, 0, logical_width, logical_height}, sdlpp::color{20, 24, 34, 255});
+            neutrino::draw_rect_fill(neutrino::rect{0, 0, logical_width, logical_height}, neutrino::color{20, 24, 34, 255});
 
             // 1. Line styles showcase panel on the left
             render_line_showcase();
@@ -134,12 +134,12 @@ namespace {
             draw_detection_radius(sensor_center, sensor_radius, in_range);
 
             // 3. Trajectory line (dashed)
-            neutrino::draw_line_dashed(sensor_center, m_actor_pos, 8.0f, 4.0f, sdlpp::colors::dark_gray);
+            neutrino::draw_line_dashed(sensor_center, m_actor_pos, 8.0f, 4.0f, neutrino::colors::dark_gray);
 
             // 4. Actor bounding box and center cross
             neutrino::draw_rect(neutrino::render_rect{m_actor_pos.x - 16.0f, m_actor_pos.y - 16.0f, 32.0f, 32.0f},
-                                sdlpp::colors::yellow);
-            neutrino::draw_cross(m_actor_pos, 5.0f, 1.0f, sdlpp::colors::white);
+                                neutrino::colors::yellow);
+            neutrino::draw_cross(m_actor_pos, 5.0f, 1.0f, neutrino::colors::white);
 
             // 5. Actor velocity vector arrow
             draw_velocity_vector(m_actor_pos, m_actor_vel_x, m_actor_vel_y);
@@ -151,27 +151,27 @@ namespace {
     private:
         void render_line_showcase() {
             // Panel background
-            neutrino::draw_rect_fill(neutrino::rect{16, 68, 240, 276}, sdlpp::color{28, 34, 48, 200});
-            neutrino::draw_rect(neutrino::rect{16, 68, 240, 276}, sdlpp::color{60, 70, 95, 255});
+            neutrino::draw_rect_fill(neutrino::rect{16, 68, 240, 276}, neutrino::color{28, 34, 48, 200});
+            neutrino::draw_rect(neutrino::rect{16, 68, 240, 276}, neutrino::color{60, 70, 95, 255});
 
             // Standard line
-            neutrino::draw_line(neutrino::point{30, 100}, neutrino::point{230, 100}, sdlpp::colors::gray);
+            neutrino::draw_line(neutrino::point{30, 100}, neutrino::point{230, 100}, neutrino::colors::gray);
 
             // Anti-aliased diagonal line
-            neutrino::draw_line_aa(neutrino::point{30, 130}, neutrino::point{230, 160}, sdlpp::colors::light_blue);
+            neutrino::draw_line_aa(neutrino::point{30, 130}, neutrino::point{230, 160}, neutrino::colors::light_blue);
 
             // Thick line (4px stroke)
-            neutrino::draw_line_thick(neutrino::point{30, 190}, neutrino::point{230, 190}, 4.0f, sdlpp::colors::coral);
+            neutrino::draw_line_thick(neutrino::point{30, 190}, neutrino::point{230, 190}, 4.0f, neutrino::colors::coral);
 
             // Dashed line (10px mark, 5px gap)
-            neutrino::draw_line_dashed(neutrino::point{30, 230}, neutrino::point{230, 230}, 10, 5, sdlpp::colors::yellow);
+            neutrino::draw_line_dashed(neutrino::point{30, 230}, neutrino::point{230, 230}, 10, 5, neutrino::colors::yellow);
 
             // Dotted line (dots spaced every 8px)
-            neutrino::draw_line_dotted(neutrino::point{30, 270}, neutrino::point{230, 270}, 8, sdlpp::colors::white);
+            neutrino::draw_line_dotted(neutrino::point{30, 270}, neutrino::point{230, 270}, 8, neutrino::colors::white);
 
             // Arrow primitive
-            neutrino::draw_arrow(neutrino::point{30, 310}, neutrino::point{130, 310}, 8, 30.0f, 1.5f, sdlpp::colors::lime_green);
-            neutrino::draw_cross(neutrino::point{180, 310}, 6, 1.5f, sdlpp::colors::cyan);
+            neutrino::draw_arrow(neutrino::point{30, 310}, neutrino::point{130, 310}, 8, 30.0f, 1.5f, neutrino::colors::lime_green);
+            neutrino::draw_cross(neutrino::point{180, 310}, 6, 1.5f, neutrino::colors::cyan);
         }
 
         float m_elapsed_sec = 0.0f;
@@ -199,7 +199,7 @@ namespace {
             cfg.title = "Neutrino Drawing Tutorial 01 - Primitives & UI";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
             cfg.logical_size = neutrino::dim{logical_width, logical_height};
             cfg.scale = neutrino::scale_mode::letterbox;
             return cfg;
@@ -208,4 +208,4 @@ namespace {
 
 } // namespace
 
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)

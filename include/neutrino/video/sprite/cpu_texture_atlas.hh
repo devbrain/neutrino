@@ -13,6 +13,8 @@
 
 #include <neutrino/video/sprite/bitmask.hh>
 #include <neutrino/video/geometry_types.hh>
+#include <neutrino/video/image.hh>
+#include <neutrino/video/color.hh>
 
 namespace neutrino {
     /**
@@ -30,7 +32,7 @@ namespace neutrino {
          *
          * Alpha is ignored for the key comparison.
          */
-        std::optional <sdlpp::color> key_color;
+        std::optional <neutrino::color> key_color;
 
         /**
          * @brief INDEX8 palette index treated as transparent when evaluating a bitmask.
@@ -81,7 +83,7 @@ namespace neutrino {
          *         when the surface/rectangle/options combination is invalid.
          */
         static std::optional <bitmask> evaluate_bitmask(
-            const sdlpp::surface& s,
+            const image& s,
             const rect& atlas_rect,
             const cpu_texture_atlas_mask_options& options = {});
     };
@@ -99,18 +101,18 @@ namespace neutrino {
             /**
              * @brief Construct an atlas with no frame metadata.
              */
-            explicit cpu_texture_atlas(sdlpp::surface&& s);
+            explicit cpu_texture_atlas(image&& s);
 
             /**
              * @brief Construct an atlas with precomputed frame metadata.
              */
-            explicit cpu_texture_atlas(sdlpp::surface&& s,
+            explicit cpu_texture_atlas(image&& s,
                                        std::vector <cpu_texture_atlas_frame>&& frames);
 
             /**
              * @brief Access the owned CPU surface.
              */
-            [[nodiscard]] const sdlpp::surface& surface() const noexcept;
+            [[nodiscard]] const image& surface() const noexcept;
 
             /**
              * @brief Number of frame rectangles stored in this atlas.
@@ -130,7 +132,7 @@ namespace neutrino {
             void add_frame (const cpu_texture_atlas_frame& f);
 
         private:
-            sdlpp::surface m_surface;
+            image m_surface;
             std::vector <cpu_texture_atlas_frame> m_frames;
     };
 

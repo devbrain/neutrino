@@ -6,8 +6,7 @@
 #include <neutrino/application.hh>
 #include <failsafe/enforce.hh>
 #include <neutrino/entry_point.hh>
-#include <sdlpp/image/image.hh>
-#include <sdlpp/video/pixels.hh>
+#include <neutrino/video/image_loader.hh>
 
 #include <algorithm>
 #include <filesystem>
@@ -48,11 +47,10 @@ namespace {
         return std::filesystem::path{NEUTRINO_SPRITE_DEMO_ASSET_DIR} / "arcade_platformerV2.png";
     }
 
-    [[nodiscard]] sdlpp::surface load_demo_sheet() {
-        auto loaded = sdlpp::image::load(demo_asset_path());
-        ENFORCE(loaded.has_value());
+    [[nodiscard]] neutrino::image load_demo_sheet() {
+        const auto loaded = neutrino::load_image(demo_asset_path()); // throws if the file can't be decoded
 
-        auto converted = loaded->convert(sdlpp::pixel_format_enum::RGBA8888);
+        auto converted = loaded.convert(neutrino::pixel_format::RGBA8888);
         ENFORCE(converted.has_value());
 
         auto matte = converted->get_pixel(0, 0);
@@ -93,7 +91,7 @@ namespace {
         def.image.width = static_cast <unsigned>(sheet.get()->w);
         def.image.height = static_cast <unsigned>(sheet.get()->h);
         def.image.source = neutrino::image_from_surface{
-            std::make_shared <const sdlpp::surface>(std::move(sheet)), std::nullopt};
+            std::make_shared <const neutrino::image>(std::move(sheet)), std::nullopt};
 
         def.visuals.reserve(demo_frames.size());
         for (const auto& f : demo_frames) {
@@ -135,18 +133,18 @@ namespace {
             }
 
             void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
-                if (in.pressed(sdlpp::scancode::escape)) {
+                if (in.pressed(neutrino::key::escape)) {
                     neutrino::pop_scene();
                     return;
                 }
 
                 const float seconds = dt.count();
-                const bool left = in.held(sdlpp::scancode::left)
-                    || in.held(sdlpp::scancode::a);
-                const bool right = in.held(sdlpp::scancode::right)
-                    || in.held(sdlpp::scancode::d);
-                const bool jump_pressed = in.pressed(sdlpp::scancode::space)
-                    || in.pressed(sdlpp::scancode::up);
+                const bool left = in.held(neutrino::key::left)
+                    || in.held(neutrino::key::a);
+                const bool right = in.held(neutrino::key::right)
+                    || in.held(neutrino::key::d);
+                const bool jump_pressed = in.pressed(neutrino::key::space)
+                    || in.pressed(neutrino::key::up);
 
                 if (left != right) {
                     m_player_x += (right ? 1.0f : -1.0f) * 90.0f * seconds;
@@ -197,11 +195,11 @@ namespace {
 
         private:
             static void draw_background() {
-                neutrino::draw_rect_fill(neutrino::rect{0, 0, window_width, window_height}, sdlpp::color{118, 196, 255, 255});
-                neutrino::draw_rect_fill(neutrino::rect{0, ground_y + 8, window_width, window_height - ground_y - 8}, sdlpp::color{60, 150, 86, 255});
-                neutrino::draw_rect_fill(neutrino::rect{0, ground_y - 4, window_width, 12}, sdlpp::color{72, 190, 100, 255});
-                neutrino::draw_rect_fill(neutrino::rect{390, ground_y - 20, 72, 24}, sdlpp::color{116, 82, 46, 255});
-                neutrino::draw_rect_fill(neutrino::rect{418, ground_y - 48, 16, 32}, sdlpp::color{86, 55, 32, 255});
+                neutrino::draw_rect_fill(neutrino::rect{0, 0, window_width, window_height}, neutrino::color{118, 196, 255, 255});
+                neutrino::draw_rect_fill(neutrino::rect{0, ground_y + 8, window_width, window_height - ground_y - 8}, neutrino::color{60, 150, 86, 255});
+                neutrino::draw_rect_fill(neutrino::rect{0, ground_y - 4, window_width, 12}, neutrino::color{72, 190, 100, 255});
+                neutrino::draw_rect_fill(neutrino::rect{390, ground_y - 20, 72, 24}, neutrino::color{116, 82, 46, 255});
+                neutrino::draw_rect_fill(neutrino::rect{418, ground_y - 48, 16, 32}, neutrino::color{86, 55, 32, 255});
             }
 
             // Declared cache -> handle -> instances, so destruction runs in reverse:
@@ -236,7 +234,7 @@ namespace {
                 cfg.title = "Neutrino Sprite Demo";
                 cfg.width = window_width;
                 cfg.height = window_height;
-                cfg.flags = sdlpp::window_flags::resizable;
+                cfg.flags = neutrino::window_flags::resizable;
                 // Fixed 640x360 design resolution, integer-scaled to the window: the
                 // demo always draws in these coordinates and a larger window scales
                 // it up crisply (pixel-art friendly) instead of showing more.

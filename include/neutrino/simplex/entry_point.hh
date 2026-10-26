@@ -7,7 +7,7 @@
 
 namespace neutrino::simplex::detail {
     struct application_access {
-        [[nodiscard]] static sdlpp::abstract_application* get(application& app) noexcept {
+        [[nodiscard]] static sdlpp::abstract_application* get(application& app) noexcept {  // sdlpp-ok: SDL callback plumbing
             return app.get_application();
         }
     };
@@ -21,7 +21,7 @@ namespace neutrino::simplex::detail {
             std::unique_ptr<application> app = create();
             auto* runtime = application_access::get(*app);
             *appstate = app.release();
-            return sdlpp::detail::app_init(runtime, argc, argv);
+            return sdlpp::detail::app_init(runtime, argc, argv);  // sdlpp-ok: SDL callback plumbing
         } catch (const std::exception& error) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                          "Simplex application construction failed: %s", error.what());
@@ -34,13 +34,13 @@ namespace neutrino::simplex::detail {
 
     inline SDL_AppResult app_iterate(void* appstate) noexcept {
         if (!appstate) return SDL_APP_FAILURE;
-        return sdlpp::detail::app_iterate(
+        return sdlpp::detail::app_iterate(  // sdlpp-ok: SDL callback plumbing
             application_access::get(*static_cast<application*>(appstate)));
     }
 
     inline SDL_AppResult app_event(void* appstate, SDL_Event* event) noexcept {
         if (!appstate) return SDL_APP_FAILURE;
-        return sdlpp::detail::app_handle_event(
+        return sdlpp::detail::app_handle_event(  // sdlpp-ok: SDL callback plumbing
             application_access::get(*static_cast<application*>(appstate)), event);
     }
 
@@ -50,7 +50,7 @@ namespace neutrino::simplex::detail {
         application_access::get(*app)->on_quit();
         // Destroy the user object, then its adapter/window/renderer. The
         // adapter's abstract_application base releases its SDL init guard last.
-        // sdlpp::detail::app_quit would shut SDL down before these destructors.
+        // sdlpp::detail::app_quit would shut SDL down before these destructors. (sdlpp-ok)
     }
 }
 

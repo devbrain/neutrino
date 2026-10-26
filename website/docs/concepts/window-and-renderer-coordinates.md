@@ -197,7 +197,7 @@ bool button_clicked(const neutrino::input_snapshot& input, neutrino::dim canvas)
     // The button is drawn at {120, 80, 160, 40} in these same coordinates.
     const bool inside_button =
         p.x >= 120 && p.x < 280 && p.y >= 80 && p.y < 120;
-    return inside_button && input.mouse(sdlpp::mouse_button::left).pressed;
+    return inside_button && input.mouse(neutrino::mouse_button::left).pressed;
 }
 ```
 

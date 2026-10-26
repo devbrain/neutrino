@@ -49,7 +49,7 @@ namespace {
             }
 
             bool on_update(float dt, const input_snapshot& input) override {
-                if (input.key(sdlpp::scancode::escape).pressed) {
+                if (input.key(neutrino::key::escape).pressed) {
                     return false;
                 }
 
@@ -74,7 +74,7 @@ namespace {
                         if (x <= 0 || x >= w || y <=0 || y >= h) {
                             reinint_star(s, true);
                         } else {
-                            set_draw_color(sdlpp::colors::red);
+                            set_draw_color(neutrino::colors::red);
                             draw_point(render_pos{x, y});
                         }
                     }

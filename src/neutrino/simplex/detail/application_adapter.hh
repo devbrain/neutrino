@@ -20,11 +20,11 @@ namespace neutrino::simplex {
             protected:
                 void ready() override;
                 void update_scene(float dt, const input_snapshot& input) override;
-                void render_scene(sdlpp::renderer& renderer) override;
+                void render_scene() override;
                 void teardown() override;
                 // Input is delivered through the frame snapshot. SDL presentation
                 // scales the fixed canvas; neither hook dispatches into scenes.
-                void event(const sdlpp::event&) override {}
+                void event(const neutrino::event&) override {}
                 void resize_scene(dim) override {}
 
             private:

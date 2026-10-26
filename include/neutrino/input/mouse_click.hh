@@ -2,7 +2,7 @@
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/input/hotkey.hh>
-#include <sdlpp/events/mouse_codes.hh>
+#include <neutrino/input/keys.hh>
 #include <sdlpp/utility/geometry_types.hh>
 
 namespace neutrino {
@@ -17,11 +17,11 @@ namespace neutrino {
     class NEUTRINO_EXPORT mouse_click {
     public:
         /// @brief Match @p button with no modifier requirement.
-        mouse_click(sdlpp::mouse_button button)
+        mouse_click(neutrino::mouse_button button)
             : m_mods(modifier::none), m_button(button) {}
 
         /// @brief Match @p button only while @p mods is held.
-        mouse_click(modifier mods, sdlpp::mouse_button button)
+        mouse_click(modifier mods, neutrino::mouse_button button)
             : m_mods(mods), m_button(button) {}
 
         /// @brief True on the frame the button transitions to down (edge), with modifiers matching.
@@ -32,11 +32,11 @@ namespace neutrino {
         [[nodiscard]] bool released(const input_snapshot& in) const noexcept;
 
         [[nodiscard]] modifier modifiers() const noexcept { return m_mods; }
-        [[nodiscard]] sdlpp::mouse_button button() const noexcept { return m_button; }
+        [[nodiscard]] neutrino::mouse_button button() const noexcept { return m_button; }
 
     private:
         modifier m_mods;
-        sdlpp::mouse_button m_button;
+        neutrino::mouse_button m_button;
     };
 
 } // namespace neutrino

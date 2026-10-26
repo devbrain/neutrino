@@ -9,7 +9,7 @@
  * @brief The engine's geometry vocabulary: integer screen space and float world space.
  *
  * Short aliases for the sdlpp geometry primitives, so code shares one coordinate type set rather
- * than spelling out @c sdlpp::point<int> and friends everywhere. Two spaces live here:
+ * than spelling out the sdlpp point/rect templates everywhere. Two spaces live here:
  *   - **integer screen/pixel space** (@ref point, @ref rect, ...) -- what the renderer draws in;
  *   - **float world space** (@ref world_point, @ref world_rect) -- what gameplay and physics use.
  *
@@ -27,16 +27,20 @@
 #include <neutrino/coordinates.hh>
 
 namespace neutrino {
-    using point = sdlpp::point<int>;    ///< A 2D integer screen-space position (x, y) in pixels.
-    using line = sdlpp::line<int>;      ///< A segment between two integer screen-space endpoints.
-    using rect = sdlpp::rect<int>;      ///< An axis-aligned integer rectangle (x, y, w, h) in pixels.
-    using circle = sdlpp::circle<int>;  ///< A circle with integer centre and radius in pixels.
-    using dim = sdlpp::size<int>;       ///< An integer size (width, height) in pixels.
+    using point = sdlpp::point<int>;    ///< A 2D integer screen-space position (x, y) in pixels. sdlpp-ok
+    using line = sdlpp::line<int>;      ///< A segment between two integer screen-space endpoints. sdlpp-ok
+    using rect = sdlpp::rect<int>;      ///< An axis-aligned integer rectangle (x, y, w, h) in pixels. sdlpp-ok
+    using circle = sdlpp::circle<int>;  ///< A circle with integer centre and radius in pixels. sdlpp-ok
+    using dim = sdlpp::size<int>;       ///< An integer size (width, height) in pixels. sdlpp-ok
+
+    /// @brief An untyped 2D float point -- for raw coordinate plumbing (window/render mapping,
+    ///        parallax factors) where no strong coordinate type applies.
+    using fpoint = sdlpp::point<float>; // sdlpp-ok
 
     /// @brief A 2D position in world pixels; the floating-point counterpart of @ref point.
-    using world_point = sdlpp::point<float>;
+    using world_point = sdlpp::point<float>; // sdlpp-ok
     /// @brief An axis-aligned rectangle in world pixels; the floating-point counterpart of @ref rect.
-    using world_rect = sdlpp::rect<float>;
+    using world_rect = sdlpp::rect<float>; // sdlpp-ok
 
     // ---- crossing between the untyped point and the strong gameplay vocabulary ------------------
     // @ref world_point is a bare float pair: it fits a position, an offset or a velocity equally

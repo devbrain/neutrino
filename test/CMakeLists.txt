@@ -106,3 +106,9 @@ add_test(NAME simplex_entry_smoke COMMAND simplex_entry_smoke)
 set_tests_properties(simplex_entry_smoke PROPERTIES
         TIMEOUT 15
         ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_AUDIODRIVER=dummy;SDL_RENDER_DRIVER=software")
+
+# Roadmap P1.7: client code never needs to spell sdlpp. Fails on any `sdlpp::` in a public header
+# (outside alias definitions marked sdlpp-ok) or any sdlpp spelling in tutorials/examples/docs.
+add_test(NAME sdlpp_seal
+         COMMAND ${CMAKE_COMMAND} -DROOT=${PROJECT_SOURCE_DIR} -DMODE=fail
+                 -P ${CMAKE_CURRENT_SOURCE_DIR}/check_sdlpp_seal.cmake)

@@ -16,8 +16,8 @@
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/sprites.hh>
 
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 
 #include <algorithm>
 #include <chrono>
@@ -105,7 +105,7 @@ namespace {
 
         void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
             // 1. Exit cleanly on Escape press
-            if (in.pressed(sdlpp::scancode::escape)) {
+            if (in.pressed(neutrino::key::escape)) {
                 std::cout << "[Tutorial 03] Escape pressed - exiting\n";
                 neutrino::pop_scene();
                 return;
@@ -115,8 +115,8 @@ namespace {
 
             // 2. Read continuous horizontal movement (Held State)
             // We check both Arrow keys and WASD keys.
-            const bool move_left = in.held(sdlpp::scancode::left) || in.held(sdlpp::scancode::a);
-            const bool move_right = in.held(sdlpp::scancode::right) || in.held(sdlpp::scancode::d);
+            const bool move_left = in.held(neutrino::key::left) || in.held(neutrino::key::a);
+            const bool move_right = in.held(neutrino::key::right) || in.held(neutrino::key::d);
 
             if (move_left != move_right) {
                 const float dir = move_right ? 1.0f : -1.0f;
@@ -134,9 +134,9 @@ namespace {
             // 3. Read discrete jump impulse (Edge Transition)
             // in.pressed() returns true ONLY on the single frame the key was struck down.
             // If the key is held down continuously, in.pressed() returns false on subsequent ticks.
-            const bool jump_pressed = in.pressed(sdlpp::scancode::space) 
-                                   || in.pressed(sdlpp::scancode::up) 
-                                   || in.pressed(sdlpp::scancode::w);
+            const bool jump_pressed = in.pressed(neutrino::key::space) 
+                                   || in.pressed(neutrino::key::up) 
+                                   || in.pressed(neutrino::key::w);
 
             if (jump_pressed && m_on_ground) {
                 m_player_vy = jump_velocity;
@@ -178,18 +178,18 @@ namespace {
             // 1. Draw sky background
             neutrino::draw_rect_fill(
                 neutrino::rect{0, 0, logical_width, logical_height},
-                sdlpp::color{90, 160, 230, 255}
+                neutrino::color{90, 160, 230, 255}
             );
 
             // 2. Draw ground strip
             constexpr int ground_height = logical_height - ground_y;
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y, logical_width, 10},
-                sdlpp::color{80, 185, 95, 255}
+                neutrino::color{80, 185, 95, 255}
             );
             neutrino::draw_rect_fill(
                 neutrino::rect{0, ground_y + 10, logical_width, ground_height - 10},
-                sdlpp::color{110, 75, 45, 255}
+                neutrino::color{110, 75, 45, 255}
             );
 
             // 3. Draw keybind instruction banner
@@ -216,21 +216,21 @@ namespace {
     private:
         void draw_instructions() const {
             // Top HUD frame showing active movement controls
-            neutrino::draw_rect_fill(neutrino::rect{12, 12, 380, 24}, sdlpp::color{0, 0, 0, 160});
-            neutrino::draw_rect(neutrino::rect{12, 12, 380, 24}, sdlpp::colors::white);
+            neutrino::draw_rect_fill(neutrino::rect{12, 12, 380, 24}, neutrino::color{0, 0, 0, 160});
+            neutrino::draw_rect(neutrino::rect{12, 12, 380, 24}, neutrino::colors::white);
 
             // Small indicator lamps for active input
             neutrino::draw_rect_fill(
                 neutrino::rect{20, 18, 12, 12}, 
-                m_facing_left ? sdlpp::colors::yellow : sdlpp::colors::dark_gray
+                m_facing_left ? neutrino::colors::yellow : neutrino::colors::dark_gray
             );
             neutrino::draw_rect_fill(
                 neutrino::rect{36, 18, 12, 12}, 
-                !m_facing_left ? sdlpp::colors::yellow : sdlpp::colors::dark_gray
+                !m_facing_left ? neutrino::colors::yellow : neutrino::colors::dark_gray
             );
             neutrino::draw_rect_fill(
                 neutrino::rect{56, 18, 12, 12}, 
-                !m_on_ground ? sdlpp::colors::cyan : sdlpp::colors::dark_gray
+                !m_on_ground ? neutrino::colors::cyan : neutrino::colors::dark_gray
             );
         }
 
@@ -266,7 +266,7 @@ namespace {
             cfg.title = "Neutrino Tutorial 03 - Moving with the Keyboard";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
 
             cfg.logical_size = neutrino::dim{logical_width, logical_height};
             cfg.scale = neutrino::scale_mode::letterbox;
@@ -277,4 +277,4 @@ namespace {
 
 } // namespace
 
-SDLPP_MAIN(tutorial_app)
+NEUTRINO_MAIN(tutorial_app)

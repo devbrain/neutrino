@@ -18,7 +18,8 @@
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/geometry_types.hh>
 
-#include <sdlpp/video/color.hh>
+#include <neutrino/video/color.hh>
+#include <neutrino/video/image.hh>
 
 namespace sdlpp {
     class surface;
@@ -125,7 +126,7 @@ namespace neutrino {
         std::int64_t,
         bool,
         float,
-        sdlpp::color,
+        neutrino::color,
         std::filesystem::path,
         world_object_reference,
         world_typed_string
@@ -179,7 +180,7 @@ namespace neutrino {
      * is keyed once and never re-uploaded; live content belongs to a render layer, not here.
      */
     struct image_from_surface {
-        std::shared_ptr <const sdlpp::surface> pixels; ///< The already-decoded, immutable pixels.
+        std::shared_ptr <const neutrino::image> pixels; ///< The already-decoded, immutable pixels.
         std::optional <std::uint64_t> identity;        ///< Stable content id for cache dedup; unset keys on the surface itself.
     };
 
@@ -195,7 +196,7 @@ namespace neutrino {
      */
     struct world_image {
         world_image_source source{image_from_disk{}}; ///< Where the pixels come from (disk/memory/surface).
-        std::optional <sdlpp::color> transparent_color; ///< Colour keyed out as transparent, if any.
+        std::optional <neutrino::color> transparent_color; ///< Colour keyed out as transparent, if any.
         unsigned width{};  ///< Declared image width in pixels.
         unsigned height{}; ///< Declared image height in pixels.
 

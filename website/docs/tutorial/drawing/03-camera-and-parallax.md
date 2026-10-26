@@ -239,8 +239,8 @@ Here is a complete, working scene with player tracking, zoom controls, and paral
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/world/camera.hh>
 #include <neutrino/video/world/sprite_batch.hh>
-#include <sdlpp/app/entry_point.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/entry_point.hh>
+#include <neutrino/video/color.hh>
 #include <cmath>
 
 class scrolling_scene final : public neutrino::base_scene {
@@ -275,7 +275,7 @@ public:
         const neutrino::rect viewport{0, 0, 640, 360};
 
         // Clear backdrop with dark twilight sky
-        neutrino::draw_rect_fill(viewport, sdlpp::color{15, 20, 35, 255});
+        neutrino::draw_rect_fill(viewport, neutrino::color{15, 20, 35, 255});
 
         // 1. Draw distant mountains (parallax = 0.25)
         neutrino::world_layer_header bg_plane;
@@ -289,12 +289,12 @@ public:
 
         // Player avatar
         const auto player_screen = neutrino::to_screen(m_cam, actor_plane, viewport.dimensions(), m_player_pos);
-        neutrino::draw_rect_fill(neutrino::rect{player_screen.x - 16, player_screen.y - 32, 32, 32}, sdlpp::colors::goldenrod);
-        neutrino::draw_rect(neutrino::rect{player_screen.x - 16, player_screen.y - 32, 32, 32}, sdlpp::colors::white);
+        neutrino::draw_rect_fill(neutrino::rect{player_screen.x - 16, player_screen.y - 32, 32, 32}, neutrino::colors::goldenrod);
+        neutrino::draw_rect(neutrino::rect{player_screen.x - 16, player_screen.y - 32, 32, 32}, neutrino::colors::white);
 
         // 3. Draw screen-space HUD (no camera transform)
-        neutrino::draw_rect_fill(neutrino::rect{10, 10, 160, 24}, sdlpp::color{0, 0, 0, 180});
-        neutrino::draw_rect(neutrino::rect{10, 10, 160, 24}, sdlpp::colors::white);
+        neutrino::draw_rect_fill(neutrino::rect{10, 10, 160, 24}, neutrino::color{0, 0, 0, 180});
+        neutrino::draw_rect(neutrino::rect{10, 10, 160, 24}, neutrino::colors::white);
     }
 
 private:
@@ -302,7 +302,7 @@ private:
         for (int i = -2; i <= 5; ++i) {
             const neutrino::world_point peak{i * 300.0f, 200.0f};
             const auto sp = neutrino::to_screen(cam, plane, viewport.dimensions(), peak);
-            neutrino::draw_circle_fill(neutrino::circle{sp, static_cast<int>(120 * cam.zoom)}, sdlpp::color{30, 45, 70, 255});
+            neutrino::draw_circle_fill(neutrino::circle{sp, static_cast<int>(120 * cam.zoom)}, neutrino::color{30, 45, 70, 255});
         }
     }
 

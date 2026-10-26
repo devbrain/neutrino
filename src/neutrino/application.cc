@@ -326,10 +326,10 @@ namespace neutrino {
         return snap;
     }
 
-    void application::on_render(sdlpp::renderer& r) {
+    void application::on_render(renderer& r) {
         r.set_draw_color(sdlpp::colors::black);
         r.clear();
-        render_scene(r);
+        render_scene();
         r.present();
 
         // End of frame: clear transient gamepad state (pressed/released) at
@@ -341,7 +341,7 @@ namespace neutrino {
         m_pimpl->m_gamepads.clear_state();
     }
 
-    void application::render_scene([[maybe_unused]] sdlpp::renderer& renderer) {
+    void application::render_scene() {
         if (!m_pimpl->m_scene_faulted) {
             try {
                 m_pimpl->m_scenes_manager.render();
@@ -355,7 +355,7 @@ namespace neutrino {
         }
     }
 
-    void application::handle_event(const sdlpp::event& e) {
+    void application::handle_event(const neutrino::event& e) {
         if (auto change = m_pimpl->m_gamepads.handle_event(e)) {
             if (change->connected) {
                 on_gamepad_connected(change->index);
@@ -377,7 +377,7 @@ namespace neutrino {
         event(e);
     }
 
-    void application::event(const sdlpp::event& e) {
+    void application::event(const neutrino::event& e) {
         try {
             m_pimpl->m_scenes_manager.handle_action(e);
         } catch (const std::exception& ex) {

@@ -13,9 +13,7 @@
 #include <bitset>
 #include <cstddef>
 #include <cstdint>
-#include <sdlpp/events/mouse_codes.hh>    // sdlpp::mouse_button
-#include <sdlpp/events/keyboard_codes.hh> // sdlpp::scancode / keycode
-#include <sdlpp/input/gamepad.hh>         // sdlpp::gamepad_button / gamepad_axis
+#include <neutrino/input/keys.hh>
 #include <neutrino/neutrino_export.h>
 #include <neutrino/coordinates.hh>        // window_pos / render_pos
 #include <neutrino/input/hotkey.hh>
@@ -50,8 +48,8 @@ namespace neutrino {
         public:
             static constexpr std::size_t max_scancodes = 512;
             static constexpr std::size_t max_gamepad_slots = 4;
-            static constexpr std::size_t max_gamepad_buttons = static_cast<std::size_t>(sdlpp::gamepad_button::max);
-            static constexpr std::size_t max_gamepad_axes = static_cast<std::size_t>(sdlpp::gamepad_axis::max);
+            static constexpr std::size_t max_gamepad_buttons = static_cast<std::size_t>(pad_button::max);
+            static constexpr std::size_t max_gamepad_axes = static_cast<std::size_t>(pad_axis::max);
 
             struct gamepad_slot_state {
                 std::bitset<max_gamepad_buttons> pressed{};
@@ -72,22 +70,22 @@ namespace neutrino {
 
             // --- Pointer & Mouse ---
             [[nodiscard]] const pointer_state& pointer() const noexcept { return m_pointer; }
-            [[nodiscard]] button_state mouse(sdlpp::mouse_button b) const noexcept;
+            [[nodiscard]] button_state mouse(neutrino::mouse_button b) const noexcept;
             [[nodiscard]] int wheel() const noexcept { return m_wheel; }
 
             // --- Keyboard ---
-            [[nodiscard]] button_state key(sdlpp::scancode scan) const noexcept;
-            [[nodiscard]] button_state key(sdlpp::keycode code) const noexcept;
+            [[nodiscard]] button_state key(neutrino::key scan) const noexcept;
+            [[nodiscard]] button_state key(neutrino::keycode code) const noexcept;
             [[nodiscard]] modifier modifiers() const noexcept { return m_modifiers; }
 
             // Direct keyboard conveniences
-            [[nodiscard]] bool pressed(sdlpp::scancode scan) const noexcept { return key(scan).pressed; }
-            [[nodiscard]] bool held(sdlpp::scancode scan) const noexcept { return key(scan).held; }
-            [[nodiscard]] bool released(sdlpp::scancode scan) const noexcept { return key(scan).released; }
+            [[nodiscard]] bool pressed(neutrino::key scan) const noexcept { return key(scan).pressed; }
+            [[nodiscard]] bool held(neutrino::key scan) const noexcept { return key(scan).held; }
+            [[nodiscard]] bool released(neutrino::key scan) const noexcept { return key(scan).released; }
 
             // --- Gamepad ---
-            [[nodiscard]] button_state gamepad_button_state(int slot, sdlpp::gamepad_button button) const noexcept;
-            [[nodiscard]] float gamepad_axis(int slot, sdlpp::gamepad_axis axis) const noexcept;
+            [[nodiscard]] button_state gamepad_button_state(int slot, pad_button button) const noexcept;
+            [[nodiscard]] float gamepad_axis(int slot, pad_axis axis) const noexcept;
             [[nodiscard]] bool gamepad_connected(int slot) const noexcept;
             [[nodiscard]] const gamepad_slot_state& gamepad(int slot) const noexcept;
 
@@ -106,12 +104,12 @@ namespace neutrino {
 
             // --- Mutators (for application::sample_input and tests) ---
             void set_pointer(pointer_state ptr) noexcept { m_pointer = ptr; }
-            void set_mouse(sdlpp::mouse_button b, button_state s) noexcept;
+            void set_mouse(neutrino::mouse_button b, button_state s) noexcept;
             void set_wheel(int delta) noexcept { m_wheel = delta; }
-            void set_key(sdlpp::scancode scan, button_state s) noexcept;
+            void set_key(neutrino::key scan, button_state s) noexcept;
             void set_modifiers(modifier mods) noexcept { m_modifiers = mods; }
-            void set_gamepad_button(int slot, sdlpp::gamepad_button btn, button_state s) noexcept;
-            void set_gamepad_axis(int slot, sdlpp::gamepad_axis axis, float val) noexcept;
+            void set_gamepad_button(int slot, pad_button btn, button_state s) noexcept;
+            void set_gamepad_axis(int slot, pad_axis axis, float val) noexcept;
             void set_gamepad_connected(int slot, bool connected) noexcept;
 
         private:

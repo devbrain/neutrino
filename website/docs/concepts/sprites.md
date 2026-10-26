@@ -62,7 +62,7 @@ A definition combines three parts:
 
 neutrino::sprite_def def;
 
-// 1. Image source: disk file, memory buffer, or procedural sdlpp::surface
+// 1. Image source: disk file, memory buffer, or procedural neutrino::image
 def.image.source = neutrino::image_from_disk{"assets/hero.png"};
 def.image.width  = 128;
 def.image.height = 64;

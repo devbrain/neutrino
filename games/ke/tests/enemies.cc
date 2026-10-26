@@ -192,4 +192,4 @@ namespace {
         enemy_tests() : application(config()) {}
     };
 }
-SDLPP_MAIN(enemy_tests)
+NEUTRINO_MAIN(enemy_tests)
