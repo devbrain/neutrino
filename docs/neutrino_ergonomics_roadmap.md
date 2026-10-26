@@ -298,6 +298,65 @@ flowchart TD
   ```
 * Expose `sprite_metrics::collider()` so games can automatically configure physics bodies from sprite metadata.
 
+#### 3.4 First-Class Textures (`neutrino::texture`)
+* **Problem**: neutrino has no first-class texture. Textures exist only as hidden sprite-atlas storage (`texture_registry`) or as `render_texture` (target-only, `compose()` + `blit()` only). Everything else falls to raw SDL and loses what `draw.hh` adds (`pixel_snap`, `DRAW_CHECK` / `draw_failure_count()`, render-space types). `texture_layer.hh` even documents that the game "owns and updates" a streaming texture -- i.e. creates it through raw SDL. brix (planned port) uses five texture patterns, none expressible today: static image textures drawn by sub-rect with flip (backdrops, wallpapers, tileset and font atlases), a render target bound across begin/end and then used as a source, screen read-back into a texture, palette framebuffers streamed every frame, and textured quads (`SDL_RenderGeometry`) for rotation effects.
+* **Decisions** (2026-10-26):
+  * **One type with an access mode**, not three types:
+    ```cpp
+    enum class texture_access : std::uint8_t { fixed, streaming, target };
+
+    class texture {   // move-only RAII; replaces the P1.7 alias of sdlpp::texture
+      public:
+        static std::optional<texture> from_image(const image& img);              // fixed
+        static std::optional<texture> create(dim size, texture_access access,
+                                             pixel_format fmt = pixel_format::RGBA8888);
+        dim size() const noexcept;  texture_access access() const noexcept;
+        void set_scale_mode(scale_mode m);    // nearest (pixel art) / linear
+        void set_blend_mode(blend_mode m);
+
+        // streaming only (ENFORCE otherwise)
+        void update(std::span<const std::uint32_t> pixels);                     // whole texture
+        [[nodiscard]] pixel_lock lock();                                       // RAII write view
+
+        // target only (ENFORCE otherwise)
+        template<class Fn> void compose(Fn&& draw, std::optional<color> clear = colors::transparent);
+        [[nodiscard]] target_scope bind(std::optional<color> clear = {});      // begin/end flows
+        [[nodiscard]] image to_image() const;                                   // read-back
+
+        const sdlpp::texture& native() const noexcept;                           // escape hatch
+    };
+    ```
+    `std::nullopt` as the clear colour composes onto the existing contents (persistent canvases).
+  * **One way to draw any texture**, in `draw.hh`, with the same contract as the rest of it (float render space, `pixel_snap`, `DRAW_CHECK`):
+    ```cpp
+    struct texture_draw_params { std::optional<rect> src; sprite_flip flip{}; float rotation_degrees{};
+                                 std::optional<render_pos> pivot; color tint{colors::white}; };
+    void draw_texture(const texture& t, const render_rect& dst, const texture_draw_params& p = {});
+    void draw_texture(const texture& t);                                   // fill the current target
+    void draw_texture_quad(const texture& t, const std::array<render_pos, 4>& corners,
+                           std::optional<rect> src = {});                  // rotor-style mapping
+    [[nodiscard]] image capture_frame();   // read the current target; valid before present only
+    ```
+  * `get_renderer()` / `get_window()` stay public as the escape hatch; with this in place a game should rarely need them.
+* **Migration -- every site found in the review** (2026-10-26):
+  * Engine:
+    * `render_texture` (`include/neutrino/video/render_texture.hh`, `src/.../render_texture.cc`) becomes `texture` with `texture_access::target`; `compose()` moves out of line (it calls `get_renderer()` in the header today). `render_texture` is removed.
+    * `texture_registry` / `gpu_texture_atlas` (`src/neutrino/video/sprite/texture_registry.*`): sprite atlases are backed by `neutrino::texture` (fixed); the sprite draw paths in `draw.cc` (`copy_ex`, `render_geometry`) read it through `native()`. Its `create(format, access, w, h)` overload is the seed of `texture::create`.
+    * `texture_layer` (`include/neutrino/video/world/texture_layer.hh`): holds a `const neutrino::texture*` and draws it with `draw_texture`; drop the "game creates a streaming texture" note.
+    * simplex adapter (`src/neutrino/simplex/detail/application_adapter.cc`): its hand-made target canvas + `target_guard` scope + `copy` become a `texture` (target, nearest, no-clear) + `bind()` + `draw_texture`.
+  * Clients:
+    * KE `games/ke/assets/backdrop.cc` + `scenes/play_game_scene.cc:221` (`render_texture::create`, `blit`) -> `texture::create(..., target)`, `draw_texture`.
+    * KE `games/ke/tests/enemies.cc:172` (`SDL_RenderReadPixels` screenshot) -> `capture_frame()` (+ `image` save).
+    * demoscene `demos/demoscene/vga_canvas.cc` (streaming texture + raw `copy`) -> `palette_canvas` (P3.5).
+    * `tutorials/drawing/04_render_textures` + `website/docs/tutorial/drawing/04-render-textures.md` + `concepts/drawing.md` §4 -> the texture API.
+  * Tests (raw `SDL_CreateTexture` targets + `SDL_RenderReadPixels`): `test/video/test_draw.cc`, `test_window_presentation.cc`, `world/test_world_compositor.cc`, `world/test_world_draw.cc`, `test/simplex/test_entry_point.cc` -> `texture` targets + `to_image()` / `capture_frame()`.
+  * brix (future port), for the design check: `video/video_assets.cc` + `video/video_system.cc` (static textures, ~12 sub-rect draws, flip) -> `texture::from_image` + `draw_texture`; `game/view/game_board_painter.cc` (target begin/end, `get_texture()`) -> `bind()`; `game/view/view.cc:177` (read screen back to rotate it) -> rotate the board target directly with `draw_texture_quad`; `game/view/rotor.cc` (textured `SDL_RenderGeometry`) -> `draw_texture_quad`; `libs/gfx/*framebuffer*` -> `palette_canvas`.
+
+#### 3.5 Palette Canvas (`neutrino::palette_canvas`)
+* **Why in the engine**: brix's `libs/gfx` (static/dynamic framebuffers: 8-bit indexed buffer, 256-colour palette, fades, blur) and the demoscene `vga_canvas` (indexed buffer, 6-bit DAC palette, palette cycling) are two independent copies of the same machine.
+* **Shape**: an indexed `std::vector<std::uint8_t>` buffer plus a 256-entry `color` palette, uploaded through a streaming `texture` once per frame (palette lookup on upload), drawn with `draw_texture`. Palette ops: `set_color`, 6-bit DAC helpers, `cycle(start, count, step)`, `fade_in/out(step, steps)`. Pixel ops: `put_pixel`, `get_pixel`, h/v lines, `clear`, `fill`, raw `pixels()` span; effect helpers (brix's blur) come over with the port.
+* **Builds on** P3.4 (`texture_access::streaming`). Migrates `demos/demoscene/vga_canvas` first, then brix `libs/gfx`.
+
 ---
 
 ### Phase 4: Scene Ergonomics & Migration
@@ -359,6 +418,8 @@ flowchart TD
 | **P3.1** | Screen clear functions (`neutrino::clear`) | **S** (2 hrs) | `include/neutrino/video/draw.hh`, `globals.hh` | No (additive) |
 | **P3.2** | Physics debug renderer | **M** (2 days) | `include/neutrino/physics/debug_draw.hh`, `src/...` | No (additive) |
 | **P3.3** | Sprite def hitbox integration | **M** (2 days) | `sprite_def_builder.hh`, `sprite_sheet.hh` | No (additive) |
+| **P3.4** | First-class `texture` (one type, `fixed`/`streaming`/`target` access) + `draw_texture` / `draw_texture_quad` / `capture_frame`; migrate `render_texture`, sprite atlases, `texture_layer`, simplex canvas, KE, tests | **L** (3-4 days) | `video/texture.hh` (new), `draw.hh`, `render_texture.*` (removed), `sprite/texture_registry.*`, `world/texture_layer.hh`, simplex adapter, KE, tests, docs | Yes: `render_texture` is replaced by `texture`; the P1.7 `texture` alias becomes the engine class |
+| **P3.5** | `palette_canvas` (8-bit indexed + palette, fades/cycling) on a streaming `texture`; migrate demoscene `vga_canvas` | **M** (1-2 days) | `video/palette_canvas.hh` (new), `demos/demoscene` | No (additive) |
 | **P4.1** | Migrate tutorials 01–03 & simplex | **S** (½ day) | `tutorials/*` | No |
 | **P4.2** | Migrate `games/ke` and demos | **M** (1 day) | `games/ke/*`, `demos/*` | No |
 
