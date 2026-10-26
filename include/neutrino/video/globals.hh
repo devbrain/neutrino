@@ -19,7 +19,6 @@ namespace neutrino {
     // and everything else draw.hh adds. Prefer draw.hh; reach for these for genuinely low-level work.
     using renderer = sdlpp::renderer; // sdlpp-ok
     using window = sdlpp::window;     // sdlpp-ok
-    using texture = sdlpp::texture;   // sdlpp-ok
 
     /// @brief The active application's renderer, the target every draw call issues to.
     ///        Escape hatch: see the note on @ref renderer.

@@ -158,7 +158,7 @@ TEST_SUITE("neutrino::video world_compositor") {
         CHECK(background.last.viewport.h == 48);
     }
 
-    TEST_CASE("a texture_layer blits a game-owned texture without error") {
+    TEST_CASE("a texture_layer draws a game-owned texture without error") {
         neutrino::test::test_application app("compositor texture layer");
         resource_cache cache;
 
@@ -166,8 +166,7 @@ TEST_SUITE("neutrino::video world_compositor") {
         world_renderer r(w, cache);
         world_compositor comp(r);
 
-        auto tex = sdlpp::texture::create(get_renderer(), sdlpp::pixel_format_enum::RGBA8888,
-                                          sdlpp::texture_access::streaming, 16, 16);
+        auto tex = neutrino::texture::create(dim{16, 16}, texture_access::streaming);
         REQUIRE(tex.has_value());
 
         texture_layer background;

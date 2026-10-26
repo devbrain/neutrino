@@ -12,6 +12,7 @@
 #include <SDL3/SDL.h>
 
 #include <neutrino/application.hh>
+#include <neutrino/video/texture.hh>
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/globals.hh>
@@ -198,15 +199,21 @@ namespace {
         return cfg;
     }
 
-    void check_pixel(sdlpp::renderer& renderer, int x, int y, const sdlpp::color& expected) {
-        std::unique_ptr<SDL_Surface, decltype(&SDL_DestroySurface)> pixels(
-            SDL_RenderReadPixels(renderer.get(), nullptr), SDL_DestroySurface);
-        REQUIRE(pixels);
-        Uint8 r = 0, g = 0, b = 0, a = 0;
-        REQUIRE(SDL_ReadSurfacePixel(pixels.get(), x, y, &r, &g, &b, &a));
-        CHECK(r == expected.r);
-        CHECK(g == expected.g);
-        CHECK(b == expected.b);
+    // Reads the CURRENT render target -- the test binds a target texture, because window
+    // contents are undefined after present().
+    void check_pixel(int x, int y, const sdlpp::color& expected) {
+        const image frame = capture_frame();
+        const auto px = frame.get_pixel(x, y);
+        REQUIRE(px.has_value());
+        CHECK(px->r == expected.r);
+        CHECK(px->g == expected.g);
+        CHECK(px->b == expected.b);
+    }
+
+    [[nodiscard]] neutrino::texture make_output() {
+        auto output = neutrino::texture::create(dim{16, 16}, texture_access::target);
+        REQUIRE(output.has_value());
+        return std::move(*output);
     }
 
     [[nodiscard]] SDL_Event take_transition_event() {
@@ -226,18 +233,14 @@ TEST_SUITE("neutrino::video window presentation") {
     TEST_CASE("render_scene override runs after clear without scenes") {
         app_harness<render_probe_app> h(base_config("application drawing"));
         auto& renderer = get_renderer();
-        auto output = sdlpp::texture::create(renderer, sdlpp::pixel_format_enum::RGBA8888,
-                                             sdlpp::texture_access::target, 16, 16);
-        REQUIRE(output);
+        auto output = make_output();
         // Capture a target texture: window contents are undefined after present().
-        const sdlpp::renderer::target_guard guard(renderer, *output);
-        REQUIRE(renderer.set_draw_color(sdlpp::colors::green));
-        REQUIRE(renderer.clear());
+        const auto bound = output.bind(sdlpp::colors::green);
         int renders = 0;
         h.app().draw = [&](sdlpp::renderer& r) {
             ++renders;
             CHECK(&r == &renderer);
-            check_pixel(r, 0, 0, sdlpp::colors::black);
+            check_pixel(0, 0, sdlpp::colors::black);
             REQUIRE(r.set_draw_color(sdlpp::colors::red));
             REQUIRE(r.draw_point(1, 1));
         };
@@ -245,39 +248,32 @@ TEST_SUITE("neutrino::video window presentation") {
             h.iterate();
             CHECK(h.app().updates == frame);
             CHECK(renders == frame);
-            check_pixel(renderer, 1, 1, sdlpp::colors::red);
+            check_pixel(1, 1, sdlpp::colors::red);
         }
     }
 
     TEST_CASE("default render_scene draws the scene stack after clear") {
         app_harness<probe_app> h(base_config("default scene drawing"));
         auto& renderer = get_renderer();
-        auto output = sdlpp::texture::create(renderer, sdlpp::pixel_format_enum::RGBA8888,
-                                             sdlpp::texture_access::target, 16, 16);
-        REQUIRE(output);
-        const sdlpp::renderer::target_guard guard(renderer, *output);
-        REQUIRE(renderer.set_draw_color(sdlpp::colors::green));
-        REQUIRE(renderer.clear());
+        auto output = make_output();
+        const auto bound = output.bind(sdlpp::colors::green);
         REQUIRE(h.app().probe);
         int renders = 0;
         h.app().probe->draw = [&] {
             ++renders;
-            check_pixel(renderer, 0, 0, sdlpp::colors::black);
+            check_pixel(0, 0, sdlpp::colors::black);
             REQUIRE(renderer.set_draw_color(sdlpp::colors::blue));
             REQUIRE(renderer.draw_point(3, 3));
         };
         h.iterate();
         CHECK(renders == 1);
-        check_pixel(renderer, 3, 3, sdlpp::colors::blue);
+        check_pixel(3, 3, sdlpp::colors::blue);
     }
 
     TEST_CASE("render_scene override replaces scene-stack rendering") {
         app_harness<custom_scene_app> h(base_config("custom scene drawing"));
-        auto& renderer = get_renderer();
-        auto output = sdlpp::texture::create(renderer, sdlpp::pixel_format_enum::RGBA8888,
-                                             sdlpp::texture_access::target, 16, 16);
-        REQUIRE(output);
-        const sdlpp::renderer::target_guard guard(renderer, *output);
+        auto output = make_output();
+        const auto bound = output.bind();
         int renders = 0;
         h.app().draw = [&](sdlpp::renderer& r) {
             ++renders;
@@ -290,7 +286,7 @@ TEST_SUITE("neutrino::video window presentation") {
         h.iterate();
         CHECK(renders == 1);
         CHECK_FALSE(scene_rendered);
-        check_pixel(renderer, 1, 1, sdlpp::colors::red);
+        check_pixel(1, 1, sdlpp::colors::red);
     }
 
     TEST_CASE("render_scene override failures propagate without running scene rendering") {

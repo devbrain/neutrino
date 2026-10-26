@@ -15,7 +15,7 @@ Neutrino resolves this tension by providing **two distinct, complementary render
 1. **Immediate Primitives ([`draw.hh`](pathname:///api/)):** Unbuffered, direct submissions to the GPU renderer in call order. Ideal for debug shapes, HUD frames, progress bars, and overlays.
 2. **Depth-Sorted Batches ([`sprite_batch`](pathname:///api/)):** A lightweight draw sink that decouples *when* entities decide to draw from *how* they are projected, depth-sorted, and painter-ordered.
 
-Alongside these paths, **Look-at Cameras ([`camera`](pathname:///api/))** provide mathematically exact, drift-free parallax projection, while **Offscreen Render Textures ([`render_texture`](pathname:///api/))** let you bake complex or static scenes to VRAM once and blit them cheaply.
+Alongside these paths, **Look-at Cameras ([`camera`](pathname:///api/))** provide mathematically exact, drift-free parallax projection, while **Textures ([`texture`](pathname:///api/))** let you bake complex or static scenes to VRAM once and draw them cheaply, or stream CPU-generated pixels every frame.
 
 ```mermaid
 flowchart TD
@@ -28,7 +28,7 @@ flowchart TD
 
     subgraph Pipeline ["Drawing Subsystems"]
         Cam["camera & to_screen()<br/><i>(Look-at, zoom, parallax)</i>"]
-        RT["render_texture::compose()<br/><i>(Bake static layers to VRAM)</i>"]
+        RT["texture::compose()<br/><i>(Bake static layers to VRAM)</i>"]
         Batch["sprite_batch<br/><i>(Sort by layer, depth, call order)</i>"]
         Imm["draw_* immediate primitives<br/><i>(Direct call-order submission)</i>"]
     end
@@ -38,7 +38,7 @@ flowchart TD
     end
 
     StaticMap -->|"Bake once"| RT
-    RT -->|"blit()"| Target
+    RT -->|"draw_texture()"| Target
     Actors -->|"batch.add(pos, layer, depth)"| Batch
     Cam -.->|"Projects world coords"| Batch
     Batch -->|"batch.flush()"| Target
@@ -58,7 +58,7 @@ flowchart TD
 | [`draw_layer`](pathname:///api/) | `<neutrino/video/world/sprite_batch.hh>` | Coarse ordering band | Strongly-typed integer wrapper sorting categories before continuous depth. |
 | [`sprite_batch`](pathname:///api/) | `<neutrino/video/world/sprite_batch.hh>` | Depth-sorted draw sink | Collects sprite visuals and states, sorts back-to-front, projects through a camera, and flushes. |
 | [`camera`](pathname:///api/) | `<neutrino/video/world/camera.hh>` | 2D look-at camera | Defines viewport center (`target`), `zoom`, and parallax origin (`parallax_rest`). |
-| [`render_texture`](pathname:///api/) | `<neutrino/video/render_texture.hh>` | Offscreen VRAM target | Target-access GPU texture. Use `compose()` to bake draws once, then `blit()` repeatedly. |
+| [`texture`](pathname:///api/) | `<neutrino/video/texture.hh>` | GPU image | One type, three access modes (`fixed`, `streaming`, `target`). Draw it with `draw_texture()`; bake target textures once with `compose()`. |
 | [`render_layer`](pathname:///api/) | `<neutrino/video/world/render_layer.hh>` | Compositor slot | Game-owned layer slotted between static tile map layers in a `world_compositor`. |
 
 ---
@@ -242,7 +242,7 @@ A `sprite_batch` operates in one of two modes depending on its constructor:
 ```cpp
 neutrino::sprite_batch hud_batch;
 ```
-Positions added to `hud_batch` are literal integer render pixels. No camera, parallax, or zoom is applied. This is the natural sink for UI components, floating health text, or compositing into a `render_texture`.
+Positions added to `hud_batch` are literal integer render pixels. No camera, parallax, or zoom is applied. This is the natural sink for UI components, floating health text, or compositing into a target `texture`.
 
 #### 2. World-Space Batch (Camera-Aware)
 ```cpp
@@ -339,50 +339,85 @@ neutrino::cell_range bounds = neutrino::visible_cell_bounds(world, layer_header,
 
 ---
 
-## 4. Offscreen Composition (`<neutrino/video/render_texture.hh>`)
+## 4. Textures (`<neutrino/video/texture.hh>`)
 
-Redrawing complex static geometry every frame wastes GPU fillrate. A static background, a procedurally generated minimap, or an ornate dialogue window should be **drawn once and reused**.
+A `neutrino::texture` is a GPU image you draw with `draw_texture()`. It is one type; its **access mode** decides how pixels get into it:
 
-`neutrino::render_texture` wraps an RGBA target texture with automatic target guards and draw color restoration:
+| `texture_access` | Pixels come from | Created with | Typical use |
+|---|---|---|---|
+| `fixed` | an `image`, uploaded once | `texture::from_image(img)` | backdrops, wallpapers, atlases |
+| `streaming` | the CPU, rewritten each frame | `texture::create(size, texture_access::streaming)` | software canvases, palette effects |
+| `target` | the GPU: neutrino draws land in it | `texture::create(size, texture_access::target)` | baked scenery, minimaps, render-to-texture |
+
+Every texture starts alpha-blended (`set_blend_mode()` to change) and nearest-filtered for crisp pixel art (`set_filter(texture_filter::linear)` to smooth). Calling an operation that doesn't match the mode -- `update()` on a fixed texture, `bind()` on a streaming one -- throws: it is a programming error.
+
+### Drawing a texture
 
 ```cpp
-#include <neutrino/video/render_texture.hh>
+neutrino::draw_texture(tex);                                          // 1:1 at the origin
+neutrino::draw_texture(tex, neutrino::rect{50, 50, 160, 120});        // stretched to a rectangle
+neutrino::draw_texture(tex, neutrino::render_rect{x, y, 32.0f, 32.0f},
+                       {.src = neutrino::rect{0, 0, 16, 16},          // a sub-rectangle
+                        .flip = neutrino::sprite_flip::horizontal,
+                        .rotation_degrees = 45.0f,                    // about the centre, or .pivot
+                        .tint = neutrino::colors::red});              // colour/alpha for this draw only
+
+// Map the texture onto any four corners (top-left, top-right, bottom-right, bottom-left):
+neutrino::draw_texture_quad(tex, {tl, tr, br, bl});
+```
+
+`draw_texture` follows the same contract as every other call in `draw.hh`: float render-space coordinates, the `pixel_snap` policy, and draw-failure counting.
+
+### Drawing into a target: `compose()` and `bind()`
+
+Redrawing complex static geometry every frame wastes GPU fillrate. A static background, a procedurally generated minimap, or an ornate dialogue window should be **drawn once and reused**:
+
+```cpp
+#include <neutrino/video/texture.hh>
 #include <neutrino/video/draw.hh>
 
-// 1. Allocate an offscreen render target (RGBA8888 with alpha blending)
-auto rt_opt = neutrino::render_texture::create(neutrino::dim{320, 240});
+auto rt_opt = neutrino::texture::create(neutrino::dim{320, 240}, neutrino::texture_access::target);
 if (!rt_opt) {
-    // Handle GPU allocation or driver failure
-    return;
+    return; // the driver has no render-target support
 }
-neutrino::render_texture rt = std::move(*rt_opt);
+neutrino::texture rt = std::move(*rt_opt);
 
-// 2. Compose into the texture once (e.g. during level load or on resize)
+// Compose once (e.g. on level load): everything drawn in the lambda lands in the texture.
 rt.compose([&] {
-    // Everything drawn inside this lambda renders into the offscreen texture!
     neutrino::draw_rect_fill(neutrino::rect{0, 0, 320, 240}, neutrino::colors::dark_slate_gray);
     neutrino::draw_circle_fill(neutrino::circle{160, 120, 80}, neutrino::colors::goldenrod);
     neutrino::draw_line(neutrino::point{0, 0}, neutrino::point{320, 240}, neutrino::colors::white);
-}, /* clear_color = */ neutrino::colors::transparent);
+}, /* clear = */ neutrino::colors::transparent);
 
-// 3. Blit the cached texture every frame during scene rendering
-// 1:1 blit at origin:
-rt.blit();
-
-// Or scaled/positioned blit:
-rt.blit(neutrino::rect{50, 50, 160, 120});
+// Draw the cached result every frame:
+neutrino::draw_texture(rt);
 ```
 
-### Safety guarantees in `compose()`
+`compose()` binds the texture as the render target, clears it (pass `std::nullopt` to keep the existing contents -- a persistent canvas), runs your function, and restores the previous target even if it throws. When the drawing doesn't fit in one function -- `begin()` / `end()` across separate calls -- hold the binding yourself:
 
-Rendering to an offscreen texture typically requires tedious bookkeeping: binding the target, setting blend modes, resetting draw colors, and remembering to restore the window backbuffer.
+```cpp
+std::optional<neutrino::target_scope> m_painting;
+void begin() { m_painting = m_board.bind(neutrino::colors::black); }
+void end()   { m_painting.reset(); }   // previous target restored
+```
 
-`render_texture::compose` handles this via RAII:
-- Uses `neutrino::renderer::target_guard` to guarantee the original render target is restored even if an exception is thrown.
-- Scopes the renderer's draw color: records `get_draw_color()`, clears the texture to the requested clear color, executes the callback, and restores the previous draw color.
-- Sets `neutrino::blend_mode::blend` on the target texture, so transparent regions composite naturally over whatever background exists when blitted.
+Bindings nest, and inside one the coordinates are the texture's own pixels: (0, 0) is its top-left.
 
----
+### Streaming textures
+
+```cpp
+auto canvas = neutrino::texture::create(neutrino::dim{320, 200}, neutrino::texture_access::streaming);
+canvas->update(pixels);           // std::span<const std::uint32_t>, width * height, row-major
+{
+    auto px = canvas->lock();     // or write in place; uploaded when the lock ends
+    px.row(10)[20] = 0xFF0000FFu; // RGBA8888
+}
+neutrino::draw_texture(*canvas, viewport);
+```
+
+### Reading pixels back
+
+`target.to_image()` reads a target texture back into an `image`; `neutrino::capture_frame()` reads whatever target is currently bound (the window is only meaningful between drawing and present). `neutrino::save_bmp(img, path)` writes either to disk -- handy for screenshots and tests.
 
 ## 5. Putting It All Together: A Multi-Layer Scene Architecture
 
@@ -391,7 +426,7 @@ Here is how a real game scene coordinates offscreen render textures, camera-awar
 ```cpp
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/video/draw.hh>
-#include <neutrino/video/render_texture.hh>
+#include <neutrino/video/texture.hh>
 #include <neutrino/video/world/camera.hh>
 #include <neutrino/video/world/sprite_batch.hh>
 
@@ -399,7 +434,7 @@ class gameplay_scene final : public neutrino::base_scene {
 public:
     void on_enter() override {
         // 1. Bake static backdrop into an offscreen render texture once
-        m_backdrop = neutrino::render_texture::create(neutrino::dim{640, 360});
+        m_backdrop = neutrino::texture::create(neutrino::dim{640, 360}, neutrino::texture_access::target);
         if (m_backdrop) {
             m_backdrop->compose([&] {
                 bake_static_level_art();
@@ -416,7 +451,7 @@ public:
 
         // Pass 1: Blit static baked backdrop (0 draw calls for individual tiles)
         if (m_backdrop) {
-            m_backdrop->blit();
+            neutrino::draw_texture(*m_backdrop);
         }
 
         // Pass 2: Depth-sorted gameplay actors using camera batch
@@ -470,7 +505,7 @@ private:
     }
 
     neutrino::camera m_cam;
-    std::optional<neutrino::render_texture> m_backdrop;
+    std::optional<neutrino::texture> m_backdrop;
     // ... player and enemies ...
 };
 ```
@@ -483,7 +518,7 @@ Neutrino's drawing architecture is designed so you never fight the engine:
 - Use **`draw.hh`** when you want simple, call-order drawing with zero setup.
 - Use **`sprite_batch`** when entities need camera transforms and depth sorting across categorical bands.
 - Use **`camera`** for drift-free look-at targeting and parallax math.
-- Use **`render_texture`** to turn expensive repeated draws into simple single-pass blits.
+- Use a **target `texture`** to turn expensive repeated draws into a single `draw_texture()`.
 
 For more details on how these pieces fit into the rest of the engine, continue to:
 - **[Sprites](./sprites.md)** — how definitions, cache leases, and runtime instances feed into visuals.

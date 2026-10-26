@@ -31,7 +31,7 @@
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/image_loader.hh>
-#include <neutrino/video/render_texture.hh>
+#include <neutrino/video/texture.hh>
 #include <neutrino/video/sprites.hh>
 #include <neutrino/video/world.hh>
 

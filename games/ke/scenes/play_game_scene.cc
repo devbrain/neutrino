@@ -218,7 +218,7 @@ void play_game_scene::render() {
     const neutrino::rect viewport{0, 0, v.width, v.height};
 
     // 1. The static backdrop texture, scaled to the target.
-    m_backdrop->blit(viewport);
+    neutrino::draw_texture(*m_backdrop, viewport);
 
     // 2. The game's sprites (bricks, paddle, balls). KE runs at a logical 320x200, so world
     //    positions are already screen pixels -- a plain screen-space batch, no camera.

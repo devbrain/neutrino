@@ -59,5 +59,15 @@ namespace neutrino {
         }
         THROW_RUNTIME(v.error());
     }
-}
 
+    /**
+     * @brief Write @p img to @p pth as a BMP file -- e.g. a capture_frame() screenshot.
+     * @throws std::runtime_error carrying the error if the file cannot be written.
+     */
+    inline void save_bmp(const image& img, const std::filesystem::path& pth) {
+        auto v = sdlpp::save_bmp(img, pth.string()); // sdlpp-ok: implementation
+        if (!v) {
+            THROW_RUNTIME(v.error());
+        }
+    }
+}

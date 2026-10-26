@@ -79,21 +79,14 @@ namespace {
             static constexpr float scale = 4.0f;
 
             scaled_target()
-                : m_renderer(neutrino::get_renderer().get()),
-                  m_previous(SDL_GetRenderTarget(m_renderer)) {
-                m_texture = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
-                                              64, 64);
-                REQUIRE(m_texture != nullptr);
-                REQUIRE(SDL_SetRenderTarget(m_renderer, m_texture));
-                REQUIRE(SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255));
-                REQUIRE(SDL_RenderClear(m_renderer));
-                REQUIRE(SDL_SetRenderScale(m_renderer, scale, scale));
+                : m_texture(make_texture()), m_scope(m_texture.bind(neutrino::colors::black)) {
+                // Render scale has no engine API (presentation owns it); set it on the bound
+                // target through the escape hatch.
+                REQUIRE(SDL_SetRenderScale(raw(), scale, scale));
             }
 
             ~scaled_target() {
-                SDL_SetRenderScale(m_renderer, 1.0f, 1.0f);
-                SDL_SetRenderTarget(m_renderer, m_previous);
-                SDL_DestroyTexture(m_texture);
+                SDL_SetRenderScale(raw(), 1.0f, 1.0f); // still bound: m_scope ends after this body
             }
 
             scaled_target(const scaled_target&) = delete;
@@ -101,20 +94,25 @@ namespace {
 
             // True if the PHYSICAL pixel (x, y) of the target is lit (not the black background).
             [[nodiscard]] bool lit(int x, int y) {
-                REQUIRE(SDL_SetRenderScale(m_renderer, 1.0f, 1.0f));
-                std::unique_ptr <SDL_Surface, decltype(&SDL_DestroySurface)> pixels(
-                    SDL_RenderReadPixels(m_renderer, nullptr), SDL_DestroySurface);
-                REQUIRE(SDL_SetRenderScale(m_renderer, scale, scale));
-                REQUIRE(pixels);
-                Uint8 r = 0, g = 0, b = 0, a = 0;
-                REQUIRE(SDL_ReadSurfacePixel(pixels.get(), x, y, &r, &g, &b, &a));
-                return r != 0 || g != 0 || b != 0;
+                REQUIRE(SDL_SetRenderScale(raw(), 1.0f, 1.0f));
+                const neutrino::image frame = neutrino::capture_frame();
+                REQUIRE(SDL_SetRenderScale(raw(), scale, scale));
+                const auto px = frame.get_pixel(x, y);
+                REQUIRE(px.has_value());
+                return px->r != 0 || px->g != 0 || px->b != 0;
             }
 
         private:
-            SDL_Renderer* m_renderer;
-            SDL_Texture* m_previous;
-            SDL_Texture* m_texture{nullptr};
+            [[nodiscard]] static neutrino::texture make_texture() {
+                auto t = neutrino::texture::create(neutrino::dim{64, 64}, neutrino::texture_access::target);
+                REQUIRE(t.has_value());
+                return std::move(*t);
+            }
+
+            [[nodiscard]] static SDL_Renderer* raw() { return neutrino::get_renderer().get(); }
+
+            neutrino::texture m_texture;
+            neutrino::target_scope m_scope; // declared after m_texture: unbinds before it is destroyed
     };
 
     [[nodiscard]] neutrino::sprite_visual_ref white_square_sprite() {

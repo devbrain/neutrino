@@ -169,10 +169,7 @@ namespace {
             for (int i=0;i<8;++i) { enemy_state target; target.type=static_cast<rs::enemy>(i); target.pos={float(52+i%4*72),float(55+i/4*65)}; target.animation_ticks= i==2 ? 21 : 0; li.enemies.push_back(target); }
             li.hatch_ticks=55; m.get_paddle().shield=2; scene.render();
             if (const char* screenshot=std::getenv("KE_TEST_SCREENSHOT")) {
-                SDL_Surface* surface=SDL_RenderReadPixels(neutrino::get_renderer().get(),nullptr);
-                check(surface!=nullptr,"cannot capture frame");
-                const bool saved=SDL_SaveBMP(surface,screenshot); SDL_DestroySurface(surface);
-                check(saved,"cannot save frame");
+                neutrino::save_bmp(neutrino::capture_frame(), screenshot); // throws if either step fails
             }
             m.add_life(-m.get_lives()); li.paddle_death_ticks=24;
             scene.render(); // exercise game-over text as well as the sprite renderer

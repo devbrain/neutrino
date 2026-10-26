@@ -18,7 +18,7 @@
  * Two modes. The **default** constructor makes a *screen-space* batch: @c add
  * positions are literal renderer pixels -- no camera, parallax plane, or zoom. That
  * is the natural sink for a HUD, floating text, or compositing into a
- * @ref render_texture. The **camera** constructor makes a *world-space* batch that
+ * target @ref texture. The **camera** constructor makes a *world-space* batch that
  * runs each position through @ref to_screen for a camera + parallax plane, for actor
  * layers over a scrolling map.
  */

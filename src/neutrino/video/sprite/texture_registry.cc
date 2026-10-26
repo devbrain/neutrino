@@ -22,12 +22,12 @@ namespace neutrino {
             return surface.format();
         }
 
-        [[nodiscard]] gpu_texture_atlas make_atlas_record(sdlpp::texture tex, atlas_texture_format format) {
-            const auto size = tex.get_size();
-            if (!size) {
-                THROW_RUNTIME(size.error());
-            }
-            return gpu_texture_atlas{std::move(tex), format, size->width, size->height};
+        // Atlases keep SDL's own texture defaults (behaviour-preserving): adopt() applies none.
+        [[nodiscard]] gpu_texture_atlas make_atlas_record(sdlpp::texture tex, atlas_texture_format format,
+                                                          texture_access access = texture_access::fixed) {
+            auto wrapped = texture::adopt(std::move(tex), access);
+            const dim size = wrapped.size();
+            return gpu_texture_atlas{std::move(wrapped), format, size.width, size.height};
         }
     }
 
@@ -39,7 +39,10 @@ namespace neutrino {
         sdlpp::texture_access access, int width, int height) {
         auto tex = sdlpp::texture::create(renderer, format, access, width, height);
         if (tex) {
-            return m_atlases.store(make_id, make_atlas_record(std::move(*tex), atlas_texture_format::automatic));
+            const auto mode = access == sdlpp::texture_access::streaming ? texture_access::streaming
+                            : access == sdlpp::texture_access::target  ? texture_access::target
+                                                                       : texture_access::fixed;
+            return m_atlases.store(make_id, make_atlas_record(std::move(*tex), atlas_texture_format::automatic, mode));
         }
         THROW_RUNTIME(tex.error());
     }

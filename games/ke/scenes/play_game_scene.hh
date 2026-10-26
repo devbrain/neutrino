@@ -33,7 +33,7 @@ class play_game_scene : public neutrino::base_scene {
 
     private:
         rs::ke_assets& m_assets;                             // owned by the application
-        std::optional <neutrino::render_texture> m_backdrop; // the composed level backdrop
+        std::optional <neutrino::texture> m_backdrop; // the composed level backdrop
         game_mechanics m_mechanics;
 
         bool m_ready{false};

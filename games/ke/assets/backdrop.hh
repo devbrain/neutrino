@@ -71,7 +71,7 @@ namespace rs {
     // KE_FILL block from y=16, the two KE_BORD wall pillars, and the score bar/dummies -- all
     // drawn through a sprite_batch into an offscreen texture. @p fill_block selects the KE_FILL
     // tile (block 6 default). Returns nullopt if the render target cannot be created.
-    [[nodiscard]] std::optional <neutrino::render_texture> compose_backdrop(
+    [[nodiscard]] std::optional <neutrino::texture> compose_backdrop(
         const neutrino::sprite_set_handle& board,
         const neutrino::sprite_set_handle& fill,
         std::size_t fill_block = ke_default_fill_block);

@@ -31,16 +31,17 @@
 
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/color.hh>
+#include <neutrino/video/texture.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprite/sprite_state.hh>
 #include <neutrino/neutrino_export.h>
 
+#include <array>
 #include <concepts>
+#include <optional>
 #include <cstdint>
 
 namespace neutrino {
-    /// @brief How drawn pixels combine with the target: @c blend_mode::none, @c ::blend, ...
-    using blend_mode = sdlpp::blend_mode;   // sdlpp-ok
     /// @brief Dash / dot pattern applied by line draws (see set_line_style()).
     using line_style = sdlpp::line_style;   // sdlpp-ok
 
@@ -278,6 +279,48 @@ namespace neutrino {
     NEUTRINO_EXPORT void draw_cross(const point& center, int size, const color& c);
     /// @brief Draw a cross centred at @p center (arm half-length @p size px, stroke @p thickness px) in colour @p c.
     NEUTRINO_EXPORT void draw_cross(const point& center, int size, float thickness, const color& c);
+
+    // ---- textures (roadmap P3.4) -----------------------------------------------------------------
+
+    /**
+     * @brief How draw_texture() maps a texture onto its destination.
+     *
+     * @ref src selects a sub-rectangle in texture pixels (unset: the whole texture). @ref flip
+     * mirrors horizontally / vertically (a diagonal flip is not supported here -- use
+     * draw_texture_quad()). @ref rotation_degrees rotates clockwise about @ref pivot, given in
+     * destination-local pixels (unset: the destination's centre). @ref tint multiplies the
+     * texture's colour and alpha for this draw only.
+     */
+    struct texture_draw_params {
+        std::optional <rect> src{};
+        sprite_flip flip{sprite_flip::none};
+        float rotation_degrees{0.0f};
+        std::optional <render_pos> pivot{};
+        color tint{255, 255, 255, 255};
+    };
+
+    namespace detail {
+        NEUTRINO_EXPORT void draw_texture(const texture& t, const render_rect& dst, const texture_draw_params& params);
+    }
+
+    /// @brief Draw @p t (or @c params.src of it) stretched over @p dst, in render space.
+    template<std::same_as <render_rect> R>
+    void draw_texture(const texture& t, const R& dst, const texture_draw_params& params = {}) {
+        detail::draw_texture(t, dst, params);
+    }
+    /// @brief Draw @p t over the integer rectangle @p dst. @see draw_texture(const texture&, const R&, const texture_draw_params&)
+    NEUTRINO_EXPORT void draw_texture(const texture& t, const rect& dst, const texture_draw_params& params = {});
+    /// @brief Draw @p t 1:1 with its top-left at the origin of the current render target.
+    NEUTRINO_EXPORT void draw_texture(const texture& t);
+
+    /**
+     * @brief Map @p t (or @p src of it) onto an arbitrary quadrilateral: @p corners are the
+     *        destination of the source's top-left, top-right, bottom-right and bottom-left.
+     *        Rotations, skews and perspective-like effects; @p tint as in texture_draw_params.
+     */
+    NEUTRINO_EXPORT void draw_texture_quad(const texture& t, const std::array <render_pos, 4>& corners,
+                                           std::optional <rect> src = {},
+                                           const color& tint = color{255, 255, 255, 255});
 
     // ---- float render-space overloads -----------------------------------------------------------
     // The float forms are the real implementations; every integer overload above forwards to them.

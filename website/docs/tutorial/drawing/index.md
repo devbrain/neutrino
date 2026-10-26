@@ -40,7 +40,7 @@ flowchart LR
 | **1** | [**Primitives & UI**](./01-primitives-and-ui.md) | A complete player status HUD, diagnostic shape gizmos, and custom line styles | `draw.hh`, `draw_rect_fill`, `draw_line_aa`, `draw_arrow`, `draw_cross` |
 | **2** | [**Batches & Ordering Bands**](./02-batches-and-ordering.md) | A top-down multi-entity scene with Y-sorting, shadows, characters, and spell effects | `sprite_batch`, `draw_layer`, `plan()`, `flush()` |
 | **3** | [**Camera & Parallax**](./03-camera-and-parallax.md) | A scrolling world with smooth player tracking, zoom controls, and 3-plane parallax | `camera`, `to_screen()`, `visible_cell_range` |
-| **4** | [**Offscreen Render Textures**](./04-render-textures.md) | A bake-once procedural background, cached minimap, and stylized 9-slice frame | `render_texture`, `compose()`, `blit()` |
+| **4** | [**Offscreen Render Textures**](./04-render-textures.md) | A bake-once procedural background, cached minimap, and stylized 9-slice frame | target `texture`, `compose()`, `draw_texture()` |
 
 ---
 

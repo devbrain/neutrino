@@ -38,10 +38,10 @@ namespace rs {
         return geo;
     }
 
-    std::optional <neutrino::render_texture> compose_backdrop(const neutrino::sprite_set_handle& board,
+    std::optional <neutrino::texture> compose_backdrop(const neutrino::sprite_set_handle& board,
                                                               const neutrino::sprite_set_handle& fill,
                                                               std::size_t fill_block) {
-        auto target = neutrino::render_texture::create(neutrino::dim{ke_screen_w, ke_screen_h});
+        auto target = neutrino::texture::create(neutrino::dim{ke_screen_w, ke_screen_h}, neutrino::texture_access::target);
         if (!target) {
             return std::nullopt;
         }
@@ -87,7 +87,7 @@ namespace rs {
             put(fill, ke_fill_bar, 16, h, 3.0f);
 
             batch.flush();
-        }, sdlpp::color{6, 34, 42, 255});
+        }, neutrino::color{6, 34, 42, 255});
 
         return target;
     }

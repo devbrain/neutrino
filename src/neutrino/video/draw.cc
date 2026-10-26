@@ -270,7 +270,7 @@ namespace neutrino {
             }
             constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
 
-            return renderer.render_geometry(atlas.texture.get(), vertices, indices);
+            return renderer.render_geometry(atlas.texture.native().get(), vertices, indices);
         }
 
         sdlpp::expected <void, std::string> draw_visual_impl(
@@ -314,7 +314,7 @@ namespace neutrino {
 
             const bool rotate = rotation != 0.0f;
             return renderer.copy_ex(
-                atlas.texture,
+                atlas.texture.native(),
                 std::optional <rect>{visual.texture_rect},
                 std::optional <sdlpp::rect <float>>{dst},
                 static_cast <double>(rotation),
@@ -656,7 +656,7 @@ namespace neutrino {
         // both corners, so no origin/scale rounding here. Diagonal flip / rotation are
         // not supported on this path (H/V only).
         DRAW_CHECK(get_renderer().copy_ex(
-            atlas.texture,
+            atlas.texture.native(),
             std::optional <rect>{sprite.texture_rect},
             std::optional <rect>{dst},
             0.0,
@@ -842,6 +842,97 @@ namespace neutrino {
 
     void draw_cross(const point& center, int size, float thickness, const sdlpp::color& c) {
         detail::draw_cross(as_render(center), static_cast <float>(size), thickness, c);
+    }
+
+    // --- Textures ---
+
+    namespace {
+        // Tint is per-texture state in SDL: apply it around one draw and put the neutral value
+        // back, so a texture always rests at white / opaque. A white tint touches nothing.
+        class tint_scope {
+            public:
+                tint_scope(sdlpp::texture& tex, const color& tint) noexcept
+                    : m_texture(tex), m_active(tint != color{255, 255, 255, 255}) {
+                    if (m_active) {
+                        (void) m_texture.set_color_mod(tint);
+                        (void) m_texture.set_alpha_mod(tint.a);
+                    }
+                }
+
+                ~tint_scope() {
+                    if (m_active) {
+                        (void) m_texture.set_color_mod(color{255, 255, 255, 255});
+                        (void) m_texture.set_alpha_mod(255);
+                    }
+                }
+
+                tint_scope(const tint_scope&) = delete;
+                tint_scope& operator=(const tint_scope&) = delete;
+
+            private:
+                sdlpp::texture& m_texture;
+                bool m_active;
+        };
+
+        // Drawing is logically const: the only texture state touched (tint) is restored.
+        [[nodiscard]] sdlpp::texture& drawable(const texture& t) noexcept {
+            return const_cast <sdlpp::texture&>(t.native());
+        }
+    }
+
+    namespace detail {
+        void draw_texture(const texture& t, const render_rect& dst, const texture_draw_params& params) {
+            ENFORCE(!has_diagonal_flip(params.flip))("draw_texture: diagonal flip is not supported; "
+                                                     "use draw_texture_quad");
+            ENFORCE(std::isfinite(params.rotation_degrees))("texture rotation must be finite");
+
+            auto& native = drawable(t);
+            const tint_scope tint(native, params.tint);
+            const std::optional <sdlpp::rect <float>> target{to_sdl(dst, snapping())};
+            if (params.rotation_degrees == 0.0f && params.flip == sprite_flip::none) {
+                DRAW_CHECK(get_renderer().copy(native, params.src, target));
+                return;
+            }
+            const std::optional <sdlpp::point <float>> pivot =
+                params.pivot ? std::optional <sdlpp::point <float>>{sdlpp::point <float>{params.pivot->x, params.pivot->y}}
+                             : std::nullopt;
+            DRAW_CHECK(get_renderer().copy_ex(native, params.src, target, static_cast <double>(params.rotation_degrees),
+                                              pivot, to_sdl_flip(params.flip)));
+        }
+    }
+
+    void draw_texture(const texture& t, const rect& dst, const texture_draw_params& params) {
+        detail::draw_texture(t, as_render(dst), params);
+    }
+
+    void draw_texture(const texture& t) {
+        const dim size = t.size();
+        detail::draw_texture(t, render_rect{0.0f, 0.0f, static_cast <float>(size.width),
+                                            static_cast <float>(size.height)}, {});
+    }
+
+    void draw_texture_quad(const texture& t, const std::array <render_pos, 4>& corners, std::optional <rect> src,
+                           const color& tint) {
+        const dim size = t.size();
+        const rect s = src.value_or(rect{0, 0, size.width, size.height});
+        const float w = static_cast <float>(size.width);
+        const float h = static_cast <float>(size.height);
+        const float u0 = static_cast <float>(s.x) / w;
+        const float v0 = static_cast <float>(s.y) / h;
+        const float u1 = static_cast <float>(s.x + s.w) / w;
+        const float v1 = static_cast <float>(s.y + s.h) / h;
+        const SDL_FColor c{static_cast <float>(tint.r) / 255.0f, static_cast <float>(tint.g) / 255.0f,
+                           static_cast <float>(tint.b) / 255.0f, static_cast <float>(tint.a) / 255.0f};
+        const std::array <SDL_FPoint, 4> uv{{{u0, v0}, {u1, v0}, {u1, v1}, {u0, v1}}};
+
+        const bool snap = snapping();
+        std::array <SDL_Vertex, 4> vertices{};
+        for (std::size_t i = 0; i < vertices.size(); ++i) {
+            const render_pos p = snap_pos(corners[i], snap);
+            vertices[i] = SDL_Vertex{.position = {p.x, p.y}, .color = c, .tex_coord = uv[i]};
+        }
+        constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
+        DRAW_CHECK(get_renderer().render_geometry(drawable(t).get(), vertices, indices));
     }
 
     std::uint64_t draw_failure_count() noexcept {

@@ -245,8 +245,8 @@ the overall logical canvas or drawable; it is not a query for the panel's local 
 
 ## Render textures add another space
 
-A `render_texture` has its own dimensions and drawing state. Binding one directs drawing
-into that texture. Later, `blit(destination)` places the result in the window's render space.
+A target `texture` has its own dimensions and drawing state. Binding one directs drawing
+into that texture. Later, `draw_texture(tex, destination)` places the result in the window's render space.
 Each target has its own viewport, scale, and logical presentation settings.
 
 ```mermaid
@@ -254,13 +254,13 @@ flowchart TB
     T["Minimap texture: 256 × 256 pixels<br/>Point (64, 64)"]
     R["Window render space<br/>Point (512, 48)"]
     W["Window points<br/>After presentation and density"]
-    T -->|"Blit into rectangle (480, 16, 128, 128)"| R
+    T -->|"draw_texture into rectangle (480, 16, 128, 128)"| R
     R -->|"to_window_coords()"| W
     W -.->|"to_render_coords()"| R
     R -.->|"Undo the destination rectangle transform"| T
 ```
 
-For a full-texture, axis-aligned blit without rotation or flipping:
+For a full-texture, axis-aligned draw without rotation or flipping:
 
 ```text
 texture_x = (render_x - destination_x) × texture_width  / destination_width
@@ -278,20 +278,20 @@ embedded in an editor.
 
 `to_render_coords()` and `to_window_coords()` use the **window's view**, even while a
 texture is the active render target. Binding the minimap does not make these helpers
-undo its blit rectangle. Apply that extra mapping yourself.
+undo its destination rectangle. Apply that extra mapping yourself.
 
-For texture dimensions, use `render_texture::size()`. For the pixel dimensions of the
+For texture dimensions, use `texture::size()`. For the pixel dimensions of the
 currently bound target, SDL++ provides `get_renderer().get_current_output_size<dim>()`.
 `render_size()` uses the current target's logical size when enabled, but otherwise delegates
 to the renderer's output-size query; it is not a generic texture-size query.
 
 Query window output dimensions before binding a texture. In the bundled SDL software
 renderer, even `get_output_size<dim>()` can report the bound texture's dimensions. Using
-`render_texture::size()` for texture layout avoids relying on that backend-specific behavior.
+`texture::size()` for texture layout avoids relying on that backend-specific behavior.
 :::
 
 See the [render texture tutorial](../tutorial/drawing/04-render-textures.md) for creation,
-composition, and blitting.
+composition, and drawing.
 
 ### Simplex's canvas
 

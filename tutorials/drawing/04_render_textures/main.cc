@@ -2,7 +2,7 @@
 // Neutrino Drawing Tutorial 04: Offscreen Render Textures
 //
 // Demonstrates:
-// 1. Allocating offscreen GPU targets with `neutrino::render_texture::create`.
+// 1. Allocating offscreen GPU targets with `neutrino::texture::create(size, texture_access::target)`.
 // 2. The RAII `compose()` pattern for safe, leak-free target binding.
 // 3. Baking complex procedural scenery into VRAM once.
 // 4. Blitting baked textures as single draw calls.
@@ -13,7 +13,7 @@
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/draw.hh>
-#include <neutrino/video/render_texture.hh>
+#include <neutrino/video/texture.hh>
 
 #include <neutrino/entry_point.hh>
 #include <neutrino/video/color.hh>
@@ -37,11 +37,11 @@ namespace {
     public:
         void on_enter() override {
             // 1. Allocate full-screen background render texture
-            m_backdrop = neutrino::render_texture::create(neutrino::dim{logical_width, logical_height});
+            m_backdrop = neutrino::texture::create(neutrino::dim{logical_width, logical_height}, neutrino::texture_access::target);
             bake_scenery();
 
             // 2. Allocate 120x120 cached minimap target
-            m_minimap = neutrino::render_texture::create(neutrino::dim{120, 120});
+            m_minimap = neutrino::texture::create(neutrino::dim{120, 120}, neutrino::texture_access::target);
             bake_minimap();
 
             // Initialize moving entities (patrolling drones)
@@ -90,10 +90,10 @@ namespace {
 
         void render() override {
             // =================================================================
-            // PASS 1: Blit the pre-baked static scenery (1 single blit call!)
+            // PASS 1: Draw the pre-baked static scenery (1 single texture draw!)
             // =================================================================
             if (m_backdrop) {
-                m_backdrop->blit();
+                neutrino::draw_texture(*m_backdrop);
             }
 
             // =================================================================
@@ -191,7 +191,7 @@ namespace {
 
             // 1. Blit pre-baked minimap texture at top-right
             const neutrino::rect minimap_dst{504, 16, 120, 120};
-            m_minimap->blit(minimap_dst);
+            neutrino::draw_texture(*m_minimap, minimap_dst);
 
             // 2. Draw live player blip (green dot)
             const float scale_x = 120.0f / static_cast<float>(logical_width);
@@ -218,8 +218,8 @@ namespace {
             neutrino::draw_circle_fill(neutrino::circle{neutrino::point{30, 30}, 5}, neutrino::colors::cyan);
         }
 
-        std::optional<neutrino::render_texture> m_backdrop;
-        std::optional<neutrino::render_texture> m_minimap;
+        std::optional<neutrino::texture> m_backdrop;
+        std::optional<neutrino::texture> m_minimap;
 
         neutrino::world_point m_player_pos{320.0f, 180.0f};
         std::vector<neutrino::render_pos> m_drones;

@@ -49,7 +49,7 @@ A 4-part hands-on series focused entirely on mastering 2D drawing, sorting, came
 | **1** | [Primitives & UI](./drawing/01-primitives-and-ui.md) | Player HUD, status gauges, and diagnostic physics gizmos |
 | **2** | [Batches & Ordering Bands](./drawing/02-batches-and-ordering.md) | 2.5D depth sorting, coarse `draw_layer` bands, and tie-breaking |
 | **3** | [Camera & Parallax](./drawing/03-camera-and-parallax.md) | Look-at tracking, smooth zoom, and drift-free multi-plane parallax |
-| **4** | [Offscreen Render Textures](./drawing/04-render-textures.md) | `render_texture::compose()`, bake-once static art, and cached minimaps |
+| **4** | [Offscreen Render Textures](./drawing/04-render-textures.md) | `texture::compose()`, bake-once static art, and cached minimaps |
 
 ## How this fits the rest of the docs
 

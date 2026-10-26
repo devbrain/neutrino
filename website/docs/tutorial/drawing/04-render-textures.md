@@ -10,14 +10,14 @@ In the previous parts of this tutorial, we learned how to draw shapes immediatel
 
 However, drawing hundreds of static background tiles, complex procedural mountain silhouettes, or ornate HUD frames **every single frame** wastes CPU cycles and GPU fillrate.
 
-In this tutorial, you will learn how to use [`neutrino::render_texture`](pathname:///api/) to:
+In this tutorial, you will learn how to use a target [`neutrino::texture`](pathname:///api/) to:
 1. **Bake complex scenery once into VRAM** and blit it as a single texture every frame.
 2. Build a **cached minimap** that updates on demand rather than on every render tick.
 3. Use the safe, RAII-guarded **`compose()` pattern** to eliminate render target bugs.
 
 ---
 
-## What is a `render_texture`?
+## What is a target `texture`?
 
 In GPU architectures, textures typically reside in VRAM as read-only image data sampled by shaders.
 
@@ -27,12 +27,12 @@ A **render texture** (or offscreen render target) is a GPU texture configured wi
 flowchart TD
     subgraph Bake ["Level Load (Done Once)"]
         DrawOps["Complex Draw Operations:<br/>• 500 procedural stars<br/>• Gradient nebula background<br/>• Layered mountain contours"]
-        TargetTex["render_texture (RGBA8888 in VRAM)"]
+        TargetTex["target texture (RGBA8888 in VRAM)"]
         DrawOps -->|"compose(Fn)"| TargetTex
     end
 
     subgraph FrameLoop ["Every Frame (60+ FPS)"]
-        TargetTex -->|"blit() [Single Draw Call!]"| Screen["GPU Screen Backbuffer"]
+        TargetTex -->|"draw_texture() [Single Draw Call!]"| Screen["GPU Screen Backbuffer"]
         DynamicActors["Dynamic Actors & Player"] -->|"sprite_batch::flush()"| Screen
         HUD["Screen-space HUD"] -->|"draw_*"| Screen
     end
@@ -42,27 +42,30 @@ flowchart TD
 
 ## Step 1: Creating a Render Texture
 
-Allocate an offscreen render target by calling `render_texture::create(size)`:
+Allocate an offscreen render target by calling `texture::create(size, texture_access::target)`:
 
 ```cpp
-#include <neutrino/video/render_texture.hh>
+#include <neutrino/video/texture.hh>
 #include <iostream>
 
 // Allocate a 640x360 offscreen target texture
-auto rt_opt = neutrino::render_texture::create(neutrino::dim{640, 360});
+auto rt_opt = neutrino::texture::create(neutrino::dim{640, 360}, neutrino::texture_access::target);
 
 if (!rt_opt) {
     std::cerr << "Failed to allocate render texture (check VRAM or driver support)\n";
     return;
 }
 
-neutrino::render_texture backdrop = std::move(*rt_opt);
+neutrino::texture backdrop = std::move(*rt_opt);
 ```
 
-When created, `render_texture`:
+When created, a target `texture`:
 - Allocates an `RGBA8888` texture on the active GPU renderer.
-- Automatically enables `neutrino::blend_mode::blend`, so transparent areas in the texture will composite over whatever lies beneath when blitted.
+- Automatically enables `neutrino::blend_mode::blend`, so transparent areas in the texture will composite over whatever lies beneath when drawn.
+- Is nearest-filtered, so scaled draws keep crisp pixels (`set_filter()` to change).
 - Is movable but non-copyable (strictly owns its GPU texture handle).
+
+`texture_access::target` is one of three access modes; `fixed` (from an image) and `streaming` (CPU-written) textures are drawn the same way. See [Drawing: Textures](../../concepts/drawing.md).
 
 ---
 
@@ -98,20 +101,20 @@ backdrop.compose([&] {
 ```
 
 ### What `compose()` does behind the scenes:
-1. **Target Guard:** Uses `neutrino::renderer::target_guard` to bind `m_texture` as the active target and guarantees the previous target is restored when the lambda exits.
-2. **Color Restoration:** Reads `get_draw_color()`, clears the texture to the requested `clear_color` (defaulting to `{0, 0, 0, 0}` transparent), runs your lambda, and restores the previous draw color.
+1. **Binding:** Makes the texture the active render target and guarantees the previous target is restored when the lambda exits -- even if it throws.
+2. **Clearing:** Clears the texture to the requested clear colour (default transparent; pass `std::nullopt` to keep the existing contents) without disturbing the renderer's draw colour.
 3. **Arbitrary Draws:** Any Neutrino drawing code executed inside the lambda — immediate primitives, `draw_sprite`, or `sprite_batch::flush()` — automatically renders into the texture!
 
 ---
 
-## Step 3: Blitting the Texture
+## Step 3: Drawing the Texture
 
 During your scene's `render()` method, drawing the entire pre-baked scenery takes just **one line of code**:
 
 ```cpp
 void render() override {
     // 1. Blit the entire baked backdrop 1:1 at (0, 0)
-    backdrop.blit();
+    neutrino::draw_texture(backdrop);
 
     // 2. Render dynamic gameplay actors on top
     actor_batch.flush();
@@ -125,7 +128,7 @@ You can also blit the texture into a specific destination rectangle (scaled or r
 
 ```cpp
 // Blit a 128x128 preview into the bottom-right corner
-backdrop.blit(neutrino::rect{500, 220, 128, 72});
+neutrino::draw_texture(backdrop, neutrino::rect{500, 220, 128, 72});
 ```
 
 ---
@@ -135,14 +138,14 @@ backdrop.blit(neutrino::rect{500, 220, 128, 72});
 Minimaps often redraw the entire world layout, player markers, and enemy dots. Redrawing 500 room outlines every frame is wasteful when rooms don't move!
 
 We can maintain a **cached minimap**:
-1. Bake the static walls and terrain into a 160 × 160 `render_texture` **once**.
+1. Bake the static walls and terrain into a 160 × 160 target `texture` **once**.
 2. Each frame, blit the cached map texture.
 3. Draw only the moving entity dots (player, enemies) immediately on top!
 
 ```cpp
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/video/draw.hh>
-#include <neutrino/video/render_texture.hh>
+#include <neutrino/video/texture.hh>
 #include <optional>
 #include <vector>
 
@@ -150,7 +153,7 @@ class minimap_scene final : public neutrino::base_scene {
 public:
     void on_enter() override {
         // Allocate 120x120 minimap target
-        m_minimap = neutrino::render_texture::create(neutrino::dim{120, 120});
+        m_minimap = neutrino::texture::create(neutrino::dim{120, 120}, neutrino::texture_access::target);
 
         if (m_minimap) {
             // Bake static dungeon walls into the minimap texture ONCE:
@@ -177,7 +180,7 @@ public:
 
         if (m_minimap) {
             // 1. Blit the pre-baked static rooms (1 draw call!)
-            m_minimap->blit(minimap_dst);
+            neutrino::draw_texture(*m_minimap, minimap_dst);
 
             // 2. Draw dynamic entity blips on top, scaled 1:10 into the minimap
             const auto to_minimap = [&](neutrino::render_pos p) {
@@ -193,7 +196,7 @@ public:
     }
 
 private:
-    std::optional<neutrino::render_texture> m_minimap;
+    std::optional<neutrino::texture> m_minimap;
     neutrino::render_pos m_player_pos{250.0f, 200.0f};
     neutrino::render_pos m_enemy_pos{800.0f, 600.0f};
 };
@@ -220,7 +223,7 @@ cmake --build cmake-build-debug --target neutrino_tutorial_drawing_04_render_tex
 
 ## When to Invalidate and Re-compose
 
-A `render_texture` remains valid in VRAM until its destructor runs or `compose()` is called again.
+A target `texture` remains valid in VRAM until its destructor runs or `compose()` is called again.
 
 ### Rules of thumb:
 - **Level Load / Scene Transition:** Bake static background scenery once when the scene loads (`on_enter()`).

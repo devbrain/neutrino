@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include <sdlpp/video/texture.hh>
+#include <neutrino/video/texture.hh>
 
 #include <neutrino/video/sprite/texture_atlas.hh>
 
@@ -24,7 +24,7 @@ namespace neutrino {
         /**
          * @brief Uploaded renderer texture.
          */
-        sdlpp::texture texture;
+        neutrino::texture texture;
 
         /**
          * @brief Format requested when the atlas was registered.

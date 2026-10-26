@@ -6,7 +6,8 @@
 
 #include <string>
 #include <neutrino/application.hh>
-#include <sdlpp/video/texture.hh>
+#include <optional>
+#include <neutrino/video/draw.hh>
 
 namespace neutrino::simplex {
     class NEUTRINO_EXPORT application;
@@ -34,7 +35,7 @@ namespace neutrino::simplex {
 
                 simplex::application* m_owner;
                 dim m_canvas_size;
-                sdlpp::texture m_canvas;
+                std::optional<neutrino::texture> m_canvas;
                 sdlpp::fcolor m_canvas_color{0.0f, 0.0f, 0.0f, 1.0f};
                 lifecycle m_state = lifecycle::idle;
         };

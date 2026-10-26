@@ -54,15 +54,14 @@ namespace neutrino::simplex::detail {
         // target even when a callback throws or uses nested render targets.
         class canvas_scope {
             public:
-                canvas_scope(sdlpp::renderer& renderer, const sdlpp::texture& canvas, sdlpp::fcolor& color)
-                    : m_renderer(renderer), m_target(renderer), m_color(color) {
-                    checked(renderer.set_target(canvas));
+                canvas_scope(sdlpp::renderer& renderer, neutrino::texture& canvas, sdlpp::fcolor& color)
+                    : m_renderer(renderer), m_target(canvas.bind()), m_color(color) {
                     checked(renderer.set_draw_color_float(color));
                 }
 
                 void restore() {
                     m_color = checked(m_renderer.get_draw_color_float());
-                    checked(m_target.restore());
+                    m_target.end();
                 }
 
                 canvas_scope(const canvas_scope&) = delete;
@@ -70,7 +69,7 @@ namespace neutrino::simplex::detail {
 
             private:
                 sdlpp::renderer& m_renderer;
-                sdlpp::renderer::target_guard m_target;
+                target_scope m_target;
                 sdlpp::fcolor& m_color;
         };
     }
@@ -83,14 +82,14 @@ namespace neutrino::simplex::detail {
 
     void application_adapter::ready() {
         auto& renderer = get_renderer();
-        m_canvas = checked(sdlpp::texture::create(renderer, sdlpp::pixel_format_enum::RGBA8888,
-                                                 sdlpp::texture_access::target,
-                                                 m_canvas_size.width, m_canvas_size.height));
-        checked(m_canvas.set_blend_mode(sdlpp::blend_mode::none));
-        checked(m_canvas.set_scale_mode(sdlpp::scale_mode::nearest));
+        m_canvas = neutrino::texture::create(m_canvas_size, texture_access::target);
+        if (!m_canvas) {
+            throw std::runtime_error("Simplex canvas texture could not be created");
+        }
+        m_canvas->set_blend_mode(blend_mode::none); // the canvas replaces the frame; nearest is the default filter
 
         try {
-            canvas_scope canvas(renderer, m_canvas, m_canvas_color);
+            canvas_scope canvas(renderer, *m_canvas, m_canvas_color);
             // Logical presentation belongs to each target separately. Keep
             // render_size() meaningful while callbacks draw into the canvas.
             checked(renderer.set_logical_presentation(m_canvas_size.width, m_canvas_size.height,
@@ -111,7 +110,7 @@ namespace neutrino::simplex::detail {
     void application_adapter::update_scene(float dt, const input_snapshot& input) {
         if (m_state != lifecycle::running || !is_running()) return;
         try {
-            canvas_scope canvas(get_renderer(), m_canvas, m_canvas_color);
+            canvas_scope canvas(get_renderer(), *m_canvas, m_canvas_color);
             get_renderer().set_draw_color(sdlpp::colors::black);
             get_renderer().clear();
 
@@ -126,13 +125,13 @@ namespace neutrino::simplex::detail {
 
     void application_adapter::render_scene() {
         if (m_state != lifecycle::running || !is_running()) return;
-        auto& renderer = get_renderer();
-        const sdlpp::rect<float> destination{0.0f, 0.0f, static_cast<float>(m_canvas_size.width),
-                                              static_cast<float>(m_canvas_size.height)};
-
-        if (const auto result = renderer.copy(m_canvas, std::nullopt, destination); !result) {
+        // Presenting the canvas is the whole frame: a rejected draw stops the app (the entry point
+        // reports it) rather than being logged and skipped like an ordinary draw.
+        const auto failures_before = draw_failure_count();
+        draw_texture(*m_canvas);
+        if (draw_failure_count() != failures_before) {
             stop();
-            throw std::runtime_error(result.error());
+            throw std::runtime_error("Simplex canvas presentation failed");
         }
     }
 
@@ -159,7 +158,7 @@ namespace neutrino::simplex::detail {
                 log_cleanup_error("unknown exception");
             }
         }
-        m_canvas = sdlpp::texture{};
+        m_canvas.reset();
     }
 
 }

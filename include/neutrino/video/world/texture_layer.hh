@@ -10,21 +10,19 @@
  *        game-owned texture across the viewport.
  *
  * Its content changes every frame, so -- unlike a static image layer -- it cannot be
- * content-keyed or cached. The game creates
- * and updates the texture (typically @c texture_access::streaming) and points this
- * layer at it; the layer just draws it each frame, beneath the map when slotted with
- * @ref world_compositor::insert_bottom. It ignores the @ref sprite_batch -- there is
- * one full-plane blit, nothing to depth-sort.
+ * content-keyed or cached. The game owns a @ref texture -- typically @c texture_access::streaming
+ * rewritten by the CPU, or a @c target composed on the GPU -- and points this layer at it; the
+ * layer draws it each frame, beneath the map when slotted with @ref world_compositor::insert_bottom.
+ * It ignores the @ref sprite_batch -- there is one full-plane draw, nothing to depth-sort.
  */
 
 #include <optional>
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/geometry_types.hh>
-#include <neutrino/video/globals.hh>
+#include <neutrino/video/draw.hh>
 #include <neutrino/video/world/render_layer.hh>
 
-#include <neutrino/video/globals.hh>
 
 namespace neutrino {
     /**
@@ -42,9 +40,7 @@ namespace neutrino {
                 if (texture == nullptr) {
                     return;
                 }
-                const std::optional <rect> dst{view.viewport};
-                // A per-frame draw failure is a no-op, never a throw.
-                (void) get_renderer().copy(*texture, source, dst);
+                draw_texture(*texture, view.viewport, texture_draw_params{.src = source});
             }
     };
 }
