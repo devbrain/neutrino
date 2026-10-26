@@ -181,3 +181,33 @@ TEST_CASE("sprite_file to_json serialization") {
     }
 }
 
+
+TEST_CASE("GVF binary fields are little-endian and truncated properties fail") {
+    // Three strings: the animation name, its type, and the Rect property key.
+    const std::vector<uint8_t> prefix{
+        1,'G','V','F','0','0','2',1, 3,0,0,0,
+        4,0,0,0,'w','a','l','k', 4,0,0,0,'A','n','i','m',
+        4,0,0,0,'R','e','c','t', 0,0,0,0,0,0,0,0,
+        0x11,0,0,0,0,1,0,0,0,
+        0x13,2,0,0,0
+    };
+    auto bytes = prefix;
+    bytes.insert(bytes.end(), {3,4, 0,0,0,0, 0,0,0,0x3f, 0,0,0x80,0x3f, 0,0,0x80,0x3e});
+    auto parsed = luxor::rc::parse_spr(bytes.data(), bytes.size());
+    REQUIRE(parsed.has_value());
+    REQUIRE(parsed->anims.size() == 1);
+    CHECK(parsed->anims[0].name == "walk");
+    REQUIRE(parsed->anims[0].frames.size() == 1);
+    CHECK(parsed->anims[0].frames[0].u_min == 0.0f);
+    CHECK(parsed->anims[0].frames[0].v_min == 0.5f);
+    CHECK(parsed->anims[0].frames[0].u_max == 1.0f);
+    CHECK(parsed->anims[0].frames[0].v_max == 0.25f);
+    for (auto type : {uint8_t{0}, uint8_t{2}}) {
+        bytes = prefix;
+        bytes.insert(bytes.end(), {type,1});
+        CHECK_FALSE(luxor::rc::parse_spr(bytes.data(), bytes.size()).has_value());
+    }
+    bytes = prefix;
+    bytes.insert(bytes.end(), {3,4,0,0,0});
+    CHECK_FALSE(luxor::rc::parse_spr(bytes.data(), bytes.size()).has_value());
+}

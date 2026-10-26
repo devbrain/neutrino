@@ -2,6 +2,9 @@
 // Created by igor on 12/10/2026.
 //
 
+#include <bstream/span_reader.hh>
+#include <bstream/stream_copier.hh>
+
 #include "luxor/resources/parser/spr_parser.hh"
 
 #include <fstream>
@@ -279,55 +282,51 @@ namespace luxor::rc {
             sprite_file spr{};
             spr.format = sprite_format::gvf_binary;
 
-            size_t pos = 8;
-            if (pos + 4 > size) {
+            bstream::span_reader reader(data, size, bstream::endian::little);
+            if (size < 12) {
                 return unexpected("Unexpected EOF reading string table count");
             }
 
-            uint32_t num_strings = 0;
-            std::memcpy(&num_strings, data + pos, 4);
-            pos += 4;
+            reader.skip(8);
+            const auto num_strings = reader.read<uint32_t>();
+            if (num_strings > reader.remaining() / 4) {
+                return unexpected("Unexpected EOF reading string table");
+            }
 
             std::vector<std::string> strings;
             strings.reserve(num_strings);
 
             for (uint32_t s = 0; s < num_strings; ++s) {
-                if (pos + 4 > size) {
+                if (reader.remaining() < 4) {
                     return unexpected("Unexpected EOF reading string length");
                 }
-                uint32_t slen = 0;
-                std::memcpy(&slen, data + pos, 4);
-                pos += 4;
+                const auto slen = reader.read<uint32_t>();
 
-                if (pos + slen > size) {
+                if (reader.remaining() < slen) {
                     return unexpected("Unexpected EOF reading string data");
                 }
 
-                strings.emplace_back(reinterpret_cast<const char*>(data + pos), slen);
-                pos += slen;
+                strings.push_back(reader.read_fixed_string(slen, false));
             }
 
             // 8-byte separator
-            if (pos + 8 > size) {
+            if (reader.remaining() < 8) {
                 return unexpected("Unexpected EOF before bytecode payload");
             }
-            pos += 8;
+            reader.skip(8);
 
             std::string current_block;
             std::string current_anim_name;
 
-            while (pos < size) {
-                uint8_t op = data[pos++];
+            while (!reader.eof()) {
+                uint8_t op = reader.read<uint8_t>();
 
                 if (op == 0x11) {
-                    if (pos + 8 > size) {
+                    if (reader.remaining() < 8) {
                         return unexpected("Truncated block header (0x11)");
                     }
-                    int32_t name_id = 0;
-                    int32_t type_id = 0;
-                    std::memcpy(&name_id, data + pos, 4);
-                    std::memcpy(&type_id, data + pos + 4, 4);
-                    pos += 8;
+                    const auto name_id = reader.read<int32_t>();
+                    const auto type_id = reader.read<int32_t>();
 
                     std::string name_str = (name_id >= 0 && static_cast<size_t>(name_id) < strings.size())
                                            ? strings[name_id] : "";
@@ -344,32 +343,27 @@ namespace luxor::rc {
                 } else if (op == 0x12) {
                     current_block.clear();
                 } else if (op == 0x13) {
-                    if (pos + 6 > size) {
+                    if (reader.remaining() < 6) {
                         return unexpected("Truncated property (0x13)");
                     }
-                    int32_t key_id = 0;
-                    std::memcpy(&key_id, data + pos, 4);
-                    pos += 4;
+                    const auto key_id = reader.read<int32_t>();
 
-                    uint8_t val_type = data[pos++];
-                    uint8_t val_subtype = data[pos++];
+                    uint8_t val_type = reader.read<uint8_t>();
+                    uint8_t val_subtype = reader.read<uint8_t>();
 
                     std::string key_str = (key_id >= 0 && static_cast<size_t>(key_id) < strings.size())
                                           ? strings[key_id] : "";
 
                     if (val_type == 8 && val_subtype == 1) {
                         // String value
-                        if (pos + 4 > size) {
+                        if (reader.remaining() < 4) {
                             return unexpected("Truncated string value length");
                         }
-                        uint32_t vlen = 0;
-                        std::memcpy(&vlen, data + pos, 4);
-                        pos += 4;
-                        if (pos + vlen > size) {
+                        const auto vlen = reader.read<uint32_t>();
+                        if (reader.remaining() < vlen) {
                             return unexpected("Truncated string value payload");
                         }
-                        std::string val(reinterpret_cast<const char*>(data + pos), vlen);
-                        pos += vlen;
+                        auto val = reader.read_fixed_string(vlen, false);
 
                         if (key_str.rfind("Material_", 0) == 0 || key_str == "Material") {
                             std::string mat = val;
@@ -390,17 +384,22 @@ namespace luxor::rc {
                             }
                         }
                     } else if (val_type == 2 && val_subtype == 1) {
-                        pos += 4; // int32
+                        if (reader.remaining() < 4) {
+                            return unexpected("Truncated int32 property");
+                        }
+                        reader.skip(4);
                     } else if (val_type == 0 && val_subtype == 1) {
-                        pos += 1; // uint8
+                        if (reader.eof()) {
+                            return unexpected("Truncated uint8 property");
+                        }
+                        reader.skip(1);
                     } else if (val_type == 3 && val_subtype == 4) {
                         // float[4] UV rect: [u_min, v_min, u_max, v_max]
-                        if (pos + 16 > size) {
+                        if (reader.remaining() < 16) {
                             return unexpected("Truncated float[4] Rect property");
                         }
                         float uv[4];
-                        std::memcpy(uv, data + pos, 16);
-                        pos += 16;
+                        reader >> uv;
 
                         if (key_str == "Rect" && !spr.anims.empty()) {
                             sprite_frame frame{};
@@ -438,13 +437,10 @@ namespace luxor::rc {
         if (!ifs.is_open()) {
             return unexpected("Failed to open sprite file: " + path.string());
         }
-        ifs.seekg(0, std::ios::end);
-        size_t size = static_cast<size_t>(ifs.tellg());
-        ifs.seekg(0, std::ios::beg);
-
-        std::vector<uint8_t> buffer(size);
-        if (size > 0) {
-            ifs.read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(size));
+        std::vector<uint8_t> buffer;
+        bstream::stream_copier::copy_to_vector(ifs, buffer);
+        if (ifs.bad() || (ifs.fail() && !ifs.eof())) {
+            return unexpected("Failed to read sprite file: " + path.string());
         }
 
         return parse_spr(buffer.data(), buffer.size());

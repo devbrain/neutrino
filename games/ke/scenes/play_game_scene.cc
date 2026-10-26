@@ -11,9 +11,7 @@
 
 #include <sdlpp/events/events.hh>
 
-#include <neutrino/video/globals.hh>
-#include <neutrino/video/draw.hh>
-#include <neutrino/video/world/sprite_batch.hh>
+#include <neutrino/neutrino.hh>
 #include <onyx_font/bios_font.hh>
 
 #include <ke/assets/sprites.hh>

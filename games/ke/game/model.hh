@@ -6,9 +6,7 @@
 
 #include <vector>
 
-#include <neutrino/world_space.hh> // world_pos / world_velocity
-#include <neutrino/physics/geometry/shapes.hh>
-#include <neutrino/video/sprite/sprite_state.hh>
+#include <neutrino/neutrino.hh> // world_pos / world_velocity
 #include <ke/assets/sprites.hh>
 
 // The KE domain model: pure game state. It owns no engine subsystems -- game_mechanics

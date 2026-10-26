@@ -10,7 +10,7 @@
 #include <array>
 #include <variant>
 #include <span>
-#include "binary_reader.hh"
+#include <bstream/span_reader.hh>
 #include "it_vm.hh"
 
 // ============================================================================
@@ -575,15 +575,15 @@ struct block_address {
 using addressed_block = std::pair<block_address, decoded_block>;
 
 /**
- * @brief Decodes a raw asset payload from a binary_reader into its corresponding strongly-typed struct.
+ * @brief Decodes a raw asset payload from a bounded binary reader into its corresponding strongly-typed struct.
  *
  * @param type_id Asset type ID (a1).
- * @param rdr binary_reader positioned at the start of the block payload.
+ * @param rdr Binary reader positioned at the start of the block payload.
  * @param payload_size Byte size of the payload.
  * @param is_anim_stream True if extracted from Tag 0x05 (animation stream).
  * @return decoded_block variant containing the concrete struct.
  */
-decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_size, bool is_anim_stream = false);
+decoded_block decode_block(int type_id, bstream::span_reader& rdr, std::size_t payload_size, bool is_anim_stream = false);
 
 /**
  * @brief Decodes a raw asset payload into its corresponding strongly-typed struct.

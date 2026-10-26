@@ -378,7 +378,7 @@ the unused part of the step. Visually tolerable today, so below Tiers 0–1.
 > `<filesystem>`, `<map>`, `<variant>`, `<vector>` and the colour header from their
 > translation units.
 >
-> **The strong-type vocabulary: DONE.** `include/neutrino/world_space.hh` defines
+> **The strong-type vocabulary: DONE.** `include/neutrino/coordinates.hh` defines
 > `world_seconds` / `world_delta` / `world_pos` / `world_velocity` / `world_bounds`, plus
 > `render_pos` / `window_pos` at the input edge, as **distinct structs** (aliases would compile
 > everywhere and catch nothing) with only the meaningful algebra: `pos - pos = delta`,
@@ -394,7 +394,7 @@ the unused part of the step. Visually tolerable today, so below Tiers 0–1.
 
 | Layer | Change |
 |---|---|
-| `world_space.hh` | The vocabulary + algebra. Header-only, `<chrono>`/`<cmath>` only. |
+| `coordinates.hh` | The vocabulary + algebra. Header-only, `<chrono>`/`<cmath>` only. |
 | `physics::world` | Typed overloads: `set_velocity`, `set_target`, `move_by`, `move_to`, `velocity_of`, `position_of`, `bounds_of`; `world_move_result`. Thin delegations to the `vec` forms. |
 | `geometry_types.hh` | `to_world_point` / `to_world_pos` — the **named**, non-implicit crossing to the untyped point the renderer wants. |
 | `globals.hh` | `to_render_coords(window_pos) -> render_pos`, `to_window_coords(render_pos) -> window_pos`. |

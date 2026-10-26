@@ -1,7 +1,7 @@
 //
 // A frame-scoped snapshot of continuous input (pointer position, mouse buttons, keyboard
 // scancodes, and gamepad states), sampled ONCE per frame by the application and handed to
-// base_scene::fixed_update.
+// application::update_scene and, by default, base_scene::fixed_update.
 // A pure value type: no service lookup, directly constructible in a test so a scene's update
 // can be driven with synthetic input (findings #12). Discrete, one-shot events still arrive
 // through base_scene::handle_action.
@@ -17,15 +17,15 @@
 #include <sdlpp/events/keyboard_codes.hh> // sdlpp::scancode / keycode
 #include <sdlpp/input/gamepad.hh>         // sdlpp::gamepad_button / gamepad_axis
 #include <neutrino/neutrino_export.h>
-#include <neutrino/world_space.hh>        // window_pos / render_pos
+#include <neutrino/coordinates.hh>        // window_pos / render_pos
 #include <neutrino/input/hotkey.hh>
 #include <neutrino/input/mouse_click.hh>
 #include <neutrino/input/gamepad_button.hh>
 
 namespace neutrino {
     /// @brief The pointer position this frame, in BOTH window and render space. @c render is the one
-    ///        scenes want: window input already mapped through to_render_coords() (so HiDPI scaling
-    ///        and logical-presentation letterboxing are accounted for), so a scene never re-derives it.
+    ///        update callbacks want: window input already mapped through to_render_coords() (so HiDPI scaling
+    ///        and logical-presentation letterboxing are accounted for), so callbacks never re-derive it.
     struct pointer_state {
         window_pos window{}; ///< Window pixels, as SDL delivers mouse coordinates.
         render_pos render{}; ///< Render / logical-presentation space.
@@ -45,7 +45,7 @@ namespace neutrino {
         }
     };
 
-    /// @brief Immutable, frame-scoped input, sampled once per frame and passed to fixed_update.
+    /// @brief Frame-scoped input, sampled once per frame and passed to update callbacks by const reference.
     class NEUTRINO_EXPORT input_snapshot {
         public:
             static constexpr std::size_t max_scancodes = 512;

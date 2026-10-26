@@ -46,7 +46,7 @@
 #include <vector>
 #include <optional>
 
-#include <neutrino/world_space.hh> // strong gameplay-space vocabulary (roadmap Tier 3)
+#include <neutrino/coordinates.hh> // strong gameplay-space vocabulary (roadmap Tier 3)
 
 #include <neutrino/physics/geometry/shapes.hh>
 #include <neutrino/physics/geometry/units.hh>

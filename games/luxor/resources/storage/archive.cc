@@ -12,8 +12,8 @@
 #include <filesystem>
 #include <cstring>
 #include <cctype>
-#include <type_traits>
-#include <bit>
+#include <bstream/span_reader.hh>
+#include <bstream/stream_reader.hh>
 #include <stdexcept>
 
 #include "luxor/resources/storage/archive.hh"
@@ -34,80 +34,6 @@
 
 namespace luxor::rc {
     namespace {
-        // ============================================================================
-        // Endianness Helpers (All archive formats store Little-Endian values)
-        // ============================================================================
-
-        template <typename T>
-        constexpr T byteswap(T val) noexcept {
-            static_assert(std::is_integral_v<T> || std::is_enum_v<T>, "Integral or enum type required");
-            if constexpr (sizeof(T) == 1) {
-                return val;
-            } else if constexpr (sizeof(T) == 2) {
-                using U = uint16_t;
-                auto v = static_cast<U>(val);
-#if defined(__GNUC__) || defined(__clang__)
-                return static_cast<T>(__builtin_bswap16(v));
-#else
-                return static_cast<T>((static_cast<U>(v << 8)) | (v >> 8));
-#endif
-            } else if constexpr (sizeof(T) == 4) {
-                using U = uint32_t;
-                auto v = static_cast<U>(val);
-#if defined(__GNUC__) || defined(__clang__)
-                return static_cast<T>(__builtin_bswap32(v));
-#else
-                return static_cast<T>(
-                    ((v & 0x000000FFU) << 24) |
-                    ((v & 0x0000FF00U) << 8)  |
-                    ((v & 0x00FF0000U) >> 8)  |
-                    ((v & 0xFF000000U) >> 24)
-                );
-#endif
-            } else if constexpr (sizeof(T) == 8) {
-                using U = uint64_t;
-                auto v = static_cast<U>(val);
-#if defined(__GNUC__) || defined(__clang__)
-                return static_cast<T>(__builtin_bswap64(v));
-#else
-                return static_cast<T>(
-                    ((v & 0x00000000000000FFULL) << 56) |
-                    ((v & 0x000000000000FF00ULL) << 40) |
-                    ((v & 0x0000000000FF0000ULL) << 24) |
-                    ((v & 0x00000000FF000000ULL) << 8)  |
-                    ((v & 0x000000FF00000000ULL) >> 8)  |
-                    ((v & 0x0000FF0000000000ULL) >> 24) |
-                    ((v & 0x00FF000000000000ULL) >> 40) |
-                    ((v & 0xFF00000000000000ULL) >> 56)
-                );
-#endif
-            } else {
-                return val;
-            }
-        }
-
-        template <typename T>
-        constexpr T le_to_cpu(T val) noexcept {
-            if constexpr (std::endian::native == std::endian::little) {
-                return val;
-            } else {
-                if constexpr (std::is_floating_point_v<T>) {
-                    if constexpr (sizeof(T) == 4) {
-                        uint32_t u = 0;
-                        std::memcpy(&u, &val, sizeof(float));
-                        u = byteswap(u);
-                        float res = 0.0f;
-                        std::memcpy(&res, &u, sizeof(float));
-                        return res;
-                    } else {
-                        return val;
-                    }
-                } else {
-                    return byteswap(val);
-                }
-            }
-        }
-
         // ============================================================================
         // Stream & I/O Helpers
         // ============================================================================
@@ -134,23 +60,26 @@ namespace luxor::rc {
             std::streampos m_pos;
         };
 
-        template <typename T>
-        bool read_pod(std::istream& is, T& val) {
-            static_assert(std::is_trivially_copyable_v<T>, "T must be trivially copyable");
-            return static_cast<bool>(is.read(reinterpret_cast<char*>(&val), sizeof(T)));
-        }
-
+        // Keep the format probes' non-throwing contract while sharing exact reads
+        // and little-endian field decoding with the other resource parsers.
         template <typename T>
         bool read_le(std::istream& is, T& val) {
-            if (!read_pod(is, val)) {
+            try {
+                bstream::stream_reader reader(is, bstream::endian::little);
+                reader >> val;
+                return true;
+            } catch (const bstream::bstream_error&) {
                 return false;
             }
-            val = le_to_cpu(val);
-            return true;
         }
 
         bool read_bytes(std::istream& is, void* dest, size_t count) {
-            return static_cast<bool>(is.read(reinterpret_cast<char*>(dest), count));
+            try {
+                bstream::stream_reader(is).read_exact(dest, count);
+                return true;
+            } catch (const bstream::bstream_error&) {
+                return false;
+            }
         }
 
         std::string read_string(std::istream& is, size_t len) {
@@ -325,35 +254,31 @@ namespace luxor::rc {
     // =======================================================================
     namespace mjz {
         namespace {
-#pragma pack(push, 1)
             struct header {
                 char magic[4];
                 uint32_t version;
                 uint32_t file_count;
                 uint32_t checksum;
             };
-#pragma pack(pop)
 
-            void to_cpu(header& h) noexcept {
-                h.version = le_to_cpu(h.version);
-                h.file_count = le_to_cpu(h.file_count);
-                h.checksum = le_to_cpu(h.checksum);
+            bstream::stream_reader& operator>>(bstream::stream_reader& reader, header& h) {
+                reader >> h.magic >> h.version >> h.file_count >> h.checksum;
+                return reader;
             }
         }
 
         bool probe(std::istream& is, uint64_t file_size) {
-            if (file_size < sizeof(header)) return false;
+            if (file_size < 16) return false;
             stream_pos_guard guard(is);
             header hdr{};
-            return read_pod(is, hdr) && (std::memcmp(hdr.magic, "MJZ0", 4) == 0);
+            return read_le(is, hdr) && (std::memcmp(hdr.magic, "MJZ0", 4) == 0);
         }
 
         std::vector<entry> load(std::istream& is, uint64_t /*file_size*/) {
             header hdr{};
-            if (!read_pod(is, hdr)) {
+            if (!read_le(is, hdr)) {
                 throw std::runtime_error("Failed to read MJZ header.");
             }
-            to_cpu(hdr);
 
             std::vector<entry> entries;
             entries.reserve(hdr.file_count);
@@ -370,11 +295,8 @@ namespace luxor::rc {
                     e.name = sanitize_path(name_buf);
 
                     uint32_t meta[4];
-                    if (!read_pod(is, meta)) {
+                    if (!read_le(is, meta)) {
                         throw std::runtime_error("Failed to read MJZ entry #" + std::to_string(i) + " metadata.");
-                    }
-                    for (auto& m : meta) {
-                        m = le_to_cpu(m);
                     }
                     e.type = static_cast<entry_type>(meta[0]);
                     e.offset = meta[1];
@@ -382,11 +304,8 @@ namespace luxor::rc {
                     e.zsize = meta[3];
                 } else {
                     uint32_t meta[4];
-                    if (!read_pod(is, meta)) {
+                    if (!read_le(is, meta)) {
                         throw std::runtime_error("Failed to read MJZ entry #" + std::to_string(i) + " metadata.");
-                    }
-                    for (auto& m : meta) {
-                        m = le_to_cpu(m);
                     }
                     e.type = static_cast<entry_type>(meta[0]);
                     e.offset = meta[1];
@@ -394,7 +313,7 @@ namespace luxor::rc {
                     e.zsize = meta[3];
 
                     uint8_t name_len = 0;
-                    if (!read_pod(is, name_len)) {
+                    if (!read_le(is, name_len)) {
                         throw std::runtime_error("Failed to read MJZ entry #" + std::to_string(i) + " name length.");
                     }
                     e.name = sanitize_path(read_string(is, name_len));
@@ -411,7 +330,6 @@ namespace luxor::rc {
     // =======================================================================
     namespace npk {
         namespace {
-#pragma pack(push, 1)
             struct header {
                 char magic[8];
                 uint32_t unknown1;
@@ -419,33 +337,30 @@ namespace luxor::rc {
                 char marker[9];
                 uint32_t offset;
             };
-#pragma pack(pop)
 
-            void to_cpu(header& h) noexcept {
-                h.unknown1 = le_to_cpu(h.unknown1);
-                h.unknown2 = le_to_cpu(h.unknown2);
-                h.offset = le_to_cpu(h.offset);
+            bstream::stream_reader& operator>>(bstream::stream_reader& reader, header& h) {
+                reader >> h.magic >> h.unknown1 >> h.unknown2 >> h.marker >> h.offset;
+                return reader;
             }
         }
 
         bool probe(std::istream& is, uint64_t file_size) {
-            if (file_size < sizeof(header)) return false;
+            if (file_size < 29) return false;
             stream_pos_guard guard(is);
             header hdr{};
-            return read_pod(is, hdr) &&
+            return read_le(is, hdr) &&
                    std::memcmp(hdr.magic, "NovaPack", 8) == 0 &&
                    std::memcmp(hdr.marker, "DictStart", 9) == 0;
         }
 
         std::vector<entry> load(std::istream& is, uint64_t /*file_size*/) {
             header hdr{};
-            if (!read_pod(is, hdr)) {
+            if (!read_le(is, hdr)) {
                 throw std::runtime_error("Failed to read NPK header.");
             }
-            to_cpu(hdr);
 
             std::vector<entry> res;
-            while (is.tellg() <= hdr.offset) {
+            while (is.tellg() < hdr.offset) {
                 uint32_t name_len = 0;
                 if (!read_le(is, name_len)) break;
                 auto raw_name = read_string(is, name_len);
@@ -473,34 +388,32 @@ namespace luxor::rc {
     // =======================================================================
     namespace nhp {
         namespace {
-#pragma pack(push, 1)
             struct header {
                 char magic[12];       // "NovaHackPack"
                 uint32_t dict_offset; // offset to dictionary
                 char marker[13];      // "LumpDataBegin"
             };
-#pragma pack(pop)
 
-            void to_cpu(header& h) noexcept {
-                h.dict_offset = le_to_cpu(h.dict_offset);
+            bstream::stream_reader& operator>>(bstream::stream_reader& reader, header& h) {
+                reader >> h.magic >> h.dict_offset >> h.marker;
+                return reader;
             }
         }
 
         bool probe(std::istream& is, uint64_t file_size) {
-            if (file_size < sizeof(header)) return false;
+            if (file_size < 29) return false;
             stream_pos_guard guard(is);
             header hdr{};
-            return read_pod(is, hdr) &&
+            return read_le(is, hdr) &&
                    std::memcmp(hdr.magic, "NovaHackPack", 12) == 0 &&
                    std::memcmp(hdr.marker, "LumpDataBegin", 13) == 0;
         }
 
         std::vector<entry> load(std::istream& is, uint64_t file_size) {
             header hdr{};
-            if (!read_pod(is, hdr)) {
+            if (!read_le(is, hdr)) {
                 throw std::runtime_error("Failed to read NHP header.");
             }
-            to_cpu(hdr);
 
             if (hdr.dict_offset > file_size) {
                 throw std::runtime_error("NHP dictionary offset is out of bounds.");
@@ -562,7 +475,6 @@ namespace luxor::rc {
     // =======================================================================
     namespace sfs {
         namespace {
-#pragma pack(push, 1)
             struct header {
                 char magic[8];         // "AAMVHFSS"
                 uint8_t reserved1[284];
@@ -588,24 +500,18 @@ namespace luxor::rc {
                 char name[256];         // 0xE0
                 uint8_t reserved3[32];  // 0x1E0
             };
-#pragma pack(pop)
 
-            void to_cpu(header& h) noexcept {
-                h.version = le_to_cpu(h.version);
-                h.chunk_size = le_to_cpu(h.chunk_size);
-                h.tree_address = le_to_cpu(h.tree_address);
-                h.n_tree_items = le_to_cpu(h.n_tree_items);
-                h.sfs_n_chunks = le_to_cpu(h.sfs_n_chunks);
+            bstream::stream_reader& operator>>(bstream::stream_reader& reader, header& h) {
+                reader >> h.magic >> h.reserved1 >> h.version >> h.chunk_size >> h.reserved2
+                       >> h.tree_address >> h.n_tree_items >> h.sfs_n_chunks;
+                return reader;
             }
 
-            void to_cpu(raw_entry& re) noexcept {
-                re.ptr_to_ptr = le_to_cpu(re.ptr_to_ptr);
-                re.size = le_to_cpu(re.size);
-                re.create_time = le_to_cpu(re.create_time);
-                re.mod_time = le_to_cpu(re.mod_time);
-                re.some_time = le_to_cpu(re.some_time);
-                re.perms = le_to_cpu(re.perms);
-                re.parent = le_to_cpu(re.parent);
+            bstream::span_reader& operator>>(bstream::span_reader& reader, raw_entry& re) {
+                reader >> re.ptr_to_ptr >> re.size >> re.create_time >> re.mod_time
+                       >> re.some_time >> re.perms >> re.parent >> re.reserved1
+                       >> re.is_dir >> re.reserved2 >> re.name >> re.reserved3;
+                return reader;
             }
 
             struct sfs_item {
@@ -626,14 +532,13 @@ namespace luxor::rc {
 
         std::vector<entry> load(std::istream& is, uint64_t file_size) {
             header hdr{};
-            if (!read_pod(is, hdr)) {
+            if (!read_le(is, hdr)) {
                 throw std::runtime_error("Failed to read SFS header.");
             }
 
             if (std::memcmp(hdr.magic, "AAMVHFSS", 8) != 0) {
                 throw std::runtime_error("Invalid SFS magic signature.");
             }
-            to_cpu(hdr);
 
             uint32_t chunk_size = hdr.chunk_size ? hdr.chunk_size : 4096;
             if (chunk_size < 512 || chunk_size > 65536) {
@@ -656,20 +561,20 @@ namespace luxor::rc {
                     throw std::runtime_error("Failed to read SFS tree chunk.");
                 }
 
-                uint32_t next_chunk = 0;
-                std::memcpy(&next_chunk, &chunk_buf[0x118], sizeof(uint32_t));
-                next_chunk = le_to_cpu(next_chunk);
+                bstream::span_reader chunk_reader(chunk_buf, bstream::endian::little);
+                chunk_reader.seek(0x118);
+                const auto next_chunk = chunk_reader.read<uint32_t>();
 
                 size_t items_in_chunk = std::min(static_cast<size_t>(7), static_cast<size_t>(hdr.n_tree_items - raw_items.size()));
                 for (size_t j = 0; j < items_in_chunk; ++j) {
-                    size_t entry_offset = 0x138 + j * sizeof(raw_entry);
-                    if (entry_offset + sizeof(raw_entry) > chunk_size) {
+                    size_t entry_offset = 0x138 + j * 512;
+                    if (entry_offset + 512 > chunk_size) {
                         break;
                     }
 
                     raw_entry re{};
-                    std::memcpy(&re, &chunk_buf[entry_offset], sizeof(raw_entry));
-                    to_cpu(re);
+                    chunk_reader.seek(entry_offset);
+                    chunk_reader >> re;
 
                     sfs_item item;
                     char name_buf[257];
@@ -747,7 +652,7 @@ namespace luxor::rc {
 
             for (uint32_t i = 0; i < num_files; ++i) {
                 uint8_t name_len = 0;
-                if (!read_pod(is, name_len)) {
+                if (!read_le(is, name_len)) {
                     throw std::runtime_error("Unexpected EOF reading PFP entry name length");
                 }
 
@@ -816,12 +721,11 @@ namespace luxor::rc {
                 is.seekg(static_cast<uint64_t>(curr_ptr_chunk) * chunk_size + 0x138, std::ios::beg);
                 size_t start_idx = chunk_ptrs.size();
                 chunk_ptrs.resize(start_idx + to_read);
-                if (!read_bytes(is, &chunk_ptrs[start_idx], to_read * sizeof(uint32_t))) {
-                    err = "Failed to read chunk pointers";
-                    return false;
-                }
                 for (size_t k = start_idx; k < start_idx + to_read; ++k) {
-                    chunk_ptrs[k] = le_to_cpu(chunk_ptrs[k]);
+                    if (!read_le(is, chunk_ptrs[k])) {
+                        err = "Failed to read chunk pointers";
+                        return false;
+                    }
                 }
 
                 curr_ptr_chunk = next_ptr_chunk;
@@ -891,8 +795,11 @@ namespace luxor::rc {
             }
 
             std::vector<uint8_t> compressed_data(e.zsize);
-            is.seekg(e.offset, std::ios::beg);
-            if (e.zsize > 0 && !read_bytes(is, compressed_data.data(), e.zsize)) {
+            try {
+                bstream::stream_reader reader(is);
+                reader.seek(e.offset);
+                reader.read_exact(compressed_data.data(), compressed_data.size());
+            } catch (const bstream::bstream_error&) {
                 err = "Failed to read compressed bytes from archive";
                 return false;
             }

@@ -3,6 +3,8 @@
 //
 
 #include <ke/format/dig.hh>
+#include <bstream/span_reader.hh>
+#include <bstream/span_writer.hh>
 
 #include <musac/sdk/io_stream.hh>
 #include <musac/error.hh>
@@ -16,13 +18,7 @@ namespace rs {
         constexpr size_t DIG_HEADER_SIZE = 20; // magic(4) + count(2) + reserved(14)
         constexpr size_t DIG_ENTRY_SIZE  = 20;
 
-        uint16_t u16le(const uint8_t* p) {
-            return static_cast<uint16_t>(p[0]) | static_cast<uint16_t>(p[1] << 8);
-        }
-        uint32_t u32le(const uint8_t* p) {
-            return static_cast<uint32_t>(p[0]) | (static_cast<uint32_t>(p[1]) << 8)
-                 | (static_cast<uint32_t>(p[2]) << 16) | (static_cast<uint32_t>(p[3]) << 24);
-        }
+
     }
 
     struct dig_decoder::impl {
@@ -85,25 +81,22 @@ namespace rs {
         if (std::memcmp(bank.data(), "DIG*", 4) != 0) {
             throw musac::decoder_error("DIG: bad magic");
         }
-        const uint16_t n = u16le(bank.data() + 4);
+        bstream::span_reader reader(bank, bstream::endian::little);
+        reader.seek(4);
+        const auto n = reader.read<uint16_t>();
 
         m_pimpl->samples.clear();
         m_pimpl->samples.reserve(n);
-        for (uint16_t i = 1; i <= n; ++i) {
+        for (size_t i = 1; i <= n; ++i) {
             // Descriptor i (1-based) sits at offset i * 20 (the header occupies slot 0).
             const size_t off = static_cast<size_t>(i) * DIG_ENTRY_SIZE;
             if (off + DIG_ENTRY_SIZE > bank.size()) {
                 throw musac::decoder_error("DIG: descriptor table truncated");
             }
-            const uint8_t* e = bank.data() + off;
-
+            reader.seek(off);
             impl::sample_desc d;
-            d.data_offset  = u32le(e + 0);
-            d.data_size    = u32le(e + 4);
-            d.rate         = u16le(e + 8);
-            d.flags        = u16le(e + 10);
-            d.name1_offset = u32le(e + 12);
-            d.name2_offset = u32le(e + 16);
+            reader >> d.data_offset >> d.data_size >> d.rate >> d.flags
+                   >> d.name1_offset >> d.name2_offset;
 
             if (d.data_offset > bank.size() || d.data_size > bank.size() - d.data_offset) {
                 throw musac::decoder_error("DIG: sample payload out of range");
@@ -192,25 +185,14 @@ namespace rs {
         const impl::sample_desc& d = m_pimpl->samples[index];
         std::vector<uint8_t> out(DIG_HEADER_SIZE + DIG_ENTRY_SIZE + d.data_size, 0);
 
-        auto put16 = [&](size_t o, uint16_t v) {
-            out[o] = static_cast<uint8_t>(v);
-            out[o + 1] = static_cast<uint8_t>(v >> 8);
-        };
-        auto put32 = [&](size_t o, uint32_t v) {
-            out[o + 0] = static_cast<uint8_t>(v);
-            out[o + 1] = static_cast<uint8_t>(v >> 8);
-            out[o + 2] = static_cast<uint8_t>(v >> 16);
-            out[o + 3] = static_cast<uint8_t>(v >> 24);
-        };
-
-        std::memcpy(out.data(), "DIG*", 4);
-        put16(4, 1); // one sample
-
-        // descriptor at offset 20, PCM immediately after (at offset 40)
-        put32(20, static_cast<uint32_t>(DIG_HEADER_SIZE + DIG_ENTRY_SIZE)); // data_offset = 40
-        put32(24, d.data_size);
-        put16(28, d.rate);
-        put16(30, d.flags);
+        bstream::span_writer writer(out, bstream::endian::little);
+        writer.write_exact("DIG*", 4);
+        writer.write<uint16_t>(1); // one sample
+        writer.seek(DIG_HEADER_SIZE);
+        writer.write<uint32_t>(DIG_HEADER_SIZE + DIG_ENTRY_SIZE);
+        writer.write(d.data_size);
+        writer.write(d.rate);
+        writer.write(d.flags);
         // name offsets stay 0
         std::memcpy(out.data() + DIG_HEADER_SIZE + DIG_ENTRY_SIZE,
                     m_pimpl->bank.data() + d.data_offset, d.data_size);

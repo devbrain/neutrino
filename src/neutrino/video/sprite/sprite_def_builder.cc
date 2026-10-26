@@ -2,6 +2,8 @@
 // Created by igor on 29/09/2026.
 //
 
+#include <bstream/stream_copier.hh>
+
 #include <neutrino/video/sprite/sprite_def_builder.hh>
 
 #include <algorithm>
@@ -89,30 +91,7 @@ namespace neutrino {
 
     sprite_def_builder& sprite_def_builder::from_stream(std::istream& is, unsigned width, unsigned height) {
         std::vector <std::uint8_t> buffer;
-        if (is.good()) {
-            const auto cur = is.tellg();
-            if (cur != -1) {
-                is.seekg(0, std::ios::end);
-                const auto end = is.tellg();
-                if (end >= cur) {
-                    buffer.reserve(static_cast <std::size_t>(end - cur));
-                }
-                is.seekg(cur, std::ios::beg);
-            }
-            char chunk[4096];
-            while (is.read(chunk, sizeof(chunk))) {
-                const auto count = is.gcount();
-                buffer.insert(buffer.end(),
-                              reinterpret_cast <const std::uint8_t*>(chunk),
-                              reinterpret_cast <const std::uint8_t*>(chunk) + count);
-            }
-            const auto remaining = is.gcount();
-            if (remaining > 0) {
-                buffer.insert(buffer.end(),
-                              reinterpret_cast <const std::uint8_t*>(chunk),
-                              reinterpret_cast <const std::uint8_t*>(chunk) + remaining);
-            }
-        }
+        bstream::stream_copier::copy_to_vector(is, buffer);
         return from_memory(std::move(buffer), width, height);
     }
 

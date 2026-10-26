@@ -2,6 +2,8 @@
 // Created by igor on 11/10/2026.
 //
 
+#include <bstream/stream_reader.hh>
+
 #include <vector>
 #include <string>
 #include <string_view>
@@ -279,7 +281,9 @@ namespace luxor::rc {
                     return {};
                 }
                 std::vector<uint8_t> data(sz);
-                if (!ifs.read(reinterpret_cast<char*>(data.data()), sz)) {
+                try {
+                    bstream::stream_reader(ifs).read_exact(data.data(), data.size());
+                } catch (const bstream::bstream_error&) {
                     throw std::runtime_error("Failed to read file: " + e->physical_path.string());
                 }
                 return data;

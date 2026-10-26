@@ -6,6 +6,8 @@
 
 #include "world/tmx/node.hh"
 
+#include <bstream/span_reader.hh>
+
 #include <algorithm>
 #include <cstddef>
 #include <limits>
@@ -87,20 +89,18 @@ namespace neutrino::world_tmx {
             if (offset + 2 > data.size()) {
                 fail("truncated gzip header");
             }
-            return static_cast <std::uint16_t>(
-                static_cast <std::uint16_t>(data[offset]) |
-                (static_cast <std::uint16_t>(data[offset + 1]) << 8u));
+            bstream::span_reader reader(data, bstream::endian::little);
+            reader.seek(offset);
+            return reader.read<std::uint16_t>();
         }
 
         [[nodiscard]] std::uint32_t read_le32(const byte_buffer& data, std::size_t offset) {
             if (offset + 4 > data.size()) {
                 fail("truncated gzip trailer");
             }
-            return
-                static_cast <std::uint32_t>(data[offset]) |
-                (static_cast <std::uint32_t>(data[offset + 1]) << 8u) |
-                (static_cast <std::uint32_t>(data[offset + 2]) << 16u) |
-                (static_cast <std::uint32_t>(data[offset + 3]) << 24u);
+            bstream::span_reader reader(data, bstream::endian::little);
+            reader.seek(offset);
+            return reader.read<std::uint32_t>();
         }
 
         void skip_zero_terminated_field(const byte_buffer& data, std::size_t& offset) {

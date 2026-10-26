@@ -187,7 +187,12 @@ There are two fundamental ways 2D games handle arbitrary display sizes:
 
 Notice that `fixed_update` does not receive real frame deltas. In Neutrino, the simulation runs at a fixed frequency (default `120 Hz`, or `1/120 s ≈ 8.33 ms` per tick).
 
-If the display runs at 60 Hz, the engine executes two substeps per frame. If a frame takes longer due to a background spike, the accumulator runs catch-up ticks. Because every tick advances time by the exact same amount, physics and platforming calculations are completely deterministic across different machines.
+At a steady 60 Hz display rate, the default scheduler runs about two substeps per frame.
+Longer frames can run catch-up ticks, within the configured cap. Fixed steps keep the integration
+interval consistent; reproducibility also depends on the initial state, input sequence,
+randomness, and numerical behavior. Fixed timing alone does not guarantee identical results
+across machines. Input edges go only to the first substep, and are currently lost if a frame
+runs no substeps; see [Input](../concepts/input.md#input-across-simulation-substeps).
 
 ### 3. Transitions and quitting
 

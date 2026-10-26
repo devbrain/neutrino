@@ -6,8 +6,7 @@
 #include <span>
 #include <vector>
 
-#include <neutrino/video/globals.hh>
-#include <neutrino/video/geometry_types.hh>
+#include <neutrino/neutrino.hh>
 #include <sdlpp/video/color.hh>
 #include <sdlpp/video/texture.hh>
 

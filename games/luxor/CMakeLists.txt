@@ -118,6 +118,7 @@ target_include_directories(luxor_common PUBLIC
 )
 
 target_link_libraries(luxor_common PUBLIC
+        neutrino::bstream
         failsafe
         nlohmann_json::nlohmann_json
         neutrino::neutrino

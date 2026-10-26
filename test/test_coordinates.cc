@@ -8,7 +8,7 @@
 //
 #include <doctest/doctest.h>
 
-#include <neutrino/world_space.hh>
+#include <neutrino/coordinates.hh>
 #include <neutrino/video/geometry_types.hh>
 
 #include <type_traits>
@@ -32,7 +32,7 @@ static_assert(std::is_same_v<decltype(world_pos{} + world_delta{}), world_pos>);
 static_assert(std::is_same_v<decltype(world_velocity{} * world_seconds{}), world_delta>);
 static_assert(std::is_same_v<decltype(world_delta{} / world_seconds{}), world_velocity>);
 
-TEST_SUITE("neutrino world_space") {
+TEST_SUITE("neutrino coordinates") {
     TEST_CASE("positions and offsets compose the way places and gaps do") {
         constexpr world_pos a{10.0f, 4.0f};
         constexpr world_pos b{13.0f, 8.0f};

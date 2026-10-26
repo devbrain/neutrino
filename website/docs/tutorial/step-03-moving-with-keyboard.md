@@ -292,18 +292,30 @@ if (SDL_GetKeyboardState(nullptr)[SDL_SCANCODE_SPACE]) {
 }
 ```
 
-In Neutrino, `fixed_update` never reads global state. Instead, it receives a read-only **[`input_snapshot`](pathname:///api/)**:
+Use the read-only **[`input_snapshot`](pathname:///api/)** passed to `fixed_update()`.
+Live polling remains possible, but bypasses scene input isolation and substep edge stripping:
 
 ```cpp
 void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
-    // All input queries evaluate strictly against `in`
+    // Read scancode, mouse, and gamepad state from `in`.
 }
 ```
 
 ### Why a snapshot?
-1. **Determinism:** If the simulation loop runs multiple fixed substeps to catch up with display time, all substeps evaluate against a synchronized, immutable record of input events that occurred during that frame window.
-2. **Testability:** You can unit-test player movement, combos, and physics trajectories by constructing an artificial `input_snapshot` without opening an OS window.
-3. **Replay Support:** Recording input snapshots enables byte-for-byte gameplay replays.
+
+1. **Consistent input within a frame:** Substeps use state from the same frame snapshot.
+   Only the first receives edges and wheel movement; later substeps receive `without_edges()`.
+2. **Testability:** Synthetic snapshots can drive movement and physics tests without an OS
+   window. Scancode, mouse, and gamepad queries use stored state; keycode queries additionally
+   consult SDL's current keyboard-layout mapping.
+3. **Replay support:** Recorded snapshots or resolved actions can be part of a replay system.
+   Identical results also require the same initial state, simulation-step sequence, randomness,
+   other external inputs, and deterministic simulation behavior. Snapshots alone do not
+   guarantee byte-for-byte replays.
+
+This tutorial uses the default scene scheduler. Applications can replace it through
+`update_scene(dt, input)`; Simplex delivers the snapshot once per frame through `on_update()`.
+See [where input is delivered](../concepts/input.md#where-input-is-delivered).
 
 ---
 
@@ -350,7 +362,8 @@ if (move_left != move_right) {
 ### When to use `pressed()`: Discrete Impulses
 Jumping is an impulse event. If we used `in.held()` for jumping, holding the Spacebar would cause the character to continuously jump the exact microsecond their feet touched the grass.
 
-Using `in.pressed()` ensures the jump fires **exactly once per key strike**:
+Using `in.pressed()` makes a delivered press trigger **at most one jump**. A press while
+airborne is ignored by this example's `m_on_ground` check:
 
 ```cpp
 const bool jump_pressed = in.pressed(sdlpp::scancode::space) 
@@ -369,12 +382,13 @@ if (jump_pressed && m_on_ground) {
 
 A critical feature of Neutrino's frame loop is how it handles multiple fixed-update substeps.
 
-Suppose the game experiences a 33ms display frame delay, prompting the engine to run **two** fixed substeps of 16.6ms:
+With the tutorial's default 120 Hz simulation, a frame accruing two full ticks (about
+16.7 ms) runs **two** fixed substeps of about 8.33 ms each:
 
 ```mermaid
 flowchart TD
-    FrameBegin(["Frame Begins (Time debt = 33.3ms)"]) --> Substep1["Substep 1 (dt = 16.6ms):<br/>fixed_update(period, in)<br/><b>Edges INTACT (pressed/released true)</b>"]
-    Substep1 --> Substep2["Substep 2 (dt = 16.6ms):<br/>fixed_update(period, in.without_edges())<br/><b>Edges STRIPPED (only held state remains)</b>"]
+    FrameBegin(["Frame Begins (Time debt = 2 ticks, about 16.7ms)"]) --> Substep1["Substep 1 (dt = about 8.33ms):<br/>fixed_update(period, in)<br/><b>Edges and wheel movement available</b>"]
+    Substep1 --> Substep2["Substep 2 (dt = about 8.33ms):<br/>fixed_update(period, in.without_edges())<br/><b>Edges and wheel movement cleared</b>"]
     Substep2 --> Render(["render()"])
 ```
 
@@ -382,10 +396,22 @@ flowchart TD
 2. **Substep 2** runs with `in.without_edges()`. The key is still `held()`, but its `pressed()` edge has been stripped.
 
 :::note[Why edge stripping matters]
-Without edge stripping, a jump impulse would execute twice during a single frame hitch, sending the player flying into outer space at double the expected jump height. Neutrino's automatic edge stripping guarantees that one physical tap translates to exactly one simulation impulse.
+Without edge stripping, a one-shot action could run again in each substep. The jump code here
+also checks `m_on_ground`, which prevents a second airborne jump, but other actions such as
+firing a projectile need the edge to be delivered only once. Read the supplied snapshot;
+`application::get_key()` retains frame-level edges and does not perform substep filtering.
 :::
 
 ---
+
+:::caution[The current zero-step limitation]
+
+If a frame runs zero simulation steps, its press/release edges and wheel movement are cleared
+without reaching this scene. A key can still be held on the next stepping frame while its
+`pressed` edge has already been lost. This can miss a jump or Escape press even when the key
+is held for longer than one frame. The default scheduler does not currently buffer those edges.
+See [Input](../concepts/input.md#input-across-simulation-substeps) for the full limitation.
+:::
 
 ## 4. Facing Direction & Visual Flipping
 
@@ -434,7 +460,7 @@ Build and run the Step 3 tutorial executable:
 
 ```bash
 cmake --build cmake-build-debug --target neutrino_tutorial_03_keyboard_movement
-./cmake-build-debug/tutorials/03_keyboard_movement/neutrino_tutorial_03_keyboard_movement
+./cmake-build-debug/bin/neutrino_tutorial_03_keyboard_movement
 ```
 
 ### Controls:

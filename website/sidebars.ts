@@ -65,6 +65,7 @@ const sidebars: SidebarsConfig = {
         'concepts/the-frame',
         'concepts/scenes',
         'concepts/input',
+        'concepts/window-and-renderer-coordinates',
         'concepts/coordinate-spaces',
         'concepts/sprites',
         'concepts/drawing',

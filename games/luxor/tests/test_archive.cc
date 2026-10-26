@@ -185,3 +185,38 @@ TEST_CASE("archive dumping") {
         verify_dump("Luxor Super Pack/Luxor5thPassage/assets/assets.pfp", temp_root / "luxor_test_dump_pfp");
     }
 }
+
+TEST_CASE("NPK header fields have no compiler padding") {
+    const std::vector<uint8_t> bytes{
+        'N','o','v','a','P','a','c','k', 0,0,0,0, 0,0,0,0,
+        'D','i','c','t','S','t','a','r','t', 46,0,0,0,
+        5,0,0,0,'t','.','t','x','t', 0,0,0,0,3,0,0,0, 'X','Y','Z'
+    };
+    std::istringstream input(std::string(bytes.begin(), bytes.end()));
+    REQUIRE(luxor::rc::archive::probe(input));
+    CHECK(input.tellg() == 0);
+    auto archive = luxor::rc::archive::load(input);
+    REQUIRE(archive != nullptr);
+    REQUIRE(archive->has_file("t.txt"));
+    CHECK(archive->read("t.txt") == std::vector<uint8_t>{'X','Y','Z'});
+    for (size_t n = 0; n < 29; ++n) {
+        CAPTURE(n);
+        std::istringstream truncated(std::string(bytes.begin(), bytes.begin() + n));
+        CHECK_FALSE(luxor::rc::archive::probe(truncated));
+    }
+}
+
+TEST_CASE("NHP dictionary offset follows its 12-byte signature") {
+    const std::vector<uint8_t> bytes{
+        'N','o','v','a','H','a','c','k','P','a','c','k', 32,0,0,0,
+        'L','u','m','p','D','a','t','a','B','e','g','i','n', 'X','Y','Z',
+        'D','i','c','t','i','o','n','a','r','y','B','e','g','i','n', 1,0,0,0,
+        5,0,'t','.','t','x','t',29,0,0,0,3,0,0,0
+    };
+    std::istringstream input(std::string(bytes.begin(), bytes.end()));
+    REQUIRE(luxor::rc::archive::probe(input));
+    auto archive = luxor::rc::archive::load(input);
+    REQUIRE(archive != nullptr);
+    REQUIRE(archive->has_file("t.txt"));
+    CHECK(archive->read("t.txt") == std::vector<uint8_t>{'X','Y','Z'});
+}

@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <neutrino/physics/geometry/shapes.hh>
+#include <neutrino/neutrino.hh>
 
 #include <ke/game/mechanics.hh>
 #include <ke/game/model.hh>

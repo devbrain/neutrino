@@ -3,6 +3,7 @@
 //
 
 #include <ke/format/bob.hh>
+#include <bstream/span_reader.hh>
 
 #include <algorithm>
 #include <cstring>
@@ -12,14 +13,6 @@ namespace rs {
     namespace {
         constexpr std::size_t BOB_HEADER_SIZE = 28;
         constexpr std::uint16_t BOB_FLAGS = 0x0305;
-
-        std::uint16_t read_u16le(const std::uint8_t* p) {
-            return static_cast <std::uint16_t>(p[0]) | (static_cast <std::uint16_t>(p[1]) << 8);
-        }
-
-        std::int16_t read_s16le(const std::uint8_t* p) {
-            return static_cast <std::int16_t>(read_u16le(p));
-        }
 
         // Decompress a single colour plane (RLE, row-by-row). Output size is
         // row_bytes * height; skipped bytes retain the default value 0.
@@ -120,27 +113,28 @@ namespace rs {
             return false;
         }
 
-        const std::uint16_t block_count = read_u16le(data_.data());
+        bstream::span_reader reader(data_, bstream::endian::little);
+        const auto block_count = reader.read<std::uint16_t>();
         std::size_t pos = 2;
 
         for (std::uint16_t bi = 0; bi < block_count; ++bi) {
             if (pos + 2 > data_.size()) break;
-            const std::uint16_t bs = read_u16le(data_.data() + pos);
+            reader.seek(pos);
+            const auto bs = reader.read<std::uint16_t>();
             if (bs < BOB_HEADER_SIZE || pos + bs > data_.size()) {
                 error = "BOB: block " + std::to_string(bi) + " has invalid size";
                 break;
             }
 
-            const std::uint8_t* block = data_.data() + pos;
             bob_frame f;
-            f.width = read_u16le(block + 2);
-            f.height = read_u16le(block + 4);
-            const std::uint16_t header_size = read_u16le(block + 6);
-            const std::uint16_t flags = read_u16le(block + 8);
-            f.x_off_a = read_s16le(block + 10);
-            f.y_off_a = read_s16le(block + 12);
-            f.x_off_b = read_s16le(block + 14);
-            f.y_off_b = read_s16le(block + 16);
+            f.width = reader.read<std::uint16_t>();
+            f.height = reader.read<std::uint16_t>();
+            const auto header_size = reader.read<std::uint16_t>();
+            const auto flags = reader.read<std::uint16_t>();
+            f.x_off_a = reader.read<std::int16_t>();
+            f.y_off_a = reader.read<std::int16_t>();
+            f.x_off_b = reader.read<std::int16_t>();
+            f.y_off_b = reader.read<std::int16_t>();
 
             if (flags == BOB_FLAGS && header_size == BOB_HEADER_SIZE && f.width > 0 && f.height > 0) {
                 blocks_.emplace_back(pos, bs);
@@ -177,12 +171,14 @@ namespace rs {
         const std::uint8_t* block = data_.data() + offset;
         const std::uint8_t* block_end = block + size;
 
-        width = read_u16le(block + 2);
-        height = read_u16le(block + 4);
-        const std::uint16_t header_size = read_u16le(block + 6);
-
+        bstream::span_reader reader(block, size, bstream::endian::little);
+        reader.skip(2);
+        width = reader.read<std::uint16_t>();
+        height = reader.read<std::uint16_t>();
+        const auto header_size = reader.read<std::uint16_t>();
+        reader.seek(18);
         std::uint16_t plane_off[5];
-        for (int i = 0; i < 5; ++i) plane_off[i] = read_u16le(block + 18 + i * 2);
+        reader >> plane_off;
 
         const std::uint8_t* base = block + header_size;
 

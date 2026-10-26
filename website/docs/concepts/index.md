@@ -23,6 +23,8 @@ Read these in order — together they describe the shape of every frame your gam
   transitions are queued rather than immediate.
 - **[Input](./input.md)** — the per-frame snapshot, why edges and held state are different things,
   and the two spaces a pointer position can be in.
+- **[Window and renderer coordinates](./window-and-renderer-coordinates.md)** — window points,
+  drawable pixels, logical canvases, and practical input mapping with HiDPI, bars, and viewports.
 - **[Coordinate spaces](./coordinate-spaces.md)** — window, render, and world space; the strong quantity
   types (`world_pos`, `world_delta`, `world_velocity`) that prevent space confusion at compile time.
 - **[Sprites](./sprites.md)** — the three-tier sprite pipeline (`sprite_def` → `sprite_set` → `sprite_instance`),

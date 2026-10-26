@@ -5,7 +5,7 @@
 #pragma once
 
 /**
- * @file world_space.hh
+ * @file coordinates.hh
  * @brief Strong coordinate/quantity types for gameplay space -- roadmap Tier 3.
  *
  * The engine's public surface has long spoken one shape for many meanings: a position, an offset

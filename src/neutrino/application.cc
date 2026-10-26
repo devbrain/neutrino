@@ -49,10 +49,10 @@ namespace neutrino {
         std::unique_ptr<sprite_cache> m_sprite_cache;
         // Set once the first scene enters the stack; an empty stack after
         // that means the game is over, while a scene-less application keeps
-        // running on the plain update()/render() callbacks.
+        // running on the update_scene()/render_scene() hooks.
         bool m_had_scenes = false;
-        // A scene faulted in update_physics this frame: its pop is already
-        // enqueued, so skip its render to avoid enqueueing a second pop.
+        // A scene faulted during this frame's update: its pop is already queued.
+        // Reset by the final update wrapper, independent of render overrides.
         bool m_scene_faulted = false;
         // Last render_size() delivered via on_resize, so a window_pixel_size_changed
         // that leaves the render space unchanged (e.g. a logical-mode resize) does
@@ -200,26 +200,33 @@ namespace neutrino {
     }
 
     void application::on_update(float dt) {
+        m_pimpl->m_scene_faulted = false;
         // Fire any audio finish/loop callbacks (relayed from the audio thread) on the main
         // thread, before this frame's simulation so a callback can affect it same-frame.
         m_pimpl->m_sound_system.dispatch_callbacks();
 
         m_pimpl->m_sprites.update(sprite_animation_duration{dt * 1000.0f});
 
+        // Capture input before an override changes render targets, so the pointer
+        // uses the window's presentation mapping. Scene-free applications need the
+        // same frame snapshot as the default scene scheduler.
+        const input_snapshot input = sample_input();
+        update_scene(dt, input);
+    }
+
+    void application::update_scene(float dt, const input_snapshot& input) {
         if (!m_pimpl->m_scenes_manager.empty()) {
             m_pimpl->m_had_scenes = true;
             // Fixed-step scheduler: the sim advances in constant `period` ticks decoupled from the
             // display rate. Clamp the frame delta (a stall must not spiral) into the accumulator, then
-            // run whole ticks -- up to max_substeps -- each with the SAME dt and the SAME input
-            // snapshot (sampled once per frame, below). Physics thus always sees a constant dt, so it
-            // is deterministic and framerate-independent.
+            // run whole ticks -- up to max_substeps -- with a constant dt. Input was sampled
+            // once for the frame; only the first substep receives its edges.
             const fixed_step_config& fx = m_pimpl->m_cfg.fixed;
             const float period = fx.period.count();
-            const input_snapshot in = sample_input();
             // Edges belong to ONE substep. A 120 Hz sim on a 60 Hz display runs 2 substeps per
-            // frame, so passing `in` to both would fire every one-shot action twice per click.
+            // frame, so passing all edges to both would fire every one-shot action twice per click.
             // The first substep sees the transitions, the rest see held-only.
-            const input_snapshot held_only = in.without_edges();
+            const input_snapshot held_only = input.without_edges();
             m_pimpl->m_accum += std::min(dt, fx.max_frame.count());
             // Safety net: an exception escaping to SDL would become SDL_APP_FAILURE and terminate the
             // process. Log it and drop the top scene (it's clearly broken) so the next frame runs a
@@ -229,7 +236,7 @@ namespace neutrino {
                 int step = 0;
                 for (; m_pimpl->m_accum >= period && step < fx.max_substeps; ++step) {
                     m_pimpl->m_scenes_manager.fixed_update(sim_duration{period},
-                                                           step == 0 ? in : held_only);
+                                                           step == 0 ? input : held_only);
                     m_pimpl->m_accum -= period;
                 }
                 // Hit the substep cap with time still owed: the machine cannot keep up. DROP the
@@ -254,8 +261,6 @@ namespace neutrino {
             quit();
             return;
         }
-
-        update(dt);
     }
 
     input_snapshot application::sample_input() {
@@ -323,19 +328,7 @@ namespace neutrino {
     void application::on_render(sdlpp::renderer& r) {
         r.set_draw_color(sdlpp::colors::black);
         r.clear();
-        if (m_pimpl->m_scene_faulted) {
-            m_pimpl->m_scene_faulted = false;
-        } else {
-            try {
-                m_pimpl->m_scenes_manager.render();
-            } catch (const std::exception& ex) {
-                LOG_ERROR("Scene render threw:", ex.what());
-                pop_scene();
-            } catch (...) {
-                LOG_ERROR("Scene render threw an unknown exception");
-                pop_scene();
-            }
-        }
+        render_scene(r);
         r.present();
 
         // End of frame: clear transient gamepad state (pressed/released) at
@@ -347,6 +340,20 @@ namespace neutrino {
         m_pimpl->m_gamepads.clear_state();
     }
 
+    void application::render_scene([[maybe_unused]] sdlpp::renderer& renderer) {
+        if (!m_pimpl->m_scene_faulted) {
+            try {
+                m_pimpl->m_scenes_manager.render();
+            } catch (const std::exception& ex) {
+                LOG_ERROR("Scene render threw:", ex.what());
+                pop_scene();
+            } catch (...) {
+                LOG_ERROR("Scene render threw an unknown exception");
+                pop_scene();
+            }
+        }
+    }
+
     void application::handle_event(const sdlpp::event& e) {
         if (auto change = m_pimpl->m_gamepads.handle_event(e)) {
             if (change->connected) {
@@ -356,16 +363,20 @@ namespace neutrino {
             }
         }
         // The drawable changed (resize, fullscreen toggle, HiDPI move). Recompute
-        // the render space and, if it actually changed, notify the active scene.
+        // the render space and, if it actually changed, deliver it to the resize hook.
         // In logical mode the render space is fixed, so this dedups to nothing.
         if (e.type() == sdlpp::event_type::window_pixel_size_changed) {
             const dim now = render_size();
             if (now.width != m_pimpl->m_last_render_size.width
                 || now.height != m_pimpl->m_last_render_size.height) {
                 m_pimpl->m_last_render_size = now;
-                m_pimpl->m_scenes_manager.notify_resize(now);
+                resize_scene(now);
             }
         }
+        event(e);
+    }
+
+    void application::event(const sdlpp::event& e) {
         try {
             m_pimpl->m_scenes_manager.handle_action(e);
         } catch (const std::exception& ex) {
@@ -373,7 +384,16 @@ namespace neutrino {
         } catch (...) {
             LOG_ERROR("Scene event handler threw an unknown exception");
         }
-        event(e);
+    }
+
+    void application::resize_scene(dim size) {
+        try {
+            m_pimpl->m_scenes_manager.notify_resize(size);
+        } catch (const std::exception& ex) {
+            LOG_ERROR("Scene resize handler threw:", ex.what());
+        } catch (...) {
+            LOG_ERROR("Scene resize handler threw an unknown exception");
+        }
     }
 
     void application::on_quit() noexcept {

@@ -50,8 +50,9 @@ namespace neutrino {
             }
 
             /// @brief Fixed-timestep logic update. Called 0..N times per frame with a CONSTANT @p dt
-            /// and the frame's @p in input snapshot (sampled once per frame, the same instance shared
-            /// across every substep of that frame). This is where input is polled and state advances.
+            /// and the frame's @p in input snapshot. The first substep receives input edges;
+            /// later substeps receive held state without edges. Covered scenes receive neutral
+            /// input. This is where input is polled and state advances.
             virtual void fixed_update(sim_duration dt, const input_snapshot& in) = 0;
             /// @brief Render the scene; called every frame after fixed_update. Draws the latest
             /// committed state -- no time argument and no interpolation factor (KE is integer-scaled

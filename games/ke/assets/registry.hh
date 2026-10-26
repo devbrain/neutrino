@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <neutrino/video/sprite/sprite_cache.hh>
+#include <neutrino/neutrino.hh>
 #include <ke/resources/resources.hh>
 #include <ke/resources/cell.hh>
 

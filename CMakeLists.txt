@@ -46,6 +46,15 @@ neutrino_fetch_sdlpp()
 include(${NEUTRINO_CMAKE_DIR}/deps/euler.cmake)
 neutrino_fetch_euler()
 
+# Binary I/O shared by the engine and game resource parsers.
+if(NOT TARGET neutrino::bstream)
+    FetchContent_Declare(bstream
+        GIT_REPOSITORY https://github.com/devbrain/lib_bstream.git
+        GIT_TAG e741fca8c703b48e95fbfc51674857e2fdd227c1
+    )
+    FetchContent_MakeAvailable(bstream)
+endif()
+
 # stb single-header libraries. Declared BEFORE onyx_image (which also pulls stb):
 # FetchContent honours the first declaration, so pinning to a fixed commit here
 # makes the stb version reproducible for both neutrino and onyx_image instead of

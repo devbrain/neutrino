@@ -6,8 +6,7 @@
 
 #include <failsafe/enforce.hh>
 
-#include <neutrino/video/world/sprite_batch.hh>
-#include <neutrino/video/geometry_types.hh> // world_point
+#include <neutrino/neutrino.hh>
 #include <ke/assets/sprites.hh>             // ke_paddle_frame (active form)
 
 namespace rs {
@@ -53,7 +52,7 @@ namespace rs {
             neutrino::sprite_batch batch; // screen-space: add() positions are texture pixels
             const auto put = [&](const neutrino::sprite_set_handle& set, std::size_t i,
                                  int x, int y, float depth) {
-                batch.add(neutrino::world_point{static_cast<float>(x), static_cast<float>(y)},
+                batch.add(neutrino::world_point{static_cast <float>(x), static_cast <float>(y)},
                           depth, set.require_visual(i));
             };
 

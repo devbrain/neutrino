@@ -10,6 +10,7 @@
 #include <string>
 
 #include <neutrino/neutrino_export.h>
+#include <neutrino/input/input_snapshot.hh>
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <sdlpp/app/game_application.hh>
@@ -35,6 +36,7 @@ namespace neutrino {
         sim_duration max_frame{0.25f};      ///< Per-frame dt clamp, in seconds.
     };
 
+    using window_flags = sdlpp::window_flags;
     /// @brief Startup configuration for @ref application -- window geometry,
     /// presentation, and frame pacing. Passed once to the application
     /// constructor; every field has a usable default.
@@ -47,7 +49,7 @@ namespace neutrino {
         int height = 720;
         /// SDL window flags applied at creation (resizable by default). Composes
         /// with @ref fullscreen and @ref high_pixel_density.
-        sdlpp::window_flags flags = sdlpp::window_flags::resizable;
+        window_flags flags = window_flags::resizable;
         /// Target frame rate the main loop paces to, in frames per second.
         int target_fps = 60;
         /// Present in lock-step with the display: 1 = on (default, no tearing),
@@ -77,10 +79,10 @@ namespace neutrino {
     /// loop, input state, and the scene stack.
     ///
     /// Subclass it and override the protected template-method hooks (@ref ready,
-    /// @ref update, @ref event, the gamepad callbacks, and
+    /// @ref update_scene, @ref render_scene, @ref event, @ref resize_scene, the gamepad callbacks, and
     /// @ref create_initial_scene) to supply game logic; the engine drives them.
-    /// Most games run entirely through scenes (see base_scene) and leave
-    /// @ref update / @ref event empty. Construct with an @ref application_config
+    /// Most games run entirely through scenes (see base_scene) and use the default
+    /// update/render hooks. Construct with an @ref application_config
     /// to customize the window and presentation.
     class NEUTRINO_EXPORT application : public sdlpp::game_application {
         public:
@@ -136,15 +138,36 @@ namespace neutrino {
             /// @note @ref ready having thrown partway does NOT skip it: whatever that call
             ///       allocated before failing still needs releasing, and the services are up.
             virtual void teardown() {}
-            /// @brief Per-frame logic hook, called every frame after the scene
-            /// stack's physics update. @p dt is the frame delta in seconds.
-            /// Runs whether or not scenes are active; override for global,
-            /// scene-independent update logic. Default: no-op.
-            virtual void update([[maybe_unused]] float dt) {}
-            /// @brief Raw SDL event hook, called for every event after the engine
-            /// has handled gamepad connect/disconnect and resize. Override to
-            /// handle input not routed through a scene. Default: no-op.
-            virtual void event([[maybe_unused]] const sdlpp::event& e) {}
+            /// @brief Per-frame logic hook with elapsed seconds and the frame's input.
+            /// Called once after common audio/animation updates and input sampling, even
+            /// with no scenes. The snapshot remains valid for the duration of this call.
+            /// Default: drive the scene stack's fixed-step scheduler, recover from scene
+            /// failures, and quit when a previously populated stack becomes empty.
+            /// Override to replace scene updates; call the base implementation explicitly
+            /// if the scene stack should also advance. Exceptions from overrides propagate
+            /// to the application entry point. Input edges are cleared at frame completion.
+            virtual void update_scene(float dt, const input_snapshot& input);
+            /// @brief Per-frame drawing hook, called after clearing the renderer.
+            /// Default: render the scene stack, including scene-failure handling.
+            /// Override to replace scene rendering; call the base implementation explicitly
+            /// if the scene stack should also be drawn. The engine owns clearing, presentation,
+            /// and end-of-frame input bookkeeping. Exceptions from overrides propagate to the
+            /// application entry point.
+            virtual void render_scene(sdlpp::renderer& renderer);
+            /// @brief Raw SDL event hook, called after input/gamepad bookkeeping and
+            /// render-space resize delivery. Default: dispatch scene transitions and
+            /// events to the scene stack, containing scene exceptions. Override to
+            /// replace scene dispatch; explicitly call application::event(e) to retain it.
+            /// Ignored scene-transition requests are reclaimed at shutdown. Exceptions
+            /// from overrides propagate to the application entry point.
+            virtual void event(const sdlpp::event& e);
+            /// @brief Render-space size change, deduplicated by the final event wrapper.
+            /// Default: notify the active scene, containing scene exceptions. Override
+            /// to replace that delivery; call the base implementation to retain it.
+            /// Scene activation delivers its initial size separately. A custom application
+            /// can query render_size() in ready() for its initial size. Exceptions from
+            /// overrides propagate to the application entry point.
+            virtual void resize_scene(dim size);
 
             /// @brief Called when a gamepad is connected (also once per pad
             /// already plugged in at startup). gamepad_index is the stable
@@ -158,7 +181,7 @@ namespace neutrino {
             /// @brief Provide the first scene of the game. Called once after
             /// ready(); the scene is pushed synchronously, so the stack is
             /// populated before the first frame. Return nullptr (the default)
-            /// to run without scenes on the plain update() callback, or push
+            /// to run without scenes using update_scene() and render_scene(), or push
             /// scenes manually from ready() via neutrino::push_scene().
             virtual std::unique_ptr <base_scene> create_initial_scene() { return nullptr; }
         private:
@@ -168,7 +191,7 @@ namespace neutrino {
             void handle_event(const sdlpp::event& e) final;
             void on_quit() noexcept final;
             /// @brief Build this frame's input snapshot from the tracked input state (pointer mapped
-            /// into render space, mouse-button edge/held), sampled once per frame for fixed_update.
+            /// into render space, mouse-button edge/held), sampled once per frame for update_scene.
             [[nodiscard]] input_snapshot sample_input();
         private:
             struct impl;

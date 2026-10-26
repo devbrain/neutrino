@@ -12,10 +12,7 @@
 #include <vector>
 #include <random>
 
-#include <neutrino/physics/collide/world.hh>
-#include <neutrino/scene/base_scene.hh> // sim_duration
-#include <neutrino/world_space.hh>      // world_pos / world_velocity
-
+#include <neutrino/neutrino.hh>
 #include <ke/resources/cell.hh> // rs::bonus
 
 class model;

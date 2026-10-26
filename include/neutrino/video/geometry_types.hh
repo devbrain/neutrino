@@ -14,7 +14,7 @@
  *   - **float world space** (@ref world_point, @ref world_rect) -- what gameplay and physics use.
  *
  * This header is deliberately LIGHT (two sdlpp geometry headers plus the header-only
- * @c world_space.hh, nothing else), because the world aliases are needed almost everywhere. They
+ * @c coordinates.hh, nothing else), because the world aliases are needed almost everywhere. They
  * previously lived in @c world/world_common.hh, the tile-world header, which drags in
  * @c <filesystem>, @c <map>, @c <variant>, @c <vector> and the colour header -- so a consumer
  * needing one float point paid for the whole tile-world vocabulary. @c world_common.hh includes
@@ -24,7 +24,7 @@
 #include <sdlpp/utility/geometry.hh>
 #include <sdlpp/utility/dimension.hh>
 
-#include <neutrino/world_space.hh>
+#include <neutrino/coordinates.hh>
 
 namespace neutrino {
     using point = sdlpp::point<int>;    ///< A 2D integer screen-space position (x, y) in pixels.
@@ -40,7 +40,7 @@ namespace neutrino {
 
     // ---- crossing between the untyped point and the strong gameplay vocabulary ------------------
     // @ref world_point is a bare float pair: it fits a position, an offset or a velocity equally
-    // well, which is exactly the confusion <neutrino/world_space.hh> exists to remove. Gameplay
+    // well, which is exactly the confusion <neutrino/coordinates.hh> exists to remove. Gameplay
     // state should hold the typed forms; the untyped point survives at the DRAWING edge, where the
     // renderer wants a plain pair. These named conversions make each such crossing visible instead
     // of letting one implicitly become the other.

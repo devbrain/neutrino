@@ -6,12 +6,14 @@ description: One clock for the simulation, rendering as an event, and why your u
 
 # The frame
 
-Neutrino has **one clock: the simulation clock.** Rendering is not a second timebase — it is an
-event that fires when the display is ready to present. Getting this distinction right at the start
-makes the rest of the engine read predictably, because almost every timing question reduces to it.
+Neutrino's default scene scheduler advances simulation in fixed time steps. A scene's
+`fixed_update` receives a **constant** `dt` and may run zero, one, or several times per frame.
+Rendering follows the updates and draws the latest state.
 
-Concretely: your scene's `fixed_update` receives a **constant** `dt`, no matter what the frame rate
-is doing. It may be called zero times in a frame, or once, or several times.
+At the application boundary, `update_scene(float dt, const input_snapshot& input)` runs once
+per frame with elapsed seconds and a freshly captured snapshot. Its default implementation
+runs the scheduler described here. An override replaces it; Simplex uses this hook to call
+`on_update(dt, input)` once per frame. See [Input](./input.md#where-input-is-delivered).
 
 ## Why not just use the frame delta?
 
@@ -26,26 +28,33 @@ start with. It breaks in three ways that compound:
 - **Tuning stops transferring.** Jump heights and acceleration values found on one machine feel
   wrong on another.
 
-A fixed step removes all three by construction. The simulation always advances in identical
-increments; only *how many* increments a frame runs varies.
+A fixed step keeps the integration interval consistent; only the number of steps per frame
+varies. This makes simulation easier to tune and reproduce, but reproducibility still depends
+on the initial state, input sequence, randomness, and the simulation's numerical behavior.
 
 ## The loop
 
-Each frame, the engine adds the elapsed real time to an accumulator, then drains it in whole ticks:
+Each frame, the default `update_scene()` adds elapsed time to an accumulator, then drains it
+in whole ticks. In this simplified pseudocode, `input` is the frame snapshot:
 
 ```text
 accumulator += min(frame_delta, max_frame)
+steps = 0
 
 while accumulator >= period and steps < max_substeps:
-    fixed_update(period, input)
+    step_input = input if steps == 0 else input.without_edges()
+    fixed_update(period, step_input)
     accumulator -= period
     steps += 1
+
+if steps == max_substeps and accumulator >= period:
+    accumulator = 0
 
 render()
 ```
 
-Whatever time is left over stays in the accumulator and carries into the next frame, so no time is
-lost — it is just deferred to the next whole tick.
+A remainder smaller than one tick carries into the next frame. The frame-delta clamp and
+substep cap deliberately discard excess time during stalls, as described below.
 
 ```mermaid
 flowchart TD
@@ -98,27 +107,32 @@ one such frame dumps a huge delta into the accumulator and the loop tries to run
 
 `max_substeps` caps sustained inability to keep up. When the loop hits the cap with time still
 owed, the engine **discards the backlog** rather than carrying it. That choice matters: carrying it
-means that on any machine slower than `max_substeps / period`, the debt grows every single frame,
+means that below `1 / (period * max_substeps)` frames per second, the debt grows every frame,
 the simulation falls further and further behind real time, and input latency climbs without bound.
 That is the spiral of death the cap exists to prevent. Dropping the debt makes the game run in slow
 motion during the stall — visibly degraded, but responsive and recoverable.
 
 ## Input across substeps
 
-One frame samples input **once**, and that snapshot goes to every substep of that frame. But a
-button press is a *transition*, not a state, and replaying a transition would fire one-shot actions
-more than once per physical press. At the default 120 Hz simulation on a 60 Hz display — two
-substeps per frame — every click would fire twice.
+The application samples input **once per frame**. The default scene scheduler derives each
+substep's input from that snapshot. A button press is a transition, and passing its edge to
+every substep would let one-shot actions repeat within the frame.
 
 So the engine splits the snapshot:
 
-- **substep 0** receives the full snapshot, including `pressed` and `released` edges
-- **later substeps** receive a copy with edges cleared, but `held` intact
+- **Substep 0**, if it runs, receives the full snapshot, including edges and wheel movement.
+- **Later substeps** receive `without_edges()`: edges and wheel movement are cleared, while
+  held state, axes, modifiers, and pointer position are preserved.
 
-`held` describes a state, so every substep should see it. `pressed` describes a moment, so exactly
-one substep should. This applies to the polled input APIs as well, not just the snapshot object.
+Live polling APIs such as `application::get_key()` and `get_mouse()` retain their frame-level
+edges until frame completion. They do **not** receive this filtering and can repeat an edge
+across substeps. Scene updates should read the supplied snapshot.
 
-See [Input](./input.md) for the full model, including how this applies to the polled input APIs.
+If a frame runs zero substeps, its edges and wheel movement are cleared without reaching a
+scene update. Holding a key into the next stepping frame preserves `held`, but does not
+recover `pressed`. The scheduler currently has no latch for those missed edges. The application
+and Simplex per-frame hooks still receive the frame snapshot; see
+[Input](./input.md#input-across-simulation-substeps) for the delivery rules and limitation.
 
 ## Rendering
 
@@ -137,17 +151,17 @@ request, not a limitation you should work around by re-deriving positions in `re
 - **Advancing state in `render()`:** A frame rate variation, screen tear, or monitor refresh change
   alters your game's speed if state moves inside `render()`. Rendering is not a clock — it is an
   event that happens when the display hardware is ready.
-- **Stalling into slow-motion instead of catching up:** If your simulation logic exceeds
-  `max_substeps / period` (e.g. more than 24 FPS with the default 5 substeps at 120 Hz), the accumulator
-  debt is discarded rather than carried forward. The game appears in slow motion to maintain input
-  responsiveness and prevent unpayable latency queues.
+- **Exceeding the catch-up budget:** Below `1 / (period * max_substeps)` frames per second
+  (24 FPS with the default 5 substeps at 120 Hz), a frame can owe more simulation steps than
+  the scheduler permits. Remaining backlog is discarded and simulation falls behind wall time.
 - **Measuring time inside `fixed_update`:** Do not call system clocks like
   `std::chrono::steady_clock::now()` inside update logic. Physics and simulations rely strictly on
   integrating the constant `dt` provided by the engine.
 
 ## What this means for your code
 
-- Put simulation in `fixed_update` and drawing in `render`. Do not advance game state while drawing.
+- With the default scene scheduler, put simulation in `fixed_update` and drawing in `render`.
+  Simplex instead calls `on_update(dt, input)` once per frame, with elapsed seconds.
 - Treat the `dt` you are handed as authoritative. Do not measure elapsed time yourself.
 - Do not assume `fixed_update` runs once per frame. It may run zero times, or five.
 - Do not assume `render` runs between every pair of substeps. It does not.

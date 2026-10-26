@@ -198,9 +198,10 @@ class gameplay_scene : public neutrino::base_scene {
 };
 ```
 
-Note the division: **continuous** input (where the pointer is, whether a key is down) is polled
-from the snapshot in `fixed_update`; **discrete** one-shot events arrive in `handle_action`. Mixing
-them is the most common source of input bugs, and [Input](./input.md) explains why.
+With the default application hooks, `fixed_update()` receives a snapshot containing both
+held state and button edges, while `handle_action()` receives raw event payloads such as text
+input. The application can replace these routes through `update_scene()` and `event()`.
+See [Input](./input.md) for the hook boundaries and substep delivery rules.
 
 ## Common pitfalls
 

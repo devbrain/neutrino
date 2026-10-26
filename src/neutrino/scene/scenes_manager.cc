@@ -4,6 +4,8 @@
 
 #include <exception>
 #include <limits>
+#include <mutex>
+#include <unordered_map>
 #include <sdlpp/events/events.hh>
 #include <failsafe/enforce.hh>
 #include <failsafe/logger.hh>
@@ -20,6 +22,16 @@ namespace neutrino {
     static constexpr int PUSH_SCENE = 1;
     static constexpr int POP_SCENE = 2;
     static constexpr int REPLACE_SCENE = 3;
+    // Pending transitions outlive a consumed event when an application replaces
+    // scene dispatch. Keep ownership here until dispatch or finish(), not in SDL.
+    static std::mutex s_pending_mutex;
+    static std::unordered_map<base_scene*, std::unique_ptr<base_scene>> s_pending_scenes;
+
+    static std::unique_ptr<base_scene> take_pending_scene(void* id) {
+        const std::lock_guard lock(s_pending_mutex);
+        auto node = s_pending_scenes.extract(static_cast<base_scene*>(id));
+        return node.empty() ? nullptr : std::move(node.mapped());
+    }
 
     static SDL_Event create_custom_event(int code, base_scene* bs = nullptr) {
         if (s_event_type == INVALID_EVENT) {
@@ -35,6 +47,21 @@ namespace neutrino {
         return custom;
     }
 
+    static void queue_scene(int code, std::unique_ptr<base_scene> scene) {
+        ENFORCE(scene != nullptr);
+        const auto ev = create_custom_event(code, scene.get());
+        {
+            const std::lock_guard lock(s_pending_mutex);
+            s_pending_scenes.emplace(scene.get(), std::move(scene));
+        }
+        try {
+            ENFORCE(sdlpp::event_queue::push(sdlpp::event(ev)));
+        } catch (...) {
+            auto discarded = take_pending_scene(ev.user.data1);
+            throw;
+        }
+    }
+
     scenes_manager::scenes_manager() {
         ENFORCE(!s_scenes_manager_initialized);
         s_scenes_manager_initialized = true;
@@ -45,9 +72,7 @@ namespace neutrino {
     }
 
     void scenes_manager::push_scene(std::unique_ptr <base_scene>&& scene) {
-        auto v = std::move(scene);
-        const auto ev = create_custom_event(PUSH_SCENE, v.release());
-        ENFORCE (sdlpp::event_queue::push(sdlpp::event(ev)));
+        queue_scene(PUSH_SCENE, std::move(scene));
     }
 
     void scenes_manager::pop_scene() {
@@ -56,9 +81,7 @@ namespace neutrino {
     }
 
     void scenes_manager::replace_scene(std::unique_ptr <base_scene>&& scene) {
-        auto v = std::move(scene);
-        auto ev = create_custom_event(REPLACE_SCENE, v.release());
-        ENFORCE(sdlpp::event_queue::push(sdlpp::event(ev)));
+        queue_scene(REPLACE_SCENE, std::move(scene));
     }
 
     void scenes_manager::push_scene_sync(std::unique_ptr <base_scene>&& scene) {
@@ -66,13 +89,18 @@ namespace neutrino {
     }
 
     void scenes_manager::finish() {
-        // Drain pending scene-transition events so released pointers are reclaimed
+        // Remove queued transition notifications, then reclaim pending scenes,
+        // including requests whose events were ignored by an application override.
         // Note: using SDL_PeepEvents directly — no sdlpp wrapper available
         SDL_Event ev;
-        while (SDL_PeepEvents(&ev, 1, SDL_GETEVENT, s_event_type, s_event_type) > 0) {
-            if (ev.user.data1) {
-                delete static_cast <base_scene*>(ev.user.data1);
+        while (SDL_PeepEvents(&ev, 1, SDL_GETEVENT, s_event_type, s_event_type) > 0) {}
+        {
+            decltype(s_pending_scenes) discarded;
+            {
+                const std::lock_guard lock(s_pending_mutex);
+                discarded.swap(s_pending_scenes);
             }
+            // Destroy outside the lock: scene destructors can call engine services.
         }
         // Orderly teardown of the scene stack (top to bottom).
         //
@@ -221,13 +249,15 @@ namespace neutrino {
             auto type = static_cast <uint32_t>(ue->type);
             if (type == s_event_type && type != INVALID_EVENT) {
                 if (ue->code == PUSH_SCENE) {
-                    ENFORCE(ue->data1);
-                    apply_push(std::unique_ptr <base_scene>(static_cast <base_scene*>(ue->data1)));
+                    auto scene = take_pending_scene(ue->data1);
+                    ENFORCE(scene != nullptr);
+                    apply_push(std::move(scene));
                 } else if (ue->code == POP_SCENE) {
                     apply_pop();
                 } else if (ue->code == REPLACE_SCENE) {
-                    ENFORCE(ue->data1);
-                    apply_replace(std::unique_ptr <base_scene>(static_cast <base_scene*>(ue->data1)));
+                    auto scene = take_pending_scene(ue->data1);
+                    ENFORCE(scene != nullptr);
+                    apply_replace(std::move(scene));
                 } else {
                     THROW_DEFAULT("Should not be here");
                 }

@@ -12,7 +12,8 @@
 #include <map>
 #include <iomanip>
 
-#include "binary_reader.hh"
+#include <bstream/span_reader.hh>
+#include <bstream/stream_reader.hh>
 #include "lzss.hh"
 #include "it_blocks.hh"
 
@@ -23,11 +24,17 @@ struct res_location {
 };
 
 static std::vector <res_location> parse_resource_locations(std::istream& is) {
-    binary_reader rdr(is);
+    bstream::stream_reader rdr(is);
 
     static constexpr auto FOOTER_SIZE = 12;
     // Read footer
-    rdr.seek(-FOOTER_SIZE, std::ios::end);
+    is.seekg(0, std::ios::end);
+    const auto end = is.tellg();
+    if (end < FOOTER_SIZE) {
+        throw bstream::eof_error("Truncated resource footer");
+    }
+    const auto file_size = static_cast<std::size_t>(end);
+    rdr.seek(file_size - FOOTER_SIZE);
 
     uint32_t max_char_count;
     uint8_t padding[3];
@@ -43,8 +50,11 @@ static std::vector <res_location> parse_resource_locations(std::istream& is) {
         throw std::runtime_error("Unsupported resource format version: " + std::to_string(version));
     }
 
-    const auto metadata_offset = -static_cast <std::streamoff>(FOOTER_SIZE + max_char_count);
-    rdr.seek(metadata_offset, std::ios::end);
+    if (max_char_count > file_size - FOOTER_SIZE) {
+        throw bstream::eof_error("Resource metadata exceeds file size");
+    }
+    const auto metadata_offset = file_size - FOOTER_SIZE - max_char_count;
+    rdr.seek(metadata_offset);
 
     uint32_t num_resources = 0;
     uint32_t base_offset = 0;
@@ -54,10 +64,13 @@ static std::vector <res_location> parse_resource_locations(std::istream& is) {
         return {};
     }
 
-    const auto entry_table_size = static_cast <std::streamoff>(5) * num_resources;
+    const auto entry_table_size = std::uint64_t{5} * num_resources;
 
     // Seek to the start of the resource entry table
-    rdr.seek(metadata_offset - entry_table_size, std::ios::end);
+    if (entry_table_size > metadata_offset) {
+        throw bstream::eof_error("Resource entry table exceeds file size");
+    }
+    rdr.seek(metadata_offset - entry_table_size);
     const auto entry_table_start = rdr.tell();
 
     std::vector <res_location> rc;
@@ -90,7 +103,7 @@ static std::vector <res_location> parse_resource_locations(std::istream& is) {
     return rc;
 }
 
-static int32_t var_decode(binary_reader& br) {
+static int32_t var_decode(bstream::span_reader& br) {
     static constexpr int32_t dword_41020C[] = {
         -67372032, // 0xfc000000
         -263169, // 0xfffcffff
@@ -115,6 +128,9 @@ static int32_t var_decode(binary_reader& br) {
         bytes_to_read = c & 0x1F;
     }
 
+    if (bytes_to_read > sizeof(uint32_t)) {
+        throw bstream::parse_error("Variable-length integer exceeds 32 bits");
+    }
     uint32_t val = 0;
     for (uint32_t i = 0; i < bytes_to_read; ++i) {
         uint8_t x;
@@ -140,7 +156,7 @@ static int32_t var_decode(binary_reader& br) {
 }
 
 
-static std::vector<uint8_t> read_command_block(binary_reader& rdr) {
+static std::vector<uint8_t> read_command_block(bstream::span_reader& rdr) {
     int8_t control_signed;
     rdr >> control_signed;
     if (control_signed >= 0) {
@@ -153,7 +169,7 @@ static std::vector<uint8_t> read_command_block(binary_reader& rdr) {
         const std::size_t size = control & 0x1F;
         std::vector<uint8_t> data(size);
         if (size > 0) {
-            rdr.read(data.data(), size);
+            rdr.read_exact(data.data(), size);
         }
         return data;
     } else {
@@ -176,21 +192,21 @@ static std::vector<uint8_t> read_command_block(binary_reader& rdr) {
 
             std::vector<uint8_t> comp_data(comp_size);
             if (comp_size > 0) {
-                rdr.read(comp_data.data(), comp_size);
+                rdr.read_exact(comp_data.data(), comp_size);
             }
             return decompress_lzss(comp_data, decomp_size);
         } else {
             // Uncompressed block with multi-byte size
             std::vector<uint8_t> data(comp_size);
             if (comp_size > 0) {
-                rdr.read(data.data(), comp_size);
+                rdr.read_exact(data.data(), comp_size);
             }
             return data;
         }
     }
 }
 
-static std::vector<uint8_t> read_animation_stream_block(binary_reader& rdr) {
+static std::vector<uint8_t> read_animation_stream_block(bstream::span_reader& rdr) {
     uint8_t prefix;
     rdr >> prefix;
     if ((prefix & 0xEC) != 0xEC) {
@@ -205,12 +221,12 @@ static std::vector<uint8_t> read_animation_stream_block(binary_reader& rdr) {
     }
     std::vector<uint8_t> raw_data(size);
     if (size > 0) {
-        rdr.read(raw_data.data(), size);
+        rdr.read_exact(raw_data.data(), size);
     }
     return raw_data;
 }
 
-static std::vector<addressed_block> parse_resource_stream(binary_reader& rdr, std::size_t max_size = 0) {
+static std::vector<addressed_block> parse_resource_stream(bstream::span_reader& rdr, std::size_t max_size = 0) {
     std::vector<addressed_block> blocks;
 
     uint32_t slot_id = 0;
@@ -220,7 +236,7 @@ static std::vector<addressed_block> parse_resource_stream(binary_reader& rdr, st
     int block_type_id = 0;
 
     const auto start_pos = rdr.tell();
-    const auto end_pos = (max_size > 0) ? (start_pos + static_cast<std::streamoff>(max_size)) : std::streampos(0);
+    const auto end_pos = start_pos + std::min(max_size, rdr.remaining());
 
     uint8_t raw_tag = 0;
     rdr >> raw_tag;
@@ -309,7 +325,7 @@ int main(int argc, char* argv[]) {
     try {
         const auto resources = parse_resource_locations(ifs);
         std::cout << "Successfully parsed " << resources.size() << " resources from " << path << ":\n";
-        binary_reader rdr(ifs);
+        bstream::stream_reader rdr(ifs);
         for (const auto& res : resources) {
             std::cout << "  Resource " << res.res_id
                 << ": offset = " << res.offset
@@ -317,12 +333,12 @@ int main(int argc, char* argv[]) {
              // 1. Bulk-read the whole resource into memory (one read per resource)
             rdr.seek(res.offset);
             std::vector <uint8_t> res_bytes(res.size);
-            rdr.read(res_bytes.data(), res_bytes.size());
+            rdr.read_exact(res_bytes.data(), res_bytes.size());
 
-            // 2. Wrap it in a zero-copy stream
-            span_reader mem_rdr(res_bytes);
+            // 2. Read directly from the bounded resource buffer
+            bstream::span_reader mem_rdr(res_bytes);
 
-            // 3. Parse with binary_reader exactly the same way!
+            // 3. Decode the resource blocks
             const auto blocks = parse_resource_stream(mem_rdr, res.size);
             std::cout << "    -> Extracted and decoded " << blocks.size() << " blocks\n";
 

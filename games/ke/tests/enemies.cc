@@ -6,8 +6,8 @@
 #include <memory>
 #include <stdexcept>
 #include <neutrino/application.hh>
-#include <neutrino/video/globals.hh>
-#include <sdlpp/app/entry_point.hh>
+#include <neutrino/neutrino.hh>
+#include <neutrino/entry_point.hh>
 #include <ke/assets/registry.hh>
 #include <ke/assets/sprites.hh>
 #include <ke/game/mechanics.hh>

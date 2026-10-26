@@ -2,8 +2,10 @@
 // Created by igor on 17/07/2026.
 //
 
+#include <bstream/stream_reader.hh>
+
 #include <failsafe/logger.hh>
-#include <neutrino/video/image_loader.hh>
+#include <neutrino/neutrino.hh>
 
 #include <ke/resources/resources.hh>
 #include <ke/format/archive.hh>
@@ -14,8 +16,9 @@ namespace rs {
         // Read a resource's raw bytes from the archive stream.
         std::vector <std::uint8_t> read_resource(std::istream& is, const resource& r) {
             std::vector <std::uint8_t> data(r.size);
-            is.seekg(r.offset, std::ios::beg);
-            is.read(reinterpret_cast <std::istream::char_type*>(data.data()), r.size);
+            bstream::stream_reader reader(is);
+            reader.seek(r.offset);
+            reader.read_exact(data.data(), data.size());
             return data;
         }
 

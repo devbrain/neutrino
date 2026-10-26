@@ -4,12 +4,11 @@
 
 #include <iostream>
 #include <failsafe/message.hh>
-#include <neutrino/video/image_loader.hh>
-#include <neutrino/video/sprite/cpu_texture_atlas.hh>
+#include <neutrino/neutrino.hh>
 
 #include <ke/format/archive.hh>
 #include <ke/format/bob.hh>
-#include <ke/format/binary_reader.hh>
+#include <bstream/stream_reader.hh>
 
 namespace rs {
     namespace {
@@ -23,7 +22,7 @@ namespace rs {
             uint32_t data_offset_size_bytes;
         };
 
-        binary_reader& operator >>(binary_reader& bio, ke_header& h) {
+        bstream::stream_reader& operator >>(bstream::stream_reader& bio, ke_header& h) {
             bio >> h.resource_count >> h.header_size >> h.directory_size_bytes >> h.name_table_offset >> h.
                 name_table_size_bytes
                 >> h.data_offset >> h.data_offset_size_bytes;
@@ -38,7 +37,7 @@ namespace rs {
             uint32_t data_size;
         };
 
-        binary_reader& operator >>(binary_reader& bio, ke_dir_entry& h) {
+        bstream::stream_reader& operator >>(bstream::stream_reader& bio, ke_dir_entry& h) {
             bio >> h.name_offset >> h.unknown >> h.data_rel_offset >> h.data_size;
             return bio;
         }
@@ -112,7 +111,7 @@ namespace rs {
             return true;
         }
 
-        std::vector <ke_dir_entry> read_directory(binary_reader& bio, const ke_header& hdr,
+        std::vector <ke_dir_entry> read_directory(bstream::stream_reader& bio, const ke_header& hdr,
                                                   std::vector <diagnostic>& diagnostics) {
             if (!bio) {
                 diagnostics.push_back({
@@ -131,8 +130,9 @@ namespace rs {
 
             for (uint32_t i = 0; i < hdr.resource_count; i++) {
                 ke_dir_entry de{};
-                bio >> de;
-                if (!bio) {
+                try {
+                    bio >> de;
+                } catch (const bstream::bstream_error&) {
                     diagnostics.push_back({
                         diagnostic::severity_level::error,
                         failsafe::build_message("Truncated read while reading directory entry", i)
@@ -154,10 +154,11 @@ namespace rs {
         uint64_t file_size = (file_size_pos >= 0) ? static_cast <uint64_t>(file_size_pos) : -1;
         is.seekg(0, std::ios::beg);
 
-        binary_reader bio(is, std::endian::little);
+        bstream::stream_reader bio(is, bstream::endian::little);
         ke_header hdr{};
-        bio >> hdr;
-        if (!bio) {
+        try {
+            bio >> hdr;
+        } catch (const bstream::bstream_error&) {
             result.diagnostics.push_back({diagnostic::severity_level::error, "Failed to read file header"});
             return result;
         }
@@ -232,8 +233,9 @@ namespace rs {
             bool name_read_failed = false;
             while (name_bytes_left > 0) {
                 char ch{};
-                bio >> ch;
-                if (!bio) {
+                try {
+                    bio >> ch;
+                } catch (const bstream::bstream_error&) {
                     name_read_failed = true;
                     break;
                 }

@@ -6,8 +6,7 @@
 
 #include <optional>
 
-#include <neutrino/scene/base_scene.hh>
-#include <neutrino/video/render_texture.hh>  // the composed backdrop
+#include <neutrino/neutrino.hh>
 
 #include <ke/game/mechanics.hh>
 #include <ke/assets/registry.hh>

@@ -2,6 +2,8 @@
 // Created by igor on 05/07/2026.
 //
 
+#include <bstream/span_reader.hh>
+
 #include "world/tmx/encoding.hh"
 
 #include <cctype>
@@ -130,12 +132,9 @@ namespace neutrino::world_tmx {
             validate_cell_count(data.size() / 4, expected_cells, "binary tile data");
             std::vector <world_tile_cell> result;
             result.reserve(data.size() / 4);
-            for (std::size_t i = 0; i < data.size(); i += 4) {
-                const auto gid =
-                    static_cast <std::uint32_t>(data[i]) |
-                    (static_cast <std::uint32_t>(data[i + 1]) << 8u) |
-                    (static_cast <std::uint32_t>(data[i + 2]) << 16u) |
-                    (static_cast <std::uint32_t>(data[i + 3]) << 24u);
+            bstream::span_reader reader(data, bstream::endian::little);
+            while (!reader.eof()) {
+                const auto gid = reader.read<std::uint32_t>();
                 result.push_back(decode_gid(gid));
             }
             return result;

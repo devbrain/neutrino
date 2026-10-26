@@ -25,7 +25,7 @@ add_executable(neutrino_tests
         physics/test_world_swept_triggers.cc
 
         test_main.cc
-        test_world_space.cc
+        test_coordinates.cc
 
         audio/test_audio.cc
         scene/test_scenes_manager.cc
@@ -87,3 +87,21 @@ if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)
 endif()
 
 add_test(NAME neutrino_tests COMMAND neutrino_tests)
+
+# Game formats are tested with literal wire bytes, independently of the writer.
+add_executable(game_format_tests test_main.cc test_game_formats.cc)
+target_link_libraries(game_format_tests PRIVATE ke_format it_format doctest::doctest)
+add_test(NAME game_format_tests COMMAND game_format_tests)
+
+# Exercise the public entry macro separately from the main engine test process.
+add_executable(simplex_entry_tests test_main.cc simplex/test_entry_point.cc)
+target_link_libraries(simplex_entry_tests PRIVATE neutrino doctest::doctest)
+add_test(NAME simplex_entry_tests COMMAND simplex_entry_tests)
+
+# This target uses SDL's generated main, including the normal platform bootstrap.
+add_executable(simplex_entry_smoke simplex/entry_point_smoke.cc)
+target_link_libraries(simplex_entry_smoke PRIVATE neutrino)
+add_test(NAME simplex_entry_smoke COMMAND simplex_entry_smoke)
+set_tests_properties(simplex_entry_smoke PROPERTIES
+        TIMEOUT 15
+        ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_AUDIODRIVER=dummy;SDL_RENDER_DRIVER=software")

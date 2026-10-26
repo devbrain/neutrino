@@ -18,10 +18,14 @@ In many 2D game engines, every coordinate, offset, and rate is represented as a 
 
 Neutrino solves this at compile time using **distinct strong types** for each quantity and space.
 
+For a practical introduction to window points, drawable pixels, logical canvases, and
+input mapping, start with [window and renderer coordinates](./window-and-renderer-coordinates.md).
+This page connects those spaces to world coordinates and the quantity type system.
+
 ```mermaid
 flowchart LR
     subgraph OS ["Window Space (window_pos)"]
-        WinMouse["SDL Pointer Input<br/><i>(Raw OS pixels, e.g. 1280x800)</i>"]
+        WinMouse["SDL Pointer Input<br/><i>(Window points, e.g. 1280x800)</i>"]
     end
 
     subgraph Presentation ["Render Space (render_pos)"]
@@ -45,8 +49,8 @@ flowchart LR
 
 | Space | Type | Origin (0, 0) | Units | Represents |
 |---|---|---|---|---|
-| **Window space** | [`neutrino::window_pos`](pathname:///api/) | Top-left of OS window | Physical OS pixels | Raw display pixels delivered by SDL window and mouse events. |
-| **Render space** | [`neutrino::render_pos`](pathname:///api/) | Top-left of virtual canvas | Design pixels | The fixed virtual resolution (`logical_size`). What scenes and UI draw to. |
+| **Window space** | [`neutrino::window_pos`](pathname:///api/) | Top-left of the window's client area | Window coordinates (points) | Mouse positions reported by SDL; these need not equal drawable pixels on HiDPI displays. |
+| **Render space** | [`neutrino::render_pos`](pathname:///api/) | Renderer view origin | Logical drawing units, or drawable pixels in the default reflow view | Coordinates used for drawing, including the configured logical presentation, viewport, and scale. |
 | **World space** | [`neutrino::world_pos`](pathname:///api/) | Arbitrary origin (0, 0) | Simulation units | Unbounded continuous coordinates where physics bodies, tiles, and actors exist. |
 
 ---
@@ -63,7 +67,11 @@ cfg.scale = neutrino::scale_mode::letterbox; // or integer_scale
 
 This guarantees your game draws to a stable, predictable canvas regardless of whether the player runs on a 1080p monitor, a 4K display, or an ultrawide screen.
 
-However, the user's mouse and touch inputs arrive in **Window space** (physical OS pixels). Converting between the two requires accounting for **HiDPI display density** and **letterboxing black bars**.
+Mouse positions arrive in **window coordinates**, which can differ from drawable pixels.
+For example, a window measuring `640 x 400` points can have a `1280 x 800` pixel drawable
+on a HiDPI display. `to_render_coords()` accounts for that density difference, logical
+presentation, the viewport, and render scale. Raw SDL touch events use normalized coordinates;
+convert them to window coordinates before using this mapping.
 
 ```mermaid
 flowchart TD
@@ -79,7 +87,9 @@ flowchart TD
 
 ### Numeric Walkthrough: The Letterbox Trap
 
-Suppose your game has a logical design canvas of `640 x 360` (16:9 aspect ratio), and runs on a laptop screen with a window size of `1280 x 800` (16:10 aspect ratio) under `scale_mode::letterbox`:
+Suppose your game has a logical design canvas of `640 x 360` (16:9 aspect ratio), and runs
+in a `1280 x 800` window under `scale_mode::letterbox`. For this example, assume a pixel
+density of 1, so window points and drawable pixels coincide, with the default viewport and scale:
 
 1. **Calculate the Uniform Scale Factor (S):**
    The canvas expands to fill the width (`1280 px`):
@@ -112,7 +122,7 @@ render_y = (win_y - offset_y) / S = (400.0 - 40.0) / 2.0 = 180.0
 
 The result is `render_pos{320.0f, 180.0f}` — the exact center of your `640 x 360` canvas.
 
-#### Case B: Naive Engine (Passing Raw Window Pixels)
+#### Case B: Passing Unconverted Window Coordinates
 If your game passed the raw window coordinates `(640.0, 400.0)` directly into gameplay:
 - `x = 640.0` is the extreme right edge of your canvas.
 - `y = 400.0` is `40 px` below the bottom of the screen!
@@ -124,7 +134,7 @@ In Neutrino, `to_render_coords` and `to_window_coords` are strongly typed templa
 
 ```cpp
 #include <neutrino/video/globals.hh>
-#include <neutrino/world_space.hh>
+#include <neutrino/coordinates.hh>
 
 // Window space -> Render space (Input conversion):
 neutrino::window_pos mouse_win{640.0f, 400.0f};
@@ -136,7 +146,8 @@ neutrino::window_pos back_to_win = neutrino::to_window_coords(mouse_render);
 // back_to_win == {640.0f, 400.0f}
 ```
 
-In `fixed_update`, the [`input_snapshot`](./input.md) has already converted pointer input for you:
+The [`input_snapshot`](./input.md) passed to application, Simplex, and scene update hooks
+has already converted pointer input for you. For example, in a scene:
 
 ```cpp
 void my_scene::fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) {
@@ -184,7 +195,7 @@ flowchart TD
 The whole purpose of strong typing is that nonsensical geometric operations **refuse to compile**:
 
 ```cpp
-#include <neutrino/world_space.hh>
+#include <neutrino/coordinates.hh>
 
 using namespace neutrino;
 

@@ -10,9 +10,7 @@
 #include <cstddef>
 #include <optional>
 
-#include <neutrino/video/geometry_types.hh>            // neutrino::point / dim
-#include <neutrino/video/render_texture.hh>            // the composed backdrop target
-#include <neutrino/video/sprite/sprite_cache.hh>       // sprite_set_handle
+#include <neutrino/neutrino.hh>
 
 namespace rs {
     // KE screen + playfield geometry (tab.md §3/§6, mirrored from ke_dump render_level).
@@ -24,13 +22,13 @@ namespace rs {
     inline constexpr int ke_grid_y = 24;
     inline constexpr int ke_paddle_bottom_y = 190; // the paddle's bottom edge rides this row
     // KE_FILL fixed HUD blocks (blocks 6..46 are the per-level fill tiles).
-    inline constexpr std::size_t ke_fill_score_left  = 0; // left score dummy
-    inline constexpr std::size_t ke_fill_score_mid   = 1; // centre score dummy
+    inline constexpr std::size_t ke_fill_score_left = 0; // left score dummy
+    inline constexpr std::size_t ke_fill_score_mid = 1; // centre score dummy
     inline constexpr std::size_t ke_fill_score_right = 2; // right score dummy
-    inline constexpr std::size_t ke_fill_bar         = 5; // horizontal bar under the score row
+    inline constexpr std::size_t ke_fill_bar = 5; // horizontal bar under the score row
 
     // KE_BORD wall pillars.
-    inline constexpr std::size_t ke_bord_left  = 0;
+    inline constexpr std::size_t ke_bord_left = 0;
     inline constexpr std::size_t ke_bord_right = 1;
 
     // KE_FILL block 6 is the level-entry fill tile (the engine cycles 6..46; the static

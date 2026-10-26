@@ -10,7 +10,7 @@
 #include <iosfwd>
 #include <string_view>
 
-#include <neutrino/video/sprite/sprite_def.hh>
+#include <neutrino/neutrino.hh>
 #include <ke/format/archive.hh>
 #include <ke/resources/resources.hh>
 

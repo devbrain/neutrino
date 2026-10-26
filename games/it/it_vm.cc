@@ -3,7 +3,7 @@
 //
 
 #include "it_vm.hh"
-#include "binary_reader.hh"
+#include <bstream/span_reader.hh>
 
 #include <iomanip>
 #include <sstream>
@@ -150,14 +150,14 @@ std::vector<vm_instruction> decode_bytecode(std::span<const uint8_t> bytecode) {
         return instructions;
     }
 
-    span_reader rdr(bytecode);
+    bstream::span_reader rdr(bytecode);
 
     while (!rdr.eof()) {
         std::size_t pos = static_cast<std::size_t>(rdr.tell());
         uint8_t op = 0;
         try {
             rdr >> op;
-        } catch (const binary_reader_eof_error&) {
+        } catch (const bstream::eof_error&) {
             break;
         }
 
@@ -178,8 +178,8 @@ std::vector<vm_instruction> decode_bytecode(std::span<const uint8_t> bytecode) {
                     inst.param = param_val;
 
                     // Append 4 parameter bytes in little-endian order
-                    const auto* pbytes = reinterpret_cast<const uint8_t*>(&param_val);
-                    inst.raw_bytes.insert(inst.raw_bytes.end(), pbytes, pbytes + 4);
+                    const auto bytes = bytecode.subspan(pos + 1, 4);
+                    inst.raw_bytes.insert(inst.raw_bytes.end(), bytes.begin(), bytes.end());
 
                     // Compute jump target: target is relative to the address of the parameter (pos + 1)
                     if (inst.opcode == vm_opcode::JZ || inst.opcode == vm_opcode::JMP) {
@@ -188,7 +188,7 @@ std::vector<vm_instruction> decode_bytecode(std::span<const uint8_t> bytecode) {
                             inst.target_offset = static_cast<std::size_t>(target);
                         }
                     }
-                } catch (const binary_reader_eof_error&) {
+                } catch (const bstream::eof_error&) {
                     // Truncated instruction at end of stream
                     inst.opcode = vm_opcode::UNKNOWN;
                     break;

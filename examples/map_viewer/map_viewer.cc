@@ -4,17 +4,8 @@
 //
 
 #include <neutrino/application.hh>
-#include <neutrino/input/hotkey.hh>
-#include <neutrino/scene/base_scene.hh>
-#include <neutrino/scene/scene_transitions.hh>
-#include <neutrino/video/draw.hh>
-#include <neutrino/video/globals.hh>
-#include <neutrino/video/world/camera.hh>
-#include <neutrino/video/world/world_renderer.hh>
-#include <neutrino/world/tmx_loader.hh>
-#include <neutrino/world/world.hh>
-
-#include <sdlpp/app/entry_point.hh>
+#include <neutrino/neutrino.hh>
+#include <neutrino/entry_point.hh>
 
 #include <algorithm>
 #include <cmath>
@@ -258,4 +249,4 @@ namespace {
     };
 }
 
-SDLPP_MAIN(map_viewer_app)
+NEUTRINO_MAIN(map_viewer_app)

@@ -7,10 +7,7 @@
 
 #include <vector>
 
-#include <neutrino/scene/base_scene.hh>
-#include <neutrino/video/sprite/render_bundle.hh>
-#include <neutrino/video/sprite/sprite_sheet.hh>
-#include <neutrino/video/sprite/sprite_state.hh>
+#include <neutrino/neutrino.hh>
 #include <ke/resources/resources.hh>
 #include <ke/format/archive.hh>
 

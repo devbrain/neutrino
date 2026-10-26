@@ -9,6 +9,8 @@
 // onyx_image's own gif codec.
 //
 
+#include <bstream/stream_reader.hh>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -34,7 +36,7 @@
 #include <sdlpp/video/surface.hh>
 #include <sdlpp/image/sdl_surface_adapter.hh>
 
-#include <neutrino/video/geometry_types.hh>
+#include <neutrino/neutrino.hh>
 
 #include <ke/format/archive.hh>
 #include <ke/format/bob.hh>
@@ -99,8 +101,9 @@ namespace {
     // Read a resource's raw bytes from the archive stream.
     std::vector <std::uint8_t> read_bytes(std::istream& is, const rs::resource& r) {
         std::vector <std::uint8_t> data(r.size);
-        is.seekg(r.offset, std::ios::beg);
-        is.read(reinterpret_cast <std::istream::char_type*>(data.data()), r.size);
+        bstream::stream_reader reader(is);
+        reader.seek(r.offset);
+        reader.read_exact(data.data(), data.size());
         return data;
     }
 

@@ -4,6 +4,7 @@
 
 #include "it_blocks.hh"
 #include "lzss.hh"
+#include <bstream/span_writer.hh>
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -98,7 +99,8 @@ static void parse_rule_block_words(
     }
 }
 
-decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_size, bool is_anim_stream) {
+decoded_block decode_block(int type_id, bstream::span_reader& rdr, std::size_t payload_size, bool is_anim_stream) {
+    const auto payload_start = rdr.tell();
     if (is_anim_stream) {
         animation_stream_block blk;
         std::size_t bytes_read = 0;
@@ -115,7 +117,7 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
                 const std::size_t read_bytes = std::min<std::size_t>(rec.comp_size, payload_size - bytes_read);
                 std::vector<uint8_t> comp_bytes(read_bytes);
                 if (read_bytes > 0) {
-                    rdr.read(comp_bytes.data(), read_bytes);
+                    rdr.read_exact(comp_bytes.data(), read_bytes);
                 }
                 bytes_read += read_bytes;
 
@@ -187,7 +189,7 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
                 blk.type_id = type_id;
                 blk.bytecode.resize(payload_size);
                 if (payload_size > 0) {
-                    rdr.read(blk.bytecode.data(), payload_size);
+                    rdr.read_exact(blk.bytecode.data(), payload_size);
                 }
                 return blk;
             }
@@ -206,10 +208,10 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
                     const std::size_t actual_pixel_size = std::min<std::size_t>(blk.pixel_size, available_pixels);
                     blk.pixels.resize(actual_pixel_size);
                     if (actual_pixel_size > 0) {
-                        rdr.read(blk.pixels.data(), actual_pixel_size);
+                        rdr.read_exact(blk.pixels.data(), actual_pixel_size);
                     }
                     if (blk.pixel_size > actual_pixel_size) {
-                        rdr.seek(static_cast<std::streamoff>(blk.pixel_size - actual_pixel_size), std::ios_base::cur);
+                        rdr.skip(blk.pixel_size - actual_pixel_size);
                     }
                     rdr >> blk.palette;
                 }
@@ -236,7 +238,7 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
                 level_collision_override_block blk;
                 blk.collision_map.resize(payload_size);
                 if (payload_size > 0) {
-                    rdr.read(blk.collision_map.data(), payload_size);
+                    rdr.read_exact(blk.collision_map.data(), payload_size);
                 }
                 return blk;
             }
@@ -272,7 +274,7 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
                     const std::size_t to_read = std::min<std::size_t>(count, payload_size - 1);
                     blk.tile_ids.resize(to_read);
                     if (to_read > 0) {
-                        rdr.read(blk.tile_ids.data(), to_read);
+                        rdr.read_exact(blk.tile_ids.data(), to_read);
                     }
                 }
                 return blk;
@@ -282,7 +284,7 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
                 tile_rotations_block blk;
                 blk.rotation_flags.resize(payload_size);
                 if (payload_size > 0) {
-                    rdr.read(blk.rotation_flags.data(), payload_size);
+                    rdr.read_exact(blk.rotation_flags.data(), payload_size);
                 }
                 return blk;
             }
@@ -310,7 +312,7 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
                     const std::size_t pixel_bytes = payload_size - 4;
                     blk.pixels.resize(pixel_bytes);
                     if (pixel_bytes > 0) {
-                        rdr.read(blk.pixels.data(), pixel_bytes);
+                        rdr.read_exact(blk.pixels.data(), pixel_bytes);
                     }
                 }
                 return blk;
@@ -333,7 +335,7 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
                 const std::size_t actual_size = (payload_size >= 4) ? std::min<std::size_t>(pcm_size, payload_size - 4) : pcm_size;
                 blk.pcm_samples.resize(actual_size);
                 if (actual_size > 0) {
-                    rdr.read(blk.pcm_samples.data(), actual_size);
+                    rdr.read_exact(blk.pcm_samples.data(), actual_size);
                 }
                 return blk;
             }
@@ -345,7 +347,7 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
                 const std::size_t actual_size = (payload_size >= 4) ? std::min<std::size_t>(midi_size, payload_size - 4) : midi_size;
                 blk.midi_stream.resize(actual_size);
                 if (actual_size > 0) {
-                    rdr.read(blk.midi_stream.data(), actual_size);
+                    rdr.read_exact(blk.midi_stream.data(), actual_size);
                 }
                 return blk;
             }
@@ -390,7 +392,7 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
             default:
                 break;
         }
-    } catch (const binary_reader_error&) {
+    } catch (const bstream::bstream_error&) {
         // Fall back to generic_asset_block if structured read fails or stream ends prematurely
     }
 
@@ -399,15 +401,15 @@ decoded_block decode_block(int type_id, binary_reader& rdr, std::size_t payload_
     blk.raw_data.resize(payload_size);
     if (payload_size > 0) {
         try {
-            rdr.seek(0, std::ios_base::beg);
-            rdr.read(blk.raw_data.data(), payload_size);
+            rdr.seek(payload_start);
+            rdr.read_exact(blk.raw_data.data(), payload_size);
         } catch (...) {}
     }
     return blk;
 }
 
 decoded_block decode_block(int type_id, std::span<const uint8_t> data, bool is_anim_stream) {
-    span_reader rdr(data);
+    bstream::span_reader rdr(data);
     auto blk = decode_block(type_id, rdr, data.size(), is_anim_stream);
     // If generic fallback occurred and raw_data is empty, assign it from span
     if (std::holds_alternative<generic_asset_block>(blk)) {
@@ -735,37 +737,21 @@ std::vector<uint8_t> digital_audio_clip_block::to_wav(uint32_t sample_rate) cons
     const uint16_t block_align = num_channels * (bits_per_sample / 8);
     const uint32_t byte_rate = sample_rate * block_align;
 
-    std::vector<uint8_t> wav;
-    wav.reserve(44 + pcm_len);
-
-    auto append16 = [&](uint16_t val) {
-        wav.push_back(static_cast<uint8_t>(val & 0xFF));
-        wav.push_back(static_cast<uint8_t>((val >> 8) & 0xFF));
-    };
-    auto append32 = [&](uint32_t val) {
-        wav.push_back(static_cast<uint8_t>(val & 0xFF));
-        wav.push_back(static_cast<uint8_t>((val >> 8) & 0xFF));
-        wav.push_back(static_cast<uint8_t>((val >> 16) & 0xFF));
-        wav.push_back(static_cast<uint8_t>((val >> 24) & 0xFF));
-    };
-    auto append_bytes = [&](std::string_view s) {
-        for (char c : s) wav.push_back(static_cast<uint8_t>(c));
-    };
-
-    append_bytes("RIFF");
-    append32(riff_size);
-    append_bytes("WAVE");
-    append_bytes("fmt ");
-    append32(16); // Subchunk1Size
-    append16(1);  // AudioFormat (1 = PCM)
-    append16(num_channels);
-    append32(sample_rate);
-    append32(byte_rate);
-    append16(block_align);
-    append16(bits_per_sample);
-    append_bytes("data");
-    append32(pcm_len);
-    wav.insert(wav.end(), pcm_samples.begin(), pcm_samples.end());
+    std::vector<uint8_t> wav(44 + pcm_samples.size());
+    bstream::span_writer writer(wav, bstream::endian::little);
+    writer.write_exact("RIFF", 4);
+    writer.write(riff_size);
+    writer.write_exact("WAVEfmt ", 8);
+    writer.write<uint32_t>(16); // PCM format chunk size
+    writer.write<uint16_t>(1);  // PCM
+    writer.write(num_channels);
+    writer.write(sample_rate);
+    writer.write(byte_rate);
+    writer.write(block_align);
+    writer.write(bits_per_sample);
+    writer.write_exact("data", 4);
+    writer.write(pcm_len);
+    writer.write_exact(pcm_samples.data(), pcm_samples.size());
 
     return wav;
 }
@@ -890,29 +876,16 @@ std::vector<uint8_t> music_track_block::to_mid() const {
     }
 
     // Standard MIDI Header: Format 0, 1 track, division 100
-    std::vector<uint8_t> smf;
-    auto append32_be = [&](uint32_t val) {
-        smf.push_back(static_cast<uint8_t>((val >> 24) & 0xFF));
-        smf.push_back(static_cast<uint8_t>((val >> 16) & 0xFF));
-        smf.push_back(static_cast<uint8_t>((val >> 8) & 0xFF));
-        smf.push_back(static_cast<uint8_t>(val & 0xFF));
-    };
-    auto append16_be = [&](uint16_t val) {
-        smf.push_back(static_cast<uint8_t>((val >> 8) & 0xFF));
-        smf.push_back(static_cast<uint8_t>(val & 0xFF));
-    };
-
-    // "MThd"
-    smf.push_back('M'); smf.push_back('T'); smf.push_back('h'); smf.push_back('d');
-    append32_be(6);
-    append16_be(0);
-    append16_be(1);
-    append16_be(100);
-
-    // "MTrk"
-    smf.push_back('M'); smf.push_back('T'); smf.push_back('r'); smf.push_back('k');
-    append32_be(static_cast<uint32_t>(track_data.size()));
-    smf.insert(smf.end(), track_data.begin(), track_data.end());
+    std::vector<uint8_t> smf(22 + track_data.size());
+    bstream::span_writer writer(smf, bstream::endian::big);
+    writer.write_exact("MThd", 4);
+    writer.write<uint32_t>(6);
+    writer.write<uint16_t>(0);
+    writer.write<uint16_t>(1);
+    writer.write<uint16_t>(100);
+    writer.write_exact("MTrk", 4);
+    writer.write<uint32_t>(static_cast<uint32_t>(track_data.size()));
+    writer.write_exact(track_data.data(), track_data.size());
 
     return smf;
 }

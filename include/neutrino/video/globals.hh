@@ -32,7 +32,7 @@ namespace neutrino {
     /// @brief Inverse of to_render_coords(): map a render point back to a window point.
     NEUTRINO_EXPORT [[nodiscard]] sdlpp::point <float> to_window_coords(sdlpp::point <float> render_pt);
 
-    // The same mapping in the strong spaces of <neutrino/world_space.hh>. The two spaces differ by
+    // The same mapping in the strong spaces of <neutrino/coordinates.hh>. The two spaces differ by
     // the HiDPI scale and the letterbox offset, so passing one where the other belongs is silently
     // wrong on exactly the setups (scaled displays, non-matching aspect ratios) least likely to be
     // the developer's own. Typed, that swap is a compile error and the direction of the mapping is

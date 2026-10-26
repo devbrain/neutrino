@@ -13,7 +13,7 @@
 
 #include <onyx_image/surface.hpp>
 #include <sdlpp/video/palette.hh>
-#include <neutrino/video/geometry_types.hh>
+#include <neutrino/neutrino.hh>
 
 namespace rs {
     // Per-frame metadata parsed from a BOB block header.

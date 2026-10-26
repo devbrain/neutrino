@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include <neutrino/scene/base_scene.hh>
+#include <neutrino/neutrino.hh>
 #include <sdlpp/video/color.hh>
 #include "effects/effect_base.hh"
 

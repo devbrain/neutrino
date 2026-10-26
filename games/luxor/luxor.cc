@@ -9,9 +9,9 @@
 #include <resources/storage/vfs.hh>
 #include <luxor/resources/loader.hh>
 
-#include <neutrino/application.hh>
 #include <luxor/scenes/play_scene.hh>
-#include <sdlpp/app/entry_point.hh>
+#include <neutrino/application.hh>
+#include <neutrino/entry_point.hh>
 // =========================================================================
 // The Application: tutorial_app
 // =========================================================================

@@ -8,13 +8,20 @@ neutrino_library_type(neutrino _lib_type)
 
 add_library(neutrino ${_lib_type}
         # -------------------------------------------------------
+        # Common
+        # -------------------------------------------------------
+        ${PROJECT_SOURCE_DIR}/include/neutrino/application.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/coordinates.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/entry_point.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/neutrino.hh
+        # -------------------------------------------------------
         # Input
         # -------------------------------------------------------
         ${PROJECT_SOURCE_DIR}/include/neutrino/input/input_snapshot.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/input/hotkey.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/input/mouse_click.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/input/gamepad_button.hh
-
+        ${PROJECT_SOURCE_DIR}/include/neutrino/input/input.hh
         # -------------------------------------------------------
         # Physics
         # -------------------------------------------------------
@@ -37,6 +44,7 @@ add_library(neutrino ${_lib_type}
         ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/world_internal.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/world_types.hh
 
+        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/physics.hh
         # -------------------------------------------------------
         # Scenes
         # -------------------------------------------------------
@@ -65,6 +73,7 @@ add_library(neutrino ${_lib_type}
         # -------------------------------------------------------
         # Video
         # -------------------------------------------------------
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/detail/id_strong_type.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/image_loader.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/geometry_types.hh
@@ -183,6 +192,14 @@ add_library(neutrino ${_lib_type}
         input/mouse_click.cc
         input/gamepad_button.cc
 
+        # ----------------------------------------------------------
+        # Simplex
+        # ----------------------------------------------------------
+        ${PROJECT_SOURCE_DIR}/include/neutrino/simplex/application.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/simplex/entry_point.hh
+        simplex/detail/application_adapter.hh
+        simplex/detail/application_adapter.cc
+        simplex/application.cc
 
 )
 add_library(neutrino::neutrino ALIAS neutrino)
@@ -205,6 +222,7 @@ target_link_libraries(neutrino
         neutrino::onyx_image
         neutrino::onyx_font
         PRIVATE
+        neutrino::bstream
         nlohmann_json::nlohmann_json
         pugixml::pugixml
         neutrino_stb_rect_pack)

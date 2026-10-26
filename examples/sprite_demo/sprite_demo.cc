@@ -2,16 +2,10 @@
 // Created by igor on 05/07/2026.
 //
 
+#include <neutrino/neutrino.hh>
 #include <neutrino/application.hh>
-#include <neutrino/input/hotkey.hh>
-#include <neutrino/scene/base_scene.hh>
-#include <neutrino/scene/scene_transitions.hh>
-#include <neutrino/video/draw.hh>
-#include <neutrino/video/sprite/sprite_cache.hh>
-#include <neutrino/video/sprite/sprite_def.hh>
-
 #include <failsafe/enforce.hh>
-#include <sdlpp/app/entry_point.hh>
+#include <neutrino/entry_point.hh>
 #include <sdlpp/image/image.hh>
 #include <sdlpp/video/pixels.hh>
 
@@ -259,4 +253,4 @@ namespace {
     };
 }
 
-SDLPP_MAIN(sprite_demo_app)
+NEUTRINO_MAIN(sprite_demo_app)

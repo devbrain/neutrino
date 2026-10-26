@@ -12,7 +12,7 @@
 
 #include <failsafe/logger.hh>
 #include <neutrino/application.hh>
-#include <sdlpp/app/entry_point.hh>
+#include <neutrino/entry_point.hh>
 
 #include <ke/assets/registry.hh>
 #include <ke/format/archive.hh>
@@ -183,4 +183,4 @@ class ke : public neutrino::application {
         std::unique_ptr <rs::ke_assets> m_assets;
 };
 
-SDLPP_MAIN(ke)
+NEUTRINO_MAIN(ke)

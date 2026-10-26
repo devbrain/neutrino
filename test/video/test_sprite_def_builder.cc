@@ -107,6 +107,25 @@ TEST_SUITE("neutrino::video sprite_def_builder") {
         CHECK(def.image.height == 48);
     }
 
+    TEST_CASE("builder reads non-seekable streams across buffer boundaries") {
+        std::string raw(9001, '\0');
+        for (std::size_t i = 0; i < raw.size(); ++i) {
+            raw[i] = static_cast<char>(i % 256);
+        }
+        class sequential_buffer : public std::streambuf {
+        public:
+            explicit sequential_buffer(std::string& bytes) {
+                setg(bytes.data(), bytes.data(), bytes.data() + bytes.size());
+            }
+        } buffer(raw);
+        std::istream input(&buffer);
+        input.ignore(3);
+        const auto def = sprite_def_builder().from_stream(input, 48, 48).build();
+        REQUIRE(std::holds_alternative<image_from_memory>(def.image.source));
+        const auto& bytes = std::get<image_from_memory>(def.image.source).bytes;
+        CHECK(std::string(bytes.begin(), bytes.end()) == raw.substr(3));
+    }
+
     TEST_CASE("builder configures image from surface and automatically adopts dimensions") {
         auto surf = sdlpp::surface::create_rgb(40, 20, sdlpp::pixel_format_enum::RGBA8888);
         REQUIRE(surf.has_value());

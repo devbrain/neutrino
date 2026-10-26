@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <neutrino/scene/base_scene.hh>
+#include <neutrino/neutrino.hh>
 
 namespace luxor {
     class play_scene : public neutrino::base_scene {

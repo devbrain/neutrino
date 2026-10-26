@@ -273,7 +273,7 @@ namespace neutrino::physics {
             move_result move_to(collider_id cid, const vec& target, units::duration dt);
 
             // ---- typed gameplay-space boundary (roadmap Tier 3) -------------------------------
-            // The same operations in the strong vocabulary of <neutrino/world_space.hh>, so intent
+            // The same operations in the strong vocabulary of <neutrino/coordinates.hh>, so intent
             // is carried by the type rather than by the parameter name: a world_pos cannot be
             // handed to set_velocity, and an effective world_velocity cannot be mistaken for a
             // requested one. Thin delegations to the vec-based forms above -- ADDITIVE, so

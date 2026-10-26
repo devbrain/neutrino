@@ -3,6 +3,7 @@
 //
 
 #include "memory_io.hh"
+#include <bstream/stream_copier.hh>
 
 namespace neutrino::audio_detail {
 
@@ -54,17 +55,7 @@ namespace {
 
 std::shared_ptr<const std::vector<uint8_t>> read_all(std::istream& is) {
     auto buf = std::make_shared<std::vector<uint8_t>>();
-    char chunk[4096];
-    while (true) {
-        is.read(chunk, sizeof(chunk));
-        const auto got = is.gcount();
-        if (got > 0) {
-            buf->insert(buf->end(), chunk, chunk + got);
-        }
-        if (!is) {
-            break;
-        }
-    }
+    bstream::stream_copier::copy_to_vector(is, *buf);
     return buf;
 }
 

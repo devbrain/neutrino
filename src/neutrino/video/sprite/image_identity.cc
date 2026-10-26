@@ -2,6 +2,8 @@
 // Created by igor on 12/07/2026.
 //
 
+#include <bstream/stream_copier.hh>
+
 #include <neutrino/video/sprite/image_identity.hh>
 
 #include <cstddef>
@@ -57,8 +59,8 @@ namespace neutrino {
             if (!in) {
                 THROW_RUNTIME("image_identifier: cannot open image file: ", path.string());
             }
-            const std::vector <std::uint8_t> bytes(
-                (std::istreambuf_iterator <char>(in)), std::istreambuf_iterator <char>());
+            std::vector <std::uint8_t> bytes;
+            bstream::stream_copier::copy_to_vector(in, bytes);
             return content_hash(std::as_bytes(std::span <const std::uint8_t>(bytes)));
         }
     } // namespace

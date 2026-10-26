@@ -12,6 +12,8 @@ binary.
 ## Build
 
 Neutrino fetches every dependency itself. Nothing to install first, no submodules to initialise.
+Binary I/O in the engine and the Luxor, KE, and IT game formats uses
+[lib_bstream](https://github.com/devbrain/lib_bstream), pinned to a specific revision in CMake.
 
 ```bash
 git clone https://github.com/devbrain/neutrino.git
