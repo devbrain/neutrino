@@ -92,7 +92,11 @@ neutrino::draw_cross(neutrino::point{50, 50}, 4, 1.0f, sdlpp::colors::white);
 
 ### Color scoping & error reporting
 
-Every draw function in `draw.hh` returns `sdlpp::expected<void, std::string>`. On success, the primitive was submitted to the GPU backbuffer; on failure (e.g. an invalidated graphics context), the expected contains SDL's error description.
+Drawing is fire-and-forget: draw and set functions in `draw.hh` return `void`, so there is nothing to check at the call site.
+
+- **Invalid arguments throw.** A non-finite or non-positive sprite scale, or a non-finite rotation, is a bug in the calling code and fails loudly.
+- **SDL failures are logged and counted.** If SDL rejects a draw (e.g. an invalidated graphics context), the engine logs SDL's error, rate-limited per call site so a broken renderer cannot flood the log, and increments `neutrino::draw_failure_count()`. Tests and tools can compare the count before and after a span of draws.
+- **Getters return values directly.** `get_draw_color()`, `get_draw_blend_mode()` and `get_line_style()` throw only if the renderer can no longer report its state.
 
 Calls that take a trailing `sdlpp::color` apply that color for the single call and **automatically restore the previous draw color**:
 

@@ -83,7 +83,7 @@ namespace neutrino {
                 // enforcement) and ignore per-sprite draw failures: a bad sprite is a
                 // no-op, never a thrown exception -- same policy as draw_stats.
                 if (ref.valid()) {
-                    (void) draw_sprite(d.position, ref, d.params);
+                    draw_sprite(d.position, ref, d.params);
                 }
             }, d.visual);
         }

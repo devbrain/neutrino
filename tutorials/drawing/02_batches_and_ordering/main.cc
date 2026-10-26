@@ -191,7 +191,7 @@ namespace {
                 // If we draw actors first, trees always draw over them even when actor is south!
                 for (const auto& a : m_actors) {
                     if (player_vis) {
-                        (void) neutrino::draw_sprite(
+                        neutrino::draw_sprite(
                             neutrino::point{static_cast<int>(a.position.x), static_cast<int>(a.position.y)},
                             *player_vis,
                             neutrino::sprite_draw_params{.scale = 2.0f}
@@ -200,7 +200,7 @@ namespace {
                 }
                 for (const auto& t : m_trees) {
                     if (tree_vis) {
-                        (void) neutrino::draw_sprite(
+                        neutrino::draw_sprite(
                             neutrino::point{static_cast<int>(t.x), static_cast<int>(t.y)},
                             *tree_vis,
                             neutrino::sprite_draw_params{.scale = 2.5f}

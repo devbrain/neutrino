@@ -118,7 +118,7 @@ namespace {
         int x = pos.x;
         for (const char c : text) {
             if (c >= 32 && c <= 126) {
-                (void) neutrino::draw_sprite(point{x, pos.y},
+                neutrino::draw_sprite(point{x, pos.y},
                     neutrino::visual_ref(font, static_cast <std::size_t>(c - 32)));
             }
             x += 8;
@@ -160,7 +160,7 @@ void sprite_gallery_scene::render() {
     for (std::size_t i = 0; i < m_bonus.size(); ++i) {
         const int cx = margin + static_cast <int>(i) % cols * cell_w;
         const int cy = b_top + static_cast <int>(i) / cols * cell_h;
-        (void) neutrino::draw_sprite(point{cx + spr_x, cy + spr_y}, m_bonus[i]);
+        neutrino::draw_sprite(point{cx + spr_x, cy + spr_y}, m_bonus[i]);
         draw_text(m_font, point{cx, cy + name_dy}, rs::bonus_name(static_cast <rs::bonus>(i)));
     }
 
@@ -170,7 +170,7 @@ void sprite_gallery_scene::render() {
     for (std::size_t i = 0; i < m_enemy.size(); ++i) {
         const int cx = margin + static_cast <int>(i) % cols * cell_w;
         const int cy = e_top + static_cast <int>(i) / cols * cell_h;
-        (void) neutrino::draw_sprite(point{cx + spr_x, cy + spr_y}, m_enemy[i]);
+        neutrino::draw_sprite(point{cx + spr_x, cy + spr_y}, m_enemy[i]);
         draw_text(m_font, point{cx, cy + name_dy}, rs::enemy_name(static_cast <rs::enemy>(i)));
     }
 }

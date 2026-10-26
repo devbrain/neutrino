@@ -13,6 +13,19 @@
 
 namespace neutrino {
     namespace {
+        // Runs one tile draw and files it under drawn or failed. Draws return void, so a
+        // failure is read off the engine's draw-failure counter.
+        template<class Draw>
+        void tally(draw_stats& stats, Draw&& draw) {
+            const auto failures_before = draw_failure_count();
+            draw();
+            if (draw_failure_count() == failures_before) {
+                ++stats.drawn;
+            } else {
+                ++stats.failed;
+            }
+        }
+
         // The application-wide cache published at ready time. Fails loudly rather
         // than acquiring against a null cache if used before the app is ready.
         resource_cache& located_cache() {
@@ -272,12 +285,7 @@ namespace neutrino {
             || !grid_aligned) {
             const point sp = to_screen(cam, layer, vp, anchor);
             const point pos{viewport.x + sp.x, viewport.y + sp.y};
-            const auto result = draw_sprite(pos, visual, {cam.zoom, flip, rotation});
-            if (result.has_value()) {
-                ++stats.drawn;
-            } else {
-                ++stats.failed;
-            }
+            tally(stats, [&] { draw_sprite(pos, visual, {cam.zoom, flip, rotation}); });
             return;
         }
 
@@ -293,11 +301,7 @@ namespace neutrino {
         const point s_br = to_screen(cam, layer, vp, br);
         const rect dst{viewport.x + s_tl.x, viewport.y + s_tl.y, s_br.x - s_tl.x, s_br.y - s_tl.y};
 
-        if (draw_sprite(dst, visual, flip).has_value()) {
-            ++stats.drawn;
-        } else {
-            ++stats.failed;
-        }
+        tally(stats, [&] { draw_sprite(dst, visual, flip); });
     }
 
     void world_renderer::draw_cell(const world_tile_cell& cell, int cx, int cy,
@@ -405,11 +409,7 @@ namespace neutrino {
         const world_point anchor{0.0f, static_cast <float>(height)};
         const point sp = to_screen(cam, layer, viewport.dimensions(), anchor);
         const point pos{viewport.x + sp.x, viewport.y + sp.y};
-        if (draw_sprite(pos, visual, {cam.zoom}).has_value()) {
-            ++stats.drawn;
-        } else {
-            ++stats.failed;
-        }
+        tally(stats, [&] { draw_sprite(pos, visual, {cam.zoom}); });
     }
 
     void world_renderer::draw_layer(const world_object_layer& layer, const camera& cam,

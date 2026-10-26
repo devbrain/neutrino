@@ -346,12 +346,12 @@ TEST_SUITE("neutrino::simplex frames") {
     TEST_CASE("callback drawing survives the engine clear and canvas pixels persist") {
         app_session session;
         probe.create = [] {
-            REQUIRE(neutrino::draw_point(1, 1, sdlpp::colors::green));
-            REQUIRE(neutrino::set_draw_color(sdlpp::colors::red));
+            neutrino::draw_point(1, 1, sdlpp::colors::green);
+            neutrino::set_draw_color(sdlpp::colors::red);
         };
         probe.update = [] {
-            if (probe.updates.size() == 1) REQUIRE(neutrino::draw_point(3, 3));
-            if (probe.updates.size() == 2) REQUIRE(neutrino::draw_point(4, 4));
+            if (probe.updates.size() == 1) neutrino::draw_point(3, 3);
+            if (probe.updates.size() == 2) neutrino::draw_point(4, 4);
         };
         REQUIRE(session.init() == SDL_APP_CONTINUE);
         capture_target output;
@@ -363,7 +363,7 @@ TEST_SUITE("neutrino::simplex frames") {
         check_pixel(output.renderer, 3, 3, 255, 0, 0);
         check_pixel(output.renderer, 4, 4, 255, 0, 0);
         probe.update = [] {
-            REQUIRE(neutrino::set_draw_color(sdlpp::colors::blue));
+            neutrino::set_draw_color(sdlpp::colors::blue);
             REQUIRE(neutrino::get_renderer().clear());
         };
         session.frame(0.0f);

@@ -37,7 +37,7 @@ However, client code currently feels glued together because the seams of underly
    * Input queries require `#include <sdlpp/events/keyboard_codes.hh>` and `in.pressed(hotkey{sdlpp::scancode::escape})`.
    * Application startup requires `#include <sdlpp/app/entry_point.hh>` and the `SDLPP_MAIN` macro.
    * Event handling forces every `base_scene` to implement pure virtual `handle_action(const sdlpp::event&)`.
-   * Drawing calls return `sdlpp::expected<void, std::string>`. (`sdlpp::expected` is only an alias of `failsafe::expected`, so this is a spelling leak, not a type mismatch.)
+   * Drawing calls return `sdlpp::expected<void, std::string>`, a result no caller checks (0 of 147 call sites in games, demos, examples and tutorials) and that also leaks the `sdlpp::` spelling.
 
 3. **Subsystem Islands**:
    * Physics and visual sprites are disconnected. Visual frames authored in `sprite_def_builder` cannot declare hitboxes, and physics colliders have no built-in visual debug rendering.
@@ -152,26 +152,32 @@ flowchart TD
   * Geometry & types: `<neutrino/video/geometry_types.hh>`, `<neutrino/video/color.hh>`, `<neutrino/coordinates.hh>`
   * Graphics & sprites: `<neutrino/video/draw.hh>`, `<neutrino/video/sprites.hh>`, `<neutrino/video/globals.hh>`
   * Input: `<neutrino/input/input_snapshot.hh>`, `<neutrino/input/keys.hh>`
-  * Errors: `<neutrino/expected.hh>`
   * Audio: `<neutrino/audio/audio.hh>`
 * **Client Impact**: An entire game scene can be written with a single `#include <neutrino/neutrino.hh>`.
 
-#### 1.6 Engine-Owned `expected` Spelling
-* **Location**: `<neutrino/expected.hh>` (re-exported by `<neutrino/neutrino.hh>`).
-* `expected` lives in the general-purpose `failsafe` library; `sdlpp::expected` is just `failsafe::expected<T, E>`. Neutrino adds the same thin alias set that sdlpp and `games/luxor/util/expected.hh` already use:
+#### 1.6 Draw Calls Return `void`
+* **Decision**: drawing is fire-and-forget. Draw primitives and `draw_sprite` return `void`; state getters return their value directly. This removes every `expected` from neutrino's public API, so no `neutrino::expected` alias is needed. (An alias was the original plan; it was dropped once it turned out `draw.hh` is the only public header that returns `expected`.)
+* **Why `expected` buys nothing here**:
+  * **No caller uses it.** 0 of 147 draw calls in games, demos, examples and tutorials look at the result. The only consumers are three engine-internal call sites in `world_renderer.cc` that bump `stats.failed`, which tests assert is 0 and `map_viewer` prints.
+  * **Programmer errors never reach it.** A bad scale or rotation already fails `ENFORCE`; an invalid sprite reference or empty destination is a silent no-op.
+  * **What remains is SDL's own return value** from `SDL_RenderLine`, `SDL_RenderFillRect`, `SDL_RenderGeometry`, etc. In SDL3 these fail only on a broken renderer, a texture from another renderer, or out-of-memory while queuing. None of these can be handled per call, mid-frame.
+  * **It is unenforced.** The `void`-valued draws aren't `[[nodiscard]]`, so results are silently dropped; adding `[[nodiscard]]` would only spread `(void)` casts across 147 call sites.
+  * **Getters wrap engine-owned state.** `get_draw_color()`, `get_draw_blend_mode()` and `get_line_style()` return `expected` for state the engine itself set.
+* **New contract** (`include/neutrino/video/draw.hh`):
   ```cpp
-  #include <failsafe/expected.hh>
-
-  namespace neutrino {
-      template<typename T, typename E = failsafe::error_type>
-      using expected = failsafe::expected<T, E>;
-      template<typename E>
-      using unexpected = failsafe::unexpected<E>;
-      using failsafe::make_unexpected;
-  }
+  NEUTRINO_EXPORT void draw_line(const point& a, const point& b, const color& c);
+  NEUTRINO_EXPORT void draw_sprite(const point& position, sprite_state_id state,
+                                   const sprite_draw_params& params = {});
+  NEUTRINO_EXPORT void set_draw_color(const color& c);
+  NEUTRINO_EXPORT [[nodiscard]] color get_draw_color();
   ```
-* Replace `sdlpp::expected` with `neutrino::expected` in neutrino's public headers (~67 occurrences, mostly `draw.hh`). Because both aliases name the same `failsafe::expected` type, results from sdlpp calls pass straight through with no conversion, and existing client code that names `sdlpp::expected` keeps compiling.
-* Keeping `expected` (rather than making draw calls return `void`) costs nothing now that it is a general library type.
+* **Failures stay visible, not silent**: when SDL reports an error, the engine logs it, rate-limited per call site (the 1st, 1001st, ... failure of each `DRAW_CHECK` site, logged with that site's line), and increments `draw_failure_count()`, a running total since startup. Tests and tools compare the count before and after a span of draws; `world_renderer`'s `stats.failed` does exactly that per tile. (Per-call-site limiting and a running total replaced the earlier "first failure per frame" / per-frame counter idea: neither needs a frame-start reset hook in `draw.cc`.)
+* **Scope of `expected` vs. other error channels** (unchanged, now documented as policy):
+  * Draw calls: `void` + log/counter (this item).
+  * Loading images: throws (`image_loader.hh`); a missing asset is fatal for the caller.
+  * Optional resources: `std::optional` (`render_texture::create`).
+  * If a future public API has a failure the caller can genuinely act on, introduce `<neutrino/expected.hh>` (aliasing `failsafe::expected`) at that point, not before.
+* **Client impact**: none for normal code. A call written as a statement compiles unchanged when its return type becomes `void`; only code that inspects the result (`.has_value()`, `return draw_...(...)`) must change, and none exists outside `world_renderer.cc`. Phase 2's float `render_pos` overloads (§2.1) are specified as `void` already and stay that way.
 
 ---
 
@@ -326,7 +332,7 @@ flowchart TD
 | **P1.3** | `NEUTRINO_MAIN` macro | **S** (1 hr) | `include/neutrino/entry_point.hh` | No (additive) |
 | **P1.4** | Default stubs in `base_scene` | **S** (1 hr) | `include/neutrino/scene/base_scene.hh` | No (additive) |
 | **P1.5** | Umbrella header `<neutrino/neutrino.hh>` | **S** (2 hrs) | `include/neutrino/neutrino.hh` | No (additive) |
-| **P1.6** | `neutrino::expected` alias; drop `sdlpp::expected` from public headers | **S** (2 hrs) | `include/neutrino/expected.hh`, `include/neutrino/**` | No (same type) |
+| **P1.6** | Draw calls return `void`; getters return values; failures logged + counted | **S** (½ day) | `include/neutrino/video/draw.hh`, `src/neutrino/video/draw.cc`, `video/world/world_renderer.*` | No for callers that ignore results (all client code) |
 | **P2.1** | Float `render_pos` drawing overloads | **M** (1 day) | `include/neutrino/video/draw.hh`, `src/neutrino/video/draw.cc` | No (overloads) |
 | **P2.2** | Camera-aware world drawing (`to_render`, `sprite_batch::add(world_pos)`) | **S** (½ day) | `video/world/camera.hh`, `video/world/sprite_batch.hh` | No (additive) |
 | **P2.3** | Physics boundary helpers (`to_vec`, `to_aabb`) | **S** (2 hrs) | `include/neutrino/physics/geometry/types.hh` | No (additive) |

@@ -2,13 +2,18 @@
 // Created by igor on 03/07/2026.
 //
 
+#include <source_location>
+#include <type_traits>
 #include <neutrino/video/draw.hh>
 #include <failsafe/enforce.hh>
+#include <failsafe/logger.hh>
+#include <failsafe/exception.hh>
 #include <sdlpp/video/renderer.hh>
 #include <euler/complex/complex.hh>
 #include <euler/angles/degree.hh>
 #include <algorithm>
 #include <array>
+#include <cstdint>
 #include <cmath>
 #include <optional>
 
@@ -16,15 +21,48 @@
 
 namespace neutrino {
     namespace {
+// Total draw failures since startup; read through draw_failure_count().
+        std::uint64_t g_draw_failures = 0;
+
+        // Turns an sdlpp result into the draw API's contract. Draws/setters: a failure is counted
+        // and logged, rate-limited per call site (1st, 1001st, ...) so a broken renderer cannot
+        // flood the log. Getters: a failure means the renderer itself is gone, so throw.
+        // LINE is the DRAW_CHECK call site; two checks on one line share a counter.
+        template<std::uint_least32_t LINE>
+        struct call_site_checker {
+            static inline std::uint32_t count = 0;
+
+            static void run(const sdlpp::expected <void, std::string>& x) {
+                if (x) [[likely]] {
+                    return;
+                }
+                ++g_draw_failures;
+                if (count++ % 1000 == 0) {
+                    failsafe::logger::log_with_level <LOGGER_LEVEL_ERROR>(
+                        LOGGER_DEFAULT_CATEGORY_STR, __FILE__, static_cast <int>(LINE), x.error());
+                }
+            }
+
+            template<typename T>
+            static T run(const sdlpp::expected <T, std::string>& x) {
+                if (x) [[likely]] {
+                    return *x;
+                }
+                THROW_DEFAULT(x.error());
+            }
+        };
+
+#define DRAW_CHECK(...) call_site_checker <std::source_location::current().line()>::run(__VA_ARGS__)
 
         // Open the renderer, set the draw colour under a scope guard, and run `fn(renderer)`.
         // Collapses the repeated get_renderer() + draw_color_guard + forward boilerplate.
-        template <class Fn>
-        [[nodiscard]] auto with_draw_color(const sdlpp::color& c, Fn&& fn) {
+        template<class Fn>
+        auto with_draw_color(const sdlpp::color& c, Fn&& fn) {
             auto& renderer = get_renderer();
             sdlpp::renderer::draw_color_guard guard(renderer, c);
             return fn(renderer);
         }
+
         [[nodiscard]] bool has_flip(sprite_flip flags, sprite_flip flag) noexcept {
             return static_cast <std::uint8_t>(flags & flag) != 0;
         }
@@ -65,7 +103,8 @@ namespace neutrino {
             float y{0};
         };
 
-        [[nodiscard]] local_point transform_local_tiled(local_point p, float width, float height, sprite_flip flip) noexcept {
+        [[nodiscard]] local_point transform_local_tiled(local_point p, float width, float height,
+                                                        sprite_flip flip) noexcept {
             // Match Tiled orthogonal/isometric GID flags: diagonal first, then H/V.
             // The diagonal flag swaps bottom-left and top-right corners (x/y axis swap).
             if (has_flip(flip, sprite_flip::diagonal)) {
@@ -172,8 +211,8 @@ namespace neutrino {
             float scale,
             float rotation) {
             const auto& src = visual.texture_rect;
-            const float texture_width = static_cast <float>(atlas.width);
-            const float texture_height = static_cast <float>(atlas.height);
+            const auto texture_width = static_cast <float>(atlas.width);
+            const auto texture_height = static_cast <float>(atlas.height);
             const float u0 = static_cast <float>(src.x) / texture_width;
             const float v0 = static_cast <float>(src.y) / texture_height;
             const float u1 = static_cast <float>(src.x + src.w) / texture_width;
@@ -208,11 +247,11 @@ namespace neutrino {
                 // polar(1, θ) gives (dx·cosθ - dy·sinθ, dx·sinθ + dy·cosθ) —
                 // clockwise in screen space (y down), matching copy_ex on the
                 // other path. Rotate each vertex about the anchor `position`.
-                const auto rotor = euler::complex<float>::polar(1.0f, euler::degree<float>(rotation));
-                const float cx = static_cast <float>(position.x);
-                const float cy = static_cast <float>(position.y);
+                const auto rotor = euler::complex <float>::polar(1.0f, euler::degree <float>(rotation));
+                const auto cx = static_cast <float>(position.x);
+                const auto cy = static_cast <float>(position.y);
                 for (auto& v : vertices) {
-                    const auto rotated = euler::complex<float>(v.position.x - cx, v.position.y - cy) * rotor;
+                    const auto rotated = euler::complex <float>(v.position.x - cx, v.position.y - cy) * rotor;
                     v.position.x = cx + rotated.real();
                     v.position.y = cy + rotated.imag();
                 }
@@ -291,146 +330,146 @@ namespace neutrino {
         }
     }
 
-    sdlpp::expected<void, std::string> set_draw_color(const sdlpp::color& c) {
-        return get_renderer().set_draw_color(c);
+    void set_draw_color(const sdlpp::color& c) {
+        DRAW_CHECK(get_renderer().set_draw_color(c));
     }
 
-    sdlpp::expected<sdlpp::color, std::string> get_draw_color() {
-        return get_renderer().get_draw_color();
+    sdlpp::color get_draw_color() {
+        return DRAW_CHECK(get_renderer().get_draw_color());
     }
 
-    sdlpp::expected<void, std::string> set_draw_blend_mode(sdlpp::blend_mode mode) {
-        return get_renderer().set_draw_blend_mode(mode);
+    void set_draw_blend_mode(sdlpp::blend_mode mode) {
+        DRAW_CHECK(get_renderer().set_draw_blend_mode(mode));
     }
 
-    sdlpp::expected<sdlpp::blend_mode, std::string> get_draw_blend_mode() {
-        return get_renderer().get_draw_blend_mode();
+    sdlpp::blend_mode get_draw_blend_mode() {
+        return DRAW_CHECK(get_renderer().get_draw_blend_mode());
     }
 
-    sdlpp::expected<void, std::string> set_line_style(const sdlpp::line_style& style) {
-        return get_renderer().set_line_style(style);
+    void set_line_style(const sdlpp::line_style& style) {
+        DRAW_CHECK(get_renderer().set_line_style(style));
     }
 
-    sdlpp::expected<sdlpp::line_style, std::string> get_line_style() {
-        return get_renderer().get_line_style();
+    sdlpp::line_style get_line_style() {
+        return DRAW_CHECK(get_renderer().get_line_style());
     }
 
     // --- Points ---
 
-    sdlpp::expected<void, std::string> draw_point(int x, int y) {
-        return get_renderer().draw_point(x, y);
+    void draw_point(int x, int y) {
+        DRAW_CHECK(get_renderer().draw_point(x, y));
     }
 
-    sdlpp::expected<void, std::string> draw_point(int x, int y, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_point(x, y); });
+    void draw_point(int x, int y, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_point(x, y); }));
     }
 
-    sdlpp::expected<void, std::string> draw_point(const point& p) {
-        return get_renderer().draw_point(p);
+    void draw_point(const point& p) {
+        DRAW_CHECK(get_renderer().draw_point(p));
     }
 
-    sdlpp::expected<void, std::string> draw_point(const point& p, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_point(p); });
+    void draw_point(const point& p, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_point(p); }));
     }
 
     // --- Lines ---
 
-    sdlpp::expected<void, std::string> draw_line(int x1, int y1, int x2, int y2) {
-        return get_renderer().draw_line(x1, y1, x2, y2);
+    void draw_line(int x1, int y1, int x2, int y2) {
+        DRAW_CHECK(get_renderer().draw_line(x1, y1, x2, y2));
     }
 
-    sdlpp::expected<void, std::string> draw_line(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_line(x1, y1, x2, y2); });
+    void draw_line(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_line(x1, y1, x2, y2); }));
     }
 
-    sdlpp::expected<void, std::string> draw_line(const point& p1, const point& p2) {
-        return get_renderer().draw_line(p1, p2);
+    void draw_line(const point& p1, const point& p2) {
+        DRAW_CHECK(get_renderer().draw_line(p1, p2));
     }
 
-    sdlpp::expected<void, std::string> draw_line(const point& p1, const point& p2, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_line(p1, p2); });
+    void draw_line(const point& p1, const point& p2, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_line(p1, p2); }));
     }
 
-    sdlpp::expected<void, std::string> draw_line(const line& l) {
-        return get_renderer().draw_line(l.start(), l.end());
+    void draw_line(const line& l) {
+        DRAW_CHECK(get_renderer().draw_line(l.start(), l.end()));
     }
 
-    sdlpp::expected<void, std::string> draw_line(const line& l, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_line(l.start(), l.end()); });
+    void draw_line(const line& l, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_line(l.start(), l.end()); }));
     }
 
     // --- Rectangles ---
 
-    sdlpp::expected<void, std::string> draw_rect(int x1, int y1, int x2, int y2) {
+    void draw_rect(int x1, int y1, int x2, int y2) {
         int rx = std::min(x1, x2);
         int ry = std::min(y1, y2);
         int rw = std::abs(x2 - x1);
         int rh = std::abs(y2 - y1);
-        return get_renderer().draw_rect(rect{rx, ry, rw, rh});
+        DRAW_CHECK(get_renderer().draw_rect(rect{rx, ry, rw, rh}));
     }
 
-    sdlpp::expected<void, std::string> draw_rect(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto&) { return draw_rect(x1, y1, x2, y2); });
+    void draw_rect(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
+        with_draw_color(c, [&](auto&) { draw_rect(x1, y1, x2, y2); });
     }
 
-    sdlpp::expected<void, std::string> draw_rect(const rect& r) {
-        return get_renderer().draw_rect(r);
+    void draw_rect(const rect& r) {
+        DRAW_CHECK(get_renderer().draw_rect(r));
     }
 
-    sdlpp::expected<void, std::string> draw_rect(const rect& r, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r_dev) { return r_dev.draw_rect(r); });
+    void draw_rect(const rect& r, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r_dev) { return r_dev.draw_rect(r); }));
     }
 
-    sdlpp::expected<void, std::string> draw_rect_fill(int x1, int y1, int x2, int y2) {
+    void draw_rect_fill(int x1, int y1, int x2, int y2) {
         int rx = std::min(x1, x2);
         int ry = std::min(y1, y2);
         int rw = std::abs(x2 - x1);
         int rh = std::abs(y2 - y1);
-        return get_renderer().fill_rect(rect{rx, ry, rw, rh});
+        DRAW_CHECK(get_renderer().fill_rect(rect{rx, ry, rw, rh}));
     }
 
-    sdlpp::expected<void, std::string> draw_rect_fill(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto&) { return draw_rect_fill(x1, y1, x2, y2); });
+    void draw_rect_fill(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
+        with_draw_color(c, [&](auto&) { draw_rect_fill(x1, y1, x2, y2); });
     }
 
-    sdlpp::expected<void, std::string> draw_rect_fill(const rect& r) {
-        return get_renderer().fill_rect(r);
+    void draw_rect_fill(const rect& r) {
+        DRAW_CHECK(get_renderer().fill_rect(r));
     }
 
-    sdlpp::expected<void, std::string> draw_rect_fill(const rect& r, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r_dev) { return r_dev.fill_rect(r); });
+    void draw_rect_fill(const rect& r, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r_dev) { return r_dev.fill_rect(r); }));
     }
 
-    sdlpp::expected <void, std::string> draw_sprite(
+    void draw_sprite(
         const point& position,
         const sprite_sheet& sheet,
         sprite_visual_id visual,
         const sprite_draw_params& params) {
-        return draw_visual_impl(require_texture_registry(), sheet, visual, position, params.flip, params.scale,
-                                params.rotation_degrees);
+        DRAW_CHECK(draw_visual_impl(require_texture_registry(), sheet, visual, position, params.flip, params.scale,
+                                    params.rotation_degrees));
     }
 
-    sdlpp::expected <void, std::string> draw_sprite(
+    void draw_sprite(
         const point& position,
         sprite_visual_ref visual,
         const sprite_draw_params& params) {
         const auto& manager = require_sprites_manager();
-        return draw_visual_impl(
+        DRAW_CHECK(draw_visual_impl(
             require_texture_registry(),
             manager.get(visual.sheet),
             visual.visual,
             position,
             params.flip,
             params.scale,
-            params.rotation_degrees);
+            params.rotation_degrees));
     }
 
-    sdlpp::expected <void, std::string> draw_sprite(
+    void draw_sprite(
         const rect& dst,
         sprite_visual_ref visual,
         sprite_flip flip) {
         if (!visual.valid() || dst.w <= 0 || dst.h <= 0) {
-            return {}; // nothing to draw
+            return; // nothing to draw
         }
         const auto& manager = require_sprites_manager();
         const auto& sheet = manager.get(visual.sheet);
@@ -439,197 +478,224 @@ namespace neutrino {
         // Straight blit into the explicit destination: the caller has already rounded
         // both corners, so no origin/scale rounding here. Diagonal flip / rotation are
         // not supported on this path (H/V only).
-        return get_renderer().copy_ex(
+        DRAW_CHECK(get_renderer().copy_ex(
             atlas.texture,
             std::optional <rect>{sprite.texture_rect},
             std::optional <rect>{dst},
             0.0,
             std::optional <point>{},
-            to_sdl_flip(flip));
+            to_sdl_flip(flip)));
     }
 
-    sdlpp::expected <void, std::string> draw_sprite(
+    void draw_sprite(
         const point& position,
         const sprite_appearance& appearance,
         const sprite_draw_params& params) {
         if (!appearance.visible || !appearance.visual.valid()) {
-            return {};
+            return;
         }
 
-        return draw_appearance_impl(require_sprites_manager(), position, appearance, params);
+        DRAW_CHECK(draw_appearance_impl(require_sprites_manager(), position, appearance, params));
     }
 
-    sdlpp::expected <void, std::string> draw_sprite(
+    void draw_sprite(
         const point& position,
         sprite_state_id state,
         const sprite_draw_params& params) {
         const auto& manager = require_sprites_manager();
-        return draw_appearance_impl(manager, position, manager.appearance(state), params);
+        DRAW_CHECK(draw_appearance_impl(manager, position, manager.appearance(state), params));
     }
 
     // --- Anti-aliased Lines ---
 
-    sdlpp::expected<void, std::string> draw_line_aa(int x1, int y1, int x2, int y2) {
-        return get_renderer().draw_line_aa(static_cast<float>(x1), static_cast<float>(y1),
-                                           static_cast<float>(x2), static_cast<float>(y2));
+    void draw_line_aa(int x1, int y1, int x2, int y2) {
+        DRAW_CHECK(get_renderer().draw_line_aa(static_cast <float>(x1), static_cast <float>(y1),
+                                           static_cast <float>(x2), static_cast <float>(y2)));
     }
 
-    sdlpp::expected<void, std::string> draw_line_aa(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto&) { return draw_line_aa(x1, y1, x2, y2); });
+    void draw_line_aa(int x1, int y1, int x2, int y2, const sdlpp::color& c) {
+        with_draw_color(c, [&](auto&) { draw_line_aa(x1, y1, x2, y2); });
     }
 
-    sdlpp::expected<void, std::string> draw_line_aa(const point& p1, const point& p2) {
-        return get_renderer().draw_line_aa(p1, p2);
+    void draw_line_aa(const point& p1, const point& p2) {
+        DRAW_CHECK(get_renderer().draw_line_aa(p1, p2));
     }
 
-    sdlpp::expected<void, std::string> draw_line_aa(const point& p1, const point& p2, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_line_aa(p1, p2); });
+    void draw_line_aa(const point& p1, const point& p2, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_line_aa(p1, p2); }));
     }
 
-    sdlpp::expected<void, std::string> draw_line_aa(const line& l) {
-        return get_renderer().draw_line_aa(l.start(), l.end());
+    void draw_line_aa(const line& l) {
+        DRAW_CHECK(get_renderer().draw_line_aa(l.start(), l.end()));
     }
 
-    sdlpp::expected<void, std::string> draw_line_aa(const line& l, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_line_aa(l.start(), l.end()); });
+    void draw_line_aa(const line& l, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_line_aa(l.start(), l.end()); }));
     }
 
     // --- Thick Lines ---
 
-    sdlpp::expected<void, std::string> draw_line_thick(int x1, int y1, int x2, int y2, float w) {
-        return get_renderer().draw_line_thick(static_cast<float>(x1), static_cast<float>(y1),
-                                              static_cast<float>(x2), static_cast<float>(y2), w);
+    void draw_line_thick(int x1, int y1, int x2, int y2, float w) {
+        DRAW_CHECK(get_renderer().draw_line_thick(static_cast <float>(x1), static_cast <float>(y1),
+                                              static_cast <float>(x2), static_cast <float>(y2), w));
     }
 
-    sdlpp::expected<void, std::string> draw_line_thick(int x1, int y1, int x2, int y2, float w, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto&) { return draw_line_thick(x1, y1, x2, y2, w); });
+    void draw_line_thick(int x1, int y1, int x2, int y2, float w, const sdlpp::color& c) {
+        with_draw_color(c, [&](auto&) { draw_line_thick(x1, y1, x2, y2, w); });
     }
 
-    sdlpp::expected<void, std::string> draw_line_thick(const point& p1, const point& p2, float w) {
-        return get_renderer().draw_line_thick(p1, p2, w);
+    void draw_line_thick(const point& p1, const point& p2, float w) {
+        DRAW_CHECK(get_renderer().draw_line_thick(p1, p2, w));
     }
 
-    sdlpp::expected<void, std::string> draw_line_thick(const point& p1, const point& p2, float w, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_line_thick(p1, p2, w); });
+    void draw_line_thick(const point& p1, const point& p2, float w,
+                         const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_line_thick(p1, p2, w); }));
     }
 
-    sdlpp::expected<void, std::string> draw_line_thick(const line& l, float w) {
-        return get_renderer().draw_line_thick(l.start(), l.end(), w);
+    void draw_line_thick(const line& l, float w) {
+        DRAW_CHECK(get_renderer().draw_line_thick(l.start(), l.end(), w));
     }
 
-    sdlpp::expected<void, std::string> draw_line_thick(const line& l, float w, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_line_thick(l.start(), l.end(), w); });
+    void draw_line_thick(const line& l, float w, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_line_thick(l.start(), l.end(), w); }));
     }
 
     // --- Dashed Lines ---
 
-    sdlpp::expected<void, std::string> draw_line_dashed(const point& p1, const point& p2, int dash, int gap) {
-        return get_renderer().draw_line_dashed(p1, p2, static_cast<float>(dash), static_cast<float>(gap));
+    void draw_line_dashed(const point& p1, const point& p2, int dash, int gap) {
+        DRAW_CHECK(get_renderer().draw_line_dashed(p1, p2, static_cast <float>(dash), static_cast <float>(gap)));
     }
 
-    sdlpp::expected<void, std::string> draw_line_dashed(const point& p1, const point& p2, int dash, int gap, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto&) { return draw_line_dashed(p1, p2, dash, gap); });
+    void draw_line_dashed(const point& p1, const point& p2, int dash, int gap,
+                          const sdlpp::color& c) {
+        with_draw_color(c, [&](auto&) { draw_line_dashed(p1, p2, dash, gap); });
     }
 
-    sdlpp::expected<void, std::string> draw_line_dashed(const line& l, int dash, int gap) {
-        return get_renderer().draw_line_dashed(l.start(), l.end(), static_cast<float>(dash), static_cast<float>(gap));
+    void draw_line_dashed(const line& l, int dash, int gap) {
+        DRAW_CHECK(get_renderer().draw_line_dashed(l.start(), l.end(), static_cast <float>(dash), static_cast <float>(gap)));
     }
 
-    sdlpp::expected<void, std::string> draw_line_dashed(const line& l, int dash, int gap, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_line_dashed(l.start(), l.end(), static_cast<float>(dash), static_cast<float>(gap)); });
+    void draw_line_dashed(const line& l, int dash, int gap, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) {
+            return r.draw_line_dashed(l.start(), l.end(), static_cast <float>(dash), static_cast <float>(gap));
+        }));
     }
 
     // --- Dotted Lines ---
 
-    sdlpp::expected<void, std::string> draw_line_dotted(const point& p1, const point& p2, int spacing) {
-        return get_renderer().draw_line_dotted(p1, p2, static_cast<float>(spacing));
+    void draw_line_dotted(const point& p1, const point& p2, int spacing) {
+        DRAW_CHECK(get_renderer().draw_line_dotted(p1, p2, static_cast <float>(spacing)));
     }
 
-    sdlpp::expected<void, std::string> draw_line_dotted(const point& p1, const point& p2, int spacing, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto&) { return draw_line_dotted(p1, p2, spacing); });
+    void draw_line_dotted(const point& p1, const point& p2, int spacing,
+                          const sdlpp::color& c) {
+        with_draw_color(c, [&](auto&) { draw_line_dotted(p1, p2, spacing); });
     }
 
-    sdlpp::expected<void, std::string> draw_line_dotted(const line& l, int spacing) {
-        return get_renderer().draw_line_dotted(l.start(), l.end(), static_cast<float>(spacing));
+    void draw_line_dotted(const line& l, int spacing) {
+        DRAW_CHECK(get_renderer().draw_line_dotted(l.start(), l.end(), static_cast <float>(spacing)));
     }
 
-    sdlpp::expected<void, std::string> draw_line_dotted(const line& l, int spacing, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_line_dotted(l.start(), l.end(), static_cast<float>(spacing)); });
+    void draw_line_dotted(const line& l, int spacing, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) {
+            return r.draw_line_dotted(l.start(), l.end(), static_cast <float>(spacing));
+        }));
     }
 
     // --- Circles ---
 
-    sdlpp::expected<void, std::string> draw_circle(int x1, int y1, int radius) {
-        return get_renderer().draw_circle(x1, y1, radius);
+    void draw_circle(int x1, int y1, int radius) {
+        DRAW_CHECK(get_renderer().draw_circle(x1, y1, radius));
     }
 
-    sdlpp::expected<void, std::string> draw_circle(int x1, int y1, int radius, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_circle(x1, y1, radius); });
+    void draw_circle(int x1, int y1, int radius, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_circle(x1, y1, radius); }));
     }
 
-    sdlpp::expected<void, std::string> draw_circle(const circle& c) {
-        return get_renderer().draw_circle(point{c.x, c.y}, c.radius);
+    void draw_circle(const circle& c) {
+        DRAW_CHECK(get_renderer().draw_circle(point{c.x, c.y}, c.radius));
     }
 
-    sdlpp::expected<void, std::string> draw_circle(const circle& shape, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_circle(point{shape.x, shape.y}, shape.radius); });
+    void draw_circle(const circle& shape, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_circle(point{shape.x, shape.y}, shape.radius); }));
     }
 
     // --- Filled Circles ---
 
-    sdlpp::expected<void, std::string> draw_circle_fill(int x1, int y1, int radius) {
-        return get_renderer().fill_circle(x1, y1, radius);
+    void draw_circle_fill(int x1, int y1, int radius) {
+        DRAW_CHECK(get_renderer().fill_circle(x1, y1, radius));
     }
 
-    sdlpp::expected<void, std::string> draw_circle_fill(int x1, int y1, int radius, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.fill_circle(x1, y1, radius); });
+    void draw_circle_fill(int x1, int y1, int radius, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.fill_circle(x1, y1, radius); }));
     }
 
-    sdlpp::expected<void, std::string> draw_circle_fill(const circle& c) {
-        return get_renderer().fill_circle(point{c.x, c.y}, c.radius);
+    void draw_circle_fill(const circle& c) {
+        DRAW_CHECK(get_renderer().fill_circle(point{c.x, c.y}, c.radius));
     }
 
-    sdlpp::expected<void, std::string> draw_circle_fill(const circle& shape, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.fill_circle(point{shape.x, shape.y}, shape.radius); });
+    void draw_circle_fill(const circle& shape, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.fill_circle(point{shape.x, shape.y}, shape.radius); }));
     }
 
     // --- Arrows ---
 
-    sdlpp::expected<void, std::string> draw_arrow(const point& from, const point& to, int head_size, float head_angle, float thickness) {
-        return get_renderer().draw_arrow(from, to, static_cast<float>(head_size), head_angle, thickness);
+    void draw_arrow(const point& from, const point& to, int head_size, float head_angle,
+                    float thickness) {
+        DRAW_CHECK(get_renderer().draw_arrow(from, to, static_cast <float>(head_size), head_angle, thickness));
     }
 
-    sdlpp::expected<void, std::string> draw_arrow(const point& from, const point& to, int head_size, float head_angle, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_arrow(from, to, static_cast<float>(head_size), head_angle); });
+    void draw_arrow(const point& from, const point& to, int head_size, float head_angle,
+                    const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) {
+            return r.draw_arrow(from, to, static_cast <float>(head_size), head_angle);
+        }));
     }
 
-    sdlpp::expected<void, std::string> draw_arrow(const point& from, const point& to, int head_size, float head_angle, float thickness, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_arrow(from, to, static_cast<float>(head_size), head_angle, thickness); });
+    void draw_arrow(const point& from, const point& to, int head_size, float head_angle,
+                    float thickness, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) {
+            return r.draw_arrow(from, to, static_cast <float>(head_size), head_angle, thickness);
+        }));
     }
 
-    sdlpp::expected<void, std::string> draw_arrow(const line& l, int head_size, float head_angle, float thickness) {
-        return get_renderer().draw_arrow(l.start(), l.end(), static_cast<float>(head_size), head_angle, thickness);
+    void draw_arrow(const line& l, int head_size, float head_angle, float thickness) {
+        DRAW_CHECK(get_renderer().draw_arrow(l.start(), l.end(), static_cast <float>(head_size), head_angle, thickness));
     }
 
-    sdlpp::expected<void, std::string> draw_arrow(const line& l, int head_size, float head_angle, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_arrow(l.start(), l.end(), static_cast<float>(head_size), head_angle); });
+    void draw_arrow(const line& l, int head_size, float head_angle,
+                    const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) {
+            return r.draw_arrow(l.start(), l.end(), static_cast <float>(head_size), head_angle);
+        }));
     }
 
-    sdlpp::expected<void, std::string> draw_arrow(const line& l, int head_size, float head_angle, float thickness, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_arrow(l.start(), l.end(), static_cast<float>(head_size), head_angle, thickness); });
+    void draw_arrow(const line& l, int head_size, float head_angle, float thickness,
+                    const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) {
+            return r.draw_arrow(l.start(), l.end(), static_cast <float>(head_size), head_angle, thickness);
+        }));
     }
 
     // --- Crosses ---
 
-    sdlpp::expected<void, std::string> draw_cross(const point& center, int size, float thickness) {
-        return get_renderer().draw_cross(center, static_cast<float>(size), thickness);
+    void draw_cross(const point& center, int size, float thickness) {
+        DRAW_CHECK(get_renderer().draw_cross(center, static_cast <float>(size), thickness));
     }
 
-    sdlpp::expected<void, std::string> draw_cross(const point& center, int size, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_cross(center, static_cast<float>(size)); });
+    void draw_cross(const point& center, int size, const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_cross(center, static_cast <float>(size)); }));
     }
 
-    sdlpp::expected<void, std::string> draw_cross(const point& center, int size, float thickness, const sdlpp::color& c) {
-        return with_draw_color(c, [&](auto& r) { return r.draw_cross(center, static_cast<float>(size), thickness); });
+    void draw_cross(const point& center, int size, float thickness,
+                    const sdlpp::color& c) {
+        DRAW_CHECK(with_draw_color(c, [&](auto& r) { return r.draw_cross(center, static_cast <float>(size), thickness); }));
+    }
+
+    std::uint64_t draw_failure_count() noexcept {
+        return g_draw_failures;
     }
 }
+
+#undef DRAW_CHECK

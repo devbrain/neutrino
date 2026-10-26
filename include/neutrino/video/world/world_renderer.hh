@@ -29,7 +29,7 @@ namespace neutrino {
     struct draw_stats {
         std::size_t drawn{0};   ///< Tiles successfully drawn.
         std::size_t skipped{0}; ///< Non-empty cells whose gid did not resolve to a visual.
-        std::size_t failed{0};  ///< Tiles whose draw call returned an error.
+        std::size_t failed{0};  ///< Tiles whose draw SDL rejected (see draw_failure_count()).
     };
 
     /**

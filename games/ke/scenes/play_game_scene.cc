@@ -106,8 +106,8 @@ namespace {
     }
 
     void draw_game_over() {
-        (void) neutrino::draw_rect_fill(neutrino::rect{52, 80, 216, 40}, sdlpp::color{0, 0, 0, 255});
-        (void) neutrino::set_draw_color(sdlpp::color{255, 235, 120, 255});
+        neutrino::draw_rect_fill(neutrino::rect{52, 80, 216, 40}, sdlpp::color{0, 0, 0, 255});
+        neutrino::set_draw_color(sdlpp::color{255, 235, 120, 255});
         const auto text = [](std::string_view s, int y) {
             int x = (320 - static_cast <int>(s.size()) * 8) / 2;
             const auto& font = onyx_font::bios_font_8x8();
@@ -116,7 +116,7 @@ namespace {
                 for (std::uint16_t gy = 0; gy < glyph.height(); ++gy) {
                     for (std::uint16_t gx = 0; gx < glyph.width(); ++gx) {
                         if (glyph.pixel(gx, gy)) {
-                            (void) neutrino::draw_point(x + gx, y + gy);
+                            neutrino::draw_point(x + gx, y + gy);
                         }
                     }
                 }
