@@ -8,6 +8,18 @@
 #include "services/service_locator.hh"
 
 namespace neutrino {
+    namespace {
+        pixel_snap g_pixel_snap = pixel_snap::off;
+    }
+
+    void set_pixel_snap(pixel_snap mode) noexcept {
+        g_pixel_snap = mode;
+    }
+
+    pixel_snap get_pixel_snap() noexcept {
+        return g_pixel_snap;
+    }
+
     sdlpp::renderer& get_renderer() {
         return service_locator::instance().get_renderer();
     }

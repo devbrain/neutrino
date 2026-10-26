@@ -183,6 +183,16 @@ namespace neutrino {
         [[nodiscard]] friend constexpr bool operator==(render_pos, render_pos) = default;
     };
 
+    /// @brief An axis-aligned rectangle in RENDER space: top-left corner plus size, in logical /
+    /// presentation pixels (floats; fractions are meaningful under scaled presentation).
+    struct render_rect {
+        float x{};
+        float y{};
+        float w{};
+        float h{};
+        [[nodiscard]] friend constexpr bool operator==(render_rect, render_rect) = default;
+    };
+
     /// @brief A position in WINDOW space (raw window pixels) -- what SDL delivers with input.
     /// Map to @ref render_pos with neutrino::to_render_coords(); never use one for the other.
     struct window_pos {

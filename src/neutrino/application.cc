@@ -167,6 +167,7 @@ namespace neutrino {
                 LOG_ERROR("Failed to set logical presentation:", SDL_GetError());
             }
         }
+        set_pixel_snap(m_pimpl->m_cfg.snap);
         m_pimpl->m_last_render_size = render_size();
         service_locator::instance().set_window(get_window());
         service_locator::instance().set_gamepads(m_pimpl->m_gamepads);

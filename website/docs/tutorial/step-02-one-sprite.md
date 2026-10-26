@@ -157,7 +157,7 @@ namespace {
             // 3. Draw the player sprite standing on the ground!
             if (m_player.valid()) {
                 neutrino::draw_sprite(
-                    neutrino::point{static_cast<int>(m_player_x), ground_y},
+                    neutrino::render_pos{m_player_x, ground_y},
                     m_player.state(),
                     neutrino::sprite_draw_params{
                         .scale = sprite_scale,
@@ -250,7 +250,7 @@ By placing the pivot at `(16, 32)` — the horizontal center and vertical bottom
 When drawing:
 ```cpp
 neutrino::draw_sprite(
-    neutrino::point{static_cast<int>(m_player_x), ground_y},
+    neutrino::render_pos{m_player_x, ground_y},
     m_player.state(),
     {.scale = sprite_scale}
 );

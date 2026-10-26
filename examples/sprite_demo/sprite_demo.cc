@@ -190,7 +190,7 @@ namespace {
 
                 const auto player_flip = m_facing_left ? neutrino::sprite_flip::horizontal : neutrino::sprite_flip::none;
                 neutrino::draw_sprite(
-                    neutrino::point{static_cast <int>(m_player_x), static_cast <int>(m_player_y)},
+                    neutrino::render_pos{m_player_x, m_player_y},
                     m_player.state(),
                     {.scale = player_scale, .flip = player_flip});
             }

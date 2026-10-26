@@ -202,7 +202,7 @@ namespace {
                     : neutrino::sprite_flip::none;
 
                 neutrino::draw_sprite(
-                    neutrino::point{static_cast<int>(m_player_x), static_cast<int>(m_player_y)},
+                    neutrino::render_pos{m_player_x, m_player_y},
                     m_player.state(),
                     neutrino::sprite_draw_params{
                         .scale = sprite_scale,

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <concepts>
+#include <cstdint>
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/geometry_types.hh>
@@ -23,6 +24,22 @@ namespace neutrino {
     /// This is what a scene's viewport and camera should use. Derived from the
     /// renderer state every call — never cached, so it cannot drift.
     NEUTRINO_EXPORT [[nodiscard]] dim render_size();
+
+    /// @brief How float render-space coordinates reach SDL. SDL3 draws in floats, so by default
+    /// fractions pass straight through: under a scaled presentation they land on distinct physical
+    /// pixels (smooth sub-pixel motion and zoom). Integer-scaled pixel art wants every edge on a
+    /// whole logical pixel instead -- a sprite at a fractional position with nearest-neighbour
+    /// sampling otherwise shows uneven pixel widths ("pixel crawl") while moving slowly.
+    enum class pixel_snap : std::uint8_t {
+        off,     ///< Faithful floats (default).
+        logical, ///< Round positions, edges and sprite extents to whole logical pixels.
+    };
+
+    /// @brief Set the snapping policy applied by every draw call. The application sets it from
+    /// @c application_config::snap at startup; it may be changed at any time.
+    NEUTRINO_EXPORT void set_pixel_snap(pixel_snap mode) noexcept;
+    /// @brief The snapping policy currently applied by draw calls.
+    NEUTRINO_EXPORT [[nodiscard]] pixel_snap get_pixel_snap() noexcept;
 
     /// @brief Map a window point (as delivered in mouse/touch events) into render
     /// coordinates. One call accounts for BOTH the HiDPI scale AND logical-

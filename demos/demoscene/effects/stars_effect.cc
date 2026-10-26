@@ -85,8 +85,8 @@ void stars_effect::render(const neutrino::rect& viewport) {
             curr_y >= viewport.y && curr_y < viewport.y + viewport.h) {
 
             // Draw anti-aliased velocity streak from previous frame's projected point
-            const neutrino::point p_prev{static_cast<int>(s.prev_proj_x), static_cast<int>(s.prev_proj_y)};
-            const neutrino::point p_curr{static_cast<int>(curr_x), static_cast<int>(curr_y)};
+            const neutrino::render_pos p_prev{s.prev_proj_x, s.prev_proj_y};
+            const neutrino::render_pos p_curr{curr_x, curr_y};
 
             // Electric blue/white streak
             sdlpp::color streak_color{
@@ -98,11 +98,8 @@ void stars_effect::render(const neutrino::rect& viewport) {
             neutrino::draw_line_aa(p_prev, p_curr, streak_color);
 
             // Draw bright star head
-            const int dot_radius = (z_factor > 0.7f) ? 2 : 1;
-            neutrino::draw_circle_fill(
-                static_cast<int>(curr_x), static_cast<int>(curr_y), dot_radius,
-                sdlpp::color{255, 255, 255, alpha}
-            );
+            const float dot_radius = (z_factor > 0.7f) ? 2.0f : 1.0f;
+            neutrino::draw_circle_fill(p_curr, dot_radius, sdlpp::color{255, 255, 255, alpha});
         }
 
         s.prev_proj_x = curr_x;

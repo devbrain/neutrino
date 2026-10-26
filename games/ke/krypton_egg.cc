@@ -171,6 +171,7 @@ class ke : public neutrino::application {
             // the same content crisply, not more.
             cfg.logical_size = neutrino::dim{window_width, window_height};
             cfg.scale = neutrino::scale_mode::integer_scale;
+            cfg.snap = neutrino::pixel_snap::logical;
             return cfg;
         }
     private:

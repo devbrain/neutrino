@@ -111,18 +111,18 @@ Neutrino provides specialized primitives designed specifically for diagnostics:
 An arrow visualizes direction and magnitude. `draw_arrow` takes starting and ending points, arrowhead pixel length, arrowhead half-angle in degrees, and stroke thickness:
 
 ```cpp
-void draw_velocity_vector(neutrino::point actor_pos, float vx, float vy) {
+void draw_velocity_vector(neutrino::render_pos actor_pos, float vx, float vy) {
     // Scale velocity for visual clarity on screen
-    const neutrino::point arrow_end{
-        actor_pos.x + static_cast<int>(vx * 0.25f),
-        actor_pos.y + static_cast<int>(vy * 0.25f)
+    const neutrino::render_pos arrow_end{
+        actor_pos.x + vx * 0.25f,
+        actor_pos.y + vy * 0.25f
     };
 
     // Draw an orange vector arrow with a 6px head at a 30-degree spread
     neutrino::draw_arrow(
         actor_pos, 
         arrow_end, 
-        /* head_size = */ 8, 
+        /* head_size = */ 8.0f, 
         /* head_angle = */ 30.0f, 
         /* thickness = */ 1.5f, 
         sdlpp::colors::orange
@@ -136,7 +136,7 @@ When debugging sprite pivot offsets and bounding box alignment, `draw_cross` pla
 
 ```cpp
 // Draw a 5-pixel radius white cross centered directly on the actor's anchor
-neutrino::draw_cross(actor_pos, /* size = */ 5, /* thickness = */ 1.0f, sdlpp::colors::white);
+neutrino::draw_cross(actor_pos, /* size = */ 5.0f, /* thickness = */ 1.0f, sdlpp::colors::white);
 ```
 
 ### 3. Hitbox Outlines (`draw_rect`)
@@ -187,7 +187,7 @@ neutrino::draw_line_dotted(neutrino::point{50, 320}, neutrino::point{250, 320}, 
 To draw radar ranges, blast radiuses, or detection zones, use `draw_circle` (outline) and `draw_circle_fill` (filled disk):
 
 ```cpp
-void draw_detection_radius(neutrino::point center, int radius, bool player_detected) {
+void draw_detection_radius(neutrino::render_pos center, float radius, bool player_detected) {
     const sdlpp::color fill_color = player_detected 
         ? sdlpp::color{231, 76, 60, 60}    // Translucent red when triggered
         : sdlpp::color{52, 152, 219, 40};   // Translucent blue when idle
@@ -197,10 +197,10 @@ void draw_detection_radius(neutrino::point center, int radius, bool player_detec
         : sdlpp::color{52, 152, 219, 180};
 
     // 1. Semi-transparent filled area
-    neutrino::draw_circle_fill(neutrino::circle{center, radius}, fill_color);
+    neutrino::draw_circle_fill(center, radius, fill_color);
 
     // 2. Sharp outer perimeter ring
-    neutrino::draw_circle(neutrino::circle{center, radius}, border_color);
+    neutrino::draw_circle(center, radius, border_color);
 }
 ```
 
@@ -228,8 +228,8 @@ public:
         m_stamina = 75.0f + 25.0f * std::cos(m_elapsed_sec * 1.5f);
 
         // Move actor in a small circle to demonstrate vectors
-        m_actor_pos.x = 320 + static_cast<int>(80.0f * std::cos(m_elapsed_sec * 2.0f));
-        m_actor_pos.y = 180 + static_cast<int>(50.0f * std::sin(m_elapsed_sec * 2.0f));
+        m_actor_pos.x = 320.0f + 80.0f * std::cos(m_elapsed_sec * 2.0f);
+        m_actor_pos.y = 180.0f + 50.0f * std::sin(m_elapsed_sec * 2.0f);
 
         // Velocity is derivative of position
         m_actor_vel_x = -160.0f * std::sin(m_elapsed_sec * 2.0f);
@@ -241,15 +241,17 @@ public:
         neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, sdlpp::color{20, 24, 30, 255});
 
         // 1. Draw detection sensor centered on screen
-        const bool in_range = std::hypot(m_actor_pos.x - 320, m_actor_pos.y - 180) < 100.0f;
-        draw_detection_radius(neutrino::point{320, 180}, 100, in_range);
+        const neutrino::render_pos sensor_center{320.0f, 180.0f};
+        const bool in_range = std::hypot(m_actor_pos.x - sensor_center.x, m_actor_pos.y - sensor_center.y) < 100.0f;
+        draw_detection_radius(sensor_center, 100.0f, in_range);
 
         // 2. Draw trajectory path (dashed line from center to actor)
-        neutrino::draw_line_dashed(neutrino::point{320, 180}, m_actor_pos, 8, 4, sdlpp::colors::dark_gray);
+        neutrino::draw_line_dashed(sensor_center, m_actor_pos, 8.0f, 4.0f, sdlpp::colors::dark_gray);
 
         // 3. Draw actor collision box and center cross
-        neutrino::draw_rect(neutrino::rect{m_actor_pos.x - 16, m_actor_pos.y - 16, 32, 32}, sdlpp::colors::yellow);
-        neutrino::draw_cross(m_actor_pos, 4, 1.0f, sdlpp::colors::white);
+        neutrino::draw_rect(neutrino::render_rect{m_actor_pos.x - 16.0f, m_actor_pos.y - 16.0f, 32.0f, 32.0f},
+                            sdlpp::colors::yellow);
+        neutrino::draw_cross(m_actor_pos, 4.0f, 1.0f, sdlpp::colors::white);
 
         // 4. Draw actor velocity arrow
         draw_velocity_vector(m_actor_pos, m_actor_vel_x, m_actor_vel_y);
@@ -262,7 +264,7 @@ private:
     float m_elapsed_sec = 0.0f;
     float m_health = 100.0f;
     float m_stamina = 100.0f;
-    neutrino::point m_actor_pos{320, 180};
+    neutrino::render_pos m_actor_pos{320.0f, 180.0f};
     float m_actor_vel_x = 0.0f;
     float m_actor_vel_y = 0.0f;
 };

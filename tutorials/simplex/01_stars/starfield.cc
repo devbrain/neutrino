@@ -75,7 +75,7 @@ namespace {
                             reinint_star(s, true);
                         } else {
                             set_draw_color(sdlpp::colors::red);
-                            draw_point(x, y);
+                            draw_point(render_pos{x, y});
                         }
                     }
                 }

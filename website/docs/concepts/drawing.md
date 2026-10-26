@@ -90,6 +90,28 @@ neutrino::draw_arrow(neutrino::point{50, 50}, neutrino::point{80, 20}, 8, 30.0f,
 neutrino::draw_cross(neutrino::point{50, 50}, 4, 1.0f, sdlpp::colors::white);
 ```
 
+### Float coordinates & pixel snapping
+
+SDL3 draws in floats, and so does Neutrino: every primitive is implemented once on float render-space coordinates, and the integer `point` / `rect` overloads above forward to it. Use `render_pos` and `render_rect` to draw at fractional positions, which under a scaled presentation (say, a 640×360 logical canvas in a 1920×1080 window) land on distinct physical pixels for smooth sub-pixel motion:
+
+```cpp
+neutrino::draw_rect_fill(neutrino::render_rect{x, y, 24.0f, 4.0f}, sdlpp::colors::red);
+neutrino::draw_sprite(neutrino::render_pos{m_player_x, m_player_y}, m_player.state());
+```
+
+Spell the float types out. A braced `{x, y}` deliberately keeps selecting the integer overload, so existing calls such as `draw_point({1, 2})` stay unambiguous.
+
+Integer-scaled pixel art usually wants every edge on a whole logical pixel instead: a sprite at a fractional position with nearest-neighbour sampling otherwise shows uneven pixel widths ("pixel crawl") while it moves slowly. Opt in with the `pixel_snap` policy:
+
+```cpp
+neutrino::application_config cfg;
+cfg.logical_size = neutrino::dim{320, 200};
+cfg.scale = neutrino::scale_mode::integer_scale;
+cfg.snap = neutrino::pixel_snap::logical;   // round positions, edges and sprite extents
+```
+
+`pixel_snap::off` (the default) passes fractions through untouched; `neutrino::set_pixel_snap()` changes the policy at runtime. Circles are the one exception: the circle rasterizer is integer-only, so `draw_circle` and `draw_circle_fill` always round their centre and radius.
+
 ### Color scoping & error reporting
 
 Drawing is fire-and-forget: draw and set functions in `draw.hh` return `void`, so there is nothing to check at the call site.

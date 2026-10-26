@@ -179,23 +179,23 @@ public:
             // 1. Blit the pre-baked static rooms (1 draw call!)
             m_minimap->blit(minimap_dst);
 
-            // 2. Draw dynamic entity blips on top
+            // 2. Draw dynamic entity blips on top, scaled 1:10 into the minimap
+            const auto to_minimap = [&](neutrino::render_pos p) {
+                return neutrino::render_pos{static_cast<float>(minimap_dst.x) + p.x * 0.1f,
+                                            static_cast<float>(minimap_dst.y) + p.y * 0.1f};
+            };
             // Player blip (green dot)
-            const int p_x = minimap_dst.x + static_cast<int>(m_player_pos.x * 0.1f);
-            const int p_y = minimap_dst.y + static_cast<int>(m_player_pos.y * 0.1f);
-            neutrino::draw_circle_fill(neutrino::circle{neutrino::point{p_x, p_y}, 2}, sdlpp::colors::lime_green);
+            neutrino::draw_circle_fill(to_minimap(m_player_pos), 2.0f, sdlpp::colors::lime_green);
 
             // Enemy blip (red dot)
-            const int e_x = minimap_dst.x + static_cast<int>(m_enemy_pos.x * 0.1f);
-            const int e_y = minimap_dst.y + static_cast<int>(m_enemy_pos.y * 0.1f);
-            neutrino::draw_circle_fill(neutrino::circle{neutrino::point{e_x, e_y}, 2}, sdlpp::colors::red);
+            neutrino::draw_circle_fill(to_minimap(m_enemy_pos), 2.0f, sdlpp::colors::red);
         }
     }
 
 private:
     std::optional<neutrino::render_texture> m_minimap;
-    neutrino::point m_player_pos{250, 200};
-    neutrino::point m_enemy_pos{800, 600};
+    neutrino::render_pos m_player_pos{250.0f, 200.0f};
+    neutrino::render_pos m_enemy_pos{800.0f, 600.0f};
 };
 ```
 

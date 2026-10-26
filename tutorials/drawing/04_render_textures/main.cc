@@ -46,9 +46,9 @@ namespace {
 
             // Initialize moving entities (patrolling drones)
             m_drones = {
-                neutrino::point{140, 100},
-                neutrino::point{320, 220},
-                neutrino::point{460, 120},
+                neutrino::render_pos{140.0f, 100.0f},
+                neutrino::render_pos{320.0f, 220.0f},
+                neutrino::render_pos{460.0f, 120.0f},
             };
         }
 
@@ -78,14 +78,14 @@ namespace {
             m_player_pos.y = std::clamp(m_player_pos.y, 16.0f, static_cast<float>(logical_height) - 16.0f);
 
             // Animate orbiting drones
-            m_drones[0].x = static_cast<int>(140 + 40 * std::cos(m_elapsed_sec * 1.5f));
-            m_drones[0].y = static_cast<int>(100 + 40 * std::sin(m_elapsed_sec * 1.5f));
+            m_drones[0].x = 140.0f + 40.0f * std::cos(m_elapsed_sec * 1.5f);
+            m_drones[0].y = 100.0f + 40.0f * std::sin(m_elapsed_sec * 1.5f);
 
-            m_drones[1].x = static_cast<int>(320 + 80 * std::cos(m_elapsed_sec * 1.0f));
-            m_drones[1].y = static_cast<int>(220 + 30 * std::sin(m_elapsed_sec * 2.0f));
+            m_drones[1].x = 320.0f + 80.0f * std::cos(m_elapsed_sec * 1.0f);
+            m_drones[1].y = 220.0f + 30.0f * std::sin(m_elapsed_sec * 2.0f);
 
-            m_drones[2].x = static_cast<int>(460 + 50 * std::sin(m_elapsed_sec * 1.2f));
-            m_drones[2].y = static_cast<int>(120 + 50 * std::cos(m_elapsed_sec * 1.2f));
+            m_drones[2].x = 460.0f + 50.0f * std::sin(m_elapsed_sec * 1.2f);
+            m_drones[2].y = 120.0f + 50.0f * std::cos(m_elapsed_sec * 1.2f);
         }
 
         void render() override {
@@ -101,16 +101,17 @@ namespace {
             // =================================================================
             // Draw patrolling drones
             for (const auto& drone : m_drones) {
-                neutrino::draw_circle_fill(neutrino::circle{drone, 10}, sdlpp::color{231, 76, 60, 255});
-                neutrino::draw_circle(neutrino::circle{drone, 10}, sdlpp::colors::white);
-                neutrino::draw_circle(neutrino::circle{drone, 16}, sdlpp::color{231, 76, 60, 100});
+                neutrino::draw_circle_fill(drone, 10.0f, sdlpp::color{231, 76, 60, 255});
+                neutrino::draw_circle(drone, 10.0f, sdlpp::colors::white);
+                neutrino::draw_circle(drone, 16.0f, sdlpp::color{231, 76, 60, 100});
             }
 
             // Draw player avatar (emerald diamond)
-            const neutrino::point p{static_cast<int>(m_player_pos.x), static_cast<int>(m_player_pos.y)};
-            neutrino::draw_rect_fill(neutrino::rect{p.x - 12, p.y - 12, 24, 24}, sdlpp::color{46, 204, 113, 255});
-            neutrino::draw_rect(neutrino::rect{p.x - 12, p.y - 12, 24, 24}, sdlpp::colors::white);
-            neutrino::draw_cross(p, 4, 1.0f, sdlpp::colors::black);
+            const neutrino::render_pos p{m_player_pos.x, m_player_pos.y};
+            const neutrino::render_rect body{p.x - 12.0f, p.y - 12.0f, 24.0f, 24.0f};
+            neutrino::draw_rect_fill(body, sdlpp::color{46, 204, 113, 255});
+            neutrino::draw_rect(body, sdlpp::colors::white);
+            neutrino::draw_cross(p, 4.0f, 1.0f, sdlpp::colors::black);
 
             // =================================================================
             // PASS 3: Render Cached Minimap at Top-Right
@@ -196,15 +197,15 @@ namespace {
             const float scale_x = 120.0f / static_cast<float>(logical_width);
             const float scale_y = 120.0f / static_cast<float>(logical_height);
 
-            const int px = minimap_dst.x + static_cast<int>(m_player_pos.x * scale_x);
-            const int py = minimap_dst.y + static_cast<int>(m_player_pos.y * scale_y);
-            neutrino::draw_circle_fill(neutrino::circle{neutrino::point{px, py}, 2}, sdlpp::colors::lime_green);
+            const auto to_minimap = [&](float x, float y) {
+                return neutrino::render_pos{static_cast<float>(minimap_dst.x) + x * scale_x,
+                                            static_cast<float>(minimap_dst.y) + y * scale_y};
+            };
+            neutrino::draw_circle_fill(to_minimap(m_player_pos.x, m_player_pos.y), 2.0f, sdlpp::colors::lime_green);
 
             // 3. Draw live drone blips (red dots)
             for (const auto& drone : m_drones) {
-                const int dx = minimap_dst.x + static_cast<int>(drone.x * scale_x);
-                const int dy = minimap_dst.y + static_cast<int>(drone.y * scale_y);
-                neutrino::draw_circle_fill(neutrino::circle{neutrino::point{dx, dy}, 2}, sdlpp::colors::crimson);
+                neutrino::draw_circle_fill(to_minimap(drone.x, drone.y), 2.0f, sdlpp::colors::crimson);
             }
         }
 
@@ -221,7 +222,7 @@ namespace {
         std::optional<neutrino::render_texture> m_minimap;
 
         neutrino::world_point m_player_pos{320.0f, 180.0f};
-        std::vector<neutrino::point> m_drones;
+        std::vector<neutrino::render_pos> m_drones;
 
         float m_elapsed_sec = 0.0f;
         unsigned int m_star_seed = 42;

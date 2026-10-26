@@ -13,6 +13,7 @@
 #include <neutrino/input/input_snapshot.hh>
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/video/geometry_types.hh>
+#include <neutrino/video/globals.hh>
 #include <sdlpp/app/game_application.hh>
 #include <sdlpp/input/gamepad.hh>
 
@@ -66,6 +67,9 @@ namespace neutrino {
         std::optional <dim> logical_size;
         /// Fit mode for @ref logical_size; ignored in reflow mode.
         scale_mode scale = scale_mode::letterbox;
+        /// How float draw coordinates reach SDL (see @ref pixel_snap). Integer-scaled pixel art
+        /// usually wants pixel_snap::logical; the default passes fractions through untouched.
+        pixel_snap snap = pixel_snap::off;
         /// Render at the drawable's native (HiDPI) pixel resolution instead of in
         /// scaled window points. Input still arrives in window points — map it into
         /// render space with neutrino::to_render_coords().

@@ -138,7 +138,7 @@ void rotate3d_effect::render(const neutrino::rect& viewport) {
     constexpr float camera_dist_z = 3.5f;
 
     // 1. Rotate vertices by quaternion and project to 2D screen coordinates
-    std::vector<neutrino::point> projected(m_base_vertices.size());
+    std::vector<neutrino::render_pos> projected(m_base_vertices.size());
     std::vector<float> transformed_z(m_base_vertices.size());
 
     for (size_t i = 0; i < m_base_vertices.size(); ++i) {
@@ -150,18 +150,15 @@ void rotate3d_effect::render(const neutrino::rect& viewport) {
         const float z_world = rot_v.z() + camera_dist_z;
         const float inv_z = m_zoom / z_world;
 
-        projected[i] = neutrino::point{
-            static_cast<int>(center_x + rot_v.x() * inv_z),
-            static_cast<int>(center_y + rot_v.y() * inv_z)
+        projected[i] = neutrino::render_pos{
+            center_x + rot_v.x() * inv_z,
+            center_y + rot_v.y() * inv_z
         };
 
         // Draw vertex glowing dots with depth-based sizing
-        const int radius = std::max(2, static_cast<int>(4.0f + rot_v.z() * 1.5f));
+        const float radius = std::max(2.0f, 4.0f + rot_v.z() * 1.5f);
         const uint8_t alpha = static_cast<uint8_t>(std::clamp(180.0f + rot_v.z() * 50.0f, 60.0f, 255.0f));
-        neutrino::draw_circle_fill(
-            projected[i].x, projected[i].y, radius,
-            sdlpp::color{100, 220, 255, alpha}
-        );
+        neutrino::draw_circle_fill(projected[i], radius, sdlpp::color{100, 220, 255, alpha});
     }
 
     // 2. Render anti-aliased wireframe edges with depth shading

@@ -192,7 +192,7 @@ namespace {
                 for (const auto& a : m_actors) {
                     if (player_vis) {
                         neutrino::draw_sprite(
-                            neutrino::point{static_cast<int>(a.position.x), static_cast<int>(a.position.y)},
+                            neutrino::render_pos{a.position.x, a.position.y},
                             *player_vis,
                             neutrino::sprite_draw_params{.scale = 2.0f}
                         );
@@ -201,7 +201,7 @@ namespace {
                 for (const auto& t : m_trees) {
                     if (tree_vis) {
                         neutrino::draw_sprite(
-                            neutrino::point{static_cast<int>(t.x), static_cast<int>(t.y)},
+                            neutrino::render_pos{t.x, t.y},
                             *tree_vis,
                             neutrino::sprite_draw_params{.scale = 2.5f}
                         );

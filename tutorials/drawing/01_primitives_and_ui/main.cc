@@ -68,7 +68,7 @@ namespace {
         draw_gauge(16, 38, 140, 12, stamina, max_stamina, sdlpp::color{52, 152, 219, 255});
     }
 
-    void draw_detection_radius(neutrino::point center, int radius, bool player_detected) {
+    void draw_detection_radius(neutrino::render_pos center, float radius, bool player_detected) {
         const sdlpp::color fill_color = player_detected
             ? sdlpp::color{231, 76, 60, 60}
             : sdlpp::color{52, 152, 219, 40};
@@ -77,20 +77,20 @@ namespace {
             ? sdlpp::color{231, 76, 60, 200}
             : sdlpp::color{52, 152, 219, 180};
 
-        neutrino::draw_circle_fill(neutrino::circle{center, radius}, fill_color);
-        neutrino::draw_circle(neutrino::circle{center, radius}, border_color);
+        neutrino::draw_circle_fill(center, radius, fill_color);
+        neutrino::draw_circle(center, radius, border_color);
     }
 
-    void draw_velocity_vector(neutrino::point actor_pos, float vx, float vy) {
-        const neutrino::point arrow_end{
-            actor_pos.x + static_cast<int>(vx * 0.25f),
-            actor_pos.y + static_cast<int>(vy * 0.25f)
+    void draw_velocity_vector(neutrino::render_pos actor_pos, float vx, float vy) {
+        const neutrino::render_pos arrow_end{
+            actor_pos.x + vx * 0.25f,
+            actor_pos.y + vy * 0.25f
         };
 
         neutrino::draw_arrow(
             actor_pos,
             arrow_end,
-            /* head_size = */ 8,
+            /* head_size = */ 8.0f,
             /* head_angle = */ 30.0f,
             /* thickness = */ 1.5f,
             sdlpp::colors::orange
@@ -112,8 +112,8 @@ namespace {
             m_stamina = 75.0f + 25.0f * std::cos(m_elapsed_sec * 1.5f);
 
             // Orbit moving actor around sensor center
-            m_actor_pos.x = 420 + static_cast<int>(80.0f * std::cos(m_elapsed_sec * 2.0f));
-            m_actor_pos.y = 180 + static_cast<int>(50.0f * std::sin(m_elapsed_sec * 2.0f));
+            m_actor_pos.x = 420.0f + 80.0f * std::cos(m_elapsed_sec * 2.0f);
+            m_actor_pos.y = 180.0f + 50.0f * std::sin(m_elapsed_sec * 2.0f);
 
             m_actor_vel_x = -160.0f * std::sin(m_elapsed_sec * 2.0f);
             m_actor_vel_y =  100.0f * std::cos(m_elapsed_sec * 2.0f);
@@ -127,18 +127,19 @@ namespace {
             render_line_showcase();
 
             // 2. Interactive proximity sensor on the right
-            const neutrino::point sensor_center{420, 180};
-            constexpr int sensor_radius = 90;
+            const neutrino::render_pos sensor_center{420.0f, 180.0f};
+            constexpr float sensor_radius = 90.0f;
             const bool in_range = std::hypot(m_actor_pos.x - sensor_center.x, m_actor_pos.y - sensor_center.y) < sensor_radius;
 
             draw_detection_radius(sensor_center, sensor_radius, in_range);
 
             // 3. Trajectory line (dashed)
-            neutrino::draw_line_dashed(sensor_center, m_actor_pos, 8, 4, sdlpp::colors::dark_gray);
+            neutrino::draw_line_dashed(sensor_center, m_actor_pos, 8.0f, 4.0f, sdlpp::colors::dark_gray);
 
             // 4. Actor bounding box and center cross
-            neutrino::draw_rect(neutrino::rect{m_actor_pos.x - 16, m_actor_pos.y - 16, 32, 32}, sdlpp::colors::yellow);
-            neutrino::draw_cross(m_actor_pos, 5, 1.0f, sdlpp::colors::white);
+            neutrino::draw_rect(neutrino::render_rect{m_actor_pos.x - 16.0f, m_actor_pos.y - 16.0f, 32.0f, 32.0f},
+                                sdlpp::colors::yellow);
+            neutrino::draw_cross(m_actor_pos, 5.0f, 1.0f, sdlpp::colors::white);
 
             // 5. Actor velocity vector arrow
             draw_velocity_vector(m_actor_pos, m_actor_vel_x, m_actor_vel_y);
@@ -176,7 +177,7 @@ namespace {
         float m_elapsed_sec = 0.0f;
         float m_health = 100.0f;
         float m_stamina = 100.0f;
-        neutrino::point m_actor_pos{420, 180};
+        neutrino::render_pos m_actor_pos{420.0f, 180.0f};
         float m_actor_vel_x = 0.0f;
         float m_actor_vel_y = 0.0f;
     };

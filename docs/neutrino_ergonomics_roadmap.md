@@ -187,9 +187,10 @@ flowchart TD
 
 > **Rejected: a universal `vec2<T>` adapter (former Option A).** A struct cannot declare both a data member `x` and a member function `x()`, so the "dual accessor" design does not compile. Bidirectional implicit conversions between `vec2`, `euler::vector`, `euler::point2` and `sdlpp::point` cause overload ambiguity in the existing `draw_*` sets, and re-aliasing `point` / `rect` breaks every sdlpp API taking `sdlpp::point<int>`. Most importantly, an implicit `world_pos → vec2f` conversion plus a `draw_sprite(world_pos)` overload would silently treat world coordinates as render coordinates (no camera applied) -- exactly the bug class the strong types were introduced to prevent. The measured friction is small (KE has 7 `to_world_point` calls, all feeding `sprite_batch::add`), so it is fixed at those boundaries instead.
 
-#### 2.1 Float Render-Space Drawing Overloads
-* **Location**: `<neutrino/video/draw.hh>`, `src/neutrino/video/draw.cc`.
-* Add overloads of the immediate-mode primitives and `draw_sprite` that take float **render-space** coordinates:
+#### 2.1 Float Render-Space Drawing
+* **Location**: `<neutrino/video/draw.hh>`, `src/neutrino/video/draw.cc`, presentation config.
+* **Decision**: draw in floats end to end. SDL3 draws in floats natively (`SDL_RenderPoint`, `SDL_RenderLine`, `SDL_RenderRect` / `SDL_RenderFillRect`, `SDL_RenderTexture` all take `float`), and sdlpp's `int` overloads only `static_cast<float>` into the same calls. Rounding a float to `int` before submission would just be converted straight back to float, losing precision for nothing. Under a scaled presentation (e.g. 640x360 logical in a 1920x1080 window) the fractional part is visible: it gives smooth sub-pixel motion and zoom instead of 3-physical-pixel steps.
+* Add float **render-space** overloads of the immediate-mode primitives and `draw_sprite`:
   ```cpp
   // render_pos already exists in coordinates.hh: "what scenes draw in".
   void draw_point(render_pos p, const color& c);
@@ -203,9 +204,18 @@ flowchart TD
   void draw_sprite(render_pos position, sprite_visual_ref visual, const sprite_draw_params& params = {});
   void draw_sprite(render_pos position, const sprite_appearance& a, const sprite_draw_params& params = {});
   ```
-* **Rounding happens once**, at submission (`std::lround`), in one helper shared by all overloads. Game code never writes `static_cast<int>(x)`.
-* Brace-init stays unambiguous: `draw_sprite({x, y}, ...)` must keep resolving to one overload -- add a compile test for it, and prefer `render_pos` over a second untyped float point to avoid an `int`/`float` brace ambiguity.
-* Integer `point` overloads remain; nothing is removed.
+* **Every primitive, including the line variants.** As implemented, `draw_line_aa`, `draw_line_thick`, `draw_line_dashed`, `draw_line_dotted`, `draw_arrow` and `draw_cross` got `render_pos` overloads too: the demos drew anti-aliased lines from float projections and had to truncate them to `int` first, which defeats the anti-aliasing.
+* **One implementation, in float.** Each primitive is implemented once on floats; the existing `int` / `point` overloads become one-line forwards to it (`int` -> `float` is exact below 2^24). This mirrors how sdlpp itself is layered. Integer overloads remain; nothing is removed.
+* **Optional pixel snapping, as a policy.** Integer-scaled pixel art (KE) wants positions on whole logical pixels: a sprite at a fractional position with nearest-neighbour sampling shows uneven pixel widths ("pixel crawl") while moving slowly, and can differ between GPU backends. So snapping is a single presentation-level setting, applied in the one submit helper shared by all overloads -- not hard-coded:
+  ```cpp
+  enum class pixel_snap { off, logical };   // off (default): faithful floats; logical: round to whole logical pixels
+  ```
+  KE opts into `pixel_snap::logical`; everything else draws faithful floats. Game code never writes `static_cast<int>(x)` either way.
+* **Sprites**: `copy_ex` takes float rectangles, and the diagonal-flip / rotation path already builds float vertices for `render_geometry`. The float path therefore computes origin and size as `w * scale` directly instead of rounding through `scaled_offset` / `scaled_extent`. The `draw_sprite(const rect& dst, ...)` overload with an explicit integer destination stays unchanged: `world_renderer` derives that destination from two rounded world corners to keep tiles seam-free under fractional zoom. That is a tile-map decision, separate from the draw API's precision.
+  * *Visible change*: with a fractional `scale` (e.g. a zoomed map viewer), sprites drawn at integer positions are no longer rounded to whole-pixel sizes/origins under `pixel_snap::off`. `pixel_snap::logical` must keep rounding them, so pixel-art output stays identical.
+* **Circles are the exception.** sdlpp's `draw_circle` / `fill_circle` are `int`-only midpoint rasterizers, so the float overloads round centre and radius internally (documented). Build float circles from `render_geometry` (a triangle fan, as sdlpp's `fill_polygon` does) only if a client needs sub-pixel circles.
+* **Brace-init must stay unambiguous**: if `draw_point({1, 2})` can build both a `point` and a `render_pos`, the call is ambiguous. Add a compile test pinning which overload `draw_*({x, y}, ...)` selects; prefer `render_pos{...}` in docs for new code over a second untyped float point.
+* **Tests**: existing pixel-readback tests draw at integer coordinates, which are exact in float, so they are unaffected. Add coverage for a fractional position with `pixel_snap::off` vs `pixel_snap::logical`.
 
 #### 2.2 Camera-Aware World Drawing
 * World positions reach the screen only through a camera. Provide that path explicitly instead of an implicit conversion:
@@ -333,7 +343,7 @@ flowchart TD
 | **P1.4** | Default stubs in `base_scene` | **S** (1 hr) | `include/neutrino/scene/base_scene.hh` | No (additive) |
 | **P1.5** | Umbrella header `<neutrino/neutrino.hh>` | **S** (2 hrs) | `include/neutrino/neutrino.hh` | No (additive) |
 | **P1.6** | Draw calls return `void`; getters return values; failures logged + counted | **S** (½ day) | `include/neutrino/video/draw.hh`, `src/neutrino/video/draw.cc`, `video/world/world_renderer.*` | No for callers that ignore results (all client code) |
-| **P2.1** | Float `render_pos` drawing overloads | **M** (1 day) | `include/neutrino/video/draw.hh`, `src/neutrino/video/draw.cc` | No (overloads) |
+| **P2.1** | Float render-space drawing: float `render_pos` overloads, int overloads forward to float, optional `pixel_snap` policy | **M+** (1-2 days) | `include/neutrino/video/draw.hh`, `src/neutrino/video/draw.cc`, presentation config | No for source (overloads); output changes for sprites with a fractional `scale` (size/origin no longer rounded) |
 | **P2.2** | Camera-aware world drawing (`to_render`, `sprite_batch::add(world_pos)`) | **S** (½ day) | `video/world/camera.hh`, `video/world/sprite_batch.hh` | No (additive) |
 | **P2.3** | Physics boundary helpers (`to_vec`, `to_aabb`) | **S** (2 hrs) | `include/neutrino/physics/geometry/types.hh` | No (additive) |
 | **P3.1** | Screen clear functions (`neutrino::clear`) | **S** (2 hrs) | `include/neutrino/video/draw.hh`, `globals.hh` | No (additive) |

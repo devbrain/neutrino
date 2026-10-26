@@ -216,7 +216,7 @@ namespace {
                     : neutrino::sprite_flip::none;
 
                 neutrino::draw_sprite(
-                    neutrino::point{static_cast<int>(m_player_x), static_cast<int>(m_player_y)},
+                    neutrino::render_pos{m_player_x, m_player_y},
                     m_player.state(),
                     neutrino::sprite_draw_params{
                         .scale = sprite_scale,
@@ -418,7 +418,7 @@ const auto flip = m_facing_left
     : neutrino::sprite_flip::none;
 
 neutrino::draw_sprite(
-    neutrino::point{static_cast<int>(m_player_x), static_cast<int>(m_player_y)},
+    neutrino::render_pos{m_player_x, m_player_y},
     m_player.state(),
     neutrino::sprite_draw_params{
         .scale = sprite_scale,
@@ -428,6 +428,8 @@ neutrino::draw_sprite(
 ```
 
 Because our visual pivot is placed at `{16, 32}` (the bottom horizontal center of the 32px sprite), flipping horizontally flips the character around its central vertical axis. The character's feet remain anchored in the exact same spot on the ground.
+
+The position is passed as a `neutrino::render_pos` because `m_player_x` and `m_player_y` are floats: the fractional part reaches the renderer instead of being truncated to a whole pixel, so slow movement stays smooth when the 640×360 canvas is scaled up to a larger window. (Pixel-art games that want every sprite on a whole logical pixel opt into `pixel_snap::logical`; see [Drawing](../concepts/drawing.md).)
 
 ---
 
