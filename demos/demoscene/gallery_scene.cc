@@ -178,10 +178,6 @@ void gallery_scene::fixed_update(neutrino::sim_duration dt, const neutrino::inpu
     }
 }
 
-void gallery_scene::handle_action(const sdlpp::event& ev) {
-    (void)ev;
-}
-
 void gallery_scene::draw_bios_text(int px, int py, std::string_view text, const sdlpp::color& color) {
     const auto& font = onyx_font::bios_font_8x8();
     int pen_x = px;

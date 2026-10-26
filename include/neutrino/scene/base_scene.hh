@@ -46,8 +46,7 @@ namespace neutrino {
             /// mode the render space is constant, so it fires once at activation.
             /// Default: no-op — override to lay out against the render size instead of
             /// polling it every frame.
-            virtual void on_resize([[maybe_unused]] dim size) {
-            }
+            virtual void on_resize(dim size);
 
             /// @brief Fixed-timestep logic update. Called 0..N times per frame with a CONSTANT @p dt
             /// and the frame's @p in input snapshot. The first substep receives input edges;
@@ -59,8 +58,8 @@ namespace neutrino {
             /// pixel-art, where sub-step interpolation rounds away; see roadmap 0B).
             virtual void render() = 0;
             /// @brief Handle an SDL event (input, window, etc.).
-            virtual void handle_action(const sdlpp::event& ev) = 0;
+            virtual void handle_action(const sdlpp::event& ev);
             /// @brief Return true if this scene fully covers the screen (no need to render below).
-            [[nodiscard]] virtual bool is_opaque() const = 0;
+            [[nodiscard]] virtual bool is_opaque() const;
     };
 }

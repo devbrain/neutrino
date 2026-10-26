@@ -258,8 +258,6 @@ public:
         draw_hud(m_health, 100.0f, m_stamina, 100.0f, m_elapsed_sec);
     }
 
-    void handle_action(const sdlpp::event& ev) override {}
-
 private:
     float m_elapsed_sec = 0.0f;
     float m_health = 100.0f;

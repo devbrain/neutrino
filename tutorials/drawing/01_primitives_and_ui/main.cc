@@ -119,8 +119,6 @@ namespace {
             m_actor_vel_y =  100.0f * std::cos(m_elapsed_sec * 2.0f);
         }
 
-        void handle_action(const sdlpp::event&) override {}
-
         void render() override {
             // Dark navy background
             neutrino::draw_rect_fill(neutrino::rect{0, 0, logical_width, logical_height}, sdlpp::color{20, 24, 34, 255});
@@ -147,10 +145,6 @@ namespace {
 
             // 6. Player status HUD at top-left
             draw_hud(m_health, 100.0f, m_stamina, 100.0f, m_elapsed_sec);
-        }
-
-        [[nodiscard]] bool is_opaque() const override {
-            return true;
         }
 
     private:

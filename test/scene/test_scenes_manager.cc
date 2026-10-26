@@ -38,8 +38,6 @@ namespace {
 
             void fixed_update(sim_duration, const input_snapshot&) override {}
             void render() override {}
-            void handle_action(const sdlpp::event&) override {}
-            [[nodiscard]] bool is_opaque() const override { return true; }
 
         private:
             std::vector <int>& m_log;

@@ -27,11 +27,6 @@ public:
 
     void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override;
     void render() override;
-    void handle_action(const sdlpp::event& ev) override;
-
-    [[nodiscard]] bool is_opaque() const override {
-        return true;
-    }
 
     void switch_effect(size_t index);
     void next_effect();

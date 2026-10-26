@@ -123,8 +123,6 @@ namespace {
             m_spark_pos.y = 180.0f + 70.0f * std::sin(m_elapsed_sec * 2.0f);
         }
 
-        void handle_action(const sdlpp::event&) override {}
-
         void render() override {
             // Isometric-style tile floor background
             render_floor_grid();
@@ -212,10 +210,6 @@ namespace {
             }
 
             render_hud();
-        }
-
-        [[nodiscard]] bool is_opaque() const override {
-            return true;
         }
 
     private:

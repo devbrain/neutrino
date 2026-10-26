@@ -192,8 +192,6 @@ public:
         }
     }
 
-    void handle_action(const sdlpp::event& ev) override {}
-
 private:
     std::optional<neutrino::render_texture> m_minimap;
     neutrino::point m_player_pos{250, 200};

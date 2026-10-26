@@ -191,8 +191,6 @@ namespace {
             }
         }
 
-        void handle_action(const sdlpp::event&) override {}
-
         void render() override {
             // Sky background
             neutrino::draw_rect_fill(
@@ -227,10 +225,6 @@ namespace {
                     }
                 );
             }
-        }
-
-        [[nodiscard]] bool is_opaque() const override {
-            return true;
         }
 
     private:

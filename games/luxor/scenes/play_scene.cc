@@ -30,11 +30,4 @@ namespace luxor {
             sdlpp::color{90, 160, 230, 255}
         );
     }
-
-    bool play_scene::is_opaque() const {
-        return true;
-    }
-
-    void play_scene::handle_action([[maybe_unused]] const sdlpp::event& ev) {
-    }
 }

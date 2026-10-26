@@ -297,8 +297,6 @@ public:
         neutrino::draw_rect(neutrino::rect{10, 10, 160, 24}, sdlpp::colors::white);
     }
 
-    void handle_action(const sdlpp::event& ev) override {}
-
 private:
     void draw_distant_scenery(const neutrino::camera& cam, const neutrino::rect& viewport, const neutrino::world_layer_header& plane) {
         for (int i = -2; i <= 5; ++i) {

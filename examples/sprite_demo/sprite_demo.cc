@@ -195,12 +195,6 @@ namespace {
                     {.scale = player_scale, .flip = player_flip});
             }
 
-            void handle_action(const sdlpp::event&) override {}
-
-            [[nodiscard]] bool is_opaque() const override {
-                return true;
-            }
-
         private:
             static void draw_background() {
                 neutrino::draw_rect_fill(neutrino::rect{0, 0, window_width, window_height}, sdlpp::color{118, 196, 255, 255});

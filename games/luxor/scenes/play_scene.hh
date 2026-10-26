@@ -16,9 +16,5 @@ namespace luxor {
             void fixed_update(neutrino::sim_duration, const neutrino::input_snapshot& in) override;
 
             void render() override;
-
-            [[nodiscard]] bool is_opaque() const override;
-
-            void handle_action(const sdlpp::event& ev) override;
     };
 }

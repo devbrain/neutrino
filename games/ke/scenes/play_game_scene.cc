@@ -236,12 +236,3 @@ void play_game_scene::render() {
         draw_game_over();
     }
 }
-
-void play_game_scene::handle_action(const sdlpp::event&) {
-    // Continuous input (the paddle-tracking mouse position) is polled from the frame's
-    // input_snapshot in fixed_update; only discrete one-shot events would be handled here.
-}
-
-bool play_game_scene::is_opaque() const {
-    return true;
-}

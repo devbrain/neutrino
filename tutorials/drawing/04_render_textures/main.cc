@@ -88,8 +88,6 @@ namespace {
             m_drones[2].y = static_cast<int>(120 + 50 * std::cos(m_elapsed_sec * 1.2f));
         }
 
-        void handle_action(const sdlpp::event&) override {}
-
         void render() override {
             // =================================================================
             // PASS 1: Blit the pre-baked static scenery (1 single blit call!)
@@ -123,10 +121,6 @@ namespace {
             // PASS 4: Render Screen HUD & Instructions
             // =================================================================
             render_hud();
-        }
-
-        [[nodiscard]] bool is_opaque() const override {
-            return true;
         }
 
     private:

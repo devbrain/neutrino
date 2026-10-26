@@ -30,8 +30,6 @@ class play_game_scene : public neutrino::base_scene {
         void on_exit() override;
         void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override;
         void render() override;
-        void handle_action(const sdlpp::event& ev) override;
-        [[nodiscard]] bool is_opaque() const override;
 
     private:
         rs::ke_assets& m_assets;                             // owned by the application

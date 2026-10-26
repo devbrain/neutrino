@@ -104,8 +104,6 @@ namespace {
             m_cam.target.y += (m_player_pos.y - m_cam.target.y) * blend;
         }
 
-        void handle_action(const sdlpp::event&) override {}
-
         void render() override {
             const neutrino::rect viewport{0, 0, logical_width, logical_height};
 
@@ -153,10 +151,6 @@ namespace {
 
             // 5. Screen-Space HUD (no camera transform)
             render_hud();
-        }
-
-        [[nodiscard]] bool is_opaque() const override {
-            return true;
         }
 
     private:

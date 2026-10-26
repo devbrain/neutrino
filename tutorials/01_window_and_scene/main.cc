@@ -105,18 +105,13 @@ namespace {
             );
         }
 
-        // Handle discrete one-shot SDL events (window focus, text input, custom events).
-        // Continuous input (e.g. keyboard movement, mouse coordinates) belongs in fixed_update.
-        void handle_action([[maybe_unused]] const sdlpp::event& ev) override {
-            // Nothing to handle for an empty scene.
-        }
-
-        // Return true if this scene completely covers the display (opaque).
-        // The engine uses this to avoid wasting GPU work updating and rendering
-        // scenes hidden underneath.
-        [[nodiscard]] bool is_opaque() const override {
-            return true;
-        }
+        // fixed_update and render are the only hooks a scene must write. base_scene
+        // provides the rest, and both defaults suit this scene:
+        //   handle_action(ev) - discrete one-shot SDL events (window focus, text input).
+        //                       Default: ignore. Continuous input belongs in fixed_update.
+        //   is_opaque()       - "does this scene cover the whole display?" Default: true,
+        //                       so scenes underneath are neither updated nor drawn.
+        //                       Overlays (pause menus, dialogs) override it to return false.
 
     private:
         uint64_t m_sim_ticks{0};

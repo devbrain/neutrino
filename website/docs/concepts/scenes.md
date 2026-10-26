@@ -9,7 +9,7 @@ description: The scene stack, lifecycle hooks, opaque versus overlay, and how tr
 A scene is one screen of your game: a menu, the gameplay, a pause overlay. The engine keeps them in
 a **stack**, and each frame it dispatches updates and drawing to some slice of that stack.
 
-You implement [`base_scene`](pathname:///api/). Four members are pure virtual, so the
+You implement [`base_scene`](pathname:///api/). Two members are pure virtual, so the
 compiler makes you supply them:
 
 ```cpp
@@ -17,13 +17,14 @@ class my_scene : public neutrino::base_scene {
   public:
     void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override;
     void render() override;
-    void handle_action(const sdlpp::event& ev) override;
-    [[nodiscard]] bool is_opaque() const override { return true; }
 };
 ```
 
-The lifecycle hooks — `on_enter`, `on_exit`, `on_pause`, `on_resume`, `on_resize` — all have
-do-nothing defaults, so override only the ones you need.
+Everything else has a default, so override only what you need:
+
+- `is_opaque()` returns `true` (see below).
+- `handle_action(ev)` ignores raw events.
+- The lifecycle hooks — `on_enter`, `on_exit`, `on_pause`, `on_resume`, `on_resize` — do nothing.
 
 See [Tutorial Step 1: A window and an empty scene](../tutorial/step-01-window-and-scene.md) for a working
 minimal scene implementation.
@@ -34,8 +35,8 @@ minimal scene implementation.
 completely cover the screen?", and the engine uses that answer to decide how much of the stack
 stays alive.
 
-- **Opaque** (`true`) — a full screen. Nothing below it is drawn.
-- **Overlay** (`false`) — a pause menu, a modal dialog, a loading spinner. The scene below keeps
+- **Opaque** (`true`, the default) — a full screen. Nothing below it is drawn.
+- **Overlay** (`false`, override to opt in) — a pause menu, a modal dialog, a loading spinner. The scene below keeps
   drawing *and* keeps updating.
 
 Each frame the engine scans down from the top of the stack to the **first opaque scene**, and
@@ -189,12 +190,8 @@ class gameplay_scene : public neutrino::base_scene {
         m_level.draw();
     }
 
-    void handle_action(const sdlpp::event&) override {
-        // Discrete one-shot events. Continuous input belongs in fixed_update,
-        // read from the snapshot.
-    }
-
-    [[nodiscard]] bool is_opaque() const override { return true; }
+    // handle_action() and is_opaque() keep their defaults: continuous input is read
+    // from the snapshot in fixed_update, and a gameplay scene is a full screen.
 };
 ```
 

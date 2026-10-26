@@ -174,10 +174,3 @@ void sprite_gallery_scene::render() {
         draw_text(m_font, point{cx, cy + name_dy}, rs::enemy_name(static_cast <rs::enemy>(i)));
     }
 }
-
-void sprite_gallery_scene::handle_action(const sdlpp::event&) {
-}
-
-bool sprite_gallery_scene::is_opaque() const {
-    return true;
-}

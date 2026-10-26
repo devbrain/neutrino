@@ -100,14 +100,6 @@ namespace {
             );
         }
 
-        void handle_action([[maybe_unused]] const sdlpp::event& ev) override {
-            // Discrete one-shot events.
-        }
-
-        [[nodiscard]] bool is_opaque() const override {
-            return true;
-        }
-
     private:
         uint64_t m_sim_ticks{0};
         float m_sim_time{0.0f};
@@ -174,14 +166,19 @@ There are two fundamental ways 2D games handle arbitrary display sizes:
 
 ### 2. The scene interface
 
-`neutrino::base_scene` enforces four pure virtual methods:
+`neutrino::base_scene` has two pure virtual methods, so every scene writes these:
 
 | Method | Role |
 |---|---|
 | `fixed_update(dt, in)` | Fixed-timestep simulation logic. Physics, motion, and continuous input live here. |
 | `render()` | Presentation rendering. Draws the current state. |
-| `handle_action(ev)` | Discrete event dispatch (e.g. text entry, window events). |
-| `is_opaque()` | Returns `true` if this scene covers the full display, allowing Neutrino to skip updating and rendering covered scenes. |
+
+Two more hooks have defaults that suit most scenes, so this one doesn't override them:
+
+| Method | Default | Role |
+|---|---|---|
+| `handle_action(ev)` | ignore | Discrete event dispatch (e.g. text entry, window events). |
+| `is_opaque()` | `true` | Whether this scene covers the full display, allowing Neutrino to skip updating and rendering covered scenes. Overlays such as pause menus override it to return `false`. |
 
 #### Why `fixed_update` receives a constant `dt`
 

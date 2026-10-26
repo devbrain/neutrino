@@ -121,10 +121,6 @@ namespace {
             }
         }
 
-        void handle_action(const sdlpp::event&) override {
-            // Discrete one-shot window and system events arrive here.
-        }
-
         void render() override {
             // 1. Draw sky background.
             neutrino::draw_rect_fill(
@@ -161,10 +157,6 @@ namespace {
                     }
                 );
             }
-        }
-
-        [[nodiscard]] bool is_opaque() const override {
-            return true;
         }
 
     private:
