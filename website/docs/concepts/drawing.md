@@ -1,7 +1,7 @@
 ---
 sidebar_position: 6
 title: Drawing
-description: Immediate-mode primitives, depth-sorted batches, coarse ordering bands, look-at cameras, and offscreen render textures.
+description: Colours, immediate-mode primitives, depth-sorted batches, coarse ordering bands, look-at cameras, and offscreen render textures.
 ---
 
 # Drawing
@@ -53,6 +53,7 @@ flowchart TD
 
 | Type | Header | Role | Lifetime & Responsibility |
 |---|---|---|---|
+| [`color`, `fcolor`, `colors`](pathname:///api/) | `<neutrino/video/color.hh>` | Colour values | `color` is 8-bit RGBA, `fcolor` float RGBA; `colors::` is the named X11 palette. Plain values, freely copied.
 | [`draw_*`](pathname:///api/) | `<neutrino/video/draw.hh>` | Immediate-mode primitives & sprites | Free functions submitting directly to `get_renderer()` in call order. |
 | [`sprite_draw_params`](pathname:///api/) | `<neutrino/video/draw.hh>` | Draw transform | Value struct: `.scale`, `.flip`, and `.rotation_degrees`. |
 | [`draw_layer`](pathname:///api/) | `<neutrino/video/world/sprite_batch.hh>` | Coarse ordering band | Strongly-typed integer wrapper sorting categories before continuous depth. |
@@ -63,7 +64,99 @@ flowchart TD
 
 ---
 
-## 1. Immediate-Mode Primitives (`<neutrino/video/draw.hh>`)
+## 1. Colors (`<neutrino/video/color.hh>`)
+
+Every draw call takes a colour. Neutrino has two colour types and one palette:
+
+| Name | Channels | Use it for |
+|---|---|---|
+| `neutrino::color` | `std::uint8_t r, g, b, a` (0–255) | Everything the draw API takes. Default-constructed it is opaque black. |
+| `neutrino::fcolor` | `float r, g, b, a` (0–1) | Colour maths that wants continuous values: easing, gamma, physically based mixing. |
+| `neutrino::colors::*` | named `color` constants | `colors::white`, `colors::forest_green`, `colors::transparent`, ... `colors::f::*` holds a small `fcolor` subset. |
+
+```cpp
+#include <neutrino/video/color.hh>
+
+const neutrino::color hp_bar{220, 40, 40};            // alpha defaults to 255
+const neutrino::color glass{180, 220, 255, 96};       // translucent
+const neutrino::color sky = neutrino::colors::sky_blue;
+```
+
+:::caution[The palette uses X11 values, not CSS]
+
+The names follow the X11 colour list, and so do the values. A few common names differ from CSS/HTML:
+
+| Name | Neutrino (X11) | CSS |
+|---|---|---|
+| `colors::gray` / `grey` | 190, 190, 190 | 128, 128, 128 |
+| `colors::dark_gray` | 169, 169, 169 (lighter than CSS gray) | 169, 169, 169 |
+| `colors::green` | 0, 255, 0 | 0, 128, 0 (CSS `lime` is 0, 255, 0) |
+
+If you need an exact value, write it out: `neutrino::color{128, 128, 128}`.
+:::
+
+### Operations
+
+All of these are `constexpr`, so they work in constant expressions too.
+
+| Operation | Result | Notes |
+|---|---|---|
+| `a.mix(b, t)` / `neutrino::lerp(a, b, t)` | linear blend, `t` in [0, 1] | All four channels, alpha included. 8-bit results truncate: `black.mix(white, 0.5f)` is 127. |
+| `c.premultiply()` | rgb × alpha, alpha kept | What straight-alpha `c` looks like over black; the input to premultiplied blending. |
+| `c.luminance()` | perceived brightness | BT.709 weights (0.2126 R + 0.7152 G + 0.0722 B), in the channel's range. |
+| `c.to_grayscale()` | luminance in r, g and b | Alpha kept. |
+| `a + b` | channel-wise sum, saturating | Alpha is added too, so opaque + anything stays opaque. Light mixing: `red + green` is yellow. |
+| `c * f` | rgb × `f`, clamped | Brightness; alpha untouched. `c * 0.5f` darkens, `c * 1.5f` brightens. Only `color * float` is defined, not `float * color`. |
+| `c.adjust_brightness(f)` | same as `c * f` | The named form. |
+| `neutrino::alpha_blend(src, dst)` | `src` composited over `dst` | Straight alpha, on the CPU; the GPU does this for you when the blend mode is `blend`. |
+
+```cpp
+using namespace neutrino;
+
+const color fade   = lerp(colors::black, colors::orange, intro_t);   // fade in from black
+const color shadow = colors::black.mix(colors::navy_blue, 0.3f);     // tinted shadow
+const color hover  = button_color * 1.2f;                            // highlight
+const color warmth = base + color{20, 8, 0, 0};                      // add, don't overflow
+const bool  light  = background.luminance() > 128;                   // pick dark or light text
+```
+
+### `color` and `fcolor`
+
+Conversion is explicit in both directions, so a float colour never sneaks into the 8-bit API:
+
+```cpp
+const neutrino::fcolor f{neutrino::colors::coral};    // 0..255 -> 0..1
+const neutrino::color  c{f};                          // 0..1 -> 0..255, clamped, truncated
+```
+
+Float-to-byte conversion clamps to [0, 1] and **truncates**, so `fcolor` 0.5 becomes 127, not 128. A `color` → `fcolor` → `color` round trip is exact. The idiom is: do the maths in `fcolor`, convert once at the draw call.
+
+### Packing pixels
+
+`neutrino::to_rgba32(c)` packs a colour as `0xRRGGBBAA` and `neutrino::from_rgba32()` unpacks it. That is exactly the pixel layout of an RGBA8888 [streaming texture](#streaming-textures), the default format of `texture::create()`:
+
+```cpp
+auto px = canvas.lock();
+px.row(y)[x] = neutrino::to_rgba32(neutrino::colors::gold);
+```
+
+### Alpha needs a blend mode
+
+A colour's alpha only shows when the renderer blends. The immediate primitives use the renderer's draw blend mode, which starts as `blend_mode::none` (alpha ignored), so turn blending on around translucent draws:
+
+```cpp
+neutrino::set_draw_blend_mode(neutrino::blend_mode::blend);
+neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, neutrino::color{0, 0, 0, 128});   // dim the screen
+neutrino::set_draw_blend_mode(neutrino::blend_mode::none);
+```
+
+`draw_line_aa` is the exception among primitives: it blends its edge pixels itself and restores the mode afterwards. Textures are different too: every texture created by the engine is alpha-blended by default.
+
+See [Drawing tutorial, Part 5: Colors](../tutorial/drawing/05-colors.md) for a runnable demo of every operation.
+
+---
+
+## 2. Immediate-Mode Primitives (`<neutrino/video/draw.hh>`)
 
 When you want to draw a health bar, highlight a selected tile, or visualize a physics collider, you do not want to construct a scene node. You want to call a function.
 
@@ -165,7 +258,7 @@ Here, the caller derives `rect` from two projected world corners, guaranteeing t
 
 ---
 
-## 2. Depth-Sorted Batches (`<neutrino/video/world/sprite_batch.hh>`)
+## 3. Depth-Sorted Batches (`<neutrino/video/world/sprite_batch.hh>`)
 
 Immediate mode submits draws in **call order**. In top-down RPGs, 2.5D platformers, and isometric worlds, call order is not sufficient:
 
@@ -267,7 +360,7 @@ A batch separates planning from drawing:
 
 ---
 
-## 3. The Camera Model & Parallax Plane Projection (`<neutrino/video/world/camera.hh>`)
+## 4. The Camera Model & Parallax Plane Projection (`<neutrino/video/world/camera.hh>`)
 
 In 2D tile engines, camera systems often suffer from **parallax drift**: when the camera pans, layers moving at different parallax speeds drift out of alignment, creating gaps between the background art and the playfield.
 
@@ -339,7 +432,7 @@ neutrino::cell_range bounds = neutrino::visible_cell_bounds(world, layer_header,
 
 ---
 
-## 4. Textures (`<neutrino/video/texture.hh>`)
+## 5. Textures (`<neutrino/video/texture.hh>`)
 
 A `neutrino::texture` is a GPU image you draw with `draw_texture()`. It is one type; its **access mode** decides how pixels get into it:
 
@@ -419,7 +512,7 @@ neutrino::draw_texture(*canvas, viewport);
 
 `target.to_image()` reads a target texture back into an `image`; `neutrino::capture_frame()` reads whatever target is currently bound (the window is only meaningful between drawing and present). `neutrino::save_bmp(img, path)` writes either to disk -- handy for screenshots and tests.
 
-## 5. Putting It All Together: A Multi-Layer Scene Architecture
+## 6. Putting It All Together: A Multi-Layer Scene Architecture
 
 Here is how a real game scene coordinates offscreen render textures, camera-aware sprite batches, and immediate-mode UI:
 
@@ -515,6 +608,7 @@ private:
 ## Summary & Next Steps
 
 Neutrino's drawing architecture is designed so you never fight the engine:
+- Use **`color`** for every draw, **`fcolor`** for colour maths, and remember the palette is X11.
 - Use **`draw.hh`** when you want simple, call-order drawing with zero setup.
 - Use **`sprite_batch`** when entities need camera transforms and depth sorting across categorical bands.
 - Use **`camera`** for drift-free look-at targeting and parallax math.

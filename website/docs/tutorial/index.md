@@ -42,7 +42,7 @@ A complete journey building a 2D platformer from an empty window up to moving pl
 
 ### 2. [Drawing Tutorial Series](./drawing/index.md) (Rendering Deep Dive)
 
-A 4-part hands-on series focused entirely on mastering 2D drawing, sorting, cameras, and offscreen buffers:
+A 5-part hands-on series focused entirely on mastering 2D drawing, sorting, cameras, offscreen buffers, and colours:
 
 | Part | You build | You learn |
 |---|---|---|
@@ -50,6 +50,7 @@ A 4-part hands-on series focused entirely on mastering 2D drawing, sorting, came
 | **2** | [Batches & Ordering Bands](./drawing/02-batches-and-ordering.md) | 2.5D depth sorting, coarse `draw_layer` bands, and tie-breaking |
 | **3** | [Camera & Parallax](./drawing/03-camera-and-parallax.md) | Look-at tracking, smooth zoom, and drift-free multi-plane parallax |
 | **4** | [Offscreen Render Textures](./drawing/04-render-textures.md) | `texture::compose()`, bake-once static art, and cached minimaps |
+| **5** | [Colors](./drawing/05-colors.md) | Mixing, premultiplied alpha, grayscale, additive light, brightness, and `color` ↔ `fcolor` |
 
 ## How this fits the rest of the docs
 

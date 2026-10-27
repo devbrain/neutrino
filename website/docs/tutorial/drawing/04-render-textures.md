@@ -251,13 +251,14 @@ flowchart TD
     end
 
     subgraph Textures ["Part 4: Offscreen Render Textures"]
-        T["render_texture::compose & blit<br/><i>Bake static art & minimaps to VRAM once</i>"]
+        T["texture::compose & draw_texture<br/><i>Bake static art & minimaps to VRAM once</i>"]
     end
 
     Primitives & Batches & Cameras & Textures --> Master["High-Performance, Drift-Free 2D Game"]
 ```
 
 ### Where to go from here:
+- Continue to **[Part 5: Colors](./05-colors.md)** to mix, fade, and brighten the colours you draw with.
 - Read the **[Drawing Concept Page](../../concepts/drawing.md)** for deep reference on signatures and mathematical guarantees.
 - Explore the **[Sprites Concept Page](../../concepts/sprites.md)** to see how texture atlases and animations are managed in cache.
 - Jump into the **[Platformer Tutorial](../index.md)** to connect this rendering pipeline to physics, collision detection, and player controls!

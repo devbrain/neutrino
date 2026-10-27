@@ -77,11 +77,7 @@ void vga_canvas::render_to_screen(const neutrino::rect& dest_rect) {
     // 1. Precompute 32-bit RGBA palette lookup table for maximum throughput
     uint32_t lut[256];
     for (size_t i = 0; i < 256; ++i) {
-        const auto& c = m_palette[i];
-        lut[i] = (static_cast<uint32_t>(c.r) << 24)
-               | (static_cast<uint32_t>(c.g) << 16)
-               | (static_cast<uint32_t>(c.b) << 8)
-               | static_cast<uint32_t>(c.a);
+        lut[i] = neutrino::to_rgba32(m_palette[i]);
     }
 
     // 2. Translate the 8-bit indexed buffer straight into the locked texture rows

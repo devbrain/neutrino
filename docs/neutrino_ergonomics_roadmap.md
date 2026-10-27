@@ -90,6 +90,12 @@ flowchart TD
   ```
   A namespace alias keeps every named colour clients already use (`forest_green`, `coral`, `crimson`, ...); a hand-copied subset would have broken them.
 * **Client Impact**: Clients write `neutrino::colors::white` and `neutrino::color{r, g, b, a}` without including `sdlpp/video/color.hh`. Public neutrino headers use the same spelling.
+* **As implemented** (2026-10-27):
+  * The free helpers are re-exported too (`using sdlpp::lerp`, `alpha_blend`, `to_rgba32`, `from_rgba32`), so `neutrino::to_rgba32()` packs an RGBA8888 texture pixel without spelling sdlpp; the demoscene `vga_canvas` uses it.
+  * The palette keeps sdlpp's X11 values (`gray` 190, `dark_gray` 169, `green` 0,255,0), which differ from CSS. Changing them would silently alter existing output, so they are documented instead (`color.hh`, concepts/drawing.md section 1).
+  * `<neutrino/neutrino.hh>` includes `color.hh` directly.
+  * Tests: `test/video/test_color.cc` pins the aliases, the packing, the X11 values and the documented member behaviour (truncating `mix`, saturating `+`, alpha-preserving `*`, explicit `color` <-> `fcolor`).
+  * Docs and demo: a Colors section in concepts/drawing.md, and drawing tutorial Part 5 (`tutorials/drawing/05_colors`) with one row per operation.
 
 #### 1.2 Native Input Enums & Fluent Queries
 * **Location**: `<neutrino/input/keys.hh>` and `<neutrino/input/input_snapshot.hh>`.

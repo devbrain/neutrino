@@ -28,6 +28,7 @@
 #include <neutrino/input/input.hh>
 
 // ---- video -------------------------------------------------------------------------------------
+#include <neutrino/video/color.hh>
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/image_loader.hh>

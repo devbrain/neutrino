@@ -96,7 +96,7 @@ namespace neutrino {
             return std::nullopt;
         }
         apply_defaults(*tex);
-        return texture(std::move(*tex), dim{img.width(), img.height()}, texture_access::fixed);
+        return texture(std::move(*tex), dim{static_cast <int>(img.width()), static_cast <int>(img.height())}, texture_access::fixed);
     }
 
     std::optional <texture> texture::create(dim size, texture_access access, pixel_format format) {

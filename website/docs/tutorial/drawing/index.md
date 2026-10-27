@@ -1,7 +1,7 @@
 ---
 sidebar_position: 0
 title: "Drawing Tutorial"
-description: A hands-on guide to 2D rendering in Neutrino — immediate primitives, depth sorting, look-at cameras, parallax, and offscreen render textures.
+description: A hands-on guide to 2D rendering in Neutrino — immediate primitives, depth sorting, look-at cameras, parallax, offscreen render textures, and colours.
 ---
 
 # Drawing Tutorial
@@ -12,7 +12,7 @@ Rendering in games is much more than putting a sprite on screen. Real games need
 - **Camera projection** with smooth tracking, zoom, and parallax backgrounds that never drift out of alignment.
 - **Offscreen composition** to bake static or procedural scenery once and blit it cheaply each frame.
 
-This 4-part tutorial series teaches Neutrino's rendering architecture from the ground up through practical, working C++20 code.
+This 5-part tutorial series teaches Neutrino's rendering architecture from the ground up through practical, working C++20 code.
 
 :::tip[Companion Concept Pages]
 While these tutorials focus on practical, step-by-step implementation, the theory and engine mechanics are explained in:
@@ -23,7 +23,7 @@ While these tutorials focus on practical, step-by-step implementation, the theor
 
 ---
 
-## The 4-Part Roadmap
+## The 5-Part Roadmap
 
 ```mermaid
 flowchart LR
@@ -31,8 +31,9 @@ flowchart LR
     P2["<b>Part 2: Batches & Ordering</b><br/>Depth sorting, draw layers,<br/>and tie-breaking"]
     P3["<b>Part 3: Camera & Parallax</b><br/>Look-at tracking, zoom,<br/>and multi-plane parallax"]
     P4["<b>Part 4: Render Textures</b><br/>Offscreen targets, bake-once<br/>scenery, and cached minimaps"]
+    P5["<b>Part 5: Colors</b><br/>Mixing, brightness, grayscale,<br/>and float colour maths"]
 
-    P1 --> P2 --> P3 --> P4
+    P1 --> P2 --> P3 --> P4 --> P5
 ```
 
 | Part | Title | What you build | Key engine APIs |
@@ -41,6 +42,7 @@ flowchart LR
 | **2** | [**Batches & Ordering Bands**](./02-batches-and-ordering.md) | A top-down multi-entity scene with Y-sorting, shadows, characters, and spell effects | `sprite_batch`, `draw_layer`, `plan()`, `flush()` |
 | **3** | [**Camera & Parallax**](./03-camera-and-parallax.md) | A scrolling world with smooth player tracking, zoom controls, and 3-plane parallax | `camera`, `to_screen()`, `visible_cell_range` |
 | **4** | [**Offscreen Render Textures**](./04-render-textures.md) | A bake-once procedural background, cached minimap, and stylized 9-slice frame | target `texture`, `compose()`, `draw_texture()` |
+| **5** | [**Colors**](./05-colors.md) | A six-row colour lab: gradients, premultiplied alpha, grayscale, additive light, brightness ramps, float colour maths | `color`, `fcolor`, `colors::`, `mix`, `lerp`, `premultiply`, `to_grayscale`, `+`, `*` |
 
 ---
 
