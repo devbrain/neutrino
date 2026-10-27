@@ -2,13 +2,10 @@
 
 #include <algorithm>
 #include <cstring>
-#include <sdlpp/video/renderer.hh>
 
 namespace demoscene {
 
-vga_canvas::vga_canvas()
-    : m_rgba_buffer(pixel_count, 0xFF000000)
-{
+vga_canvas::vga_canvas() {
     set_default_grayscale();
 }
 
@@ -17,14 +14,14 @@ void vga_canvas::set_rgb_6bit(uint8_t index, uint8_t r6, uint8_t g6, uint8_t b6)
     const uint8_t r8 = static_cast<uint8_t>((static_cast<uint32_t>(r6 & 0x3F) * 255) / 63);
     const uint8_t g8 = static_cast<uint8_t>((static_cast<uint32_t>(g6 & 0x3F) * 255) / 63);
     const uint8_t b8 = static_cast<uint8_t>((static_cast<uint32_t>(b6 & 0x3F) * 255) / 63);
-    m_palette[index] = sdlpp::color{r8, g8, b8, 255};
+    m_palette[index] = neutrino::color{r8, g8, b8, 255};
 }
 
 void vga_canvas::set_rgb(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-    m_palette[index] = sdlpp::color{r, g, b, a};
+    m_palette[index] = neutrino::color{r, g, b, a};
 }
 
-void vga_canvas::set_color(uint8_t index, const sdlpp::color& color) {
+void vga_canvas::set_color(uint8_t index, const neutrino::color& color) {
     m_palette[index] = color;
 }
 
@@ -43,7 +40,7 @@ void vga_canvas::cycle_palette(uint8_t start_index, uint8_t count, int step) {
 void vga_canvas::set_default_grayscale() {
     for (int i = 0; i < 256; ++i) {
         const uint8_t v = static_cast<uint8_t>(i);
-        m_palette[static_cast<size_t>(i)] = sdlpp::color{v, v, v, 255};
+        m_palette[static_cast<size_t>(i)] = neutrino::color{v, v, v, 255};
     }
 }
 
@@ -68,16 +65,8 @@ void vga_canvas::clear(uint8_t color_index) noexcept {
 
 void vga_canvas::ensure_texture() {
     if (!m_texture) {
-        auto tex_exp = sdlpp::texture::create(
-            neutrino::get_renderer(),
-            sdlpp::pixel_format_enum::RGBA8888,
-            sdlpp::texture_access::streaming,
-            width, height
-        );
-        if (tex_exp) {
-            m_texture = std::move(*tex_exp);
-            (void)m_texture->set_scale_mode(sdlpp::scale_mode::nearest);
-        }
+        // Streaming, RGBA8888, nearest-filtered (the neutrino::texture defaults).
+        m_texture = neutrino::texture::create(neutrino::dim{width, height}, neutrino::texture_access::streaming);
     }
 }
 
@@ -95,14 +84,21 @@ void vga_canvas::render_to_screen(const neutrino::rect& dest_rect) {
                | static_cast<uint32_t>(c.a);
     }
 
-    // 2. Translate 8-bit indexed buffer to 32-bit RGBA streaming buffer
-    for (size_t i = 0; i < pixel_count; ++i) {
-        m_rgba_buffer[i] = lut[m_indexed_buffer[i]];
+    // 2. Translate the 8-bit indexed buffer straight into the locked texture rows
+    //    (uploaded when the lock goes out of scope)
+    {
+        auto lock = m_texture->lock();
+        for (int y = 0; y < height; ++y) {
+            const uint8_t* src = m_indexed_buffer.data() + static_cast<size_t>(y) * width;
+            auto row = lock.row(y);
+            for (int x = 0; x < width; ++x) {
+                row[static_cast<size_t>(x)] = lut[src[x]];
+            }
+        }
     }
 
-    // 3. Update streaming texture and blit to destination rectangle
-    (void)m_texture->update(m_rgba_buffer.data(), static_cast<int>(width * sizeof(uint32_t)));
-    (void)neutrino::get_renderer().copy(*m_texture, std::nullopt, dest_rect);
+    // 3. Draw the texture into the destination rectangle
+    neutrino::draw_texture(*m_texture, dest_rect);
 }
 
 } // namespace demoscene

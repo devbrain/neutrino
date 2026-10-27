@@ -4,11 +4,8 @@
 #include <cstdint>
 #include <optional>
 #include <span>
-#include <vector>
 
 #include <neutrino/neutrino.hh>
-#include <sdlpp/video/color.hh>
-#include <sdlpp/video/texture.hh>
 
 namespace demoscene {
 
@@ -19,7 +16,7 @@ namespace demoscene {
  * - 320x200 8-bit indexed framebuffer (64,000 bytes linear array).
  * - 256-color DAC palette registers with 6-bit DAC (0..63) to 8-bit (0..255) conversion.
  * - In-place palette cycling for demoscene plasma and copper bar animations.
- * - Single-pass palette lookup and upload to an SDL streaming texture for GPU presentation.
+ * - Single-pass palette lookup and upload to a neutrino streaming texture for GPU presentation.
  */
 class vga_canvas {
 public:
@@ -53,12 +50,12 @@ public:
     /**
      * @brief Set a specific palette index to a color.
      */
-    void set_color(uint8_t index, const sdlpp::color& color);
+    void set_color(uint8_t index, const neutrino::color& color);
 
     /**
      * @brief Get color at palette index.
      */
-    [[nodiscard]] const sdlpp::color& get_color(uint8_t index) const noexcept {
+    [[nodiscard]] const neutrino::color& get_color(uint8_t index) const noexcept {
         return m_palette[index];
     }
 
@@ -136,8 +133,8 @@ public:
     // ------------------------------------------------------------------------
 
     /**
-     * @brief Converts the 8-bit indexed buffer via the palette into a 32-bit ARGB texture
-     * and copies it to the destination viewport rectangle.
+     * @brief Converts the 8-bit indexed buffer via the palette into a 32-bit RGBA streaming
+     * texture and draws it into the destination viewport rectangle.
      */
     void render_to_screen(const neutrino::rect& dest_rect);
 
@@ -145,9 +142,8 @@ private:
     void ensure_texture();
 
     std::array<uint8_t, pixel_count> m_indexed_buffer{};
-    std::array<sdlpp::color, 256> m_palette{};
-    std::vector<uint32_t> m_rgba_buffer;
-    std::optional<sdlpp::texture> m_texture;
+    std::array<neutrino::color, 256> m_palette{};
+    std::optional<neutrino::texture> m_texture;
 };
 
 } // namespace demoscene

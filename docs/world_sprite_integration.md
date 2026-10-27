@@ -1565,6 +1565,8 @@ New `video/world/texture_layer.hh` — `texture_layer : render_layer` blits a ga
 `const sdlpp::texture*` (streaming; the game updates it) to fill the viewport via
 `get_renderer().copy` (optional `source` sub-rect), ignoring the batch; a null texture is a
 no-op. No separate `draw_texture` primitive was needed — `get_renderer().copy` is the blit.
+*Superseded by roadmap P3.4:* `texture_layer` now holds a `const neutrino::texture*` and draws it
+with `draw_texture` (pixel_snap, draw-failure counting); `get_renderer().copy` is no longer used.
 Suite 581/581 (+2: a bottom slot draws before the after-slots and `layer_view` carries the
 viewport; a `texture_layer` blits a real streaming texture with `failed==0`, null is a no-op).
 
