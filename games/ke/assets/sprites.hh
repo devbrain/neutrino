@@ -221,7 +221,7 @@ namespace rs {
     // Call from application::teardown(), before the ke_assets storage goes away and while the
     // sprite services are still published. (The longer-term fix is to move these animations into
     // sprite_def::clips, which the engine already supports, so the sets own them and there is
-    // nothing to hand-unregister -- see the roadmap's "not an engine gap" section.)
+    // nothing to hand-unregister.)
     // @pre set_ke_assets() has been called.
     void release_sprites();
 }

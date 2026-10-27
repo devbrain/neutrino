@@ -1,7 +1,7 @@
 //
 // Created by igor on 28/06/2026.
 //
-// Swept / crossing triggers (cross-cutting roadmap). run()'s trigger pass diffs SENSOR overlaps
+// Swept / crossing triggers. run()'s trigger pass diffs SENSOR overlaps
 // at frame BOUNDARIES, so a fast body can skip a thin pickup / checkpoint / tripwire between two
 // sampled frames without ever overlapping it at an endpoint. world::swept_triggers sweeps a shape
 // by a delta and reports every SENSOR it touches along the way -- including ones it passes

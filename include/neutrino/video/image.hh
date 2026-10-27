@@ -8,7 +8,7 @@
  * @file image.hh
  * @brief The engine's CPU-side image vocabulary: @ref image and @ref pixel_format.
  *
- * Engine-owned NAMES for sdlpp's surface types (roadmap P1.7): aliases, so an image passes to
+ * Engine-owned NAMES for sdlpp's surface types: aliases, so an image passes to
  * sdlpp unchanged. An image is decoded pixels in system memory -- what image_loader.hh returns and
  * what sprite atlases are built from; it becomes a GPU texture when a sheet is registered.
  */

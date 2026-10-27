@@ -475,7 +475,7 @@ TEST_SUITE("world+grid: triangle (solid slope) tiles") {
     }
 }
 
-TEST_SUITE("world+grid: tile boundary compilation (§19 #4)") {
+TEST_SUITE("world+grid: tile boundary compilation") {
     TEST_CASE("mergeable solid tiles compile to merged residents on the first run; floor stays solid") {
         world w = grid_world(); // 8x8 cells of 2x2 over [0,16]^2
         material_props m; m.response = response_mode::BLOCK; m.block_normal = vec{0, 1};

@@ -88,7 +88,7 @@ TEST_SUITE("neutrino::video tileset bundle") {
         }
     }
 
-    TEST_CASE("a surface-backed image builds a bundle without a decode round-trip (Flavor 1)") {
+    TEST_CASE("a surface-backed image builds a bundle without a decode round-trip") {
         neutrino::test::test_application app("tileset bundle from surface");
 
         // A uniform tileset whose shared image is an already-decoded surface (procedural

@@ -280,7 +280,7 @@ namespace neutrino {
     /// @brief Draw a cross centred at @p center (arm half-length @p size px, stroke @p thickness px) in colour @p c.
     NEUTRINO_EXPORT void draw_cross(const point& center, int size, float thickness, const color& c);
 
-    // ---- textures (roadmap P3.4) -----------------------------------------------------------------
+    // ---- textures --------------------------------------------------------------------------------
 
     /**
      * @brief How draw_texture() maps a texture onto its destination.

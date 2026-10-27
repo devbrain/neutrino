@@ -1,7 +1,7 @@
 //
 // Created by igor on 28/06/2026.
 //
-// Step-up / ledge forgiveness (§19 #3). A mover walking into a small lip (a low step riser,
+// Step-up / ledge forgiveness. A mover walking into a small lip (a low step riser,
 // a curb, a tile edge) should ride up over it instead of jamming against it. step_up lifts
 // the actor up to max_step (capped by headroom), re-casts the horizontal step from the raised
 // position, and -- if the path is now clear AND there is a tread to land on -- carries it
@@ -50,7 +50,7 @@ namespace {
     }
 }
 
-TEST_SUITE("world: step_up (§19 #3)") {
+TEST_SUITE("world: step_up") {
     TEST_CASE("climbs a short lip onto the higher floor and settles on the tread") {
         world w = step_world();
         add_solid(w, 1, aabb{vec{0, 0}, vec{32, 2}});  // lower floor, top y=2

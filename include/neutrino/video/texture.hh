@@ -6,7 +6,7 @@
 
 /**
  * @file texture.hh
- * @brief The engine's GPU texture: one type, three ways for pixels to get in (roadmap P3.4).
+ * @brief The engine's GPU texture: one type, three ways for pixels to get in.
  *
  * A @ref texture lives on the GPU and is drawn with draw_texture() / draw_texture_quad()
  * (draw.hh), which give it the same contract as every other draw: float render space, the

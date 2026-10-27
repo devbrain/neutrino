@@ -14,7 +14,7 @@
 #include <sdlpp/video/window.hh>
 
 namespace neutrino {
-    // Raw SDL objects, under engine-owned names (roadmap P1.7). They are the escape hatch below the
+    // Raw SDL objects, under engine-owned names. They are the escape hatch below the
     // engine: drawing straight through the renderer bypasses pixel_snap, the draw-failure counter
     // and everything else draw.hh adds. Prefer draw.hh; reach for these for genuinely low-level work.
     using renderer = sdlpp::renderer; // sdlpp-ok

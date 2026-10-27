@@ -1,4 +1,4 @@
-# Guard for roadmap P1.7: client code never needs to SPELL sdlpp.
+# Guard: client code never needs to SPELL sdlpp.
 #
 #   cmake -DROOT=<repo> [-DMODE=warn|fail] -P check_sdlpp_seal.cmake
 #

@@ -1,7 +1,7 @@
 //
 // Created by igor on 28/06/2026.
 //
-// Entity-level collider grouping (cross-cutting roadmap). One entity often owns several colliders
+// Entity-level collider grouping. One entity often owns several colliders
 // by role -- hurtbox, hitbox, weak points, shield zones -- all sharing its eid, so a multi-hit
 // query (raycast_all / cast_all / swept_triggers) reports it once per collider. dedup_by_entity
 // collapses such results to one contact per eid, keeping the nearest collider of each, preserving

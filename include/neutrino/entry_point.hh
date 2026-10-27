@@ -10,7 +10,7 @@
  *
  * Include in exactly one translation unit: it defines SDL's application callbacks. It mirrors
  * SDLPP_MAIN, but reaches the SDL application through detail::application_access, because
- * neutrino::application inherits the SDL machinery privately (roadmap P1.7) and the
+ * neutrino::application inherits the SDL machinery privately and the
  * derived-to-base conversion SDLPP_MAIN relies on is therefore not accessible from here.
  */
 

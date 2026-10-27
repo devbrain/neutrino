@@ -1,5 +1,5 @@
 //
-// Tests for neutrino::texture and the texture draw API (roadmap P3.4).
+// Tests for neutrino::texture and the texture draw API.
 //
 // Every texture is drawn into, or read back from, a TARGET texture -- never the window, whose
 // contents are undefined after present. Reading back is itself part of the API under test

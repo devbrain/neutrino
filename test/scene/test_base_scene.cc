@@ -1,5 +1,5 @@
 //
-// Tests for base_scene's default hooks (ergonomics roadmap P1.4).
+// Tests for base_scene's default hooks.
 //
 // A scene must implement only fixed_update and render; everything else has a default. These pin
 // both halves of that contract: the minimal scene is instantiable (no hook is accidentally pure

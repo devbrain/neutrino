@@ -60,7 +60,7 @@ namespace neutrino {
                 return m_sprites_manager;
             }
 
-            // The application's shared tileset render-resource cache (Tier 2). Null
+            // The application's shared tileset render-resource cache. Null
             // before the application is ready and after it is torn down.
             resource_cache* get_resource_cache() const {
                 return m_resource_cache;

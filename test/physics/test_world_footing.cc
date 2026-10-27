@@ -1,7 +1,7 @@
 //
 // Created by igor on 28/06/2026.
 //
-// Footing / edge sensors (§19 #4). ground_support probes straight down at three points of the
+// Footing / edge sensors. ground_support probes straight down at three points of the
 // actor's footprint -- left edge, centre, right edge -- and reports the solid ground under each
 // (the left/right pair is exactly Sonic's twin floor sensors A/B). It is a pure QUERY the game
 // reads to drive teeter/balance, edge-stop, coyote-time and ledge-grab -- a state the game
@@ -51,7 +51,7 @@ namespace {
     }
 }
 
-TEST_SUITE("world: ground_support / footing (§19 #4)") {
+TEST_SUITE("world: ground_support / footing") {
     TEST_CASE("firmly on a wide floor: all three feet supported") {
         world w = foot_world();
         add_solid(w, 1, aabb{vec{0, 0}, vec{32, 2}});

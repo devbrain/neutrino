@@ -19,7 +19,7 @@
     } while (false)
 
 namespace {
-    // Brace-init pins (P2.1): a braced {x, y} must keep selecting the integer overloads -- the
+    // Brace-init pins: a braced {x, y} must keep selecting the integer overloads -- the
     // render_pos / render_rect forms are constrained templates precisely so this stays
     // unambiguous. Never called; it only has to compile.
     [[maybe_unused]] void brace_init_still_selects_integer_overloads(neutrino::sprite_state_id state) {

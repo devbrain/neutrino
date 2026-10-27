@@ -1,7 +1,7 @@
 //
 // Created by igor on 28/06/2026.
 //
-// Ground snapping (§19 #2). snap_to_ground keeps a grounded actor glued to a floor that
+// Ground snapping. snap_to_ground keeps a grounded actor glued to a floor that
 // receded beneath it this frame -- so it hugs a downhill slope / staircase instead of
 // launching off each lip. It sweeps the actor's own shape straight down (-up) by at most
 // max_drop and, if it lands on a WALKABLE surface within reach, translates the actor down
@@ -48,7 +48,7 @@ namespace {
     constexpr float SKIN = 0.01f;
 }
 
-TEST_SUITE("world: snap_to_ground (§19 #2)") {
+TEST_SUITE("world: snap_to_ground") {
     TEST_CASE("snaps a grounded actor down onto a flat floor within reach") {
         world w = snap_world();
         add_floor(w, 1, aabb{vec{0, 0}, vec{32, 2}}); // top at y=2

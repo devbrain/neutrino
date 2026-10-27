@@ -8,7 +8,7 @@
  * @file keys.hh
  * @brief The engine's input-code vocabulary: keys, mouse buttons, gamepad buttons and axes.
  *
- * Engine-owned NAMES for sdlpp's input enums (roadmap P1.2 / P1.7): aliases, not new types, so the
+ * Engine-owned NAMES for sdlpp's input enums: aliases, not new types, so the
  * values pass to sdlpp unchanged. Client code writes @c neutrino::key::space and never names sdlpp.
  *
  * The gamepad enums are @ref pad_button / @ref pad_axis because @c gamepad_button is already the

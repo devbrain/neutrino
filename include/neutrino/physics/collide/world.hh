@@ -272,7 +272,7 @@ namespace neutrino::physics {
              */
             move_result move_to(collider_id cid, const vec& target, units::duration dt);
 
-            // ---- typed gameplay-space boundary (roadmap Tier 3) -------------------------------
+            // ---- typed gameplay-space boundary -------------------------------------------------
             // The same operations in the strong vocabulary of <neutrino/coordinates.hh>, so intent
             // is carried by the type rather than by the parameter name: a world_pos cannot be
             // handed to set_velocity, and an effective world_velocity cannot be mistaken for a
@@ -480,7 +480,7 @@ namespace neutrino::physics {
 
             /**
              * @brief Frame pass 1 -- carriers: move each carrier rigidly on its scripted path and
-             *        carry (MP1), push (MP2), and crush (MP3) the actors it touches.
+             *        carry, push, and crush the actors it touches.
              * @param active_region Off-region carriers stay dormant (like off-region movers);
              *                      @c nullopt disables culling.
              * @param dt            Frame duration. Runs BEFORE the movement pass so actors then see
@@ -491,8 +491,8 @@ namespace neutrino::physics {
                 // and transports the actors riding it. Runs BEFORE the actor movement pass, so actors
                 // then see carriers at their resolved positions. A rider inherits
                 // (velocity + surface_velocity)*dt -- the platform's own delta plus any conveyor drag
-                // -- collision-aware against everything but its carrier. (MP1: carrying only; pushing
-                // and crushing are follow-ups.) Carriers are body_kind::CARRIER, so the movement pass
+                // -- collision-aware against everything but its carrier. Non-riders in its path are pushed,
+                // and pinned actors are crushed. Carriers are body_kind::CARRIER, so the movement pass
                 // below (which only processes KINEMATIC) leaves them alone.
                 for (auto it = m_bodies_storage.begin(); it != m_bodies_storage.end(); ++it) {
                     if (it->kind != detail::body_kind::CARRIER) {
@@ -512,7 +512,7 @@ namespace neutrino::physics {
                     }
                     const uint32_t carrier_idx = it.index();
                     // Collect riders at the carrier's CURRENT position, before it moves. (Linear scan
-                    // -- carriers are few; a tree query is a perf follow-up.)
+                    // -- carriers are few, so a tree query is not worth it.)
                     m_rider_scratch.clear();
                     for (auto jt = m_bodies_storage.begin(); jt != m_bodies_storage.end(); ++jt) {
                         if (jt->kind == detail::body_kind::KINEMATIC && is_riding(jt.index(), carrier_idx)) {
@@ -522,17 +522,17 @@ namespace neutrino::physics {
                     move_carrier_rigid(carrier_idx, body_delta);
                     for (const uint32_t r : m_rider_scratch) {
                         carry_translate(r, carrier_idx, rider_delta);
-                        emit_crush_if_pinned(r, carrier_idx, rider_delta); // MP3: carried into a wall
+                        emit_crush_if_pinned(r, carrier_idx, rider_delta); // crush: carried into a wall
                     }
 
-                    // MP2 -- pushing: a carrier that MOVED (body_delta != 0) shoves any non-rider
+                    // Pushing: a carrier that MOVED (body_delta != 0) shoves any non-rider
                     // actor its sweep RAN INTO clear along its motion. (A conveyor with body_delta 0
                     // does not push -- it only drags riders.) The candidate gate is a swept test of
                     // the carrier (from its start, by body_delta) vs the actor: this is anti-tunnel
                     // (a fast carrier still catches a thin actor anywhere in the band) AND directional
                     // (a carrier moving AWAY from a trailing actor never hits it). Each hit is shoved
                     // to the carrier's FINAL leading edge via the collision-aware carry_translate
-                    // (blocked at a wall it stops, leaving a residual overlap MP3 reads as a crush).
+                    // (blocked at a wall it stops, leaving a residual overlap the crush check reads).
                     // Collect-then-push -- pushing mutates the tree and must not run during the query.
                     if (!near_zero(body_delta)) {
                         const vec back{-body_delta.x(), -body_delta.y()};
@@ -594,7 +594,7 @@ namespace neutrino::physics {
                             const aabb abox = detail::tight_box(m_bodies_storage[aidx].shape);
                             const vec push = clear_push(abox, fbox, body_delta);
                             carry_translate(aidx, carrier_idx, push);
-                            emit_crush_if_pinned(aidx, carrier_idx, push); // MP3: pushed into a wall
+                            emit_crush_if_pinned(aidx, carrier_idx, push); // crush: pushed into a wall
                         }
                     }
                 }
@@ -1706,7 +1706,7 @@ namespace neutrino::physics {
 
         private:
             // ====================================================================================
-            // Internals, part 2: the slide solver (move_and_slide), carriers (MP1/2/3 helpers),
+            // Internals, part 2: the slide solver (move_and_slide), carriers (carry / push / crush helpers),
             // trigger bookkeeping, grid boundary-bake, shared constants, and the member state.
             // ====================================================================================
             /// @brief Outcome of @ref move_and_slide: post-slide velocity, grounded flag, and the
@@ -2046,7 +2046,7 @@ namespace neutrino::physics {
             }
 
             /**
-             * @brief Move a carrier rigidly by @c d (it is never blocked -- it pushes/carries, MP2/3).
+             * @brief Move a carrier rigidly by @c d (it is never blocked -- it pushes and carries).
              * @param idx The carrier's slot index.
              * @param d   The rigid displacement.
              */
@@ -2061,7 +2061,7 @@ namespace neutrino::physics {
              *        move that hits every solid EXCEPT its carrier.
              *
              * The rider rides freely but still stops a skin short of walls / ceilings / other
-             * carriers. (MP1: a blocked rider simply stops; @ref emit_crush_if_pinned turns "still
+             * carriers. (A blocked rider simply stops; @ref emit_crush_if_pinned turns "still
              * pinned" into a @c CRUSH event.)
              *
              * @param j           The rider's slot index.
@@ -2089,7 +2089,7 @@ namespace neutrino::physics {
             }
 
             /**
-             * @brief MP3 crush: after a carry/push, emit a @c CRUSH event if the actor still overlaps
+             * @brief Crush: after a carry/push, emit a @c CRUSH event if the actor still overlaps
              *        the carrier (it could not move clear -- pinned against other solid geometry).
              *
              * Uses STRICT penetration, so a clean carry/push (which leaves a skin gap, or at best a
@@ -2125,7 +2125,7 @@ namespace neutrino::physics {
             }
 
             /**
-             * @brief MP2 push displacement: the move that shoves actor box @c a clear of carrier box
+             * @brief Push displacement: the move that shoves actor box @c a clear of carrier box
              *        @c c ALONG the carrier's motion @c d, leaving a skin gap.
              * @param a The actor's tight box.
              * @param c The carrier's tight box.
@@ -2159,7 +2159,7 @@ namespace neutrino::physics {
 
             std::vector <world_event> m_events; ///< Reused per-frame event buffer (returned by run()).
             std::vector <uint32_t> m_rider_scratch; ///< Reused per-carrier rider list (carrier pass).
-            std::vector <uint32_t> m_push_scratch; ///< Reused per-carrier pushed-actor list (MP2).
+            std::vector <uint32_t> m_push_scratch; ///< Reused per-carrier pushed-actor list.
             std::vector <sensor_pair> m_triggers_curr; ///< This frame's sensor overlaps.
             std::vector <sensor_pair> m_triggers_prev; ///< Last frame's overlaps (for the begin/end diff).
             std::vector <collider_id> m_sensor_tiles; ///< SENSOR tile handles (lazily pruned).
@@ -2505,7 +2505,7 @@ namespace neutrino::physics {
                                                             float dt) {
         m_events.clear();
         compile_static_grid(); // one-shot tile boundary-bake, before anything queries
-        carrier_pass(active_region, dt); // carry (MP1) + push (MP2) + crush (MP3)
+        carrier_pass(active_region, dt); // carry + push + crush
         movement_pass(active_region, dt); // kinematic move-and-slide -> COLLISION events
         bullet_pass(active_region, dt); // bullets -> BULLET_HIT / BULLET_EXPIRED
         trigger_pass(); // sensor overlap diff -> TRIGGER_BEGIN / END

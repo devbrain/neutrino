@@ -1,7 +1,7 @@
 //
 // Created by igor on 28/06/2026.
 //
-// Multi-hit queries (cross-cutting roadmap). raycast / cast return only the NEAREST hit;
+// Multi-hit queries. raycast / cast return only the NEAREST hit;
 // raycast_all / cast_all return EVERY collider crossed, ordered nearest-first by toi, with an
 // optional max-hit cap. Covers beams, piercing shots, melee/sword arcs, explosion sweeps and
 // boss multi-hurtbox scans -- across both dynamic residents and static tiles.

@@ -8,7 +8,8 @@
 // Internal RAII lock for reading a surface's pixels. Locks only when SDL_MUSTLOCK
 // requires it; ready() is false only when a required lock failed (or the surface is
 // null). Locks SDL directly rather than via sdlpp's surface::lock_guard, which misreads
-// SDL3's bool return from SDL_LockSurface (see the risks note in the design doc).
+// SDL3's bool return from SDL_LockSurface (it tests != 0, as for SDL2's int result, so a
+// successful lock reads as a failure).
 //
 
 #include <sdlpp/video/surface.hh>

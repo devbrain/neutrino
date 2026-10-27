@@ -58,8 +58,8 @@ namespace neutrino {
             /// input. This is where input is polled and state advances.
             virtual void fixed_update(sim_duration dt, const input_snapshot& in) = 0;
             /// @brief Render the scene; called every frame after fixed_update. Draws the latest
-            /// committed state -- no time argument and no interpolation factor (KE is integer-scaled
-            /// pixel-art, where sub-step interpolation rounds away; see roadmap 0B).
+            /// committed state -- no time argument and no interpolation factor (for integer-scaled
+            /// pixel art, sub-step interpolation would round away anyway).
             virtual void render() = 0;
             /// @brief Handle an SDL event (input, window, etc.).
             virtual void handle_action(const event& ev);

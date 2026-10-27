@@ -6,7 +6,7 @@
 
 /**
  * @file coordinates.hh
- * @brief Strong coordinate/quantity types for gameplay space -- roadmap Tier 3.
+ * @brief Strong coordinate/quantity types for gameplay space.
  *
  * The engine's public surface has long spoken one shape for many meanings: a position, an offset
  * and a velocity are all a pair of floats (@c vec / @c world_point), so any of them fits wherever
@@ -33,10 +33,6 @@
  *       @c displacement) but strips it at the public boundary. This is that discipline, made
  *       public. Conversion to and from the untyped representations is explicit and one-directional
  *       per call (@ref to_xy / the explicit constructors), so every boundary crossing is visible.
- *
- * @warning Introduced ahead of the call-site migration: nothing in the engine takes these yet.
- *          The migration converts the physics public boundary first and lets the compiler
- *          enumerate the rest. See games/ke/roadmap.md, Tier 3.
  */
 
 #include <chrono>

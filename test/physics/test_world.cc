@@ -6,11 +6,11 @@
 // generation-tagged handle (collider_id) and its validity/recycling semantics, and
 // the mutator precondition guards (set_shape / set_velocity / remove).
 //
-// Scope note: the world does not yet expose any read-back of the broadphase proxy or
-// the stored body, so the "every resident has a fat box that bounds its shape"
-// invariant cannot be observed here -- it belongs to the Phase 2 query API. These
-// tests cover exactly what the public surface allows today, with ENFORCE-guard checks
-// via CHECK_THROWS (ENFORCE throws).
+// Scope note: the public surface has no read-back of the broadphase proxy or the
+// stored body, so the "every resident has a fat box that bounds its shape" invariant
+// is not observed here -- test_world_queries.cc checks it through a friend accessor.
+// These tests cover what the public surface allows, with ENFORCE-guard checks via
+// CHECK_THROWS (ENFORCE throws).
 //
 #include <doctest/doctest.h>
 

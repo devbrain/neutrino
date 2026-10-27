@@ -297,7 +297,7 @@ TEST_SUITE("world::run -- positional intent (set_target / move_to)") {
         CHECK(std::fabs(aabb_min_x(w.get_shape(k))) < 1e-4f);
     }
 
-    // The typed boundary (roadmap Tier 3): same behaviour, with intent carried by the type. Added
+    // The typed boundary: same behaviour, with intent carried by the type. Added
     // as OVERLOADS, so untyped callers keep working and migrate one at a time.
     TEST_CASE("the typed gameplay-space overloads agree with the vec-based ones") {
         world w;

@@ -1,8 +1,8 @@
 //
 // Created by igor on 24/06/2026.
 //
-// Tests for the static collision grid scaffolding in <neutrino/physics/collide/grid.hh>
-// (Phase G0): the grid_coord sentinel/validity, the row-major grid_storage<T>, the
+// Tests for the static collision grid scaffolding in <neutrino/physics/collide/grid.hh>:
+// the grid_coord sentinel/validity, the row-major grid_storage<T>, the
 // physical->grid cell mapping and its inverse cell_box (resolution w*h over a physical
 // extent [min,max], so the cell size is derived). The mappings are private, so they are
 // reached through the grid_test_access friend tap -- the same pattern as the world tests.

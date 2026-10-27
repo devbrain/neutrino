@@ -1,5 +1,5 @@
 //
-// Tests for the strong gameplay-space vocabulary (roadmap Tier 3).
+// Tests for the strong gameplay-space vocabulary.
 //
 // These pin the ALGEBRA -- which combinations exist and what they produce. The combinations that
 // must NOT compile (world_pos + world_pos, world_velocity used as world_delta) cannot be asserted

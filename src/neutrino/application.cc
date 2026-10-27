@@ -42,7 +42,7 @@ namespace neutrino {
         scenes_manager m_scenes_manager;
         texture_registry m_textures;
         sprites_manager m_sprites;
-        // The shared tileset render-resource cache (Tier 2). Held by pointer and
+        // The shared tileset render-resource cache. Held by pointer and
         // torn down explicitly in ~application while m_textures/m_sprites are still
         // published, since destroy_bundle unregisters through the service_locator.
         std::unique_ptr<resource_cache> m_resource_cache;

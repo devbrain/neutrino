@@ -94,7 +94,7 @@ namespace neutrino {
     /// update/render hooks. Construct with an @ref application_config
     /// to customize the window and presentation.
     ///
-    /// The SDL application machinery is a PRIVATE base (roadmap P1.7): its API is not part of
+    /// The SDL application machinery is a PRIVATE base: its API is not part of
     /// neutrino's. Input is read from the @ref input_snapshot handed to update_scene() /
     /// base_scene::fixed_update(); the entry point (NEUTRINO_MAIN) and test harnesses reach the
     /// base through detail::application_access.

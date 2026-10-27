@@ -1,11 +1,11 @@
 //
 // Created by igor on 25/06/2026.
 //
-// Moving platforms / carriers (§19 #1, MP1 — carrying). A carrier_body is a kinematic "solid"
+// Moving platforms / carriers. A carrier_body is a kinematic "solid"
 // that moves rigidly on a scripted path and transports the actors riding it. Each frame it
 // translates by velocity*dt; a rider on top inherits (velocity + surface_velocity)*dt:
 //   moving platform -> surface_velocity {0,0}; conveyor -> velocity {0,0}, surface = belt speed.
-// MP1 covers carrying only; pushing/crushing are follow-ups.
+// A moving carrier also pushes actors in its path, and an actor pinned against a wall is crushed.
 //
 #include <doctest/doctest.h>
 
@@ -121,7 +121,7 @@ TEST_SUITE("world: carriers (moving platforms / conveyors)") {
 
     TEST_CASE("an AABB touching only the carrier's top corner (no real support) is not a rider") {
         world w = carrier_world();
-        // a CONVEYOR (no body motion -> no MP2 push) isolates the carry/ride decision: a corner
+        // a CONVEYOR (no body motion -> no push) isolates the carry/ride decision: a corner
         // toucher must not be dragged by the belt, since it isn't a rider.
         w.add(1, carrier_body{moving_shape_t{aabb{vec{10, 8}, vec{16, 10}}}, {}, {}, vec{0, 0}, vec{120, 0}});
         // bottom-left at the carrier's top-right corner (16,10): zero perpendicular overlap.
@@ -134,7 +134,7 @@ TEST_SUITE("world: carriers (moving platforms / conveyors)") {
 
     TEST_CASE("a circle merely near a carrier CORNER (bbox overlaps, circle doesn't touch) is not a rider") {
         world w = carrier_world();
-        // conveyor again, to test the ride decision without MP2 push.
+        // conveyor again, to test the ride decision without a push.
         w.add(1, carrier_body{moving_shape_t{aabb{vec{0, -1}, vec{1, 0}}}, {}, {}, vec{0, 0}, vec{120, 0}});
         // circle at (1.9,1) r1: bbox bottom y=0, x-span [0.9,2.9] overlaps the carrier in x, but the
         // circle is ~1.33 from the corner -> not touching, must not be dragged.
@@ -157,7 +157,7 @@ TEST_SUITE("world: carriers (moving platforms / conveyors)") {
         CHECK(box_of(w, other).min.x() == doctest::Approx(ox0)); // untouched
     }
 
-    TEST_CASE("a rider carried into a wall stops, doesn't tunnel (MP1: blocked, no crush yet)") {
+    TEST_CASE("a rider carried into a wall stops, doesn't tunnel (blocked, not tunnelling)") {
         world w = carrier_world();
         w.add(1, carrier_body{moving_shape_t{aabb{vec{10, 8}, vec{16, 10}}}, {}, {}, vec{600, 0}, vec{0, 0}}); // dx=+10
         w.add(3, static_body{shape_t{aabb{vec{14, 10}, vec{15, 14}}}, {}, {}});   // wall above-right of the platform
@@ -210,7 +210,7 @@ TEST_SUITE("world: carriers (moving platforms / conveyors)") {
         CHECK_NOTHROW(w.set_shape(c, shape_t{circle{vec{13, 9}, 1.0f}})); // a mover shape is fine
     }
 
-    // --- MP2: pushing (a carrier moving into an actor displaces it along its motion) ---
+    // --- pushing (a carrier moving into an actor displaces it along its motion) ---
 
     TEST_CASE("a carrier moving into an actor pushes it forward, clear of the carrier") {
         world w = carrier_world();
@@ -233,7 +233,7 @@ TEST_SUITE("world: carriers (moving platforms / conveyors)") {
         CHECK(box_of(w, act).min.x() == doctest::Approx(ax0)); // untouched
     }
 
-    TEST_CASE("a pushed actor stops at a wall (does not tunnel; residual overlap is MP3's job)") {
+    TEST_CASE("a pushed actor stops at a wall (does not tunnel; residual overlap is the crush check's job)") {
         world w = carrier_world();
         w.add(1, carrier_body{moving_shape_t{aabb{vec{10, 8}, vec{16, 10}}}, {}, {}, vec{60, 0}, vec{0, 0}});
         w.add(3, static_body{shape_t{aabb{vec{18, 8}, vec{19, 10}}}, {}, {}}); // wall
@@ -334,7 +334,7 @@ TEST_SUITE("world: carriers (moving platforms / conveyors)") {
         CHECK(box_of(w, act).min.x() == doctest::Approx(ax0)); // belt drags top riders only, never pushes
     }
 
-    // --- MP3: crushing (a pinned actor that can't move clear -> CRUSH event) ---
+    // --- crushing (a pinned actor that can't move clear -> CRUSH event) ---
 
     TEST_CASE("a pushed actor pinned against a wall is crushed (CRUSH names actor + carrier)") {
         world w = carrier_world();

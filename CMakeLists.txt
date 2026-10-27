@@ -59,7 +59,7 @@ endif()
 # FetchContent honours the first declaration, so pinning to a fixed commit here
 # makes the stb version reproducible for both neutrino and onyx_image instead of
 # tracking a moving master. The neutrino library uses stb_rect_pack.h for atlas
-# packing (Phase 3); header-only — STB_RECT_PACK_IMPLEMENTATION is defined in
+# packing; header-only — STB_RECT_PACK_IMPLEMENTATION is defined in
 # exactly one TU (atlas_packer.cc).
 FetchContent_Declare(stb
     GIT_REPOSITORY https://github.com/nothings/stb.git

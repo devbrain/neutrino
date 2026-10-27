@@ -153,7 +153,7 @@ void game_mechanics::spawn_ball(model& m, neutrino::world_pos pos, neutrino::wor
     // impact position: sparks land off the contact and english is computed from the wrong offset,
     // worsening with ball speed and step length. Adopting bounce needs the impact point carried on
     // the BULLET_HIT event (world_event has the normal and toi but no position); until then the
-    // one-frame rest is the lesser artefact. See roadmap Tier 2.
+    // one-frame rest is the lesser artefact.
     body.on_hit = neutrino::physics::bullet_on_hit::stop;
 
     const auto index = static_cast <std::uint32_t>(li.balls.size());

@@ -8,7 +8,7 @@
  * @file color.hh
  * @brief The engine's colour vocabulary: @ref color, @ref fcolor and the @ref colors palette.
  *
- * Engine-owned NAMES for sdlpp's colour types (roadmap P1.1 / P1.7): aliases, not new types, so a
+ * Engine-owned NAMES for sdlpp's colour types: aliases, not new types, so a
  * neutrino::color IS the sdlpp colour type and passes to sdlpp with no conversion. Client code spells
  * colours through neutrino and never needs to include or name sdlpp.
  */
