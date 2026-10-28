@@ -35,6 +35,7 @@
 #include <neutrino/video/texture.hh>
 #include <neutrino/video/sprites.hh>
 #include <neutrino/video/world.hh>
+#include <neutrino/video/palette.hh>
 
 // ---- world (tile maps) -------------------------------------------------------------------------
 #include <neutrino/world/world.hh>

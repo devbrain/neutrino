@@ -83,6 +83,8 @@ add_library(neutrino ${_lib_type}
         video/draw.cc
         video/texture.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/texture.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/palette.hh
+        video/palette.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprites.hh
         video/sprites.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/bitmask.hh
@@ -136,11 +138,13 @@ add_library(neutrino ${_lib_type}
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/texture_layer.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/world_compositor.hh
         video/world/world_compositor.cc
-        utils/lru.hh
+        video/image_loader.cc
+
         # -------------------------------------------------------
         # Utils
         # -------------------------------------------------------
         ${PROJECT_SOURCE_DIR}/include/neutrino/detail/hash.hh
+        utils/lru.hh
         detail/hash.cc
         utils/json.cc
         utils/json.hh

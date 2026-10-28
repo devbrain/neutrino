@@ -1,6 +1,7 @@
 #include <doctest/doctest.h>
 
 #include <neutrino/video/world/resource_cache.hh>
+#include <neutrino/video/image_loader.hh>
 
 #include "test_application.hh"
 #include "video/test_images.hh"
@@ -8,7 +9,6 @@
 #include <sdlpp/video/surface.hh>
 
 #include <filesystem>
-#include <fstream>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -43,15 +43,10 @@ namespace {
     }
 
     void write_bmp_file(const std::filesystem::path& path, unsigned size) {
-        auto surface = sdlpp::surface::create_rgb(
-            static_cast<int>(size), static_cast<int>(size), sdlpp::pixel_format_enum::RGBA8888);
+        auto surface = image::create_rgb(
+            static_cast<int>(size), static_cast<int>(size), pixel_format::RGBA8888);
         REQUIRE(surface.has_value());
-        auto bytes = sdlpp::save_bmp(*surface);
-        REQUIRE(bytes.has_value());
-        std::ofstream out(path, std::ios::binary | std::ios::trunc);
-        REQUIRE(out.good());
-        out.write(reinterpret_cast<const char*>(bytes->data()),
-                  static_cast<std::streamsize>(bytes->size()));
+        neutrino::save_bmp(*surface, path);
     }
 }
 
