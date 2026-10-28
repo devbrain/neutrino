@@ -192,7 +192,7 @@ flowchart TD
   * Members of the private base that are engine API are re-exported by the base's injected name, so the header spells no `sdlpp::`: `quit`, `is_running`, the fullscreen trio (public), and `get_renderer` / `get_window` (protected -- otherwise an unqualified `get_renderer()` inside an application subclass finds the private base member by class-scope lookup and fails access checking instead of reaching the free function).
   * `get_window_config()` became private `final` plumbing: `map_viewer` overrode it only to restate `application_config` fields and now uses `application(cfg)`.
   * Every client entry point moved from `SDLPP_MAIN` to `NEUTRINO_MAIN` (required: `SDLPP_MAIN` cannot convert to the private base). `map_viewer`'s wheel zoom moved from `handle_action` + `mouse_wheel_event` to the snapshot (`in.wheel()`, `in.pointer().render`); `sprite_demo` loads through `neutrino::load_image()`.
-  * Result: 459 flagged lines -> 0; the `sdlpp_seal` CTest runs in fail mode. `games/` and `demos/` still spell sdlpp in places (allowlisted).
+  * Result: 459 flagged lines -> 0; the `sdlpp_seal` CTest runs in fail mode. `games/` and `demos/` are allowlisted. A later sweep (2026-10-27) moved them onto the neutrino names (~460 spellings: keys, colours, `image`, `pixel_format`, `window_flags`, `mouse_button`); what remains is genuine low-level pixel work with no engine name: `sdlpp::palette` / `const_palette_ref` (KE's indexed formats), `sdlpp::pixel_format` channel masks (luxor's alpha merge) and `sdlpp::image::sdl_surface_adapter` (onyx image bridge).
 
 ---
 
@@ -370,6 +370,75 @@ flowchart TD
 * **Shape**: an indexed `std::vector<std::uint8_t>` buffer plus a 256-entry `color` palette, uploaded through a streaming `texture` once per frame (palette lookup on upload), drawn with `draw_texture`. Palette ops: `set_color`, 6-bit DAC helpers, `cycle(start, count, step)`, `fade_in/out(step, steps)`. Pixel ops: `put_pixel`, `get_pixel`, h/v lines, `clear`, `fill`, raw `pixels()` span; effect helpers (brix's blur) come over with the port.
 * **Builds on** P3.4 (`texture_access::streaming`). Migrates `demos/demoscene/vga_canvas` first, then brix `libs/gfx`.
 
+#### 3.6 Custom Image Formats and Atlases (decoders, atlas sinks, palettes)
+* **Why**: retro games ship their own image formats, and every port so far parses them ad hoc. KE's `.bob` decoder takes an onyx output surface and does its own shelf packing, so both call sites need `sdlpp::image::sdl_surface_adapter`; brix (`~/proj/ares/brix`, `resources/classic_loader.cc`) hand-rolls its formats on raw `SDL_Surface`s; Crystal Caves / Secret Agent (`~/games/cc/cc1/native/modern`, `formats/prographx.*`) decode EGA planes with a mask plane by hand. The recurring needs:
+
+  | Game | Asset | Needs |
+  |---|---|---|
+  | brix | backdrop | embedded 6-bit palette (768 bytes) + `u16` width/height + 8-bit indexed pixels |
+  | brix | `.pal` | standalone 6-bit palette, consumed by other assets |
+  | brix | blocks | headerless 16x16 indexed tiles, external palette, index 0 transparent |
+  | brix | font | 64 1-bit 8x8 glyphs, coloured per row by a ramp of palette indices, in 6 colour variants |
+  | KE | `.bob` | multi-frame sprites: 4 colour planes + an RLE opacity mask, hotspot per frame, palette from a sibling `.pal` / `.gif` / default |
+  | KE | `.pal`, `.gif` | standalone palette; standard GIF |
+  | CC1 / SA | ProGraphx `.GFX` | EGA tiles: per 8-pixel group `[mask, B, G, R, I]` -- 16 colours plus a 1-bit mask plane used for drawing and collision |
+
+  That is: sniffable and headerless formats, palettes from another file, transparency as an index *or* as a separate mask plane, multi-frame files with per-frame pivots, and the same pixels drawn with different palettes.
+* **What already exists**:
+  * `onyx_image`: the single-image plugin system (`decoder`, `codec_registry`, the `surface` sink). Its multi-image support (`set_subrect`, `decode_options` packing fields) is weak: each multi-image codec (ICO, DCX) packs on its own and the packing options are read by nobody.
+  * Neutrino's atlas machinery, in `video/sprite/`: `pack_atlas` (stb_rect_pack, multiple pages, page cap from the renderer, gutter margin), `pack_regions` / `pack_surfaces` / `pack_atlases` (allocate pages, blit, extrude gutters, convert format, generate masks), `surface_atlases` (pages + placements), `cpu_texture_atlas` (image + frames `{atlas_rect, optional bitmask}`), `cpu_texture_atlas_mask_options`, and `atlas_texture_format::indexed8` in the texture registry. Users: `tileset_bundle`, `sprite_set`.
+* **Design**: three layers, dependencies pointing one way: `image.hh` <- `video/atlas/` <- `image_loader.hh` <- `sprite/`, `world/`.
+  * **`video/atlas/`: atlas building and management** (no decoders, no files):
+    ```cpp
+    // moved from video/sprite/: atlas_packer.hh, cpu_texture_atlas.hh, bitmask.hh
+    // cpu_texture_atlas_frame gains: point origin; std::uint32_t index;
+
+    // atlas_sink.hh -- the protocol between producers and builders
+    struct frame_info   { dim size; point origin; std::uint32_t index; };
+    struct frame_format {
+        pixel_format pixels;
+        const palette* colors = nullptr;                 // indexed only; borrowed for set_frames()
+        std::optional <std::uint8_t> transparent_index;  // indexed only
+        bool has_mask = false;                           // producer supplies write_mask()
+    };
+    class atlas_sink {
+    public:
+        virtual bool set_frames(std::span <const frame_info>, const frame_format&) = 0;   // phase 1: lay out + allocate
+        virtual void write_pixels(std::size_t frame, int x, int y, std::span <const std::uint8_t>) = 0;
+        virtual void write_mask(std::size_t frame, int x, int y, std::span <const std::uint8_t> opaque) = 0;
+    };
+
+    // atlas_builder.hh -- the engine's sinks; both pack with pack_atlas and return surface_atlases
+    class rgba_atlas_sink;      // RGBA8888 pages; any input; mask -> alpha
+    class indexed_atlas_sink;   // INDEX8 pages + palette + colour key; indexed input only
+    cpu_texture_atlas with_palette(const cpu_texture_atlas&, const palette&);   // recolour an indexed page
+    ```
+  * **`image_loader.hh`: loading**:
+    ```cpp
+    // single images (onyx_image plugins)
+    image load_image(path | bytes);
+    void  register_image_decoder(std::unique_ptr <image_decoder>);
+    image decode_image(bytes, const image_decoder&, opts = {});
+    // multi-image files
+    using atlas_decoder = std::function <image_decode_result(bytes, atlas_sink&, const image_decode_options&)>;
+    surface_atlases load_image_atlas(bytes, const atlas_decoder&, opts = {});   // into an rgba_atlas_sink
+    void            decode_image_atlas(bytes, const atlas_decoder&, atlas_sink&, opts = {});
+    ```
+  * **`palette.hh`**: `palette` (= `sdlpp::palette`), `palette_encoding { vga6, rgb8 }`, `load_palette(bytes, enc)`. Shared with P3.5.
+* **Rules**:
+  * **Two-phase protocol.** `set_frames` once, with every frame and the shared format: formats know their frame count and sizes up front, so the sink packs and allocates once and pixels are written straight into place, in frame-local pixel coordinates (onyx's `write_pixels` takes bytes). Frames are addressed by position, so regions are dense and in decoder order; `frame_info::index` keeps the format's own numbering, `origin` the pivot. No region kind: the caller knows what it loaded.
+  * **Decoders emit their native format; the caller picks the sink.** `rgba_atlas_sink` for drawing as-is, `indexed_atlas_sink` to keep indices (palette effects, recolouring). A format with a palette per frame declares RGBA and expands itself.
+  * **Transparency**: alpha in the pixels, `transparent_index` (exact, survives palette swaps; not a key colour), or a mask plane via `write_mask` (ProGraphx, BOB), where a masked pixel still has a colour underneath. With a mask, the rgba sink writes alpha and the indexed sink maps masked pixels to the transparent index, or to the first entry past the palette (16 for EGA); a full 256-entry palette with no free index makes `set_frames` fail. A mask also becomes the frame's collision `bitmask` exactly, instead of one guessed from alpha.
+  * **Recolouring is a palette operation.** brix's 6 font variants are one INDEX8 sheet (`index = 1 + row` for set bits, 0 transparent) plus 6 small palettes taken from the game palette; KE's per-level palettes work the same way. The font is an ordinary `atlas_decoder`, not "synthesis" outside the codec layer.
+  * **One compositing path.** The sinks are the only place that packs, writes pixels, extrudes gutters and builds masks; `pack_surfaces` / `pack_regions` / `pack_atlases` become producers writing into a sink (`tileset_bundle` is unchanged). Care points: masks evaluated from source pixels before conversion, the colour-key / INDEX8 semantics `pack_regions` preserves today, and row writes vs SDL blits (add a blit fast path only if it shows up in profiles).
+  * **Frame position is the contract.** Frame `i` is the `i`-th entry given to `set_frames`: dense, from 0, in decoder order. It is the join key for everything attached to the atlas from outside (game extras, `input_index` in placements). The engine never changes the position -> frame mapping, even though packing scatters frames across pages. `frame_info::index` is separate: the file's own id (BOB block, tile number), possibly sparse, carried through unchanged for game data that uses the file's numbering.
+  * **Lookup in the result.** `surface_atlases::placements` is sorted by `(page, input_index)` and each page numbers its frames locally, so "where is frame `i`" would be a search. The sinks fill, in `take()`: `locate(i) -> frame_location{page, frame_in_page}` (O(1)) and `find_by_index(index) -> optional<position>`. Existing `placements` users (`tileset_bundle`) are unchanged.
+  * **Per-frame data only the game reads stays with the game.** No metadata bag on frames: they travel through the texture registry, `sprite_sheet` and repacking, `world_property_map` lives above `video/atlas/`, and `std::any` is untyped. A decoder is a game-owned callable, so it fills its own typed side table during decode (`extra[i]` belongs to frame `i`), e.g. BOB's second offset pair or CC tile flags. Typed frame fields only for data the engine acts on: `origin`, `index`; `duration` when the first animated format (GIF, ANI) needs atlas -> clip. A typed convenience `load_image_atlas<Extra>` returning `{atlas, extra}` and checking one extra per frame waits for a second game using the pattern; the core API stays non-templated.
+  * **No layout parameter**: placement is `pack_atlas`'s job (gutters, pages, renderer cap); a contact-sheet tool lays out frames through its own sink.
+  * **Single image + external layout is slicing, not decoding** (`slice_grid`; Aseprite JSON and TMX already have loaders).
+* **Order**: (1) move `atlas_packer`, `cpu_texture_atlas`, `bitmask` to `video/atlas/` (paths only); (2) `atlas_sink.hh` + the two sinks on top of `pack_atlas`, frame `origin` / `index`, `with_palette`, `load_palette`, with tests via a recording sink; (3) re-express `pack_*` through the sinks with the existing packer tests unchanged; (4) port KE `.bob` to a `bob_decoder` (removes its packer, `sdl_surface_adapter`, the palette helpers); (5) brix decoders (backdrop, blocks, `.pal`, font) arrive with the port. Later: a generic 1-bit glyph decoder (brix font, onyx BIOS font).
+* **Builds on** P1.7 (`image`, `pixel_format`), P1.1 (`color`); shares `palette` with P3.5.
+
 ---
 
 ### Phase 4: Scene Ergonomics & Migration
@@ -433,6 +502,7 @@ flowchart TD
 | **P3.3** | Sprite def hitbox integration | **M** (2 days) | `sprite_def_builder.hh`, `sprite_sheet.hh` | No (additive) |
 | **P3.4** | First-class `texture` (one type, `fixed`/`streaming`/`target` access) + `draw_texture` / `draw_texture_quad` / `capture_frame`; migrate `render_texture`, sprite atlases, `texture_layer`, simplex canvas, KE, tests | **L** (3-4 days) | `video/texture.hh` (new), `draw.hh`, `render_texture.*` (removed), `sprite/texture_registry.*`, `world/texture_layer.hh`, simplex adapter, KE, tests, docs | Yes: `render_texture` is replaced by `texture`; the P1.7 `texture` alias becomes the engine class |
 | **P3.5** | `palette_canvas` (8-bit indexed + palette, fades/cycling) on a streaming `texture`; migrate demoscene `vga_canvas` | **M** (1-2 days) | `video/palette_canvas.hh` (new), `demos/demoscene` | No (additive) |
+| **P3.6** | Custom image formats and atlases: `video/atlas/` (packer, `cpu_texture_atlas`, `bitmask` moved; `atlas_sink` protocol, `rgba_atlas_sink` / `indexed_atlas_sink`, `with_palette`), loading (`atlas_decoder`, `load_image_atlas`, `decode_image_atlas`, `register_image_decoder`, `decode_image`), `palette` + `load_palette`; `pack_*` through the sinks; port KE `.bob` | **L** (3-5 days) | `video/atlas/*` (new), `image_loader.hh`, `palette.hh`, `video/sprite/*` includes, `tileset_bundle.cc`, KE `format/bob.*`, `resources.cc`, `ke_collage.cc` | Include paths of the moved headers; KE's `bob_image` API |
 | **P4.1** | Migrate tutorials 01–03 & simplex | **S** (½ day) | `tutorials/*` | No |
 | **P4.2** | Migrate `games/ke` and demos | **M** (1 day) | `games/ke/*`, `demos/*` | No |
 
