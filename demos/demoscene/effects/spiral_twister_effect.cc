@@ -110,26 +110,26 @@ void spiral_twister_effect::update(neutrino::sim_duration dt, const neutrino::in
     m_time += dt_sec;
 
     // Cycle Display Mode
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_mode = (m_mode + 1) % 3;
         m_canvas.clear(0);
     }
 
     // Cycle Color Theme
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_palette_theme = (m_palette_theme + 1) % 3;
         init_palette();
     }
 
     // Twist Rate Controls
-    if (in.held(sdlpp::scancode::up))   m_twist_rate = std::min(0.09f, m_twist_rate + 0.04f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_twist_rate = std::max(0.005f, m_twist_rate - 0.04f * dt_sec);
+    if (in.held(neutrino::key::up))   m_twist_rate = std::min(0.09f, m_twist_rate + 0.04f * dt_sec);
+    if (in.held(neutrino::key::down)) m_twist_rate = std::max(0.005f, m_twist_rate - 0.04f * dt_sec);
 
     // Rotation Speed Controls
-    if (in.held(sdlpp::scancode::left))  m_rot_speed -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_rot_speed += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_rot_speed -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_rot_speed += 2.0f * dt_sec;
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_time = 0.0f;
         m_rot_speed = 2.4f;
         m_twist_rate = 0.035f;

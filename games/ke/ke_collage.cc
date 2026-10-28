@@ -31,9 +31,9 @@
 #include <onyx_image/surface.hpp>
 #include <onyx_image/types.hpp>
 
-#include <sdlpp/video/color.hh>
+#include <neutrino/video/color.hh>
 #include <sdlpp/video/palette.hh>
-#include <sdlpp/video/surface.hh>
+#include <neutrino/video/image.hh>
 #include <sdlpp/image/sdl_surface_adapter.hh>
 
 #include <neutrino/neutrino.hh>
@@ -85,7 +85,7 @@ namespace {
 
     // Copy one frame (from the RGBA atlas) into the collage, skipping transparent texels.
     void blit_frame(onyx_image::memory_surface& dst, int dx, int dy,
-                    const sdlpp::surface& atlas, const neutrino::rect& r) {
+                    const neutrino::image& atlas, const neutrino::rect& r) {
         SDL_Surface* s = atlas.get();
         for (int yy = 0; yy < r.h; ++yy) {
             for (int xx = 0; xx < r.w; ++xx) {
@@ -112,7 +112,7 @@ namespace {
         if (rgb.size() < 256 * 3) {
             return std::nullopt;
         }
-        std::vector <sdlpp::color> colors;
+        std::vector <neutrino::color> colors;
         colors.reserve(256);
         for (std::size_t i = 0; i < 256; ++i) {
             colors.emplace_back(rgb[i * 3 + 0], rgb[i * 3 + 1], rgb[i * 3 + 2], 255);
@@ -127,7 +127,7 @@ namespace {
         return std::move(*pal);
     }
 
-    bool make_collage(const sdlpp::surface& image, const std::vector <neutrino::rect>& rects,
+    bool make_collage(const neutrino::image& image, const std::vector <neutrino::rect>& rects,
                       const std::filesystem::path& out) {
         const std::size_t n = rects.size();
         if (n == 0) {
@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
                 continue;
             }
 
-            sdlpp::surface image;
+            neutrino::image image;
             sdlpp::image::sdl_surface_adapter adaptor(image);
             std::vector <neutrino::rect> rects;
             if (const sdlpp::palette pal = palette_for(base);

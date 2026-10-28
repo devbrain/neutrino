@@ -89,18 +89,18 @@ void dypp_effect::update(neutrino::sim_duration dt, const neutrino::input_snapsh
     }
 
     // Interactive controls
-    if (in.pressed(sdlpp::scancode::up))   m_amp1 = std::min(45.0f, m_amp1 + 4.0f);
-    if (in.pressed(sdlpp::scancode::down)) m_amp1 = std::max(5.0f,  m_amp1 - 4.0f);
+    if (in.pressed(neutrino::key::up))   m_amp1 = std::min(45.0f, m_amp1 + 4.0f);
+    if (in.pressed(neutrino::key::down)) m_amp1 = std::max(5.0f,  m_amp1 - 4.0f);
 
-    if (in.held(sdlpp::scancode::left))  m_scroll_speed = std::max(30.0f, m_scroll_speed - 40.0f * dt_sec);
-    if (in.held(sdlpp::scancode::right)) m_scroll_speed = std::min(220.0f, m_scroll_speed + 40.0f * dt_sec);
+    if (in.held(neutrino::key::left))  m_scroll_speed = std::max(30.0f, m_scroll_speed - 40.0f * dt_sec);
+    if (in.held(neutrino::key::right)) m_scroll_speed = std::min(220.0f, m_scroll_speed + 40.0f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_current_text_idx = (m_current_text_idx + 1) % m_messages.size();
         m_scroll_pos = 0.0f;
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_scroll_pos = 0.0f;
         m_scroll_speed = 90.0f;
         m_amp1 = 28.0f;

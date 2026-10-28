@@ -7,7 +7,7 @@
 #include <luxor/resources/parser/spr_parser.hh>
 
 namespace luxor::rc {
-    expected <void, std::string> apply_alpha(sdlpp::surface& img, const sdlpp::surface& alpha) {
+    expected <void, std::string> apply_alpha(neutrino::image& img, const neutrino::image& alpha) {
         const auto w = img.width();
         const auto h = img.height();
         if (w != alpha.width() || h != alpha.height()) {
@@ -22,16 +22,16 @@ namespace luxor::rc {
         }
 
         // Ensure destination image is ABGR8888 (standard 32-bit RGBA)
-        if (img.format() != sdlpp::pixel_format_enum::ABGR8888) {
-            auto converted = img.convert(sdlpp::pixel_format_enum::ABGR8888);
+        if (img.format() != neutrino::pixel_format::ABGR8888) {
+            auto converted = img.convert(neutrino::pixel_format::ABGR8888);
             if (!converted) {
                 return unexpected("Failed to convert image to ABGR8888: " + converted.error());
             }
             img = std::move(*converted);
         }
 
-        sdlpp::surface::lock_guard lock_i(img);
-        sdlpp::surface::lock_guard lock_a(const_cast <sdlpp::surface&>(alpha));
+        neutrino::image::lock_guard lock_i(img);
+        neutrino::image::lock_guard lock_a(const_cast <neutrino::image&>(alpha));
 
         auto img_format = sdlpp::pixel_format(img.format());
         const uint32_t a_mask = img_format.details->Amask;
@@ -41,7 +41,7 @@ namespace luxor::rc {
         const auto img_pitch = img.get_pitch();
 
         // Fast-path: both surfaces are 32-bit ABGR8888
-        if (alpha.format() == sdlpp::pixel_format_enum::ABGR8888) {
+        if (alpha.format() == neutrino::pixel_format::ABGR8888) {
             auto alpha_format = sdlpp::pixel_format(alpha.format());
             const uint8_t a_s = alpha_format.details->Ashift;
             const uint8_t r_s = alpha_format.details->Rshift;
@@ -81,7 +81,7 @@ namespace luxor::rc {
             auto* dst_row = reinterpret_cast <uint32_t*>(img_raw + (y * img_pitch));
             for (int x = 0; x < static_cast <int>(w); ++x) {
                 auto px_a = alpha_get_px(alpha_px, alpha_pitch, x, y);
-                sdlpp::color col_a = alpha_format.get_rgba(px_a);
+                neutrino::color col_a = alpha_format.get_rgba(px_a);
 
                 const uint8_t a = (col_a.a < 255 || col_a.r != col_a.g) ? col_a.a : col_a.r;
                 dst_row[x] = (dst_row[x] & ~a_mask) | ((static_cast <uint32_t>(a) << a_shift) & a_mask);
@@ -91,7 +91,7 @@ namespace luxor::rc {
         return {};
     }
 
-    sdlpp::surface load_image(const vfs& fs, const std::string& path) {
+    neutrino::image load_image(const vfs& fs, const std::string& path) {
         auto img = fs.read(path);
         if (img.empty()) {
             return {};

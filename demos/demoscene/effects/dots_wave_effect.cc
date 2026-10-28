@@ -140,28 +140,28 @@ void dots_wave_effect::update(neutrino::sim_duration dt, const neutrino::input_s
     m_time += dt_sec;
 
     // Switch Pattern
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_pattern_mode = (m_pattern_mode + 1) % 3;
         m_canvas.clear(0);
     }
 
     // Switch Color Theme
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_color_theme = (m_color_theme + 1) % 3;
         init_palette();
     }
 
     // Zoom Controls
-    if (in.held(sdlpp::scancode::w)) m_zoom = std::min(400.0f, m_zoom + 100.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom = std::max(100.0f, m_zoom - 100.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom = std::min(400.0f, m_zoom + 100.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom = std::max(100.0f, m_zoom - 100.0f * dt_sec);
 
     // Interactive Manual Rotation Bias
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_angular_velocity[0] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::down))  m_angular_velocity[0] += 2.0f * dt_sec;
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_orientation = euler::quaternion<float>::identity();
         m_angular_velocity = euler::vec3<float>{0.4f, 0.7f, 0.2f};
         m_zoom = 220.0f;

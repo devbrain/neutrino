@@ -93,25 +93,25 @@ void wavy_ribbon_effect::update(neutrino::sim_duration dt, const neutrino::input
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_mode = (m_mode + 1) % 4;
         m_canvas.clear(0);
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 4;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::up))   m_amplitude = std::min(1.8f, m_amplitude + 0.8f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_amplitude = std::max(0.2f, m_amplitude - 0.8f * dt_sec);
+    if (in.held(neutrino::key::up))   m_amplitude = std::min(1.8f, m_amplitude + 0.8f * dt_sec);
+    if (in.held(neutrino::key::down)) m_amplitude = std::max(0.2f, m_amplitude - 0.8f * dt_sec);
 
-    if (in.held(sdlpp::scancode::right)) m_speed = std::min(3.0f, m_speed + 1.2f * dt_sec);
-    if (in.held(sdlpp::scancode::left))  m_speed = std::max(0.2f, m_speed - 1.2f * dt_sec);
+    if (in.held(neutrino::key::right)) m_speed = std::min(3.0f, m_speed + 1.2f * dt_sec);
+    if (in.held(neutrino::key::left))  m_speed = std::max(0.2f, m_speed - 1.2f * dt_sec);
 
     // Phase increment stepping (Authentic WAVY.PAS: add1=1, add2=-1, add3=-1)
     const int step = std::max(1, static_cast<int>(std::round(m_speed)));

@@ -64,8 +64,8 @@ namespace luxor::rc {
         [[nodiscard]] expected<neutrino::sprite_set_handle, std::string> acquire_sprite(std::string_view path);
 
         // Images / Surfaces
-        [[nodiscard]] std::shared_ptr<const sdlpp::surface> get_image(std::string_view path);
-        [[nodiscard]] const sdlpp::surface* find_image(std::string_view path);
+        [[nodiscard]] std::shared_ptr<const neutrino::image> get_image(std::string_view path);
+        [[nodiscard]] const neutrino::image* find_image(std::string_view path);
         [[nodiscard]] bool has_image(std::string_view path) const;
 
         // Fonts
@@ -131,7 +131,7 @@ namespace luxor::rc {
 
         vfs m_vfs;
         std::unordered_map<std::string, neutrino::sprite_def> m_sprites;
-        std::unordered_map<std::string, std::shared_ptr<sdlpp::surface>> m_images;
+        std::unordered_map<std::string, std::shared_ptr<neutrino::image>> m_images;
         std::unordered_map<std::string, font_file> m_fonts;
         std::unordered_map<std::string, depth_table> m_depths;
         std::unordered_map<std::string, string_list> m_string_lists;

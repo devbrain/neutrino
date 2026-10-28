@@ -105,29 +105,29 @@ void uv_deformations_effect::update(neutrino::sim_duration dt, const neutrino::i
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_deform_type = static_cast<DeformType>((static_cast<int>(m_deform_type) + 1) % static_cast<int>(DeformType::Count));
     }
 
-    if (in.pressed(sdlpp::scancode::t)) {
+    if (in.pressed(neutrino::key::t)) {
         m_texture_idx = (m_texture_idx + 1) % num_textures;
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::equals) || in.held(sdlpp::scancode::kp_plus)) {
+    if (in.held(neutrino::key::equals) || in.held(neutrino::key::kp_plus)) {
         m_fly_speed = std::min(3.0f, m_fly_speed + 1.0f * dt_sec);
     }
-    if (in.held(sdlpp::scancode::minus) || in.held(sdlpp::scancode::kp_minus)) {
+    if (in.held(neutrino::key::minus) || in.held(neutrino::key::kp_minus)) {
         m_fly_speed = std::max(0.1f, m_fly_speed - 1.0f * dt_sec);
     }
 
-    if (in.held(sdlpp::scancode::left))  m_pan_x -= 0.8f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_pan_x += 0.8f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_pan_y -= 0.8f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_pan_y += 0.8f * dt_sec;
+    if (in.held(neutrino::key::left))  m_pan_x -= 0.8f * dt_sec;
+    if (in.held(neutrino::key::right)) m_pan_x += 0.8f * dt_sec;
+    if (in.held(neutrino::key::up))    m_pan_y -= 0.8f * dt_sec;
+    if (in.held(neutrino::key::down))  m_pan_y += 0.8f * dt_sec;
 
     m_scroll_v += 35.0f * m_fly_speed * dt_sec;
     m_scroll_u += 12.0f * m_fly_speed * dt_sec;

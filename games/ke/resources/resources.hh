@@ -11,12 +11,12 @@
 
 #include <neutrino/neutrino.hh>
 
-#include <sdlpp/video/surface.hh>
+#include <neutrino/video/image.hh>
 #include <ke/resources/cell.hh>
 
 namespace rs {
     struct tile_sheet_def {
-        sdlpp::surface image;
+        neutrino::image image;
         std::vector <neutrino::rect> source_rects;
         std::vector <neutrino::point> origins;
     };

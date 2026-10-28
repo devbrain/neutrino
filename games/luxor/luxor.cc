@@ -41,7 +41,7 @@ namespace {
                 cfg.title = "Luxor";
                 cfg.width = window_width;
                 cfg.height = window_height;
-                // cfg.flags = sdlpp::window_flags::maximized;
+                // cfg.flags = neutrino::window_flags::maximized;
 
                 cfg.logical_size = neutrino::dim{logical_width, logical_height};
                 cfg.scale = neutrino::scale_mode::letterbox;

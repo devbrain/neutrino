@@ -155,22 +155,22 @@ void rototunnel_effect::update(neutrino::sim_duration dt, const neutrino::input_
     m_cam_y = 100.0f + 32.0f * std::sin(m_time * 1.9f);
 
     // Controls
-    if (in.held(sdlpp::scancode::up))   m_speed = std::min(300.0f, m_speed + 80.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_speed = std::max(20.0f, m_speed - 80.0f * dt_sec);
-    if (in.held(sdlpp::scancode::left))  m_roll_speed -= 1.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_roll_speed += 1.0f * dt_sec;
+    if (in.held(neutrino::key::up))   m_speed = std::min(300.0f, m_speed + 80.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_speed = std::max(20.0f, m_speed - 80.0f * dt_sec);
+    if (in.held(neutrino::key::left))  m_roll_speed -= 1.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_roll_speed += 1.0f * dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_pattern_idx = (m_pattern_idx + 1) % 3;
         generate_texture(m_pattern_idx);
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_color_theme = (m_color_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 }

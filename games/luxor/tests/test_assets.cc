@@ -1,7 +1,7 @@
 #include <doctest/doctest.h>
 #include <luxor/resources/assets.hh>
 #include <luxor/resources/storage/vfs.hh>
-#include <sdlpp/video/surface.hh>
+#include <neutrino/video/image.hh>
 
 #include <filesystem>
 #include <fstream>

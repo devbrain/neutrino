@@ -8,7 +8,7 @@
 #include <euler/quaternion/quaternion_ops.hh>
 #include <euler/vector/vector.hh>
 #include <euler/vector/vector_ops.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/video/color.hh>
 
 namespace demoscene {
 
@@ -56,7 +56,7 @@ private:
 
     struct face {
         size_t v0, v1, v2;
-        sdlpp::color base_color;
+        neutrino::color base_color;
     };
 
     void build_mesh(int model_index);

@@ -114,26 +114,26 @@ void checkerboard3d_effect::update(neutrino::sim_duration dt, const neutrino::in
     m_time += dt_sec;
 
     // Interactive Model Wave Mode
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_wave_mode = (m_wave_mode + 1) % 3;
     }
 
     // Color Theme Switch
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_color_theme = (m_color_theme + 1) % 3;
     }
 
     // Zoom Controls
-    if (in.held(sdlpp::scancode::w)) m_zoom = std::min(400.0f, m_zoom + 100.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom = std::max(100.0f, m_zoom - 100.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom = std::min(400.0f, m_zoom + 100.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom = std::max(100.0f, m_zoom - 100.0f * dt_sec);
 
     // Interactive Manual Rotation Bias
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_angular_velocity[0] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::down))  m_angular_velocity[0] += 2.0f * dt_sec;
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_orientation = euler::quaternion<float>::identity();
         m_angular_velocity = euler::vec3<float>{0.6f, 0.9f, 0.4f};
         m_zoom = 220.0f;

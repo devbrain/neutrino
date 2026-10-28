@@ -158,46 +158,46 @@ void dotmorph_effect::update(neutrino::sim_duration dt, const neutrino::input_sn
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_source_shape = m_target_shape;
         m_target_shape = (m_target_shape + 1) % SHAPE_COUNT;
         m_morph_progress = 0.0f;
     }
 
-    if (in.pressed(sdlpp::scancode::equals) || in.pressed(sdlpp::scancode::kp_plus)) {
+    if (in.pressed(neutrino::key::equals) || in.pressed(neutrino::key::kp_plus)) {
         m_active_particles = std::min(max_particles, m_active_particles + 1024);
     }
-    if (in.pressed(sdlpp::scancode::minus) || in.pressed(sdlpp::scancode::kp_minus)) {
+    if (in.pressed(neutrino::key::minus) || in.pressed(neutrino::key::kp_minus)) {
         m_active_particles = std::max(size_t{1024}, m_active_particles - 1024);
     }
 
-    if (in.pressed(sdlpp::scancode::rightbracket)) {
+    if (in.pressed(neutrino::key::rightbracket)) {
         m_morph_speed = std::min(3.0f, m_morph_speed + 0.3f);
     }
-    if (in.pressed(sdlpp::scancode::leftbracket)) {
+    if (in.pressed(neutrino::key::leftbracket)) {
         m_morph_speed = std::max(0.4f, m_morph_speed - 0.3f);
     }
 
-    if (in.pressed(sdlpp::scancode::a)) {
+    if (in.pressed(neutrino::key::a)) {
         m_phosphor_trails = !m_phosphor_trails;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 4;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::w)) m_zoom = std::min(300.0f, m_zoom + 80.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom = std::max(60.0f, m_zoom - 80.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom = std::min(300.0f, m_zoom + 80.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom = std::max(60.0f, m_zoom - 80.0f * dt_sec);
 
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_angular_velocity[0] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::down))  m_angular_velocity[0] += 2.0f * dt_sec;
 
     // Automatic morph cycle: morph (0..1) -> hold shape (1..2) -> next
     if (m_auto_morph) {

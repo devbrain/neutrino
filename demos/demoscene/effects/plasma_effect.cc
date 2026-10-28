@@ -36,11 +36,11 @@ void plasma_effect::update(neutrino::sim_duration dt, const neutrino::input_snap
     const float dt_sec = static_cast<float>(dt.count());
 
     // Interactive controls
-    if (in.pressed(sdlpp::scancode::p)) m_cycling_enabled = !m_cycling_enabled;
-    if (in.held(sdlpp::scancode::right)) m_cycle_speed = std::min(10, m_cycle_speed + 1);
-    if (in.held(sdlpp::scancode::left))  m_cycle_speed = std::max(-10, m_cycle_speed - 1);
+    if (in.pressed(neutrino::key::p)) m_cycling_enabled = !m_cycling_enabled;
+    if (in.held(neutrino::key::right)) m_cycle_speed = std::min(10, m_cycle_speed + 1);
+    if (in.held(neutrino::key::left))  m_cycle_speed = std::max(-10, m_cycle_speed - 1);
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_cycle_speed = 2;
         m_cycling_enabled = true;
         rebuild_palette();

@@ -170,28 +170,28 @@ void vectorballs_effect::update(neutrino::sim_duration dt, const neutrino::input
     m_time += dt_sec;
 
     // Switch Vectorball Shape
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_shape_idx = (m_shape_idx + 1) % 3;
         build_shape(m_shape_idx);
     }
 
     // Switch Palette Theme
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_color_theme = (m_color_theme + 1) % 3;
         init_palette();
     }
 
     // Zoom Controls
-    if (in.held(sdlpp::scancode::w)) m_zoom = std::min(400.0f, m_zoom + 100.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom = std::max(100.0f, m_zoom - 100.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom = std::min(400.0f, m_zoom + 100.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom = std::max(100.0f, m_zoom - 100.0f * dt_sec);
 
     // Interactive Rotation Bias
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_angular_velocity[0] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::down))  m_angular_velocity[0] += 2.0f * dt_sec;
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_orientation = euler::quaternion<float>::identity();
         m_angular_velocity = euler::vec3<float>{0.6f, 0.9f, 0.4f};
         m_zoom = 220.0f;

@@ -22,7 +22,7 @@ namespace rs {
             return data;
         }
 
-        std::optional <sdlpp::palette> palette_from_colors(std::span <const sdlpp::color> colors) {
+        std::optional <sdlpp::palette> palette_from_colors(std::span <const neutrino::color> colors) {
             if (colors.size() < 256) {
                 return std::nullopt;
             }
@@ -42,7 +42,7 @@ namespace rs {
                 return std::nullopt;
             }
 
-            std::vector <sdlpp::color> colors;
+            std::vector <neutrino::color> colors;
             colors.reserve(256);
             for (std::size_t i = 0; i < 256; ++i) {
                 colors.emplace_back(
@@ -106,7 +106,7 @@ namespace rs {
                     if (auto itr_gif = gr.backdrops.find(base + ".gif"); itr_gif != gr.backdrops.end()) {
                         // 2. sibling <base>.gif global colour table (the GIF decoder yields indexed8 + palette)
                         const auto& gif_srf = itr_gif->second.surface();
-                        if (gif_srf.format() == sdlpp::pixel_format_enum::INDEX8) {
+                        if (gif_srf.format() == neutrino::pixel_format::INDEX8) {
                             bob_rc = bob.decode_atlas(gif_srf.get_palette(), adaptor, err, tl_def.source_rects);
                         }
                     } else {

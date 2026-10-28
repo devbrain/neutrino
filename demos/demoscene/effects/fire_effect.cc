@@ -135,22 +135,22 @@ void fire_effect::update(neutrino::sim_duration dt, const neutrino::input_snapsh
     }
 
     // Interactive controls
-    if (in.pressed(sdlpp::scancode::left)) m_wind = std::max(-2, m_wind - 1);
-    if (in.pressed(sdlpp::scancode::right)) m_wind = std::min(2, m_wind + 1);
+    if (in.pressed(neutrino::key::left)) m_wind = std::max(-2, m_wind - 1);
+    if (in.pressed(neutrino::key::right)) m_wind = std::min(2, m_wind + 1);
 
-    if (in.pressed(sdlpp::scancode::up)) m_cooling = std::max(1, m_cooling - 1);     // Hotter, taller flames
-    if (in.pressed(sdlpp::scancode::down)) m_cooling = std::min(5, m_cooling + 1);   // Colder, shorter flames
+    if (in.pressed(neutrino::key::up)) m_cooling = std::max(1, m_cooling - 1);     // Hotter, taller flames
+    if (in.pressed(neutrino::key::down)) m_cooling = std::min(5, m_cooling + 1);   // Colder, shorter flames
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_burst_active = true;
         m_burst_timer = 0.45f;
     }
 
-    if (in.pressed(sdlpp::scancode::num_1)) m_emitter_mode = 0;
-    if (in.pressed(sdlpp::scancode::num_2)) m_emitter_mode = 1;
-    if (in.pressed(sdlpp::scancode::num_3)) m_emitter_mode = 2;
+    if (in.pressed(neutrino::key::num_1)) m_emitter_mode = 0;
+    if (in.pressed(neutrino::key::num_2)) m_emitter_mode = 1;
+    if (in.pressed(neutrino::key::num_3)) m_emitter_mode = 2;
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_wind = 0;
         m_cooling = 2;
         m_emitter_mode = 0;

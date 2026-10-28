@@ -184,7 +184,7 @@ namespace luxor::rc {
         }
     }
 
-    std::shared_ptr<const sdlpp::surface> assets::get_image(std::string_view path) {
+    std::shared_ptr<const neutrino::image> assets::get_image(std::string_view path) {
         std::string key = normalize_key(path);
         auto it = m_images.find(key);
         if (it != m_images.end()) {
@@ -196,12 +196,12 @@ namespace luxor::rc {
             return nullptr;
         }
 
-        auto shared = std::make_shared<sdlpp::surface>(std::move(surf));
+        auto shared = std::make_shared<neutrino::image>(std::move(surf));
         m_images.emplace(std::move(key), shared);
         return shared;
     }
 
-    const sdlpp::surface* assets::find_image(std::string_view path) {
+    const neutrino::image* assets::find_image(std::string_view path) {
         auto img = get_image(path);
         return img ? img.get() : nullptr;
     }

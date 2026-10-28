@@ -50,39 +50,39 @@ void julia_effect::update(neutrino::sim_duration dt, const neutrino::input_snaps
 
     // Interactive panning
     const float pan_step = (0.8f / m_zoom) * dt_sec;
-    if (in.held(sdlpp::scancode::left))  m_center_x -= pan_step;
-    if (in.held(sdlpp::scancode::right)) m_center_x += pan_step;
-    if (in.held(sdlpp::scancode::up))    m_center_y -= pan_step;
-    if (in.held(sdlpp::scancode::down))  m_center_y += pan_step;
+    if (in.held(neutrino::key::left))  m_center_x -= pan_step;
+    if (in.held(neutrino::key::right)) m_center_x += pan_step;
+    if (in.held(neutrino::key::up))    m_center_y -= pan_step;
+    if (in.held(neutrino::key::down))  m_center_y += pan_step;
 
     // Interactive zooming
-    if (in.held(sdlpp::scancode::w)) m_zoom *= (1.0f + 1.5f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom /= (1.0f + 1.5f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom *= (1.0f + 1.5f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom /= (1.0f + 1.5f * dt_sec);
 
     // Toggle continuous orbit animation
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_animating_c = !m_animating_c;
     }
 
     // Classic Julia seed presets
-    if (in.pressed(sdlpp::scancode::num_1)) {
+    if (in.pressed(neutrino::key::num_1)) {
         m_animating_c = false;
         m_c = euler::complex<float>{-0.7f, 0.27015f}; // Feathery Frost Dendrite
     }
-    if (in.pressed(sdlpp::scancode::num_2)) {
+    if (in.pressed(neutrino::key::num_2)) {
         m_animating_c = false;
         m_c = euler::complex<float>{-0.4f, 0.6f};     // Douady's Classic Rabbit
     }
-    if (in.pressed(sdlpp::scancode::num_3)) {
+    if (in.pressed(neutrino::key::num_3)) {
         m_animating_c = false;
         m_c = euler::complex<float>{-0.8f, 0.156f};   // Dragon & Cauliflower
     }
-    if (in.pressed(sdlpp::scancode::num_4)) {
+    if (in.pressed(neutrino::key::num_4)) {
         m_animating_c = false;
         m_c = euler::complex<float>{0.285f, 0.01f};    // San Marco Cathedral
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_center_x = 0.0f;
         m_center_y = 0.0f;
         m_zoom = 1.0f;

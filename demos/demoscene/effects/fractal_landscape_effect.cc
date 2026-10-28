@@ -137,27 +137,27 @@ void fractal_landscape_effect::update(neutrino::sim_duration dt, const neutrino:
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_rng_state += 99991;
         generate_terrain();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::left))  m_cam_yaw -= 1.4f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_cam_yaw += 1.4f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_cam_pitch = std::min(45.0f, m_cam_pitch + 40.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down))  m_cam_pitch = std::max(-35.0f, m_cam_pitch - 40.0f * dt_sec);
+    if (in.held(neutrino::key::left))  m_cam_yaw -= 1.4f * dt_sec;
+    if (in.held(neutrino::key::right)) m_cam_yaw += 1.4f * dt_sec;
+    if (in.held(neutrino::key::up))    m_cam_pitch = std::min(45.0f, m_cam_pitch + 40.0f * dt_sec);
+    if (in.held(neutrino::key::down))  m_cam_pitch = std::max(-35.0f, m_cam_pitch - 40.0f * dt_sec);
 
-    if (in.held(sdlpp::scancode::w)) m_cam_z = std::min(220.0f, m_cam_z + 45.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_cam_z = std::max(20.0f, m_cam_z - 45.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_cam_z = std::min(220.0f, m_cam_z + 45.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_cam_z = std::max(20.0f, m_cam_z - 45.0f * dt_sec);
 
-    if (in.held(sdlpp::scancode::equals) || in.held(sdlpp::scancode::kp_plus)) {
+    if (in.held(neutrino::key::equals) || in.held(neutrino::key::kp_plus)) {
         m_speed = std::min(90.0f, m_speed + 25.0f * dt_sec);
     }
-    if (in.held(sdlpp::scancode::minus) || in.held(sdlpp::scancode::kp_minus)) {
+    if (in.held(neutrino::key::minus) || in.held(neutrino::key::kp_minus)) {
         m_speed = std::max(5.0f, m_speed - 25.0f * dt_sec);
     }
 

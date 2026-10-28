@@ -136,27 +136,27 @@ void gravitational_well_effect::update(neutrino::sim_duration dt, const neutrino
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_mode = (m_mode + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::w)) m_zoom = std::min(280.0f, m_zoom + 80.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom = std::max(60.0f, m_zoom - 80.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom = std::min(280.0f, m_zoom + 80.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom = std::max(60.0f, m_zoom - 80.0f * dt_sec);
 
-    if (in.held(sdlpp::scancode::up))   m_well_depth = std::min(2.5f, m_well_depth + 1.2f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_well_depth = std::max(0.1f, m_well_depth - 1.2f * dt_sec);
+    if (in.held(neutrino::key::up))   m_well_depth = std::min(2.5f, m_well_depth + 1.2f * dt_sec);
+    if (in.held(neutrino::key::down)) m_well_depth = std::max(0.1f, m_well_depth - 1.2f * dt_sec);
 
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
 
     // Apply 3D quaternion rotation
     const float speed = m_angular_velocity.length();

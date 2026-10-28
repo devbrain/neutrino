@@ -111,7 +111,7 @@ void pixelate_effect::update(neutrino::sim_duration dt, const neutrino::input_sn
     m_time += delta;
 
     // Handle user inputs
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         if (!m_transitioning) {
             m_transitioning = true;
             m_transition_swap_done = false;
@@ -119,25 +119,25 @@ void pixelate_effect::update(neutrino::sim_duration dt, const neutrino::input_sn
         }
     }
 
-    if (in.pressed(sdlpp::scancode::m)) {
+    if (in.pressed(neutrino::key::m)) {
         m_mode = static_cast<Mode>((static_cast<int>(m_mode) + 1) % static_cast<int>(Mode::Count));
     }
 
-    if (in.pressed(sdlpp::scancode::s)) {
+    if (in.pressed(neutrino::key::s)) {
         m_sample_method = static_cast<SampleMethod>((static_cast<int>(m_sample_method) + 1) % static_cast<int>(SampleMethod::Count));
     }
 
-    if (in.pressed(sdlpp::scancode::left)) {
+    if (in.pressed(neutrino::key::left)) {
         m_current_scene = (m_current_scene + 3) % 4;
     }
-    if (in.pressed(sdlpp::scancode::right)) {
+    if (in.pressed(neutrino::key::right)) {
         m_current_scene = (m_current_scene + 1) % 4;
     }
 
-    if (in.held(sdlpp::scancode::up)) {
+    if (in.held(neutrino::key::up)) {
         m_manual_size = std::min(64.0f, m_manual_size + 20.0f * delta);
     }
-    if (in.held(sdlpp::scancode::down)) {
+    if (in.held(neutrino::key::down)) {
         m_manual_size = std::max(1.0f, m_manual_size - 20.0f * delta);
     }
 

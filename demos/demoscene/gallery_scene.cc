@@ -146,31 +146,31 @@ void gallery_scene::fixed_update(neutrino::sim_duration dt, const neutrino::inpu
     }
 
     // Gallery navigation keys
-    if (in.pressed(sdlpp::scancode::tab) || in.pressed(sdlpp::scancode::pagedown)) next_effect();
-    if (in.pressed(sdlpp::scancode::backspace) || in.pressed(sdlpp::scancode::pageup)) prev_effect();
-    if (in.pressed(sdlpp::scancode::f1)) m_show_hud = !m_show_hud;
+    if (in.pressed(neutrino::key::tab) || in.pressed(neutrino::key::pagedown)) next_effect();
+    if (in.pressed(neutrino::key::backspace) || in.pressed(neutrino::key::pageup)) prev_effect();
+    if (in.pressed(neutrino::key::f1)) m_show_hud = !m_show_hud;
 
     // Direct jump keys
-    if (in.pressed(sdlpp::scancode::num_1)) switch_effect(0);
-    if (in.pressed(sdlpp::scancode::num_2)) switch_effect(1);
-    if (in.pressed(sdlpp::scancode::num_3)) switch_effect(2);
-    if (in.pressed(sdlpp::scancode::num_4)) switch_effect(3);
-    if (in.pressed(sdlpp::scancode::num_5)) switch_effect(4);
-    if (in.pressed(sdlpp::scancode::num_6)) switch_effect(5);
-    if (in.pressed(sdlpp::scancode::num_7)) switch_effect(6);
-    if (in.pressed(sdlpp::scancode::num_8)) switch_effect(7);
-    if (in.pressed(sdlpp::scancode::num_9)) switch_effect(8);
-    if (in.pressed(sdlpp::scancode::num_0)) switch_effect(9);
-    if (in.pressed(sdlpp::scancode::minus)) switch_effect(10);
-    if (in.pressed(sdlpp::scancode::equals)) switch_effect(11);
-    if (in.pressed(sdlpp::scancode::leftbracket)) switch_effect(12);
-    if (in.pressed(sdlpp::scancode::rightbracket)) switch_effect(13);
-    if (in.pressed(sdlpp::scancode::backslash)) switch_effect(14);
-    if (in.pressed(sdlpp::scancode::semicolon)) switch_effect(15);
-    if (in.pressed(sdlpp::scancode::apostrophe)) switch_effect(16);
-    if (in.pressed(sdlpp::scancode::comma)) switch_effect(17);
-    if (in.pressed(sdlpp::scancode::period)) switch_effect(18);
-    if (in.pressed(sdlpp::scancode::slash)) switch_effect(19);
+    if (in.pressed(neutrino::key::num_1)) switch_effect(0);
+    if (in.pressed(neutrino::key::num_2)) switch_effect(1);
+    if (in.pressed(neutrino::key::num_3)) switch_effect(2);
+    if (in.pressed(neutrino::key::num_4)) switch_effect(3);
+    if (in.pressed(neutrino::key::num_5)) switch_effect(4);
+    if (in.pressed(neutrino::key::num_6)) switch_effect(5);
+    if (in.pressed(neutrino::key::num_7)) switch_effect(6);
+    if (in.pressed(neutrino::key::num_8)) switch_effect(7);
+    if (in.pressed(neutrino::key::num_9)) switch_effect(8);
+    if (in.pressed(neutrino::key::num_0)) switch_effect(9);
+    if (in.pressed(neutrino::key::minus)) switch_effect(10);
+    if (in.pressed(neutrino::key::equals)) switch_effect(11);
+    if (in.pressed(neutrino::key::leftbracket)) switch_effect(12);
+    if (in.pressed(neutrino::key::rightbracket)) switch_effect(13);
+    if (in.pressed(neutrino::key::backslash)) switch_effect(14);
+    if (in.pressed(neutrino::key::semicolon)) switch_effect(15);
+    if (in.pressed(neutrino::key::apostrophe)) switch_effect(16);
+    if (in.pressed(neutrino::key::comma)) switch_effect(17);
+    if (in.pressed(neutrino::key::period)) switch_effect(18);
+    if (in.pressed(neutrino::key::slash)) switch_effect(19);
 
     // Dispatch update to active effect
     if (!m_effects.empty() && m_active_index < m_effects.size()) {
@@ -178,7 +178,7 @@ void gallery_scene::fixed_update(neutrino::sim_duration dt, const neutrino::inpu
     }
 }
 
-void gallery_scene::draw_bios_text(int px, int py, std::string_view text, const sdlpp::color& color) {
+void gallery_scene::draw_bios_text(int px, int py, std::string_view text, const neutrino::color& color) {
     const auto& font = onyx_font::bios_font_8x8();
     int pen_x = px;
 
@@ -216,28 +216,28 @@ void gallery_scene::render_hud(const neutrino::rect& viewport) {
 
     // Header Panel: Effect Title & Provenance
     const neutrino::rect header_rect{10, 8, viewport.w - 20, 48};
-    neutrino::draw_rect_fill(header_rect, sdlpp::color{10, 15, 25, 210});
-    neutrino::draw_rect(header_rect, sdlpp::color{60, 90, 140, 255});
+    neutrino::draw_rect_fill(header_rect, neutrino::color{10, 15, 25, 210});
+    neutrino::draw_rect(header_rect, neutrino::color{60, 90, 140, 255});
 
     const std::string title_line = std::format("[{}/{}] {}  ({})",
         m_active_index + 1, m_effects.size(), current->name(), current->original_file());
-    draw_bios_text(header_rect.x + 8, header_rect.y + 8, title_line, sdlpp::colors::yellow);
+    draw_bios_text(header_rect.x + 8, header_rect.y + 8, title_line, neutrino::colors::yellow);
 
     const std::string author_line = std::format("Author: {} | Formula: {}",
         current->author(), current->math_formula());
-    draw_bios_text(header_rect.x + 8, header_rect.y + 26, author_line, sdlpp::color{140, 200, 255, 255});
+    draw_bios_text(header_rect.x + 8, header_rect.y + 26, author_line, neutrino::color{140, 200, 255, 255});
 
     // Footer Panel: Controls & Telemetry
     const neutrino::rect footer_rect{10, viewport.h - 44, viewport.w - 20, 36};
-    neutrino::draw_rect_fill(footer_rect, sdlpp::color{10, 15, 25, 210});
-    neutrino::draw_rect(footer_rect, sdlpp::color{60, 90, 140, 255});
+    neutrino::draw_rect_fill(footer_rect, neutrino::color{10, 15, 25, 210});
+    neutrino::draw_rect(footer_rect, neutrino::color{60, 90, 140, 255});
 
     const std::string controls_line = std::format("Controls: {}", current->controls_hint());
-    draw_bios_text(footer_rect.x + 8, footer_rect.y + 6, controls_line, sdlpp::color{230, 230, 230, 255});
+    draw_bios_text(footer_rect.x + 8, footer_rect.y + 6, controls_line, neutrino::color{230, 230, 230, 255});
 
     const std::string nav_line = std::format("Tab/PgDn: Next | Bksp/PgUp: Prev (1..{}) | F1: Toggle HUD | FPS: {:.1f}",
         m_effects.size(), m_fps);
-    draw_bios_text(footer_rect.x + 8, footer_rect.y + 20, nav_line, sdlpp::color{120, 240, 160, 255});
+    draw_bios_text(footer_rect.x + 8, footer_rect.y + 20, nav_line, neutrino::color{120, 240, 160, 255});
 }
 
 } // namespace demoscene

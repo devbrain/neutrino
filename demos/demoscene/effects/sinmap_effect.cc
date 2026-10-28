@@ -121,21 +121,21 @@ void sinmap_effect::update(neutrino::sim_duration dt, const neutrino::input_snap
     m_time += dt_sec;
 
     // Interactive Amplitude Controls
-    if (in.held(sdlpp::scancode::up))   m_amp_x = std::min(40.0f, m_amp_x + 15.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_amp_x = std::max(2.0f,  m_amp_x - 15.0f * dt_sec);
+    if (in.held(neutrino::key::up))   m_amp_x = std::min(40.0f, m_amp_x + 15.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_amp_x = std::max(2.0f,  m_amp_x - 15.0f * dt_sec);
     m_amp_y = m_amp_x * 0.75f;
 
     // Interactive Wave Frequency Controls
-    if (in.held(sdlpp::scancode::left))  m_freq = std::max(0.4f, m_freq - 0.6f * dt_sec);
-    if (in.held(sdlpp::scancode::right)) m_freq = std::min(2.5f, m_freq + 0.6f * dt_sec);
+    if (in.held(neutrino::key::left))  m_freq = std::max(0.4f, m_freq - 0.6f * dt_sec);
+    if (in.held(neutrino::key::right)) m_freq = std::min(2.5f, m_freq + 0.6f * dt_sec);
 
     // Switch Texture Pattern
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_pattern_mode = (m_pattern_mode + 1) % 3;
         generate_texture_pattern();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_amp_x = 18.0f;
         m_amp_y = 14.0f;
         m_freq = 1.0f;

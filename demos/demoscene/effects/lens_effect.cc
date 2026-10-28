@@ -92,16 +92,16 @@ void lens_effect::update(neutrino::sim_duration dt, const neutrino::input_snapsh
     const float dt_sec = static_cast<float>(dt.count());
 
     // Interactive controls
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_auto_bounce = !m_auto_bounce;
     }
 
-    if (in.held(sdlpp::scancode::left))  { m_lens_x -= 120.0f * dt_sec; m_auto_bounce = false; }
-    if (in.held(sdlpp::scancode::right)) { m_lens_x += 120.0f * dt_sec; m_auto_bounce = false; }
-    if (in.held(sdlpp::scancode::up))    { m_lens_y -= 120.0f * dt_sec; m_auto_bounce = false; }
-    if (in.held(sdlpp::scancode::down))  { m_lens_y += 120.0f * dt_sec; m_auto_bounce = false; }
+    if (in.held(neutrino::key::left))  { m_lens_x -= 120.0f * dt_sec; m_auto_bounce = false; }
+    if (in.held(neutrino::key::right)) { m_lens_x += 120.0f * dt_sec; m_auto_bounce = false; }
+    if (in.held(neutrino::key::up))    { m_lens_y -= 120.0f * dt_sec; m_auto_bounce = false; }
+    if (in.held(neutrino::key::down))  { m_lens_y += 120.0f * dt_sec; m_auto_bounce = false; }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_lens_x = 160.0f;
         m_lens_y = 100.0f;
         m_auto_bounce = true;

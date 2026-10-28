@@ -137,25 +137,25 @@ void texture_cube_effect::update(neutrino::sim_duration dt, const neutrino::inpu
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_texture_idx = (m_texture_idx + 1) % num_textures;
     }
 
-    if (in.pressed(sdlpp::scancode::l)) {
+    if (in.pressed(neutrino::key::l)) {
         m_enable_lighting = !m_enable_lighting;
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::w)) m_zoom = std::min(300.0f, m_zoom + 80.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom = std::max(60.0f, m_zoom - 80.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom = std::min(300.0f, m_zoom + 80.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom = std::max(60.0f, m_zoom - 80.0f * dt_sec);
 
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_angular_velocity[0] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::down))  m_angular_velocity[0] += 2.0f * dt_sec;
 
     // Quaternion auto-rotation
     const float speed = m_angular_velocity.length();

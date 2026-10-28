@@ -7,7 +7,7 @@
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/sprites.hh>
 #include <neutrino/video/globals.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/video/color.hh>
 
 namespace luxor {
     void play_scene::on_enter() {
@@ -16,7 +16,7 @@ namespace luxor {
     void play_scene::fixed_update(neutrino::sim_duration, const neutrino::input_snapshot& in) {
 
         // Press Escape to pop the scene and cleanly exit.
-        if (in.pressed(neutrino::hotkey{sdlpp::scancode::escape})) {
+        if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
             LOG_INFO("Escape pressed - exiting");
             neutrino::pop_scene();
         }
@@ -27,7 +27,7 @@ namespace luxor {
         auto render_size = neutrino::render_size();
         neutrino::draw_rect_fill(
             neutrino::rect{0, 0, render_size.width, render_size.height},
-            sdlpp::color{90, 160, 230, 255}
+            neutrino::color{90, 160, 230, 255}
         );
     }
 }

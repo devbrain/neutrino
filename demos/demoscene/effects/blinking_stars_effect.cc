@@ -168,27 +168,27 @@ void blinking_stars_effect::update(neutrino::sim_duration dt, const neutrino::in
     const float dt_sec = static_cast<float>(dt.count());
     m_nebula_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_sky_mode = (m_sky_mode + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::s)) {
+    if (in.pressed(neutrino::key::s)) {
         spawn_meteor();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.pressed(sdlpp::scancode::equals) || in.pressed(sdlpp::scancode::kp_plus)) {
+    if (in.pressed(neutrino::key::equals) || in.pressed(neutrino::key::kp_plus)) {
         m_star_count = std::min(max_stars, m_star_count + 20);
     }
-    if (in.pressed(sdlpp::scancode::minus) || in.pressed(sdlpp::scancode::kp_minus)) {
+    if (in.pressed(neutrino::key::minus) || in.pressed(neutrino::key::kp_minus)) {
         m_star_count = std::max(size_t{40}, m_star_count - 20);
     }
 

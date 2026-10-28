@@ -36,12 +36,12 @@ void stars_effect::update(neutrino::sim_duration dt, const neutrino::input_snaps
     const float dt_sec = static_cast<float>(dt.count());
 
     // Interactive controls
-    if (in.held(sdlpp::scancode::up))   m_warp_speed = std::min(1200.0f, m_warp_speed + 400.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_warp_speed = std::max(50.0f, m_warp_speed - 400.0f * dt_sec);
+    if (in.held(neutrino::key::up))   m_warp_speed = std::min(1200.0f, m_warp_speed + 400.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_warp_speed = std::max(50.0f, m_warp_speed - 400.0f * dt_sec);
 
-    m_hyperdrive = in.held(sdlpp::scancode::space);
+    m_hyperdrive = in.held(neutrino::key::space);
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_warp_speed = 350.0f;
         on_enter();
     }
@@ -61,7 +61,7 @@ void stars_effect::update(neutrino::sim_duration dt, const neutrino::input_snaps
 
 void stars_effect::render(const neutrino::rect& viewport) {
     // Fill deep interstellar black
-    neutrino::draw_rect_fill(viewport, sdlpp::color{2, 4, 8, 255});
+    neutrino::draw_rect_fill(viewport, neutrino::color{2, 4, 8, 255});
 
     const float center_x = static_cast<float>(viewport.x) + static_cast<float>(viewport.w) * 0.5f;
     const float center_y = static_cast<float>(viewport.y) + static_cast<float>(viewport.h) * 0.5f;
@@ -89,7 +89,7 @@ void stars_effect::render(const neutrino::rect& viewport) {
             const neutrino::render_pos p_curr{curr_x, curr_y};
 
             // Electric blue/white streak
-            sdlpp::color streak_color{
+            neutrino::color streak_color{
                 brightness,
                 static_cast<uint8_t>(brightness * 0.95f),
                 255,
@@ -99,7 +99,7 @@ void stars_effect::render(const neutrino::rect& viewport) {
 
             // Draw bright star head
             const float dot_radius = (z_factor > 0.7f) ? 2.0f : 1.0f;
-            neutrino::draw_circle_fill(p_curr, dot_radius, sdlpp::color{255, 255, 255, alpha});
+            neutrino::draw_circle_fill(p_curr, dot_radius, neutrino::color{255, 255, 255, alpha});
         }
 
         s.prev_proj_x = curr_x;

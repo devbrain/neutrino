@@ -364,21 +364,21 @@ void field_lines_effect::update(neutrino::sim_duration dt, const neutrino::input
     m_charges[2].pos = euler::vec2<float>{160.0f + 50.0f * std::sin(m_time * 1.4f), 100.0f + 40.0f * std::cos(m_time * 1.1f)};
     m_charges[3].pos = euler::vec2<float>{160.0f - 50.0f * std::sin(m_time * 1.4f), 100.0f - 40.0f * std::cos(m_time * 1.1f)};
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         reset_charges();
     }
 
     // Toggle display modes: 0 = Heatmap + Lines, 1 = Retro Grid + Lines, 2 = Lines Only
-    if (in.pressed(sdlpp::scancode::m)) {
+    if (in.pressed(neutrino::key::m)) {
         m_display_mode = (m_display_mode + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_color_theme = (m_color_theme + 1) % 2;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         reset_charges();
         m_time = 0.0f;
         m_display_mode = 0;

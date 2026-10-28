@@ -189,10 +189,10 @@ void bump_effect::update(neutrino::sim_duration dt, const neutrino::input_snapsh
 
     // Manual light position control
     bool moved = false;
-    if (in.held(sdlpp::scancode::left))  { m_light_x -= 140.0f * dt_sec; moved = true; }
-    if (in.held(sdlpp::scancode::right)) { m_light_x += 140.0f * dt_sec; moved = true; }
-    if (in.held(sdlpp::scancode::up))    { m_light_y -= 140.0f * dt_sec; moved = true; }
-    if (in.held(sdlpp::scancode::down))  { m_light_y += 140.0f * dt_sec; moved = true; }
+    if (in.held(neutrino::key::left))  { m_light_x -= 140.0f * dt_sec; moved = true; }
+    if (in.held(neutrino::key::right)) { m_light_x += 140.0f * dt_sec; moved = true; }
+    if (in.held(neutrino::key::up))    { m_light_y -= 140.0f * dt_sec; moved = true; }
+    if (in.held(neutrino::key::down))  { m_light_y += 140.0f * dt_sec; moved = true; }
 
     if (moved) {
         m_manual_control = true;
@@ -205,18 +205,18 @@ void bump_effect::update(neutrino::sim_duration dt, const neutrino::input_snapsh
     }
 
     // Cycle heightmap pattern
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_map_idx = (m_map_idx + 1) % 3;
         generate_heightmap(m_map_idx);
     }
 
     // Cycle theme
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_color_theme = (m_color_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 }

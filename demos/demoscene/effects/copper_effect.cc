@@ -8,16 +8,16 @@ namespace demoscene {
 copper_effect::copper_effect() {
     // Define 10 distinct harmonic oscillating bars with varied frequencies and phase offsets
     m_bars = {
-        {1.2f, 48.0f, 0.0f,  20, sdlpp::color{255, 140,  40, 255}}, // Copper orange
-        {1.7f, 42.0f, 1.2f,  24, sdlpp::color{255,  60,  60, 255}}, // Crimson red
-        {0.9f, 52.0f, 2.5f,  18, sdlpp::color{255, 210,  60, 255}}, // Gold
-        {2.1f, 36.0f, 4.0f,  22, sdlpp::color{ 40, 180, 255, 255}}, // Cyan
-        {1.4f, 45.0f, 5.1f,  20, sdlpp::color{220,  50, 240, 255}}, // Magenta
-        {0.7f, 55.0f, 3.2f,  26, sdlpp::color{ 60, 255, 120, 255}}, // Lime green
-        {1.9f, 38.0f, 0.8f,  16, sdlpp::color{255, 100, 180, 255}}, // Hot pink
-        {1.1f, 46.0f, 2.1f,  22, sdlpp::color{100, 140, 255, 255}}, // Royal blue
-        {2.4f, 32.0f, 4.7f,  18, sdlpp::color{255, 170,  50, 255}}, // Amber
-        {0.8f, 50.0f, 1.5f,  24, sdlpp::color{180,  80, 255, 255}}, // Violet
+        {1.2f, 48.0f, 0.0f,  20, neutrino::color{255, 140,  40, 255}}, // Copper orange
+        {1.7f, 42.0f, 1.2f,  24, neutrino::color{255,  60,  60, 255}}, // Crimson red
+        {0.9f, 52.0f, 2.5f,  18, neutrino::color{255, 210,  60, 255}}, // Gold
+        {2.1f, 36.0f, 4.0f,  22, neutrino::color{ 40, 180, 255, 255}}, // Cyan
+        {1.4f, 45.0f, 5.1f,  20, neutrino::color{220,  50, 240, 255}}, // Magenta
+        {0.7f, 55.0f, 3.2f,  26, neutrino::color{ 60, 255, 120, 255}}, // Lime green
+        {1.9f, 38.0f, 0.8f,  16, neutrino::color{255, 100, 180, 255}}, // Hot pink
+        {1.1f, 46.0f, 2.1f,  22, neutrino::color{100, 140, 255, 255}}, // Royal blue
+        {2.4f, 32.0f, 4.7f,  18, neutrino::color{255, 170,  50, 255}}, // Amber
+        {0.8f, 50.0f, 1.5f,  24, neutrino::color{180,  80, 255, 255}}, // Violet
     };
 
     on_enter();
@@ -121,22 +121,22 @@ void copper_effect::update(neutrino::sim_duration dt, const neutrino::input_snap
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec * m_speed;
 
-    if (in.pressed(sdlpp::scancode::up))   m_bar_count = std::min(10, m_bar_count + 1);
-    if (in.pressed(sdlpp::scancode::down)) m_bar_count = std::max(2, m_bar_count - 1);
+    if (in.pressed(neutrino::key::up))   m_bar_count = std::min(10, m_bar_count + 1);
+    if (in.pressed(neutrino::key::down)) m_bar_count = std::max(2, m_bar_count - 1);
 
-    if (in.held(sdlpp::scancode::left))  m_speed = std::max(0.2f, m_speed - 0.8f * dt_sec);
-    if (in.held(sdlpp::scancode::right)) m_speed = std::min(3.0f, m_speed + 0.8f * dt_sec);
+    if (in.held(neutrino::key::left))  m_speed = std::max(0.2f, m_speed - 0.8f * dt_sec);
+    if (in.held(neutrino::key::right)) m_speed = std::min(3.0f, m_speed + 0.8f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_palette_theme = (m_palette_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::m)) {
+    if (in.pressed(neutrino::key::m)) {
         m_mirror_floor = !m_mirror_floor;
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_speed = 1.0f;
         m_bar_count = 6;
         m_palette_theme = 0;

@@ -151,32 +151,32 @@ void stretch_scroll_effect::update(neutrino::sim_duration dt, const neutrino::in
     const float delta = std::chrono::duration<float>(dt).count();
     m_time += delta;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_mode = static_cast<Mode>((static_cast<int>(m_mode) + 1) % static_cast<int>(Mode::Count));
     }
 
-    if (in.pressed(sdlpp::scancode::b)) {
+    if (in.pressed(neutrino::key::b)) {
         m_show_backdrop = !m_show_backdrop;
     }
 
-    if (in.pressed(sdlpp::scancode::w)) {
+    if (in.pressed(neutrino::key::w)) {
         if (m_wobble_scale < 0.6f) m_wobble_scale = 1.0f;
         else if (m_wobble_scale < 1.4f) m_wobble_scale = 2.0f;
         else if (m_wobble_scale < 2.5f) m_wobble_scale = 0.0f;
         else m_wobble_scale = 0.5f;
     }
 
-    if (in.held(sdlpp::scancode::up)) {
+    if (in.held(neutrino::key::up)) {
         m_stretch_mult = std::min(2.5f, m_stretch_mult + 1.2f * delta);
     }
-    if (in.held(sdlpp::scancode::down)) {
+    if (in.held(neutrino::key::down)) {
         m_stretch_mult = std::max(0.2f, m_stretch_mult - 1.2f * delta);
     }
 
-    if (in.held(sdlpp::scancode::left)) {
+    if (in.held(neutrino::key::left)) {
         m_scroll_speed = std::max(10.0f, m_scroll_speed - 25.0f * delta);
     }
-    if (in.held(sdlpp::scancode::right)) {
+    if (in.held(neutrino::key::right)) {
         m_scroll_speed = std::min(120.0f, m_scroll_speed + 25.0f * delta);
     }
 

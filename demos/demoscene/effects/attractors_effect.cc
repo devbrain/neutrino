@@ -231,39 +231,39 @@ void attractors_effect::update(neutrino::sim_duration dt, const neutrino::input_
     const float dt_sec = static_cast<float>(dt.count());
     m_sim_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_attractor_type = (m_attractor_type + 1) % 4;
         reset_simulation();
         m_canvas.clear(0);
     }
 
-    if (in.pressed(sdlpp::scancode::a)) {
+    if (in.pressed(neutrino::key::a)) {
         m_attenuate = !m_attenuate;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_palette_theme = (m_palette_theme + 1) % 4;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.pressed(sdlpp::scancode::equals) || in.pressed(sdlpp::scancode::kp_plus)) {
+    if (in.pressed(neutrino::key::equals) || in.pressed(neutrino::key::kp_plus)) {
         m_active_points = std::min(max_points, m_active_points + 1024);
     }
-    if (in.pressed(sdlpp::scancode::minus) || in.pressed(sdlpp::scancode::kp_minus)) {
+    if (in.pressed(neutrino::key::minus) || in.pressed(neutrino::key::kp_minus)) {
         m_active_points = std::max(size_t{1024}, m_active_points - 1024);
     }
 
-    if (in.held(sdlpp::scancode::w)) m_zoom = std::min(400.0f, m_zoom + 120.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom = std::max(60.0f, m_zoom - 120.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom = std::min(400.0f, m_zoom + 120.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom = std::max(60.0f, m_zoom - 120.0f * dt_sec);
 
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_angular_velocity[0] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::down))  m_angular_velocity[0] += 2.0f * dt_sec;
 
     // Quaternion auto-tumble and interactive orientation
     const float speed = m_angular_velocity.length();

@@ -9,7 +9,6 @@
 
 #include <failsafe/logger.hh>
 
-#include <sdlpp/events/events.hh>
 
 #include <neutrino/neutrino.hh>
 #include <onyx_font/bios_font.hh>
@@ -106,8 +105,8 @@ namespace {
     }
 
     void draw_game_over() {
-        neutrino::draw_rect_fill(neutrino::rect{52, 80, 216, 40}, sdlpp::color{0, 0, 0, 255});
-        neutrino::set_draw_color(sdlpp::color{255, 235, 120, 255});
+        neutrino::draw_rect_fill(neutrino::rect{52, 80, 216, 40}, neutrino::color{0, 0, 0, 255});
+        neutrino::set_draw_color(neutrino::color{255, 235, 120, 255});
         const auto text = [](std::string_view s, int y) {
             int x = (320 - static_cast <int>(s.size()) * 8) / 2;
             const auto& font = onyx_font::bios_font_8x8();
@@ -193,7 +192,7 @@ void play_game_scene::fixed_update(neutrino::sim_duration dt, const neutrino::in
     }
     auto& m = model::instance();
     if (m.get_lives() <= 0 && m.get_level_info().paddle_death_ticks >= 24
-        && in.mouse(sdlpp::mouse_button::left).pressed) {
+        && in.mouse(neutrino::mouse_button::left).pressed) {
         m.restart_game();
         m_mechanics.load(m);
     }

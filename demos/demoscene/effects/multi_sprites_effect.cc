@@ -179,28 +179,28 @@ void multi_sprites_effect::update(neutrino::sim_duration dt, const neutrino::inp
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_formation = (m_formation + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::b)) {
+    if (in.pressed(neutrino::key::b)) {
         m_backdrop_mode = (m_backdrop_mode + 1) % 3;
         init_background();
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_palette_theme = (m_palette_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.pressed(sdlpp::scancode::equals) || in.pressed(sdlpp::scancode::kp_plus)) {
+    if (in.pressed(neutrino::key::equals) || in.pressed(neutrino::key::kp_plus)) {
         m_active_sprites = std::min(max_sprites, m_active_sprites + 10);
     }
-    if (in.pressed(sdlpp::scancode::minus) || in.pressed(sdlpp::scancode::kp_minus)) {
+    if (in.pressed(neutrino::key::minus) || in.pressed(neutrino::key::kp_minus)) {
         m_active_sprites = std::max(size_t{20}, m_active_sprites - 10);
     }
 

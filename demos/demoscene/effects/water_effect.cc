@@ -156,30 +156,30 @@ void water_effect::update(neutrino::sim_duration dt, const neutrino::input_snaps
 
     // Interactive ripple controls
     bool moved = false;
-    if (in.held(sdlpp::scancode::left))  { m_ripple_x = std::max(10.0f, m_ripple_x - 120.0f * dt_sec); moved = true; }
-    if (in.held(sdlpp::scancode::right)) { m_ripple_x = std::min(310.0f, m_ripple_x + 120.0f * dt_sec); moved = true; }
-    if (in.held(sdlpp::scancode::up))    { m_ripple_y = std::max(10.0f, m_ripple_y - 120.0f * dt_sec); moved = true; }
-    if (in.held(sdlpp::scancode::down))  { m_ripple_y = std::min(190.0f, m_ripple_y + 120.0f * dt_sec); moved = true; }
+    if (in.held(neutrino::key::left))  { m_ripple_x = std::max(10.0f, m_ripple_x - 120.0f * dt_sec); moved = true; }
+    if (in.held(neutrino::key::right)) { m_ripple_x = std::min(310.0f, m_ripple_x + 120.0f * dt_sec); moved = true; }
+    if (in.held(neutrino::key::up))    { m_ripple_y = std::max(10.0f, m_ripple_y - 120.0f * dt_sec); moved = true; }
+    if (in.held(neutrino::key::down))  { m_ripple_y = std::min(190.0f, m_ripple_y + 120.0f * dt_sec); moved = true; }
 
     if (moved) {
         drop_splash(static_cast<int>(m_ripple_x), static_cast<int>(m_ripple_y), 180.0f, 3);
     }
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         drop_splash(static_cast<int>(m_ripple_x), static_cast<int>(m_ripple_y), 450.0f, 7);
     }
 
     // Theme cycle
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 3;
         init_palette();
     }
 
     // Viscosity
-    if (in.held(sdlpp::scancode::w)) m_damping = std::min(0.995f, m_damping + 0.01f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_damping = std::max(0.920f, m_damping - 0.01f * dt_sec);
+    if (in.held(neutrino::key::w)) m_damping = std::min(0.995f, m_damping + 0.01f * dt_sec);
+    if (in.held(neutrino::key::s)) m_damping = std::max(0.920f, m_damping - 0.01f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 }

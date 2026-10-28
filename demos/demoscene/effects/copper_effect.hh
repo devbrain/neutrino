@@ -52,7 +52,7 @@ private:
         float amp;
         float phase;
         int height;
-        sdlpp::color base_color;
+        neutrino::color base_color;
     };
 
     void init_palette();

@@ -153,23 +153,23 @@ void radar_sweep_effect::update(neutrino::sim_duration dt, const neutrino::input
     if (m_angle < 0.0f) m_angle += two_pi;
 
     // Controls
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         reset_targets();
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_color_theme = (m_color_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::m)) {
+    if (in.pressed(neutrino::key::m)) {
         m_show_grid = !m_show_grid;
     }
 
-    if (in.held(sdlpp::scancode::up))   m_sweep_speed = std::min(6.0f, m_sweep_speed + 2.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_sweep_speed = std::max(0.5f, m_sweep_speed - 2.0f * dt_sec);
+    if (in.held(neutrino::key::up))   m_sweep_speed = std::min(6.0f, m_sweep_speed + 2.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_sweep_speed = std::max(0.5f, m_sweep_speed - 2.0f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_angle = 0.0f;
         m_sweep_speed = 2.0f;
         m_show_grid = true;

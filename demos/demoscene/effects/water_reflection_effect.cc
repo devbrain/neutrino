@@ -190,25 +190,25 @@ void water_reflection_effect::update(neutrino::sim_duration dt, const neutrino::
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_skyline_type = (m_skyline_type + 1) % 3;
         generate_skyline();
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::up))   m_wave_amp = std::min(2.5f, m_wave_amp + 1.2f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_wave_amp = std::max(0.1f, m_wave_amp - 1.2f * dt_sec);
+    if (in.held(neutrino::key::up))   m_wave_amp = std::min(2.5f, m_wave_amp + 1.2f * dt_sec);
+    if (in.held(neutrino::key::down)) m_wave_amp = std::max(0.1f, m_wave_amp - 1.2f * dt_sec);
 
-    if (in.held(sdlpp::scancode::right)) m_wind_speed = std::min(3.0f, m_wind_speed + 1.2f * dt_sec);
-    if (in.held(sdlpp::scancode::left))  m_wind_speed = std::max(0.2f, m_wind_speed - 1.2f * dt_sec);
+    if (in.held(neutrino::key::right)) m_wind_speed = std::min(3.0f, m_wind_speed + 1.2f * dt_sec);
+    if (in.held(neutrino::key::left))  m_wind_speed = std::max(0.2f, m_wind_speed - 1.2f * dt_sec);
 }
 
 void water_reflection_effect::render(const neutrino::rect& viewport) {

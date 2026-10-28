@@ -23,7 +23,7 @@ namespace demoscene {
                 cfg.height = 400; // 320x200 scaled x2
                 cfg.logical_size = neutrino::dim{640, 400};
                 cfg.scale = neutrino::scale_mode::integer_scale;
-                cfg.flags = sdlpp::window_flags::resizable;
+                cfg.flags = neutrino::window_flags::resizable;
                 return cfg;
             }
     };

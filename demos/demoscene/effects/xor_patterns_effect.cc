@@ -69,30 +69,30 @@ void xor_patterns_effect::update(neutrino::sim_duration dt, const neutrino::inpu
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_mode = (m_mode + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 4;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::equals) || in.held(sdlpp::scancode::kp_plus)) {
+    if (in.held(neutrino::key::equals) || in.held(neutrino::key::kp_plus)) {
         m_scale = std::min(4.0f, m_scale + 1.2f * dt_sec);
     }
-    if (in.held(sdlpp::scancode::minus) || in.held(sdlpp::scancode::kp_minus)) {
+    if (in.held(neutrino::key::minus) || in.held(neutrino::key::kp_minus)) {
         m_scale = std::max(0.25f, m_scale - 1.2f * dt_sec);
     }
 
-    if (in.held(sdlpp::scancode::left))  m_pan_x -= 120.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_pan_x += 120.0f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_pan_y -= 100.0f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_pan_y += 100.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_pan_x -= 120.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_pan_x += 120.0f * dt_sec;
+    if (in.held(neutrino::key::up))    m_pan_y -= 100.0f * dt_sec;
+    if (in.held(neutrino::key::down))  m_pan_y += 100.0f * dt_sec;
 }
 
 void xor_patterns_effect::render(const neutrino::rect& viewport) {

@@ -162,22 +162,22 @@ void rotozoom_effect::update(neutrino::sim_duration dt, const neutrino::input_sn
     m_pos_v += 35.0f * dt_sec * std::sin(m_angle * 0.7f);
 
     // Controls
-    if (in.held(sdlpp::scancode::left))  m_rot_speed -= 1.5f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_rot_speed += 1.5f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_zoom = std::min(4.0f, m_zoom + 1.2f * dt_sec);
-    if (in.held(sdlpp::scancode::down))  m_zoom = std::max(0.2f, m_zoom - 1.2f * dt_sec);
+    if (in.held(neutrino::key::left))  m_rot_speed -= 1.5f * dt_sec;
+    if (in.held(neutrino::key::right)) m_rot_speed += 1.5f * dt_sec;
+    if (in.held(neutrino::key::up))    m_zoom = std::min(4.0f, m_zoom + 1.2f * dt_sec);
+    if (in.held(neutrino::key::down))  m_zoom = std::max(0.2f, m_zoom - 1.2f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_pattern_idx = (m_pattern_idx + 1) % 3;
         generate_texture(m_pattern_idx);
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_color_theme = (m_color_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 }

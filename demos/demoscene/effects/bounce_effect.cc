@@ -107,21 +107,21 @@ void bounce_effect::update(neutrino::sim_duration dt, const neutrino::input_snap
     const float dt_sec = static_cast<float>(dt.count());
 
     // Interactive Drop New Ball
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         const uint8_t colors[] = {41, 81, 121, 161, 201};
         const uint8_t col = colors[m_balls.size() % 5];
         m_balls.push_back({160.0f, 20.0f, (m_balls.size() % 2 == 0 ? 100.0f : -100.0f), 0.0f, 16.0f, 0.0f, col});
     }
 
     // Gravity controls
-    if (in.held(sdlpp::scancode::up))   m_gravity = std::max(100.0f, m_gravity - 150.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_gravity = std::min(900.0f, m_gravity + 150.0f * dt_sec);
+    if (in.held(neutrino::key::up))   m_gravity = std::max(100.0f, m_gravity - 150.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_gravity = std::min(900.0f, m_gravity + 150.0f * dt_sec);
 
     // Elasticity / Restitution controls
-    if (in.held(sdlpp::scancode::left))  m_restitution = std::max(0.4f, m_restitution - 0.3f * dt_sec);
-    if (in.held(sdlpp::scancode::right)) m_restitution = std::min(0.96f, m_restitution + 0.3f * dt_sec);
+    if (in.held(neutrino::key::left))  m_restitution = std::max(0.4f, m_restitution - 0.3f * dt_sec);
+    if (in.held(neutrino::key::right)) m_restitution = std::min(0.96f, m_restitution + 0.3f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         reset_balls();
         m_gravity = 480.0f;
         m_restitution = 0.82f;

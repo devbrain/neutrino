@@ -83,10 +83,10 @@ namespace {
         constexpr int gw = 8;
         constexpr int gh = 8;
 
-        auto se = sdlpp::surface::create_rgb(count * gw, gh, sdlpp::pixel_format_enum::RGBA8888);
+        auto se = neutrino::image::create_rgb(count * gw, gh, neutrino::pixel_format::RGBA8888);
         ENFORCE(se.has_value())("failed to create font surface");
-        sdlpp::surface surf = std::move(*se);
-        (void) surf.fill(sdlpp::color{0, 0, 0, 0}); // transparent
+        neutrino::image surf = std::move(*se);
+        (void) surf.fill(neutrino::color{0, 0, 0, 0}); // transparent
 
         for (int i = 0; i < count; ++i) {
             const auto g = font.get_glyph(static_cast <std::uint8_t>(first + i));

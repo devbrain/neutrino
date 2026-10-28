@@ -106,31 +106,31 @@ void moire_effect::update(neutrino::sim_duration dt, const neutrino::input_snaps
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_mode = (m_mode + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 4;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::equals) || in.held(sdlpp::scancode::kp_plus)) {
+    if (in.held(neutrino::key::equals) || in.held(neutrino::key::kp_plus)) {
         m_frequency = std::min(2.5f, m_frequency + 0.6f * dt_sec);
     }
-    if (in.held(sdlpp::scancode::minus) || in.held(sdlpp::scancode::kp_minus)) {
+    if (in.held(neutrino::key::minus) || in.held(neutrino::key::kp_minus)) {
         m_frequency = std::max(0.4f, m_frequency - 0.6f * dt_sec);
     }
 
     // Manual control over center 1
-    if (in.held(sdlpp::scancode::left))  { m_cx1 = std::max(10.0f, m_cx1 - 120.0f * dt_sec); m_manual_control = true; }
-    if (in.held(sdlpp::scancode::right)) { m_cx1 = std::min(310.0f, m_cx1 + 120.0f * dt_sec); m_manual_control = true; }
-    if (in.held(sdlpp::scancode::up))    { m_cy1 = std::max(10.0f, m_cy1 - 100.0f * dt_sec); m_manual_control = true; }
-    if (in.held(sdlpp::scancode::down))  { m_cy1 = std::min(190.0f, m_cy1 + 100.0f * dt_sec); m_manual_control = true; }
+    if (in.held(neutrino::key::left))  { m_cx1 = std::max(10.0f, m_cx1 - 120.0f * dt_sec); m_manual_control = true; }
+    if (in.held(neutrino::key::right)) { m_cx1 = std::min(310.0f, m_cx1 + 120.0f * dt_sec); m_manual_control = true; }
+    if (in.held(neutrino::key::up))    { m_cy1 = std::max(10.0f, m_cy1 - 100.0f * dt_sec); m_manual_control = true; }
+    if (in.held(neutrino::key::down))  { m_cy1 = std::min(190.0f, m_cy1 + 100.0f * dt_sec); m_manual_control = true; }
 
     // Natural Lissajous wave orbit motion
     const float t = m_time;

@@ -120,30 +120,30 @@ void bouncing_sphere3d_effect::update(neutrino::sim_duration dt, const neutrino:
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_mode = (m_mode + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::equals) || in.held(sdlpp::scancode::kp_plus)) {
+    if (in.held(neutrino::key::equals) || in.held(neutrino::key::kp_plus)) {
         m_bounce_speed = std::min(2.5f, m_bounce_speed + 0.8f * dt_sec);
     }
-    if (in.held(sdlpp::scancode::minus) || in.held(sdlpp::scancode::kp_minus)) {
+    if (in.held(neutrino::key::minus) || in.held(neutrino::key::kp_minus)) {
         m_bounce_speed = std::max(0.4f, m_bounce_speed - 0.8f * dt_sec);
     }
 
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_angular_velocity[0] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::down))  m_angular_velocity[0] += 2.0f * dt_sec;
 
     // Quaternion auto-rotation
     const float speed = m_angular_velocity.length();

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <neutrino/neutrino.hh>
-#include <sdlpp/video/color.hh>
+#include <neutrino/video/color.hh>
 #include "effects/effect_base.hh"
 
 namespace demoscene {
@@ -34,7 +34,7 @@ public:
 
 private:
     void render_hud(const neutrino::rect& viewport);
-    void draw_bios_text(int px, int py, std::string_view text, const sdlpp::color& color);
+    void draw_bios_text(int px, int py, std::string_view text, const neutrino::color& color);
 
     std::vector<std::unique_ptr<effect_base>> m_effects;
     size_t m_active_index = 0;

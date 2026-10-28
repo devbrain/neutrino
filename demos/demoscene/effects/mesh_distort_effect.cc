@@ -62,27 +62,27 @@ void mesh_distort_effect::update(neutrino::sim_duration dt, const neutrino::inpu
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_distort_mode = static_cast<DistortMode>((static_cast<int>(m_distort_mode) + 1) % static_cast<int>(DistortMode::Count));
     }
 
-    if (in.pressed(sdlpp::scancode::m)) {
+    if (in.pressed(neutrino::key::m)) {
         m_scene_id = (m_scene_id + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::equals) || in.held(sdlpp::scancode::kp_plus)) {
+    if (in.held(neutrino::key::equals) || in.held(neutrino::key::kp_plus)) {
         m_amplitude = std::min(40.0f, m_amplitude + 15.0f * dt_sec);
     }
-    if (in.held(sdlpp::scancode::minus) || in.held(sdlpp::scancode::kp_minus)) {
+    if (in.held(neutrino::key::minus) || in.held(neutrino::key::kp_minus)) {
         m_amplitude = std::max(2.0f, m_amplitude - 15.0f * dt_sec);
     }
 
-    if (in.held(sdlpp::scancode::up))   m_frequency = std::min(2.5f, m_frequency + 0.8f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_frequency = std::max(0.3f, m_frequency - 0.8f * dt_sec);
+    if (in.held(neutrino::key::up))   m_frequency = std::min(2.5f, m_frequency + 0.8f * dt_sec);
+    if (in.held(neutrino::key::down)) m_frequency = std::max(0.3f, m_frequency - 0.8f * dt_sec);
 }
 
 void mesh_distort_effect::render_source_scene(int scene_id, uint8_t* dst) {

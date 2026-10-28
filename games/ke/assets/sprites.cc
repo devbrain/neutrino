@@ -22,7 +22,7 @@ namespace rs {
     neutrino::sprite_def to_sprite_def(const tile_sheet_def& sheet, bool top_left_origin) {
         auto dup = sheet.image.duplicate();
         ENFORCE(dup.has_value())("failed to duplicate sheet surface");
-        auto shared = std::make_shared <const sdlpp::surface>(std::move(*dup));
+        auto shared = std::make_shared <const neutrino::image>(std::move(*dup));
 
         neutrino::sprite_def def;
         neutrino::world_image img;

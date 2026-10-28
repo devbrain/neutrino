@@ -96,22 +96,22 @@ void rotate3d_effect::update(neutrino::sim_duration dt, const neutrino::input_sn
     const float dt_sec = static_cast<float>(dt.count());
 
     // Interactive Model Switch
-    if (in.pressed(sdlpp::scancode::m)) {
+    if (in.pressed(neutrino::key::m)) {
         m_current_model = (m_current_model + 1) % 3;
         build_mesh(m_current_model);
     }
 
     // Zoom Controls
-    if (in.held(sdlpp::scancode::w)) m_zoom = std::min(450.0f, m_zoom + 100.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom = std::max(120.0f, m_zoom - 100.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom = std::min(450.0f, m_zoom + 100.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom = std::max(120.0f, m_zoom - 100.0f * dt_sec);
 
     // Interactive Manual Rotation Bias
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::down))  m_angular_velocity[0] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::up))    m_angular_velocity[0] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::down))  m_angular_velocity[0] += 2.0f * dt_sec;
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_orientation = euler::quaternion<float>::identity();
         m_angular_velocity = euler::vec3<float>{0.5f, 0.8f, 0.3f};
         m_zoom = 280.0f;
@@ -131,7 +131,7 @@ void rotate3d_effect::update(neutrino::sim_duration dt, const neutrino::input_sn
 
 void rotate3d_effect::render(const neutrino::rect& viewport) {
     // Fill deep cosmos backdrop
-    neutrino::draw_rect_fill(viewport, sdlpp::color{10, 12, 20, 255});
+    neutrino::draw_rect_fill(viewport, neutrino::color{10, 12, 20, 255});
 
     const float center_x = static_cast<float>(viewport.x) + static_cast<float>(viewport.w) * 0.5f;
     const float center_y = static_cast<float>(viewport.y) + static_cast<float>(viewport.h) * 0.5f;
@@ -158,7 +158,7 @@ void rotate3d_effect::render(const neutrino::rect& viewport) {
         // Draw vertex glowing dots with depth-based sizing
         const float radius = std::max(2.0f, 4.0f + rot_v.z() * 1.5f);
         const uint8_t alpha = static_cast<uint8_t>(std::clamp(180.0f + rot_v.z() * 50.0f, 60.0f, 255.0f));
-        neutrino::draw_circle_fill(projected[i], radius, sdlpp::color{100, 220, 255, alpha});
+        neutrino::draw_circle_fill(projected[i], radius, neutrino::color{100, 220, 255, alpha});
     }
 
     // 2. Render anti-aliased wireframe edges with depth shading
@@ -172,7 +172,7 @@ void rotate3d_effect::render(const neutrino::rect& viewport) {
         const uint8_t b = static_cast<uint8_t>(140 + depth_t * 115);
         const uint8_t a = static_cast<uint8_t>(80 + depth_t * 175);
 
-        neutrino::draw_line_aa(projected[e.a], projected[e.b], sdlpp::color{r, g, b, a});
+        neutrino::draw_line_aa(projected[e.a], projected[e.b], neutrino::color{r, g, b, a});
     }
 }
 

@@ -134,30 +134,30 @@ void fadeplot_effect::update(neutrino::sim_duration dt, const neutrino::input_sn
     m_time += dt_sec * 1.5f;
 
     // Switch Knot Curve
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_curve_mode = (m_curve_mode + 1) % 4;
         m_canvas.clear(0);
     }
 
     // Switch Phosphor Theme
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_phosphor_theme = (m_phosphor_theme + 1) % 3;
         init_palette();
     }
 
     // Decay rate (persistence length)
-    if (in.pressed(sdlpp::scancode::up))   m_decay_rate = std::max(1, m_decay_rate - 1);
-    if (in.pressed(sdlpp::scancode::down)) m_decay_rate = std::min(8, m_decay_rate + 1);
+    if (in.pressed(neutrino::key::up))   m_decay_rate = std::max(1, m_decay_rate - 1);
+    if (in.pressed(neutrino::key::down)) m_decay_rate = std::min(8, m_decay_rate + 1);
 
     // Zoom Controls
-    if (in.held(sdlpp::scancode::w)) m_zoom = std::min(400.0f, m_zoom + 100.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_zoom = std::max(100.0f, m_zoom - 100.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_zoom = std::min(400.0f, m_zoom + 100.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_zoom = std::max(100.0f, m_zoom - 100.0f * dt_sec);
 
     // Interactive Manual Rotation Bias
-    if (in.held(sdlpp::scancode::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_angular_velocity[1] += 2.0f * dt_sec;
+    if (in.held(neutrino::key::left))  m_angular_velocity[1] -= 2.0f * dt_sec;
+    if (in.held(neutrino::key::right)) m_angular_velocity[1] += 2.0f * dt_sec;
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_orientation = euler::quaternion<float>::identity();
         m_angular_velocity = euler::vec3<float>{0.4f, 0.7f, 0.2f};
         m_zoom = 220.0f;

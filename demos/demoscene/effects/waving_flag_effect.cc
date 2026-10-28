@@ -121,21 +121,21 @@ void waving_flag_effect::update(neutrino::sim_duration dt, const neutrino::input
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_flag_theme = (m_flag_theme + 1) % 4;
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::up))   m_wind_speed = std::min(8.0f, m_wind_speed + 2.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_wind_speed = std::max(1.0f, m_wind_speed - 2.0f * dt_sec);
+    if (in.held(neutrino::key::up))   m_wind_speed = std::min(8.0f, m_wind_speed + 2.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_wind_speed = std::max(1.0f, m_wind_speed - 2.0f * dt_sec);
 
-    if (in.held(sdlpp::scancode::equals) || in.held(sdlpp::scancode::kp_plus)) {
+    if (in.held(neutrino::key::equals) || in.held(neutrino::key::kp_plus)) {
         m_wave_amp = std::min(45.0f, m_wave_amp + 15.0f * dt_sec);
     }
-    if (in.held(sdlpp::scancode::minus) || in.held(sdlpp::scancode::kp_minus)) {
+    if (in.held(neutrino::key::minus) || in.held(neutrino::key::kp_minus)) {
         m_wave_amp = std::max(5.0f, m_wave_amp - 15.0f * dt_sec);
     }
 }

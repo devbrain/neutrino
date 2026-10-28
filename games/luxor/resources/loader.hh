@@ -16,7 +16,7 @@
 #include <tiny_obj_loader.h>
 
 namespace luxor::rc {
-    sdlpp::surface load_image(const vfs& fs, const std::string& path);
+    neutrino::image load_image(const vfs& fs, const std::string& path);
     expected<neutrino::sprite_def, std::string> load_sprite(const vfs& fs, const std::string& path);
     expected<font_file, std::string> load_font(const vfs& fs, const std::string& path);
     expected<depth_table, std::string> load_depths(const vfs& fs, const std::string& path);

@@ -109,22 +109,22 @@ void metaballs_effect::update(neutrino::sim_duration dt, const neutrino::input_s
     m_balls[3].pos = euler::vec2<float>{160.0f + 85.0f * std::cos(t * 1.5f - 0.5f), 100.0f + 35.0f * std::sin(t * 2.1f + 1.4f)};
     m_balls[4].pos = euler::vec2<float>{160.0f + 55.0f * std::sin(t * 2.3f - 1.0f), 100.0f + 55.0f * std::cos(t * 0.8f - 0.4f)};
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_mode = (m_mode + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_color_theme = (m_color_theme + 1) % 3;
         init_palette();
     }
 
-    if (in.held(sdlpp::scancode::up))   m_threshold = std::min(2.5f, m_threshold + 0.8f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_threshold = std::max(0.4f, m_threshold - 0.8f * dt_sec);
+    if (in.held(neutrino::key::up))   m_threshold = std::min(2.5f, m_threshold + 0.8f * dt_sec);
+    if (in.held(neutrino::key::down)) m_threshold = std::max(0.4f, m_threshold - 0.8f * dt_sec);
 
-    if (in.held(sdlpp::scancode::w)) m_speed = std::min(3.0f, m_speed + 1.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_speed = std::max(0.2f, m_speed - 1.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_speed = std::min(3.0f, m_speed + 1.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_speed = std::max(0.2f, m_speed - 1.0f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 }

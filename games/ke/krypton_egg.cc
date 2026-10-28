@@ -166,7 +166,7 @@ class ke : public neutrino::application {
             cfg.title = "Krypton Egg";
             cfg.width = window_width;
             cfg.height = window_height;
-            cfg.flags = sdlpp::window_flags::resizable;
+            cfg.flags = neutrino::window_flags::resizable;
             // Fixed design resolution, integer-scaled to the window so a larger window shows
             // the same content crisply, not more.
             cfg.logical_size = neutrino::dim{window_width, window_height};

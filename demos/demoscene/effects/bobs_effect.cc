@@ -68,13 +68,13 @@ void bobs_effect::update(neutrino::sim_duration dt, const neutrino::input_snapsh
     const float dt_sec = static_cast<float>(dt.count());
 
     // Controls
-    if (in.pressed(sdlpp::scancode::c)) m_canvas.clear(0);
-    if (in.pressed(sdlpp::scancode::d)) m_decay_enabled = !m_decay_enabled;
+    if (in.pressed(neutrino::key::c)) m_canvas.clear(0);
+    if (in.pressed(neutrino::key::d)) m_decay_enabled = !m_decay_enabled;
 
-    if (in.held(sdlpp::scancode::up)) m_speed = std::min(3.0f, m_speed + 1.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_speed = std::max(0.2f, m_speed - 1.0f * dt_sec);
+    if (in.held(neutrino::key::up)) m_speed = std::min(3.0f, m_speed + 1.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_speed = std::max(0.2f, m_speed - 1.0f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_canvas.clear(0);
         m_speed = 1.0f;
         m_decay_enabled = false;

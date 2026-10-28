@@ -110,15 +110,15 @@ void voxel_effect::update(neutrino::sim_duration dt, const neutrino::input_snaps
     m_cam_y += std::sin(m_cam_angle) * m_speed * dt_sec;
 
     // Interactive flight controls
-    if (in.held(sdlpp::scancode::up)) m_cam_altitude = std::min(150.0f, m_cam_altitude + 40.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_cam_altitude = std::max(12.0f, m_cam_altitude - 40.0f * dt_sec);
-    if (in.held(sdlpp::scancode::left)) m_cam_angle += 1.2f * dt_sec;
-    if (in.held(sdlpp::scancode::right)) m_cam_angle -= 1.2f * dt_sec;
+    if (in.held(neutrino::key::up)) m_cam_altitude = std::min(150.0f, m_cam_altitude + 40.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_cam_altitude = std::max(12.0f, m_cam_altitude - 40.0f * dt_sec);
+    if (in.held(neutrino::key::left)) m_cam_angle += 1.2f * dt_sec;
+    if (in.held(neutrino::key::right)) m_cam_angle -= 1.2f * dt_sec;
 
-    if (in.held(sdlpp::scancode::w)) m_speed = std::min(150.0f, m_speed + 30.0f * dt_sec);
-    if (in.held(sdlpp::scancode::s)) m_speed = std::max(0.0f, m_speed - 30.0f * dt_sec);
+    if (in.held(neutrino::key::w)) m_speed = std::min(150.0f, m_speed + 30.0f * dt_sec);
+    if (in.held(neutrino::key::s)) m_speed = std::max(0.0f, m_speed - 30.0f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_cam_x = 128.0f;
         m_cam_y = 0.0f;
         m_cam_altitude = 35.0f;

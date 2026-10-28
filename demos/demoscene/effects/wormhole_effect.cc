@@ -28,12 +28,12 @@ void wormhole_effect::update(neutrino::sim_duration dt, const neutrino::input_sn
     const float dt_sec = static_cast<float>(dt.count());
 
     // Interactive controls
-    if (in.held(sdlpp::scancode::up)) m_speed = std::min(3.0f, m_speed + 1.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_speed = std::max(0.2f, m_speed - 1.0f * dt_sec);
-    if (in.held(sdlpp::scancode::right)) m_sway_amp_x = std::min(100.0f, m_sway_amp_x + 20.0f * dt_sec);
-    if (in.held(sdlpp::scancode::left)) m_sway_amp_x = std::max(10.0f, m_sway_amp_x - 20.0f * dt_sec);
+    if (in.held(neutrino::key::up)) m_speed = std::min(3.0f, m_speed + 1.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_speed = std::max(0.2f, m_speed - 1.0f * dt_sec);
+    if (in.held(neutrino::key::right)) m_sway_amp_x = std::min(100.0f, m_sway_amp_x + 20.0f * dt_sec);
+    if (in.held(neutrino::key::left)) m_sway_amp_x = std::max(10.0f, m_sway_amp_x - 20.0f * dt_sec);
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         m_speed = 1.0f;
         m_sway_amp_x = 60.0f;
         m_sway_amp_y = 45.0f;

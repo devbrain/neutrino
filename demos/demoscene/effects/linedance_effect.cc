@@ -92,27 +92,27 @@ void linedance_effect::update(neutrino::sim_duration dt, const neutrino::input_s
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec * 2.0f;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_mode = (m_mode + 1) % 3;
     }
 
-    if (in.pressed(sdlpp::scancode::a)) {
+    if (in.pressed(neutrino::key::a)) {
         m_motion_blur = !m_motion_blur;
     }
 
-    if (in.pressed(sdlpp::scancode::c)) {
+    if (in.pressed(neutrino::key::c)) {
         m_theme = (m_theme + 1) % 4;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::equals) || in.held(sdlpp::scancode::kp_plus)) {
+    if (in.held(neutrino::key::equals) || in.held(neutrino::key::kp_plus)) {
         m_damping = std::min(1.8f, m_damping + 0.5f * dt_sec);
     }
-    if (in.held(sdlpp::scancode::minus) || in.held(sdlpp::scancode::kp_minus)) {
+    if (in.held(neutrino::key::minus) || in.held(neutrino::key::kp_minus)) {
         m_damping = std::max(0.2f, m_damping - 0.5f * dt_sec);
     }
 

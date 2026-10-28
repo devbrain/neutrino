@@ -91,28 +91,28 @@ void dot_tunnel_effect::update(neutrino::sim_duration dt, const neutrino::input_
     const float dt_sec = static_cast<float>(dt.count());
     m_time += dt_sec;
 
-    if (in.pressed(sdlpp::scancode::space)) {
+    if (in.pressed(neutrino::key::space)) {
         m_theme = (m_theme + 1) % 4;
         init_palette();
     }
 
-    if (in.pressed(sdlpp::scancode::t)) {
+    if (in.pressed(neutrino::key::t)) {
         m_spiral_twist = !m_spiral_twist;
     }
 
-    if (in.pressed(sdlpp::scancode::r)) {
+    if (in.pressed(neutrino::key::r)) {
         on_enter();
     }
 
-    if (in.held(sdlpp::scancode::equals) || in.held(sdlpp::scancode::kp_plus)) {
+    if (in.held(neutrino::key::equals) || in.held(neutrino::key::kp_plus)) {
         m_flight_speed = std::min(80.0f, m_flight_speed + 25.0f * dt_sec);
     }
-    if (in.held(sdlpp::scancode::minus) || in.held(sdlpp::scancode::kp_minus)) {
+    if (in.held(neutrino::key::minus) || in.held(neutrino::key::kp_minus)) {
         m_flight_speed = std::max(5.0f, m_flight_speed - 25.0f * dt_sec);
     }
 
-    if (in.held(sdlpp::scancode::up))   m_sway_amp = std::min(2.5f, m_sway_amp + 1.0f * dt_sec);
-    if (in.held(sdlpp::scancode::down)) m_sway_amp = std::max(0.0f, m_sway_amp - 1.0f * dt_sec);
+    if (in.held(neutrino::key::up))   m_sway_amp = std::min(2.5f, m_sway_amp + 1.0f * dt_sec);
+    if (in.held(neutrino::key::down)) m_sway_amp = std::max(0.0f, m_sway_amp - 1.0f * dt_sec);
 
     m_flight_z += m_flight_speed * dt_sec;
 }
