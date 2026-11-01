@@ -82,4 +82,4 @@ sweep are highest-confidence. Ordered by value ÷ risk. Check off as done.
   unregister→move→conditional-register; `sound_effect` made explicit for clarity (unconditional
   registration, so it was safe).
 - [x] **Surface lock dedup.** Extracted the SDL3-correct `surface_pixel_lock` into
-  `src/…/video/sprite/surface_lock.hh`; `cpu_texture_atlas.cc` and `image_identity.cc` share it.
+  `src/…/video/sprite/surface_lock.hh`; `image_atlas.cc` and `image_identity.cc` share it.

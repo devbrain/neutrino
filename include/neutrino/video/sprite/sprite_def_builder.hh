@@ -34,7 +34,7 @@
 #include <neutrino/video/sprite/sprite_appearance.hh>
 #include <neutrino/video/sprite/sprite_def.hh>
 #include <neutrino/world/world_common.hh>
-#include <neutrino/video/image.hh>
+#include <neutrino/video/image/image.hh>
 
 namespace neutrino {
     class sprite_def_builder;

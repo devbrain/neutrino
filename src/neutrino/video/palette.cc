@@ -10,7 +10,7 @@ namespace neutrino {
         ENFORCE(!bytes.empty(), "Can not create an empty palette");
         ENFORCE(bytes.size() % 3 == 0, "Number of bytes in the palette should be divisible by 3");
         const std::size_t n = bytes.size() / 3;
-        ENFORCE(n <= 256)("Can not create a palette with more than 256 entries, got ")(n);
+        ENFORCE(n <= 256, "Can not create a palette with more than 256 entries, got", n);
 
         auto p = sdlpp::palette::create(static_cast <int>(n));
         ENFORCE(p);

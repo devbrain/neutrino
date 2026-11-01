@@ -8,8 +8,8 @@
 #include <functional>
 
 #include <neutrino/neutrino_export.h>
-#include <neutrino/video/sprite/cpu_texture_atlas.hh>
-#include <neutrino/video/sprite/detail/id_strong_type.hh>
+#include <neutrino/video/atlas/image_atlas_old.hh>
+#include <neutrino/detail/id_strong_type.hh>
 
 namespace neutrino {
     /**
@@ -77,7 +77,7 @@ namespace neutrino {
      * @return Opaque handle to the uploaded atlas.
      */
     NEUTRINO_EXPORT gpu_texture_atlas_id register_atlas(
-        const cpu_texture_atlas& atlas,
+        const image_atlas_old& atlas,
         atlas_texture_format format = atlas_texture_format::automatic);
 
     /**

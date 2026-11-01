@@ -11,7 +11,7 @@
 
 namespace neutrino {
     gpu_texture_atlas_id register_atlas(
-        const cpu_texture_atlas& atlas,
+        const image_atlas_old& atlas,
         atlas_texture_format format) {
         return require_texture_registry().create(
             service_locator::instance().get_renderer(), atlas, format);

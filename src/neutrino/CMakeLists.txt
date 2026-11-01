@@ -74,8 +74,16 @@ add_library(neutrino ${_lib_type}
         # Video
         # -------------------------------------------------------
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/world.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/detail/id_strong_type.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image_loader.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/detail/id_strong_type.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image_loader.hh
+        video/image/image_loader.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image_builder.hh
+        video/image/image_builder.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image_bank.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image_bank_builder.hh
+        video/image/image_bank_builder.cc
+
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/geometry_types.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/globals.hh
         video/globals.cc
@@ -87,10 +95,13 @@ add_library(neutrino ${_lib_type}
         video/palette.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprites.hh
         video/sprites.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/bitmask.hh
-        video/sprite/bitmask.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/cpu_texture_atlas.hh
-        video/sprite/cpu_texture_atlas.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/bitmask.hh
+        video/atlas/bitmask.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/image_atlas_old.hh
+        video/atlas/image_atlas_old.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/image_atlas.hh
+        video/atlas/image_atlas.cc
+        video/atlas/shelf_packer.hh
         video/sprite/surface_lock.hh
         video/sprite/image_decode.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/texture_atlas.hh
@@ -107,8 +118,8 @@ add_library(neutrino ${_lib_type}
         video/sprite/sprites_manager.hh
         video/sprite/texture_registry.cc
         video/sprite/texture_registry.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/atlas_packer.hh
-        video/sprite/atlas_packer.cc
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/atlas_packer.hh
+        video/atlas/atlas_packer.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/render_bundle.hh
         video/sprite/render_bundle.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/image_identity.hh
@@ -138,7 +149,7 @@ add_library(neutrino ${_lib_type}
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/texture_layer.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/world_compositor.hh
         video/world/world_compositor.cc
-        video/image_loader.cc
+
 
         # -------------------------------------------------------
         # Utils

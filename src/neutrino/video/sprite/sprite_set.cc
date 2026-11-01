@@ -17,7 +17,7 @@
 #include <failsafe/enforce.hh>
 
 #include <neutrino/video/sprites.hh>
-#include <neutrino/video/sprite/cpu_texture_atlas.hh>
+#include <neutrino/video/atlas/image_atlas_old.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 
 #include <sdlpp/video/surface.hh>
@@ -264,9 +264,9 @@ namespace neutrino {
 
         // The sheet image is already a packed atlas: upload it whole and reference the
         // authored sub-rects in place (repacking would move their coordinates).
-        cpu_texture_atlas cpu(std::move(surface),
-                              std::vector <cpu_texture_atlas_frame>{
-                                  cpu_texture_atlas_frame(rect{0, 0, image_size.width, image_size.height})});
+        image_atlas_old cpu(std::move(surface),
+                              std::vector <atlas_frame_old>{
+                                  atlas_frame_old(rect{0, 0, image_size.width, image_size.height})});
 
         // --- Registration phase. Each registered id is recorded in `set` the instant it
         // is created, and the owner vectors are reserved up front so the recording

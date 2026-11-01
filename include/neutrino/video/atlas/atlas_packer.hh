@@ -13,8 +13,8 @@
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/geometry_types.hh>
-#include <neutrino/video/sprite/cpu_texture_atlas.hh>
-#include <neutrino/video/image.hh>
+#include <neutrino/video/atlas/image_atlas_old.hh>
+#include <neutrino/video/image/image.hh>
 
 namespace neutrino {
     /**
@@ -27,8 +27,8 @@ namespace neutrino {
      * it lives just outside @ref bounds and is reserved (not part of the size).
      */
     struct placement {
-        unsigned page; ///< Index into pack_result::pages of the atlas page holding this tile.
-        uint32_t input_index; ///< Index of the source rectangle in the input span.
+        unsigned page{0}; ///< Index into pack_result::pages of the atlas page holding this tile.
+        uint32_t input_index{0}; ///< Index of the source rectangle in the input span.
         rect bounds; ///< Placed rectangle: {x, y} on the page, {w, h} the original tile size.
     };
 
@@ -88,16 +88,16 @@ namespace neutrino {
     /**
      * @brief Composited atlas pages plus the input -> page/rect mapping.
      *
-     * @ref pages holds one @ref cpu_texture_atlas per atlas page, in page order.
+     * @ref pages holds one @ref image_atlas per atlas page, in page order.
      * @ref placements maps each input surface to where it landed — entry's
      * @c input_index names the source, @c page / @c bounds locate it — ordered by
      * @c (page, input_index), the same contract as @ref pack_result. Together they
      * let a caller resolve "source image k -> which page, which rectangle" without
      * re-deriving the packing.
      */
-    struct surface_atlases {
-        std::vector <cpu_texture_atlas> pages;      ///< One composited atlas per page.
-        std::vector <placement>         placements; ///< input_index -> {page, bounds}.
+    struct packed_atlas {
+        std::vector <image_atlas_old> pages; ///< One composited atlas per page.
+        std::vector <placement> placements; ///< input_index -> {page, bounds}.
     };
 
     /**
@@ -110,9 +110,9 @@ namespace neutrino {
      * @ref pack_atlases (existing atlas frames) build.
      */
     struct pack_region {
-        const image* surface;        ///< Source pixels (not owned).
-        rect                  src;            ///< Sub-rect to pack; its {w,h} is the tile size.
-        const bitmask*        mask = nullptr; ///< Optional mask copied onto the output frame.
+        const image* surface = nullptr; ///< Source pixels (not owned).
+        rect src; ///< Sub-rect to pack; its {w,h} is the tile size.
+        const bitmask* mask = nullptr; ///< Optional mask copied onto the output frame.
     };
 
     /**
@@ -135,19 +135,19 @@ namespace neutrino {
      *                   the original, pre-conversion surface). Regions that already
      *                   carry a mask keep it. Default: no generation.
      */
-    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_regions(
+    [[nodiscard]] NEUTRINO_EXPORT packed_atlas pack_regions(
         std::span <const pack_region> regions,
         pixel_format format,
         int max_width, int max_height, int margin,
-        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
+        std::optional <atlas_mask_options_old> generate = std::nullopt);
 
     /**
      * @brief Convenience @ref pack_regions: format from the first region's surface,
      *        per-page cap from the renderer (default 2048). Empty input -> empty.
      */
-    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_regions(
+    [[nodiscard]] NEUTRINO_EXPORT packed_atlas pack_regions(
         std::span <const pack_region> regions, int margin,
-        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
+        std::optional <atlas_mask_options_old> generate = std::nullopt);
 
     /**
      * @brief Convenience @ref pack_regions: explicit @p format, per-page cap from the
@@ -155,10 +155,10 @@ namespace neutrino {
      *        than whatever the first source happens to be — a palettized source would
      *        otherwise yield a palettized page the GPU sprite path cannot sample.
      */
-    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_regions(
+    [[nodiscard]] NEUTRINO_EXPORT packed_atlas pack_regions(
         std::span <const pack_region> regions,
         pixel_format format, int margin,
-        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
+        std::optional <atlas_mask_options_old> generate = std::nullopt);
 
     /**
      * @brief Composite surfaces into one or more atlas pages in a target format.
@@ -183,19 +183,19 @@ namespace neutrino {
      * @throws (via @ref pack_atlas) on invalid args or a surface larger than the
      *         page cap; also if a page allocation or source conversion fails.
      */
-    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_surfaces(
+    [[nodiscard]] NEUTRINO_EXPORT packed_atlas pack_surfaces(
         std::span <const image> images,
         pixel_format format,
         int max_width, int max_height, int margin,
-        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
+        std::optional <atlas_mask_options_old> generate = std::nullopt);
 
     /**
      * @brief Convenience @ref pack_surfaces: format from the first image, per-page
      *        cap from the renderer (default 2048). Empty input -> empty.
      */
-    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_surfaces(
+    [[nodiscard]] NEUTRINO_EXPORT packed_atlas pack_surfaces(
         std::span <const image> images, int margin,
-        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
+        std::optional <atlas_mask_options_old> generate = std::nullopt);
 
     /**
      * @brief Convenience @ref pack_surfaces: explicit @p format, per-page cap from the
@@ -203,11 +203,11 @@ namespace neutrino {
      *        than whatever the first image happens to be — a palettized source would
      *        otherwise yield a palettized page the GPU sprite path cannot sample.
      */
-    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_surfaces(
+    [[nodiscard]] NEUTRINO_EXPORT packed_atlas pack_surfaces(
         std::span <const image> images,
         pixel_format format,
         int margin,
-        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
+        std::optional <atlas_mask_options_old> generate = std::nullopt);
 
     /**
      * @brief Repack the frames of several atlases into fewer atlas pages.
@@ -228,19 +228,19 @@ namespace neutrino {
      *                   to source frames that carry no mask; existing masks pass
      *                   through unchanged.
      */
-    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_atlases(
-        std::span <const cpu_texture_atlas> atlases,
+    [[nodiscard]] NEUTRINO_EXPORT packed_atlas pack_atlases(
+        std::span <const image_atlas_old> atlases,
         pixel_format format,
         int max_width, int max_height, int margin,
-        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
+        std::optional <atlas_mask_options_old> generate = std::nullopt);
 
     /**
      * @brief Convenience @ref pack_atlases: format from the first atlas's surface,
      *        per-page cap from the renderer (default 2048). Empty input -> empty.
      */
-    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_atlases(
-        std::span <const cpu_texture_atlas> atlases, int margin,
-        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
+    [[nodiscard]] NEUTRINO_EXPORT packed_atlas pack_atlases(
+        std::span <const image_atlas_old> atlases, int margin,
+        std::optional <atlas_mask_options_old> generate = std::nullopt);
 
     /**
      * @brief Convenience @ref pack_atlases: explicit @p format, per-page cap from the
@@ -248,10 +248,9 @@ namespace neutrino {
      *        than whatever the first atlas's surface happens to be — a palettized source
      *        would otherwise yield a palettized page the GPU sprite path cannot sample.
      */
-    [[nodiscard]] NEUTRINO_EXPORT surface_atlases pack_atlases(
-        std::span <const cpu_texture_atlas> atlases,
+    [[nodiscard]] NEUTRINO_EXPORT packed_atlas pack_atlases(
+        std::span <const image_atlas_old> atlases,
         pixel_format format,
         int margin,
-        std::optional <cpu_texture_atlas_mask_options> generate = std::nullopt);
-
+        std::optional <atlas_mask_options_old> generate = std::nullopt);
 }

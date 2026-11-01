@@ -370,7 +370,7 @@ flowchart TD
 * **Shape**: an indexed `std::vector<std::uint8_t>` buffer plus a 256-entry `color` palette, uploaded through a streaming `texture` once per frame (palette lookup on upload), drawn with `draw_texture`. Palette ops: `set_color`, 6-bit DAC helpers, `cycle(start, count, step)`, `fade_in/out(step, steps)`. Pixel ops: `put_pixel`, `get_pixel`, h/v lines, `clear`, `fill`, raw `pixels()` span; effect helpers (brix's blur) come over with the port.
 * **Builds on** P3.4 (`texture_access::streaming`). Migrates `demos/demoscene/vga_canvas` first, then brix `libs/gfx`.
 
-#### 3.6 Custom Image Formats and Atlases (decoders, atlas sinks, palettes)
+#### 3.6 Custom Image Formats and Atlases (decoders, image banks, palettes)
 * **Why**: retro games ship their own image formats, and every port so far parses them ad hoc. KE's `.bob` decoder takes an onyx output surface and does its own shelf packing, so both call sites need `sdlpp::image::sdl_surface_adapter`; brix (`~/proj/ares/brix`, `resources/classic_loader.cc`) hand-rolls its formats on raw `SDL_Surface`s; Crystal Caves / Secret Agent (`~/games/cc/cc1/native/modern`, `formats/prographx.*`) decode EGA planes with a mask plane by hand. The recurring needs:
 
   | Game | Asset | Needs |
@@ -386,57 +386,97 @@ flowchart TD
   That is: sniffable and headerless formats, palettes from another file, transparency as an index *or* as a separate mask plane, multi-frame files with per-frame pivots, and the same pixels drawn with different palettes.
 * **What already exists**:
   * `onyx_image`: the single-image plugin system (`decoder`, `codec_registry`, the `surface` sink). Its multi-image support (`set_subrect`, `decode_options` packing fields) is weak: each multi-image codec (ICO, DCX) packs on its own and the packing options are read by nobody.
-  * Neutrino's atlas machinery, in `video/sprite/`: `pack_atlas` (stb_rect_pack, multiple pages, page cap from the renderer, gutter margin), `pack_regions` / `pack_surfaces` / `pack_atlases` (allocate pages, blit, extrude gutters, convert format, generate masks), `surface_atlases` (pages + placements), `cpu_texture_atlas` (image + frames `{atlas_rect, optional bitmask}`), `cpu_texture_atlas_mask_options`, and `atlas_texture_format::indexed8` in the texture registry. Users: `tileset_bundle`, `sprite_set`.
-* **Design**: three layers, dependencies pointing one way: `image.hh` <- `video/atlas/` <- `image_loader.hh` <- `sprite/`, `world/`.
+  * Neutrino's atlas machinery, now in `video/atlas/` (moved from `video/sprite/`, done): `pack_atlas` (stb_rect_pack skyline into the full renderer cap, then trimmed; multiple pages; gutter margin), `pack_regions` / `pack_surfaces` / `pack_atlases` (allocate pages, blit, extrude gutters, convert format, generate masks), `packed_atlas` (pages + placements), the one-page `image_atlas` (image + frames `{atlas_rect, optional bitmask}`), `atlas_mask_options`, and `atlas_texture_format::indexed8` in the texture registry. Users: `tileset_bundle` (through `pack_regions`), `sprite_set`; `pack_atlas` is only called by the `pack_*` functions, and `pack_surfaces` / `pack_atlases` have no users outside their tests.
+* **Vocabulary**: `docs/images_atlases_sprites.md` is the reference for every name below (one meaning per word: *image* = pixels, *region* = a rect on a page, *atlas* = pages + regions, *frame* = an animation step only) and holds the full current -> target rename table.
+* **Design**: three layers, dependencies pointing one way: `image/{image, image_builder, image_bank}.hh` <- `video/atlas/` <- `image/image_loader.hh` <- `sprite/`, `world/`.
+  * **Pixels: one type, `image`.** A parser builds its pictures with a builder instead of a second pixel type:
+    ```cpp
+    // video/image/image_builder.hh
+    class image_builder {
+        static image_builder indexed(dim, const palette&, std::optional <std::uint8_t> transparent_index = {});
+        static image_builder rgba(dim);
+        void set(int x, int y, std::uint8_t index);   // indexed
+        void set(int x, int y, color c);              // rgba
+        std::span <std::uint8_t> row(int y);          // fast path for planar / RLE decoders
+        image build() &&;                             // hides lock, pitch and format
+    };
+    ```
+    An indexed builder produces an INDEX8 `image` that references the palette (SDL palettes are refcounted, so every image of a bank shares one) and carries `transparent_index` as the surface's colour key; an RGBA builder produces RGBA32.
+    ```cpp
+    // video/image/image_bank.hh -- many pictures; plain data, no loading or atlas dependency
+    struct image_bank {
+        struct entry { image pixels; std::uint32_t id = 0; };    // id = the game's opaque key
+        std::vector <entry> entries;
+    };
+    // video/image/image_bank_builder.hh -- one format/palette/key for the whole bank (done)
+    auto bank = image_bank_builder::indexed(pal, transparent_index);  // or ::rgba()
+    auto img  = bank.next(dim);                    // an image_builder set up for the bank
+    bank.add(std::move(img), id);                  // id required; throws on a mismatched picture
+    image_bank b = std::move(bank).build();
+    ```
+    The bank sits with `image` and `image_builder`, below `video/atlas/` (whose `build_atlas` takes it) and below `image_loader.hh` (whose `load_atlas` = decode + `build_atlas`). Putting it in `image_loader.hh` would make the atlas depend on the loader while the loader depends on the atlas; `tileset_bundle` and procedural generators fill banks without loading anything.
   * **`video/atlas/`: atlas building and management** (no decoders, no files):
     ```cpp
-    // moved from video/sprite/: atlas_packer.hh, cpu_texture_atlas.hh, bitmask.hh
-    // cpu_texture_atlas_frame gains: point origin; std::uint32_t index;
-
-    // atlas_sink.hh -- the protocol between producers and builders
-    struct frame_info   { dim size; point origin; std::uint32_t index; };
-    struct frame_format {
-        pixel_format pixels;
-        const palette* colors = nullptr;                 // indexed only; borrowed for set_frames()
-        std::optional <std::uint8_t> transparent_index;  // indexed only
-        bool has_mask = false;                           // producer supplies write_mask()
+    // image_atlas.hh -- pages + a flat list of regions
+    class atlas_id;                          // details::id_strong_type, minted by build_atlas (no GPU)
+    struct atlas_region {                    // a picture's complete address, valid from load time
+        atlas_id                  atlas;     // which atlas
+        unsigned                  page = 0;  // which page of it
+        rect                      dest;      // where on that page
+        std::uint32_t             id = 0;    // carried from image_bank::entry::id
     };
-    class atlas_sink {
-    public:
-        virtual bool set_frames(std::span <const frame_info>, const frame_format&) = 0;   // phase 1: lay out + allocate
-        virtual void write_pixels(std::size_t frame, int x, int y, std::span <const std::uint8_t>) = 0;
-        virtual void write_mask(std::size_t frame, int x, int y, std::span <const std::uint8_t> opaque) = 0;
+    class image_atlas {
+        atlas_id id() const;                 // kept on move
+        std::vector <image>        pages;
+        std::vector <atlas_region> regions;  // regions[i] = bank entry i
+        const atlas_region& region(std::size_t i) const;
+        std::optional <atlas_region> find_by_id(std::uint32_t id) const;   // first match
     };
 
-    // atlas_builder.hh -- the engine's sinks; both pack with pack_atlas and return surface_atlases
-    class rgba_atlas_sink;      // RGBA8888 pages; any input; mask -> alpha
-    class indexed_atlas_sink;   // INDEX8 pages + palette + colour key; indexed input only
-    cpu_texture_atlas with_palette(const cpu_texture_atlas&, const palette&);   // recolour an indexed page
+    // atlas_builder.hh -- max_page defaults to the renderer's max texture size; shelf placement is private
+    image_atlas build_atlas(const image_bank&, atlas_texture_format = atlas_texture_format::automatic,
+                            std::optional <dim> max_page = {});
+    image_atlas with_palette(const image_atlas&, const palette&);   // recolour every indexed page
+
+    // bitmask.hh -- collision masks on demand, not stored in the atlas
+    bitmask make_bitmask(const image&, rect);   // alpha 0 or the colour key = transparent
     ```
-  * **`image_loader.hh`: loading**:
+  * **`image/image_loader.hh`: loading**:
     ```cpp
-    // single images (onyx_image plugins)
+    // one picture (onyx_image plugins; a game parser just returns an image)
     image load_image(path | bytes);
     void  register_image_decoder(std::unique_ptr <image_decoder>);
     image decode_image(bytes, const image_decoder&, opts = {});
-    // multi-image files
-    using atlas_decoder = std::function <image_decode_result(bytes, atlas_sink&, const image_decode_options&)>;
-    surface_atlases load_image_atlas(bytes, const atlas_decoder&, opts = {});   // into an rgba_atlas_sink
-    void            decode_image_atlas(bytes, const atlas_decoder&, atlas_sink&, opts = {});
+    // many pictures
+    using image_bank_decoder = std::function <image_bank(std::span <const std::uint8_t>, const image_decode_options&)>;
+    image_atlas load_atlas(bytes, const image_bank_decoder&, opts = {});   // decode + build_atlas
     ```
-  * **`palette.hh`**: `palette` (= `sdlpp::palette`), `palette_encoding { vga6, rgb8 }`, `load_palette(bytes, enc)`. Shared with P3.5.
+    A decoder returns a value and throws on corrupt input, like the rest of the loading API.
+  * **GPU**: `register_atlas(image_atlas&&)` uploads every page and stores the textures in the registry **under the atlas's existing `atlas_id`** (registry: hash map `atlas_id` -> page textures); one handle per atlas, pages internal. `draw_sprite(pos, region)` = `registry[region.atlas].pages[region.page]` + `region.dest`; a region of an unregistered atlas fails through `DRAW_CHECK`. This replaces the earlier per-page `atlas_texture_id` (and `gpu_texture_atlas_id`): regions carry their page, so nobody outside the registry needs a per-page handle. `atlas_id` reuses `details::id_strong_type` / `id_access`, whose header moves from `video/sprite/detail/` to `neutrino/detail/` (atlas sits below sprite).
+  * **`palette.hh`**: `palette` (= `sdlpp::palette`), `palette_encoding { vga6, rgb8 }`, `load_palette(bytes, enc)`. Shared with P3.5. Done.
+  * **sdlpp**: add `surface::set_color_key` / `color_key` (no wrapper for `SDL_SetSurfaceColorKey` today).
 * **Rules**:
-  * **Two-phase protocol.** `set_frames` once, with every frame and the shared format: formats know their frame count and sizes up front, so the sink packs and allocates once and pixels are written straight into place, in frame-local pixel coordinates (onyx's `write_pixels` takes bytes). Frames are addressed by position, so regions are dense and in decoder order; `frame_info::index` keeps the format's own numbering, `origin` the pivot. No region kind: the caller knows what it loaded.
-  * **Decoders emit their native format; the caller picks the sink.** `rgba_atlas_sink` for drawing as-is, `indexed_atlas_sink` to keep indices (palette effects, recolouring). A format with a palette per frame declares RGBA and expands itself.
-  * **Transparency**: alpha in the pixels, `transparent_index` (exact, survives palette swaps; not a key colour), or a mask plane via `write_mask` (ProGraphx, BOB), where a masked pixel still has a colour underneath. With a mask, the rgba sink writes alpha and the indexed sink maps masked pixels to the transparent index, or to the first entry past the palette (16 for EGA); a full 256-entry palette with no free index makes `set_frames` fail. A mask also becomes the frame's collision `bitmask` exactly, instead of one guessed from alpha.
-  * **Recolouring is a palette operation.** brix's 6 font variants are one INDEX8 sheet (`index = 1 + row` for set bits, 0 transparent) plus 6 small palettes taken from the game palette; KE's per-level palettes work the same way. The font is an ordinary `atlas_decoder`, not "synthesis" outside the codec layer.
-  * **One compositing path.** The sinks are the only place that packs, writes pixels, extrudes gutters and builds masks; `pack_surfaces` / `pack_regions` / `pack_atlases` become producers writing into a sink (`tileset_bundle` is unchanged). Care points: masks evaluated from source pixels before conversion, the colour-key / INDEX8 semantics `pack_regions` preserves today, and row writes vs SDL blits (add a blit fast path only if it shows up in profiles).
-  * **Frame position is the contract.** Frame `i` is the `i`-th entry given to `set_frames`: dense, from 0, in decoder order. It is the join key for everything attached to the atlas from outside (game extras, `input_index` in placements). The engine never changes the position -> frame mapping, even though packing scatters frames across pages. `frame_info::index` is separate: the file's own id (BOB block, tile number), possibly sparse, carried through unchanged for game data that uses the file's numbering.
-  * **Lookup in the result.** `surface_atlases::placements` is sorted by `(page, input_index)` and each page numbers its frames locally, so "where is frame `i`" would be a search. The sinks fill, in `take()`: `locate(i) -> frame_location{page, frame_in_page}` (O(1)) and `find_by_index(index) -> optional<position>`. Existing `placements` users (`tileset_bundle`) are unchanged.
-  * **Per-frame data only the game reads stays with the game.** No metadata bag on frames: they travel through the texture registry, `sprite_sheet` and repacking, `world_property_map` lives above `video/atlas/`, and `std::any` is untyped. A decoder is a game-owned callable, so it fills its own typed side table during decode (`extra[i]` belongs to frame `i`), e.g. BOB's second offset pair or CC tile flags. Typed frame fields only for data the engine acts on: `origin`, `index`; `duration` when the first animated format (GIF, ANI) needs atlas -> clip. A typed convenience `load_image_atlas<Extra>` returning `{atlas, extra}` and checking one extra per frame waits for a second game using the pattern; the core API stays non-templated.
-  * **No layout parameter**: placement is `pack_atlas`'s job (gutters, pages, renderer cap); a contact-sheet tool lays out frames through its own sink.
-  * **Single image + external layout is slicing, not decoding** (`slice_grid`; Aseprite JSON and TMX already have loaders).
-* **Order**: (1) move `atlas_packer`, `cpu_texture_atlas`, `bitmask` to `video/atlas/` (paths only); (2) `atlas_sink.hh` + the two sinks on top of `pack_atlas`, frame `origin` / `index`, `with_palette`, `load_palette`, with tests via a recording sink; (3) re-express `pack_*` through the sinks with the existing packer tests unchanged; (4) port KE `.bob` to a `bob_decoder` (removes its packer, `sdl_surface_adapter`, the palette helpers); (5) brix decoders (backdrop, blocks, `.pal`, font) arrive with the port. Later: a generic 1-bit glyph decoder (brix font, onyx BIOS font).
+  * **One pixel type.** An image from onyx codecs and an image from a game parser are the same thing; only the way they are loaded differs. The earlier plain buffers (`indexed_image` / `rgba_image`, later `pixmap<T>`) existed only to make setting pixels convenient, which is a builder's job, not a type's. With one type, the decoder output is just images, compositing is a surface blit (what `pack_regions` already does), masks come from the existing `evaluate_bitmask`, and `tileset_bundle` passes crops of its source images. The cost, one SDL surface per picture, is paid once at load time.
+  * **The only split is one picture vs. many.** One picture: `image` (onyx registry for sniffable formats; a game parser simply returns an `image`). Many pictures with the file's numbering: `image_bank`. There is no indexed/RGBA variant: the format is the image's own pixel format.
+  * **Decoders return values; there is no sink protocol and no streaming.** The `atlas_sink` design (`set_frames` + `write_pixels`, `frame_info`, `frame_format`, stateful sinks with `take()`) existed to write pixels straight into place; at retro sizes holding the pictures twice until the build is irrelevant. Streaming (one picture per call) was rejected: shelf placement needs every size before placing any, so a stream either buffers everything or declares sizes first, and it turns each decoder into a resumable state machine (C++20 has no `std::generator`). Selecting pictures ("10..20") is a decoder option.
+  * **Decoders emit their native format; the caller picks the output.** `build_atlas(bank, indexed8)` keeps indices (palette effects, recolouring) and requires every entry to be INDEX8 with the same palette (the same refcounted SDL palette, or equal colours), else throws. `rgba` expands. `automatic` gives indexed pages when the bank qualifies and RGBA otherwise. `load_atlas` uses `automatic`.
+  * **Transparency has two sources**: alpha in the pixels, or the colour key of an INDEX8 image (`transparent_index`; exact, survives palette swaps). Both give an exact collision `bitmask` through `make_bitmask`. There is no mask channel: a format with a separate mask plane (ProGraphx, BOB) folds it in during decode, because the decoder owns the palette and so owns the choice of which index means invisible. It writes masked pixels as a reserved index and declares it transparent -- for EGA, a 17th palette entry (index 16). With a full 256-entry palette and no free index, the decoder builds RGBA images with alpha 0 (losing palette swaps). Compositing fills each page with the key (indexed) or alpha 0 (RGBA) first, so keyed pixels stay transparent. A helper such as `palette with_transparent_entry(const palette&)` waits for the first decoder that needs it.
+  * **Recolouring is a palette operation.** brix's 6 font variants are one INDEX8 sheet (`index = 1 + row` for set bits, 0 transparent) plus 6 small palettes taken from the game palette; KE's per-level palettes work the same way. The font is an ordinary `image_bank_decoder`.
+  * **One compositing path.** `build_atlas` is the only place that places pictures, writes page pixels and extrudes gutters. `tileset_bundle` crops its tiles into an `image_bank` and builds; its tests must pass unchanged. Care point carried over from `pack_regions`: the colour-key / INDEX8 semantics.
+  * **No collision masks in the atlas.** Today `pack_regions` evaluates a `bitmask` for every region (every tile of every tileset), and nothing reads it: `texture_registry` uploads only the pixels, `sprite_sheet` copies only the rect, and the CPU atlas -- masks included -- is dropped after upload; nothing calls `bitmask::overlaps`, and only the atlas's own tests check masks (the `tileset_bundle` tests do not). A mask is gameplay data, like a pivot or a hit box, so it follows the side-table rule: a game that wants pixel-perfect collision calls `make_bitmask(image, rect)` on its bank images and keeps the masks in its own tables (by id or region). This drops the per-picture cost from every load, `atlas_mask_options`, `atlas_frame::evaluate_bitmask`, and the "masks from source pixels before conversion" ordering in the builder. `bitmask` itself (with `overlaps`) stays in `video/atlas/`.
+  * **A region is the address; the id is the game's.** Region `i` is bank entry `i`, whichever page it landed on, and it names its atlas, so a game keeps regions from load time on and draws them after upload without resolving anything later. `id` is the game's opaque key (block number, character code, cell index): `image_bank_builder::add(img, id)` requires it, ids may be sparse and may repeat (the engine never enforces uniqueness), and `find_by_id(id)` returns the first region carrying it. There are no placeholder entries (`add_empty` was removed): a file with blocks 1, 2, 5 gives three entries. No region kind: the caller knows what it loaded.
+  * **Per-picture data only the game reads stays with the game.** A bank entry is pixels + `id`, and `id` stays only because the atlas acts on it (`find_by_id`). A decoder is a game-owned callable, so it returns its own typed side table next to the bank (keyed by id or position), e.g. BOB's hotspot and second offset pair, CC tile flags. The pivot is owned by the sprite layer (`sprite_visual_def::origin`, `sprite_def_builder::add_visual(name, rect, origin)`); nothing in `video/atlas/` reads it, and a copy in the atlas could disagree with `sprite_def`. Durations of animated formats (GIF, ANI) follow the same path into sprite clips. A typed `load_atlas<Extra>` waits for a second game using the pattern.
+  * **Placement is shelf, private to `build_atlas`.** What an atlas must deliver is few textures, pages under the max texture size, and gutters; tight packing only saves memory, and only for mixed sizes. Real content is mostly uniform (glyphs, tiles, animation frames), where shelf is optimal, and the mixed cases (KE BOBs, Tiled image-collection tilesets) are small and packed once at load, so shelf's loss there (~10-20% area) never costs a page. Today's skyline also gives uniform pictures the wrong shape: it fills the full renderer cap and trims, so 300 16x16 tiles become a ~5400x18 strip. So:
+    * **Order**: stable sort by height, descending, then rows left to right (next-fit decreasing height). Uniform pictures keep input order.
+    * **Width**: about sqrt(total area including gutters), clamped to [widest picture, max texture size].
+    * **Pages**: when a page reaches the height cap, start a new one; each page is trimmed to its used extent.
+    * A picture larger than a page (with its gutter) throws.
+    * `stb_rect_pack` is dropped.
+  * **No public packer.** `atlas_packer.hh` (`pack_atlas`, `pack_result`, `placement`, `pack_region`, `pack_regions` / `pack_surfaces` / `pack_atlases`) duplicated the builder's job in public. Placement becomes ~40 lines inside the builder's `.cc`; `test_atlas_packer.cc` is rewritten as builder tests keeping the useful assertions (no overlap, gutters extruded, page split at the cap, collision masks, position round-trip) and dropping skyline geometry.
+  * **No layout parameter**, only `max_page`. A grid is shelf for uniform sizes; nothing computes UVs from a tile id.
+  * **Single image + external layout is slicing, not decoding** (`sprite_grid`, explicit rects; Aseprite JSON and TMX already have loaders).
+* **Order**: (1) move `atlas_packer`, `image_atlas`, `bitmask` to `video/atlas/` (done, uncommitted); (2) sdlpp `set_color_key` / `color_key`; (3) `image_builder`; `image_bank`; `image_atlas` reshaped to pages + regions (`atlas_frame` -> `atlas_region` without a mask, `packed_atlas` and `frame_ref` merged in; `atlas_mask_options` / `evaluate_bitmask` replaced by `make_bitmask`, their test cases moving to `test_bitmask.cc`); `build_atlas` with private shelf placement and `with_palette`; `image_bank_decoder` and `load_atlas` in `image_loader.hh`; `atlas_id` on the atlas and its regions, `find_by_id` -> `optional<atlas_region>`; `register_atlas(image_atlas&&)` attaching the page textures to the atlas's id; builder tests replacing `test_atlas_packer.cc`; (4) `tileset_bundle` on `build_atlas`, its tests unchanged; (5) delete `atlas_packer.hh` / `.cc` and `stb_rect_pack`; (6) port KE `.bob` to a `bob_decoder`: its RLE mask folded into a reserved transparent index if KE's palettes leave one free, else RGBA images; hotspots in its side table (removes its packer, `sdl_surface_adapter`, the palette helpers); (7) brix decoders (backdrop, blocks, `.pal`, font) arrive with the port. Later: a generic 1-bit glyph decoder (brix font, onyx BIOS font).
+* **Sprite layer (redesign under discussion)**: the review of `video/sprite/` against KE, Luxor and `sprite_demo` and the decisions so far are in `docs/images_atlases_sprites.md` §9. Agreed: the pipeline is load -> define sprites -> upload -> draw, the first two CPU-only; `sprite` and animation are one concept (frames `{region, duration, flip}` + loop; a still is one frame), which retires `sprite_animation`, `sprite_appearance`, `sprite_visual`, `sprite_clip_def`, `sprite_frame_def`; the per-actor playhead is a value (`sprite_player`) owned by the actor, as in brix; sprites hold regions. Open: pivot in the bank entry/region vs a side table; playhead advance (`update(dt)` vs clock-based); the fate of `sprite_def` / `sprite_cache` / `sprite_set` / `render_bundle`; draw effects brix needs (destination size, source sub-rect); recolouring a registered atlas; the world subsystem review (`tileset_bundle`, `world_image`). The `register_atlas` port waits for these.
 * **Builds on** P1.7 (`image`, `pixel_format`), P1.1 (`color`); shares `palette` with P3.5.
 
 ---
@@ -502,7 +542,7 @@ flowchart TD
 | **P3.3** | Sprite def hitbox integration | **M** (2 days) | `sprite_def_builder.hh`, `sprite_sheet.hh` | No (additive) |
 | **P3.4** | First-class `texture` (one type, `fixed`/`streaming`/`target` access) + `draw_texture` / `draw_texture_quad` / `capture_frame`; migrate `render_texture`, sprite atlases, `texture_layer`, simplex canvas, KE, tests | **L** (3-4 days) | `video/texture.hh` (new), `draw.hh`, `render_texture.*` (removed), `sprite/texture_registry.*`, `world/texture_layer.hh`, simplex adapter, KE, tests, docs | Yes: `render_texture` is replaced by `texture`; the P1.7 `texture` alias becomes the engine class |
 | **P3.5** | `palette_canvas` (8-bit indexed + palette, fades/cycling) on a streaming `texture`; migrate demoscene `vga_canvas` | **M** (1-2 days) | `video/palette_canvas.hh` (new), `demos/demoscene` | No (additive) |
-| **P3.6** | Custom image formats and atlases: `video/atlas/` (packer, `cpu_texture_atlas`, `bitmask` moved; `atlas_sink` protocol, `rgba_atlas_sink` / `indexed_atlas_sink`, `with_palette`), loading (`atlas_decoder`, `load_image_atlas`, `decode_image_atlas`, `register_image_decoder`, `decode_image`), `palette` + `load_palette`; `pack_*` through the sinks; port KE `.bob` | **L** (3-5 days) | `video/atlas/*` (new), `image_loader.hh`, `palette.hh`, `video/sprite/*` includes, `tileset_bundle.cc`, KE `format/bob.*`, `resources.cc`, `ke_collage.cc` | Include paths of the moved headers; KE's `bob_image` API |
+| **P3.6** | Custom image formats and atlases: `video/atlas/` (`bitmask` moved; `image_bank`; `image_bank_builder`; `image_atlas` = `atlas_id` + pages + `atlas_region {atlas, page, dest, id}`, `find_by_id` -> region; masks on demand via `make_bitmask`; `build_atlas` with private shelf placement, `with_palette`; `atlas_packer` removed), `image_builder`, loading (`image_bank_decoder`, `load_atlas`, `register_image_decoder`, `decode_image`), `register_atlas(image_atlas&&)` attaching textures to the atlas's id, sprite layer redesign (`images_atlases_sprites.md` §9), `palette` + `load_palette`, sdlpp colour key; `tileset_bundle` on `build_atlas`; port KE `.bob` | **L** (3-5 days) | `video/atlas/*` (new), `image_builder.hh`, `image_loader.hh`, `palette.hh`, `texture_atlas.hh`, `video/sprite/*`, `tileset_bundle.cc`, sdlpp `surface.hh`, KE `format/bob.*`, `resources.cc`, `ke_collage.cc` | Include paths of the moved headers; KE's `bob_image` API |
 | **P4.1** | Migrate tutorials 01–03 & simplex | **S** (½ day) | `tutorials/*` | No |
 | **P4.2** | Migrate `games/ke` and demos | **M** (1 day) | `games/ke/*`, `demos/*` | No |
 

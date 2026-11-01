@@ -3,7 +3,7 @@
 //
 
 #include <utility>
-#include <neutrino/video/sprite/cpu_texture_atlas.hh>
+#include <neutrino/video/atlas/image_atlas_old.hh>
 #include <failsafe/enforce.hh>
 
 #include "video/sprite/surface_lock.hh"
@@ -21,10 +21,10 @@ namespace neutrino {
         }
     }
 
-    std::optional <bitmask> cpu_texture_atlas_frame::evaluate_bitmask(
+    std::optional <bitmask> atlas_frame_old::evaluate_bitmask(
         const sdlpp::surface& s,
         const rect& atlas_rect,
-        const cpu_texture_atlas_mask_options& options) {
+        const atlas_mask_options_old& options) {
         if (!s || atlas_rect.x < 0 || atlas_rect.y < 0 || atlas_rect.w < 0 || atlas_rect.h < 0) {
             return std::nullopt;
         }
@@ -86,29 +86,29 @@ namespace neutrino {
         return evaluated;
     }
 
-    cpu_texture_atlas::cpu_texture_atlas(sdlpp::surface&& s)
+    image_atlas_old::image_atlas_old(sdlpp::surface&& s)
         : m_surface(std::move(s)) {
     }
 
-    cpu_texture_atlas::cpu_texture_atlas(sdlpp::surface&& s, std::vector <cpu_texture_atlas_frame>&& frames)
+    image_atlas_old::image_atlas_old(sdlpp::surface&& s, std::vector <atlas_frame_old>&& frames)
         : m_surface(std::move(s)),
           m_frames(std::move(frames)) {
     }
 
-    const sdlpp::surface& cpu_texture_atlas::surface() const noexcept {
+    const sdlpp::surface& image_atlas_old::surface() const noexcept {
         return m_surface;
     }
 
-    std::size_t cpu_texture_atlas::frame_count() const noexcept {
+    std::size_t image_atlas_old::frame_count() const noexcept {
         return m_frames.size();
     }
 
-    const cpu_texture_atlas_frame& cpu_texture_atlas::frame(std::size_t index) const {
+    const atlas_frame_old& image_atlas_old::frame(std::size_t index) const {
         ENFORCE(index < m_frames.size());
         return m_frames[index];
     }
 
-    void cpu_texture_atlas::add_frame(const cpu_texture_atlas_frame& f) {
+    void image_atlas_old::add_frame(const atlas_frame_old& f) {
         m_frames.push_back(f);
     }
 }

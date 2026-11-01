@@ -1,5 +1,5 @@
 #include <doctest/doctest.h>
-#include <neutrino/video/sprite/cpu_texture_atlas.hh>
+#include <neutrino/video/atlas/image_atlas_old.hh>
 #include <neutrino/video/sprite/sprite_sheet.hh>
 #include <neutrino/video/sprite/sprite_state.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
@@ -26,14 +26,14 @@ TEST_SUITE("neutrino::video::sprite_state") {
             };
         }
 
-        [[nodiscard]] neutrino::cpu_texture_atlas make_atlas() {
+        [[nodiscard]] neutrino::image_atlas_old make_atlas() {
             auto surface = sdlpp::surface::create_rgb(4, 4, sdlpp::pixel_format_enum::RGBA8888);
             REQUIRE(surface.has_value());
             REQUIRE(surface->put_pixel(0, 0, sdlpp::colors::white).has_value());
 
-            std::vector <neutrino::cpu_texture_atlas_frame> frames;
+            std::vector <neutrino::atlas_frame_old> frames;
             frames.emplace_back(neutrino::rect{0, 0, 4, 4});
-            return neutrino::cpu_texture_atlas(std::move(*surface), std::move(frames));
+            return neutrino::image_atlas_old(std::move(*surface), std::move(frames));
         }
     }
 

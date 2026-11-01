@@ -73,7 +73,7 @@ namespace rs {
         for (const auto& r : result.resources) {
             if (r.name.find(".gif") != std::string::npos) {
                 auto data = read_resource(is, r);
-                gr.backdrops.emplace(r.name, neutrino::cpu_texture_atlas(neutrino::load_image(data)));
+                gr.backdrops.emplace(r.name, neutrino::image_atlas_old(neutrino::load_image(data)));
             }
             if (r.name.find(".pal") != std::string::npos) {
                 auto data = read_resource(is, r);

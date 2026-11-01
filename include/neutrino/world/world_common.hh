@@ -19,7 +19,7 @@
 #include <neutrino/video/geometry_types.hh>
 
 #include <neutrino/video/color.hh>
-#include <neutrino/video/image.hh>
+#include <neutrino/video/image/image.hh>
 
 namespace sdlpp {
     class surface;

@@ -66,7 +66,7 @@ texture_registry / sprites_manager    ── Tier 1: dumb id stores (exist, hard
   `^` operator (each flip is an involution).
 
 - **Packing.** Only **collection-of-images** tilesets are packed (stb_rect_pack
-  → composited surface → `cpu_texture_atlas`). Uniform tilesets upload as-is.
+  → composited surface → `image_atlas`). Uniform tilesets upload as-is.
   Gutter + edge-extrude and multi-page spill are built in from the start.
 
 - **Two-level cache key.** Hot path keys on `(resolved path, mtime, size)` via
@@ -101,7 +101,7 @@ texture_registry / sprites_manager    ── Tier 1: dumb id stores (exist, hard
 | Rect packing | `stb_rect_pack.h` | dep `stb` (already compiled via onyx_image) |
 | 32-bit hash primitive | `SDL_murmur3_32` | SDL3 |
 | Surface compositing | `sdlpp::surface::blit_to` | dep `sdlpp` |
-| Atlas value type (surface+frames) | `cpu_texture_atlas` | `include/neutrino/video/sprite/` |
+| Atlas value type (surface+frames) | `image_atlas` | `include/neutrino/video/sprite/` |
 | GPU atlas / sheet registration | `register_atlas`, `register_sprite_sheet` | sprite subsystem |
 | Errors | `THROW_*` / `ENFORCE` | `failsafe` |
 | hash_combine, transparent string hash | `neutrino::details::` | `include/neutrino/detail/hash.hh` |
@@ -210,11 +210,11 @@ via `sdlpp::image::load`; wrapper compiles against real include flags.
 ## Phase 3 — Rectangle packer + surface compositing ✅ DONE
 
 **Goal.** Given N sized inputs, assign non-overlapping positions with gutter and
-multi-page spill (stb_rect_pack), and composite N surfaces into `cpu_texture_atlas`
+multi-page spill (stb_rect_pack), and composite N surfaces into `image_atlas`
 pages.
 
-**Deliverables.** (`include/neutrino/video/sprite/atlas_packer.{hh}` +
-`src/neutrino/video/sprite/atlas_packer.cc`; stb pinned in the top `CMakeLists.txt`.)
+**Deliverables.** (`include/neutrino/video/atlas/atlas_packer.{hh}` +
+`src/neutrino/video/atlas/atlas_packer.cc`; stb pinned in the top `CMakeLists.txt`.)
 - Low level: `pack_atlas(std::span<const rect>, max_w, max_h, margin) -> pack_result`
   — per-input `placement{page, input_index, bounds}` ordered by `(page, input_index)`,
   auto-spilling to new pages; `pages` holds trimmed extents. `pack_atlas(rects, margin)`
@@ -224,9 +224,9 @@ pages.
   `blit_to` with gutter + edge-extrude, converts each distinct source to `format`
   once, preserves or (opt-in) generates the per-frame bitmask. **Done.**
 - Adapters over it: `pack_surfaces(span<const surface>)` (whole images) and
-  `pack_atlases(span<const cpu_texture_atlas>)` (repack many sheets' frames into
+  `pack_atlases(span<const image_atlas>)` (repack many sheets' frames into
   fewer textures). Each has a convenience overload (format from first input, cap
-  from renderer) and an optional `cpu_texture_atlas_mask_options generate`. **Done.**
+  from renderer) and an optional `atlas_mask_options generate`. **Done.**
 
 **Design notes.**
 - Gutter: each rect inflated by `2*margin` (symmetric belt); after blitting, edge
@@ -981,16 +981,16 @@ cases (19 in the draw suite), full suite **554/554**.
   on revisit. Separate from the GPU resource cache.
 - **Megatexture uniform tilesets** into shared pages for batching — only if
   draw-call count is measured to matter; doesn't change the resolution interface.
-  The merge primitive already exists: `pack_atlases(std::span<const cpu_texture_atlas>)`
+  The merge primitive already exists: `pack_atlases(std::span<const image_atlas>)`
   (a thin adapter over `pack_regions`, which packs `{surface, src_rect, mask}`
   regions). **Constraint:** only merge content with the *same lifetime* (e.g. one
   level's static tiles) — merging across the Phase-7 refcount/delta boundary
   destroys per-tileset unload granularity.
 - **Generate bitmasks while packing.** *Done.* `pack_regions`/`pack_surfaces`/
-  `pack_atlases` take an optional `cpu_texture_atlas_mask_options generate`: an input
+  `pack_atlases` take an optional `atlas_mask_options generate`: an input
   region's mask is preserved (correct across relocation + format conversion — the
   mask is a format-agnostic solid/transparent grid), and for regions with no mask
-  the policy evaluates one via `cpu_texture_atlas_frame::evaluate_bitmask` against
+  the policy evaluates one via `atlas_frame::evaluate_bitmask` against
   the original (pre-conversion) surface. Phase 6 just picks the policy (key-colour
   vs alpha). Convenience overloads (format from first input, cap from the renderer)
   also carry it.
@@ -1613,7 +1613,7 @@ and the blit primitive land.
 - **Silent wrong-texture on hash collision.** Mitigated by the length
   discriminator (Phase 1) and the stat-key primary path. Keep both.
 - **sdlpp `surface::lock_guard` bug.** It misreads SDL3's `bool` return from
-  `SDL_LockSurface` (treats success as failure). `cpu_texture_atlas.cc` already
+  `SDL_LockSurface` (treats success as failure). `image_atlas.cc` already
   uses a correct local RAII; do **not** "reuse" `lock_guard` until fixed upstream.
 - **Gutter/extrude omission** re-introduces tile bleed under scale/filtering —
   build it in Phase 3, don't defer.

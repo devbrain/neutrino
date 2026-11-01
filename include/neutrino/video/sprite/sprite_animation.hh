@@ -11,7 +11,7 @@
 #include <vector>
 
 #include <neutrino/neutrino_export.h>
-#include <neutrino/video/sprite/detail/id_strong_type.hh>
+#include <neutrino/detail/id_strong_type.hh>
 #include <neutrino/video/sprite/sprite_appearance.hh>
 
 namespace neutrino {

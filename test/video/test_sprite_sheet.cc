@@ -105,11 +105,11 @@ TEST_SUITE("neutrino::video::sprite_sheet") {
         auto surface = sdlpp::surface::create_rgb(16, 16, sdlpp::pixel_format_enum::RGBA8888);
         REQUIRE(surface.has_value());
 
-        std::vector <neutrino::cpu_texture_atlas_frame> frames;
+        std::vector <neutrino::atlas_frame_old> frames;
         frames.emplace_back(neutrino::rect{0, 0, 4, 5});
         frames.emplace_back(neutrino::rect{4, 1, 6, 7});
 
-        neutrino::cpu_texture_atlas cpu_atlas(std::move(*surface), std::move(frames));
+        neutrino::image_atlas_old cpu_atlas(std::move(*surface), std::move(frames));
         neutrino::sprite_sheet sheet(neutrino::gpu_texture_atlas_id{}, cpu_atlas);
 
         REQUIRE(sheet.visual_count() == 2);

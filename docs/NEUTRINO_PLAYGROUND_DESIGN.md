@@ -59,7 +59,7 @@ implementation into Neutrino. Simplex source paths in this table are relative to
 | Movement queue and easing (`include/simplex/sprite.hh`, `src/simplex/sprite.cc`) | Extract | A small Neutrino motion-sequence utility independent of sprite images, animation clocks, and renderers. |
 | CPU fire buffer and upload (`examples/simplex/example_fire.cc`) | Generalize | Playground's persistent CPU canvas, dirty upload, logical presentation, and managed shutdown. |
 | WGT loader (`src/simplex/sprite_atlas.cc`) | Migrate separately | An optional Neutrino asset loader using `lib_bstream`, producing CPU image/atlas data before GPU upload. |
-| Atlas ownership, frame rectangles, and collision masks (`include/simplex/sprite_atlas.hh`) | Replace with existing components | [CPU atlases](../include/neutrino/video/sprite/cpu_texture_atlas.hh), [GPU atlases](../include/neutrino/video/sprite/texture_atlas.hh), and [bitmasks](../include/neutrino/video/sprite/bitmask.hh); add only missing conveniences. |
+| Atlas ownership, frame rectangles, and collision masks (`include/simplex/sprite_atlas.hh`) | Replace with existing components | [CPU atlases](../include/neutrino/video/atlas/image_atlas.hh), [GPU atlases](../include/neutrino/video/sprite/texture_atlas.hh), and [bitmasks](../include/neutrino/video/atlas/bitmask.hh); add only missing conveniences. |
 | Frame animation (`include/simplex/sprite.hh`) | Replace with existing components | [Animation definitions](../include/neutrino/video/sprite/sprite_animation.hh), [playback state](../include/neutrino/video/sprite/sprite_state.hh), and [sprite builders](../include/neutrino/video/sprite/sprite_def_builder.hh). |
 | Collision math and display bridge (`include/simplex/collide/shapes.hh`, `include/simplex/collide/bridge.hh`) | Consolidate | Existing [Neutrino physics geometry](../include/neutrino/physics/geometry/shapes.hh); preserve useful test cases and explicit coordinate conversion, without another collision implementation. |
 | Application and primitive wrappers (`include/simplex/simplex.hh`, `src/simplex/simplex.cc`) | Retire after consumer migration | Neutrino's application adapter and existing SDL++/Neutrino rendering operations, with the CPU/GPU distinction defined below. |
@@ -394,7 +394,7 @@ existing assets, identifiers, registries, animation clocks, and resource owners.
 
 | Responsibility | Existing component |
 | --- | --- |
-| Editable CPU image | `sdlpp::surface`, loaded through [`load_image()`](../include/neutrino/video/image_loader.hh) or generated in memory; [`cpu_texture_atlas`](../include/neutrino/video/sprite/cpu_texture_atlas.hh) adds frame metadata when needed. |
+| Editable CPU image | `sdlpp::surface`, loaded through [`load_image()`](../include/neutrino/video/image_loader.hh) or generated in memory; [`image_atlas`](../include/neutrino/video/atlas/image_atlas.hh) adds frame metadata when needed. |
 | Define a single image, sheet, or animation | [`sprite_def_builder`](../include/neutrino/video/sprite/sprite_def_builder.hh), including `from_surface()` for generated images. |
 | Upload and resolve named frames/clips | [`sprite_set`](../include/neutrino/video/sprite/sprite_set.hh), `build_sprite_set()`, and the existing atlas/sheet registries. |
 | Share uploaded assets and own animation instances | [`acquire_sprite()`, `sprite_set_handle`, and `sprite_instance`](../include/neutrino/video/sprite/sprite_cache.hh). |

@@ -2,7 +2,7 @@
 // Created by igor on 04/07/2026.
 //
 
-#include <neutrino/video/sprite/bitmask.hh>
+#include <neutrino/video/atlas/bitmask.hh>
 
 #include <algorithm>
 #include <limits>

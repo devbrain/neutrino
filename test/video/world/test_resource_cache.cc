@@ -1,7 +1,7 @@
 #include <doctest/doctest.h>
 
 #include <neutrino/video/world/resource_cache.hh>
-#include <neutrino/video/image_loader.hh>
+#include <../../../include/neutrino/video/image/image_loader.hh>
 
 #include "test_application.hh"
 #include "video/test_images.hh"

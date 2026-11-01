@@ -14,15 +14,15 @@ TEST_SUITE("neutrino::video::sprites") {
             neutrino::sprite_sheet_id sheet;
         };
 
-        [[nodiscard]] neutrino::cpu_texture_atlas make_cpu_atlas() {
+        [[nodiscard]] neutrino::image_atlas_old make_cpu_atlas() {
             auto surface = sdlpp::surface::create_rgb(24, 8, sdlpp::pixel_format_enum::RGBA8888);
             REQUIRE(surface.has_value());
 
-            std::vector <neutrino::cpu_texture_atlas_frame> frames;
+            std::vector <neutrino::atlas_frame_old> frames;
             frames.emplace_back(neutrino::rect{0, 0, 8, 8});
             frames.emplace_back(neutrino::rect{8, 0, 8, 8});
             frames.emplace_back(neutrino::rect{16, 0, 8, 8});
-            return neutrino::cpu_texture_atlas(std::move(*surface), std::move(frames));
+            return neutrino::image_atlas_old(std::move(*surface), std::move(frames));
         }
 
         [[nodiscard]] registered_sheet make_registered_sheet() {

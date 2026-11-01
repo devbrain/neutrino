@@ -22,7 +22,7 @@
  *
  * # Vocabulary
  *
- * - **cpu_texture_atlas** -- a CPU surface plus frame rects (the asset side of an atlas).
+ * - **image_atlas** -- a CPU surface plus frame rects (the asset side of an atlas).
  * - **gpu_texture_atlas_id** -- an uploaded texture (`register_atlas`).
  * - **sprite_visual** -- one static frame: a sub-rect of an atlas plus a pivot/origin.
  *   Addressed within a sheet by @ref sprite_visual_id, or globally by @ref sprite_visual_ref
@@ -42,7 +42,7 @@
  *
  * # Theory of operation
  *
- * **Two representations.** Plain values (`cpu_texture_atlas`, `sprite_animation`,
+ * **Two representations.** Plain values (`image_atlas`, `sprite_animation`,
  * `sprite_appearance`, `sprite_def`) are what you build, hash, and serialize. `register_*`
  * turns each into an opaque **id** owned by an internal, application-scoped *sprite
  * manager*; an id is invalid before the app is initialized and after you `unregister_*`
@@ -169,7 +169,7 @@
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/sprite/atlas_loader.hh>
-#include <neutrino/video/sprite/cpu_texture_atlas.hh>
+#include <neutrino/video/atlas/image_atlas_old.hh>
 #include <neutrino/video/sprite/sprite_animation.hh>
 #include <neutrino/video/sprite/sprite_appearance.hh>
 #include <neutrino/video/sprite/sprite_cache.hh>

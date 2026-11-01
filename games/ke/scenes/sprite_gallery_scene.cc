@@ -21,7 +21,7 @@
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/sprites.hh>
-#include <neutrino/video/sprite/cpu_texture_atlas.hh>
+#include <neutrino/video/atlas/image_atlas_old.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 
 #include <ke/assets/sprites.hh>
@@ -42,12 +42,12 @@ namespace {
     neutrino::sprite_sheet_id register_sheet(neutrino::render_bundle& bundle, const rs::tile_sheet_def& tsd) {
         auto dup = tsd.image.duplicate();
         ENFORCE(dup.has_value(), "failed to duplicate sheet surface");
-        std::vector <neutrino::cpu_texture_atlas_frame> frames;
+        std::vector <neutrino::atlas_frame_old> frames;
         frames.reserve(tsd.source_rects.size());
         for (const auto& r : tsd.source_rects) {
             frames.emplace_back(r);
         }
-        neutrino::cpu_texture_atlas atlas(std::move(*dup), std::move(frames));
+        neutrino::image_atlas_old atlas(std::move(*dup), std::move(frames));
 
         const neutrino::gpu_texture_atlas_id gpu = neutrino::register_atlas(atlas);
         bundle.atlases.push_back(gpu);
@@ -99,12 +99,12 @@ namespace {
             }
         }
 
-        std::vector <neutrino::cpu_texture_atlas_frame> frames;
+        std::vector <neutrino::atlas_frame_old> frames;
         frames.reserve(count);
         for (int i = 0; i < count; ++i) {
             frames.emplace_back(neutrino::rect{i * gw, 0, gw, gh});
         }
-        neutrino::cpu_texture_atlas atlas(std::move(surf), std::move(frames));
+        neutrino::image_atlas_old atlas(std::move(surf), std::move(frames));
 
         const neutrino::gpu_texture_atlas_id gpu = neutrino::register_atlas(atlas);
         bundle.atlases.push_back(gpu);

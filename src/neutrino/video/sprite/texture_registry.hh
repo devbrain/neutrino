@@ -68,7 +68,7 @@ namespace neutrino {
              * @brief Upload a CPU texture atlas and copy its frame metadata.
              */
             gpu_texture_atlas_id create(const sdlpp::renderer& renderer,
-                                        const cpu_texture_atlas& atlas,
+                                        const image_atlas_old& atlas,
                                         atlas_texture_format format = atlas_texture_format::automatic);
 
             /**

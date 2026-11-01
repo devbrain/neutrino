@@ -1,7 +1,7 @@
 //
 // Created by igor on 14/10/2026.
 //
-#include <neutrino/video/image_loader.hh>
+#include <../../../include/neutrino/video/image/image_loader.hh>
 
 #include "loader.hh"
 #include <luxor/resources/parser/spr_parser.hh>

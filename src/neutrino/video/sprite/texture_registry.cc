@@ -57,7 +57,7 @@ namespace neutrino {
 
     gpu_texture_atlas_id texture_registry::create(
         const sdlpp::renderer& renderer,
-        const cpu_texture_atlas& atlas,
+        const image_atlas_old& atlas,
         atlas_texture_format format) {
         sdlpp::expected <sdlpp::texture, std::string> tex;
         if (format == atlas_texture_format::automatic) {

@@ -7,7 +7,7 @@
 #include <optional>
 #include <unordered_map>
 #include <failsafe/enforce.hh>
-#include <neutrino/video/sprite/atlas_packer.hh>
+#include <neutrino/video/atlas/atlas_packer.hh>
 #include "services/service_locator.hh"
 
 #define STBRP_STATIC
@@ -113,12 +113,12 @@ namespace neutrino {
         }
     }
 
-    surface_atlases pack_regions(std::span <const pack_region> regions,
+    packed_atlas pack_regions(std::span <const pack_region> regions,
                                  sdlpp::pixel_format_enum format,
                                  int max_width,
                                  int max_height,
                                  int margin,
-                                 std::optional <cpu_texture_atlas_mask_options> generate) {
+                                 std::optional <atlas_mask_options_old> generate) {
         std::vector <rect> dims;
         dims.reserve(regions.size());
         for (const auto& r : regions) {
@@ -128,7 +128,7 @@ namespace neutrino {
         auto rc = pack_atlas(dims, max_width, max_height, margin);
 
         std::vector <sdlpp::surface> pages;
-        std::vector <std::vector <cpu_texture_atlas_frame>> frames(rc.pages.size());
+        std::vector <std::vector <atlas_frame_old>> frames(rc.pages.size());
         pages.reserve(rc.pages.size());
         for (const auto& sz : rc.pages) {
             // NB: ENFORCE the has_value(), not the expected itself — ENFORCE
@@ -166,7 +166,7 @@ namespace neutrino {
             if (region.mask) {
                 frames[p.page].emplace_back(p.bounds, *region.mask);
             } else if (generate) {
-                auto m = cpu_texture_atlas_frame::evaluate_bitmask(
+                auto m = atlas_frame_old::evaluate_bitmask(
                     *region.surface, region.src, *generate);
                 if (m) {
                     frames[p.page].emplace_back(p.bounds, *m);
@@ -178,7 +178,7 @@ namespace neutrino {
             }
         }
 
-        surface_atlases out;
+        packed_atlas out;
         out.pages.reserve(pages.size());
         for (std::size_t i = 0; i < pages.size(); ++i) {
             out.pages.emplace_back(std::move(pages[i]), std::move(frames[i]));
@@ -187,12 +187,12 @@ namespace neutrino {
         return out;
     }
 
-    surface_atlases pack_surfaces(std::span <const sdlpp::surface> images,
+    packed_atlas pack_surfaces(std::span <const sdlpp::surface> images,
                                   sdlpp::pixel_format_enum format,
                                   int max_width,
                                   int max_height,
                                   int margin,
-                                  std::optional <cpu_texture_atlas_mask_options> generate) {
+                                  std::optional <atlas_mask_options_old> generate) {
         std::vector <pack_region> regions;
         regions.reserve(images.size());
         for (const auto& s : images) {
@@ -202,12 +202,12 @@ namespace neutrino {
         return pack_regions(regions, format, max_width, max_height, margin, generate);
     }
 
-    surface_atlases pack_atlases(std::span <const cpu_texture_atlas> atlases,
+    packed_atlas pack_atlases(std::span <const image_atlas_old> atlases,
                                  sdlpp::pixel_format_enum format,
                                  int max_width,
                                  int max_height,
                                  int margin,
-                                 std::optional <cpu_texture_atlas_mask_options> generate) {
+                                 std::optional <atlas_mask_options_old> generate) {
         std::vector <pack_region> regions;
         for (const auto& a : atlases) {
             for (std::size_t f = 0; f < a.frame_count(); ++f) {
@@ -224,8 +224,8 @@ namespace neutrino {
     // and the per-page cap from the renderer (default_page_cap()).
     // ------------------------------------------------------------------
 
-    surface_atlases pack_regions(std::span <const pack_region> regions, int margin,
-                                 std::optional <cpu_texture_atlas_mask_options> generate) {
+    packed_atlas pack_regions(std::span <const pack_region> regions, int margin,
+                                 std::optional <atlas_mask_options_old> generate) {
         if (regions.empty()) {
             return {};
         }
@@ -233,9 +233,9 @@ namespace neutrino {
         return pack_regions(regions, regions.front().surface->format(), cap, cap, margin, generate);
     }
 
-    surface_atlases pack_regions(std::span <const pack_region> regions,
+    packed_atlas pack_regions(std::span <const pack_region> regions,
                                  sdlpp::pixel_format_enum format, int margin,
-                                 std::optional <cpu_texture_atlas_mask_options> generate) {
+                                 std::optional <atlas_mask_options_old> generate) {
         if (regions.empty()) {
             return {};
         }
@@ -243,8 +243,8 @@ namespace neutrino {
         return pack_regions(regions, format, cap, cap, margin, generate);
     }
 
-    surface_atlases pack_surfaces(std::span <const sdlpp::surface> images, int margin,
-                                  std::optional <cpu_texture_atlas_mask_options> generate) {
+    packed_atlas pack_surfaces(std::span <const sdlpp::surface> images, int margin,
+                                  std::optional <atlas_mask_options_old> generate) {
         if (images.empty()) {
             return {};
         }
@@ -252,8 +252,8 @@ namespace neutrino {
         return pack_surfaces(images, images.front().format(), cap, cap, margin, generate);
     }
 
-    surface_atlases pack_surfaces(std::span<const sdlpp::surface> images, sdlpp::pixel_format_enum format, int margin,
-        std::optional<cpu_texture_atlas_mask_options> generate) {
+    packed_atlas pack_surfaces(std::span<const sdlpp::surface> images, sdlpp::pixel_format_enum format, int margin,
+        std::optional<atlas_mask_options_old> generate) {
         if (images.empty()) {
             return {};
         }
@@ -261,8 +261,8 @@ namespace neutrino {
         return pack_surfaces(images, format, cap, cap, margin, generate);
     }
 
-    surface_atlases pack_atlases(std::span <const cpu_texture_atlas> atlases, int margin,
-                                 std::optional <cpu_texture_atlas_mask_options> generate) {
+    packed_atlas pack_atlases(std::span <const image_atlas_old> atlases, int margin,
+                                 std::optional <atlas_mask_options_old> generate) {
         if (atlases.empty()) {
             return {};
         }
@@ -270,8 +270,8 @@ namespace neutrino {
         return pack_atlases(atlases, atlases.front().surface().format(), cap, cap, margin, generate);
     }
 
-    surface_atlases pack_atlases(std::span<const cpu_texture_atlas> atlases, sdlpp::pixel_format_enum format,
-        int margin, std::optional<cpu_texture_atlas_mask_options> generate) {
+    packed_atlas pack_atlases(std::span<const image_atlas_old> atlases, sdlpp::pixel_format_enum format,
+        int margin, std::optional<atlas_mask_options_old> generate) {
         if (atlases.empty()) {
             return {};
         }

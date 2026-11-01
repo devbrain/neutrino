@@ -119,9 +119,9 @@ namespace {
         auto surface = sdlpp::surface::create_rgb(4, 4, sdlpp::pixel_format_enum::RGBA8888);
         REQUIRE(surface.has_value());
         REQUIRE(surface->fill(sdlpp::colors::white).has_value());
-        std::vector <neutrino::cpu_texture_atlas_frame> frames;
+        std::vector <neutrino::atlas_frame_old> frames;
         frames.emplace_back(neutrino::rect{0, 0, 4, 4});
-        neutrino::cpu_texture_atlas atlas(std::move(*surface), std::move(frames));
+        neutrino::image_atlas_old atlas(std::move(*surface), std::move(frames));
         return neutrino::visual_ref(neutrino::register_sprite_sheet(atlas, neutrino::atlas_texture_format::rgba), 0);
     }
 }
@@ -154,9 +154,9 @@ TEST_SUITE("neutrino::video::draw") {
         REQUIRE(sprite_surface.has_value());
         REQUIRE(sprite_surface->put_pixel(0, 0, sdlpp::colors::white).has_value());
 
-        std::vector <neutrino::cpu_texture_atlas_frame> sprite_frames;
+        std::vector <neutrino::atlas_frame_old> sprite_frames;
         sprite_frames.emplace_back(neutrino::rect{0, 0, 4, 4});
-        neutrino::cpu_texture_atlas sprite_atlas(std::move(*sprite_surface), std::move(sprite_frames));
+        neutrino::image_atlas_old sprite_atlas(std::move(*sprite_surface), std::move(sprite_frames));
         const auto sprite_sheet = neutrino::register_sprite_sheet(sprite_atlas, neutrino::atlas_texture_format::rgba);
         const auto sprite = neutrino::visual_ref(sprite_sheet, 0);
 
@@ -237,9 +237,9 @@ TEST_SUITE("neutrino::video::draw") {
         auto surface = sdlpp::surface::create_rgb(4, 4, sdlpp::pixel_format_enum::RGBA8888);
         REQUIRE(surface.has_value());
         REQUIRE(surface->fill(sdlpp::colors::white).has_value());
-        std::vector <neutrino::cpu_texture_atlas_frame> frames;
+        std::vector <neutrino::atlas_frame_old> frames;
         frames.emplace_back(neutrino::rect{0, 0, 4, 4});
-        neutrino::cpu_texture_atlas atlas(std::move(*surface), std::move(frames));
+        neutrino::image_atlas_old atlas(std::move(*surface), std::move(frames));
         const auto sheet = neutrino::register_sprite_sheet(atlas, neutrino::atlas_texture_format::rgba);
         const auto sprite = neutrino::visual_ref(sheet, 0);
         const neutrino::point at{20, 20};

@@ -19,7 +19,7 @@
 #include <neutrino/detail/hash.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
-#include <neutrino/video/sprite/detail/id_strong_type.hh>
+#include <neutrino/detail/id_strong_type.hh>
 
 namespace neutrino {
     class sprite_sheet;
@@ -228,10 +228,10 @@ namespace neutrino {
              * @brief Construct a sheet over an uploaded atlas and copy CPU frame rects.
              *
              * One visual is created for every CPU atlas frame. The visual texture rect
-             * is copied from @c cpu_texture_atlas_frame::atlas_rect and the origin is
+             * is copied from @c atlas_frame::atlas_rect and the origin is
              * left at @c {0,0}.
              */
-            sprite_sheet(gpu_texture_atlas_id atlas, const cpu_texture_atlas& source);
+            sprite_sheet(gpu_texture_atlas_id atlas, const image_atlas_old& source);
 
             /**
              * @brief Texture atlas backing every visual in this sheet.
@@ -323,7 +323,7 @@ namespace neutrino {
      * each frame's atlas rectangle into @ref sprite_visual::texture_rect.
      */
     NEUTRINO_EXPORT sprite_sheet_id register_sprite_sheet(
-        const cpu_texture_atlas& atlas,
+        const image_atlas_old& atlas,
         atlas_texture_format format = atlas_texture_format::automatic);
 
     /**

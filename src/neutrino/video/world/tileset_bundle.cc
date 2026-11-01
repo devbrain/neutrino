@@ -17,7 +17,7 @@
 #include <failsafe/enforce.hh>
 
 #include <neutrino/video/sprites.hh>
-#include <neutrino/video/sprite/atlas_packer.hh>
+#include <neutrino/video/atlas/atlas_packer.hh>
 
 #include "video/sprite/image_decode.hh"
 
@@ -39,14 +39,14 @@ namespace neutrino {
         // palettized GPU texture cannot be sampled by the sprite draw path ("Texture
         // doesn't have a palette"); the packer converts every source on the way in. The
         // per-page cap comes from the renderer unless the caller pins one.
-        [[nodiscard]] surface_atlases pack_tiles(std::span <const pack_region> regions,
+        [[nodiscard]] packed_atlas pack_tiles(std::span <const pack_region> regions,
                                                  std::optional <dim> max_page) {
             constexpr auto format = sdlpp::pixel_format_enum::RGBA8888;
             if (!max_page) {
                 return pack_regions(regions, format, tile_gutter);
             }
             if (regions.empty()) {
-                return surface_atlases{};
+                return packed_atlas{};
             }
             return pack_regions(regions, format, max_page->width, max_page->height, tile_gutter);
         }
@@ -112,7 +112,7 @@ namespace neutrino {
             metas.push_back(tile_region{id, anchor});
         }
 
-        const surface_atlases packed = pack_tiles(regions, max_page);
+        const packed_atlas packed = pack_tiles(regions, max_page);
 
         // --- Registration phase. Each registered handle is recorded in the bundle the
         // instant it is created, and the recording vectors are reserved up front so the
@@ -128,7 +128,7 @@ namespace neutrino {
         // Upload one atlas per page and open a sheet over each.
         std::vector <sprite_sheet> sheets;
         sheets.reserve(packed.pages.size());
-        for (const cpu_texture_atlas& page : packed.pages) {
+        for (const image_atlas_old& page : packed.pages) {
             const gpu_texture_atlas_id atlas = register_atlas(page);
             bundle.atlases.push_back(atlas);
             sheets.emplace_back(atlas);

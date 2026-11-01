@@ -15,13 +15,11 @@
 #include <span>
 #include <variant>
 
-#include <sdlpp/video/surface.hh>
-
-#include <neutrino/video/image_loader.hh>
+#include <neutrino/video/image/image_loader.hh>
 #include <neutrino/world/world_common.hh>
 
 namespace neutrino::details {
-    [[nodiscard]] inline sdlpp::surface load_encoded_image(const world_image_source& src) {
+    [[nodiscard]] inline image load_encoded_image(const world_image_source& src) {
         if (const auto* mem = std::get_if <image_from_memory>(&src)) {
             return load_image(std::span <const std::uint8_t>(mem->bytes.data(), mem->bytes.size()));
         }

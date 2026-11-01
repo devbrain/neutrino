@@ -1,9 +1,9 @@
 #include <doctest/doctest.h>
-#include <neutrino/video/sprite/bitmask.hh>
+#include <neutrino/video/atlas/bitmask.hh>
 
 #include <limits>
 
-TEST_SUITE("neutrino::video::sprite::bitmask") {
+TEST_SUITE("neutrino::video::atlas::bitmask") {
     TEST_CASE("Constructor and dimensions") {
         neutrino::bitmask empty_mask;
         CHECK(empty_mask.width() == 0);

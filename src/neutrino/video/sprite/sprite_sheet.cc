@@ -28,7 +28,7 @@ namespace neutrino {
         : m_atlas(atlas) {
     }
 
-    sprite_sheet::sprite_sheet(gpu_texture_atlas_id atlas, const cpu_texture_atlas& source)
+    sprite_sheet::sprite_sheet(gpu_texture_atlas_id atlas, const image_atlas_old& source)
         : sprite_sheet(atlas) {
         m_visuals.reserve(source.frame_count());
         for (std::size_t i = 0; i < source.frame_count(); ++i) {
@@ -89,7 +89,7 @@ namespace neutrino {
     }
 
     sprite_sheet_id register_sprite_sheet(
-        const cpu_texture_atlas& atlas,
+        const image_atlas_old& atlas,
         atlas_texture_format format) {
         return register_sprite_sheet(sprite_sheet(register_atlas(atlas, format), atlas));
     }

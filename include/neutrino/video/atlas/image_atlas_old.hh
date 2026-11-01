@@ -11,9 +11,9 @@
 #include <sdlpp/video/surface.hh>
 #include <neutrino/neutrino_export.h>
 
-#include <neutrino/video/sprite/bitmask.hh>
+#include <neutrino/video/atlas/bitmask.hh>
 #include <neutrino/video/geometry_types.hh>
-#include <neutrino/video/image.hh>
+#include <neutrino/video/image/image.hh>
 #include <neutrino/video/color.hh>
 
 namespace neutrino {
@@ -26,13 +26,13 @@ namespace neutrino {
      * channel, zero-alpha pixels are transparent. Pixels with no transparency signal are
      * considered solid.
      */
-    struct cpu_texture_atlas_mask_options {
+    struct atlas_mask_options_old {
         /**
          * @brief RGB key color treated as transparent when evaluating a bitmask.
          *
          * Alpha is ignored for the key comparison.
          */
-        std::optional <neutrino::color> key_color;
+        std::optional <color> key_color;
 
         /**
          * @brief INDEX8 palette index treated as transparent when evaluating a bitmask.
@@ -44,21 +44,21 @@ namespace neutrino {
      * @brief Metadata for one frame/region inside a CPU-resident texture atlas.
      *
      * The frame does not own pixels. @ref atlas_rect identifies a rectangle inside the
-     * owning @ref cpu_texture_atlas surface. The optional @ref mask is CPU-only metadata
+     * owning @ref image_atlas surface. The optional @ref mask is CPU-only metadata
      * for per-pixel picking or collision.
      */
-    struct cpu_texture_atlas_frame {
+    struct atlas_frame_old {
         /**
          * @brief Construct a frame that references a rectangle in the atlas surface.
          */
-        explicit cpu_texture_atlas_frame(const rect& atlas_rect)
+        explicit atlas_frame_old(const rect& atlas_rect)
             : atlas_rect(atlas_rect) {
         }
 
         /**
          * @brief Construct a frame with an already-evaluated CPU bitmask.
          */
-        cpu_texture_atlas_frame(const rect& atlas_rect, const bitmask& mask)
+        atlas_frame_old(const rect& atlas_rect, const bitmask& mask)
             : atlas_rect(atlas_rect),
               mask(mask) {
         }
@@ -85,9 +85,8 @@ namespace neutrino {
         static std::optional <bitmask> evaluate_bitmask(
             const image& s,
             const rect& atlas_rect,
-            const cpu_texture_atlas_mask_options& options = {});
+            const atlas_mask_options_old& options = {});
     };
-
 
     /**
      * @brief CPU-resident texture atlas: one loaded surface plus frame metadata.
@@ -96,18 +95,18 @@ namespace neutrino {
      * resources. It is neutral enough to back sprites, bitmap fonts, tiles, and
      * backdrops. It owns CPU pixels but no GPU texture.
      */
-    class NEUTRINO_EXPORT cpu_texture_atlas {
+    class NEUTRINO_EXPORT image_atlas_old {
         public:
             /**
              * @brief Construct an atlas with no frame metadata.
              */
-            explicit cpu_texture_atlas(image&& s);
+            explicit image_atlas_old(image&& s);
 
             /**
              * @brief Construct an atlas with precomputed frame metadata.
              */
-            explicit cpu_texture_atlas(image&& s,
-                                       std::vector <cpu_texture_atlas_frame>&& frames);
+            explicit image_atlas_old(image&& s,
+                                 std::vector <atlas_frame_old>&& frames);
 
             /**
              * @brief Access the owned CPU surface.
@@ -124,17 +123,15 @@ namespace neutrino {
              *
              * @pre @p index must be less than @ref frame_count.
              */
-            [[nodiscard]] const cpu_texture_atlas_frame& frame(std::size_t index) const;
+            [[nodiscard]] const atlas_frame_old& frame(std::size_t index) const;
 
             /**
              * @brief Append frame metadata to the atlas.
              */
-            void add_frame (const cpu_texture_atlas_frame& f);
+            void add_frame(const atlas_frame_old& f);
 
         private:
             image m_surface;
-            std::vector <cpu_texture_atlas_frame> m_frames;
+            std::vector <atlas_frame_old> m_frames;
     };
-
-
 }

@@ -1,6 +1,6 @@
 #include <doctest/doctest.h>
 
-#include <neutrino/video/sprite/atlas_packer.hh>
+#include <neutrino/video/atlas/atlas_packer.hh>
 
 #include <algorithm>
 #include <cstdint>
@@ -26,7 +26,7 @@ namespace {
         std::vector<rect> v;
         v.reserve(static_cast<std::size_t>(n));
         for (int i = 0; i < n; ++i) {
-            v.push_back(rect{0, 0, 12 + (i % 5) * 6, 10 + (i % 3) * 8});
+            v.emplace_back(0, 0, 12 + (i % 5) * 6, 10 + (i % 3) * 8);
         }
         return v;
     }
@@ -45,18 +45,18 @@ namespace {
 
     // Build an atlas whose surface holds one fw x fh frame per colour, laid out
     // in a horizontal strip, with a frame rect registered for each.
-    neutrino::cpu_texture_atlas make_atlas(const std::vector<sdlpp::color>& frame_colors,
+    neutrino::image_atlas_old make_atlas(const std::vector<sdlpp::color>& frame_colors,
                                            int fw, int fh) {
         auto s = sdlpp::surface::create_rgb(fw * static_cast<int>(frame_colors.size()), fh,
                                             sdlpp::pixel_format_enum::RGBA8888);
         REQUIRE(s.has_value());
-        std::vector<neutrino::cpu_texture_atlas_frame> frames;
+        std::vector<neutrino::atlas_frame_old> frames;
         for (std::size_t i = 0; i < frame_colors.size(); ++i) {
             const rect fr{static_cast<int>(i) * fw, 0, fw, fh};
             REQUIRE(s->fill_rect(fr, frame_colors[i]).has_value());
             frames.emplace_back(fr);
         }
-        return neutrino::cpu_texture_atlas(std::move(*s), std::move(frames));
+        return neutrino::image_atlas_old(std::move(*s), std::move(frames));
     }
 }
 
@@ -283,7 +283,7 @@ TEST_SUITE("neutrino::pack_surfaces") {
         // Alpha policy (default options) -> mask from source alpha.
         const auto masked = pack_surfaces(std::span<const sdlpp::surface>{src},
                                           pixel_format_enum::RGBA8888, 64, 64, 0,
-                                          neutrino::cpu_texture_atlas_mask_options{});
+                                          neutrino::atlas_mask_options_old{});
         const auto& f = masked.pages[0].frame(0);
         REQUIRE(f.mask.has_value());
         CHECK(f.mask->get(0, 0) == true);
@@ -315,17 +315,17 @@ TEST_SUITE("neutrino::pack_surfaces") {
 
 TEST_SUITE("neutrino::pack_atlases") {
     using neutrino::pack_atlases;
-    using neutrino::cpu_texture_atlas;
+    using neutrino::image_atlas_old;
     using sdlpp::pixel_format_enum;
 
     TEST_CASE("frames from several atlases repack into one texture") {
-        std::vector<cpu_texture_atlas> atlases;
+        std::vector<image_atlas_old> atlases;
         atlases.push_back(make_atlas({{255, 0, 0, 255}, {0, 255, 0, 255}}, 8, 8)); // 2 frames
         atlases.push_back(make_atlas({{0, 0, 255, 255}}, 6, 10));                  // 1 frame
         // atlas-major frame order: atlas0.f0, atlas0.f1, atlas1.f0
         const std::vector<sdlpp::color> want{{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
 
-        const auto res = pack_atlases(std::span<const cpu_texture_atlas>{atlases},
+        const auto res = pack_atlases(std::span<const image_atlas_old>{atlases},
                                       pixel_format_enum::RGBA8888, 256, 256, 1);
 
         REQUIRE(res.placements.size() == 3);   // total frames across all atlases
@@ -347,12 +347,12 @@ TEST_SUITE("neutrino::pack_atlases") {
         neutrino::bitmask m(8, 8);
         m.set(0, 0, true);
         m.set(1, 1, false);
-        std::vector<neutrino::cpu_texture_atlas_frame> frames;
+        std::vector<neutrino::atlas_frame_old> frames;
         frames.emplace_back(rect{0, 0, 8, 8}, m);
-        std::vector<cpu_texture_atlas> atlases;
+        std::vector<image_atlas_old> atlases;
         atlases.emplace_back(std::move(*s), std::move(frames));
 
-        const auto res = pack_atlases(std::span<const cpu_texture_atlas>{atlases},
+        const auto res = pack_atlases(std::span<const image_atlas_old>{atlases},
                                       pixel_format_enum::RGBA8888, 64, 64, 0);
 
         REQUIRE(res.pages.size() == 1);
@@ -364,18 +364,18 @@ TEST_SUITE("neutrino::pack_atlases") {
     }
 
     TEST_CASE("empty atlas set yields no pages") {
-        const auto res = pack_atlases(std::span<const cpu_texture_atlas>{},
+        const auto res = pack_atlases(std::span<const image_atlas_old>{},
                                       pixel_format_enum::RGBA8888, 64, 64, 1);
         CHECK(res.pages.empty());
         CHECK(res.placements.empty());
     }
 
     TEST_CASE("convenience overload derives format and cap from the first atlas") {
-        std::vector<cpu_texture_atlas> atlases;
+        std::vector<image_atlas_old> atlases;
         atlases.push_back(make_atlas({{255, 0, 0, 255}, {0, 0, 255, 255}}, 8, 8));
         const std::vector<sdlpp::color> want{{255, 0, 0, 255}, {0, 0, 255, 255}};
 
-        const auto res = pack_atlases(std::span<const cpu_texture_atlas>{atlases}, 1); // no format/w/h
+        const auto res = pack_atlases(std::span<const image_atlas_old>{atlases}, 1); // no format/w/h
 
         REQUIRE(res.placements.size() == 2);
         for (const auto& p : res.placements) {
