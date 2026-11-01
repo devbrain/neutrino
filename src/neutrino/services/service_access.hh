@@ -23,7 +23,7 @@ namespace neutrino {
 
     [[nodiscard]] inline sprites_manager& require_sprites_manager() {
         auto* m = service_locator::instance().get_sprites_manager();
-        ENFORCE(m != nullptr)("sprites_manager is not available; is the application ready?");
+        ENFORCE(m != nullptr, "sprites_manager is not available; is the application ready?");
         return *m;
     }
     [[nodiscard]] inline sprites_manager* maybe_sprites_manager() noexcept {
@@ -32,7 +32,7 @@ namespace neutrino {
 
     [[nodiscard]] inline texture_registry& require_texture_registry() {
         auto* r = service_locator::instance().get_texture_registry();
-        ENFORCE(r != nullptr)("texture_registry is not available; is the application ready?");
+        ENFORCE(r != nullptr, "texture_registry is not available; is the application ready?");
         return *r;
     }
     [[nodiscard]] inline texture_registry* maybe_texture_registry() noexcept {
@@ -41,7 +41,7 @@ namespace neutrino {
 
     [[nodiscard]] inline sound_system& require_sound_system() {
         auto* s = service_locator::instance().get_sound_system();
-        ENFORCE(s != nullptr)("sound_system is not available; is the application ready?");
+        ENFORCE(s != nullptr, "sound_system is not available; is the application ready?");
         return *s;
     }
     [[nodiscard]] inline sound_system* maybe_sound_system() noexcept {
@@ -58,7 +58,7 @@ namespace neutrino {
 
     [[nodiscard]] inline sprite_cache& require_sprite_cache() {
         auto* c = service_locator::instance().get_sprite_cache();
-        ENFORCE(c != nullptr)("sprite_cache is not available; is the application ready?");
+        ENFORCE(c != nullptr, "sprite_cache is not available; is the application ready?");
         return *c;
     }
     [[nodiscard]] inline sprite_cache* maybe_sprite_cache() noexcept {

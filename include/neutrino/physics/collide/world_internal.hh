@@ -291,7 +291,7 @@ namespace neutrino::physics::detail {
                 return moving_shape_t{shp};
             } else {
                 // segment or triangle: not a valid mover (movers are aabb | circle)
-                ENFORCE(false)("a moving body/bullet must be an aabb or circle");
+                ENFORCE(false, "a moving body/bullet must be an aabb or circle");
                 return moving_shape_t{aabb{}}; // unreachable; satisfies the return type
             }
         }, s);

@@ -30,7 +30,7 @@ namespace neutrino {
         // otherwise report "no such frame" for a set that was simply never acquired. Separate the
         // two failures: this one means the HANDLE is wrong, not the key.
         void enforce_leased(const void* set, bool expired, const char* what) {
-            ENFORCE(set != nullptr && !expired)("sprite_set_handle: ", what, " on an empty or expired lease (no set acquired)");
+            ENFORCE(set != nullptr && !expired, "sprite_set_handle: ", what, " on an empty or expired lease (no set acquired)");
         }
     } // namespace
 

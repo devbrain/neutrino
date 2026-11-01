@@ -48,7 +48,7 @@ namespace neutrino {
     }
 
     sprite_def_builder& sprite_clip_builder::end_clip() {
-        ENFORCE(m_parent != nullptr)("sprite_clip_builder has null parent");
+        ENFORCE(m_parent != nullptr, "sprite_clip_builder has null parent");
         m_parent->commit_clip(std::move(m_clip));
         return *m_parent;
     }
@@ -385,7 +385,7 @@ namespace neutrino {
             if (doc.contains("meta") && doc["meta"].contains("image")) {
                 const std::string img_name = doc["meta"]["image"].get <std::string>();
                 std::vector <std::uint8_t> bytes = resolver(img_name);
-                ENFORCE(!bytes.empty())("sprite_def_builder: resolver returned empty data for image '", img_name, "'");
+                ENFORCE(!bytes.empty(), "sprite_def_builder: resolver returned empty data for image '", img_name, "'");
                 b.from_memory(std::move(bytes));
             }
         }
@@ -399,14 +399,14 @@ namespace neutrino {
     }
 
     void sprite_def_builder::validate() const {
-        ENFORCE(!m_def.image.empty())("sprite_def_builder: image source must be specified before build()");
+        ENFORCE(!m_def.image.empty(), "sprite_def_builder: image source must be specified before build()");
         for (const auto& c : m_def.clips) {
-            ENFORCE(!c.name.empty())("sprite_def_builder: clip name cannot be empty");
-            ENFORCE(!c.frames.empty())("sprite_def_builder: clip '", c.name, "' has no frames");
+            ENFORCE(!c.name.empty(), "sprite_def_builder: clip name cannot be empty");
+            ENFORCE(!c.frames.empty(), "sprite_def_builder: clip '", c.name, "' has no frames");
             for (const auto& f : c.frames) {
-                ENFORCE(!f.visual.empty())("sprite_def_builder: clip '", c.name, "' contains a frame with empty visual name");
-                ENFORCE(f.duration > sprite_animation_duration::zero())
-                    ("sprite_def_builder: clip '", c.name, "' frame duration must be positive");
+                ENFORCE(!f.visual.empty(), "sprite_def_builder: clip '", c.name, "' contains a frame with empty visual name");
+                ENFORCE(f.duration > sprite_animation_duration::zero(),
+                    "sprite_def_builder: clip '", c.name, "' frame duration must be positive");
             }
         }
     }

@@ -41,7 +41,7 @@ namespace {
     // per frame, recording the atlas + sheet in @p bundle for teardown.
     neutrino::sprite_sheet_id register_sheet(neutrino::render_bundle& bundle, const rs::tile_sheet_def& tsd) {
         auto dup = tsd.image.duplicate();
-        ENFORCE(dup.has_value())("failed to duplicate sheet surface");
+        ENFORCE(dup.has_value(), "failed to duplicate sheet surface");
         std::vector <neutrino::cpu_texture_atlas_frame> frames;
         frames.reserve(tsd.source_rects.size());
         for (const auto& r : tsd.source_rects) {
@@ -84,7 +84,7 @@ namespace {
         constexpr int gh = 8;
 
         auto se = neutrino::image::create_rgb(count * gw, gh, neutrino::pixel_format::RGBA8888);
-        ENFORCE(se.has_value())("failed to create font surface");
+        ENFORCE(se.has_value(), "failed to create font surface");
         neutrino::image surf = std::move(*se);
         (void) surf.fill(neutrino::color{0, 0, 0, 0}); // transparent
 

@@ -30,8 +30,8 @@ namespace neutrino {
         // than acquiring against a null cache if used before the app is ready.
         resource_cache& located_cache() {
             resource_cache* cache = service_locator::instance().get_resource_cache();
-            ENFORCE(cache != nullptr)
-                ("world_renderer: no resource_cache is available; is the application ready?");
+            ENFORCE(cache != nullptr,
+                "world_renderer: no resource_cache is available; is the application ready?");
             return *cache;
         }
 
@@ -196,7 +196,7 @@ namespace neutrino {
     }
 
     void world_renderer::switch_to(const world& next) {
-        ENFORCE(m_cache != nullptr)("world_renderer: switch_to on a moved-from renderer");
+        ENFORCE(m_cache != nullptr, "world_renderer: switch_to on a moved-from renderer");
         // The temporary acquires every bundle of `next` before this move-assignment
         // releases the current level's, so a tileset shared across the switch never
         // drops to refcount zero (and is never rebuilt).

@@ -11,7 +11,7 @@ class sdl_io_stream_impl : public musac::io_stream {
 public:
     explicit sdl_io_stream_impl(SDL_IOStream* stream)
         : m_stream(stream) {
-        ENFORCE(m_stream != nullptr)("Cannot wrap null SDL_IOStream");
+        ENFORCE(m_stream != nullptr, "Cannot wrap null SDL_IOStream");
     }
 
     ~sdl_io_stream_impl() override {

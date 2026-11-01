@@ -71,7 +71,7 @@ namespace rs {
             // it rather than relying on the old `if (w > 0 && h > 0)` guard, which quietly skipped
             // the whole fill (a black playfield) when the block was missing.
             const neutrino::rect fr = fill.require_frame_rect(fill_block);
-            ENFORCE(fr.w > 0 && fr.h > 0)("ke: KE_FILL block ", fill_block, " has degenerate size");
+            ENFORCE(fr.w > 0 && fr.h > 0, "ke: KE_FILL block ", fill_block, " has degenerate size");
             for (int y = 16; y < ke_screen_h; y += fr.h) {
                 for (int x = 0; x < ke_screen_w; x += fr.w) {
                     put(fill, fill_block, x, y, 1.0f);

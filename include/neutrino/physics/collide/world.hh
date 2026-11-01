@@ -1537,8 +1537,8 @@ namespace neutrino::physics {
             [[nodiscard]] std::optional <contact> snap_to_ground(collider_id cid, float max_drop) {
                 ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
                 auto& self = m_bodies_storage[cid.value];
-                ENFORCE(self.kind == detail::body_kind::KINEMATIC)("snap_to_ground: actor must be kinematic");
-                ENFORCE(max_drop >= 0.0f)("snap_to_ground: max_drop must be non-negative");
+                ENFORCE(self.kind == detail::body_kind::KINEMATIC, "snap_to_ground: actor must be kinematic");
+                ENFORCE(max_drop >= 0.0f, "snap_to_ground: max_drop must be non-negative");
 
                 // Sweep the actor's shape straight down; cast(idx, BODY, ...) excludes self and uses
                 // the actor's own filter, so we snap onto exactly the solids it would slide on.
@@ -1590,8 +1590,8 @@ namespace neutrino::physics {
             [[nodiscard]] std::optional <contact> step_up(collider_id cid, vec step, float max_step) {
                 ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
                 auto& self = m_bodies_storage[cid.value];
-                ENFORCE(self.kind == detail::body_kind::KINEMATIC)("step_up: actor must be kinematic");
-                ENFORCE(max_step >= 0.0f)("step_up: max_step must be non-negative");
+                ENFORCE(self.kind == detail::body_kind::KINEMATIC, "step_up: actor must be kinematic");
+                ENFORCE(max_step >= 0.0f, "step_up: max_step must be non-negative");
 
                 // Only the horizontal part carries the actor over a lip (vertical intent is gravity/jump).
                 const vec horiz = step - euler::dot(step, m_cfg.up) * m_cfg.up;
@@ -1663,7 +1663,7 @@ namespace neutrino::physics {
              */
             [[nodiscard]] footing ground_support(collider_id cid, float max_drop) const {
                 ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
-                ENFORCE(max_drop >= 0.0f)("ground_support: max_drop must be non-negative");
+                ENFORCE(max_drop >= 0.0f, "ground_support: max_drop must be non-negative");
                 const auto& self = m_bodies_storage[cid.value];
 
                 // Footprint = the actor's enclosing box; "down" is -up, "tangent" the perpendicular
@@ -2174,18 +2174,18 @@ namespace neutrino::physics {
             // The grid shares the world's extent (one coordinate frame). Require bounds and
             // an exact tiling -- a non-dividing extent is a config error, caught here loudly
             // rather than silently clamping tiles to a mismatched box.
-            ENFORCE(m_cfg.bounds)("world_config.grid requires world_config.bounds (the shared extent)");
+            ENFORCE(m_cfg.bounds, "world_config.grid requires world_config.bounds (the shared extent)");
             const aabb& b = *m_cfg.bounds;
             const vec ts = m_cfg.grid->tile_size;
-            ENFORCE(ts.x() > 0.0f && ts.y() > 0.0f)("grid tile_size must be positive");
+            ENFORCE(ts.x() > 0.0f && ts.y() > 0.0f, "grid tile_size must be positive");
             const float fcols = (b.max.x() - b.min.x()) / ts.x();
             const float frows = (b.max.y() - b.min.y()) / ts.y();
             const auto cols = static_cast <uint32_t>(std::lround(fcols));
             const auto rows = static_cast <uint32_t>(std::lround(frows));
-            ENFORCE(cols > 0 && rows > 0)("grid extent (bounds / tile_size) must be at least one cell");
+            ENFORCE(cols > 0 && rows > 0, "grid extent (bounds / tile_size) must be at least one cell");
             ENFORCE(std::abs(fcols - static_cast <float>(cols)) < 1e-3f
-                && std::abs(frows - static_cast <float>(rows)) < 1e-3f)
-                ("world_config.bounds must be an integer multiple of grid tile_size");
+                && std::abs(frows - static_cast <float>(rows)) < 1e-3f,
+                "world_config.bounds must be an integer multiple of grid tile_size");
             m_static_grid.emplace(grid <detail::tile>::from_tile_size(b.min, ts, cols, rows));
         }
     }
@@ -2256,19 +2256,19 @@ namespace neutrino::physics {
     }
 
     inline collider_id world::add(entity_id_t eid, const tile_body& body) {
-        ENFORCE(m_static_grid)("add(tile_body) requires a grid (world_config.grid)");
+        ENFORCE(m_static_grid, "add(tile_body) requires a grid (world_config.grid)");
         const aabb bound = detail::tight_box(body.shape);
         const vec centre = bound.center();
         const uint32_t cell = m_static_grid->to_cell(centre);
-        ENFORCE(cell != grid<detail::tile>::INVALID_CELL)("tile centre is outside the grid bounds");
+        ENFORCE(cell != grid<detail::tile>::INVALID_CELL, "tile centre is outside the grid bounds");
         // A tile is only stored in (and only found via) its centre's cell, so it must fit
         // within that cell -- otherwise queries through the overhang would silently miss it.
-        ENFORCE(detail::contains(m_static_grid->cell_box_at(cell), bound))
-            ("tile shape must fit within a single grid cell");
+        ENFORCE(detail::contains(m_static_grid->cell_box_at(cell), bound),
+            "tile shape must fit within a single grid cell");
         // Mergeable (static) geometry is baked once on the first run(); it cannot be added
         // afterwards (the bake is destructive and not re-run). Non-mergeable tiles are free.
-        ENFORCE(!(body.mergeable && m_compiled))
-            ("mergeable tiles must be added before the first run() (static geometry is baked once)");
+        ENFORCE(!(body.mergeable && m_compiled),
+            "mergeable tiles must be added before the first run() (static geometry is baked once)");
         m_static_grid->set(centre,
                            detail::tile{body.shape, body.material, body.filter, eid, body.mergeable});
         // Stamp the post-set generation: a later overwrite/clear of this cell bumps it,
@@ -2331,13 +2331,13 @@ namespace neutrino::physics {
             // TILE: reshape in place. The new shape must still fit the same cell
             // (no re-bucketing) -- else it could overhang into a cell that won't find it.
             const aabb nb = detail::tight_box(shape);
-            ENFORCE(detail::contains(m_static_grid->cell_box_at(cid.value), nb))
-                ("set_shape: a tile's new shape must fit within its cell");
+            ENFORCE(detail::contains(m_static_grid->cell_box_at(cid.value), nb),
+                "set_shape: a tile's new shape must fit within its cell");
             // A mergeable tile is frozen after the one-shot bake -- otherwise a mergeable
             // tile that survived the bake (e.g. a slope, not an aabb) could be reshaped into a
             // cell-filling BLOCK aabb and smuggle un-baked static geometry past add()'s guard.
-            ENFORCE(!(m_compiled && m_static_grid->at(cid.value)->mergeable))
-                ("a mergeable tile cannot be reshaped after the first run() (static geometry is baked once)");
+            ENFORCE(!(m_compiled && m_static_grid->at(cid.value)->mergeable),
+                "a mergeable tile cannot be reshaped after the first run() (static geometry is baked once)");
             m_static_grid->at(cid.value)->shape = shape;
         }
     }
@@ -2345,11 +2345,11 @@ namespace neutrino::physics {
     inline void world::set_velocity(collider_id cid, const vec& v) {
         ENFORCE(is_valid(cid));
         // Tiles are static -- no velocity. (A moving tile is a kinematic body, not a tile.)
-        ENFORCE(cid.type_id != collider_id::TILE)("a tile has no velocity");
+        ENFORCE(cid.type_id != collider_id::TILE, "a tile has no velocity");
         if (cid.type_id == collider_id::BODY) {
             auto& stored = m_bodies_storage[cid.value];
             // A static body has no velocity; kinematic actors AND carriers (scripted paths) do.
-            ENFORCE(stored.kind != detail::body_kind::STATIC)("a static body has no velocity");
+            ENFORCE(stored.kind != detail::body_kind::STATIC, "a static body has no velocity");
             stored.velocity = v;
         } else {
             auto& stored = m_bullets_storage[cid.value];
@@ -2360,14 +2360,14 @@ namespace neutrino::physics {
     inline void world::set_surface_velocity(collider_id cid, const vec& v) {
         ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
         auto& stored = m_bodies_storage[cid.value];
-        ENFORCE(stored.kind == detail::body_kind::CARRIER)("surface_velocity is carrier-only");
+        ENFORCE(stored.kind == detail::body_kind::CARRIER, "surface_velocity is carrier-only");
         stored.surface_velocity = v;
     }
 
     inline void world::set_target(collider_id cid, const vec& target) {
         ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
         auto& stored = m_bodies_storage[cid.value];
-        ENFORCE(stored.kind == detail::body_kind::KINEMATIC)("set_target is for kinematic actors");
+        ENFORCE(stored.kind == detail::body_kind::KINEMATIC, "set_target is for kinematic actors");
         stored.target = target;
     }
 
@@ -2384,12 +2384,12 @@ namespace neutrino::physics {
     inline move_result world::move_by(collider_id cid, units::displacement delta, units::duration dt) {
         ENFORCE(is_valid(cid) && cid.type_id == collider_id::BODY);
         auto& stored = m_bodies_storage[cid.value];
-        ENFORCE(stored.kind == detail::body_kind::KINEMATIC)("move_by is for kinematic actors");
+        ENFORCE(stored.kind == detail::body_kind::KINEMATIC, "move_by is for kinematic actors");
         // A non-positive dt has no meaningful reading: the move would apply no displacement (the
         // solver integrates velocity*dt) yet still clear a standing target, so the call would
         // silently do nothing WHILE cancelling existing intent -- the worst of both. dt scales the
         // effective-velocity read-back; if you want a pure teleport, use set_shape.
-        ENFORCE(dt.value > 0.0f)("move_by/move_to needs dt > 0 (got ", dt.value, ")");
+        ENFORCE(dt.value > 0.0f, "move_by/move_to needs dt > 0 (got ", dt.value, ")");
         const vec before = detail::tight_box(stored.shape).center();
         // Drive the move through the same solver run() uses: set the step velocity so velocity*dt
         // == delta, slide (which clamps to geometry), then zero it so a later run() won't re-apply
@@ -2476,7 +2476,7 @@ namespace neutrino::physics {
         }
         // TILE: tiles are baked into merged static geometry on the first run(), so a per-tile
         // slot would not survive the merge. Owner data belongs on a body or bullet.
-        ENFORCE(false)("a tile has no owner slot -- use a static_body for owned geometry");
+        ENFORCE(false, "a tile has no owner slot -- use a static_body for owned geometry");
     }
 
     inline std::uint64_t world::get_user_data(collider_id cid) const {

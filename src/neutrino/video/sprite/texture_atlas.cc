@@ -27,7 +27,7 @@ namespace neutrino {
             return;
         }
         if (auto* sprites = maybe_sprites_manager()) {
-            ENFORCE(!sprites->uses(atlas))("Cannot unregister texture atlas while a sprite sheet still uses it");
+            ENFORCE(!sprites->uses(atlas), "Cannot unregister texture atlas while a sprite sheet still uses it");
         }
         registry->erase(atlas);
     }

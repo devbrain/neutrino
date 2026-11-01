@@ -33,9 +33,9 @@ namespace neutrino {
         // instead, so that policy stays here); the encoded arms share load_encoded_image.
         sdlpp::surface decode(const world_image& img) {
             if (const auto* surf = std::get_if <image_from_surface>(&img.source)) {
-                ENFORCE(surf->pixels != nullptr)("build_sprite_set: image_from_surface has null pixels");
+                ENFORCE(surf->pixels != nullptr, "build_sprite_set: image_from_surface has null pixels");
                 auto converted = surf->pixels->convert(sdlpp::pixel_format_enum::RGBA8888);
-                ENFORCE(converted.has_value())("build_sprite_set: cannot convert source surface");
+                ENFORCE(converted.has_value(), "build_sprite_set: cannot convert source surface");
                 return std::move(*converted);
             }
             return details::load_encoded_image(img.source);
@@ -65,7 +65,7 @@ namespace neutrino {
                     continue;
                 }
                 // Present already: allowed only when overriding a grid frame (once).
-                ENFORCE(grid_names.erase(v.name) > 0)("duplicate sprite visual name: ", v.name);
+                ENFORCE(grid_names.erase(v.name) > 0, "duplicate sprite visual name: ", v.name);
                 resolved[it->second] = v;
             }
             return resolved;
@@ -203,55 +203,55 @@ namespace neutrino {
 
     sprite_visual_ref sprite_set::require_visual(std::string_view name) const {
         const auto v = visual(name);
-        ENFORCE(v.has_value())("sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
+        ENFORCE(v.has_value(), "sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
         return *v;
     }
 
     sprite_visual_ref sprite_set::require_visual(std::size_t index) const {
         const auto v = visual(index);
-        ENFORCE(v.has_value())("sprite_set: visual index ", index, " out of range (", visual_count(), ")");
+        ENFORCE(v.has_value(), "sprite_set: visual index ", index, " out of range (", visual_count(), ")");
         return *v;
     }
 
     rect sprite_set::require_frame_rect(std::string_view name) const {
         const auto r = frame_rect(name);
-        ENFORCE(r.has_value())("sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
+        ENFORCE(r.has_value(), "sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
         return *r;
     }
 
     rect sprite_set::require_frame_rect(std::size_t index) const {
         const auto r = frame_rect(index);
-        ENFORCE(r.has_value())("sprite_set: visual index ", index, " out of range (", visual_count(), ")");
+        ENFORCE(r.has_value(), "sprite_set: visual index ", index, " out of range (", visual_count(), ")");
         return *r;
     }
 
     point sprite_set::require_origin(std::string_view name) const {
         const auto o = origin(name);
-        ENFORCE(o.has_value())("sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
+        ENFORCE(o.has_value(), "sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
         return *o;
     }
 
     point sprite_set::require_origin(std::size_t index) const {
         const auto o = origin(index);
-        ENFORCE(o.has_value())("sprite_set: visual index ", index, " out of range (", visual_count(), ")");
+        ENFORCE(o.has_value(), "sprite_set: visual index ", index, " out of range (", visual_count(), ")");
         return *o;
     }
 
     sprite_metrics sprite_set::require_metrics(std::string_view name) const {
         const auto m = metrics(name);
-        ENFORCE(m.has_value())("sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
+        ENFORCE(m.has_value(), "sprite_set: no visual named '", name, "' (", visual_count(), " visuals)");
         return *m;
     }
 
     sprite_metrics sprite_set::require_metrics(std::size_t index) const {
         const auto m = metrics(index);
-        ENFORCE(m.has_value())("sprite_set: visual index ", index, " out of range (", visual_count(), ")");
+        ENFORCE(m.has_value(), "sprite_set: visual index ", index, " out of range (", visual_count(), ")");
         return *m;
     }
 
     sprite_animation_id sprite_set::require_clip(std::string_view name) const {
         const auto c = clip(name);
-        ENFORCE(c.has_value())("sprite_set: no clip named '", name, "'");
+        ENFORCE(c.has_value(), "sprite_set: no clip named '", name, "'");
         return *c;
     }
 
@@ -294,8 +294,8 @@ namespace neutrino {
             // defaulted to the packed size, so trimmed() reads false and logical_bounds_at() no
             // longer contains the visible pixels it is supposed to enclose.
             ENFORCE(trim.x >= 0 && trim.y >= 0
-                    && trim.x + v.src.w <= source.width && trim.y + v.src.h <= source.height)
-                ("sprite visual '", v.name, "': trimmed rect ", v.src.w, "x", v.src.h,
+                    && trim.x + v.src.w <= source.width && trim.y + v.src.h <= source.height,
+                "sprite visual '", v.name, "': trimmed rect ", v.src.w, "x", v.src.h,
                  " at offset (", trim.x, ",", trim.y, ") does not fit its source_size ",
                  source.width, "x", source.height,
                  " (a trim_offset requires a matching source_size)");
@@ -312,14 +312,14 @@ namespace neutrino {
         std::unordered_set <std::string> seen_clips;
         set.clips_by_name.reserve(def.clips.size());
         for (const sprite_clip_def& c : def.clips) {
-            ENFORCE(seen_clips.insert(c.name).second)("duplicate sprite clip name: ", c.name);
+            ENFORCE(seen_clips.insert(c.name).second, "duplicate sprite clip name: ", c.name);
 
             std::vector <sprite_animation_frame> frames;
             frames.reserve(c.frames.size());
             for (const sprite_frame_def& f : c.frames) {
                 const auto it = set.visuals_by_name.find(f.visual);
-                ENFORCE(it != set.visuals_by_name.end())
-                    ("sprite clip '", c.name, "' references unknown visual: ", f.visual);
+                ENFORCE(it != set.visuals_by_name.end(),
+                    "sprite clip '", c.name, "' references unknown visual: ", f.visual);
                 frames.push_back(make_sprite_animation_frame(
                     make_sprite_appearance(it->second, f.flip), f.duration));
             }

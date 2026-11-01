@@ -281,8 +281,8 @@ namespace neutrino {
             sprite_flip flip,
             float scale,
             float rotation) {
-            ENFORCE(std::isfinite(scale) && scale > 0.0f)("sprite scale must be finite and greater than zero");
-            ENFORCE(std::isfinite(rotation))("sprite rotation must be finite");
+            ENFORCE(std::isfinite(scale) && scale > 0.0f, "sprite scale must be finite and greater than zero");
+            ENFORCE(std::isfinite(rotation), "sprite rotation must be finite");
 
             const auto& visual = sheet.visual(visual_id);
             const auto& atlas = registry.get(sheet.atlas());
@@ -882,9 +882,9 @@ namespace neutrino {
 
     namespace detail {
         void draw_texture(const texture& t, const render_rect& dst, const texture_draw_params& params) {
-            ENFORCE(!has_diagonal_flip(params.flip))("draw_texture: diagonal flip is not supported; "
+            ENFORCE(!has_diagonal_flip(params.flip), "draw_texture: diagonal flip is not supported; "
                                                      "use draw_texture_quad");
-            ENFORCE(std::isfinite(params.rotation_degrees))("texture rotation must be finite");
+            ENFORCE(std::isfinite(params.rotation_degrees), "texture rotation must be finite");
 
             auto& native = drawable(t);
             const tint_scope tint(native, params.tint);

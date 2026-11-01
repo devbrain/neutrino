@@ -19,7 +19,7 @@ namespace rs {
     }
 
     ke_assets& require_ke_assets() {
-        ENFORCE(g_assets != nullptr)("ke_assets has not been published");
+        ENFORCE(g_assets != nullptr, "ke_assets has not been published");
         return *g_assets;
     }
 

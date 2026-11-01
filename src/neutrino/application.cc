@@ -81,7 +81,7 @@ namespace neutrino {
     application::application(const application_config& cfg)
         : m_pimpl(std::make_unique <impl>(cfg)) {
         auto& services = service_locator::instance();
-        ENFORCE(!services.get_application())("neutrino::application was already initialized");
+        ENFORCE(!services.get_application(), "neutrino::application was already initialized");
 
         // Validate the scheduler ONCE, here, rather than per frame: every one of these silently
         // breaks the simulation in a way that is hard to trace back to the config.
@@ -92,16 +92,16 @@ namespace neutrino {
         // Non-finite values are rejected too: a NaN period makes every comparison false, which
         // presents as a silently frozen game.
         const fixed_step_config& fx = m_pimpl->m_cfg.fixed;
-        ENFORCE(std::isfinite(fx.period.count()) && fx.period.count() > 0.0f)
-            ("application_config.fixed.period must be finite and > 0 (got ", fx.period.count(), ")");
-        ENFORCE(fx.max_substeps > 0)
-            ("application_config.fixed.max_substeps must be > 0 (got ", fx.max_substeps, ")");
+        ENFORCE(std::isfinite(fx.period.count()) && fx.period.count() > 0.0f,
+            "application_config.fixed.period must be finite and > 0 (got ", fx.period.count(), ")");
+        ENFORCE(fx.max_substeps > 0,
+            "application_config.fixed.max_substeps must be > 0 (got ", fx.max_substeps, ")");
         // Only positivity is required. A clamp SMALLER than the period is legitimate -- e.g. a
         // 120 Hz render cadence driving a 60 Hz simulation -- because the accumulator carries
         // across frames: successive clamped deltas still add up to a step. Only a non-positive
         // clamp truly starves it.
-        ENFORCE(std::isfinite(fx.max_frame.count()) && fx.max_frame.count() > 0.0f)
-            ("application_config.fixed.max_frame must be finite and > 0 (got ", fx.max_frame.count(), ")");
+        ENFORCE(std::isfinite(fx.max_frame.count()) && fx.max_frame.count() > 0.0f,
+            "application_config.fixed.max_frame must be finite and > 0 (got ", fx.max_frame.count(), ")");
     }
 
     application::~application() {

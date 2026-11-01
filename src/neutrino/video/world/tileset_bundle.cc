@@ -67,7 +67,7 @@ namespace neutrino {
             if (const auto* s = std::get_if <image_from_surface>(&img->source)) {
                 // Already decoded: borrow the producer's surface. The world_image (and its
                 // shared_ptr) outlives this synchronous decode->pack, so no copy is needed.
-                ENFORCE(s->pixels != nullptr)("image_from_surface has null pixels");
+                ENFORCE(s->pixels != nullptr, "image_from_surface has null pixels");
                 p = s->pixels.get();
             } else {
                 surfaces.push_back(details::load_encoded_image(img->source));

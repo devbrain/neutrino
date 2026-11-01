@@ -116,7 +116,7 @@ namespace neutrino::physics {
         }
         ENFORCE(*index >= 0 && static_cast<std::size_t>(*index) < m_pool.size());
         dynamic_aabb_node& n = m_pool[static_cast <std::size_t>(*index)];
-        ENFORCE(n.height != FREE_NODE_HEIGHT)("Double free of aabb_node"); // guard against double free
+        ENFORCE(n.height != FREE_NODE_HEIGHT, "Double free of aabb_node"); // guard against double free
         n.height = FREE_NODE_HEIGHT; // mark slot as free
         n.next = m_free_head; // push onto the free list
         m_free_head = index;

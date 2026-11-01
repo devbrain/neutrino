@@ -39,7 +39,7 @@ namespace neutrino {
 
         [[nodiscard]] image read_current_target() {
             SDL_Surface* raw = SDL_RenderReadPixels(get_renderer().get(), nullptr);
-            ENFORCE(raw != nullptr)("reading the render target back failed: ", SDL_GetError());
+            ENFORCE(raw != nullptr, "reading the render target back failed: ", SDL_GetError());
             return image(raw);
         }
     }
@@ -104,8 +104,8 @@ namespace neutrino {
             return std::nullopt;
         }
         ENFORCE(access != texture_access::streaming
-                || SDL_BYTESPERPIXEL(static_cast <SDL_PixelFormat>(format)) == 4)
-            ("streaming textures must use a 32-bit pixel format");
+                || SDL_BYTESPERPIXEL(static_cast <SDL_PixelFormat>(format)) == 4,
+            "streaming textures must use a 32-bit pixel format");
         auto tex = sdlpp::texture::create(get_renderer(), format, to_sdl(access), size.width, size.height);
         if (!tex) {
             return std::nullopt;
@@ -116,7 +116,7 @@ namespace neutrino {
 
     texture texture::adopt(sdlpp::texture raw, texture_access access) {
         const auto size = raw.get_size();
-        ENFORCE(size.has_value())("adopting a texture whose size cannot be queried");
+        ENFORCE(size.has_value(), "adopting a texture whose size cannot be queried");
         return texture(std::move(raw), dim{size->width, size->height}, access);
     }
 
@@ -129,25 +129,25 @@ namespace neutrino {
     }
 
     void texture::update(std::span <const std::uint32_t> pixels) {
-        ENFORCE(m_access == texture_access::streaming)("update() needs a streaming texture");
-        ENFORCE(pixels.size() == static_cast <std::size_t>(m_size.width) * static_cast <std::size_t>(m_size.height))
-            ("update() needs exactly width * height pixels");
+        ENFORCE(m_access == texture_access::streaming, "update() needs a streaming texture");
+        ENFORCE(pixels.size() == static_cast <std::size_t>(m_size.width) * static_cast <std::size_t>(m_size.height),
+            "update() needs exactly width * height pixels");
         const auto result = m_texture.update(pixels.data(), m_size.width * static_cast <int>(sizeof(std::uint32_t)));
-        ENFORCE(result.has_value())("texture update failed");
+        ENFORCE(result.has_value(), "texture update failed");
     }
 
     pixel_lock texture::lock() {
-        ENFORCE(m_access == texture_access::streaming)("lock() needs a streaming texture");
+        ENFORCE(m_access == texture_access::streaming, "lock() needs a streaming texture");
         auto locked = m_texture.lock();
-        ENFORCE(locked.has_value())("texture lock failed");
+        ENFORCE(locked.has_value(), "texture lock failed");
         return pixel_lock(&m_texture, locked->first, locked->second, m_size.width, m_size.height);
     }
 
     target_scope texture::bind(std::optional <color> clear) {
-        ENFORCE(m_access == texture_access::target)("bind() needs a target texture");
+        ENFORCE(m_access == texture_access::target, "bind() needs a target texture");
         auto* r = get_renderer().get();
         SDL_Texture* previous = SDL_GetRenderTarget(r);
-        ENFORCE(SDL_SetRenderTarget(r, m_texture.get()))("binding the render target failed: ", SDL_GetError());
+        ENFORCE(SDL_SetRenderTarget(r, m_texture.get()), "binding the render target failed: ", SDL_GetError());
         target_scope scope(previous);
         if (clear) {
             // Clearing uses the renderer's draw colour; restore it so a bind leaves it untouched.
@@ -161,10 +161,10 @@ namespace neutrino {
     }
 
     image texture::to_image() const {
-        ENFORCE(m_access == texture_access::target)("to_image() needs a target texture");
+        ENFORCE(m_access == texture_access::target, "to_image() needs a target texture");
         auto* r = get_renderer().get();
         SDL_Texture* previous = SDL_GetRenderTarget(r);
-        ENFORCE(SDL_SetRenderTarget(r, m_texture.get()))("binding the render target failed: ", SDL_GetError());
+        ENFORCE(SDL_SetRenderTarget(r, m_texture.get()), "binding the render target failed: ", SDL_GetError());
         target_scope restore(previous);
         return read_current_target();
     }

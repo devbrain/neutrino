@@ -12,12 +12,12 @@
 namespace neutrino {
     namespace {
         [[nodiscard]] std::size_t checked_bit_count(int width, int height) {
-            ENFORCE(width >= 0 && height >= 0)("bitmask dimensions must be non-negative");
+            ENFORCE(width >= 0 && height >= 0, "bitmask dimensions must be non-negative");
 
             const auto w = static_cast <std::size_t>(width);
             const auto h = static_cast <std::size_t>(height);
             const auto max_int = static_cast <std::size_t>(std::numeric_limits <int>::max());
-            ENFORCE(h == 0 || w <= max_int / h)("bitmask dimensions are too large");
+            ENFORCE(h == 0 || w <= max_int / h, "bitmask dimensions are too large");
             return w * h;
         }
 

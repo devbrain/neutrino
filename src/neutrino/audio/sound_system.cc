@@ -113,7 +113,7 @@ namespace neutrino {
         if (!active()) return;
 
         auto io = audio_detail::io_from_file(path);
-        ENFORCE(io != nullptr)("Failed to open audio file: " + path);
+        ENFORCE(io != nullptr, "Failed to open audio file: " + path);
         play_music(std::move(io), loop, fade_time);
     }
 
@@ -263,13 +263,13 @@ namespace neutrino {
         // Validate the path eagerly so a typo surfaces at load time, not at
         // the first play() deep inside the game.
         auto io = audio_detail::io_from_file(path);
-        ENFORCE(io != nullptr)("Failed to open audio file: " + path);
+        ENFORCE(io != nullptr, "Failed to open audio file: " + path);
         return sound_effect(path);
     }
 
     music_stream load_music(const std::string& path) {
         auto io = audio_detail::io_from_file(path);
-        ENFORCE(io != nullptr)("Failed to open audio file: " + path);
+        ENFORCE(io != nullptr, "Failed to open audio file: " + path);
 
         auto* ss = maybe_sound_system();
         if (!ss || !ss->active()) {
@@ -282,7 +282,7 @@ namespace neutrino {
 
     sound_effect load_sfx(std::istream& is) {
         auto data = audio_detail::read_all(is);
-        ENFORCE(!data->empty())("Failed to read audio data from stream");
+        ENFORCE(!data->empty(), "Failed to read audio data from stream");
         // Lazy cache: the effect's first play() decodes + resamples it to the device rate once
         // and caches that, so replays (and overlapping channels) cost no decode or resampler,
         // while an effect that is never played is never resampled. Long or undecodable samples
@@ -292,7 +292,7 @@ namespace neutrino {
 
     music_stream load_music(std::istream& is) {
         auto data = audio_detail::read_all(is);
-        ENFORCE(!data->empty())("Failed to read audio data from stream");
+        ENFORCE(!data->empty(), "Failed to read audio data from stream");
 
         auto* ss = maybe_sound_system();
         if (!ss || !ss->active()) {
@@ -319,7 +319,7 @@ namespace neutrino {
 
     void play_music(std::istream& is, bool loop, std::chrono::microseconds fade_time) {
         auto data = audio_detail::read_all(is);
-        ENFORCE(!data->empty())("Failed to read audio data from stream");
+        ENFORCE(!data->empty(), "Failed to read audio data from stream");
         if (auto* ss = maybe_sound_system()) {
             ss->play_music(audio_detail::io_from_buffer(std::move(data)), loop, fade_time);
         }
@@ -356,9 +356,9 @@ namespace neutrino {
         int priority
     ) {
         auto* ss = maybe_sound_system();
-        ENFORCE(ss != nullptr)("Cannot register decoder: application is not running");
+        ENFORCE(ss != nullptr, "Cannot register decoder: application is not running");
         auto registry = ss->registry();
-        ENFORCE(registry != nullptr)("Decoders registry is null");
+        ENFORCE(registry != nullptr, "Decoders registry is null");
         registry->register_decoder(accept_func, factory_func, priority);
     }
 
@@ -368,9 +368,9 @@ namespace neutrino {
         const std::function <std::unique_ptr <musac::decoder>()>& factory_func,
         int priority
     ) {
-        ENFORCE(!codec_id.empty())("register_decoder_once needs a non-empty codec id");
+        ENFORCE(!codec_id.empty(), "register_decoder_once needs a non-empty codec id");
         auto* ss = maybe_sound_system();
-        ENFORCE(ss != nullptr)("Cannot register decoder: application is not running");
+        ENFORCE(ss != nullptr, "Cannot register decoder: application is not running");
         if (!ss->claim_codec_id(codec_id)) {
             return false; // already registered under this id -- nothing to do
         }

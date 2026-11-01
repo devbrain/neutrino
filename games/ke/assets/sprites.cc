@@ -21,7 +21,7 @@ namespace rs {
 
     neutrino::sprite_def to_sprite_def(const tile_sheet_def& sheet, bool top_left_origin) {
         auto dup = sheet.image.duplicate();
-        ENFORCE(dup.has_value())("failed to duplicate sheet surface");
+        ENFORCE(dup.has_value(), "failed to duplicate sheet surface");
         auto shared = std::make_shared <const neutrino::image>(std::move(*dup));
 
         neutrino::sprite_def def;
@@ -55,7 +55,7 @@ namespace rs {
         void define_set(const game_resources& gr, const char* sheet_name,
                         neutrino::sprite_set_handle& set, bool top_left_origin = false) {
             const auto it = gr.tile_sheets.find(sheet_name);
-            ENFORCE(it != gr.tile_sheets.end())("ke: no", sheet_name, "sheet -- set undefined");
+            ENFORCE(it != gr.tile_sheets.end(), "ke: no", sheet_name, "sheet -- set undefined");
 
             ke_assets& a = require_ke_assets();
             const neutrino::sprite_def def = to_sprite_def(it->second, top_left_origin);

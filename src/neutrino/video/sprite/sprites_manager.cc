@@ -47,8 +47,8 @@ namespace neutrino {
     void sprites_manager::validate_sheet(const sprite_sheet& sheet) const {
         auto* textures = service_locator::instance().get_texture_registry();
         ENFORCE(textures != nullptr);
-        ENFORCE(sheet.atlas().valid())("Sprite sheet must reference a valid texture atlas");
-        ENFORCE(textures->contains(sheet.atlas()))("Sprite sheet texture atlas is not registered");
+        ENFORCE(sheet.atlas().valid(), "Sprite sheet must reference a valid texture atlas");
+        ENFORCE(textures->contains(sheet.atlas()), "Sprite sheet texture atlas is not registered");
     }
 
     void sprites_manager::validate_appearance(const sprite_appearance& appearance) const {
@@ -56,8 +56,8 @@ namespace neutrino {
             return;
         }
 
-        ENFORCE(m_sheets.contains(appearance.visual.sheet))("Sprite visual sheet is not registered");
-        ENFORCE(m_sheets.get(appearance.visual.sheet).contains(appearance.visual.visual))(
+        ENFORCE(m_sheets.contains(appearance.visual.sheet), "Sprite visual sheet is not registered");
+        ENFORCE(m_sheets.get(appearance.visual.sheet).contains(appearance.visual.visual),
             "Sprite visual id is not part of the referenced sheet");
     }
 
@@ -90,7 +90,7 @@ namespace neutrino {
             return;
         }
 
-        ENFORCE(!uses(id))("Cannot unregister sprite sheet while it is still used");
+        ENFORCE(!uses(id), "Cannot unregister sprite sheet while it is still used");
         m_sheets.erase(id);
     }
 
@@ -114,7 +114,7 @@ namespace neutrino {
             return;
         }
 
-        ENFORCE(!uses(id))("Cannot unregister sprite animation while it is still used");
+        ENFORCE(!uses(id), "Cannot unregister sprite animation while it is still used");
         m_animations.erase(id);
     }
 

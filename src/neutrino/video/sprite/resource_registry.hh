@@ -41,7 +41,7 @@ namespace neutrino::details {
                     return key;
                 }
 
-                ENFORCE(false)("Resource registry id space exhausted");
+                ENFORCE(false, "Resource registry id space exhausted");
                 return Id{};
             }
 

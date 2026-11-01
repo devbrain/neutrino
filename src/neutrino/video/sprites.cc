@@ -19,7 +19,7 @@ namespace neutrino {
 
     sprite_visual_ref visual_ref(sprite_sheet_id sheet, std::string_view name) {
         auto visual = find_visual_ref(sheet, name);
-        ENFORCE(visual.has_value())("Sprite visual name is not bound");
+        ENFORCE(visual.has_value(), "Sprite visual name is not bound");
         return *visual;
     }
 

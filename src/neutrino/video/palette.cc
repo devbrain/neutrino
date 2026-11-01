@@ -7,8 +7,8 @@
 
 namespace neutrino {
     palette load_palette(std::span <const std::uint8_t> bytes, palette_encoding enc) {
-        ENFORCE(!bytes.empty())("Can not create an empty palette");
-        ENFORCE(bytes.size() % 3 == 0)("Number of bytes in the palette should be divisible by 3");
+        ENFORCE(!bytes.empty(), "Can not create an empty palette");
+        ENFORCE(bytes.size() % 3 == 0, "Number of bytes in the palette should be divisible by 3");
         const std::size_t n = bytes.size() / 3;
         ENFORCE(n <= 256)("Can not create a palette with more than 256 entries, got ")(n);
 
@@ -19,7 +19,7 @@ namespace neutrino {
 
         const auto expand = [enc](std::uint8_t v) -> std::uint8_t {
             if (enc == palette_encoding::vga6) {
-                ENFORCE(v < 64)("VGA6 palette is corrupted");
+                ENFORCE(v < 64, "VGA6 palette is corrupted");
                 return static_cast <std::uint8_t>((v << 2) | (v >> 4));
             }
             return v;
