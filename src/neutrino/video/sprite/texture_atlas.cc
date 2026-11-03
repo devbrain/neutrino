@@ -10,14 +10,14 @@
 #include "video/sprite/texture_registry.hh"
 
 namespace neutrino {
-    gpu_texture_atlas_id register_atlas(
-        const image_atlas_old& atlas,
+    atlas_id register_atlas(
+        image_atlas&& atlas,
         atlas_texture_format format) {
-        return require_texture_registry().create(
-            service_locator::instance().get_renderer(), atlas, format);
+        return require_texture_registry().add(
+            service_locator::instance().get_renderer(), std::move(atlas), format);
     }
 
-    void unregister_atlas(gpu_texture_atlas_id atlas) {
+    void unregister_atlas(atlas_id atlas) {
         if (!atlas.valid()) {
             return;
         }
@@ -30,5 +30,9 @@ namespace neutrino {
             ENFORCE(!sprites->uses(atlas), "Cannot unregister texture atlas while a sprite sheet still uses it");
         }
         registry->erase(atlas);
+    }
+
+    dim picture_size(atlas_id atlas, std::size_t picture_idx) {
+        return require_texture_registry().picture_size(atlas, picture_idx);
     }
 }

@@ -30,24 +30,28 @@ the *current* sprite types, which §9 replaces.
                                                 │
                                                 │ build_atlas          (CPU, load time)
                                                 ▼
-                                          image_atlas {atlas_id, pages,
-                                                       regions: atlas + page + dest + id}
+                                          image_atlas {atlas_id, pictures 0..n-1}
+                                                (storage: pages + one placement
+                                                 {page, rect} per picture)
                                                 │            ▲
-            LOAD: the game keeps atlas_regions  │            │ with_palette (recolour)
-            and defines sprites from them       │
-                                                │ register_atlas(std::move(atlas))
+        LOAD: the game keeps atlas_addresses    │            │ with_palette (recolour)
+        {atlas, picture_idx} and defines        │
+        sprites from them                       │ register_atlas(std::move(atlas))  -- consumes it
                                                 ▼
- ──────────────── registry: atlas_id → page textures ─────────────────  GPU, registry-owned
+ ───── registry: atlas_id → {page textures, placements} ─────  GPU, registry-owned
                                                 │
-                     sprite = frames {region, duration, flip} (+ loop); a still = 1 frame
+                     sprite = frames {address, duration, flip} (+ loop); a still = 1 frame
                                                 │
                      sprite_player (per actor playhead) ──► draw_sprite(position, …)
-                                                          region → registry[atlas].pages[page] + dest
+                                       address → registry.get(atlas, picture_idx) → {texture, rect}
 ```
 
-Loading never touches the GPU: a region is a complete address from the moment
-`build_atlas` returns, because the atlas's `atlas_id` is assigned then. `register_atlas`
-later attaches the page textures to that same id.
+An atlas is a **list of pictures**: picture `i` is bank entry `i`. Pages are how the
+pictures are stored, not how they are named. Loading never touches the GPU: an address
+`{atlas, picture_idx}` is valid from the moment `build_atlas` returns, because the atlas's
+`atlas_id` is assigned then. `register_atlas` later consumes the CPU atlas and keeps its
+page textures and placements under that same id, so every address taken during loading
+becomes drawable.
 
 The sprite half of the diagram is the **target** of [§9](#9-sprite-layer-redesign). Today
 the path from upload to screen still goes through `sprite_sheet` / `sprite_visual` /
@@ -74,10 +78,13 @@ pick another word. *Sheet, visual, appearance, clip/animation, state, instance, 
 | **bank** | Many images, each with the game's id (`image_bank`). | registered resources |
 | **palette** | Up to 256 colours for indexed images; refcounted by SDL, so many images share one. Recolouring = swapping the palette. | — |
 | **decoder** | A function from bytes to pixels: `image_decoder` (onyx) → `image`, `image_bank_decoder` → `image_bank`. | — |
-| **region** | One picture's complete address: `{atlas, page, dest, id}` (`atlas_region`). Valid from load time; drawable once its atlas is registered. | an animation step |
-| **atlas** | Pages (images) plus a flat list of regions over them (`image_atlas`), identified by an `atlas_id` assigned when it is built. | one page; a GPU object; a JSON descriptor |
-| **page** | One image of an atlas = one GPU texture. A field/index, not a type. | — |
-| **texture** | GPU pixels: `texture` (render targets, streaming) or a registry-owned atlas page (looked up by `atlas_id` + page). | CPU pixels |
+| **picture** | One entry of an atlas, numbered by position: picture `i` is bank entry `i`. `picture_count()`, `picture_size(i)`. | a page; a sprite |
+| **address** | Which picture: `atlas_address {atlas, picture_idx}`. The handle the game keeps; valid from load time, drawable once its atlas is registered. | a rect; a page |
+| **region** | An address plus the game's id (`atlas_region`), as returned by `region(i)` / `find_by_id`. | an animation step |
+| **placement** | Where a picture is stored: `{page, rect}`. Internal to the atlas and the registry; the game never holds one. | an address |
+| **atlas** | An indexed list of pictures (`image_atlas`), identified by an `atlas_id` assigned when it is built. Short-lived on the CPU: load, define sprites, upload. | one page; a GPU object; a JSON descriptor |
+| **page** | One image of an atlas = one GPU texture. Storage, not addressing: an index inside a placement. | — |
+| **texture** | GPU pixels: `texture` (render targets, streaming) or a registry-owned atlas page (reached through an address). | CPU pixels |
 | **sheet** | `sprite_sheet`: named/indexed visuals over one uploaded texture. | a CPU image |
 | **visual** | One drawable picture: texture rect + pivot + trim (`sprite_visual`). | — |
 | **appearance** | A visual + flip + visibility: *what* to draw, statically. | — |
@@ -165,43 +172,60 @@ Rules:
 ### 3.3 Atlas — `video/atlas/`
 
 ```cpp
-class atlas_id;                   // strong type (details::id_strong_type), minted by build_atlas
+class atlas_id;                   // atlas/atlas_id.hh: strong type, minted by build_atlas
 
-struct atlas_region {
-    atlas_id atlas;               // which atlas -- known at load time, before any GPU
-    unsigned page = 0;            // which page of it
-    rect     dest;                // where on that page
-    uint32_t id = 0;              // the game's id, carried from the bank entry
+struct atlas_address {            // which picture -- known at load time, before any GPU
+    atlas_id    atlas;
+    std::size_t picture_idx;      // == bank position
+};
+
+struct atlas_region : atlas_address {
+    uint32_t id;                  // the game's id, carried from the bank entry
 };
 
 class image_atlas {
-    atlas_id                  id() const;              // assigned by build_atlas, kept on move
-    std::vector<image>        pages;
-    std::vector<atlas_region> regions;                 // regions[i] == bank entry i
-    const atlas_region&         region(size_t i) const;
+    atlas_id    id() const;                                     // assigned by build_atlas, kept on move
+    std::size_t picture_count() const;                          // == bank size
+    dim         picture_size(std::size_t i) const;
+    const atlas_region&         region(std::size_t i) const;
     std::optional<atlas_region> find_by_id(uint32_t id) const;  // first match
+  private:                        // storage, read only by build_atlas and the upload
+    std::vector<image>           pages;
+    std::vector<atlas_placement> placements;                    // {page, rect}, placements[i] == picture i
 };
 
-image_atlas build_atlas(const image_bank&, atlas_texture_format = automatic,
+image_atlas build_atlas(const image_bank&, std::optional<pixel_format> = {},
                         std::optional<dim> max_page = {});
+image_atlas build_atlas(const image&, std::optional<pixel_format> = {});   // one picture, one page
 image_atlas with_palette(const image_atlas&, const palette&);
 ```
 
 | Header | Contents |
 |---|---|
 | `bitmask.hh` | `bitmask`: 1 bit per pixel, `overlaps(other, dx, dy)`; `make_bitmask(image, rect)` builds one on demand. |
-| `image_atlas.hh` | `atlas_region`, `image_atlas`. |
+| `atlas_id.hh` | `atlas_id`. |
+| `image_atlas.hh` | `atlas_address`, `atlas_region`, `image_atlas`, `build_atlas`. |
 | `atlas_builder.hh` | `build_atlas`, `with_palette`. |
 
 Rules:
 
-- **A region is a complete address.** It names its atlas (`atlas_id`), the page and the
-  rect, so the game can store it from load time on and draw it after upload; nothing has
-  to be resolved later. Region `i` is bank entry `i`, whatever page it landed on.
+- **An atlas is a list of pictures; pages are storage.** The packer cuts the pictures into
+  pages that fit the GPU's texture limit, but nobody addresses by page: a different page
+  limit would move pictures between pages without changing any address.
+- **The address is `{atlas, picture_idx}`.** The game stores it from load time on and
+  draws it after upload. The rect is not in the address: it lives in the atlas's
+  placement table (and, after upload, in the registry), which can bounds-check a bad or
+  stale address. Picture `i` is bank entry `i`, whatever page it landed on.
+- **Placements are one flat table.** `placements[i] = {page, rect}` for every picture, so
+  a lookup is O(1) however many pictures each page holds.
+- **Sizes.** `picture_size(i)` reads the placement; it needs no renderer, so sprite
+  definitions and headless tools use it before upload.
 - **The id is the game's key.** `find_by_id(id)` returns the region carrying it, or
   nullopt; ids are opaque and may repeat, in which case the first region (lowest
   position) wins. Formats whose numbers are their positions (brix tiles) use
   `region(i)` directly.
+- **The CPU atlas is short-lived.** Load, define sprites from its addresses, upload. The
+  upload consumes it, so its rects are never kept twice.
 - **The atlas id is minted at build time** from an engine-wide counter (no renderer
   needed) and is preserved by moves. It is a `details::id_strong_type`, like every other
   engine handle.
@@ -224,23 +248,25 @@ Rules:
 - **Slicing is not decoding.** One image with an externally known layout (a uniform grid)
   is sliced by `sprite_grid`/explicit rects in the sprite layer, without repacking.
 
-### 3.4 GPU upload — `video/sprite/texture_atlas.hh` (target)
+### 3.4 GPU upload — `video/sprite/texture_atlas.hh`
 
 | Name | What |
 |---|---|
-| `register_atlas(image_atlas&&)` | Uploads every page and stores the textures in the registry **under the atlas's existing `atlas_id`**. Returns nothing new: every region taken from the atlas during loading becomes drawable. The CPU pixels are released after upload. |
-| `unregister_atlas(atlas_id)` | Releases the atlas's textures. |
-| `draw_sprite(pos, const atlas_region&)` | `registry[region.atlas].pages[region.page]`, source rect `region.dest`. One hash lookup by atlas id; the rect travels in the region. |
+| `register_atlas(image_atlas&&, atlas_texture_format = automatic)` | **Consumes** the CPU atlas: uploads every page and moves the placement table into the registry, **under the atlas's existing `atlas_id`** (returned for convenience). Every address taken from the atlas during loading becomes drawable; nothing is repacked. |
+| `unregister_atlas(atlas_id)` | Releases the atlas's textures and placements. |
+| `picture_size(atlas_id, i)` | A picture's size after upload (before upload: `image_atlas::picture_size`). |
+| `draw_sprite(pos, atlas_address)` *(planned)* | `registry.get(atlas, picture_idx)` → `{page texture, rect}`: one hash lookup by atlas id, then two indexed reads. |
 
-- **One handle per atlas, pages internal.** This replaces the earlier "one
-  `atlas_texture_id` per page" decision: with regions carrying their page, nobody outside
-  the registry needs a per-page handle.
-- The registry maps `atlas_id` → page textures with a hash map: the id is minted by
-  `build_atlas`, not by a registry slot.
-- Drawing a region whose atlas is not registered (yet, or any more) fails through
-  `DRAW_CHECK`, like any other bad draw.
-- Today: `register_atlas(const image_atlas_old&, atlas_texture_format)` returns one
-  `gpu_texture_atlas_id` for the single page.
+- **One handle per atlas, pages internal.** The registry is
+  `unordered_map<atlas_id, gpu_texture_atlas>`; a `gpu_texture_atlas` holds the page
+  textures and the placement table. The id is minted by `build_atlas`, not by a registry
+  slot.
+- **The registry owns the geometry.** Without rects a texture registry could not draw
+  anything, so the rects live there for the life of the atlas, and one query returns
+  texture and rect together. Because the address is an index, the registry rejects an
+  out-of-range or stale address, and an atlas could be reloaded under the same id.
+- Drawing an address whose atlas is not registered (yet, or any more) fails through
+  `DRAW_CHECK`, like any other bad draw *(planned)*.
 
 ### 3.5 Sprite sheet and visuals — `video/sprite/sprite_sheet.hh` (current; replaced by §9)
 
@@ -318,13 +344,13 @@ releases them in dependency order: **states → animations → sheets → textur
 | Key | Scope | Who assigns | Example |
 |---|---|---|---|
 | **`id`** | one bank / one atlas | the game (usually the file's number); opaque, may repeat | brix sprite number 0x42 |
-| **`atlas_region`** | the whole program | `build_atlas` (atlas id + page + rect) | what sprites, side tables and the draw call hold |
-| **position** `i` | one bank / one atlas | order of bank entries | `region(i)` for formats numbered by position |
+| **`atlas_address`** | the whole program | `build_atlas` (atlas id + picture position) | what sprites, side tables and the draw call hold |
+| **position** `i` | one bank / one atlas | order of bank entries; it is the address's `picture_idx` | `region(i)` for formats numbered by position |
 | **name** | one `sprite_def` / `sprite_set` (current) | the author | `"walk_3"` |
 
-The game connects its ids to regions at load time (`find_by_id`, or `region(i)`); the
-engine connects regions to GPU textures at upload (`atlas_id` → pages). Neither side
-needs the other's key.
+The game connects its ids to addresses at load time (`find_by_id`, or `region(i)`); the
+engine connects addresses to GPU textures and rects at upload (`atlas_id` → pages +
+placements). Neither side needs the other's key.
 
 ---
 
@@ -349,20 +375,22 @@ Status: **done** = in the working tree, **planned** = agreed, not yet applied,
 | Current | Target | Status |
 |---|---|---|
 | `video/sprite/{bitmask,atlas_packer,cpu_texture_atlas}.hh` | `video/atlas/{bitmask,atlas_packer,image_atlas}.hh` | done (uncommitted) |
-| `cpu_texture_atlas` → `image_atlas` (one page) | `image_atlas` meaning **all pages** + regions | planned |
-| `packed_atlas`, `frame_ref`, `locate` | merged into `image_atlas` (`regions[i].page`) | planned |
-| `atlas_frame` (`atlas_rect`, `mask`) | `atlas_region` (`atlas`, `page`, `dest`, `id`) — no mask | `page`/`dest`/`id` done; `atlas` planned |
-| `image_atlas::surface()`, `frame()`, `frame_count()`, `add_frame()` | `pages`, `region()`, `regions.size()`, `add_region()` | planned |
+| `cpu_texture_atlas` → `image_atlas` (one page) | `image_atlas`: a list of pictures over **all pages** | done (uncommitted) |
+| `packed_atlas`, `frame_ref`, `locate` | merged into `image_atlas` (`placements[i].page`, private) | done (uncommitted) |
+| `atlas_frame` (`atlas_rect`, `mask`) | `atlas_address {atlas, picture_idx}` + `atlas_region` (address + `id`); rect in the private `atlas_placement {page, rect}` — no mask | done (uncommitted) |
+| `image_atlas::surface()`, `frame()`, `frame_count()`, `add_frame()` | `region(i)`, `picture_count()`, `picture_size(i)`; pages private | done (uncommitted) |
+| `image_atlas_old` | removed | done (uncommitted) |
 | `atlas_frame::evaluate_bitmask`, `atlas_mask_options` | `make_bitmask(image, rect)` in `bitmask.hh`, on demand | planned |
-| `atlas_packer.hh`, `pack_*`, stb_rect_pack | removed; placement private to `build_atlas` | planned |
+| `atlas_packer.hh`, `pack_*`, stb_rect_pack | removed; placement private to `build_atlas` | files deleted (uncommitted; `image_loader.hh`, `tileset_bundle` still to port); stb_rect_pack planned |
 | frame-image draft (`indexed_image`, `rgba_image`, `frame<T>`, `*_frames`, `decoded_frames`, `to_*_image`, `frame_image.hh`) | `image` + `image_builder` + `image_bank` | planned |
 | `atlas_decoder` | `image_bank_decoder` | planned |
 | `load_image_atlas` | `load_atlas` | planned |
 | `atlas_output` (draft) | `atlas_texture_format` | planned |
-| `gpu_texture_atlas_id` (one page) | `atlas_id`: one per atlas, minted by `build_atlas`; the per-page `atlas_texture_id` is dropped | planned |
-| `register_atlas(const image_atlas_old&, format)` → id | `register_atlas(image_atlas&&)`: attaches the page textures to the atlas's id | planned |
-| `image_atlas::find_by_id` → `optional<size_t>` | → `optional<atlas_region>` | planned |
-| `video/sprite/detail/id_strong_type.hh` | `neutrino/detail/id_strong_type.hh` (atlas sits below sprite) | planned |
+| `gpu_texture_atlas_id` (one page) | `atlas_id`: one per atlas, minted by `build_atlas`; the per-page `atlas_texture_id` is dropped | done in the registry (uncommitted); sprite layer still to port |
+| `register_atlas(const image_atlas_old&, format)` → id | `register_atlas(image_atlas&&, format)`: consumes the atlas, keeps textures + placements under its id | done (uncommitted) |
+| `gpu_texture_atlas {texture, format, width, height}` | `gpu_texture_atlas {page textures, placements}`; `texture_registry::get(atlas, picture_idx)` → `{texture, rect}` | done (uncommitted) |
+| `image_atlas::find_by_id` → `optional<size_t>` | → `optional<atlas_region>` | done (uncommitted) |
+| `video/sprite/detail/id_strong_type.hh` | `neutrino/detail/id_strong_type.hh` (atlas sits below sprite); `operator<<` for every id | done (uncommitted) |
 | `image_bank_builder::add_empty`, default `id = 0` on `add` | removed; `add(img, id)` requires the id | done (uncommitted) |
 | `atlas_sink`, `frame_info`, `frame_format`, `atlas_layout`, `decode_image_atlas` (draft in `image_loader.hh`) | removed | planned |
 | sdlpp `surface`: no colour key | `set_color_key` / `color_key` | planned |
@@ -438,19 +466,27 @@ playhead owned by the actor and advanced with `update(dt)`, and `draw_tile(pos, 
    takes the id with no default, and there are no placeholder entries (`add_empty` removed).
 5. **An atlas has an identity from build time.** `build_atlas` mints an `atlas_id` from an
    engine-wide counter; no GPU is involved.
-6. **A region is the picture's complete address**: `atlas_region {atlas, page, dest, id}`.
-   `find_by_id` returns `optional<atlas_region>`; `region(i)` returns the same thing by
-   position. Sprites, side tables and draw calls hold regions.
-7. **Upload attaches textures to the existing id.** `register_atlas(image_atlas&&)` stores
-   the page textures under the atlas's `atlas_id`; one handle per atlas, pages internal.
-   The per-page `atlas_texture_id` (earlier "option 1") and `gpu_texture_atlas_id` are
-   dropped.
-8. **Drawing resolves the region**: `registry[region.atlas].pages[region.page]` +
-   `region.dest`. A region of an unregistered atlas fails through `DRAW_CHECK`.
+6. **An atlas is a list of pictures; the address is `{atlas, picture_idx}`** (decided
+   2026-11-03, replacing "a region carries `{atlas, page, dest, id}`"). Pages are storage;
+   each picture has a placement `{page, rect}` in one flat, private table. `find_by_id`
+   returns `optional<atlas_region>` (the address + the game's id); `region(i)` returns the
+   same thing by position. Sprites, side tables and draw calls hold addresses.
+7. **Upload consumes the atlas.** `register_atlas(image_atlas&&)` keeps the page textures
+   and moves the placement table into the registry under the atlas's `atlas_id`; one
+   handle per atlas, pages internal. The CPU atlas is short-lived (load → define → upload),
+   so rects are not kept twice. The per-page `atlas_texture_id` (earlier "option 1") and
+   `gpu_texture_atlas_id` are dropped.
+8. **Drawing resolves the address**: `registry.get(atlas, picture_idx)` → `{page texture,
+   rect}`, one query. An address of an unregistered atlas, or out of range, fails through
+   `DRAW_CHECK`.
 9. **Strong types reuse `details::id_strong_type`** + `details::id_access` (the existing
    pattern of `gpu_texture_atlas_id`, `sprite_sheet_id`, …). The header moves from
    `video/sprite/detail/` to `neutrino/detail/`, next to `hash.hh`, because `atlas/` sits
-   below `sprite/`.
+   below `sprite/`. A hidden-friend `operator<<` on the base prints every id (for
+   `ENFORCE` messages) without exposing the raw value.
+10. **Picture sizes come from either side.** `image_atlas::picture_size(i)` before upload
+    (no renderer needed, so headless code keeps the atlas alive), `picture_size(atlas, i)`
+    from the registry after. One name, `picture_size` / `picture_count`, at every level.
 
 ### 9.3 How brix looks with it
 
@@ -468,7 +504,7 @@ image_bank load_blocks(std::span<const uint8_t> bytes, const palette& pal) {
 }
 image_atlas blocks = build_atlas(load_blocks(dm.load(BLOCKS), pal));
 
-// DEFINE SPRITES (no GPU): object_templates becomes a table of sprites over regions
+// DEFINE SPRITES (no GPU): object_templates becomes a table of sprites over addresses
 const sprite GEM1          = still(blocks.region(1));
 const sprite GEM_EXPLOSION = sequence(blocks, 14, 19, configured::gem_explosion_duration(),
                                       /*loop=*/false);
@@ -487,8 +523,9 @@ Gone from brix: the hand-built `SDL_Surface`, `video_assets::texture_atlas`, the
 
 ### 9.4 Open points
 
-1. **Pivot.** Move the hotspot into the bank entry and the region (`point pivot`), so a
-   region carries everything `draw_sprite` needs -- or keep it in the game's side table?
+1. **Pivot.** Move the hotspot into the bank entry and the placement (`point pivot`), so
+   the registry returns everything `draw_sprite` needs -- or keep it in the game's side
+   table, or in the sprite's frames?
 2. **Playhead advance.** `update(dt)` returning "finished" (brix), or a clock-based player
    (start time + the app clock) with `finished()`?
 3. **Fate of the asset path.** `sprite_def` / `sprite_def_builder` / `build_sprite_set` /
@@ -498,7 +535,10 @@ Gone from brix: the hand-built `SDL_Surface`, `video_assets::texture_atlas`, the
 4. **Draw effects for brix.** `draw_tile_shrinked`, `draw_tile_sunken`, `draw_tile_offset_*`
    need a destination size and a source sub-rect in `sprite_draw_params`.
 5. **Recolouring.** brix's 6 font colourways and KE's per-level palettes: `with_palette`
-   per colourway gives a new atlas (new `atlas_id`, new regions) -- or a palette swap on a
-   registered atlas that keeps the regions valid?
-6. **The world path.** `tileset_bundle`, `render_bundle` and `world_image` share these
+   per colourway gives a new atlas (new `atlas_id`, new addresses) -- or a palette swap on
+   a registered atlas that keeps the addresses valid?
+6. **Does `atlas_region` keep the game's id?** The id is only a lookup key; once found,
+   the game keeps the address. `find_by_id` could return a bare `atlas_address`, leaving
+   the id in the bank and the atlas's sorted index only.
+7. **The world path.** `tileset_bundle`, `render_bundle` and `world_image` share these
    types; review the world subsystem before porting it.

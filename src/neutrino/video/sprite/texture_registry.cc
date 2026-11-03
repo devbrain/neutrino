@@ -3,6 +3,7 @@
 //
 
 #include "texture_registry.hh"
+#include "video/atlas/atlas_id_gen.hh"
 
 #include <utility>
 
@@ -21,77 +22,119 @@ namespace neutrino {
             }
             return surface.format();
         }
-
-        // Atlases keep SDL's own texture defaults (behaviour-preserving): adopt() applies none.
-        [[nodiscard]] gpu_texture_atlas make_atlas_record(sdlpp::texture tex, atlas_texture_format format,
-                                                          texture_access access = texture_access::fixed) {
-            auto wrapped = texture::adopt(std::move(tex), access);
-            const dim size = wrapped.size();
-            return gpu_texture_atlas{std::move(wrapped), format, size.width, size.height};
-        }
     }
 
-    gpu_texture_atlas_id texture_registry::make_id(std::uint32_t value) {
-        return details::id_access::make <gpu_texture_atlas_id>(value);
-    }
+    gpu_texture_atlas::gpu_texture_atlas(const sdlpp::renderer& renderer,
+                                         image_atlas&& atlas,
+                                         atlas_texture_format format)
+        : m_atlas(atlas.id()),
+          m_rects(std::move(atlas.m_rects)) {
+        m_pages.reserve(atlas.m_pages.size());
 
-    gpu_texture_atlas_id texture_registry::create(const sdlpp::renderer& renderer, sdlpp::pixel_format_enum format,
-        sdlpp::texture_access access, int width, int height) {
-        auto tex = sdlpp::texture::create(renderer, format, access, width, height);
-        if (tex) {
-            const auto mode = access == sdlpp::texture_access::streaming ? texture_access::streaming
-                            : access == sdlpp::texture_access::target  ? texture_access::target
-                                                                       : texture_access::fixed;
-            return m_atlases.store(make_id, make_atlas_record(std::move(*tex), atlas_texture_format::automatic, mode));
-        }
-        THROW_RUNTIME(tex.error());
-    }
-
-    gpu_texture_atlas_id texture_registry::create(const sdlpp::renderer& renderer, const sdlpp::surface& s) {
-        auto tex = sdlpp::texture::create(renderer, s);
-        if (tex) {
-            return m_atlases.store(make_id, make_atlas_record(std::move(*tex), atlas_texture_format::automatic));
-        }
-        THROW_RUNTIME(tex.error());
-    }
-
-    gpu_texture_atlas_id texture_registry::create(
-        const sdlpp::renderer& renderer,
-        const image_atlas_old& atlas,
-        atlas_texture_format format) {
-        sdlpp::expected <sdlpp::texture, std::string> tex;
-        if (format == atlas_texture_format::automatic) {
-            tex = sdlpp::texture::create(renderer, atlas.surface());
-        } else {
-            const auto requested_format = to_sdl_format(format, atlas.surface());
-            auto converted = atlas.surface().format() == requested_format
-                                 ? atlas.surface().duplicate()
-                                 : atlas.surface().convert(requested_format);
-            if (!converted) {
-                THROW_RUNTIME(converted.error());
+        for (auto & page : atlas.m_pages) {
+            sdlpp::expected <sdlpp::texture, std::string> tex;
+            if (format == atlas_texture_format::automatic) {
+                tex = sdlpp::texture::create(renderer, page);
+            } else {
+                const auto requested_format = to_sdl_format(format, page);
+                auto converted = page.format() == requested_format
+                                     ? page.duplicate()
+                                     : page.convert(requested_format);
+                if (!converted) {
+                    THROW_RUNTIME(converted.error());
+                }
+                tex = sdlpp::texture::create(renderer, *converted);
             }
-            tex = sdlpp::texture::create(renderer, *converted);
+            if (tex) {
+                m_pages.emplace_back(texture::adopt(std::move(*tex), texture_access::fixed));
+            } else {
+                THROW_RUNTIME(tex.error());
+            }
         }
+    }
 
-        if (tex) {
-            return m_atlases.store(make_id, make_atlas_record(std::move(*tex), format));
+    // ================================================================================================================
+    gpu_texture_atlas::gpu_texture_atlas(gpu_texture_atlas&&) noexcept = default;
+    gpu_texture_atlas& gpu_texture_atlas::operator=(gpu_texture_atlas&&) noexcept = default;
+
+    std::size_t gpu_texture_atlas::picture_count() const noexcept {
+        return m_rects.size();
+    }
+
+    dim gpu_texture_atlas::picture_size(std::size_t i) const {
+        ENFORCE(i < m_rects.size(), "Picture index", i, "is out of range. Number of pictures for atlas", m_atlas,
+                "is", m_rects.size());
+        return m_rects[i].picture.dimensions();
+    }
+
+    std::pair<const texture&, rect> gpu_texture_atlas::get(std::size_t i) const {
+        ENFORCE(i < m_rects.size(), "Picture index", i, "is out of range. Number of pictures for atlas", m_atlas,
+                        "is", m_rects.size());
+        const auto& placement = m_rects[i];
+        ENFORCE(placement.page < m_pages.size(), "GPU atlas is corrupted");
+        return {m_pages[placement.page], placement.picture};
+    }
+
+    std::pair<texture&, rect> gpu_texture_atlas::get(std::size_t i) {
+        ENFORCE(i < m_rects.size(), "Picture index", i, "is out of range. Number of pictures for atlas", m_atlas,
+                        "is", m_rects.size());
+        const auto& placement = m_rects[i];
+        ENFORCE(placement.page < m_pages.size(), "GPU atlas is corrupted");
+        return {m_pages[placement.page], placement.picture};
+    }
+
+    atlas_id gpu_texture_atlas::id() const noexcept {
+        return m_atlas;
+    }
+
+    atlas_id texture_registry::add(const sdlpp::renderer& renderer, image_atlas&& atlas, atlas_texture_format format) {
+        ENFORCE (!m_atlas.contains(atlas.id()), "Atlas with id", atlas.id(), "is already registered");
+        auto [itr, _] = m_atlas.emplace(atlas.id(), gpu_texture_atlas(renderer, std::move(atlas), format));
+        return itr->second.id();
+    }
+
+    bool texture_registry::contains(atlas_id idx) const {
+        auto itr = m_atlas.find(idx);
+        return itr != m_atlas.end();
+    }
+
+    bool texture_registry::contains(atlas_id idx, std::size_t picture_idx) const {
+        auto itr = m_atlas.find(idx);
+        if (itr == m_atlas.end()) {
+            return false;
         }
-        THROW_RUNTIME(tex.error());
+        return (picture_idx < itr->second.picture_count());
     }
 
-    gpu_texture_atlas& texture_registry::get(gpu_texture_atlas_id idx) {
-        return m_atlases.get(idx);
+    std::size_t texture_registry::picture_count(atlas_id idx) const {
+        auto itr = m_atlas.find(idx);
+        ENFORCE(itr != m_atlas.end(), "Atlas with id", idx, "does not exist");
+        return itr->second.picture_count();
     }
 
-    const gpu_texture_atlas& texture_registry::get(gpu_texture_atlas_id idx) const {
-        return m_atlases.get(idx);
+    dim texture_registry::picture_size(atlas_id idx, std::size_t picture_idx) const {
+        auto itr = m_atlas.find(idx);
+        ENFORCE(itr != m_atlas.end(), "Atlas with id", idx, "does not exist");
+        return itr->second.picture_size(picture_idx);
     }
 
-    bool texture_registry::contains(gpu_texture_atlas_id idx) const {
-        return m_atlases.contains(idx);
+    std::pair<texture&, rect> texture_registry::get(atlas_id idx, std::size_t picture_idx) {
+        auto itr = m_atlas.find(idx);
+        ENFORCE(itr != m_atlas.end(), "Atlas with id", idx, "does not exist");
+        return itr->second.get(picture_idx);
     }
 
-    void texture_registry::erase(gpu_texture_atlas_id idx) {
-        m_atlases.erase(idx);
+    std::pair<const texture&, rect> texture_registry::get(atlas_id idx, std::size_t picture_idx) const {
+        auto itr = m_atlas.find(idx);
+        ENFORCE(itr != m_atlas.end(), "Atlas with id", idx, "does not exist");
+        return itr->second.get(picture_idx);
+    }
+
+
+    void texture_registry::erase(atlas_id idx) {
+        auto itr = m_atlas.find(idx);
+        if (itr != m_atlas.end()) {
+            m_atlas.erase(itr);
+        }
     }
 }

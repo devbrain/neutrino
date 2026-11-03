@@ -11,11 +11,21 @@
 
 #include <cstdint>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 using namespace neutrino;
 
 namespace {
+    // find_by_id returned the region at position i (all fields equal).
+    bool is_region_at(const std::optional <atlas_region>& r, const image_atlas& a, std::size_t i) {
+        if (!r) {
+            return false;
+        }
+        const auto& e = a.region(i);
+        return r->atlas == e.atlas && r->page == e.page && r->dest == e.dest && r->id == e.id;
+    }
+
     palette ramp(int entries, std::uint8_t step) {
         std::vector <std::uint8_t> bytes;
         for (int i = 0; i < entries; i++) {
@@ -60,7 +70,7 @@ namespace {
     }
 
     bool inside_any_cell(const image_atlas& a, unsigned page, int x, int y, int gutter) {
-        for (std::size_t i = 0; i < a.region_count(); i++) {
+        for (std::size_t i = 0; i < a.picture_count(); i++) {
             const auto& r = a.region(i);
             if (r.page == page && r.dest.w > 0 &&
                 x >= r.dest.x - gutter && x < r.dest.x + r.dest.w + gutter &&
@@ -79,7 +89,7 @@ TEST_SUITE("neutrino::build_atlas") {
         const image_bank bank;
         const auto a = build_atlas(bank);
         CHECK(a.page_count() == 0);
-        CHECK(a.region_count() == 0);
+        CHECK(a.picture_count() == 0);
     }
 
     TEST_CASE("each region holds its bank entry's pixels and id") {
@@ -89,7 +99,7 @@ TEST_SUITE("neutrino::build_atlas") {
         bank.entries.push_back({solid_rgba({6, 9}, color{0, 0, 255, 255}), 11});
 
         const auto a = build_atlas(bank);
-        REQUIRE(a.region_count() == 3);
+        REQUIRE(a.picture_count() == 3);
         REQUIRE(a.page_count() == 1);
         CHECK(a.page(0).format() == pixel_format::RGBA32);
 
@@ -245,7 +255,7 @@ TEST_SUITE("neutrino::build_atlas") {
         bank.entries.push_back({solid_rgba({4, 4}, color{9, 9, 9, 255}), 3});
 
         const auto a = build_atlas(bank);
-        REQUIRE(a.region_count() == 3);
+        REQUIRE(a.picture_count() == 3);
         CHECK(a.region(1).dest.w == 0);
         CHECK(a.region(1).dest.h == 0);
         CHECK(a.region(1).id == 2);
@@ -274,14 +284,14 @@ TEST_SUITE("neutrino::build_atlas") {
         CHECK_THROWS_AS((void)build_atlas(bank, {}, dim{40, 40}), std::runtime_error);
     }
 
-    TEST_CASE("find_by_id returns the first position with that id") {
+    TEST_CASE("find_by_id returns the region at the first position with that id") {
         image_bank bank;
         bank.entries.push_back({solid_rgba({2, 2}, color{1, 1, 1, 255}), 7});
         bank.entries.push_back({solid_rgba({2, 2}, color{1, 1, 1, 255}), 3});
         bank.entries.push_back({solid_rgba({2, 2}, color{1, 1, 1, 255}), 7});
         const auto a = build_atlas(bank);
-        CHECK(a.find_by_id(7) == std::optional <std::size_t>{0});
-        CHECK(a.find_by_id(3) == std::optional <std::size_t>{1});
+        CHECK(is_region_at(a.find_by_id(7), a, 0));
+        CHECK(is_region_at(a.find_by_id(3), a, 1));
         CHECK_FALSE(a.find_by_id(9).has_value());
         CHECK_FALSE(a.find_by_id(0).has_value());
         CHECK_FALSE(a.find_by_id(UINT32_MAX).has_value());
@@ -304,7 +314,11 @@ TEST_SUITE("neutrino::build_atlas") {
                 }
             }
             CAPTURE(probe);
-            CHECK(a.find_by_id(probe) == expected);
+            const auto found = a.find_by_id(probe);
+            CHECK(found.has_value() == expected.has_value());
+            if (expected) {
+                CHECK(is_region_at(found, a, *expected));
+            }
         }
     }
 
@@ -322,5 +336,67 @@ TEST_SUITE("neutrino::build_atlas") {
         const auto a = build_atlas(bank);
         CHECK_THROWS_AS((void)a.page(1), std::runtime_error);
         CHECK_THROWS_AS((void)a.region(1), std::runtime_error);
+    }
+
+    TEST_CASE("every region carries its atlas's id") {
+        image_bank bank;
+        bank.entries.push_back({solid_rgba({2, 2}, color{1, 1, 1, 255}), 1});
+        bank.entries.push_back({solid_rgba({3, 3}, color{1, 1, 1, 255}), 2});
+        bank.entries.push_back({image{}, 3});
+        const auto a = build_atlas(bank);
+        CHECK(a.id().valid());
+        for (std::size_t i = 0; i < a.picture_count(); i++) {
+            CAPTURE(i);
+            CHECK(a.region(i).atlas == a.id());
+        }
+    }
+
+    TEST_CASE("each build_atlas call gets a new id") {
+        image_bank bank;
+        bank.entries.push_back({solid_rgba({2, 2}, color{1, 1, 1, 255}), 0});
+        const auto a = build_atlas(bank);
+        const auto b = build_atlas(bank);
+        CHECK(a.id().valid());
+        CHECK(b.id().valid());
+        CHECK(a.id() != b.id());
+    }
+
+    TEST_CASE("an empty bank still gets a valid id") {
+        const auto a = build_atlas(image_bank{});
+        CHECK(a.picture_count() == 0);
+        CHECK(a.id().valid());
+    }
+
+    TEST_CASE("the atlas id survives a move") {
+        image_bank bank;
+        bank.entries.push_back({solid_rgba({2, 2}, color{1, 1, 1, 255}), 0});
+        auto a = build_atlas(bank);
+        const atlas_id id = a.id();
+
+        const image_atlas moved(std::move(a));
+        CHECK(moved.id() == id);
+        CHECK(moved.region(0).atlas == id);
+
+        auto source = build_atlas(bank);
+        const atlas_id source_id = source.id();
+        auto target = build_atlas(bank);
+        target = std::move(source);
+        CHECK(target.id() == source_id);
+        CHECK(target.region(0).atlas == source_id);
+    }
+
+    TEST_CASE("find_by_id returns the full region") {
+        image_bank bank;
+        bank.entries.push_back({solid_rgba({2, 2}, color{1, 1, 1, 255}), 4});
+        bank.entries.push_back({solid_rgba({5, 3}, color{1, 1, 1, 255}), 9});
+        const auto a = build_atlas(bank);
+        const auto r = a.find_by_id(9);
+        REQUIRE(r.has_value());
+        CHECK(r->atlas == a.id());
+        CHECK(r->id == 9);
+        CHECK(r->page == a.region(1).page);
+        CHECK(r->dest == a.region(1).dest);
+        CHECK(r->dest.w == 5);
+        CHECK(r->dest.h == 3);
     }
 }

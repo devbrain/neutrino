@@ -100,8 +100,8 @@ TEST_SUITE("neutrino::image_bank_builder") {
         CHECK(result.entries[2].id == 5);
 
         const image_atlas a = build_atlas(result);
-        CHECK(a.find_by_id(1) == std::optional <std::size_t>{1});
-        CHECK(a.find_by_id(5) == std::optional <std::size_t>{0}); // the first of the two
+        CHECK(a.find_by_id(1).value().dest == a.region(1).dest);
+        CHECK(a.find_by_id(5).value().dest == a.region(0).dest); // the first of the two
         CHECK_FALSE(a.find_by_id(2).has_value());
     }
 
@@ -132,7 +132,7 @@ TEST_SUITE("neutrino::image_bank_builder") {
         const image_atlas a = build_atlas(std::move(bank).build());
         REQUIRE(a.page_count() == 1);
         CHECK(a.page(0).format() == pixel_format::INDEX8);
-        CHECK(a.region_count() == 2);
-        CHECK(a.find_by_id(30) == std::optional <std::size_t>{1});
+        CHECK(a.picture_count() == 2);
+        CHECK(a.find_by_id(30).value().dest == a.region(1).dest);
     }
 }

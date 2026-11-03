@@ -97,11 +97,12 @@ add_library(neutrino ${_lib_type}
         video/sprites.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/bitmask.hh
         video/atlas/bitmask.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/image_atlas_old.hh
-        video/atlas/image_atlas_old.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/image_atlas.hh
+        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/atlas_id.hh
         video/atlas/image_atlas.cc
         video/atlas/shelf_packer.hh
+        video/atlas/atlas_id_gen.cc
+        video/atlas/atlas_id_gen.hh
         video/sprite/surface_lock.hh
         video/sprite/image_decode.hh
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/texture_atlas.hh
@@ -118,8 +119,6 @@ add_library(neutrino ${_lib_type}
         video/sprite/sprites_manager.hh
         video/sprite/texture_registry.cc
         video/sprite/texture_registry.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/atlas_packer.hh
-        video/atlas/atlas_packer.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/render_bundle.hh
         video/sprite/render_bundle.cc
         ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/image_identity.hh

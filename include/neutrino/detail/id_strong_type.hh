@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <functional>
 #include <limits>
+#include <ostream>
 
 #include <neutrino/detail/hash.hh>
 
@@ -35,6 +36,7 @@ namespace neutrino::details {
     template <typename Tag>
     class id_strong_type {
         friend struct std::hash <id_strong_type<Tag>>;
+
         static constexpr auto INVALID = std::numeric_limits <std::uint32_t>::max();
 
         public:
@@ -62,6 +64,13 @@ namespace neutrino::details {
 
             std::strong_ordering operator <=>(const id_strong_type& other) const = default;
 
+            friend std::ostream& operator <<(std::ostream& os, const id_strong_type& id) {
+                if (!id.valid()) {
+                    return os << "<invalid>";
+                }
+                return os << id.m_value;
+            }
+
         protected:
             explicit id_strong_type(std::uint32_t value)
                 : m_value(value) {
@@ -77,3 +86,4 @@ struct std::hash <neutrino::details::id_strong_type<Tag>> {
         return neutrino::details::hash_value(id.m_value);
     }
 };
+

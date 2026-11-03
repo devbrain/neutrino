@@ -4,12 +4,11 @@
 
 #pragma once
 
-
 #include <functional>
 
 #include <neutrino/neutrino_export.h>
-#include <neutrino/video/atlas/image_atlas_old.hh>
-#include <neutrino/detail/id_strong_type.hh>
+#include <neutrino/video/atlas/image_atlas.hh>
+#include <neutrino/video/geometry_types.hh>
 
 namespace neutrino {
     /**
@@ -41,43 +40,19 @@ namespace neutrino {
         indexed8
     };
 
-    namespace details {
-        struct gpu_texture_atlas_id_tag;
-    }
-    /**
-     * @brief Opaque handle for a renderer-resident texture atlas.
-     *
-     * The handle identifies an uploaded atlas stored by the internal texture
-     * registry. Game code should treat it as a value handle and should not infer
-     * backend texture details from it.
-     */
-    class NEUTRINO_EXPORT gpu_texture_atlas_id
-        : public details::id_strong_type <details::gpu_texture_atlas_id_tag> {
-        friend struct details::id_access;
-
-        public:
-            /**
-             * @brief Construct an invalid atlas handle.
-             */
-            gpu_texture_atlas_id() = default;
-
-        private:
-            explicit gpu_texture_atlas_id(std::uint32_t value)
-                : id_strong_type(value) {
-            }
-    };
-
     /**
      * @brief Upload a CPU texture atlas to renderer/GPU resources.
      *
-     * The upload preserves the CPU atlas frame layout; it does not repack frames.
+     * The upload consumes the CPU atlas: its pages become textures and its picture
+     * placements move to the registry unchanged (nothing is repacked), so addresses
+     * taken from the atlas before the upload stay valid.
      *
-     * @param atlas CPU atlas containing the source surface and frame metadata.
+     * @param atlas CPU atlas to upload; moved from.
      * @param format Requested upload format.
-     * @return Opaque handle to the uploaded atlas.
+     * @return The atlas's id, the same one @ref image_atlas::id returned.
      */
-    NEUTRINO_EXPORT gpu_texture_atlas_id register_atlas(
-        const image_atlas_old& atlas,
+    NEUTRINO_EXPORT atlas_id register_atlas(
+        image_atlas&& atlas,
         atlas_texture_format format = atlas_texture_format::automatic);
 
     /**
@@ -88,14 +63,14 @@ namespace neutrino {
      *
      * @pre An application must be initialized.
      */
-    NEUTRINO_EXPORT void unregister_atlas(gpu_texture_atlas_id atlas);
-}
+    NEUTRINO_EXPORT void unregister_atlas(atlas_id atlas);
 
-/**
- * @brief @c std::hash specialization so @ref neutrino::gpu_texture_atlas_id keys
- *        @c unordered_map / @c unordered_set.
- */
-template<>
-struct std::hash <neutrino::gpu_texture_atlas_id>
-    : std::hash <neutrino::details::id_strong_type <neutrino::details::gpu_texture_atlas_id_tag>> {
-};
+    /**
+     * @brief Size of picture @p picture_idx of an uploaded atlas.
+     *
+     * Before the upload, use @ref image_atlas::picture_size.
+     *
+     * @throws std::runtime_error when @p atlas is not registered or @p picture_idx is out of range.
+     */
+    [[nodiscard]] NEUTRINO_EXPORT dim picture_size(atlas_id atlas, std::size_t picture_idx);
+}
