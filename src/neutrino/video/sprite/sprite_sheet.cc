@@ -24,19 +24,20 @@ namespace neutrino {
         return make_visual_owner();
     }
 
-    sprite_sheet::sprite_sheet(gpu_texture_atlas_id atlas)
+    sprite_sheet::sprite_sheet(atlas_id atlas)
         : m_atlas(atlas) {
     }
 
-    sprite_sheet::sprite_sheet(gpu_texture_atlas_id atlas, const image_atlas_old& source)
-        : sprite_sheet(atlas) {
-        m_visuals.reserve(source.frame_count());
-        for (std::size_t i = 0; i < source.frame_count(); ++i) {
-            add_visual(sprite_visual{.texture_rect = source.frame(i).atlas_rect});
+    sprite_sheet::sprite_sheet(const image_atlas& source)
+        : sprite_sheet(source.id()) {
+        m_visuals.reserve(source.picture_count());
+        for (std::size_t i = 0; i < source.picture_count(); ++i) {
+            const dim size = source.picture_size(i);
+            add_visual(sprite_visual{.texture_rect = rect{0, 0, size.width, size.height}, .picture = i});
         }
     }
 
-    gpu_texture_atlas_id sprite_sheet::atlas() const noexcept {
+    atlas_id sprite_sheet::atlas() const noexcept {
         return m_atlas;
     }
 
@@ -89,9 +90,11 @@ namespace neutrino {
     }
 
     sprite_sheet_id register_sprite_sheet(
-        const image_atlas_old& atlas,
+        image_atlas&& atlas,
         atlas_texture_format format) {
-        return register_sprite_sheet(sprite_sheet(register_atlas(atlas, format), atlas));
+        sprite_sheet sheet(atlas);
+        register_atlas(std::move(atlas), format);
+        return register_sprite_sheet(std::move(sheet));
     }
 
     void unregister_sprite_sheet(sprite_sheet_id sheet) {

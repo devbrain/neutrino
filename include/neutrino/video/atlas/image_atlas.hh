@@ -32,6 +32,11 @@ namespace neutrino {
 
     class image_atlas;
     class gpu_texture_atlas;
+
+    namespace details {
+        /// @brief Read access to an atlas's pages and placements, for tests only (defined there).
+        struct image_atlas_access;
+    }
     [[nodiscard]] NEUTRINO_EXPORT image_atlas build_atlas(const image_bank& bank,
                                                           std::optional <pixel_format> atlas_texture_format = {},
                                                           std::optional <dim> max_page = {});
@@ -43,6 +48,7 @@ namespace neutrino {
         friend image_atlas build_atlas(const image_bank&, std::optional <pixel_format>, std::optional <dim>);
         friend image_atlas build_atlas(const image& img, std::optional <pixel_format> atlas_texture_format);
         friend class gpu_texture_atlas;
+        friend struct details::image_atlas_access;
         public:
             image_atlas(const image_atlas&) = delete;
             image_atlas& operator =(const image_atlas&) = delete;

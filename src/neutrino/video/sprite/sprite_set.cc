@@ -17,7 +17,7 @@
 #include <failsafe/enforce.hh>
 
 #include <neutrino/video/sprites.hh>
-#include <neutrino/video/atlas/image_atlas_old.hh>
+#include <neutrino/video/atlas/image_atlas.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 
 #include <sdlpp/video/surface.hh>
@@ -262,11 +262,9 @@ namespace neutrino {
         const dim image_size{surface.get()->w, surface.get()->h};
         const std::vector <sprite_visual_def> resolved = resolve_visuals(def, image_size);
 
-        // The sheet image is already a packed atlas: upload it whole and reference the
-        // authored sub-rects in place (repacking would move their coordinates).
-        image_atlas_old cpu(std::move(surface),
-                              std::vector <atlas_frame_old>{
-                                  atlas_frame_old(rect{0, 0, image_size.width, image_size.height})});
+        // The sheet image is already a packed atlas: upload it whole, as one picture, and
+        // reference the authored sub-rects inside it (repacking would move their coordinates).
+        image_atlas cpu = build_atlas(surface);
 
         // --- Registration phase. Each registered id is recorded in `set` the instant it
         // is created, and the owner vectors are reserved up front so the recording
@@ -278,10 +276,9 @@ namespace neutrino {
         set.sheets.reserve(1);
         set.animations.reserve(def.clips.size());
 
-        const gpu_texture_atlas_id atlas = register_atlas(cpu, atlas_texture_format::rgba);
-        set.atlases.push_back(atlas);
+        sprite_sheet sheet(cpu.id());
+        set.atlases.push_back(register_atlas(std::move(cpu), atlas_texture_format::rgba));
 
-        sprite_sheet sheet(atlas);
         for (const sprite_visual_def& v : resolved) {
             // Carry the trim metadata through to the runtime visual, not just the packed rect and
             // baked pivot: without source_size/trim_offset the authored frame is unrecoverable, and
@@ -299,7 +296,7 @@ namespace neutrino {
                  " at offset (", trim.x, ",", trim.y, ") does not fit its source_size ",
                  source.width, "x", source.height,
                  " (a trim_offset requires a matching source_size)");
-            sheet.add_visual(v.name, sprite_visual{v.src, baked_visual_origin(v), source, trim});
+            sheet.add_visual(v.name, sprite_visual{v.src, baked_visual_origin(v), source, trim, 0});
         }
         const sprite_sheet_id sheet_id = register_sprite_sheet(std::move(sheet));
         set.sheets.push_back(sheet_id);

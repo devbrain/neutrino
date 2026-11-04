@@ -43,7 +43,6 @@
 #include <failsafe/exception.hh>
 #include <neutrino/video/image/image.hh>
 #include <neutrino/video/image/image_bank.hh>
-#include <neutrino/video/atlas/atlas_packer.hh>
 
 namespace neutrino {
     /**

@@ -22,9 +22,9 @@
  *
  * # Vocabulary
  *
- * - **image_atlas** -- a CPU surface plus frame rects (the asset side of an atlas).
- * - **gpu_texture_atlas_id** -- an uploaded texture (`register_atlas`).
- * - **sprite_visual** -- one static frame: a sub-rect of an atlas plus a pivot/origin.
+ * - **image_atlas** -- an indexed list of pictures packed into CPU pages (`build_atlas`).
+ * - **atlas_id** -- names an atlas; `register_atlas` consumes and uploads it under that id.
+ * - **sprite_visual** -- one static frame: (a sub-rect of) an atlas picture plus a pivot/origin.
  *   Addressed within a sheet by @ref sprite_visual_id, or globally by @ref sprite_visual_ref
  *   (sheet + visual).
  * - **sprite_sheet** (@ref sprite_sheet_id) -- named/indexed visuals over one atlas.
@@ -72,14 +72,14 @@
  *
  * A static sprite:
  * @code{.cpp}
- * sprite_sheet_id sheet = register_sprite_sheet(cpu_atlas); // upload + one visual per frame
+ * sprite_sheet_id sheet = register_sprite_sheet(std::move(cpu_atlas)); // upload + one visual per picture
  * sprite_visual_ref hero = visual_ref(sheet, 0);
  * draw_sprite(pos, hero);                                   // <neutrino/video/draw.hh>
  * @endcode
  *
  * A looping animation with a runtime state:
  * @code{.cpp}
- * sprite_sheet_id sheet = register_sprite_sheet(cpu_atlas);
+ * sprite_sheet_id sheet = register_sprite_sheet(std::move(cpu_atlas));
  * sprite_animation_id walk = register_sprite_animation(
  *     make_sprite_animation(sheet, {0, 1, 2, 3}, sprite_animation_duration{100.0f}));
  * sprite_state_id st = create_sprite_state(walk);
@@ -159,7 +159,7 @@
  *
  * The game-facing sprite headers (authoring, building/caching, sheets, runtime state,
  * atlas loading) plus the builder functions below. Low-level plumbing -- @c render_bundle,
- * @c atlas_packer, @c bitmask, @c image_identity -- is intentionally left out; engine
+ * @c bitmask, @c image_identity -- is intentionally left out; engine
  * internals include those directly to keep incremental builds tight.
  */
 
@@ -169,7 +169,7 @@
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/sprite/atlas_loader.hh>
-#include <neutrino/video/atlas/image_atlas_old.hh>
+#include <neutrino/video/atlas/image_atlas.hh>
 #include <neutrino/video/sprite/sprite_animation.hh>
 #include <neutrino/video/sprite/sprite_appearance.hh>
 #include <neutrino/video/sprite/sprite_cache.hh>

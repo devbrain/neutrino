@@ -30,8 +30,8 @@
 
 namespace neutrino {
     struct NEUTRINO_EXPORT render_bundle {
-        std::vector <gpu_texture_atlas_id> atlases;    ///< One uploaded atlas per packed page.
-        std::vector <sprite_sheet_id>      sheets;     ///< One sheet per page (a sheet is single-atlas).
+        std::vector <atlas_id>             atlases;    ///< Uploaded atlases.
+        std::vector <sprite_sheet_id>      sheets;     ///< Sheets over those atlases (a sheet is single-atlas).
         std::vector <sprite_animation_id>  animations; ///< Registered animations, for teardown.
         std::vector <sprite_state_id>      states;     ///< Shared states (empty when instances own their own).
 

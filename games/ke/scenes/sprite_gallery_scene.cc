@@ -21,7 +21,7 @@
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/sprites.hh>
-#include <neutrino/video/atlas/image_atlas_old.hh>
+#include <neutrino/video/atlas/image_atlas.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 
 #include <ke/assets/sprites.hh>
@@ -37,24 +37,27 @@ namespace {
     constexpr int name_dy = 42; // name baseline offset within a cell
     constexpr int margin = 6;
 
+    // Upload @p pixels whole, as one atlas picture, and register a sprite_sheet with one visual
+    // per rect of @p frames inside it, recording the atlas + sheet in @p bundle for teardown.
+    neutrino::sprite_sheet_id register_whole(neutrino::render_bundle& bundle, neutrino::image pixels,
+                                             const std::vector <neutrino::rect>& frames) {
+        neutrino::image_atlas atlas = neutrino::build_atlas(pixels);
+        neutrino::sprite_sheet sheet(atlas.id());
+        for (const auto& r : frames) {
+            sheet.add_visual(neutrino::sprite_visual{.texture_rect = r});
+        }
+        bundle.atlases.push_back(neutrino::register_atlas(std::move(atlas)));
+        const neutrino::sprite_sheet_id id = neutrino::register_sprite_sheet(std::move(sheet));
+        bundle.sheets.push_back(id);
+        return id;
+    }
+
     // Register a decoded BOB sheet (surface + frame rects) as a sprite_sheet with one visual
     // per frame, recording the atlas + sheet in @p bundle for teardown.
     neutrino::sprite_sheet_id register_sheet(neutrino::render_bundle& bundle, const rs::tile_sheet_def& tsd) {
         auto dup = tsd.image.duplicate();
         ENFORCE(dup.has_value(), "failed to duplicate sheet surface");
-        std::vector <neutrino::atlas_frame_old> frames;
-        frames.reserve(tsd.source_rects.size());
-        for (const auto& r : tsd.source_rects) {
-            frames.emplace_back(r);
-        }
-        neutrino::image_atlas_old atlas(std::move(*dup), std::move(frames));
-
-        const neutrino::gpu_texture_atlas_id gpu = neutrino::register_atlas(atlas);
-        bundle.atlases.push_back(gpu);
-        neutrino::sprite_sheet sheet(gpu, atlas);
-        const neutrino::sprite_sheet_id id = neutrino::register_sprite_sheet(std::move(sheet));
-        bundle.sheets.push_back(id);
-        return id;
+        return register_whole(bundle, std::move(*dup), tsd.source_rects);
     }
 
     // Build a looping runtime state playing @p anim's block sequence from @p sheet.
@@ -99,19 +102,12 @@ namespace {
             }
         }
 
-        std::vector <neutrino::atlas_frame_old> frames;
-        frames.reserve(count);
+        std::vector <neutrino::rect> glyphs;
+        glyphs.reserve(count);
         for (int i = 0; i < count; ++i) {
-            frames.emplace_back(neutrino::rect{i * gw, 0, gw, gh});
+            glyphs.emplace_back(i * gw, 0, gw, gh);
         }
-        neutrino::image_atlas_old atlas(std::move(surf), std::move(frames));
-
-        const neutrino::gpu_texture_atlas_id gpu = neutrino::register_atlas(atlas);
-        bundle.atlases.push_back(gpu);
-        neutrino::sprite_sheet sheet(gpu, atlas);
-        const neutrino::sprite_sheet_id id = neutrino::register_sprite_sheet(std::move(sheet));
-        bundle.sheets.push_back(id);
-        return id;
+        return register_whole(bundle, std::move(surf), glyphs);
     }
 
     void draw_text(neutrino::sprite_sheet_id font, point pos, std::string_view text) {

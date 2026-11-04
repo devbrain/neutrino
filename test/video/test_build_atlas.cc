@@ -9,12 +9,19 @@
 #include <neutrino/video/image/image_builder.hh>
 #include <neutrino/video/palette.hh>
 
+#include "image_atlas_access.hh"
+
 #include <cstdint>
+#include <sstream>
 #include <stdexcept>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 using namespace neutrino;
+using atlas_test::page;
+using atlas_test::page_count;
+using atlas_test::place;
 
 namespace {
     // find_by_id returned the region at position i (all fields equal).
@@ -23,7 +30,7 @@ namespace {
             return false;
         }
         const auto& e = a.region(i);
-        return r->atlas == e.atlas && r->page == e.page && r->dest == e.dest && r->id == e.id;
+        return r->atlas == e.atlas && r->picture_idx == e.picture_idx && r->id == e.id;
     }
 
     palette ramp(int entries, std::uint8_t step) {
@@ -71,7 +78,7 @@ namespace {
 
     bool inside_any_cell(const image_atlas& a, unsigned page, int x, int y, int gutter) {
         for (std::size_t i = 0; i < a.picture_count(); i++) {
-            const auto& r = a.region(i);
+            const auto r = place(a, i);
             if (r.page == page && r.dest.w > 0 &&
                 x >= r.dest.x - gutter && x < r.dest.x + r.dest.w + gutter &&
                 y >= r.dest.y - gutter && y < r.dest.y + r.dest.h + gutter) {
@@ -88,7 +95,7 @@ TEST_SUITE("neutrino::build_atlas") {
     TEST_CASE("an empty bank gives an empty atlas") {
         const image_bank bank;
         const auto a = build_atlas(bank);
-        CHECK(a.page_count() == 0);
+        CHECK(page_count(a) == 0);
         CHECK(a.picture_count() == 0);
     }
 
@@ -100,19 +107,20 @@ TEST_SUITE("neutrino::build_atlas") {
 
         const auto a = build_atlas(bank);
         REQUIRE(a.picture_count() == 3);
-        REQUIRE(a.page_count() == 1);
-        CHECK(a.page(0).format() == pixel_format::RGBA32);
+        REQUIRE(page_count(a) == 1);
+        CHECK(page(a, 0).format() == pixel_format::RGBA32);
 
         const color expected[] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
         const dim sizes[] = {{10, 20}, {4, 4}, {6, 9}};
         const std::uint32_t ids[] = {7, 3, 11};
         for (std::size_t i = 0; i < 3; i++) {
             CAPTURE(i);
-            const auto& r = a.region(i);
-            CHECK(r.id == ids[i]);
+            CHECK(a.region(i).id == ids[i]);
+            CHECK(a.picture_size(i) == sizes[i]);
+            const auto r = place(a, i);
             CHECK(r.dest.w == sizes[i].width);
             CHECK(r.dest.h == sizes[i].height);
-            const auto& page = a.page(r.page);
+            const auto& page = atlas_test::page(a, r.page);
             CHECK(pixel(page, r.dest.x, r.dest.y) == expected[i]);
             CHECK(pixel(page, r.dest.x + r.dest.w - 1, r.dest.y + r.dest.h - 1) == expected[i]);
         }
@@ -129,8 +137,8 @@ TEST_SUITE("neutrino::build_atlas") {
         bank.entries.push_back({std::move(b).build(), 0});
 
         const auto a = build_atlas(bank);
-        const auto& r = a.region(0);
-        const auto& page = a.page(0);
+        const auto r = place(a, 0);
+        const auto& page = atlas_test::page(a, 0);
         for (int m = 1; m <= gutter; m++) {
             CAPTURE(m);
             CHECK(pixel(page, r.dest.x - m, r.dest.y + 1) == pixel(page, r.dest.x, r.dest.y + 1));
@@ -148,7 +156,7 @@ TEST_SUITE("neutrino::build_atlas") {
         bank.entries.push_back({solid_rgba({4, 4}, color{255, 255, 255, 255}), 0});
 
         const auto a = build_atlas(bank);
-        const auto& page = a.page(0);
+        const auto& page = atlas_test::page(a, 0);
         int gaps = 0;
         for (int y = 0; y < static_cast <int>(page.height()); y++) {
             for (int x = 0; x < static_cast <int>(page.width()); x++) {
@@ -165,8 +173,8 @@ TEST_SUITE("neutrino::build_atlas") {
         image_bank bank;
         bank.entries.push_back({solid_rgba({2, 2}, color{200, 100, 50, 128}), 0});
         const auto a = build_atlas(bank);
-        const auto& r = a.region(0);
-        CHECK(pixel(a.page(0), r.dest.x, r.dest.y) == color{200, 100, 50, 128});
+        const auto r = place(a, 0);
+        CHECK(pixel(page(a, 0), r.dest.x, r.dest.y) == color{200, 100, 50, 128});
     }
 
     TEST_CASE("an indexed bank sharing a palette gives indexed pages by default") {
@@ -176,15 +184,15 @@ TEST_SUITE("neutrino::build_atlas") {
         bank.entries.push_back({pattern_indexed({3, 6}, pal, std::uint8_t{0}), 1});
 
         const auto a = build_atlas(bank);
-        REQUIRE(a.page_count() == 1);
-        const auto& page = a.page(0);
+        REQUIRE(page_count(a) == 1);
+        const auto& page = atlas_test::page(a, 0);
         CHECK(page.format() == pixel_format::INDEX8);
         CHECK(page.color_key() == std::optional <std::uint32_t>{0u});
         CHECK(page.get_palette().get() == bank.entries[0].pixels.get_palette().get());
 
         for (std::size_t i = 0; i < 2; i++) {
             CAPTURE(i);
-            const auto& r = a.region(i);
+            const auto r = place(a, i);
             CHECK(index_at(page, r.dest.x, r.dest.y) == 0); // the keyed pixel keeps the key
             for (int y = 0; y < r.dest.h; y++) {
                 for (int x = (y == 0 ? 1 : 0); x < r.dest.w; x++) {
@@ -200,9 +208,9 @@ TEST_SUITE("neutrino::build_atlas") {
         bank.entries.push_back({pattern_indexed({4, 4}, pal, std::uint8_t{0}), 0});
 
         const auto a = build_atlas(bank, pixel_format::RGBA32);
-        const auto& page = a.page(0);
+        const auto& page = atlas_test::page(a, 0);
         CHECK(page.format() == pixel_format::RGBA32);
-        const auto& r = a.region(0);
+        const auto r = place(a, 0);
         CHECK(pixel(page, r.dest.x, r.dest.y).a == 0);
         // pixel (1, 0) is index 2: ramp colour {60, 195, 60}
         CHECK(pixel(page, r.dest.x + 1, r.dest.y) == color{60, 195, 60, 255});
@@ -221,8 +229,8 @@ TEST_SUITE("neutrino::build_atlas") {
             image_bank bank;
             bank.entries.push_back({std::move(img), 0});
             const auto a = build_atlas(bank);
-            const auto& r = a.region(0);
-            const auto& page = a.page(0);
+            const auto r = place(a, 0);
+            const auto& page = atlas_test::page(a, 0);
             CHECK(page.format() == pixel_format::RGBA32);
             CHECK(pixel(page, r.dest.x, r.dest.y).a == 0);                        // keyed pixel
             CHECK(pixel(page, r.dest.x - 1, r.dest.y - 1).a == 0);                // its extruded corner
@@ -235,7 +243,7 @@ TEST_SUITE("neutrino::build_atlas") {
         different_palettes.entries.push_back({pattern_indexed({4, 4}, ramp(8, 30), {}), 0});
         different_palettes.entries.push_back({pattern_indexed({4, 4}, ramp(8, 31), {}), 1});
         CHECK_THROWS_AS((void)build_atlas(different_palettes, pixel_format::INDEX8), std::runtime_error);
-        CHECK(build_atlas(different_palettes).page(0).format() == pixel_format::RGBA32);
+        CHECK(page(build_atlas(different_palettes), 0).format() == pixel_format::RGBA32);
 
         const palette pal = ramp(8, 30);
         image_bank different_keys;
@@ -256,10 +264,10 @@ TEST_SUITE("neutrino::build_atlas") {
 
         const auto a = build_atlas(bank);
         REQUIRE(a.picture_count() == 3);
-        CHECK(a.region(1).dest.w == 0);
-        CHECK(a.region(1).dest.h == 0);
+        CHECK(a.picture_size(1) == dim{0, 0});
         CHECK(a.region(1).id == 2);
-        CHECK(pixel(a.page(a.region(2).page), a.region(2).dest.x, a.region(2).dest.y) == color{9, 9, 9, 255});
+        const auto r = place(a, 2);
+        CHECK(pixel(page(a, r.page), r.dest.x, r.dest.y) == color{9, 9, 9, 255});
     }
 
     TEST_CASE("pictures that do not share a page go on several pages") {
@@ -268,13 +276,13 @@ TEST_SUITE("neutrino::build_atlas") {
             bank.entries.push_back({solid_rgba({30, 30}, color{static_cast <std::uint8_t>(i * 60), 0, 0, 255}), i});
         }
         const auto a = build_atlas(bank, {}, dim{40, 40});
-        REQUIRE(a.page_count() == 4);
+        REQUIRE(page_count(a) == 4);
         for (std::size_t i = 0; i < 4; i++) {
             CAPTURE(i);
-            const auto& r = a.region(i);
+            const auto r = place(a, i);
             CHECK(r.page == i);
-            CHECK(a.page(r.page).width() == 32);
-            CHECK(pixel(a.page(r.page), r.dest.x, r.dest.y).r == i * 60);
+            CHECK(page(a, r.page).width() == 32);
+            CHECK(pixel(page(a, r.page), r.dest.x, r.dest.y).r == i * 60);
         }
     }
 
@@ -326,16 +334,16 @@ TEST_SUITE("neutrino::build_atlas") {
         image_bank bank;
         bank.entries.push_back({solid_rgba({2048 - 2 * gutter, 1}, color{1, 1, 1, 255}), 0});
         const auto a = build_atlas(bank);
-        REQUIRE(a.page_count() == 1);
-        CHECK(a.page(0).width() == 2048);
+        REQUIRE(page_count(a) == 1);
+        CHECK(page(a, 0).width() == 2048);
     }
 
-    TEST_CASE("out-of-range page and region throw") {
+    TEST_CASE("an out-of-range picture throws") {
         image_bank bank;
         bank.entries.push_back({solid_rgba({2, 2}, color{1, 1, 1, 255}), 0});
         const auto a = build_atlas(bank);
-        CHECK_THROWS_AS((void)a.page(1), std::runtime_error);
         CHECK_THROWS_AS((void)a.region(1), std::runtime_error);
+        CHECK_THROWS_AS((void)a.picture_size(1), std::runtime_error);
     }
 
     TEST_CASE("every region carries its atlas's id") {
@@ -394,9 +402,36 @@ TEST_SUITE("neutrino::build_atlas") {
         REQUIRE(r.has_value());
         CHECK(r->atlas == a.id());
         CHECK(r->id == 9);
-        CHECK(r->page == a.region(1).page);
-        CHECK(r->dest == a.region(1).dest);
-        CHECK(r->dest.w == 5);
-        CHECK(r->dest.h == 3);
+        CHECK(r->picture_idx == 1);
+        CHECK(a.picture_size(r->picture_idx) == dim{5, 3});
+    }
+
+    TEST_CASE("atlas ids key unordered containers and print") {
+        std::unordered_set <atlas_id> ids;
+        ids.insert(atlas_id{});
+        ids.insert(atlas_id{});
+        CHECK(ids.size() == 1);
+
+        const auto a = build_atlas(image_bank{});
+        ids.insert(a.id());
+        CHECK(ids.size() == 2);
+
+        std::ostringstream invalid;
+        invalid << atlas_id{};
+        CHECK(invalid.str() == "<invalid>");
+        std::ostringstream valid;
+        valid << a.id();
+        CHECK_FALSE(valid.str().empty());
+        CHECK(valid.str() != "<invalid>");
+    }
+
+    TEST_CASE("a single image is a one-picture atlas") {
+        const auto a = build_atlas(solid_rgba({6, 3}, color{4, 5, 6, 255}));
+        REQUIRE(a.picture_count() == 1);
+        CHECK(a.picture_size(0) == dim{6, 3});
+        CHECK(a.region(0).atlas == a.id());
+        const auto r = place(a, 0);
+        CHECK(pixel(page(a, r.page), r.dest.x + 5, r.dest.y + 2) == color{4, 5, 6, 255});
+        CHECK_THROWS_AS((void)build_atlas(image{}), std::runtime_error);
     }
 }

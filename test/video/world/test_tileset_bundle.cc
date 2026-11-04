@@ -4,6 +4,7 @@
 
 #include "test_application.hh"
 #include "video/test_images.hh"
+#include "services/service_access.hh"
 
 #include <sdlpp/video/surface.hh>
 
@@ -47,7 +48,8 @@ TEST_SUITE("neutrino::video tileset bundle") {
             CHECK(bundle.visual(id).valid());
         }
         CHECK_FALSE(bundle.sheets.empty());
-        CHECK(bundle.atlases.size() == bundle.sheets.size()); // one sheet per uploaded page
+        CHECK(bundle.atlases.size() == 1); // one atlas, however many pages it spans
+        CHECK(bundle.sheets.size() == 1);
 
         // No animated tiles: every state slot is the invalid sentinel.
         for (world_local_tile_id id = 0; id < 16; ++id) {
@@ -171,8 +173,8 @@ TEST_SUITE("neutrino::video tileset bundle") {
         neutrino::test::test_application app("tileset bundle spill");
 
         // Two 40x40 tiles are 42x42 each with their gutter belts, so two cannot
-        // share a 64x64 page: an explicit 64x64 cap forces one page (and one sheet)
-        // per tile, exercising the multi-page ref-map deterministically.
+        // share a 64x64 page: an explicit 64x64 cap forces one page per tile. Pages are
+        // the atlas's storage: the bundle still has one atlas and one sheet.
         world_tileset ts;
         ts.first_gid = 1;
         ts.tile_count = 2;
@@ -186,13 +188,19 @@ TEST_SUITE("neutrino::video tileset bundle") {
 
         tileset_bundle bundle = build_bundle(ts, dim{64, 64});
 
-        CHECK(bundle.atlases.size() == 2); // one uploaded page per tile
-        CHECK(bundle.sheets.size() == 2);  // one sheet per page (a sheet is single-atlas)
+        REQUIRE(bundle.atlases.size() == 1);
+        CHECK(bundle.sheets.size() == 1);
         REQUIRE(bundle.visual(0).valid());
         REQUIRE(bundle.visual(1).valid());
-        // The point of the ref-map: the two tiles resolve through different sheets,
-        // not one shared sheet + identity index.
-        CHECK(bundle.visual(0).sheet != bundle.visual(1).sheet);
+        CHECK(bundle.visual(0).sheet == bundle.visual(1).sheet);
+        CHECK(bundle.visual(0).visual != bundle.visual(1).visual);
+        // The two pictures are on different page textures of that one atlas.
+        const auto& registry = neutrino::require_texture_registry();
+        const auto [page0, rect0] = registry.get(bundle.atlases[0], 0);
+        const auto [page1, rect1] = registry.get(bundle.atlases[0], 1);
+        CHECK(&page0 != &page1);
+        CHECK(rect0.w == 40);
+        CHECK(rect1.w == 40);
 
         destroy_bundle(bundle);
     }

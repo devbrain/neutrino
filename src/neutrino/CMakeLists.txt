@@ -238,8 +238,7 @@ target_link_libraries(neutrino
         PRIVATE
         neutrino::bstream
         nlohmann_json::nlohmann_json
-        pugixml::pugixml
-        neutrino_stb_rect_pack)
+        pugixml::pugixml)
 
 if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)
         target_compile_definitions(neutrino

@@ -211,18 +211,33 @@ namespace neutrino {
             };
         }
 
+        // Where a visual's pixels are on the GPU: its picture's page texture, and the
+        // visual's sub-rect moved from picture-local into page coordinates.
+        struct resolved_visual {
+            const texture& page;
+            rect src;
+        };
+
+        [[nodiscard]] resolved_visual resolve_visual(const texture_registry& registry,
+                                                     const sprite_sheet& sheet,
+                                                     const sprite_visual& visual) {
+            const auto [page, picture] = registry.get(sheet.atlas(), visual.picture);
+            const auto& r = visual.texture_rect;
+            return {page, rect{picture.x + r.x, picture.y + r.y, r.w, r.h}};
+        }
+
         sdlpp::expected <void, std::string> draw_sprite_diagonal(
             sdlpp::renderer& renderer,
-            const gpu_texture_atlas& atlas,
+            const resolved_visual& resolved,
             const sprite_visual& visual,
             render_pos position,
             sprite_flip flip,
             float scale,
             float rotation,
             bool snap) {
-            const auto& src = visual.texture_rect;
-            const auto texture_width = static_cast <float>(atlas.width);
-            const auto texture_height = static_cast <float>(atlas.height);
+            const auto& src = resolved.src;
+            const auto texture_width = static_cast <float>(resolved.page.size().width);
+            const auto texture_height = static_cast <float>(resolved.page.size().height);
             const float u0 = static_cast <float>(src.x) / texture_width;
             const float v0 = static_cast <float>(src.y) / texture_height;
             const float u1 = static_cast <float>(src.x + src.w) / texture_width;
@@ -270,7 +285,7 @@ namespace neutrino {
             }
             constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
 
-            return renderer.render_geometry(atlas.texture.native().get(), vertices, indices);
+            return renderer.render_geometry(resolved.page.native().get(), vertices, indices);
         }
 
         sdlpp::expected <void, std::string> draw_visual_impl(
@@ -285,13 +300,13 @@ namespace neutrino {
             ENFORCE(std::isfinite(rotation), "sprite rotation must be finite");
 
             const auto& visual = sheet.visual(visual_id);
-            const auto& atlas = registry.get(sheet.atlas());
+            const auto resolved = resolve_visual(registry, sheet, visual);
             auto& renderer = get_renderer();
             const bool snap = snapping();
             position = snap_pos(position, snap);
 
             if (has_diagonal_flip(flip)) {
-                return draw_sprite_diagonal(renderer, atlas, visual, position, flip, scale, rotation, snap);
+                return draw_sprite_diagonal(renderer, resolved, visual, position, flip, scale, rotation, snap);
             }
 
             const auto dst_w = scaled_extent(static_cast <float>(visual.texture_rect.w), scale, snap);
@@ -314,8 +329,8 @@ namespace neutrino {
 
             const bool rotate = rotation != 0.0f;
             return renderer.copy_ex(
-                atlas.texture.native(),
-                std::optional <rect>{visual.texture_rect},
+                resolved.page.native(),
+                std::optional <rect>{resolved.src},
                 std::optional <sdlpp::rect <float>>{dst},
                 static_cast <double>(rotation),
                 // Pivot around the (flip-adjusted) visual origin; at 0 keep the
@@ -650,14 +665,13 @@ namespace neutrino {
         }
         const auto& manager = require_sprites_manager();
         const auto& sheet = manager.get(visual.sheet);
-        const auto& sprite = sheet.visual(visual.visual);
-        const auto& atlas = require_texture_registry().get(sheet.atlas());
+        const auto resolved = resolve_visual(require_texture_registry(), sheet, sheet.visual(visual.visual));
         // Straight blit into the explicit destination: the caller has already rounded
         // both corners, so no origin/scale rounding here. Diagonal flip / rotation are
         // not supported on this path (H/V only).
         DRAW_CHECK(get_renderer().copy_ex(
-            atlas.texture.native(),
-            std::optional <rect>{sprite.texture_rect},
+            resolved.page.native(),
+            std::optional <rect>{resolved.src},
             std::optional <rect>{dst},
             0.0,
             std::optional <point>{},

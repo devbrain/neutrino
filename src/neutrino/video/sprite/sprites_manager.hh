@@ -70,7 +70,7 @@ namespace neutrino {
             /**
              * @brief Does any registered sprite sheet use this texture atlas?
              */
-            [[nodiscard]] bool uses(gpu_texture_atlas_id id) const;
+            [[nodiscard]] bool uses(atlas_id id) const;
 
             /**
              * @brief Store an animation definition and return its opaque handle.

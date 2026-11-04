@@ -73,7 +73,7 @@ namespace rs {
         for (const auto& r : result.resources) {
             if (r.name.find(".gif") != std::string::npos) {
                 auto data = read_resource(is, r);
-                gr.backdrops.emplace(r.name, neutrino::image_atlas_old(neutrino::load_image(data)));
+                gr.backdrops.emplace(r.name, neutrino::load_image(data));
             }
             if (r.name.find(".pal") != std::string::npos) {
                 auto data = read_resource(is, r);
@@ -105,7 +105,7 @@ namespace rs {
                 } else {
                     if (auto itr_gif = gr.backdrops.find(base + ".gif"); itr_gif != gr.backdrops.end()) {
                         // 2. sibling <base>.gif global colour table (the GIF decoder yields indexed8 + palette)
-                        const auto& gif_srf = itr_gif->second.surface();
+                        const auto& gif_srf = itr_gif->second;
                         if (gif_srf.format() == neutrino::pixel_format::INDEX8) {
                             bob_rc = bob.decode_atlas(gif_srf.get_palette(), adaptor, err, tl_def.source_rects);
                         }

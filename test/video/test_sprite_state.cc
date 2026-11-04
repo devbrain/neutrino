@@ -1,5 +1,5 @@
 #include <doctest/doctest.h>
-#include <neutrino/video/atlas/image_atlas_old.hh>
+#include <neutrino/video/atlas/image_atlas.hh>
 #include <neutrino/video/sprite/sprite_sheet.hh>
 #include <neutrino/video/sprite/sprite_state.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
@@ -26,14 +26,11 @@ TEST_SUITE("neutrino::video::sprite_state") {
             };
         }
 
-        [[nodiscard]] neutrino::image_atlas_old make_atlas() {
+        [[nodiscard]] neutrino::image_atlas make_atlas() {
             auto surface = sdlpp::surface::create_rgb(4, 4, sdlpp::pixel_format_enum::RGBA8888);
             REQUIRE(surface.has_value());
             REQUIRE(surface->put_pixel(0, 0, sdlpp::colors::white).has_value());
-
-            std::vector <neutrino::atlas_frame_old> frames;
-            frames.emplace_back(neutrino::rect{0, 0, 4, 4});
-            return neutrino::image_atlas_old(std::move(*surface), std::move(frames));
+            return neutrino::build_atlas(*surface);
         }
     }
 
@@ -53,17 +50,18 @@ TEST_SUITE("neutrino::video::sprite_state") {
         CHECK_NOTHROW(neutrino::unregister_sprite_state(neutrino::sprite_state_id{}));
         CHECK_NOTHROW(neutrino::unregister_sprite_animation(neutrino::sprite_animation_id{}));
         CHECK_NOTHROW(neutrino::unregister_sprite_sheet(neutrino::sprite_sheet_id{}));
-        CHECK_NOTHROW(neutrino::unregister_atlas(neutrino::gpu_texture_atlas_id{}));
+        CHECK_NOTHROW(neutrino::unregister_atlas(neutrino::atlas_id{}));
     }
 
     TEST_CASE("sprite registration rejects dangling resource references") {
         neutrino::test::test_application test_app("Sprite registration validation test");
 
-        CHECK_THROWS(neutrino::register_sprite_sheet(neutrino::sprite_sheet(neutrino::gpu_texture_atlas_id{})));
+        CHECK_THROWS(neutrino::register_sprite_sheet(neutrino::sprite_sheet(neutrino::atlas_id{})));
 
         auto cpu_atlas = make_atlas();
-        const auto atlas = neutrino::register_atlas(cpu_atlas, neutrino::atlas_texture_format::rgba);
-        const auto sheet = neutrino::register_sprite_sheet(neutrino::sprite_sheet(atlas, cpu_atlas));
+        neutrino::sprite_sheet cpu_sheet(cpu_atlas);
+        const auto atlas = neutrino::register_atlas(std::move(cpu_atlas), neutrino::atlas_texture_format::rgba);
+        const auto sheet = neutrino::register_sprite_sheet(std::move(cpu_sheet));
         const auto stale_visual = neutrino::visual_ref(sheet, 0);
         neutrino::unregister_sprite_sheet(sheet);
         neutrino::unregister_atlas(atlas);
@@ -217,8 +215,9 @@ TEST_SUITE("neutrino::video::sprite_state") {
         neutrino::test::test_application test_app(cfg);
 
         auto cpu_atlas = make_atlas();
-        const auto atlas = neutrino::register_atlas(cpu_atlas, neutrino::atlas_texture_format::rgba);
-        const auto sheet = neutrino::register_sprite_sheet(neutrino::sprite_sheet(atlas, cpu_atlas));
+        neutrino::sprite_sheet cpu_sheet(cpu_atlas);
+        const auto atlas = neutrino::register_atlas(std::move(cpu_atlas), neutrino::atlas_texture_format::rgba);
+        const auto sheet = neutrino::register_sprite_sheet(std::move(cpu_sheet));
         const auto visual = neutrino::visual_ref(sheet, 0);
 
         const auto fixed_state = neutrino::create_sprite_state(neutrino::sprite_appearance{.visual = visual});

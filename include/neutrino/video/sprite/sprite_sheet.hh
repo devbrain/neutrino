@@ -140,7 +140,7 @@ namespace neutrino {
      * and to hand-roll centring offsets. This carries both, plus the pivot in each space.
      */
     struct sprite_metrics {
-        rect  texture_rect{0, 0, 0, 0}; ///< Packed atlas rect -- the VISIBLE pixels.
+        rect  texture_rect{0, 0, 0, 0}; ///< Rect inside the atlas picture -- the VISIBLE pixels.
         dim   source_size{0, 0};        ///< Untrimmed (authored) frame size.
         point trim_offset{0, 0};        ///< Visible rect's top-left within the untrimmed frame.
         point pivot{0, 0};              ///< Draw anchor in PACKED local space (what draw_sprite uses).
@@ -170,16 +170,17 @@ namespace neutrino {
     };
 
     /**
-     * @brief Static metadata that turns one texture rectangle into a logical sprite visual.
+     * @brief Static metadata that turns one atlas picture (or a part of it) into a logical
+     *        sprite visual.
      *
-     * @ref texture_rect is copied from the CPU atlas frame so higher sprite layers do
-     * not need to ask the texture registry for source rectangles. @ref origin is the
-     * draw anchor in frame-local pixels. Collision and gameplay bounds belong to the
-     * physics/gameplay systems, not to the sprite sheet.
+     * The visual shows @ref texture_rect of picture @ref picture of the sheet's atlas; the
+     * draw path resolves the picture's page and placement through the texture registry.
+     * @ref origin is the draw anchor in frame-local pixels. Collision and gameplay bounds
+     * belong to the physics/gameplay systems, not to the sprite sheet.
      */
     struct sprite_visual {
         /**
-         * @brief Source rectangle in the sheet texture atlas.
+         * @brief Source rectangle inside picture @ref picture (picture-local pixels).
          */
         rect texture_rect{0, 0, 0, 0};
 
@@ -199,6 +200,11 @@ namespace neutrino {
          * @brief The visible rect's top-left within the untrimmed frame (@c {0,0} = untrimmed).
          */
         point trim_offset{0, 0};
+
+        /**
+         * @brief Index of the atlas picture @ref texture_rect lies in.
+         */
+        std::size_t picture{0};
 
         /// @brief This visual's resolved geometry, with the untrimmed defaults filled in.
         [[nodiscard]] sprite_metrics metrics() const noexcept {
@@ -220,23 +226,23 @@ namespace neutrino {
     class NEUTRINO_EXPORT sprite_sheet {
         public:
             /**
-             * @brief Construct an empty sheet over an uploaded texture atlas.
+             * @brief Construct an empty sheet over a texture atlas.
              */
-            explicit sprite_sheet(gpu_texture_atlas_id atlas);
+            explicit sprite_sheet(atlas_id atlas);
 
             /**
-             * @brief Construct a sheet over an uploaded atlas and copy CPU frame rects.
+             * @brief Construct a sheet with one visual per picture of @p source.
              *
-             * One visual is created for every CPU atlas frame. The visual texture rect
-             * is copied from @c atlas_frame::atlas_rect and the origin is
-             * left at @c {0,0}.
+             * Visual i shows the whole of picture i; the origin is left at @c {0,0}.
+             * The sheet is bound to @c source.id(), so it can be built before the atlas
+             * is consumed by @ref register_atlas.
              */
-            sprite_sheet(gpu_texture_atlas_id atlas, const image_atlas_old& source);
+            explicit sprite_sheet(const image_atlas& source);
 
             /**
              * @brief Texture atlas backing every visual in this sheet.
              */
-            [[nodiscard]] gpu_texture_atlas_id atlas() const noexcept;
+            [[nodiscard]] atlas_id atlas() const noexcept;
 
             /**
              * @brief Number of visual definitions stored in the sheet.
@@ -297,7 +303,7 @@ namespace neutrino {
         private:
             static std::uint64_t next_visual_owner() noexcept;
 
-            gpu_texture_atlas_id m_atlas;
+            atlas_id m_atlas;
             std::uint64_t m_visual_owner{next_visual_owner()};
             std::vector <sprite_visual> m_visuals;
             std::unordered_map <
@@ -316,14 +322,13 @@ namespace neutrino {
     NEUTRINO_EXPORT sprite_sheet_id register_sprite_sheet(sprite_sheet sheet);
 
     /**
-     * @brief Upload a CPU atlas and register a default sprite sheet from its frame rects.
+     * @brief Upload a CPU atlas and register a default sprite sheet over its pictures.
      *
      * This is the sprite-level convenience wrapper around @ref register_atlas. It
-     * uploads the texture atlas, creates one unnamed visual per CPU frame, and copies
-     * each frame's atlas rectangle into @ref sprite_visual::texture_rect.
+     * creates one unnamed visual per picture, then consumes and uploads the atlas.
      */
     NEUTRINO_EXPORT sprite_sheet_id register_sprite_sheet(
-        const image_atlas_old& atlas,
+        image_atlas&& atlas,
         atlas_texture_format format = atlas_texture_format::automatic);
 
     /**

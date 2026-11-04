@@ -15,7 +15,7 @@ namespace neutrino {
         for (const sprite_sheet_id sheet : sheets) {
             unregister_sprite_sheet(sheet);
         }
-        for (const gpu_texture_atlas_id atlas : atlases) {
+        for (const atlas_id atlas : atlases) {
             unregister_atlas(atlas);
         }
         // Clear now that every id is unregistered, so a repeat call (or the destructor)

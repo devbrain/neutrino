@@ -94,7 +94,7 @@ namespace neutrino {
         m_sheets.erase(id);
     }
 
-    bool sprites_manager::uses(gpu_texture_atlas_id id) const {
+    bool sprites_manager::uses(atlas_id id) const {
         return id.valid() && m_sheets.any_of([id](const sprite_sheet& sheet) {
             return sheet.atlas() == id;
         });

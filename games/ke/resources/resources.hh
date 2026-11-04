@@ -22,7 +22,7 @@ namespace rs {
     };
 
     struct game_resources {
-        std::map <std::string, neutrino::image_atlas_old> backdrops;
+        std::map <std::string, neutrino::image> backdrops;
         std::map <std::string, tile_sheet_def> tile_sheets;
         std::vector <ke_level> levels;
         // DIG sound banks (KE_MAIN.DIG + the per-screen tracks), keyed by name; raw bytes a

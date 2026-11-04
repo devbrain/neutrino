@@ -32,7 +32,7 @@ namespace neutrino {
      *
      * A local-tile-id facade over a @ref render_bundle (which owns the atlases,
      * sheets, animations, and shared states and tears them down in order). @ref
-     * build_bundle packs a tileset's tiles into atlas page(s), uploads them, and
+     * build_bundle packs a tileset's tiles into one atlas (one picture per tile), uploads it, and
      * exposes each local tile as a registered @ref sprite_visual_ref; animated tiles
      * additionally get one shared @ref sprite_state_id (in @ref render_bundle::states,
      * indexed by local id) playing their frames.
@@ -43,10 +43,9 @@ namespace neutrino {
      * (a sparse collection tileset's gaps) hold an invalid entry; @ref visual /
      * @ref state bounds-check and return the invalid sentinel.
      *
-     * Because a @ref sprite_sheet backs exactly one atlas, a tileset that spills
-     * past the page cap yields several pages, sheets, and the @ref visuals map
-     * points each tile at whichever page/sheet holds it -- callers never see the
-     * page split.
+     * A tileset that spills past the page cap gets an atlas with several pages, but
+     * pages are the atlas's storage: there is still one atlas and one sheet, and
+     * callers never see the page split.
      *
      * Move-only and RAII via the @ref render_bundle base (which owns/tears down the
      * registered ids). The move operations are explicit so they *swap* @ref visuals too,
@@ -103,7 +102,7 @@ namespace neutrino {
      * larger than @p max_page_size instead of resolving the cap from the active
      * renderer. Use it when a tileset must spill across several atlas pages under a
      * known bound (and in tests, to force the multi-page path deterministically).
-     * The page pixel format is still inferred from the source images.
+     * Pages are RGBA8888 whatever the source images' format.
      *
      * @pre @p max_page_size must be positive and at least as large as the biggest
      *      tile plus its gutter, or packing throws (a tile can never fit a page).

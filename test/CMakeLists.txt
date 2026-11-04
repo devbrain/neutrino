@@ -41,7 +41,6 @@ add_executable(neutrino_tests
         video/test_atlas_loader.cc
         video/test_sprite_animation.cc
         video/test_sprite_state.cc
-        video/test_image_atlas.cc
         video/test_draw.cc
         video/test_color.cc
         video/test_palette.cc
@@ -52,7 +51,6 @@ add_executable(neutrino_tests
         video/test_texture.cc
         video/test_window_presentation.cc
         video/test_sprite_sheet.cc
-        video/test_atlas_packer.cc
         video/world/test_tileset_bundle.cc
         video/world/test_resource_cache.cc
         video/world/test_resource_cache_core.cc

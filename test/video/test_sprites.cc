@@ -10,25 +10,24 @@
 TEST_SUITE("neutrino::video::sprites") {
     namespace {
         struct registered_sheet {
-            neutrino::gpu_texture_atlas_id atlas;
+            neutrino::atlas_id atlas;
             neutrino::sprite_sheet_id sheet;
         };
 
-        [[nodiscard]] neutrino::image_atlas_old make_cpu_atlas() {
-            auto surface = sdlpp::surface::create_rgb(24, 8, sdlpp::pixel_format_enum::RGBA8888);
-            REQUIRE(surface.has_value());
-
-            std::vector <neutrino::atlas_frame_old> frames;
-            frames.emplace_back(neutrino::rect{0, 0, 8, 8});
-            frames.emplace_back(neutrino::rect{8, 0, 8, 8});
-            frames.emplace_back(neutrino::rect{16, 0, 8, 8});
-            return neutrino::image_atlas_old(std::move(*surface), std::move(frames));
+        [[nodiscard]] neutrino::image_atlas make_cpu_atlas() {
+            neutrino::image_bank bank;
+            for (std::uint32_t i = 0; i < 3; ++i) {
+                auto surface = sdlpp::surface::create_rgb(8, 8, sdlpp::pixel_format_enum::RGBA8888);
+                REQUIRE(surface.has_value());
+                bank.entries.push_back({std::move(*surface), i});
+            }
+            return neutrino::build_atlas(bank);
         }
 
         [[nodiscard]] registered_sheet make_registered_sheet() {
             auto cpu_atlas = make_cpu_atlas();
-            const auto atlas = neutrino::register_atlas(cpu_atlas, neutrino::atlas_texture_format::rgba);
-            neutrino::sprite_sheet sheet(atlas, cpu_atlas);
+            neutrino::sprite_sheet sheet(cpu_atlas);
+            const auto atlas = neutrino::register_atlas(std::move(cpu_atlas), neutrino::atlas_texture_format::rgba);
             sheet.bind("idle.0", sheet.visual_id(0));
             sheet.bind("run.0", sheet.visual_id(1));
             sheet.bind("run.1", sheet.visual_id(2));
