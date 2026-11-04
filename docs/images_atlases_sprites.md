@@ -457,8 +457,9 @@ playhead owned by the actor and advanced with `update(dt)`, and `draw_tile(pos, 
    `{region, duration, flip}` plus a loop flag; a still picture is a sprite with one frame.
    `sprite_animation`, `sprite_appearance`, `sprite_visual`, `sprite_clip_def` and
    `sprite_frame_def` go. *Frame* means an animation step only.
-3. **The per-actor playhead is a value** (`sprite_player`), owned by the actor like brix's
-   `animation` -- no registry, no unregister. Which sprite an actor plays (brix's
+3. ~~**The per-actor playhead is a value** (`sprite_player`), owned by the actor like brix's
+   `animation` -- no registry, no unregister.~~ Superseded by 11 and 13: the instance is a
+   `sprite` handle whose state the engine owns and advances. Which sprite an actor plays (brix's
    `sprite`: a list of animations + the active one) is the game's state machine.
 4. **The game's id is opaque.** `image_bank::entry::id` is whatever the game uses (block
    number, character code, cell index); it may be sparse and may repeat. The engine never
@@ -487,6 +488,34 @@ playhead owned by the actor and advanced with `update(dt)`, and `draw_tile(pos, 
 10. **Picture sizes come from either side.** `image_atlas::picture_size(i)` before upload
     (no renderer needed, so headless code keeps the atlas alive), `picture_size(atlas, i)`
     from the registry after. One name, `picture_size` / `picture_count`, at every level.
+
+### 9.2a Decisions of 2026-11-03 (semantics, scenes, timing)
+
+The implementation plan, with milestones, is [`sprite_layer_plan.md`](sprite_layer_plan.md);
+its §2 is the full decision table. In short:
+
+11. **`sprite_def` is the class, `sprite` is the instance.** A `sprite_def` holds **one**
+    animation sequence (frames + loop mode); it is immutable and shared (revised
+    2026-11-04, see 18).
+    This supersedes decision 3's value `sprite_player`: the instance is an RAII handle
+    whose state the engine owns.
+12. **A `sprite` only animates;** the game positions and draws it.
+13. **The engine advances sprites.** Each sprite belongs to the scene that spawned it and
+    advances with that scene's `fixed_update`, with the same `dt`.
+14. **`scene_flags { hides_below, pauses_below }` replaces `is_opaque()`.** A pause menu
+    sets `pauses_below`, so the scenes below, and their sprites, freeze.
+15. **An application always has at least one scene;** `simplex` gets a single built-in scene.
+16. **Events: polling (`finished`, `looped`, `frame_changed`) plus optional callbacks;** a
+    looping animation never finishes. The playhead carries the leftover time.
+17. *Proposed:* per-picture pivot (from the bank entry) with a per-frame override; animated
+    tiles evaluated with the pure `frame_at` against the scene clock + a per-cell phase;
+    tint, source inset and fit modes in the draw API; refcounted `atlas_handle`; an
+    `atlas_cache` + PNG loader as the asset layer.
+18. *(2026-11-04)* **One sequence per `sprite_def`; switching is `sprite::play(other_def)`.**
+    A survey of KE, Luxor, the world renderer, warlords and brix found no user that needs
+    named multi-clip defs (brix's definition is one frame range; its instance switches
+    between definitions). Grouping is a plain game struct of `sprite_def` members; names
+    exist only in loaders. This removes animation names, ids and enum keys from the engine.
 
 ### 9.3 How brix looks with it
 

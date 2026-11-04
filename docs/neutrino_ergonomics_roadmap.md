@@ -481,6 +481,15 @@ flowchart TD
 
 ---
 
+#### 3.7 Sprite Layer Redesign (`sprite_def` / `sprite`, scene-owned animation)
+* Replace the sheet / visual / appearance / animation / state stack with a `sprite_def`
+  (class: named animations over atlas addresses) and a `sprite` (instance, advanced by the
+  engine with its scene's `fixed_update`).
+* Scene groundwork: `scene_flags { hides_below, pauses_below }` replaces `is_opaque()`;
+  every application has at least one scene (simplex gets a built-in one).
+* Builds on 3.6 (`atlas_address`, texture registry). Plan with milestones M0–M7:
+  [`sprite_layer_plan.md`](sprite_layer_plan.md).
+
 ### Phase 4: Scene Ergonomics & Migration
 
 **Goal**: Remove unnecessary ceremony and migrate all tutorials, games, and tests.
