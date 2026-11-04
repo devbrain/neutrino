@@ -110,10 +110,9 @@ namespace neutrino::simplex::detail {
     void application_adapter::update_scene(float dt, const input_snapshot& input) {
         if (m_state != lifecycle::running || !is_running()) return;
         try {
+            // The canvas and the draw colour persist between frames (the documented
+            // contract): no clear here; on_update clears when it wants a fresh frame.
             canvas_scope canvas(get_renderer(), *m_canvas, m_canvas_color);
-            get_renderer().set_draw_color(sdlpp::colors::black);
-            get_renderer().clear();
-
             const bool keep_running = m_owner->on_update(dt, input);
             canvas.restore();
             if (!keep_running) stop();

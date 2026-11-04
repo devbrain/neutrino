@@ -54,6 +54,8 @@ namespace {
                 }
 
                 const auto [w, h] = render_size();
+                // The canvas persists between frames: clear it, or the stars leave trails.
+                draw_rect_fill(rect{0, 0, w, h}, neutrino::colors::black);
                 const auto center_x = static_cast <float>(w) / 2.0f;
                 const auto center_y = static_cast <float>(w) / 2.0f;
                 constexpr float focal_length = 400.0f;
