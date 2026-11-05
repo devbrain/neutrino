@@ -10,11 +10,10 @@
 #include "video/sprite/texture_registry.hh"
 
 namespace neutrino {
-    atlas_id register_atlas(
-        image_atlas&& atlas,
-        atlas_texture_format format) {
+
+    atlas_id register_atlas(image_atlas&& atlas, atlas_texture_format format, texture_filter filter) {
         return require_texture_registry().add(
-            service_locator::instance().get_renderer(), std::move(atlas), format);
+            service_locator::instance().get_renderer(), std::move(atlas), format, filter);
     }
 
     void unregister_atlas(atlas_id atlas) {

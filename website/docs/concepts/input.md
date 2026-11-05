@@ -19,9 +19,8 @@ would make its speed depend on OS key repeat.
 
 | Hook | When it runs | Default behavior |
 |---|---|---|
-| `application::update_scene(float dt, const input_snapshot& input)` | Once per frame, including frames with no scenes or simulation steps | Runs the scene stack's fixed-step scheduler. An override replaces that scheduler. |
-| `base_scene::fixed_update(sim_duration dt, const input_snapshot& input)` | Zero or more times per frame under the default scheduler | Your scene implements simulation using a constant time step. |
-| `simplex::application::on_update(float dt, const input_snapshot& input)` | Once per frame | Your Simplex callback receives elapsed seconds and the frame snapshot; return `false` to stop. |
+| `base_scene::fixed_update(sim_duration dt, const input_snapshot& input)` | Zero or more times per frame, from the engine's fixed-step scheduler | Your scene implements simulation using a constant time step. |
+| `simplex::application::on_update(float dt, const input_snapshot& input)` | Zero or more times per frame, on the same fixed tick | Your Simplex callback receives the constant tick length and the snapshot; return `false` to stop. |
 
 The final application callbacks keep common input bookkeeping in place. After input
 tracking, `handle_event()` detects render-space size changes and calls `resize_scene(size)`
@@ -50,13 +49,14 @@ flowchart TD
     Resize -. "default" .-> SceneResize["Active scene: on_resize(size)"]
     Event -. "default" .-> Actions["Scene transitions / top scene: handle_action(e)"]
     Track --> Sample["Once per frame: capture input_snapshot"]
-    Sample --> Update["update_scene(frame_dt, input)"]
-    Update -- "default scheduler" --> Steps["0..N scene fixed_update calls<br/>Only the first substep receives edges"]
-    Update -- "Simplex adapter" --> Simplex["on_update(frame_dt, input)<br/>Once per frame"]
+    Sample --> Update["Fixed-step scheduler"]
+    Update --> Steps["0..N scene fixed_update calls<br/>Only the first substep receives edges"]
+    Steps -- "Simplex" --> Simplex["on_update(tick_dt, input)<br/>per fixed_update"]
 ```
 
-Overriding `update_scene()` does not automatically disable scene event dispatch. Each hook
-can be replaced independently. See [Scenes](./scenes.md) for the default stack behavior.
+The scheduler is not a hook: every application runs it. Overriding `event()` or
+`resize_scene()` replaces only that dispatch route. See [Scenes](./scenes.md) for the default
+stack behavior.
 
 For example, this complete Simplex application checks Escape once per frame:
 
@@ -147,8 +147,7 @@ This also affects a press that remains held: the next stepping frame sees `held 
 but `pressed == false`. It does not require a short click; for example, a 144 Hz display
 with a 120 Hz simulation can have frames with no simulation step.
 
-The per-frame `update_scene()` hook and Simplex's `on_update()` still receive that frame's
-snapshot. Guaranteed delivery to fixed-step logic would require buffering actions until
+Simplex's `on_update()` runs on the same ticks and follows the same rule. Guaranteed delivery to fixed-step logic would require buffering actions until
 a simulation step consumes them; the default scheduler currently does not do this.
 :::
 

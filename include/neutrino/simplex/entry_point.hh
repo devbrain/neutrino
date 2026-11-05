@@ -10,6 +10,10 @@ namespace neutrino::simplex::detail {
         [[nodiscard]] static sdlpp::abstract_application* get(application& app) noexcept {  // sdlpp-ok: SDL callback plumbing
             return app.get_application();
         }
+
+        static void rethrow_failure(application& app) {
+            app.rethrow_failure();
+        }
     };
 
     template<typename Factory>
@@ -34,8 +38,21 @@ namespace neutrino::simplex::detail {
 
     inline SDL_AppResult app_iterate(void* appstate) noexcept {
         if (!appstate) return SDL_APP_FAILURE;
-        return sdlpp::detail::app_iterate(  // sdlpp-ok: SDL callback plumbing
-            application_access::get(*static_cast<application*>(appstate)));
+        auto& app = *static_cast<application*>(appstate);
+        const SDL_AppResult result = sdlpp::detail::app_iterate(  // sdlpp-ok: SDL callback plumbing
+            application_access::get(app));
+        // The engine contains scene exceptions; a simplex callback's failure was recorded and the
+        // application stopped instead. Report it here, as SDL_APP_FAILURE.
+        try {
+            application_access::rethrow_failure(app);
+        } catch (const std::exception& error) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error in iterate: %s", error.what());
+            return SDL_APP_FAILURE;
+        } catch (...) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error in iterate: unknown exception");
+            return SDL_APP_FAILURE;
+        }
+        return result;
     }
 
     inline SDL_AppResult app_event(void* appstate, SDL_Event* event) noexcept {

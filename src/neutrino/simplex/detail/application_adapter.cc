@@ -11,6 +11,7 @@
 #include <neutrino/simplex/application.hh>
 
 #include "simplex/detail/application_adapter.hh"
+#include "simplex/detail/simplex_scene.hh"
 
 namespace neutrino::simplex::detail {
     namespace {
@@ -107,7 +108,13 @@ namespace neutrino::simplex::detail {
         }
     }
 
-    void application_adapter::update_scene(float dt, const input_snapshot& input) {
+    std::unique_ptr<base_scene> application_adapter::create_initial_scene() {
+        return std::make_unique<simplex_scene>(*this);
+    }
+
+    void application_adapter::run_update(float dt, const input_snapshot& input) noexcept {
+        // Also guards the remaining fixed ticks of a frame in which on_update returned false
+        // or threw: no callback runs after the application stopped.
         if (m_state != lifecycle::running || !is_running()) return;
         try {
             // The canvas and the draw colour persist between frames (the documented
@@ -117,20 +124,18 @@ namespace neutrino::simplex::detail {
             canvas.restore();
             if (!keep_running) stop();
         } catch (...) {
-            stop();
-            throw; // The entry point reports callback failure.
+            fail(std::current_exception());
         }
     }
 
-    void application_adapter::render_scene() {
+    void application_adapter::present() noexcept {
         if (m_state != lifecycle::running || !is_running()) return;
         // Presenting the canvas is the whole frame: a rejected draw stops the app (the entry point
         // reports it) rather than being logged and skipped like an ordinary draw.
         const auto failures_before = draw_failure_count();
         draw_texture(*m_canvas);
         if (draw_failure_count() != failures_before) {
-            stop();
-            throw std::runtime_error("Simplex canvas presentation failed");
+            fail(std::make_exception_ptr(std::runtime_error("Simplex canvas presentation failed")));
         }
     }
 
@@ -139,6 +144,17 @@ namespace neutrino::simplex::detail {
             m_state = lifecycle::stopped;
         }
         quit();
+    }
+
+    void application_adapter::fail(std::exception_ptr error) noexcept {
+        stop();
+        if (!m_failure) m_failure = std::move(error);
+    }
+
+    void application_adapter::rethrow_failure() {
+        if (m_failure) {
+            std::rethrow_exception(std::exchange(m_failure, nullptr));
+        }
     }
 
     void application_adapter::teardown() {
@@ -159,5 +175,4 @@ namespace neutrino::simplex::detail {
         }
         m_canvas.reset();
     }
-
 }

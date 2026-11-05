@@ -307,8 +307,8 @@ void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in)
    other external inputs, and deterministic simulation behavior. Snapshots alone do not
    guarantee byte-for-byte replays.
 
-This tutorial uses the default scene scheduler. Applications can replace it through
-`update_scene(dt, input)`; Simplex delivers the snapshot once per frame through `on_update()`.
+Every application runs this scheduler; Simplex delivers the snapshot to `on_update()` on the
+same fixed ticks.
 See [where input is delivered](../concepts/input.md#where-input-is-delivered).
 
 ---

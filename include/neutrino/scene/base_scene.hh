@@ -3,11 +3,14 @@
 
 #pragma once
 
+#include <cstdint>
 #include <chrono>
+
 #include <sdlpp/events/event_category.hh>
 #include <neutrino/neutrino_export.h>
 #include <neutrino/input/input_snapshot.hh>
 #include <neutrino/video/geometry_types.hh>
+#include <neutrino/detail/enum.hh>
 
 namespace neutrino {
     /// @brief Floating-point milliseconds. Wall-clock frame delta for render-rate cosmetics; the
@@ -21,6 +24,16 @@ namespace neutrino {
     /// @brief A raw SDL event (keyboard, mouse, window, text input, ...), as delivered to
     ///        @ref base_scene::handle_action and application::event.
     using event = sdlpp::event; // sdlpp-ok
+
+    /// @brief What a scene does to the scenes beneath it on the stack. The two bits are
+    ///        independent; the scene carrying them is always updated and drawn itself.
+    enum class scene_flags : std::uint8_t {
+        none         = 0, ///< An overlay: the scenes below keep updating and are drawn.
+        hides_below  = 1, ///< The scenes below are not drawn (this scene covers the display).
+        pauses_below = 2  ///< The scenes below are not updated; the one directly below gets
+                          ///< on_pause when this scene is pushed and on_resume when it is popped.
+    };
+    d_NEUTRINO_PROMOTE_ENUM(scene_flags);
 
     /// @brief Abstract scene interface with lifecycle hooks and per-frame callbacks.
     /// Scenes are managed in a stack by scenes_manager.
@@ -36,11 +49,13 @@ namespace neutrino {
             virtual void on_exit() {
             }
 
-            /// @brief Called when another scene is pushed on top of this one.
+            /// @brief Called when a scene with scene_flags::pauses_below is pushed on top of this
+            /// one: fixed_update stops until on_resume.
             virtual void on_pause() {
             }
 
-            /// @brief Called when the scene above is popped, making this one active again.
+            /// @brief Called when the scene above, which paused this one, is popped: fixed_update
+            /// runs again.
             virtual void on_resume() {
             }
 
@@ -63,7 +78,11 @@ namespace neutrino {
             virtual void render() = 0;
             /// @brief Handle an SDL event (input, window, etc.).
             virtual void handle_action(const event& ev);
-            /// @brief Return true if this scene fully covers the screen (no need to render below).
-            [[nodiscard]] virtual bool is_opaque() const;
+            /// @brief What this scene does to the scenes beneath it (see @ref scene_flags).
+            /// Default: `hides_below | pauses_below` -- a full-screen scene. Overlays override it:
+            /// a pause menu returns `pauses_below`, a busy spinner returns `none`. The value must
+            /// not change while the scene is on the stack: push and pop each read it, and a change
+            /// in between would unbalance on_pause / on_resume.
+            [[nodiscard]] virtual scene_flags flags() const;
     };
 }

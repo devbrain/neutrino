@@ -31,4 +31,8 @@ namespace neutrino::simplex {
     sdlpp::abstract_application* application::get_application() noexcept {
         return neutrino::detail::application_access::base(*m_pimpl->m_app);
     }
+
+    void application::rethrow_failure() {
+        m_pimpl->m_app->rethrow_failure();
+    }
 }

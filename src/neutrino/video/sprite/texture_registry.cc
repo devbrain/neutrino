@@ -26,12 +26,14 @@ namespace neutrino {
 
     gpu_texture_atlas::gpu_texture_atlas(const sdlpp::renderer& renderer,
                                          image_atlas&& atlas,
-                                         atlas_texture_format format)
+                                         atlas_texture_format format,
+                                         texture_filter filter)
         : m_atlas(atlas.id()),
-          m_rects(std::move(atlas.m_rects)) {
+          m_rects(std::move(atlas.m_rects)),
+          m_filter(filter) {
         m_pages.reserve(atlas.m_pages.size());
 
-        for (auto & page : atlas.m_pages) {
+        for (auto& page : atlas.m_pages) {
             sdlpp::expected <sdlpp::texture, std::string> tex;
             if (format == atlas_texture_format::automatic) {
                 tex = sdlpp::texture::create(renderer, page);
@@ -46,7 +48,7 @@ namespace neutrino {
                 tex = sdlpp::texture::create(renderer, *converted);
             }
             if (tex) {
-                m_pages.emplace_back(texture::adopt(std::move(*tex), texture_access::fixed));
+                m_pages.emplace_back(texture::adopt(std::move(*tex), texture_access::fixed)).set_filter(filter);
             } else {
                 THROW_RUNTIME(tex.error());
             }
@@ -67,17 +69,17 @@ namespace neutrino {
         return m_rects[i].picture.dimensions();
     }
 
-    std::pair<const texture&, rect> gpu_texture_atlas::get(std::size_t i) const {
+    std::pair <const texture&, rect> gpu_texture_atlas::get(std::size_t i) const {
         ENFORCE(i < m_rects.size(), "Picture index", i, "is out of range. Number of pictures for atlas", m_atlas,
-                        "is", m_rects.size());
+                "is", m_rects.size());
         const auto& placement = m_rects[i];
         ENFORCE(placement.page < m_pages.size(), "GPU atlas is corrupted");
         return {m_pages[placement.page], placement.picture};
     }
 
-    std::pair<texture&, rect> gpu_texture_atlas::get(std::size_t i) {
+    std::pair <texture&, rect> gpu_texture_atlas::get(std::size_t i) {
         ENFORCE(i < m_rects.size(), "Picture index", i, "is out of range. Number of pictures for atlas", m_atlas,
-                        "is", m_rects.size());
+                "is", m_rects.size());
         const auto& placement = m_rects[i];
         ENFORCE(placement.page < m_pages.size(), "GPU atlas is corrupted");
         return {m_pages[placement.page], placement.picture};
@@ -87,9 +89,11 @@ namespace neutrino {
         return m_atlas;
     }
 
-    atlas_id texture_registry::add(const sdlpp::renderer& renderer, image_atlas&& atlas, atlas_texture_format format) {
-        ENFORCE (!m_atlas.contains(atlas.id()), "Atlas with id", atlas.id(), "is already registered");
-        auto [itr, _] = m_atlas.emplace(atlas.id(), gpu_texture_atlas(renderer, std::move(atlas), format));
+    atlas_id texture_registry::add(const sdlpp::renderer& renderer,
+                                   image_atlas&& atlas, atlas_texture_format format,
+                                   texture_filter filter) {
+        ENFORCE(!m_atlas.contains(atlas.id()), "Atlas with id", atlas.id(), "is already registered");
+        auto [itr, _] = m_atlas.emplace(atlas.id(), gpu_texture_atlas(renderer, std::move(atlas), format, filter));
         return itr->second.id();
     }
 
@@ -118,18 +122,17 @@ namespace neutrino {
         return itr->second.picture_size(picture_idx);
     }
 
-    std::pair<texture&, rect> texture_registry::get(atlas_id idx, std::size_t picture_idx) {
+    std::pair <texture&, rect> texture_registry::get(atlas_id idx, std::size_t picture_idx) {
         auto itr = m_atlas.find(idx);
         ENFORCE(itr != m_atlas.end(), "Atlas with id", idx, "does not exist");
         return itr->second.get(picture_idx);
     }
 
-    std::pair<const texture&, rect> texture_registry::get(atlas_id idx, std::size_t picture_idx) const {
+    std::pair <const texture&, rect> texture_registry::get(atlas_id idx, std::size_t picture_idx) const {
         auto itr = m_atlas.find(idx);
         ENFORCE(itr != m_atlas.end(), "Atlas with id", idx, "does not exist");
         return itr->second.get(picture_idx);
     }
-
 
     void texture_registry::erase(atlas_id idx) {
         auto itr = m_atlas.find(idx);

@@ -1,221 +1,298 @@
 # ============================================================================
 # Neutrino Library Target
 # ============================================================================
+#
+# The library is described as a set of subsystems, then built from all of them at once.
+#
+#   neutrino_subsystem(<name> [DIR <dir>] [PUBLIC <headers>...] [PRIVATE <files>...])
+#
+#   DIR      the subsystem's folder; defaults to <name>. "." is the library root.
+#   PUBLIC   installed headers, relative to include/neutrino/<dir>.
+#   PRIVATE  sources and internal headers, relative to src/neutrino/<dir>.
+#
+# Each call appends to NEUTRINO_SOURCES; add_library() below takes the whole list.
 
 include(GenerateExportHeader)
 
+set(NEUTRINO_SOURCES)
+
+function(neutrino_subsystem name)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "" "DIR" "PUBLIC;PRIVATE")
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "neutrino_subsystem(${name}): unexpected arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+    if(NOT DEFINED arg_DIR)
+        set(arg_DIR ${name})
+    endif()
+    set(files)
+    foreach(f IN LISTS arg_PUBLIC)
+        list(APPEND files ${PROJECT_SOURCE_DIR}/include/neutrino/${arg_DIR}/${f})
+    endforeach()
+    foreach(f IN LISTS arg_PRIVATE)
+        list(APPEND files ${CMAKE_CURRENT_SOURCE_DIR}/${arg_DIR}/${f})
+    endforeach()
+    set(NEUTRINO_SOURCES ${NEUTRINO_SOURCES} ${files} PARENT_SCOPE)
+endfunction()
+
+# ----------------------------------------------------------------------------
+# Subsystems
+# ----------------------------------------------------------------------------
+
+neutrino_subsystem(core DIR .
+    PUBLIC
+        application.hh
+        coordinates.hh
+        entry_point.hh
+        neutrino.hh
+    PRIVATE
+        application.cc
+)
+
+neutrino_subsystem(detail
+    PUBLIC
+        enum.hh
+        hash.hh
+        id_strong_type.hh
+    PRIVATE
+        hash.cc
+)
+
+neutrino_subsystem(utils
+    PRIVATE
+        json.cc
+        json.hh
+        lru.hh
+)
+
+neutrino_subsystem(services
+    PRIVATE
+        service_access.hh
+        service_locator.cc
+        service_locator.hh
+)
+
+neutrino_subsystem(input
+    PUBLIC
+        gamepad_button.hh
+        hotkey.hh
+        input.hh
+        input_snapshot.hh
+        keys.hh
+        mouse_click.hh
+    PRIVATE
+        gamepad_button.cc
+        gamepads.cc
+        gamepads.hh
+        hotkey.cc
+        input_snapshot.cc
+        modifier_match.hh
+        mouse_click.cc
+)
+
+neutrino_subsystem(physics
+    PUBLIC
+        physics.hh
+        geometry/clip.hh
+        geometry/distance.hh
+        geometry/enclose.hh
+        geometry/overlap.hh
+        geometry/shapes.hh
+        geometry/sweep.hh
+        geometry/translate.hh
+        geometry/triangle.hh
+        geometry/types.hh
+        geometry/units.hh
+        collide/aabb_tree_node.hh
+        collide/aabb_tree_storage.hh
+        collide/dynamic_aabb_tree.hh
+        collide/grid.hh
+        collide/sorted_array.hh
+        collide/world.hh
+        collide/world_internal.hh
+        collide/world_types.hh
+)
+
+neutrino_subsystem(scene
+    PUBLIC
+        base_scene.hh
+        scene_transitions.hh
+    PRIVATE
+        base_scene.cc
+        scenes_manager.cc
+        scenes_manager.hh
+)
+
+neutrino_subsystem(audio
+    PUBLIC
+        audio.hh
+        music_stream.hh
+        pc_speaker.hh
+        sound_effect.hh
+    PRIVATE
+        callback_relay.hh
+        memory_io.cc
+        memory_io.hh
+        music_stream.cc
+        pc_speaker.cc
+        sdl_io_stream.cc
+        sdl_io_stream.hh
+        sound_effect.cc
+        sound_system.cc
+        sound_system.hh
+)
+
+neutrino_subsystem(video
+    PUBLIC
+        color.hh
+        draw.hh
+        geometry_types.hh
+        globals.hh
+        palette.hh
+        sprites.hh
+        texture.hh
+        world.hh
+    PRIVATE
+        draw.cc
+        globals.cc
+        palette.cc
+        sprites.cc
+        texture.cc
+)
+
+neutrino_subsystem(video_image DIR video/image
+    PUBLIC
+        image.hh
+        image_bank.hh
+        image_bank_builder.hh
+        image_builder.hh
+        image_loader.hh
+    PRIVATE
+        image_bank_builder.cc
+        image_builder.cc
+        image_loader.cc
+)
+
+neutrino_subsystem(video_atlas DIR video/atlas
+    PUBLIC
+        atlas_id.hh
+        bitmask.hh
+        image_atlas.hh
+    PRIVATE
+        atlas_id_gen.cc
+        atlas_id_gen.hh
+        bitmask.cc
+        image_atlas.cc
+        shelf_packer.hh
+)
+
+neutrino_subsystem(video_sprite DIR video/sprite
+    PUBLIC
+        atlas_loader.hh
+        image_identity.hh
+        render_bundle.hh
+        sprite_animation.hh
+        sprite_appearance.hh
+        sprite_cache.hh
+        sprite_def.hh
+        sprite_def_builder.hh
+        sprite_set.hh
+        sprite_sheet.hh
+        sprite_state.hh
+        texture_atlas.hh
+    PRIVATE
+        atlas_loader.cc
+        image_decode.hh
+        image_identity.cc
+        render_bundle.cc
+        resource_cache_core.hh
+        resource_registry.hh
+        sprite_animation.cc
+        sprite_cache.cc
+        sprite_def.cc
+        sprite_def_builder.cc
+        sprite_set.cc
+        sprite_sheet.cc
+        sprite_state.cc
+        sprites_manager.cc
+        sprites_manager.hh
+        surface_lock.hh
+        texture_atlas.cc
+        texture_registry.cc
+        texture_registry.hh
+)
+
+neutrino_subsystem(video_world DIR video/world
+    PUBLIC
+        camera.hh
+        render_layer.hh
+        resource_cache.hh
+        sprite_batch.hh
+        texture_layer.hh
+        tileset_bundle.hh
+        world_compositor.hh
+        world_renderer.hh
+    PRIVATE
+        camera.cc
+        resource_cache.cc
+        sprite_batch.cc
+        tileset_bundle.cc
+        world_compositor.cc
+        world_renderer.cc
+)
+
+neutrino_subsystem(world
+    PUBLIC
+        content_key.hh
+        tmx_loader.hh
+        world.hh
+        world_common.hh
+        world_layers.hh
+        world_tileset.hh
+    PRIVATE
+        tmx_loader.cc
+        world.cc
+        tmx/component.cc
+        tmx/component.hh
+        tmx/decompressor.cc
+        tmx/decompressor.hh
+        tmx/encoding.cc
+        tmx/encoding.hh
+        tmx/image.cc
+        tmx/image.hh
+        tmx/layers.cc
+        tmx/layers.hh
+        tmx/node.cc
+        tmx/node.hh
+        tmx/objects.cc
+        tmx/objects.hh
+        tmx/parser.cc
+        tmx/parser.hh
+        tmx/sinfl.h
+        tmx/tilesets.cc
+        tmx/tilesets.hh
+        tmx/world_parser.cc
+        tmx/world_parser.hh
+)
+
+neutrino_subsystem(simplex
+    PUBLIC
+        application.hh
+        entry_point.hh
+    PRIVATE
+        application.cc
+        detail/application_adapter.cc
+        detail/application_adapter.hh
+        detail/simplex_scene.cc
+        detail/simplex_scene.hh
+)
+
+# ----------------------------------------------------------------------------
+# Target
+# ----------------------------------------------------------------------------
+
 neutrino_library_type(neutrino _lib_type)
 
-add_library(neutrino ${_lib_type}
-        # -------------------------------------------------------
-        # Common
-        # -------------------------------------------------------
-        ${PROJECT_SOURCE_DIR}/include/neutrino/application.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/coordinates.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/entry_point.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/neutrino.hh
-        # -------------------------------------------------------
-        # Input
-        # -------------------------------------------------------
-        ${PROJECT_SOURCE_DIR}/include/neutrino/input/input_snapshot.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/input/hotkey.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/input/mouse_click.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/input/gamepad_button.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/input/input.hh
-        # -------------------------------------------------------
-        # Physics
-        # -------------------------------------------------------
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/geometry/clip.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/geometry/distance.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/geometry/enclose.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/geometry/overlap.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/geometry/shapes.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/geometry/translate.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/geometry/triangle.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/geometry/types.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/geometry/units.hh
-
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/aabb_tree_node.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/aabb_tree_storage.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/dynamic_aabb_tree.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/grid.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/sorted_array.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/world.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/world_internal.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/collide/world_types.hh
-
-        ${PROJECT_SOURCE_DIR}/include/neutrino/physics/physics.hh
-        # -------------------------------------------------------
-        # Scenes
-        # -------------------------------------------------------
-        ${PROJECT_SOURCE_DIR}/include/neutrino/scene/base_scene.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/scene/scene_transitions.hh
-        scene/base_scene.cc
-        scene/scenes_manager.hh
-        scene/scenes_manager.cc
-
-        # -------------------------------------------------------
-        # Audio
-        # -------------------------------------------------------
-        ${PROJECT_SOURCE_DIR}/include/neutrino/audio/audio.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/audio/sound_effect.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/audio/music_stream.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/audio/pc_speaker.hh
-        audio/sound_system.hh
-        audio/sound_system.cc
-        audio/sound_effect.cc
-        audio/music_stream.cc
-        audio/pc_speaker.cc
-        audio/sdl_io_stream.hh
-        audio/sdl_io_stream.cc
-        audio/memory_io.hh
-        audio/memory_io.cc
-        # -------------------------------------------------------
-        # Video
-        # -------------------------------------------------------
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/detail/id_strong_type.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image_loader.hh
-        video/image/image_loader.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image_builder.hh
-        video/image/image_builder.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image_bank.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image_bank_builder.hh
-        video/image/image_bank_builder.cc
-
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/image/image.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/geometry_types.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/globals.hh
-        video/globals.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/draw.hh
-        video/draw.cc
-        video/texture.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/texture.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/palette.hh
-        video/palette.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprites.hh
-        video/sprites.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/bitmask.hh
-        video/atlas/bitmask.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/image_atlas.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/atlas/atlas_id.hh
-        video/atlas/image_atlas.cc
-        video/atlas/shelf_packer.hh
-        video/atlas/atlas_id_gen.cc
-        video/atlas/atlas_id_gen.hh
-        video/sprite/surface_lock.hh
-        video/sprite/image_decode.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/texture_atlas.hh
-        video/sprite/texture_atlas.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_appearance.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_animation.hh
-        video/sprite/sprite_animation.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_state.hh
-        video/sprite/sprite_state.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_sheet.hh
-        video/sprite/sprite_sheet.cc
-        video/sprite/resource_registry.hh
-        video/sprite/sprites_manager.cc
-        video/sprite/sprites_manager.hh
-        video/sprite/texture_registry.cc
-        video/sprite/texture_registry.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/render_bundle.hh
-        video/sprite/render_bundle.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/image_identity.hh
-        video/sprite/image_identity.cc
-        video/sprite/resource_cache_core.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_def.hh
-        video/sprite/sprite_def.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_def_builder.hh
-        video/sprite/sprite_def_builder.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_set.hh
-        video/sprite/sprite_set.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/sprite_cache.hh
-        video/sprite/sprite_cache.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/sprite/atlas_loader.hh
-        video/sprite/atlas_loader.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/tileset_bundle.hh
-        video/world/tileset_bundle.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/resource_cache.hh
-        video/world/resource_cache.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/world_renderer.hh
-        video/world/world_renderer.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/camera.hh
-        video/world/camera.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/sprite_batch.hh
-        video/world/sprite_batch.cc
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/render_layer.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/texture_layer.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/video/world/world_compositor.hh
-        video/world/world_compositor.cc
-
-
-        # -------------------------------------------------------
-        # Utils
-        # -------------------------------------------------------
-        ${PROJECT_SOURCE_DIR}/include/neutrino/detail/hash.hh
-        utils/lru.hh
-        detail/hash.cc
-        utils/json.cc
-        utils/json.hh
-        # -------------------------------------------------------
-        # World
-        # -------------------------------------------------------
-        services/service_access.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/world/content_key.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/world/world_common.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/world/world_layers.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/world/world_tileset.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/world/world.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/world/tmx_loader.hh
-        world/world.cc
-        world/tmx_loader.cc
-        world/tmx/component.cc
-        world/tmx/component.hh
-        world/tmx/decompressor.cc
-        world/tmx/decompressor.hh
-        world/tmx/encoding.cc
-        world/tmx/encoding.hh
-        world/tmx/image.cc
-        world/tmx/image.hh
-        world/tmx/layers.cc
-        world/tmx/layers.hh
-        world/tmx/node.cc
-        world/tmx/node.hh
-        world/tmx/objects.cc
-        world/tmx/objects.hh
-        world/tmx/parser.cc
-        world/tmx/parser.hh
-        world/tmx/sinfl.h
-        world/tmx/tilesets.cc
-        world/tmx/tilesets.hh
-        world/tmx/world_parser.cc
-        world/tmx/world_parser.hh
-        # -------------------------------------------------------
-        # Services
-        # -------------------------------------------------------
-        services/service_locator.cc
-        services/service_locator.hh
-        input/gamepads.cc
-        input/gamepads.hh
-        input/modifier_match.hh
-
-        application.cc
-        input/input_snapshot.cc
-        input/hotkey.cc
-        input/mouse_click.cc
-        input/gamepad_button.cc
-
-        # ----------------------------------------------------------
-        # Simplex
-        # ----------------------------------------------------------
-        ${PROJECT_SOURCE_DIR}/include/neutrino/simplex/application.hh
-        ${PROJECT_SOURCE_DIR}/include/neutrino/simplex/entry_point.hh
-        simplex/detail/application_adapter.hh
-        simplex/detail/application_adapter.cc
-        simplex/application.cc
-
-)
+add_library(neutrino ${_lib_type} ${NEUTRINO_SOURCES})
 add_library(neutrino::neutrino ALIAS neutrino)
 
 target_include_directories(neutrino

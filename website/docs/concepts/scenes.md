@@ -197,7 +197,7 @@ class gameplay_scene : public neutrino::base_scene {
 
 With the default application hooks, `fixed_update()` receives a snapshot containing both
 held state and button edges, while `handle_action()` receives raw event payloads such as text
-input. The application can replace these routes through `update_scene()` and `event()`.
+input. The application can replace the event route through `event()`.
 See [Input](./input.md) for the hook boundaries and substep delivery rules.
 
 ## Common pitfalls

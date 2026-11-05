@@ -13,8 +13,8 @@ namespace neutrino {
     void base_scene::handle_action([[maybe_unused]] const sdlpp::event& ev) {
     }
 
-    bool base_scene::is_opaque() const {
-        return true;
+    scene_flags base_scene::flags() const {
+        return scene_flags::hides_below | scene_flags::pauses_below;
     }
 }
 

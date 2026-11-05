@@ -237,25 +237,47 @@ fixed separately afterwards: simplex no longer clears the canvas before `on_upda
 KE, Luxor, `sprite_demo`, tutorials 02 / 03, drawing 02 / 03 and the map viewer start and
 draw headless without errors.
 
-### M1 — Scene foundations (D5, D6)
+### M1 — Scene foundations (D5, D6) — **done 2026-11-04** (website docs pending)
 
-1. `scene_flags { none, hides_below, pauses_below }` with bit operators (consider one
-   generic enum-flags helper in `neutrino/detail/` shared with `flip` and
-   `hotkey::modifier`).
-2. `base_scene::flags()` replaces `is_opaque()`; default `hides_below | pauses_below`.
-3. `scenes_manager`: render walks down to the first `hides_below`; `fixed_update` walks down
-   to the first `pauses_below`; input still top-only. Tests for all four combinations
-   (opaque, `busy`-style overlay, translucent pause menu, hidden-but-running).
-4. Every application has a scene: `create_initial_scene()` must return one (ENFORCE);
-   remove `m_had_scenes` and the scene-free branches in `application`; an empty stack
-   quits.
-5. `simplex`: the adapter pushes one built-in scene forwarding `fixed_update` → `on_update`
-   and `render` → `on_render`; remove its `update_scene` / `render_scene` overrides.
-   **Behaviour change:** `on_update` receives the fixed tick instead of the frame delta —
-   note it in the simplex docs and fix `simplex_entry_tests`.
+What was done:
+
+1. `scene_flags { none, hides_below, pauses_below }` (`base_scene.hh`). The operators come
+   from a new generic opt-in helper, `neutrino/detail/enum.hh` (`d_NEUTRINO_PROMOTE_ENUM`,
+   `flags_enum`, `has`; tested in `test/detail/test_enum.cc`). `flip` and `hotkey::modifier`
+   were not moved onto it.
+2. `base_scene::flags()` replaces `is_opaque()`; default `hides_below | pauses_below`. A
+   scene's flags must not change while it is on the stack.
+3. `scenes_manager`: render walks down to the nearest `hides_below`, `fixed_update` down to
+   the nearest `pauses_below`; input stays top-only. `on_pause` / `on_resume` follow
+   `pauses_below` only (an overlay without it does not pause the scene below), including the
+   rollback when a pushed scene's `on_enter` throws. Tests: a new "scenes_manager flags"
+   suite (flag matrix, draw order, independent walks, deep walks, event routing, pause /
+   resume matrix, rollback).
+4. Every application has a scene: `create_initial_scene()` is pure virtual; nullptr fails
+   startup; `m_had_scenes` and the scene-free branches are gone; an empty stack quits (also
+   when the first scene's `on_enter` throws). `update_scene` / `render_scene` are no longer
+   hooks: private, non-virtual engine internals. Overridable hooks left: `ready`,
+   `teardown`, `event`, `resize_scene`, the gamepad callbacks, `create_initial_scene`. The
+   test harnesses install an idle scene; the tests that replaced update / render went.
+5. `simplex`: `create_initial_scene()` installs `simplex::detail::simplex_scene`, whose
+   `fixed_update` calls the adapter's `run_update` (bind the canvas, `on_update`, restore)
+   and whose `render` draws the canvas. The adapter keeps the canvas and lifecycle in
+   `ready()` / `teardown()`, so a failing `on_create` still fails startup. Returning false
+   skips the frame's remaining ticks and quits. Callback and canvas-presentation failures
+   are recorded by the scene (the engine would log and pop) and `SIMPLEX_MAIN` reports them
+   as `SDL_APP_FAILURE` after the iteration (`rethrow_failure()`), instead of overriding
+   `update_scene` / `render_scene`. **Behaviour change:** `on_update` gets the fixed tick
+   (1/120 s), 0..N times per frame, edges on the first tick only — documented in
+   `simplex/application.hh`, `NEUTRINO_PLAYGROUND_DESIGN.md` and the website's input / frame
+   pages; `simplex_entry_tests` rewritten for it.
 6. Tutorial 01's `is_opaque` comment → `flags()`.
 
-Exit: scene tests cover the flag matrix; simplex runs through its scene.
+Exit (met): full build; `neutrino_tests` 763/763, `simplex_entry_tests` 17/17 (stable over
+15 runs), `luxor_unittest` 29/29, `game_format_tests` 7/7, `simplex_entry_smoke`,
+`sdlpp_seal`.
+
+Left: `website/docs/concepts/scenes.md` and `website/docs/tutorial/step-01-window-and-scene.md`
+still describe `is_opaque()`.
 
 ### M2 — Sprite core (D1–D4, D7–D9, D12, D15–D18)
 
@@ -376,7 +398,7 @@ Exit: the old API is gone; `video/sprite/` contains only the new layer.
 | A game that generates atlases per session ("new game" loop) accumulates them | Accepted for now (D12); group release is the painter's later option (`render_model.md` §8.2) |
 | `play(a)` accepts any animation, so `hero.play(coin_spin)` compiles | Accepted (D15): switching across animations is a feature (brix's shared explosion); the game's typed struct of animations is the guard |
 | `animation` may later be wanted for tweens or skeletal animation | Accepted (D17); a tween system would take another name |
-| Simplex `on_update` changes from frame delta to fixed tick | Document; adjust `simplex_entry_tests` (all green since the card #19 canvas fix, so any new failure is this change) |
+| Simplex `on_update` changes from frame delta to fixed tick | Done in M1: documented, `simplex_entry_tests` rewritten |
 | The world renderer needs its scene's clock | Pass elapsed scene time into `world_renderer::render` (or let the renderer read the current scene's clock) — decide in M4.2 |
 | Mesh effects (`render_model.md` §6) need a clock too | Same answer as sprites: the owning scene's time |
 | Ordering: sprites advance before or after the scene's `fixed_update` | Before (M2.4), so polling sees this tick's events; revisit if a game needs the reverse |

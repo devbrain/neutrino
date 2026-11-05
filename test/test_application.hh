@@ -4,9 +4,28 @@
 
 #include <SDL3/SDL.h>
 
+#include <memory>
 #include <string>
 
 namespace neutrino::test {
+    /// A scene that does nothing. Every application has at least one scene; the harness installs
+    /// this one so tests get a live engine without scene behaviour of their own.
+    struct idle_scene final : base_scene {
+        void fixed_update(sim_duration, const input_snapshot&) override {}
+        void render() override {}
+    };
+
+    /// The application the harness runs: the stock engine with an idle first scene.
+    class harness_application final : public application {
+        public:
+            using application::application;
+
+        protected:
+            std::unique_ptr <base_scene> create_initial_scene() override {
+                return std::make_unique <idle_scene>();
+            }
+    };
+
     class test_application {
         public:
             explicit test_application(std::string title = "Neutrino test application")
@@ -67,7 +86,7 @@ namespace neutrino::test {
                 return cfg;
             }
 
-            application m_app;
+            harness_application m_app;
             bool m_started{false};
     };
 }

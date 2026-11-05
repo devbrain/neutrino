@@ -10,10 +10,9 @@ Neutrino's default scene scheduler advances simulation in fixed time steps. A sc
 `fixed_update` receives a **constant** `dt` and may run zero, one, or several times per frame.
 Rendering follows the updates and draws the latest state.
 
-At the application boundary, `update_scene(float dt, const input_snapshot& input)` runs once
-per frame with elapsed seconds and a freshly captured snapshot. Its default implementation
-runs the scheduler described here. An override replaces it; Simplex uses this hook to call
-`on_update(dt, input)` once per frame. See [Input](./input.md#where-input-is-delivered).
+Once per frame the application captures a fresh input snapshot and runs the scheduler
+described here with the elapsed seconds. Every application runs it; Simplex too, whose
+`on_update(dt, input)` is called on each fixed tick. See [Input](./input.md#where-input-is-delivered).
 
 ## Why not just use the frame delta?
 
@@ -34,7 +33,7 @@ on the initial state, input sequence, randomness, and the simulation's numerical
 
 ## The loop
 
-Each frame, the default `update_scene()` adds elapsed time to an accumulator, then drains it
+Each frame, the scheduler adds elapsed time to an accumulator, then drains it
 in whole ticks. In this simplified pseudocode, `input` is the frame snapshot:
 
 ```text
@@ -159,8 +158,8 @@ request, not a limitation you should work around by re-deriving positions in `re
 
 ## What this means for your code
 
-- With the default scene scheduler, put simulation in `fixed_update` and drawing in `render`.
-  Simplex instead calls `on_update(dt, input)` once per frame, with elapsed seconds.
+- Put simulation in `fixed_update` and drawing in `render`. Simplex calls `on_update(dt, input)`
+  on the same fixed ticks, so the same rules apply to it.
 - Treat the `dt` you are handed as authoritative. Do not measure elapsed time yourself.
 - Do not assume `fixed_update` runs once per frame. It may run zero times, or five.
 - Do not assume `render` runs between every pair of substeps. It does not.

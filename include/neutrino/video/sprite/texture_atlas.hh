@@ -10,6 +10,8 @@
 #include <neutrino/video/atlas/image_atlas.hh>
 #include <neutrino/video/geometry_types.hh>
 
+#include <neutrino/video/texture.hh>
+
 namespace neutrino {
     /**
      * @brief Requested renderer texture format for an uploaded texture atlas.
@@ -49,11 +51,16 @@ namespace neutrino {
      *
      * @param atlas CPU atlas to upload; moved from.
      * @param format Requested upload format.
+     * @param filter How every page is sampled when a picture is drawn at a different size.
+     *        Defaults to linear, unlike standalone textures (nearest): atlas pages have always
+     *        been linear-filtered, so existing atlases keep their look. Pass
+     *        texture_filter::nearest for pixel-exact art such as pixel fonts.
      * @return The atlas's id, the same one @ref image_atlas::id returned.
      */
     NEUTRINO_EXPORT atlas_id register_atlas(
         image_atlas&& atlas,
-        atlas_texture_format format = atlas_texture_format::automatic);
+        atlas_texture_format format = atlas_texture_format::automatic,
+        texture_filter filter = texture_filter::linear);
 
     /**
      * @brief Unregister an uploaded texture atlas.

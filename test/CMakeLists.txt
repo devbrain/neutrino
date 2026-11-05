@@ -48,6 +48,7 @@ add_executable(neutrino_tests
         video/test_image_bank_builder.cc
         video/test_shelf_packer.cc
         video/test_build_atlas.cc
+        video/test_register_atlas.cc
         video/test_texture.cc
         video/test_window_presentation.cc
         video/test_sprite_sheet.cc
@@ -65,6 +66,7 @@ add_executable(neutrino_tests
 
         detail/test_hash.cc
         detail/test_content_hash.cc
+        detail/test_enum.cc
 
         utils/test_lru.cc
 )

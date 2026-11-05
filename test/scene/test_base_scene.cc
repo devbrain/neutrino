@@ -3,9 +3,9 @@
 //
 // A scene must implement only fixed_update and render; everything else has a default. These pin
 // both halves of that contract: the minimal scene is instantiable (no hook is accidentally pure
-// again), and the defaults are the documented ones -- opaque, and raw events ignored. The opaque
-// default is load-bearing: flipping it would silently keep every covered scene updating and
-// drawing beneath each full-screen scene.
+// again), and the defaults are the documented ones -- hiding and pausing everything below, and raw
+// events ignored. The flags default is load-bearing: dropping either bit would silently keep every
+// covered scene drawing or updating beneath each full-screen scene.
 //
 #include <doctest/doctest.h>
 
@@ -27,9 +27,9 @@ namespace {
 }
 
 TEST_SUITE("neutrino::scene base_scene defaults") {
-    TEST_CASE("a scene is opaque unless it says otherwise") {
+    TEST_CASE("a scene hides and pauses the scenes below unless it says otherwise") {
         const minimal_scene scene;
-        CHECK(scene.is_opaque());
+        CHECK(scene.flags() == (scene_flags::hides_below | scene_flags::pauses_below));
     }
 
     TEST_CASE("the default event and lifecycle hooks are callable no-ops") {

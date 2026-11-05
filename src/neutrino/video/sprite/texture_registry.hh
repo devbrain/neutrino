@@ -20,7 +20,8 @@ namespace neutrino {
         public:
             explicit gpu_texture_atlas(const sdlpp::renderer& renderer,
                                        image_atlas&& atlas,
-                                       atlas_texture_format format);
+                                       atlas_texture_format format,
+                                       texture_filter filter);
 
             gpu_texture_atlas(const gpu_texture_atlas&) = delete;
             gpu_texture_atlas& operator =(const gpu_texture_atlas&) = delete;
@@ -40,6 +41,7 @@ namespace neutrino {
             atlas_id m_atlas;
             std::vector <texture> m_pages;
             std::vector <image_atlas::atlas_placement> m_rects;
+            texture_filter m_filter;
     };
 
     /**
@@ -55,8 +57,8 @@ namespace neutrino {
              */
             atlas_id add(const sdlpp::renderer& renderer,
                      image_atlas&& atlas,
-                     atlas_texture_format format = atlas_texture_format::automatic);
-
+                     atlas_texture_format format = atlas_texture_format::automatic,
+                     texture_filter filter = texture_filter::linear);
 
             [[nodiscard]] bool contains(atlas_id idx) const;
             [[nodiscard]] bool contains(atlas_id idx, std::size_t picture_idx) const;

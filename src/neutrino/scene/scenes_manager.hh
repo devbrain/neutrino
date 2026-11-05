@@ -10,15 +10,19 @@
 
 namespace neutrino {
     /// @brief Manages a stack of base_scene instances, dispatching lifecycle and frame events.
-    /// Only the topmost scene receives input; rendering walks down to the first opaque scene.
+    /// Only the topmost scene receives input. Rendering walks down to the nearest scene with
+    /// scene_flags::hides_below, updating to the nearest one with scene_flags::pauses_below.
+    /// on_pause / on_resume of the scene below follow pauses_below.
     class scenes_manager {
         public:
             scenes_manager();
             ~scenes_manager();
 
-            /// @brief Push a new scene on top, pausing the current one.
+            /// @brief Push a new scene on top; the current one gets on_pause if the new scene
+            /// has scene_flags::pauses_below.
             static void push_scene(std::unique_ptr <base_scene>&& scene);
-            /// @brief Pop the topmost scene, resuming the one below.
+            /// @brief Pop the topmost scene; the one below gets on_resume if the popped scene
+            /// had scene_flags::pauses_below.
             static void pop_scene();
             /// @brief Replace the topmost scene (pop + push as a single operation).
             static void replace_scene(std::unique_ptr <base_scene>&& scene);

@@ -47,12 +47,8 @@ namespace neutrino {
         // published, since destroy_bundle unregisters through the service_locator.
         std::unique_ptr<resource_cache> m_resource_cache;
         std::unique_ptr<sprite_cache> m_sprite_cache;
-        // Set once the first scene enters the stack; an empty stack after
-        // that means the game is over, while a scene-less application keeps
-        // running on the update_scene()/render_scene() hooks.
-        bool m_had_scenes = false;
-        // A scene faulted during this frame's update: its pop is already queued.
-        // Reset by the final update wrapper, independent of render overrides.
+        // A scene faulted during this frame's update: its pop is already queued and
+        // this frame's render is skipped. Reset at the start of every update.
         bool m_scene_faulted = false;
         // Last render_size() delivered via on_resize, so a window_pixel_size_changed
         // that leaves the render space unchanged (e.g. a logical-mode resize) does
@@ -193,10 +189,8 @@ namespace neutrino {
         ready();
         if (auto scene = create_initial_scene()) {
             m_pimpl->m_scenes_manager.push_scene_sync(std::move(scene));
-            // Even if the scene's on_enter threw and was rolled back, the
-            // game committed to scene mode: an empty stack now means quit
-            // instead of idling on a black screen forever.
-            m_pimpl->m_had_scenes = true;
+        } else {
+            THROW_RUNTIME("Failed to create initial scene");
         }
     }
 
@@ -208,16 +202,14 @@ namespace neutrino {
 
         m_pimpl->m_sprites.update(sprite_animation_duration{dt * 1000.0f});
 
-        // Capture input before an override changes render targets, so the pointer
-        // uses the window's presentation mapping. Scene-free applications need the
-        // same frame snapshot as the default scene scheduler.
+        // Capture input before a scene changes render targets, so the pointer uses the
+        // window's presentation mapping.
         const input_snapshot input = sample_input();
         update_scene(dt, input);
     }
 
     void application::update_scene(float dt, const input_snapshot& input) {
         if (!m_pimpl->m_scenes_manager.empty()) {
-            m_pimpl->m_had_scenes = true;
             // Fixed-step scheduler: the sim advances in constant `period` ticks decoupled from the
             // display rate. Clamp the frame delta (a stall must not spiral) into the accumulator, then
             // run whole ticks -- up to max_substeps -- with a constant dt. Input was sampled
@@ -258,7 +250,7 @@ namespace neutrino {
                 pop_scene();
                 m_pimpl->m_scene_faulted = true;
             }
-        } else if (m_pimpl->m_had_scenes) {
+        } else {
             quit();
             return;
         }

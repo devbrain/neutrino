@@ -30,7 +30,7 @@ and retire Simplex once its consumers and useful examples have migrated.
 The first version includes:
 
 - One window with a fixed logical resolution, uniform integer scaling, and resize support.
-- One `on_create()` callback, one `on_update(dt, input)` per frame, and one shutdown hook.
+- One `on_create()` callback, one `on_update(dt, input)` per fixed simulation tick, and one shutdown hook.
 - A persistent CPU canvas, clipped primitives, CPU image blits, and embedded text.
 - Existing Neutrino sprites and text overlays with explicit composition order.
 - Keyboard and mouse polling in logical canvas coordinates.
@@ -173,11 +173,19 @@ window, services, and final SDL callbacks. Configuration is supplied to the faca
 constructor, and [`SIMPLEX_MAIN`](../include/neutrino/simplex/entry_point.hh) drives
 startup and shutdown.
 
+Like every Neutrino application, the adapter runs a scene: its `create_initial_scene()`
+installs one built-in `simplex_scene`. The scene's `fixed_update` runs the user's
+`on_update` into the canvas and its `render` draws the canvas. The adapter keeps the
+canvas and the user lifecycle (`on_create` in `ready()`, `on_destroy` in `teardown()`).
+
 ```mermaid
 classDiagram
     application <|-- application_adapter
+    base_scene <|-- simplex_scene
     simplex_application *-- application_adapter : owns
     application_adapter --> simplex_application : lifecycle callbacks
+    application_adapter ..> simplex_scene : initial scene
+    simplex_scene --> application_adapter : run_update / present
     class simplex_application {
         +application(width, height, title, scale)
         +on_create() bool
@@ -186,17 +194,21 @@ classDiagram
     }
     class application_adapter {
         #ready()
-        #update_scene(dt, input)
-        #render_scene(renderer)
+        #create_initial_scene()
         #teardown()
+        +rethrow_failure()
+    }
+    class simplex_scene {
+        +fixed_update(dt, input)
+        +render()
     }
 ```
 
 The engine keeps common frame bookkeeping in its final callbacks:
 
 - `application::on_update()` dispatches audio callbacks, advances sprite animations,
-  captures one input snapshot, and calls `update_scene(dt, input)` once per frame.
-- `application::on_render()` clears the renderer, calls `render_scene(renderer)`,
+  captures one input snapshot, and runs the scene stack's fixed-step scheduler.
+- `application::on_render()` clears the renderer, renders the scene stack,
   presents the frame, and clears transient gamepad input. SDL++ clears keyboard
   and mouse transients when iteration completes.
 - `application::handle_event()` maintains gamepad state, detects render-space size
@@ -206,20 +218,16 @@ The engine keeps common frame bookkeeping in its final callbacks:
   Initial scene sizing still occurs when a scene enters or resumes; a custom
   application can query `render_size()` in `ready()` for its initial size.
 
-The default `update_scene()` drives the scene stack's fixed-step scheduler,
-contains scene exceptions, and exits when a previously populated stack becomes
-empty. The default `render_scene()` draws that stack and handles scene failures.
-The adapter overrides both hooks: it forwards a frame update to the user and
-presents the persistent canvas. Its callbacks run independently of scene-stack
-scheduling. A subclass that wants scene updates or drawing in addition to custom
-behavior can explicitly call the corresponding base implementation. Scene-update
-failure suppression lasts only for the current frame, even when custom rendering
-does not call the default renderer.
+The scheduler and the stack render are engine internals, not hooks: they contain
+scene exceptions (log the error and pop the scene) and exit when the stack becomes
+empty. Simplex runs through them unchanged. Its scene catches a callback failure
+itself, stops the application and records the failure; after every iteration
+`SIMPLEX_MAIN` calls the adapter's `rethrow_failure()` and reports a recorded
+failure as `SDL_APP_FAILURE`.
 
-The Simplex adapter also overrides `event()` and `resize_scene()` with no-ops:
-input comes from the frame snapshot, and SDL presentation scales its fixed canvas.
-Queued scene transitions ignored by an event override remain owned by the scene
-manager and are reclaimed at shutdown without entering those scenes.
+Events and resizes reach the simplex scene through the default hooks and are
+ignored there: input comes from the frame snapshot, and SDL presentation scales
+its fixed canvas.
 
 The adapter does not resample input. The engine captures it before the adapter
 binds its canvas, so pointer mapping uses the window's presentation settings.
@@ -252,8 +260,8 @@ is still available. There is no separate `construct()` / `start()` API.
 | Engine hook | Adapter responsibility |
 | --- | --- |
 | `ready()` | Allocate and initialize the persistent canvas, then enter `on_create()`. Planned CPU drawing and font resources join this stage. |
-| `update_scene(float dt, const input_snapshot& input)` | Bind the canvas, forward the existing snapshot to `on_update(dt, input)` once, restore the previous target, and stop if the callback returns false. Planned sprite batching also begins here. |
-| `render_scene(sdlpp::renderer&)` | Draw the canvas. The planned CPU path uploads dirty pixels first and flushes the sprite batch afterward. |
+| `create_initial_scene()` | Install the `simplex_scene`. Its `fixed_update` binds the canvas, forwards the tick and snapshot to `on_update(dt, input)`, restores the previous target, and stops if the callback returns false. Planned sprite batching also begins here. |
+| scene `render` | Draw the canvas; the planned CPU path uploads dirty pixels first and flushes the sprite batch afterward. A failure is recorded for `rethrow_failure()`, like an `on_update` failure. |
 | `teardown()` | Stop callbacks, invoke the user's shutdown hook when applicable, and release owned device resources while services are alive. Discard any future queued draws before releasing their owners. |
 
 Returning false from `on_create()` means initialization failed and produces
@@ -266,32 +274,34 @@ returns false or throws after creating resources. Do not call it if startup
 failed before entering `on_create()`. Internal cleanup must run in both cases.
 
 Uncaught creation or frame-callback failures reach the entry point and become
-`SDL_APP_FAILURE`. The adapter's update and render overrides run outside the
-scene-stack exception handlers. Exceptions from `on_destroy()` are logged and
+`SDL_APP_FAILURE`. The simplex scene catches them itself, stops the application
+and records the exception; the adapter's update and render overrides rethrow it
+after the scene stack has run, outside the engine's scene exception handlers. Exceptions from `on_destroy()` are logged and
 contained so resource cleanup completes; cleanup is never retried. User virtual
 callbacks are not invoked from the facade's destructor.
 
 ### 2.3 Frame timing
 
-The adapter's `update_scene(float, const input_snapshot&)` runs once per engine
-frame and forwards the raw frame delta to the user's combined logic-and-drawing
-callback. It replaces the default scene scheduler, so the callback is never
-converted into fixed physics ticks. In the default scene path, the first substep
-receives input edges and subsequent substeps receive `without_edges()` copies.
+`on_update` runs through the engine's fixed-step scheduler, like any scene's
+`fixed_update`. It receives the constant tick length (1/120 s by default) and runs as
+many times per frame as the frame's elapsed time accrued: zero, one or several, up
+to `fixed_step_config::max_substeps`. The first tick of a frame receives the input
+edges; later ticks receive `without_edges()` copies. `max_frame` clamps a stalled
+frame before it feeds the accumulator, so simulation time is already bounded.
 
-Pass frame delta in seconds. Neutrino's `fixed_step_config::max_frame` clamps its
-fixed-step accumulator, not this callback's delta. Examples that need bounded
-simulation time must clamp it or use an explicit accumulator, as described below.
+**Behaviour change (M1, D6):** `on_update` used to run once per frame with the raw
+frame delta. Code that integrates with `dt` is unaffected; code that counts calls
+as frames, or draws once per call expecting one call per frame, must not.
 
 The frame sequence is:
 
-1. The engine captures one immutable input snapshot, then calls the adapter's
-   `update_scene(dt, input)`. The planned overlay path starts an empty screen-space
+1. The engine captures one immutable input snapshot, then runs the scene stack's
+   fixed ticks. The planned overlay path starts an empty screen-space
    `sprite_batch` here.
-2. Run `on_update(dt, input)`: CPU drawing changes persistent pixels; sprite and
-   overlay text calls add entries to the batch.
+2. Each tick runs `on_update(dt, input)` in the simplex scene: CPU drawing changes
+   persistent pixels; sprite and overlay text calls add entries to the batch.
 3. Let [`application::on_render()`](../src/neutrino/application.cc) clear the backbuffer.
-4. In the adapter's `render_scene(renderer)`, update the canvas presentation texture and
+4. In the simplex scene's `render()`, update the canvas presentation texture and
    draw it. The default path uploads the dirty CPU canvas once; optional Scaler
    filtering uses the cached presentation stage in section 3.1.1.
 5. Flush the sprite batch within the same hook. Use equal layer and depth values
@@ -332,8 +342,7 @@ sprite. Queue `draw_overlay_string()` last for a HUD that must appear on top.
 Batch entries do not persist and must be submitted again each frame. Enqueue them
 only during `on_update()`; canvas initialization and resource creation are also
 allowed in `on_create()`. `clear()` changes CPU pixels; it does not remove queued
-sprites. Both composition stages run inside the adapter's single `render_scene()`
-override.
+sprites. Both composition stages run inside the simplex scene's single `render()`.
 
 CPU primitives, image blits, and glyphs use straight-alpha source-over blending.
 `clear()` and direct pixel replacement store the supplied RGBA values. CPU images
@@ -527,8 +536,8 @@ input.pointer().on_screen;
 input.gamepad_button_state(0, sdlpp::gamepad_button::south);
 ```
 
-The engine samples once per frame whether or not scenes exist. Simplex receives
-the same snapshot by const reference; repeated reads do not consume edges or
+The engine samples once per frame. Simplex receives that snapshot by const
+reference (later ticks of the same frame get a copy without edges); repeated reads do not consume edges or
 query live device state again. The reference is valid during the callback. Copy
 the value if it must be retained afterward. Input transients are cleared at frame
 completion, after drawing, so press/release and wheel events remain visible for

@@ -109,9 +109,10 @@ namespace {
         // provides the rest, and both defaults suit this scene:
         //   handle_action(ev) - discrete one-shot SDL events (window focus, text input).
         //                       Default: ignore. Continuous input belongs in fixed_update.
-        //   is_opaque()       - "does this scene cover the whole display?" Default: true,
-        //                       so scenes underneath are neither updated nor drawn.
-        //                       Overlays (pause menus, dialogs) override it to return false.
+        //   flags()           - what this scene does to the scenes beneath it.
+        //                       Default: hides_below | pauses_below, so scenes underneath
+        //                       are neither drawn nor updated. A pause menu returns
+        //                       pauses_below; a busy spinner returns none.
 
     private:
         uint64_t m_sim_ticks{0};

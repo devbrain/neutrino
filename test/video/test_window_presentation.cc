@@ -41,37 +41,34 @@ namespace {
         }
         void render() override { if (draw) draw(); }
         void handle_action(const sdlpp::event& e) override { if (action) action(e); }
-        [[nodiscard]] bool is_opaque() const override { return true; }
+        [[nodiscard]] scene_flags flags() const override {
+            return scene_flags::hides_below | scene_flags::pauses_below;
+        }
         void on_resize(dim render) override {
             resizes.push_back(render);
             if (resized) resized(render);
         }
     };
 
-    class render_probe_app : public application {
-        public:
-            using application::application;
-            std::function<void(sdlpp::renderer&)> draw;
-            int updates = 0;
-            std::function<void(float, const input_snapshot&)> tick;
-
-        protected:
-            void update_scene(float dt, const input_snapshot& input) override {
-                ++updates;
-                if (tick) tick(dt, input);
-            }
-            void render_scene() override { if (draw) draw(get_renderer()); }
+    // Every application has a scene; apps that test the hooks rather than the stack get this one.
+    struct idle_scene final : base_scene {
+        void fixed_update(sim_duration, const input_snapshot&) override {}
+        void render() override {}
     };
 
-    class event_probe_app : public render_probe_app {
+    // Replaces event / resize_scene; forwards to the engine's scene dispatch only on request.
+    class event_probe_app : public application {
         public:
-            using render_probe_app::render_probe_app;
+            using application::application;
             std::function<void(const sdlpp::event&)> dispatch;
             std::function<void(dim)> resized;
             bool forward_events = false;
             bool forward_resizes = false;
 
         protected:
+            std::unique_ptr <base_scene> create_initial_scene() override {
+                return std::make_unique <idle_scene>();
+            }
             void event(const sdlpp::event& e) override {
                 if (dispatch) dispatch(e);
                 if (forward_events) application::event(e);
@@ -98,21 +95,7 @@ namespace {
     };
 
     using probe_app = scene_probe_app<application>;
-    using custom_scene_app = scene_probe_app<render_probe_app>;
     using event_probe_scene_app = scene_probe_app<event_probe_app>;
-
-    class selective_render_app : public probe_app {
-        public:
-            using probe_app::probe_app;
-            int scene_render_passes = 0;
-
-        protected:
-            void render_scene() override {
-                for (int i = 0; i < scene_render_passes; ++i) {
-                    application::render_scene();
-                }
-            }
-    };
 
     // Drive the real final hooks with an exact delta, independent of wall-clock timing.
     struct frame_driver : sdlpp::game_application {
@@ -230,32 +213,11 @@ namespace {
 }
 
 TEST_SUITE("neutrino::video window presentation") {
-    TEST_CASE("render_scene override runs after clear without scenes") {
-        app_harness<render_probe_app> h(base_config("application drawing"));
-        auto& renderer = get_renderer();
-        auto output = make_output();
-        // Capture a target texture: window contents are undefined after present().
-        const auto bound = output.bind(sdlpp::colors::green);
-        int renders = 0;
-        h.app().draw = [&](sdlpp::renderer& r) {
-            ++renders;
-            CHECK(&r == &renderer);
-            check_pixel(0, 0, sdlpp::colors::black);
-            REQUIRE(r.set_draw_color(sdlpp::colors::red));
-            REQUIRE(r.draw_point(1, 1));
-        };
-        for (int frame = 1; frame <= 2; ++frame) {
-            h.iterate();
-            CHECK(h.app().updates == frame);
-            CHECK(renders == frame);
-            check_pixel(1, 1, sdlpp::colors::red);
-        }
-    }
-
-    TEST_CASE("default render_scene draws the scene stack after clear") {
+    TEST_CASE("the scene stack draws after clear on every frame") {
         app_harness<probe_app> h(base_config("default scene drawing"));
         auto& renderer = get_renderer();
         auto output = make_output();
+        // Capture a target texture: window contents are undefined after present().
         const auto bound = output.bind(sdlpp::colors::green);
         REQUIRE(h.app().probe);
         int renders = 0;
@@ -265,41 +227,14 @@ TEST_SUITE("neutrino::video window presentation") {
             REQUIRE(renderer.set_draw_color(sdlpp::colors::blue));
             REQUIRE(renderer.draw_point(3, 3));
         };
-        h.iterate();
-        CHECK(renders == 1);
-        check_pixel(3, 3, sdlpp::colors::blue);
+        for (int frame = 1; frame <= 2; ++frame) {
+            h.iterate();
+            CHECK(renders == frame);
+            check_pixel(3, 3, sdlpp::colors::blue);
+        }
     }
 
-    TEST_CASE("render_scene override replaces scene-stack rendering") {
-        app_harness<custom_scene_app> h(base_config("custom scene drawing"));
-        auto output = make_output();
-        const auto bound = output.bind();
-        int renders = 0;
-        h.app().draw = [&](sdlpp::renderer& r) {
-            ++renders;
-            REQUIRE(r.set_draw_color(sdlpp::colors::red));
-            REQUIRE(r.draw_point(1, 1));
-        };
-        bool scene_rendered = false;
-        REQUIRE(h.app().probe);
-        h.app().probe->draw = [&] { scene_rendered = true; };
-        h.iterate();
-        CHECK(renders == 1);
-        CHECK_FALSE(scene_rendered);
-        check_pixel(1, 1, sdlpp::colors::red);
-    }
-
-    TEST_CASE("render_scene override failures propagate without running scene rendering") {
-        app_harness<custom_scene_app> h(base_config("custom scene render failure"));
-        bool scene_rendered = false;
-        REQUIRE(h.app().probe);
-        h.app().probe->draw = [&] { scene_rendered = true; };
-        h.app().draw = [](sdlpp::renderer&) { throw std::runtime_error("render failed"); };
-        CHECK_THROWS_AS(h.iterate(), std::runtime_error);
-        CHECK_FALSE(scene_rendered);
-    }
-
-    TEST_CASE("default render_scene contains scene render failures") {
+    TEST_CASE("scene render failures are contained") {
         app_harness<probe_app> h(base_config("default scene render failure"));
         REQUIRE(h.app().probe);
         int renders = 0;
@@ -311,9 +246,10 @@ TEST_SUITE("neutrino::video window presentation") {
         CHECK(renders == 1);
     }
 
-    TEST_CASE("custom rendering preserves gamepad edges until frame completion") {
+    TEST_CASE("event overrides preserve gamepad edges until frame completion") {
         // Replacing scene event dispatch must preserve gamepad tracking and edge cleanup.
-        app_harness<event_probe_app> h(base_config("custom render input bookkeeping"));
+        app_harness<event_probe_scene_app> h(base_config("custom event input bookkeeping"));
+        REQUIRE(h.app().probe);
         SDL_VirtualJoystickDesc desc{};
         SDL_INIT_INTERFACE(&desc);
         desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
@@ -342,7 +278,7 @@ TEST_SUITE("neutrino::video window presentation") {
         button.gbutton.down = true;
         h.feed(button);
         int renders = 0;
-        h.app().draw = [&](sdlpp::renderer&) {
+        h.app().probe->draw = [&] {
             ++renders;
             CHECK(state().pressed);
             CHECK_FALSE(state().released);
@@ -357,7 +293,7 @@ TEST_SUITE("neutrino::video window presentation") {
         button.type = SDL_EVENT_GAMEPAD_BUTTON_UP;
         button.gbutton.down = false;
         h.feed(button);
-        h.app().draw = [&](sdlpp::renderer&) {
+        h.app().probe->draw = [&] {
             ++renders;
             CHECK_FALSE(state().pressed);
             CHECK(state().released);
@@ -371,7 +307,7 @@ TEST_SUITE("neutrino::video window presentation") {
     }
 
     TEST_CASE("render_size() is the drawable size in reflow mode") {
-        app_harness <application> h(base_config("render_size reflow"));
+        app_harness <probe_app> h(base_config("render_size reflow"));
 
         const auto out = get_renderer().get_output_size <dim>();
         REQUIRE(out);
@@ -384,7 +320,7 @@ TEST_SUITE("neutrino::video window presentation") {
         auto cfg = base_config("render_size logical");
         cfg.logical_size = dim{640, 360};
         cfg.scale = scale_mode::letterbox;
-        app_harness <application> h(cfg);
+        app_harness <probe_app> h(cfg);
 
         const auto rs = render_size();
         CHECK(rs.width == 640);
@@ -392,7 +328,7 @@ TEST_SUITE("neutrino::video window presentation") {
     }
 
     TEST_CASE("to_render_coords() is the identity in reflow with no DPI scaling") {
-        app_harness <application> h(base_config("coords reflow"));
+        app_harness <probe_app> h(base_config("coords reflow"));
 
         const auto p = to_render_coords(sdlpp::point <float>{10.0f, 20.0f});
         CHECK(p.x == doctest::Approx(10.0f));
@@ -402,7 +338,7 @@ TEST_SUITE("neutrino::video window presentation") {
     TEST_CASE("to_window_coords() round-trips to_render_coords() under logical presentation") {
         auto cfg = base_config("coords roundtrip");
         cfg.logical_size = dim{640, 360};
-        app_harness <application> h(cfg);
+        app_harness <probe_app> h(cfg);
 
         const sdlpp::point <float> win{40.0f, 45.0f};
         const auto back = to_window_coords(to_render_coords(win));
@@ -444,13 +380,13 @@ TEST_SUITE("neutrino::video window presentation") {
     }
 
     TEST_CASE("a freshly created window reports windowed state") {
-        app_harness <application> h(base_config("fullscreen state"));
+        app_harness <probe_app> h(base_config("fullscreen state"));
         CHECK_FALSE(h.app().is_fullscreen());
     }
 }
 
 TEST_SUITE("neutrino::application frame updates") {
-    TEST_CASE("default update_scene preserves fixed steps and delivers edges only once") {
+    TEST_CASE("the scheduler preserves fixed steps and delivers edges only once") {
         auto cfg = base_config("default scene updates");
         cfg.fixed.period = sim_duration{0.125f};
         cfg.fixed.max_frame = sim_duration{0.5f};
@@ -483,42 +419,7 @@ TEST_SUITE("neutrino::application frame updates") {
         CHECK(inputs.size() == 3);
     }
 
-    TEST_CASE("update_scene override receives frame input and replaces the scheduler") {
-        app_harness<custom_scene_app> h(base_config("custom scene updates"));
-        REQUIRE(h.app().probe);
-        int scene_updates = 0;
-        h.app().probe->tick = [&](sim_duration, const input_snapshot&) { ++scene_updates; };
-        SDL_Event key{};
-        key.type = SDL_EVENT_KEY_DOWN;
-        key.key.scancode = SDL_SCANCODE_SPACE;
-        key.key.down = true;
-        h.feed(key);
-        std::vector<float> deltas;
-        h.app().tick = [&](float dt, const input_snapshot& input) {
-            deltas.push_back(dt);
-            CHECK(input.pressed(sdlpp::scancode::space));
-            CHECK(input.held(sdlpp::scancode::space));
-        };
-        // Direct hook driving does not run SDL++'s keyboard-edge cleanup between frames.
-        h.frame(0.0f);
-        h.frame(0.5f);
-        REQUIRE(deltas.size() == 2);
-        CHECK(deltas[0] == doctest::Approx(0.0f));
-        CHECK(deltas[1] == doctest::Approx(0.5f));
-        CHECK(scene_updates == 0);
-    }
-
-    TEST_CASE("custom update failures propagate to the entry point") {
-        app_harness<custom_scene_app> h(base_config("custom update failure"));
-        REQUIRE(h.app().probe);
-        int scene_updates = 0;
-        h.app().probe->tick = [&](sim_duration, const input_snapshot&) { ++scene_updates; };
-        h.app().tick = [](float, const input_snapshot&) { throw std::runtime_error("update failed"); };
-        CHECK_THROWS_AS(h.frame(0.05f), std::runtime_error);
-        CHECK(scene_updates == 0);
-    }
-
-    TEST_CASE("default update_scene contains scene failures and suppresses that frame's render") {
+    TEST_CASE("scene update failures are contained and suppress that frame's render") {
         auto cfg = base_config("default update failure");
         cfg.fixed.period = sim_duration{0.125f};
         app_harness<probe_app> h(cfg);
@@ -707,8 +608,8 @@ TEST_SUITE("neutrino::application event hooks") {
         CHECK(h.app().probe->resizes.back().height == 400);
     }
 
-    TEST_CASE("resize hooks work without scenes and override errors propagate") {
-        app_harness<event_probe_app> h(base_config("scene-free resize"));
+    TEST_CASE("resize hooks run before scene dispatch and override errors propagate") {
+        app_harness<event_probe_app> h(base_config("resize hook"));
         int calls = 0;
         h.app().resized = [&](dim size) {
             ++calls;
@@ -739,10 +640,10 @@ TEST_SUITE("neutrino::application event hooks") {
         CHECK(h.app().probe->resizes.size() == 2);
     }
 
-    TEST_CASE("scene update failure expires even when custom rendering bypasses scenes") {
+    TEST_CASE("a scene update failure suppresses only that frame's render") {
         auto cfg = base_config("scene failure frame lifetime");
         cfg.fixed.period = sim_duration{0.125f};
-        app_harness<selective_render_app> h(cfg);
+        app_harness<probe_app> h(cfg);
         int renders = 0;
         h.app().probe->draw = [&] { ++renders; };
         auto failing = std::make_unique<probe_scene>();
@@ -750,23 +651,10 @@ TEST_SUITE("neutrino::application event hooks") {
         failing->draw = [&] { FAIL("failed scene must not render"); };
         push_scene(std::move(failing));
         h.feed(take_transition_event());
-        h.frame(0.125f); // Custom rendering does not call the base implementation.
-        CHECK(renders == 0);
-        h.feed(take_transition_event()); // Apply recovery pop, revealing the healthy scene.
-        h.app().scene_render_passes = 1;
-        h.frame(0.0f);
-        CHECK(renders == 1);
-    }
-
-    TEST_CASE("scene failure suppresses every default rendering pass in the same frame") {
-        auto cfg = base_config("scene failure render passes");
-        cfg.fixed.period = sim_duration{0.125f};
-        app_harness<selective_render_app> h(cfg);
-        h.app().scene_render_passes = 2;
-        h.app().probe->tick = [](sim_duration, const input_snapshot&) { throw std::runtime_error("update failed"); };
-        int renders = 0;
-        h.app().probe->draw = [&] { ++renders; };
         h.frame(0.125f);
         CHECK(renders == 0);
+        h.feed(take_transition_event()); // Apply recovery pop, revealing the healthy scene.
+        h.frame(0.0f);
+        CHECK(renders == 1);
     }
 }

@@ -1,7 +1,7 @@
 //
 // A frame-scoped snapshot of continuous input (pointer position, mouse buttons, keyboard
 // scancodes, and gamepad states), sampled ONCE per frame by the application and handed to
-// application::update_scene and, by default, base_scene::fixed_update.
+// base_scene::fixed_update (Simplex: on_update) on the frame's fixed ticks.
 // A pure value type: no service lookup, directly constructible in a test so a scene's update
 // can be driven with synthetic input (findings #12). Discrete, one-shot events still arrive
 // through base_scene::handle_action.

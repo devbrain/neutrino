@@ -143,6 +143,18 @@ namespace {
             SDL_Texture* texture;
     };
 
+    // on_update runs on the engine's fixed tick (fixed_step_config default: 120 Hz, at most 5
+    // ticks per frame). A frame of `one_tick` seconds runs exactly one update; 0 runs none.
+    constexpr float tick = 1.0f / 120.0f;
+    constexpr float one_tick = 0.01f;
+
+    // A real SDL_AppIterate measures its delta from the previous frame. Waiting first makes sure
+    // the frame accrues at least one tick (the first frame after init could otherwise run none).
+    SDL_AppResult iterate_with_ticks(void* state) {
+        SDL_Delay(20);
+        return SDL_AppIterate(state);
+    }
+
     void check_pixel(SDL_Renderer* renderer, int x, int y, Uint8 red, Uint8 green, Uint8 blue) {
         std::unique_ptr<SDL_Surface, decltype(&SDL_DestroySurface)> pixels(SDL_RenderReadPixels(renderer, nullptr),
                                                                         SDL_DestroySurface);
@@ -225,18 +237,22 @@ TEST_SUITE("neutrino::simplex entry point") {
 
 
 TEST_SUITE("neutrino::simplex frames") {
-    TEST_CASE("update runs once with the frame delta for zero and multiple physics steps") {
+    TEST_CASE("update runs once per fixed tick, as many ticks as the frame accrued") {
         app_session session;
         REQUIRE(session.init() == SDL_APP_CONTINUE);
-        for (float dt : {0.0f, 0.05f, 0.5f, 0.001f}) session.frame(dt);
-        REQUIRE(probe.updates.size() == 4);
-        CHECK(probe.updates[0] == doctest::Approx(0.0f));
-        CHECK(probe.updates[1] == doctest::Approx(0.05f));
-        CHECK(probe.updates[2] == doctest::Approx(0.5f));
-        CHECK(probe.updates[3] == doctest::Approx(0.001f));
+        // Ticks accrue across frames: 0.01 -> 1 (0.0017 left over), 0 -> 0,
+        // 0.02 -> 2 (0.005 left), 0.5 -> clamped to max_frame 0.25 -> capped at 5.
+        std::vector<std::size_t> per_frame;
+        for (float dt : {one_tick, 0.0f, 0.02f, 0.5f}) {
+            const auto before = probe.updates.size();
+            session.frame(dt);
+            per_frame.push_back(probe.updates.size() - before);
+        }
+        CHECK(per_frame == std::vector<std::size_t>{1, 0, 2, 5});
+        for (float dt : probe.updates) CHECK(dt == doctest::Approx(tick));
     }
 
-    TEST_CASE("scene-free updates receive keyboard mouse wheel and gamepad snapshots") {
+    TEST_CASE("updates receive keyboard mouse wheel and gamepad snapshots, edges on the first tick only") {
         app_session session;
         REQUIRE(session.init() == SDL_APP_CONTINUE);
         SDL_VirtualJoystickDesc desc{};
@@ -276,6 +292,23 @@ TEST_SUITE("neutrino::simplex frames") {
         button.gbutton.down = true;
         REQUIRE(SDL_AppEvent(session.state, &button) == SDL_APP_CONTINUE);
 
+        // Each frame runs one or more ticks; the first sees the frame's edges, the rest only held
+        // state. Returns the frame's first snapshot after checking the later ones.
+        const auto next_frame = [&]() -> neutrino::input_snapshot {
+            const auto before = probe.inputs.size();
+            REQUIRE(iterate_with_ticks(session.state) == SDL_APP_CONTINUE);
+            REQUIRE(probe.inputs.size() > before);
+            for (auto i = before + 1; i < probe.inputs.size(); ++i) {
+                const auto& later = probe.inputs[i];
+                CHECK_FALSE(later.key(sdlpp::scancode::space).pressed);
+                CHECK_FALSE(later.key(sdlpp::scancode::space).released);
+                CHECK_FALSE(later.mouse(sdlpp::mouse_button::left).pressed);
+                CHECK(later.wheel() == 0);
+                CHECK(later.key(sdlpp::scancode::space).held
+                      == probe.inputs[before].key(sdlpp::scancode::space).held);
+            }
+            return probe.inputs[before];
+        };
         const auto check_buttons = [](const neutrino::input_snapshot& input,
                                       bool pressed, bool released, bool held) {
             CHECK(input.gamepad_connected(0));
@@ -287,16 +320,14 @@ TEST_SUITE("neutrino::simplex frames") {
                 CHECK(state.held == held);
             }
         };
-        REQUIRE(SDL_AppIterate(session.state) == SDL_APP_CONTINUE);
-        REQUIRE(probe.inputs.size() == 1);
-        check_buttons(probe.inputs[0], true, false, true);
-        CHECK(probe.inputs[0].wheel() == 2);
-        REQUIRE(SDL_AppIterate(session.state) == SDL_APP_CONTINUE);
-        REQUIRE(probe.inputs.size() == 2);
-        check_buttons(probe.inputs[1], false, false, true);
-        CHECK(probe.inputs[1].wheel() == 0);
+        const auto first = next_frame();
+        check_buttons(first, true, false, true);
+        CHECK(first.wheel() == 2);
+        const auto second = next_frame();
+        check_buttons(second, false, false, true);
+        CHECK(second.wheel() == 0);
         // Copies remain stable even after the engine clears its transient state.
-        check_buttons(probe.inputs[0], true, false, true);
+        check_buttons(first, true, false, true);
 
         key.type = SDL_EVENT_KEY_UP;
         key.key.down = false;
@@ -307,12 +338,8 @@ TEST_SUITE("neutrino::simplex frames") {
         REQUIRE(SDL_AppEvent(session.state, &key) == SDL_APP_CONTINUE);
         REQUIRE(SDL_AppEvent(session.state, &mouse) == SDL_APP_CONTINUE);
         REQUIRE(SDL_AppEvent(session.state, &button) == SDL_APP_CONTINUE);
-        REQUIRE(SDL_AppIterate(session.state) == SDL_APP_CONTINUE);
-        REQUIRE(probe.inputs.size() == 3);
-        check_buttons(probe.inputs[2], false, true, false);
-        REQUIRE(SDL_AppIterate(session.state) == SDL_APP_CONTINUE);
-        REQUIRE(probe.inputs.size() == 4);
-        check_buttons(probe.inputs[3], false, false, false);
+        check_buttons(next_frame(), false, true, false);
+        check_buttons(next_frame(), false, false, false);
     }
 
     TEST_CASE("pointer snapshots use scaled window coordinates while drawing to the canvas") {
@@ -338,7 +365,7 @@ TEST_SUITE("neutrino::simplex frames") {
             CHECK(pointer.render.y == doctest::Approx(expected.y));
             CHECK(pointer.on_screen == (SDL_GetMouseFocus() != nullptr));
         };
-        session.frame(0.0f);
+        session.frame(one_tick);
         CHECK(probe.updates.size() == 1);
         CHECK(SDL_GetRenderTarget(renderer) == nullptr);
     }
@@ -359,14 +386,14 @@ TEST_SUITE("neutrino::simplex frames") {
         CHECK(SDL_GetRenderTarget(output.renderer) == output.texture);
         check_pixel(output.renderer, 1, 1, 0, 255, 0);
         check_pixel(output.renderer, 3, 3, 255, 0, 0);
-        session.frame(0.0f);
+        session.frame(0.0f); // no tick: the canvas is presented again unchanged
         check_pixel(output.renderer, 3, 3, 255, 0, 0);
         check_pixel(output.renderer, 4, 4, 255, 0, 0);
         probe.update = [] {
             neutrino::set_draw_color(sdlpp::colors::blue);
             REQUIRE(neutrino::get_renderer().clear());
         };
-        session.frame(0.0f);
+        session.frame(one_tick);
         check_pixel(output.renderer, 1, 1, 0, 0, 255);
         check_pixel(output.renderer, 3, 3, 0, 0, 255);
     }
@@ -386,15 +413,17 @@ TEST_SUITE("neutrino::simplex frames") {
             CHECK(current->a == doctest::Approx(color.a));
         };
         REQUIRE(session.init() == SDL_APP_CONTINUE);
-        session.frame(0.0f);
+        session.frame(one_tick);
         session.frame(0.05f);
+        CHECK(probe.updates.size() >= 2);
     }
 
-    TEST_CASE("returning false stops immediately and never invokes another update") {
+    TEST_CASE("returning false stops immediately, even within the same frame, and never invokes another update") {
         app_session session;
         probe.update_result = false;
         REQUIRE(session.init() == SDL_APP_CONTINUE);
-        CHECK(SDL_AppIterate(session.state) == SDL_APP_SUCCESS);
+        // A frame worth several ticks: the first returns false, the rest of that frame must not run.
+        session.frame(0.05f);
         REQUIRE(probe.updates.size() == 1);
         CHECK(SDL_AppIterate(session.state) == SDL_APP_SUCCESS);
         session.frame(0.05f);
@@ -410,7 +439,7 @@ TEST_SUITE("neutrino::simplex frames") {
         REQUIRE(session.init() == SDL_APP_CONTINUE);
         {
             capture_target output;
-            CHECK(SDL_AppIterate(session.state) == SDL_APP_FAILURE);
+            CHECK(iterate_with_ticks(session.state) == SDL_APP_FAILURE);
             CHECK(SDL_GetRenderTarget(output.renderer) == output.texture);
             CHECK(SDL_AppIterate(session.state) == SDL_APP_SUCCESS);
             CHECK(probe.updates.size() == 1);

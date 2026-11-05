@@ -32,11 +32,15 @@ namespace neutrino::simplex {
 
             /// Runs once with drawing directed to the canvas. False means startup failure.
             virtual bool on_create();
-            /// Runs once per frame with elapsed seconds and an immutable input snapshot.
+            /// Runs on every fixed simulation tick with the constant tick length @p dt in
+            /// seconds (1/120 s by default) and an immutable input snapshot. A frame runs as many
+            /// ticks as its elapsed time accrued: zero, one or several. Only the first tick of a
+            /// frame sees input edges (pressed / released); later ticks see held state only.
             /// Input is captured before binding the canvas; pointer().render is in logical
             /// canvas coordinates. The reference is valid only during this callback.
             /// Canvas contents persist; clear explicitly when needed.
-            /// False requests exit with no further updates.
+            /// False requests exit with no further updates, even later ticks of the same frame.
+            /// An exception stops the application and is reported as a failure.
             virtual bool on_update(float dt, const input_snapshot& input) = 0;
             /// Runs once if on_create was entered, while rendering services are alive.
             /// Exceptions are logged and contained; cleanup is never retried.
@@ -47,5 +51,7 @@ namespace neutrino::simplex {
             std::unique_ptr<impl> m_pimpl;
 
             [[nodiscard]] sdlpp::abstract_application* get_application() noexcept;  // sdlpp-ok: SDL callback plumbing
+            // Throws the failure a callback recorded since the last call, if any (entry point only).
+            void rethrow_failure();
     };
 }

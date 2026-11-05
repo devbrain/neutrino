@@ -117,7 +117,7 @@ namespace neutrino {
     texture texture::adopt(sdlpp::texture raw, texture_access access) {
         const auto size = raw.get_size();
         ENFORCE(size.has_value(), "adopting a texture whose size cannot be queried");
-        return texture(std::move(raw), dim{size->width, size->height}, access);
+        return {std::move(raw), dim{size->width, size->height}, access};
     }
 
     void texture::set_filter(texture_filter filter) {
@@ -140,7 +140,7 @@ namespace neutrino {
         ENFORCE(m_access == texture_access::streaming, "lock() needs a streaming texture");
         auto locked = m_texture.lock();
         ENFORCE(locked.has_value(), "texture lock failed");
-        return pixel_lock(&m_texture, locked->first, locked->second, m_size.width, m_size.height);
+        return {&m_texture, locked->first, locked->second, m_size.width, m_size.height};
     }
 
     target_scope texture::bind(std::optional <color> clear) {

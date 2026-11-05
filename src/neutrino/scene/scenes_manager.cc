@@ -122,13 +122,14 @@ namespace neutrino {
     }
 
     void scenes_manager::apply_push(std::unique_ptr <base_scene>&& scene) {
-        // Non-opaque scenes (e.g. busy_scene) are overlays: the scene below
-        // keeps running, just with a visual/input overlay on top. It must
-        // NOT receive on_pause, otherwise any refresh logic wired to
-        // on_resume would fire every time the overlay is dismissed —
-        // spawning duplicate background syncs during in-flight async work.
-        const bool overlay = !scene->is_opaque();
-        if (!overlay && !m_stack.empty()) {
+        // on_pause / on_resume follow pauses_below: they tell the scene below that its
+        // fixed_update stops and starts again. A scene without pauses_below (e.g. busy_scene)
+        // leaves the scene below running, so that scene must NOT receive on_pause, otherwise
+        // any refresh logic wired to on_resume would fire every time the overlay is
+        // dismissed -- spawning duplicate background syncs during in-flight async work.
+        // hides_below is irrelevant here: a hidden scene that still updates is not paused.
+        const bool pauses = has(scene->flags(), scene_flags::pauses_below);
+        if (pauses && !m_stack.empty()) {
             m_stack.back()->on_pause();
         }
         m_stack.emplace_back(std::move(scene));
@@ -145,16 +146,14 @@ namespace neutrino {
             LOG_ERROR("Scene on_enter threw:", ex.what());
             try { m_stack.back()->on_exit(); } catch (...) {}
             m_stack.pop_back();
-            if (!overlay && !m_stack.empty()) {
+            if (pauses && !m_stack.empty()) {
                 try { m_stack.back()->on_resume(); } catch (...) {}
             }
-            // TODO
-      //      services::report_error(ex.what());
         } catch (...) {
             LOG_ERROR("Scene on_enter threw an unknown exception");
             try { m_stack.back()->on_exit(); } catch (...) {}
             m_stack.pop_back();
-            if (!overlay && !m_stack.empty()) {
+            if (pauses && !m_stack.empty()) {
                 try { m_stack.back()->on_resume(); } catch (...) {}
             }
             // TODO
@@ -170,12 +169,11 @@ namespace neutrino {
 
     void scenes_manager::apply_pop() {
         ENFORCE(!m_stack.empty());
-        const bool overlay = !m_stack.back()->is_opaque();
+        const bool pauses = has(m_stack.back()->flags(), scene_flags::pauses_below);
         m_stack.back()->on_exit();
         m_stack.pop_back();
-        // Mirror apply_push: popping an overlay is not a real mode change,
-        // so the scene below doesn't get on_resume.
-        if (!overlay && !m_stack.empty()) {
+        // Mirror apply_push: only a scene that paused the one below resumes it.
+        if (pauses && !m_stack.empty()) {
             m_stack.back()->on_resume();
         }
         notify_top_resized();
@@ -204,13 +202,15 @@ namespace neutrino {
     void scenes_manager::fixed_update(sim_duration dt, const input_snapshot& in) {
         if (m_stack.empty()) return;
 
-        // Propagate the fixed-step update to every scene from the first opaque one upward,
-        // mirroring render(). This keeps scenes beneath a non-opaque overlay
-        // (e.g. busy_scene) alive: their async_task::poll() keeps running,
-        // so completion callbacks fire while a spinner is shown on top.
+        // Propagate the fixed-step update to every scene from the topmost pauses_below one
+        // upward. This is independent of render(), which walks to hides_below instead. Scenes
+        // beneath an overlay without pauses_below (e.g. busy_scene) stay alive: their
+        // async_task::poll() keeps running, so completion callbacks fire while a spinner is
+        // shown on top.
         size_t index = 0;
         for (size_t i = m_stack.size(); i-- > 0;) {
-            if (m_stack[i]->is_opaque()) {
+            const auto flags = m_stack[i]->flags();
+            if (has(flags, scene_flags::pauses_below)) {
                 index = i;
                 break;
             }
@@ -230,9 +230,10 @@ namespace neutrino {
     void scenes_manager::render() {
         if (m_stack.empty()) return;
 
+        // Draw every scene from the topmost hides_below one upward, bottom to top.
         size_t index = 0;
         for (size_t i = m_stack.size(); i-- > 0;) {
-            if (m_stack[i]->is_opaque()) {
+            if (has(m_stack[i]->flags(), scene_flags::hides_below)) {
                 index = i;
                 break;
             }
