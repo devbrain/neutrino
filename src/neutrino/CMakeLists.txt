@@ -286,50 +286,91 @@ neutrino_subsystem(simplex
         detail/simplex_scene.hh
 )
 
+neutrino_subsystem(text DIR video/text
+        PUBLIC
+            glyph_atlas.hh
+            text.hh
+        PRIVATE
+            glyph_atlas.cc
+            glyph_atlas_access.hh
+)
 # ----------------------------------------------------------------------------
 # Target
 # ----------------------------------------------------------------------------
 
 neutrino_library_type(neutrino _lib_type)
 
-add_library(neutrino ${_lib_type} ${NEUTRINO_SOURCES})
-add_library(neutrino::neutrino ALIAS neutrino)
+# Three targets:
+#   neutrino_usage    INTERFACE: what users of the engine get (public headers, C++20, public deps)
+#   neutrino_objects  OBJECT:    the engine's sources, compiled once
+#   neutrino          the library (static or shared) made from those objects
+# The test binary links neutrino_objects directly, so it can reach internals that a shared,
+# hidden-visibility libneutrino does not export.
 
-target_include_directories(neutrino
-        PUBLIC
+add_library(neutrino_usage INTERFACE)
+target_include_directories(neutrino_usage
+        INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
 )
-
-target_compile_features(neutrino PUBLIC cxx_std_20)
-target_link_libraries(neutrino
-        PUBLIC
+target_compile_features(neutrino_usage INTERFACE cxx_std_20)
+target_link_libraries(neutrino_usage
+        INTERFACE
         neutrino::sdlpp
         neutrino::musac
         musac::backend_sdl3
         musac::codecs
         neutrino::onyx_image
-        neutrino::onyx_font
+        neutrino::onyx_font)
+
+add_library(neutrino_objects OBJECT ${NEUTRINO_SOURCES})
+target_include_directories(neutrino_objects
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(neutrino_objects
+        PUBLIC
+        neutrino_usage
         PRIVATE
         neutrino::bstream
         nlohmann_json::nlohmann_json
         pugixml::pugixml)
 
 if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)
-        target_compile_definitions(neutrino
+        target_compile_definitions(neutrino_objects
                 PRIVATE
                 NEUTRINO_TMX_ENABLE_ZSTD)
-        target_link_libraries(neutrino
+        target_link_libraries(neutrino_objects
                 PRIVATE
                 libzstd_static)
 endif()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        set_source_files_properties(world/tmx/decompressor.cc
-                PROPERTIES
-                COMPILE_OPTIONS "-fvisibility=hidden")
+add_library(neutrino ${_lib_type})
+add_library(neutrino::neutrino ALIAS neutrino)
+target_link_libraries(neutrino
+        PUBLIC
+        neutrino_usage
+        PRIVATE
+        neutrino_objects)
+
+if(_lib_type STREQUAL "SHARED")
+        # Export only what is marked NEUTRINO_EXPORT. CMake defines neutrino_EXPORTS for the
+        # sources of a shared target; the objects are compiled in neutrino_objects, so define it there.
+        set_target_properties(neutrino_objects PROPERTIES
+                POSITION_INDEPENDENT_CODE ON
+                CXX_VISIBILITY_PRESET hidden
+                C_VISIBILITY_PRESET hidden
+                VISIBILITY_INLINES_HIDDEN YES)
+        target_compile_definitions(neutrino_objects PRIVATE neutrino_EXPORTS)
+        set_target_properties(neutrino PROPERTIES
+                CXX_VISIBILITY_PRESET hidden
+                C_VISIBILITY_PRESET hidden
+                VISIBILITY_INLINES_HIDDEN YES)
+        # Static private dependencies (pugixml, zstd) are linked in; keep their symbols out of
+        # the .so's exports.
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND NOT APPLE)
+                target_link_options(neutrino PRIVATE "LINKER:--exclude-libs,ALL")
+        endif()
 endif()
 
 generate_export_header(neutrino

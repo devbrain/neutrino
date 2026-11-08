@@ -200,13 +200,15 @@ namespace neutrino {
     }
 
     namespace {
+        // has_pictures: false for a bank of only empty entries, which makes no pages, so any
+        // requested format is fine for it.
         pixel_format deduce_image_format(std::optional <pixel_format> atlas_texture_format,
-                                         const image*& indexed_like) {
+                                         const image*& indexed_like, bool has_pictures = true) {
             pixel_format format = pixel_format::RGBA32;
             if (atlas_texture_format) {
                 format = *atlas_texture_format;
                 if (format == pixel_format::INDEX8) {
-                    ENFORCE(indexed_like != nullptr,
+                    ENFORCE(indexed_like != nullptr || !has_pictures,
                             "An indexed atlas needs INDEX8 pictures sharing one palette and colour key");
                 } else {
                     indexed_like = nullptr;
@@ -227,7 +229,9 @@ namespace neutrino {
         // Output format: indexed when asked for (the bank must qualify) or, by default,
         // when the bank qualifies; otherwise the requested format, RGBA32 by default.
         const image* indexed_like = indexed_source(bank);
-        pixel_format format = deduce_image_format(atlas_texture_format, indexed_like);
+        const bool has_pictures = std::any_of(bank.entries.begin(), bank.entries.end(),
+                                              [](const auto& e) { return !is_empty(e.pixels); });
+        pixel_format format = deduce_image_format(atlas_texture_format, indexed_like, has_pictures);
 
         const auto layout = details::shelf_pack(std::span(bank.entries), max_dims, gutter);
 

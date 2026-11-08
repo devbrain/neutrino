@@ -359,7 +359,7 @@ placements). Neither side needs the other's key.
 | Source | Where it lives | Gives |
 |---|---|---|
 | RGBA alpha | pixel alpha = 0 | transparency + exact bitmask |
-| Indexed colour key | INDEX8 image's colour key (`image_builder::indexed(…, transparent_index)`) | transparency + exact bitmask; survives palette swaps |
+| Indexed colour key | INDEX8 image's colour key (`indexed_image_builder(…, transparent_index)`) | transparency + exact bitmask; survives palette swaps |
 | Colour key on an RGB image | `world_image::transparent_color` | transparency + bitmask |
 
 Masks are not stored anywhere by the engine: `make_bitmask(image, rect)` computes one from
@@ -522,7 +522,7 @@ its §2 is the full decision table. In short:
 ```cpp
 // LOAD (no GPU): blocks are headerless 16x16 INDEX8 tiles; tile N is picture N
 image_bank load_blocks(std::span<const uint8_t> bytes, const palette& pal) {
-    auto bank = image_bank_builder::indexed(pal, /*transparent=*/0);
+    indexed_image_bank_builder bank(pal, /*transparent=*/0);
     for (std::size_t off = 0, n = 0; off + 256 <= bytes.size(); off += 256, ++n) {
         auto tile = bank.next({16, 16});
         for (int y = 0; y < 16; ++y)

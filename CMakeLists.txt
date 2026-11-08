@@ -40,6 +40,24 @@ neutrino_option(
     ON)
 
 # ============================================================================
+# Shared build
+# ============================================================================
+# neutrino's public API exposes SDL (image = sdlpp::surface), sdlpp, musac, onyx_image and
+# onyx_font. Static copies of them inside libneutrino.so would sit next to the program's own
+# copies (two SDLs, two sets of global state), so in a shared build they are shared too.
+# Private dependencies (pugixml, zstd) stay static: built position-independent, linked into
+# the .so and hidden there (see --exclude-libs in src/neutrino/CMakeLists.txt).
+if(NEUTRINO_NEUTRINO_BUILD_SHARED)
+    foreach(_dep SDLPP MUSAC ONYX_IMAGE ONYX_FONT)
+        set(NEUTRINO_${_dep}_BUILD_SHARED ON CACHE BOOL "" FORCE)
+    endforeach()
+    unset(_dep)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    # sdlpp fetches SDL3 static; fetch it shared first, so sdlpp and musac find this one.
+    include(${NEUTRINO_CMAKE_DIR}/deps/SDL3.cmake)
+    neutrino_fetch_SDL3(SHARED)
+endif()
+
 include(${NEUTRINO_CMAKE_DIR}/deps/sdlpp.cmake)
 neutrino_fetch_sdlpp()
 

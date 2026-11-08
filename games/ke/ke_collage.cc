@@ -33,7 +33,7 @@
 
 #include <neutrino/video/color.hh>
 #include <sdlpp/video/palette.hh>
-#include <../../include/neutrino/video/image/image.hh>
+#include <neutrino/video/image/image.hh>
 #include <sdlpp/image/sdl_surface_adapter.hh>
 
 #include <neutrino/neutrino.hh>

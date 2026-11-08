@@ -25,10 +25,10 @@
 
 namespace neutrino {
     /**
-     * @brief Builds an @ref image_bank, one picture at a time, in one format.
+     * @brief Builds an @ref image_bank of kind @p K, one picture at a time.
      *
      * @code{.cpp}
-     * auto bank = image_bank_builder::indexed(pal, 16);     // index 16 is transparent
+     * indexed_image_bank_builder bank(pal, 16);            // index 16 is transparent
      * for (const auto& blk : blocks) {
      *     auto img = bank.next({blk.w, blk.h});
      *     decode_planes(blk, img);                         // img.row(y) / img.set(...)
@@ -38,9 +38,13 @@ namespace neutrino {
      * image_bank result = std::move(bank).build();
      * @endcode
      *
+     * As with @ref image_builder, the kind is part of the type: an RGBA bank has no palette or
+     * colour key, and only takes RGBA pictures.
+     *
      * Move-only.
      */
-    class NEUTRINO_EXPORT image_bank_builder {
+    template<image_kind K>
+    class image_bank_builder {
         public:
             /**
              * @brief A bank of indexed (INDEX8) pictures sharing @p pal.
@@ -52,17 +56,20 @@ namespace neutrino {
              * @param transparent_index Palette index treated as transparent, stored as every
              *        picture's colour key.
              */
-            static image_bank_builder indexed(const palette& pal, std::optional <uint8_t> transparent_index = {});
+            explicit image_bank_builder(const palette& pal, std::optional <uint8_t> transparent_index = {})
+                requires (K == image_kind::indexed);
 
             /**
              * @brief A bank of indexed (INDEX8) pictures sharing @p pal, taking ownership of it.
              *
-             * For a palette made just for this bank, e.g. `indexed(load_palette(bytes), 0)`.
+             * For a palette made just for this bank, e.g. `indexed_image_bank_builder(load_palette(bytes), 0)`.
              */
-            static image_bank_builder indexed(palette&& pal, std::optional <uint8_t> transparent_index = {});
+            explicit image_bank_builder(palette&& pal, std::optional <uint8_t> transparent_index = {})
+                requires (K == image_kind::indexed);
 
             /// @brief A bank of RGBA (RGBA32) pictures; transparency is alpha 0.
-            static image_bank_builder rgba();
+            image_bank_builder()
+                requires (K == image_kind::rgba);
 
             image_bank_builder(const image_bank_builder&) = delete;
             image_bank_builder& operator = (const image_bank_builder&) = delete;
@@ -71,24 +78,24 @@ namespace neutrino {
             ~image_bank_builder() = default;
 
             /**
-             * @brief A builder for the next picture, set up with the bank's format, palette
-             *        and colour key. Pass it back to @ref add when its pixels are written.
+             * @brief A builder for the next picture, set up with the bank's palette and colour
+             *        key. Pass it back to @ref add when its pixels are written.
              */
-            [[nodiscard]] image_builder next(dim size) const;
+            [[nodiscard]] image_builder <K> next(dim size) const;
 
             /**
              * @brief Finish @p picture and append it to the bank.
              *
-             * @param picture A builder from @ref next (or one made with the same format,
-             *        palette and colour key).
+             * @param picture A builder from @ref next (or one made with the same palette and
+             *        colour key).
              * @param id The game's key for the picture -- typically the file's own number
              *        (block number, character code, cell index). Opaque to the engine and
              *        not required to be unique; @ref image_atlas::find_by_id looks it up.
              * @return The picture's position in the bank, i.e. the atlas region it becomes.
-             * @throws std::runtime_error when the picture's format, palette or colour key
+             * @throws std::runtime_error when an indexed picture's palette or colour key
              *         differs from the bank's.
              */
-            std::size_t add(image_builder&& picture, uint32_t id);
+            std::size_t add(image_builder <K>&& picture, uint32_t id);
 
             /// @brief Number of entries added so far.
             [[nodiscard]] std::size_t size() const noexcept;
@@ -97,15 +104,20 @@ namespace neutrino {
             [[nodiscard]] image_bank build() &&;
 
         private:
-            image_bank_builder(bool indexed, const palette* external, std::optional <palette> owned,
-                               std::optional <uint8_t> transparent_index);
-
             [[nodiscard]] const palette* bank_palette() const noexcept;
 
-            bool m_indexed;
-            const palette* m_external;     // caller's palette (indexed(const palette&))
-            std::optional <palette> m_owned; // palette taken over (indexed(palette&&))
+            const palette* m_external = nullptr;  // caller's palette (indexed, const palette&)
+            std::optional <palette> m_owned;      // palette taken over (indexed, palette&&)
             std::optional <uint8_t> m_transparent_index;
             image_bank m_bank;
     };
+
+    /// @brief Builder of a bank of indexed (INDEX8) pictures.
+    using indexed_image_bank_builder = image_bank_builder <image_kind::indexed>;
+    /// @brief Builder of a bank of RGBA (RGBA32) pictures.
+    using rgba_image_bank_builder = image_bank_builder <image_kind::rgba>;
+
+    // Both kinds are instantiated once, in image_bank_builder.cc.
+    extern template class NEUTRINO_EXPORT image_bank_builder <image_kind::indexed>;
+    extern template class NEUTRINO_EXPORT image_bank_builder <image_kind::rgba>;
 }

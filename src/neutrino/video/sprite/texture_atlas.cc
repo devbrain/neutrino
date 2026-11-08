@@ -8,12 +8,18 @@
 #include "services/service_access.hh"
 #include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
+#include "video/text/glyph_atlas_access.hh"
 
 namespace neutrino {
-
     atlas_id register_atlas(image_atlas&& atlas, atlas_texture_format format, texture_filter filter) {
         return require_texture_registry().add(
             service_locator::instance().get_renderer(), std::move(atlas), format, filter);
+    }
+
+    atlas_id register_atlas(glyph_atlas&& atlas, atlas_texture_format format, texture_filter filter) {
+        return require_texture_registry().add(
+            service_locator::instance().get_renderer(), details::glyph_atlass_acces::extract_atlas(std::move(atlas)),
+            format, filter);
     }
 
     void unregister_atlas(atlas_id atlas) {

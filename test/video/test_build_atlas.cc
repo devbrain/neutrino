@@ -43,7 +43,7 @@ namespace {
     }
 
     image solid_rgba(dim size, color c) {
-        auto b = image_builder::rgba(size);
+        auto b = rgba_image_builder(size);
         for (int y = 0; y < size.height; y++) {
             for (int x = 0; x < size.width; x++) {
                 b.set(x, y, c);
@@ -54,7 +54,7 @@ namespace {
 
     // Indexed picture whose pixel (x, y) is (x + y) % 4 + 1, with (0, 0) set to the key when given.
     image pattern_indexed(dim size, const palette& pal, std::optional <std::uint8_t> key) {
-        auto b = image_builder::indexed(size, pal, key);
+        auto b = indexed_image_builder(size, pal, key);
         for (int y = 0; y < size.height; y++) {
             for (int x = 0; x < size.width; x++) {
                 b.set(x, y, static_cast <std::uint8_t>((x + y) % 4 + 1));
@@ -127,7 +127,7 @@ TEST_SUITE("neutrino::build_atlas") {
     }
 
     TEST_CASE("the gutter repeats the picture's edge pixels") {
-        auto b = image_builder::rgba({3, 3});
+        auto b = rgba_image_builder({3, 3});
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
                 b.set(x, y, color{static_cast <std::uint8_t>(x * 50), static_cast <std::uint8_t>(y * 50), 9, 255});

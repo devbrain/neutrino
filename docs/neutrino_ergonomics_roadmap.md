@@ -409,7 +409,7 @@ flowchart TD
         std::vector <entry> entries;
     };
     // video/image/image_bank_builder.hh -- one format/palette/key for the whole bank (done)
-    auto bank = image_bank_builder::indexed(pal, transparent_index);  // or ::rgba()
+    indexed_image_bank_builder bank(pal, transparent_index);  // or rgba_image_bank_builder bank;
     auto img  = bank.next(dim);                    // an image_builder set up for the bank
     bank.add(std::move(img), id);                  // id required; throws on a mismatched picture
     image_bank b = std::move(bank).build();

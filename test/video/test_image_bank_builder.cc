@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -34,7 +35,7 @@ namespace {
 TEST_SUITE("neutrino::image_bank_builder") {
     TEST_CASE("indexed pictures share the bank's palette and colour key") {
         const palette pal = grey_ramp(17);
-        auto bank = image_bank_builder::indexed(pal, std::uint8_t{16});
+        auto bank = indexed_image_bank_builder(pal, std::uint8_t{16});
 
         for (int i = 0; i < 3; i++) {
             auto img = bank.next({4 + i, 2});
@@ -60,7 +61,7 @@ TEST_SUITE("neutrino::image_bank_builder") {
     TEST_CASE("a palette taken over by the builder outlives its original handle") {
         image_bank result;
         {
-            auto bank = image_bank_builder::indexed(grey_ramp(4));
+            auto bank = indexed_image_bank_builder(grey_ramp(4));
             auto moved = std::move(bank); // the owned palette moves with the builder
             auto img = moved.next({2, 2});
             img.set(1, 1, std::uint8_t{3});
@@ -74,7 +75,7 @@ TEST_SUITE("neutrino::image_bank_builder") {
     }
 
     TEST_CASE("an rgba bank holds RGBA32 pictures") {
-        auto bank = image_bank_builder::rgba();
+        auto bank = rgba_image_bank_builder();
         auto img = bank.next({3, 3});
         img.set(2, 2, color{1, 2, 3, 4});
         bank.add(std::move(img), 9);
@@ -89,7 +90,7 @@ TEST_SUITE("neutrino::image_bank_builder") {
     }
 
     TEST_CASE("ids are the game's: sparse and repeated ids are kept as given") {
-        auto bank = image_bank_builder::rgba();
+        auto bank = rgba_image_bank_builder();
         CHECK(bank.add(bank.next({2, 2}), 5) == 0);
         CHECK(bank.add(bank.next({2, 2}), 1) == 1);
         CHECK(bank.add(bank.next({2, 2}), 5) == 2);
@@ -110,23 +111,22 @@ TEST_SUITE("neutrino::image_bank_builder") {
         const palette pal = grey_ramp(8);
         const palette other = grey_ramp(8);
 
-        auto indexed = image_bank_builder::indexed(pal, std::uint8_t{0});
-        CHECK_THROWS_AS(indexed.add(image_builder::rgba({2, 2}), 0), std::runtime_error);
-        CHECK_THROWS_AS(indexed.add(image_builder::indexed({2, 2}, other, std::uint8_t{0}), 0), std::runtime_error);
-        CHECK_THROWS_AS(indexed.add(image_builder::indexed({2, 2}, pal, std::uint8_t{1}), 0), std::runtime_error);
-        CHECK_THROWS_AS(indexed.add(image_builder::indexed({2, 2}, pal), 0), std::runtime_error);
+        auto indexed = indexed_image_bank_builder(pal, std::uint8_t{0});
+        CHECK_THROWS_AS(indexed.add(indexed_image_builder({2, 2}, other, std::uint8_t{0}), 0), std::runtime_error);
+        CHECK_THROWS_AS(indexed.add(indexed_image_builder({2, 2}, pal, std::uint8_t{1}), 0), std::runtime_error);
+        CHECK_THROWS_AS(indexed.add(indexed_image_builder({2, 2}, pal), 0), std::runtime_error);
         CHECK(indexed.size() == 0);
         // the same palette and key, made by hand, is accepted
-        CHECK(indexed.add(image_builder::indexed({2, 2}, pal, std::uint8_t{0}), 0) == 0);
+        CHECK(indexed.add(indexed_image_builder({2, 2}, pal, std::uint8_t{0}), 0) == 0);
 
-        auto rgba = image_bank_builder::rgba();
-        CHECK_THROWS_AS(rgba.add(image_builder::indexed({2, 2}, pal), 0), std::runtime_error);
-        CHECK(rgba.size() == 0);
+        // an RGBA bank takes only RGBA builders, checked at compile time
+        static_assert(!std::is_invocable_v <decltype(&rgba_image_bank_builder::add), rgba_image_bank_builder&,
+                                            indexed_image_builder&&, std::uint32_t>);
     }
 
     TEST_CASE("an indexed bank builds an indexed atlas") {
         const palette pal = grey_ramp(17);
-        auto bank = image_bank_builder::indexed(pal, std::uint8_t{16});
+        auto bank = indexed_image_bank_builder(pal, std::uint8_t{16});
         bank.add(bank.next({8, 8}), 10);
         bank.add(bank.next({4, 12}), 30);
 

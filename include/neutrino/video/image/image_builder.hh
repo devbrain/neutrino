@@ -15,22 +15,48 @@
 
 #include <optional>
 #include <span>
-#include <memory>
+#include <cstdint>
 
 #include <neutrino/neutrino_export.h>
 #include <neutrino/video/image/image.hh>
 #include <neutrino/video/palette.hh>
+#include <neutrino/video/color.hh>
 #include <neutrino/video/geometry_types.hh>
 
 namespace neutrino {
     /**
-     * @brief Builds one @ref image in one of two pixel formats: indexed (INDEX8) or RGBA (RGBA32).
+     * @brief The pixel format of an @ref image_builder.
+     */
+    enum class image_kind {
+        indexed, ///< INDEX8: one palette index per pixel.
+        rgba     ///< RGBA32: bytes R, G, B, A in memory on every platform.
+    };
+
+    namespace details {
+        template<image_kind K>
+        struct image_pixel;
+
+        template<>
+        struct image_pixel <image_kind::indexed> {
+            using type = std::uint8_t;
+        };
+
+        template<>
+        struct image_pixel <image_kind::rgba> {
+            using type = color;
+        };
+    }
+
+    /**
+     * @brief Builds one @ref image of kind @p K: indexed (INDEX8) or RGBA (RGBA32).
      *
-     * Every pixel starts at 0: index 0 for an indexed image, transparent black for RGBA.
-     * Write pixels with @ref set or @ref row, then call @ref build once.
+     * The kind is part of the type, so a pixel of the wrong kind, or a palette or colour key
+     * on an RGBA image, does not compile. Every pixel starts at 0: index 0 for an indexed image,
+     * transparent black for RGBA. Write pixels with @ref set, @ref row or @ref fill, then call
+     * @ref build once.
      *
      * @code{.cpp}
-     * auto b = image_builder::indexed({16, 16}, pal, 0);    // index 0 is transparent
+     * indexed_image_builder b({16, 16}, pal, 0);           // index 0 is transparent
      * for (int y = 0; y < 16; y++) {
      *     auto px = b.row(y);
      *     for (int x = 0; x < 16; x++) {
@@ -42,8 +68,14 @@ namespace neutrino {
      *
      * Move-only. A moved-from builder, or one that has already been built, must not be used again.
      */
-    class NEUTRINO_EXPORT image_builder {
+    template<image_kind K>
+    class image_builder {
         public:
+            /// @brief One pixel: a palette index (indexed) or a @ref color (RGBA).
+            using pixel_type = typename details::image_pixel <K>::type;
+
+            static constexpr image_kind kind = K;
+
             /**
              * @brief Start an indexed (INDEX8) image with no palette.
              *
@@ -56,7 +88,8 @@ namespace neutrino {
              *        the image's colour key, so it is skipped when blitting and stays
              *        transparent after a palette swap.
              */
-            static image_builder indexed(dim dimensions, std::optional <uint8_t> transparent_index = {});
+            explicit image_builder(dim dimensions, std::optional <std::uint8_t> transparent_index = {})
+                requires (K == image_kind::indexed);
 
             /**
              * @brief Start an indexed (INDEX8) image that uses @p pal.
@@ -68,52 +101,55 @@ namespace neutrino {
              * @param dimensions Size in pixels.
              * @param pal The image's palette.
              * @param transparent_index Palette index to treat as transparent, stored as the
-             *        image's colour key (see the overload without a palette).
+             *        image's colour key (see the constructor without a palette).
              */
-            static image_builder indexed(dim dimensions, const palette& pal,
-                                         std::optional <uint8_t> transparent_index = {});
+            image_builder(dim dimensions, const palette& pal, std::optional <std::uint8_t> transparent_index = {})
+                requires (K == image_kind::indexed);
 
             /**
-             * @brief Start an RGBA image (RGBA32: bytes R, G, B, A in memory on every platform).
-             *
-             * Transparency is alpha 0.
+             * @brief Start an RGBA image (RGBA32). Transparency is alpha 0.
              *
              * @param dimensions Size in pixels.
              */
-            static image_builder rgba(dim dimensions);
+            explicit image_builder(dim dimensions)
+                requires (K == image_kind::rgba);
 
             image_builder(const image_builder&) = delete;
             image_builder& operator = (const image_builder&) = delete;
 
-            image_builder(image_builder&&) noexcept;
-            image_builder& operator = (image_builder&&) noexcept;
-            ~image_builder();
+            image_builder(image_builder&&) noexcept = default;
+            image_builder& operator = (image_builder&&) noexcept = default;
+            ~image_builder() = default;
 
             /**
-             * @brief Write palette index @p index at (@p x, @p y) of an indexed image.
+             * @brief Write @p p at (@p x, @p y).
              *
-             * @throws std::runtime_error when the builder is RGBA or the pixel is outside the image.
+             * @throws std::runtime_error when the pixel is outside the image.
              */
-            void set(int x, int y, uint8_t index);
+            void set(int x, int y, pixel_type p);
 
             /**
-             * @brief Write colour @p c at (@p x, @p y) of an RGBA image.
+             * @brief Set every pixel to @p p.
              *
-             * @throws std::runtime_error when the builder is indexed or the pixel is outside the image.
+             * For a background other than 0: the colour key of an indexed image whose transparent
+             * index is not 0, or transparent white (`{255, 255, 255, 0}`) under alpha-only
+             * pictures, so that filtered edges do not blend toward black.
              */
-            void set(int x, int y, color c);
+            void fill(pixel_type p);
 
             /**
              * @brief The pixels of row @p y, for decoders that produce a row at a time (planar, RLE).
              *
-             * An indexed image gives one byte (palette index) per pixel. An RGBA image gives
-             * four bytes per pixel, in the order R, G, B, A on every platform. The span covers
-             * exactly the image width, without the padding SDL may add to each row, and stays
-             * valid until @ref build.
+             * One element per pixel: a palette index, or a @ref color whose bytes are R, G, B, A
+             * in memory. The span covers exactly the image width, without the padding SDL may add
+             * to each row, and stays valid until @ref build.
              *
              * @throws std::runtime_error when @p y is outside the image.
              */
-            std::span <uint8_t> row(int y);
+            std::span <pixel_type> row(int y);
+
+            /// @brief Width and height in pixels.
+            [[nodiscard]] dim size() const noexcept;
 
             /**
              * @brief Finish and return the image.
@@ -121,12 +157,18 @@ namespace neutrino {
              * Called on an rvalue (`std::move(builder).build()`), because it hands over the
              * image instead of copying it.
              */
-            [[nodiscard]] image build() const &&;
+            [[nodiscard]] image build() &&;
 
         private:
-            struct impl;
-            std::unique_ptr <impl> m_pimpl;
-        private:
-            explicit image_builder(std::unique_ptr <impl> pimpl);
+            image m_image;
     };
+
+    /// @brief Builder of an indexed (INDEX8) image.
+    using indexed_image_builder = image_builder <image_kind::indexed>;
+    /// @brief Builder of an RGBA (RGBA32) image.
+    using rgba_image_builder = image_builder <image_kind::rgba>;
+
+    // Both kinds are instantiated once, in image_builder.cc.
+    extern template class NEUTRINO_EXPORT image_builder <image_kind::indexed>;
+    extern template class NEUTRINO_EXPORT image_builder <image_kind::rgba>;
 }

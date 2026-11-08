@@ -6,7 +6,7 @@
 #include <neutrino/application.hh>
 #include <failsafe/enforce.hh>
 #include <neutrino/entry_point.hh>
-#include <../../include/neutrino/video/image/image_loader.hh>
+#include <neutrino/video/image/image_loader.hh>
 
 #include <algorithm>
 #include <filesystem>

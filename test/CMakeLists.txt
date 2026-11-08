@@ -49,6 +49,7 @@ add_executable(neutrino_tests
         video/test_shelf_packer.cc
         video/test_build_atlas.cc
         video/test_register_atlas.cc
+        video/test_glyph_atlas.cc
         video/test_texture.cc
         video/test_window_presentation.cc
         video/test_sprite_sheet.cc
@@ -77,9 +78,11 @@ target_include_directories(neutrino_tests
         ${PROJECT_SOURCE_DIR}/src/neutrino
 )
 
+# The engine's objects rather than the library: tests reach internals that a shared,
+# hidden-visibility libneutrino does not export.
 target_link_libraries(neutrino_tests
         PRIVATE
-        neutrino
+        neutrino_objects
         doctest::doctest
 )
 

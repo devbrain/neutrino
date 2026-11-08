@@ -29,7 +29,7 @@ using namespace neutrino;
 
 namespace {
     image solid_rgba(dim size, color c) {
-        auto b = image_builder::rgba(size);
+        auto b = rgba_image_builder(size);
         for (int y = 0; y < size.height; y++) {
             for (int x = 0; x < size.width; x++) {
                 b.set(x, y, c);
@@ -61,7 +61,7 @@ namespace {
     // Draw a 2x1 red|blue picture stretched to 20x2 and report whether every pixel of the
     // stretched row is exactly red or blue (no blended texels).
     bool scaled_picture_keeps_texels(texture_filter filter) {
-        auto b = image_builder::rgba({2, 1});
+        auto b = rgba_image_builder({2, 1});
         b.set(0, 0, colors::red);
         b.set(1, 0, colors::blue);
         image_bank bank;
@@ -106,7 +106,7 @@ namespace {
     // 4x4 glyph: a keyed one-pixel border around a 2x2 centre, left column ink_a, right ink_b.
     // The keyed border is what build_atlas extrudes into the gutter.
     image keyed_glyph(const palette& pal) {
-        auto b = image_builder::indexed({4, 4}, pal, key);
+        auto b = indexed_image_builder({4, 4}, pal, key);
         for (int y = 0; y < 4; y++) {
             for (int x = 0; x < 4; x++) {
                 const bool centre = x >= 1 && x <= 2 && y >= 1 && y <= 2;
