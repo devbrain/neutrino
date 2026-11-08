@@ -300,37 +300,28 @@ neutrino_subsystem(text DIR video/text
 
 neutrino_library_type(neutrino _lib_type)
 
-# Three targets:
-#   neutrino_usage    INTERFACE: what users of the engine get (public headers, C++20, public deps)
-#   neutrino_objects  OBJECT:    the engine's sources, compiled once
-#   neutrino          the library (static or shared) made from those objects
-# The test binary links neutrino_objects directly, so it can reach internals that a shared,
-# hidden-visibility libneutrino does not export.
+# The engine's sources are compiled once, into neutrino_objects, which carries all of the
+# engine's build settings and dependencies. The library (static or shared) is made from those
+# objects. The test binary links neutrino_objects directly, so it can reach internals that a
+# shared, hidden-visibility libneutrino does not export.
 
-add_library(neutrino_usage INTERFACE)
-target_include_directories(neutrino_usage
-        INTERFACE
+add_library(neutrino_objects OBJECT ${NEUTRINO_SOURCES})
+target_include_directories(neutrino_objects
+        PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
-target_compile_features(neutrino_usage INTERFACE cxx_std_20)
-target_link_libraries(neutrino_usage
-        INTERFACE
+target_compile_features(neutrino_objects PUBLIC cxx_std_20)
+target_link_libraries(neutrino_objects
+        PUBLIC
         neutrino::sdlpp
         neutrino::musac
         musac::backend_sdl3
         musac::codecs
         neutrino::onyx_image
-        neutrino::onyx_font)
-
-add_library(neutrino_objects OBJECT ${NEUTRINO_SOURCES})
-target_include_directories(neutrino_objects
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-)
-target_link_libraries(neutrino_objects
-        PUBLIC
-        neutrino_usage
+        neutrino::onyx_font
         PRIVATE
         neutrino::bstream
         nlohmann_json::nlohmann_json
@@ -347,11 +338,7 @@ endif()
 
 add_library(neutrino ${_lib_type})
 add_library(neutrino::neutrino ALIAS neutrino)
-target_link_libraries(neutrino
-        PUBLIC
-        neutrino_usage
-        PRIVATE
-        neutrino_objects)
+target_link_libraries(neutrino PUBLIC neutrino_objects)
 
 if(_lib_type STREQUAL "SHARED")
         # Export only what is marked NEUTRINO_EXPORT. CMake defines neutrino_EXPORTS for the
