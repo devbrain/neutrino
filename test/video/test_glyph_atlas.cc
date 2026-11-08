@@ -2,18 +2,19 @@
 // Tests for glyph_atlas_builder: pixels relative to the pen are cropped to their bounds and give
 // bearing_x / y_offset; the picture per kind (alpha: white + coverage, rgba, indexed with palette
 // and key); empty glyphs keep their position with an empty picture; entry ids are glyph ids;
-// out-of-order calls and out-of-range glyphs throw; a font of only empty glyphs builds and
-// registers.
+// out-of-order calls and out-of-range glyphs throw; a font of only empty glyphs builds;
+// register_font / unregister_font.
 //
 #include <doctest/doctest.h>
 
 #include <neutrino/video/text/glyph_atlas.hh>
-#include <neutrino/video/sprite/texture_atlas.hh>
+#include <neutrino/video/text/font.hh>
 
 #include "image_atlas_access.hh"
 #include "test_application.hh"
 #include "services/service_access.hh"
 #include "video/sprite/texture_registry.hh"
+#include "video/text/fonts_manager.hh"
 #include "video/text/glyph_atlas_access.hh"
 
 #include <cstdint>
@@ -31,7 +32,7 @@ namespace {
     using indexed_builder = glyph_atlas_builder <glyph_atlas_format::indexed>;
 
     const image_atlas& atlas_of(const glyph_atlas& g) {
-        return details::glyph_atlass_acces::atlas(g);
+        return details::glyph_atlas_access::atlas(g);
     }
 
     // Pixel (x, y) of picture i, read from its atlas page.
@@ -69,7 +70,7 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
         const glyph_atlas g = std::move(b).build();
 
         REQUIRE(g.glyph_count() == 1);
-        const auto& p = g.properties(0);
+        const auto& p = g.get_glyph_properties(0);
         CHECK(p.glyph == 65);
         CHECK(p.advance == 5);
         CHECK(p.bearing_x == 1);
@@ -85,7 +86,7 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
         b.end_glyph();
         const glyph_atlas g = std::move(b).build();
 
-        const auto& p = g.properties(0);
+        const auto& p = g.get_glyph_properties(0);
         CHECK(p.bearing_x == -2);
         CHECK(p.y_offset == 8); // one row below the baseline, 7 + 1 from the cell top
         CHECK(atlas_of(g).picture_size(0) == dim{3, 2});
@@ -154,11 +155,11 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
         CHECK(a.picture_size(1) == dim{0, 0});
         CHECK(a.picture_size(2) == dim{0, 0});
         CHECK(a.picture_size(3) == dim{2, 1});
-        CHECK(g.properties(1).glyph == ' ');
-        CHECK(g.properties(1).advance == 3);
-        CHECK(g.properties(1).bearing_x == 0);
-        CHECK(g.properties(1).y_offset == 0);
-        CHECK(g.properties(3).glyph == 'B');
+        CHECK(g.get_glyph_properties(1).glyph == ' ');
+        CHECK(g.get_glyph_properties(1).advance == 3);
+        CHECK(g.get_glyph_properties(1).bearing_x == 0);
+        CHECK(g.get_glyph_properties(1).y_offset == 0);
+        CHECK(g.get_glyph_properties(3).glyph == 'B');
     }
 
     TEST_CASE("bank entry ids are the glyph ids") {
@@ -185,7 +186,7 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
         b.empty_glyph(32);
         const glyph_atlas g = std::move(b).build();
 
-        const auto& f = details::glyph_atlass_acces::font(g);
+        const auto& f = details::glyph_atlas_access::font(g);
         CHECK(f.line_height == 10);
         CHECK(f.baseline == 8);
         CHECK(f.space_advance == 4);
@@ -212,7 +213,7 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
             alpha_builder b(font);
             b.empty_glyph(1);
             const glyph_atlas g = std::move(b).build();
-            CHECK_THROWS_AS((void)g.properties(1), std::runtime_error);
+            CHECK_THROWS_AS((void)g.get_glyph_properties(1), std::runtime_error);
         }
     }
 
@@ -221,6 +222,13 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
         b.start_glyph(1);
         b.put(40000, 0, 255);
         CHECK_THROWS_AS(b.end_glyph(), std::runtime_error);
+    }
+
+    TEST_CASE("a glyph id used twice throws at build") {
+        alpha_builder b(font);
+        b.empty_glyph('a');
+        b.empty_glyph('a');
+        CHECK_THROWS_AS((void)std::move(b).build(), std::runtime_error);
     }
 
     TEST_CASE("a font of only empty glyphs builds, also as INDEX8") {
@@ -236,26 +244,49 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
     }
 }
 
-TEST_SUITE("neutrino::video register_atlas glyph atlases") {
-    TEST_CASE("a glyph atlas registers with one picture per glyph") {
+TEST_SUITE("neutrino::video register_font") {
+    TEST_CASE("a font registers its atlas with one picture per glyph") {
         neutrino::test::test_application app("glyph atlas register");
         alpha_builder b(font);
         b.start_glyph('A');
         b.put(0, 0, 255);
         b.end_glyph();
-        b.empty_glyph(' ');
-        const atlas_id atlas = register_atlas(std::move(b).build());
-        CHECK(require_texture_registry().picture_count(atlas) == 2);
-        CHECK(require_texture_registry().picture_size(atlas, 1) == dim{0, 0});
-        unregister_atlas(atlas);
+        b.empty_glyph(' ', {.advance = 3});
+        const font_id f = register_font(std::move(b).build());
+        REQUIRE(f.valid());
+
+        const auto& loaded = require_fonts_manager().get(f);
+        CHECK(require_texture_registry().picture_count(loaded.atlas) == 2);
+        CHECK(require_texture_registry().picture_size(loaded.atlas, 1) == dim{0, 0});
+        CHECK(loaded.font_props.line_height == 8);
+        CHECK(loaded.font_props.baseline == 7);
+        REQUIRE(loaded.glyph_props.size() == 2);
+        CHECK(loaded.glyph_props[0].glyph == 'A');
+        CHECK(loaded.glyph_props[1].glyph == ' ');
+        CHECK(loaded.glyph_props[1].advance == 3);
+
+        const atlas_id atlas = loaded.atlas;
+        unregister_font(f);
+        CHECK_THROWS_AS((void)require_fonts_manager().get(f), std::runtime_error);
+        CHECK_THROWS_AS((void)require_texture_registry().picture_count(atlas), std::runtime_error);
     }
 
     TEST_CASE("a font of only empty glyphs registers") {
         neutrino::test::test_application app("glyph atlas register empty");
         alpha_builder b(font);
         b.empty_glyph(' ');
-        const atlas_id atlas = register_atlas(std::move(b).build());
-        CHECK(require_texture_registry().picture_count(atlas) == 1);
-        unregister_atlas(atlas);
+        const font_id f = register_font(std::move(b).build());
+        CHECK(require_texture_registry().picture_count(require_fonts_manager().get(f).atlas) == 1);
+        unregister_font(f);
+    }
+
+    TEST_CASE("unregister_font ignores invalid and already unregistered ids") {
+        neutrino::test::test_application app("glyph atlas unregister twice");
+        alpha_builder b(font);
+        b.empty_glyph(' ');
+        const font_id f = register_font(std::move(b).build());
+        unregister_font(f);
+        CHECK_NOTHROW(unregister_font(f));
+        CHECK_NOTHROW(unregister_font(font_id{}));
     }
 }

@@ -18,21 +18,22 @@ namespace neutrino {
     class sound_system;
     class resource_cache;
     class sprite_cache;
+    class fonts_manager;
 
     class service_locator {
         friend class application;
         public:
             static service_locator& instance();
 
-            sdlpp::window& get_window() const {
+            [[nodiscard]] sdlpp::window& get_window() const {
                 return *m_window;
             }
 
-            sdlpp::renderer& get_renderer() const {
+            [[nodiscard]] sdlpp::renderer& get_renderer() const {
                 return *m_renderer;
             }
 
-            scenes_manager& get_scenes_manager() const {
+            [[nodiscard]] scenes_manager& get_scenes_manager() const {
                 return *m_scenes_manager;
             }
 
@@ -40,40 +41,44 @@ namespace neutrino {
             // above: they are absent before the application exists and after
             // it is destroyed, and callers (input queries, sound_effect
             // destructors) must degrade gracefully in both cases.
-            application* get_application() const {
+            [[nodiscard]] application* get_application() const {
                 return m_application;
             }
 
-            gamepads* get_gamepads() const {
+            [[nodiscard]] gamepads* get_gamepads() const {
                 return m_gamepads;
             }
 
-            sound_system* get_sound_system() const {
+            [[nodiscard]] sound_system* get_sound_system() const {
                 return m_sound_system;
             }
 
-            texture_registry* get_texture_registry() const {
+            [[nodiscard]] texture_registry* get_texture_registry() const {
                 return m_texture_registry;
             }
 
-            sprites_manager* get_sprites_manager() const {
+            [[nodiscard]] sprites_manager* get_sprites_manager() const {
                 return m_sprites_manager;
             }
 
             // The application's shared tileset render-resource cache. Null
             // before the application is ready and after it is torn down.
-            resource_cache* get_resource_cache() const {
+            [[nodiscard]] resource_cache* get_resource_cache() const {
                 return m_resource_cache;
             }
 
             // The application's shared sprite cache. Null before the application is
             // ready and after it is torn down.
-            sprite_cache* get_sprite_cache() const {
+            [[nodiscard]] sprite_cache* get_sprite_cache() const {
                 return m_sprite_cache;
             }
 
-            int get_max_texture_size() const {
+            [[nodiscard]] int get_max_texture_size() const {
                 return m_max_texture_size;
+            }
+
+            [[nodiscard]] fonts_manager* get_fonts_manager() const {
+                return m_fonts_manager;
             }
         private:
             void set_window(sdlpp::window& w);
@@ -86,6 +91,7 @@ namespace neutrino {
             void set_sprites_manager(sprites_manager& s);
             void set_resource_cache(resource_cache& c);
             void set_sprite_cache(sprite_cache& c);
+            void set_fonts_manager(fonts_manager& f);
             void clear_application(application& a) noexcept;
 
         private:
@@ -99,6 +105,7 @@ namespace neutrino {
             sprites_manager* m_sprites_manager = nullptr;
             resource_cache* m_resource_cache = nullptr;
             sprite_cache* m_sprite_cache = nullptr;
+            fonts_manager* m_fonts_manager = nullptr;
             int m_max_texture_size = 0;
     };
 

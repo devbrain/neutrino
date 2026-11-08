@@ -50,6 +50,7 @@ add_executable(neutrino_tests
         video/test_build_atlas.cc
         video/test_register_atlas.cc
         video/test_glyph_atlas.cc
+        video/test_font.cc
         video/test_texture.cc
         video/test_window_presentation.cc
         video/test_sprite_sheet.cc
@@ -89,6 +90,7 @@ target_link_libraries(neutrino_tests
 target_compile_definitions(neutrino_tests
         PRIVATE
         NEUTRINO_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/world/data"
+        NEUTRINO_FONT_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/video/data/fonts"
 )
 
 if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)

@@ -17,6 +17,7 @@
 #include "services/service_locator.hh"
 #include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
+#include "video/text/fonts_manager.hh"
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/sprite/sprite_cache.hh>
 #include <neutrino/video/world/resource_cache.hh>
@@ -47,6 +48,7 @@ namespace neutrino {
         // published, since destroy_bundle unregisters through the service_locator.
         std::unique_ptr<resource_cache> m_resource_cache;
         std::unique_ptr<sprite_cache> m_sprite_cache;
+        std::unique_ptr<fonts_manager> m_fonts_manager;
         // A scene faulted during this frame's update: its pop is already queued and
         // this frame's render is skipped. Reset at the start of every update.
         bool m_scene_faulted = false;
@@ -175,6 +177,9 @@ namespace neutrino {
         service_locator::instance().set_resource_cache(*m_pimpl->m_resource_cache);
         m_pimpl->m_sprite_cache = std::make_unique<sprite_cache>();
         service_locator::instance().set_sprite_cache(*m_pimpl->m_sprite_cache);
+        m_pimpl->m_fonts_manager = std::make_unique<fonts_manager>();
+        service_locator::instance().set_fonts_manager(*m_pimpl->m_fonts_manager);
+
 
         // sdlpp initializes SDL with video|events only; without the gamepad
         // subsystem SDL emits no gamepad events at all. Ref-counted, and

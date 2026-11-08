@@ -65,6 +65,16 @@ namespace neutrino {
         return service_locator::instance().get_sprite_cache();
     }
 
+    [[nodiscard]] inline fonts_manager& require_fonts_manager() {
+        auto* c = service_locator::instance().get_fonts_manager();
+        ENFORCE(c != nullptr, "fonts_manager is not available; is the application ready?");
+        return *c;
+    }
+    [[nodiscard]] inline fonts_manager* maybe_fonts_manager() noexcept {
+        return service_locator::instance().get_fonts_manager();
+    }
+
+
     /// @brief Shutdown-safe unregister: erase @p id from @p manager when the id is live and
     ///        the manager still exists ("already torn down" means nothing to do).
     template <class Id, class Manager>

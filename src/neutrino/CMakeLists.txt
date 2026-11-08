@@ -289,10 +289,16 @@ neutrino_subsystem(simplex
 neutrino_subsystem(text DIR video/text
         PUBLIC
             glyph_atlas.hh
+            font.hh
             text.hh
         PRIVATE
             glyph_atlas.cc
             glyph_atlas_access.hh
+            font.cc
+            fonts_manager.cc
+            fonts_manager.hh
+            onyx_bitmap_font.cc
+            onyx_bitmap_font.hh
 )
 # ----------------------------------------------------------------------------
 # Target

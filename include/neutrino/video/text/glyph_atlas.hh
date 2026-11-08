@@ -5,6 +5,7 @@
 #pragma once
 
 #include <optional>
+#include <unordered_set>
 #include <vector>
 #include <limits>
 #include <algorithm>
@@ -21,7 +22,7 @@
 
 namespace neutrino {
     namespace details {
-        struct glyph_atlass_acces;
+        struct glyph_atlas_access;
     }
 
     /**
@@ -78,7 +79,7 @@ namespace neutrino {
     class glyph_atlas_builder;
 
     class NEUTRINO_EXPORT glyph_atlas {
-        friend struct details::glyph_atlass_acces;
+        friend struct details::glyph_atlas_access;
 
         template<glyph_atlas_format format>
         friend class glyph_atlas_builder;
@@ -86,7 +87,9 @@ namespace neutrino {
         public:
             [[nodiscard]] std::size_t glyph_count() const noexcept;
             /// @throws std::runtime_error when @p idx is not less than @ref glyph_count.
-            [[nodiscard]] const glyph_properties& properties(std::size_t idx) const;
+            [[nodiscard]] const glyph_properties& get_glyph_properties(std::size_t idx) const;
+
+            [[nodiscard]] font_properties get_font_properties() const noexcept;
 
         private:
             glyph_atlas(const font_properties& font_props, image_atlas&& atlas, std::vector <glyph_properties>&& props);
@@ -303,11 +306,17 @@ namespace neutrino {
             /**
              * @brief Pack the glyphs into an atlas. Glyph @c i is picture @c i.
              *
-             * @throws std::runtime_error when a glyph is started but not ended.
+             * @throws std::runtime_error when a glyph is started but not ended, or a glyph id
+             *         is used twice.
              */
             glyph_atlas build(std::optional <pixel_format> atlas_texture_format = {},
                               std::optional <dim> max_page = {}) && {
                 ENFORCE(!m_in_glyph, "build(): the last glyph is not ended");
+                std::unordered_set <std::uint32_t> ids;
+                ids.reserve(m_props.size());
+                for (const auto& p : m_props) {
+                    ENFORCE(ids.insert(p.glyph).second, "build(): glyph", p.glyph, "is defined twice");
+                }
                 return {
                     m_font_props,
                     build_atlas(m_bank, atlas_texture_format, max_page),

@@ -11,7 +11,6 @@
 #include <neutrino/video/geometry_types.hh>
 
 #include <neutrino/video/texture.hh>
-#include <neutrino/video/text/glyph_atlas.hh>
 
 namespace neutrino {
     /**
@@ -63,10 +62,6 @@ namespace neutrino {
         atlas_texture_format format = atlas_texture_format::automatic,
         texture_filter filter = texture_filter::linear);
 
-    NEUTRINO_EXPORT atlas_id register_atlas(
-        glyph_atlas&& atlas,
-        atlas_texture_format format = atlas_texture_format::automatic,
-        texture_filter filter = texture_filter::linear);
     /**
      * @brief Unregister an uploaded texture atlas.
      *

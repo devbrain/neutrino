@@ -58,6 +58,10 @@ namespace neutrino {
         m_sprite_cache = &c;
     }
 
+    void service_locator::set_fonts_manager(fonts_manager& f) {
+        m_fonts_manager = &f;
+    }
+
     void service_locator::clear_application(application& a) noexcept {
         if (m_application != &a) {
             return;
@@ -73,6 +77,7 @@ namespace neutrino {
         m_sprites_manager = nullptr;
         m_resource_cache = nullptr;
         m_sprite_cache = nullptr;
+        m_fonts_manager = nullptr;
         m_max_texture_size = 0;
     }
 }
