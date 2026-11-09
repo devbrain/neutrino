@@ -43,9 +43,9 @@ namespace neutrino::details {
                       m_scale(params.scale),
                       m_spacing(std::int64_t{font.font_props.letter_spacing + params.letter_spacing} * 64) {
                     ENFORCE(params.scale > 0.0f, "text_params.scale must be positive, got", params.scale);
-                    if (const auto it = font.lookup.find(U' '); it != font.lookup.end()) {
-                        m_space_glyph = it->second;
-                        m_space = font.advances[it->second].raw();
+                    if (const auto g = font.own_glyph(U' ')) {
+                        m_space_glyph = *g;
+                        m_space = font.advances[*g].raw();
                     } else {
                         m_space = std::int64_t{font.font_props.space_advance} * 64;
                     }

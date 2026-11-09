@@ -249,7 +249,7 @@ TEST_SUITE("neutrino::text_layout fit") {
 TEST_SUITE("neutrino::text_layout public API") {
     TEST_CASE("queries take a registered font") {
         neutrino::test::test_application app("text layout");
-        const font_id id = register_bios_font(bios_font::vga_8x16);
+        const font_id id = register_font(bios_font::vga_8x16);
         CHECK(measure("Hello\nWorld!", id) == dim{48, 32});
         CHECK(wrap("Hello World", id, 50) == std::vector <line_range>{{0, 5, 40}, {6, 11, 40}});
         CHECK(fit("Hello", id, 20) == fit_result{2, 16});

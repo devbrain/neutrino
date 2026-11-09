@@ -55,6 +55,8 @@ add_executable(neutrino_tests
         video/test_texture.cc
         video/test_window_presentation.cc
         video/test_sprite_sheet.cc
+        video/test_glyph_mapping.cc
+        video/test_glyph_bank_fonts.cc
         video/world/test_tileset_bundle.cc
         video/world/test_resource_cache.cc
         video/world/test_resource_cache_core.cc

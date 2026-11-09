@@ -13,6 +13,7 @@
 #include <onyx_font/decoder.hh>
 
 #include <neutrino/video/text/glyph_atlas.hh>
+#include <neutrino/video/text/glyph_mapping.hh>
 #include <neutrino/neutrino_export.h>
 #include <neutrino/detail/id_strong_type.hh>
 
@@ -46,6 +47,22 @@ namespace neutrino {
      * @throws std::runtime_error when the application is not ready.
      */
     [[nodiscard]] NEUTRINO_EXPORT font_id register_font(glyph_atlas&& glyphs,
+        atlas_texture_format format = atlas_texture_format::automatic,
+        texture_filter filter = texture_filter::linear);
+
+    /**
+     * @brief Register a font whose glyph ids are not code points (font_plan.md F3, FM2).
+     *
+     * @p mapping takes code points to the atlas's glyph ids; many code points may share a
+     * glyph. Unmapped code points draw the glyph whose id is @c font_properties::default_glyph,
+     * when the font has it. Glyphs the mapping does not reach are kept (the default glyph may
+     * be one of them).
+     *
+     * @throws std::runtime_error when @p mapping names a glyph id the atlas does not have, or
+     *         the application is not ready.
+     */
+    [[nodiscard]] NEUTRINO_EXPORT font_id register_font(glyph_atlas&& glyphs,
+        const glyph_mapping& mapping,
         atlas_texture_format format = atlas_texture_format::automatic,
         texture_filter filter = texture_filter::linear);
 
@@ -94,7 +111,7 @@ namespace neutrino {
 
     /// @brief Register a built-in BIOS font.
     /// @throws std::runtime_error when the application is not ready.
-    [[nodiscard]] NEUTRINO_EXPORT font_id register_bios_font(bios_font which,
+    [[nodiscard]] NEUTRINO_EXPORT font_id register_font(bios_font which,
         atlas_texture_format format = atlas_texture_format::automatic,
         texture_filter filter = texture_filter::linear);
 

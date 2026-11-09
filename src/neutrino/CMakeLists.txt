@@ -292,6 +292,7 @@ neutrino_subsystem(text DIR video/text
             font.hh
             text.hh
             text_layout.hh
+            glyph_mapping.hh
         PRIVATE
             glyph_atlas.cc
             glyph_atlas_access.hh
@@ -304,6 +305,7 @@ neutrino_subsystem(text DIR video/text
             text_layout.cc
             text_layout_engine.cc
             text_layout_engine.hh
+            glyph_mapping.cc
 )
 # ----------------------------------------------------------------------------
 # Target

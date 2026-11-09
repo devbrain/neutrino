@@ -2,31 +2,66 @@
 // Created by igor on 08/11/2026.
 //
 
+#include <algorithm>
 #include <atomic>
+#include <utility>
 #include <failsafe/enforce.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 #include "fonts_manager.hh"
 
 namespace neutrino {
-    glyph_lookup glyph_ids_as_code_points(const std::vector <glyph_properties>& glyphs) {
-        glyph_lookup lookup;
-        lookup.reserve(glyphs.size());
-        for (std::size_t i = 0; i < glyphs.size(); i++) {
-            lookup.emplace(static_cast <char32_t>(glyphs[i].glyph), i);
+    glyph_mapping glyph_ids_as_code_points(const std::vector <glyph_properties>& glyphs) {
+        std::vector <std::uint32_t> ids;
+        ids.reserve(glyphs.size());
+        for (const auto& g : glyphs) {
+            ids.push_back(g.glyph);
         }
-        return lookup;
+        std::sort(ids.begin(), ids.end());
+        glyph_mapping mapping;
+        for (const auto id : ids) {
+            mapping.bind(static_cast <char32_t>(id), id); // ascending: each bind appends or merges
+        }
+        return mapping;
+    }
+
+    namespace {
+        // Rewrite code point -> glyph id as code point -> glyph index. A range splits where
+        // consecutive ids stop being consecutive pictures.
+        glyph_mapping to_glyph_indices(const glyph_mapping& mapping, const std::vector <glyph_properties>& glyphs) {
+            std::vector <std::pair <std::uint32_t, std::size_t>> by_id; // (id, index), sorted by id
+            by_id.reserve(glyphs.size());
+            for (std::size_t i = 0; i < glyphs.size(); i++) {
+                by_id.emplace_back(glyphs[i].glyph, i);
+            }
+            std::sort(by_id.begin(), by_id.end());
+
+            glyph_mapping out;
+            for (const auto& r : mapping.ranges()) {
+                char32_t cp = r.begin;
+                while (cp < r.end) {
+                    const std::uint32_t id = r.map(cp);
+                    auto it = std::lower_bound(by_id.begin(), by_id.end(), id,
+                                               [](const auto& e, std::uint32_t v) { return e.first < v; });
+                    ENFORCE(it != by_id.end() && it->first == id, "Code point", static_cast <std::uint32_t>(cp),
+                            "maps to glyph", id, "; the font has no such glyph");
+                    const char32_t run_begin = cp;
+                    const std::size_t first_index = it->second;
+                    for (++cp, ++it; cp < r.end && it != by_id.end() && it->first == r.map(cp) &&
+                                     it->second == first_index + (cp - run_begin); ++cp, ++it) {
+                    }
+                    out.bind(run_begin, cp, static_cast <std::uint32_t>(first_index));
+                }
+            }
+            return out;
+        }
     }
 
     loaded_font::loaded_font(atlas_id atlas_, font_properties font_props_,
-                             std::vector <glyph_properties>&& glyph_props_, glyph_lookup&& lookup_)
+                             std::vector <glyph_properties>&& glyph_props_, const glyph_mapping& mapping)
         : atlas(atlas_),
           font_props(font_props_),
           glyph_props(std::move(glyph_props_)),
-          lookup(std::move(lookup_)) {
-        for (const auto& [code_point, index] : lookup) {
-            ENFORCE(index < glyph_props.size(), "Code point", static_cast <std::uint32_t>(code_point),
-                    "maps to glyph index", index, "; the font has", glyph_props.size(), "glyphs");
-        }
+          lookup(to_glyph_indices(mapping, glyph_props)) {
         advances.reserve(glyph_props.size());
         for (std::size_t i = 0; i < glyph_props.size(); i++) {
             advances.push_back(details::fixed26_6::from_float(glyph_props[i].advance));
@@ -36,9 +71,13 @@ namespace neutrino {
         }
     }
 
-    std::optional <std::size_t> loaded_font::find_glyph(char32_t code_point) const noexcept {
-        if (const auto itr = lookup.find(code_point); itr != lookup.end()) {
-            return itr->second;
+    std::optional <std::size_t> loaded_font::own_glyph(char32_t code_point) const {
+        return lookup.find(code_point);
+    }
+
+    std::optional <std::size_t> loaded_font::find_glyph(char32_t code_point) const {
+        if (const auto g = own_glyph(code_point)) {
+            return g;
         }
         return default_index;
     }

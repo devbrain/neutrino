@@ -19,25 +19,23 @@
 #include "video/text/onyx_bitmap_font.hh"
 
 namespace neutrino {
-    namespace details {
-        font_id register_font(glyph_atlas&& glyphs, glyph_lookup&& lookup,
-                              atlas_texture_format format, texture_filter filter) {
-            // Both services first: a missing one must not leave an uploaded atlas behind.
-            auto& fonts = require_fonts_manager();
-            auto& textures = require_texture_registry();
+    font_id register_font(glyph_atlas&& glyphs, const glyph_mapping& mapping,
+                          atlas_texture_format format, texture_filter filter) {
+        // Both services first: a missing one must not leave an uploaded atlas behind.
+        auto& fonts = require_fonts_manager();
+        auto& textures = require_texture_registry();
 
-            const font_properties props = glyphs.get_font_properties();
-            // The two extracts move out different members of glyphs.
-            const atlas_id atlas = textures.add(service_locator::instance().get_renderer(),
-                                                glyph_atlas_access::extract_atlas(std::move(glyphs)),
-                                                format, filter);
-            try {
-                return fonts.add({atlas, props, glyph_atlas_access::extract_glyphs(std::move(glyphs)),
-                                  std::move(lookup)});
-            } catch (...) {
-                unregister_atlas(atlas);
-                throw;
-            }
+        const font_properties props = glyphs.get_font_properties();
+        // The two extracts move out different members of glyphs.
+        const atlas_id atlas = textures.add(service_locator::instance().get_renderer(),
+                                            details::glyph_atlas_access::extract_atlas(std::move(glyphs)),
+                                            format, filter);
+        try {
+            return fonts.add({atlas, props, details::glyph_atlas_access::extract_glyphs(std::move(glyphs)),
+                              mapping});
+        } catch (...) {
+            unregister_atlas(atlas);
+            throw;
         }
     }
 
@@ -45,13 +43,13 @@ namespace neutrino {
         font_id register_bitmap_font(const onyx_font::bitmap_font& font, atlas_texture_format format,
                                      texture_filter filter) {
             auto converted = convert_bitmap_font(font);
-            return details::register_font(std::move(converted.glyphs), std::move(converted.lookup), format, filter);
+            return register_font(std::move(converted.glyphs), converted.mapping, format, filter);
         }
     }
 
     font_id register_font(glyph_atlas&& glyphs, atlas_texture_format format, texture_filter filter) {
-        auto lookup = glyph_ids_as_code_points(details::glyph_atlas_access::glyphs(glyphs));
-        return details::register_font(std::move(glyphs), std::move(lookup), format, filter);
+        const auto mapping = glyph_ids_as_code_points(details::glyph_atlas_access::glyphs(glyphs));
+        return register_font(std::move(glyphs), mapping, format, filter);
     }
 
     font_properties get_font_properties(font_id font) {
@@ -67,7 +65,7 @@ namespace neutrino {
     }
 
     bool has_glyph(font_id font, char32_t code_point) {
-        return require_fonts_manager().get(font).lookup.contains(code_point);
+        return require_fonts_manager().get(font).own_glyph(code_point).has_value();
     }
 
     void unregister_font(font_id font) {
@@ -97,7 +95,7 @@ namespace neutrino {
         return register_bitmap_font(font, format, filter);
     }
 
-    font_id register_bios_font(bios_font which, atlas_texture_format format, texture_filter filter) {
+    font_id register_font(bios_font which, atlas_texture_format format, texture_filter filter) {
         switch (which) {
             case bios_font::cga_8x8:
                 return register_bitmap_font(onyx_font::bios_font_8x8(), format, filter);

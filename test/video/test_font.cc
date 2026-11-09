@@ -1,5 +1,5 @@
 //
-// Tests for fonts: the code point lookup (own glyph, default glyph, none); onyx bitmap fonts
+// Tests for fonts: the code point mapping kept as glyph indices (own glyph, default glyph, none); onyx bitmap fonts
 // drawn into glyph atlases (metrics, ABC spacing, charset mapping incl. CP437's control-byte
 // pictures); bitmap font decoders (built-in detection of FON files, custom decoders, failures);
 // BIOS fonts.
@@ -101,10 +101,12 @@ TEST_SUITE("neutrino::font lookup") {
     }
 
     TEST_CASE("glyph ids as code points") {
-        const auto lookup = glyph_ids_as_code_points(three_glyphs());
-        CHECK(lookup.size() == 3);
-        CHECK(lookup.at(U'a') == 0);
-        CHECK(lookup.at(U'?') == 2);
+        const auto mapping = glyph_ids_as_code_points(three_glyphs());
+        CHECK(mapping.find(U'a') == 'a');
+        CHECK(mapping.find(U'b') == 'b');
+        CHECK(mapping.find(U'?') == '?');
+        CHECK_FALSE(mapping.find(U'c'));
+        CHECK(mapping.ranges().size() == 2); // a-b merged
     }
 
     TEST_CASE("a code point finds its glyph, else the default glyph") {
@@ -120,8 +122,25 @@ TEST_SUITE("neutrino::font lookup") {
         CHECK_FALSE(f.find_glyph(U'z').has_value());
     }
 
-    TEST_CASE("a lookup naming a missing glyph index throws") {
-        CHECK_THROWS_AS(loaded_font({}, {}, three_glyphs(), glyph_lookup{{U'x', 3}}), std::runtime_error);
+    TEST_CASE("a mapping naming a glyph id the font does not have throws") {
+        CHECK_THROWS_AS(loaded_font({}, {}, three_glyphs(), glyph_mapping{{U'x', U'y', 'c'}}), std::runtime_error);
+        CHECK_THROWS_AS(loaded_font({}, {}, three_glyphs(), glyph_mapping{{U'x', U'{', 'a'}}), std::runtime_error);
+    }
+
+    TEST_CASE("a mapping is kept as glyph indices, in any glyph order") {
+        // Glyph ids 30, 10, 11, 12, 20: indices 0..4.
+        std::vector <glyph_properties> g{{.glyph = 30}, {.glyph = 10}, {.glyph = 11}, {.glyph = 12}, {.glyph = 20}};
+        const glyph_mapping m{{U'a', U'd', 10}, {U'A', U'D', 10}, {U'x', U'y', 30}, {U'0', U'1', 20}};
+        const loaded_font f({}, {.default_glyph = 30}, std::move(g), m);
+        CHECK(f.find_glyph(U'a') == 1);
+        CHECK(f.find_glyph(U'c') == 3);
+        CHECK(f.find_glyph(U'B') == 2);
+        CHECK(f.find_glyph(U'x') == 0);
+        CHECK(f.find_glyph(U'0') == 4);
+        CHECK(f.own_glyph(U'a') == 1);
+        CHECK_FALSE(f.own_glyph(U'q'));
+        CHECK(f.find_glyph(U'q') == 0); // the default glyph
+        CHECK(f.lookup.ranges().size() == 4);
     }
 }
 
@@ -160,10 +179,11 @@ TEST_SUITE("neutrino::font onyx bitmap fonts") {
 
     TEST_CASE("the lookup maps code points to the font's bytes") {
         const auto c = convert_bitmap_font(synthetic_font());
-        CHECK(c.lookup.size() == 3);
-        CHECK(c.lookup.at(U'A') == 0);
-        CHECK(c.lookup.at(U'C') == 2);
-        CHECK_FALSE(c.lookup.contains(U'D'));
+        CHECK(c.mapping.find(U'A') == 'A');
+        CHECK(c.mapping.find(U'C') == 'C');
+        CHECK_FALSE(c.mapping.find(U'@'));
+        CHECK_FALSE(c.mapping.find(U'D'));
+        CHECK(c.mapping.ranges().size() == 1);
     }
 
     TEST_CASE("BIOS 8x16: 256 CP437 glyphs, control-byte pictures reachable") {
@@ -175,13 +195,13 @@ TEST_SUITE("neutrino::font onyx bitmap fonts") {
         CHECK(f.baseline == bios.get_metrics().ascent);
         CHECK(f.space_advance == 8);
 
-        CHECK(c.lookup.at(U'A') == 0x41);
-        CHECK(c.lookup.at(U'░') == 0xB0); // light shade
-        CHECK(c.lookup.at(U'é') == 0x82); // e acute
-        CHECK(c.lookup.at(U'☺') == 0x01); // smiley, the picture of byte 1
-        CHECK(c.lookup.at(U'\u0001') == 0x01); // the control code reaches the same glyph
-        CHECK(c.lookup.at(U'⌂') == 0x7F); // house
-        CHECK_FALSE(c.lookup.contains(U'€')); // no euro in CP437
+        CHECK(c.mapping.find(U'A') == 0x41u);
+        CHECK(c.mapping.find(U'░') == 0xB0u); // light shade
+        CHECK(c.mapping.find(U'é') == 0x82u); // e acute
+        CHECK(c.mapping.find(U'☺') == 0x01u); // smiley, the picture of byte 1
+        CHECK(c.mapping.find(U'\u0001') == 0x01u); // the control code reaches the same glyph
+        CHECK(c.mapping.find(U'⌂') == 0x7Fu); // house
+        CHECK_FALSE(c.mapping.find(U'€')); // no euro in CP437
 
         const auto& atlas = details::glyph_atlas_access::atlas(c.glyphs);
         CHECK(atlas.picture_size(0xDB) == dim{8, 16}); // full block fills the cell
@@ -241,7 +261,7 @@ TEST_SUITE("neutrino::font onyx bitmap pixels") {
 TEST_SUITE("neutrino::font queries") {
     TEST_CASE("properties and glyphs of a registered font") {
         neutrino::test::test_application app("font queries");
-        const font_id id = register_bios_font(bios_font::vga_8x16);
+        const font_id id = register_font(bios_font::vga_8x16);
         const auto props = get_font_properties(id);
         CHECK(props.line_height == 16);
         CHECK(props.space_advance == 8);
@@ -277,7 +297,7 @@ TEST_SUITE("neutrino::font queries") {
 
     TEST_CASE("queries on an unknown font throw") {
         neutrino::test::test_application app("font queries unknown");
-        const font_id id = register_bios_font(bios_font::cga_8x8);
+        const font_id id = register_font(bios_font::cga_8x8);
         unregister_font(id);
         CHECK_THROWS_AS((void)get_font_properties(id), std::runtime_error);
         CHECK_THROWS_AS((void)get_glyph_properties(id, U'A'), std::runtime_error);
@@ -288,7 +308,7 @@ TEST_SUITE("neutrino::font queries") {
 TEST_SUITE("neutrino::font registration") {
     TEST_CASE("register_bios_font registers 256 glyphs") {
         neutrino::test::test_application app("bios font");
-        const font_id id = register_bios_font(bios_font::vga_8x16);
+        const font_id id = register_font(bios_font::vga_8x16);
         const auto& f = require_fonts_manager().get(id);
         CHECK(f.glyph_props.size() == 256);
         CHECK(require_texture_registry().picture_count(f.atlas) == 256);
@@ -300,7 +320,7 @@ TEST_SUITE("neutrino::font registration") {
         neutrino::test::test_application app("bios fonts");
         for (const auto [which, height] : {std::pair{bios_font::cga_8x8, 8}, std::pair{bios_font::ega_8x14, 14},
                                            std::pair{bios_font::vga_8x16, 16}}) {
-            const font_id id = register_bios_font(which);
+            const font_id id = register_font(which);
             CHECK(require_fonts_manager().get(id).font_props.line_height == height);
             unregister_font(id);
         }

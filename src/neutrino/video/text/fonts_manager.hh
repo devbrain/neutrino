@@ -12,29 +12,35 @@
 #include <neutrino/video/atlas/atlas_id.hh>
 #include <neutrino/video/text/glyph_atlas.hh>
 #include <neutrino/video/text/font.hh>
+#include <neutrino/video/text/glyph_mapping.hh>
 
 #include "video/text/fixed26_6.hh"
 
 namespace neutrino {
-    /// Unicode code point -> glyph index (glyph i = picture i). Many code points may share a glyph.
-    using glyph_lookup = std::unordered_map <char32_t, std::size_t>;
-
-    /// The identity lookup: each glyph's id is taken as its code point.
-    [[nodiscard]] glyph_lookup glyph_ids_as_code_points(const std::vector <glyph_properties>& glyphs);
+    /// The identity mapping: each glyph's id is taken as its code point.
+    /// @throws std::runtime_error when a glyph id is past U+10FFFF.
+    [[nodiscard]] glyph_mapping glyph_ids_as_code_points(const std::vector <glyph_properties>& glyphs);
 
     struct loaded_font {
-        /// @throws std::runtime_error when @p lookup names a glyph index the font does not have.
+        /**
+         * @param mapping Code point -> glyph id; kept as code point -> glyph index.
+         * @throws std::runtime_error when @p mapping names a glyph id the font does not have.
+         */
         loaded_font(atlas_id atlas_, font_properties font_props_, std::vector <glyph_properties>&& glyph_props_,
-                    glyph_lookup&& lookup_);
+                    const glyph_mapping& mapping);
+
+        /// The font's own glyph for @p code_point; the default glyph does not count.
+        [[nodiscard]] std::optional <std::size_t> own_glyph(char32_t code_point) const;
 
         /// The glyph drawn for @p code_point: its own, else the default glyph; nullopt when
         /// the font has neither.
-        [[nodiscard]] std::optional <std::size_t> find_glyph(char32_t code_point) const noexcept;
+        [[nodiscard]] std::optional <std::size_t> find_glyph(char32_t code_point) const;
 
         atlas_id atlas;
         font_properties font_props;
         std::vector <glyph_properties> glyph_props;
-        glyph_lookup lookup;
+        /// Code point -> glyph index (glyph i = picture i).
+        glyph_mapping lookup;
         /// glyph_props[i].advance in 26.6, what layout adds up (P9).
         std::vector <details::fixed26_6> advances;
         /// Index of the glyph whose id is font_props.default_glyph, when the font has it.
@@ -50,11 +56,4 @@ namespace neutrino {
         private:
             std::unordered_map<font_id, loaded_font> m_fonts;
     };
-
-    namespace details {
-        /// register_font with an explicit code point lookup (sources whose glyph ids are not
-        /// code points, e.g. 8-bit fonts in a code page).
-        [[nodiscard]] font_id register_font(glyph_atlas&& glyphs, glyph_lookup&& lookup,
-                                            atlas_texture_format format, texture_filter filter);
-    }
 }

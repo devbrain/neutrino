@@ -1,7 +1,7 @@
 # Fonts — implementation plan
 
-Status: **in progress** — FM0 done, FM1 mostly built (written 2026-11-04, expanded 2026-11-05,
-updated 2026-11-09).
+Status: **in progress** — FM0 done, FM1 mostly built, FM2 built (written 2026-11-04, expanded
+2026-11-05, updated 2026-11-09).
 
 This document is self-contained: it states the goal, the vocabulary, every decision that
 shapes the work, the target API and the order of the work. The *reasoning* behind the
@@ -57,7 +57,7 @@ right-to-left and complex scripts, and `printf`-style formatting (callers use
 
 | Piece | State |
 |---|---|
-| neutrino | links `neutrino::onyx_font`; `glyph_atlas` and `glyph_atlas_builder`, `font_id` with `register_font` / `unregister_font`, onyx bitmap fonts through decoders and `register_bios_font`, a code point → glyph lookup (FM1, 2026-11-08); layout queries in `text_layout.hh` (FM1, 2026-11-09); no drawing yet |
+| neutrino | links `neutrino::onyx_font`; `glyph_atlas` and `glyph_atlas_builder`, `font_id` with `register_font` / `unregister_font`, onyx bitmap fonts through decoders and `register_font(bios_font)` (FM1, 2026-11-08); layout queries in `text_layout.hh` (FM1, 2026-11-09); `glyph_mapping` and `register_font(glyph_atlas&&, glyph_mapping)` (FM2, 2026-11-09); no drawing yet |
 | onyx_font | `bitmap_font` (1-bit, `uint8_t` glyph codes in a `charset` — CP437 for BIOS, ABC spacing), `vector_font` (BGI, Microsoft vector), `ttf_font` (behind `NEUTRINO_ONYX_FONT_LOADER_TTF`, needs FreeType), `font_factory` (`analyze`, `load_bitmap` / `load_vector` / `load_ttf`, `load_all_*`), `font_registry` (decoder plugins), `font_source` (one source over every kind), `glyph_cache<Surface>` (rasterises and packs glyphs on demand), `text_renderer` (draw / aligned / wrapped / measure), `bios_font_8x8/14/16` |
 | atlases | `image_atlas`, `build_atlas`, `register_atlas`, `atlas_address` (P3.6, P3.7 M0) — static only: no pictures can be added after registration |
 | drawing | immediate quads from atlas pictures (`draw.cc`); the painter ([P3.8], `render_model.md`) is designed, not built |
@@ -78,7 +78,7 @@ One meaning per word, used throughout this plan and the code.
 | **code point** | One Unicode character (`char32_t`) decoded from the UTF-8 input string. All text in the API is UTF-8. |
 | **glyph** | One drawable shape of a font: a picture plus its metrics. Several code points may share one glyph. |
 | **glyph id** | The font's own number for a glyph. For a glyph bank it is the `image_bank` entry id; for an onyx bitmap face it is the 8-bit code in the face's charset. |
-| **mapping** | The function code point → glyph id (`glyph_mapping`). Many-to-one is allowed; "no glyph" falls back to the font's **default glyph**. Case folding, offset tables and code-page conversion are all mappings. |
+| **mapping** | Code point → glyph id (`glyph_mapping`, a sorted table of code point ranges). Many-to-one is allowed; "no glyph" falls back to the font's **default glyph**. Case folding, offset tables and code-page conversion are all mappings. |
 | **face** | One typeface in a file (a FON or TTC file holds several). |
 | **font** | One face at one pixel size, ready to use: glyph source + glyph atlas + layout rules. A cheap value handle over shared, immutable data. |
 | **glyph source** | Where glyph pixels come from: an onyx face (bitmap, vector, TTF) or a game's glyph bank. Kept so the atlas can be rebuilt (device reset) and, for TTF, extended. |
@@ -211,13 +211,23 @@ namespace neutrino {
     //   put_span(x, y, std::span<const pixel_type>);       a row of pixels, every one counts
     //   put_mask(x, y, const bitmask&, pixel_type on);     solid pixels of neutrino's bitmask
 
-    using glyph_mapping = std::function<std::optional<std::uint32_t>(char32_t)>;
-    // plus a constructor from a table for the common contiguous case
+    // Built (FM2, 2026-11-09, include/neutrino/video/text/glyph_mapping.hh): a sorted table
+    // of half-open code point ranges, not a std::function (one binary search per lookup).
+    class glyph_mapping {
+        public:
+            struct range { char32_t begin, end; std::uint32_t first_glyph; };  // begin + k -> first_glyph + k
+            glyph_mapping(std::initializer_list<range>);
+            void bind(char32_t begin, char32_t end, std::uint32_t first_glyph); // throws on overlap
+            void bind(char32_t cp, std::uint32_t glyph);
+            std::optional<std::uint32_t> find(char32_t) const;
+            std::span<const range> ranges() const noexcept;                     // neighbours merged
+    };
+    font_id register_font(glyph_atlas&&, const glyph_mapping&, atlas_texture_format, texture_filter);
 
     class font {
         public:
-            static font from_glyphs(glyph_atlas glyphs, glyph_mapping);
-            static font from_bitmap(const onyx_font::bitmap_font&);   // built as register_font(bytes) / register_bios_font
+            static font from_glyphs(glyph_atlas glyphs, glyph_mapping);  // built as register_font(glyph_atlas&&, mapping)
+            static font from_bitmap(const onyx_font::bitmap_font&);   // built as register_font(bytes) / register_font(bios_font)
             font at_size(float pixel_size) const;   // same face, another size (F1)
             const font_properties& metrics() const;
     };
@@ -228,7 +238,7 @@ namespace neutrino {
     font_id register_font(std::span<const std::uint8_t>, std::size_t face = 0, …);  // first decoder that sniffs it
     font_id register_font(std::span<const std::uint8_t>, const bitmap_font_decoder&, std::size_t face = 0, …);
     enum class bios_font { cga_8x8, ega_8x14, vga_8x16 };
-    font_id register_bios_font(bios_font, …);
+    font_id register_font(bios_font, …);
 }
 ```
 
@@ -552,17 +562,17 @@ tests of item 2 and a layout test on a real FON face (the exit criterion).
   every write counts, last write wins); font-wide metrics are not derived; wrong-kind writes
   are compile errors, not an ENFORCE; one `put(x, y, pixel)` per kind instead of
   `put_alpha` / `put_index` / `put_color`.
-- **Glyph lookup (item 1):** each registered font keeps a code point → glyph index map (many
-  code points may share a glyph) and the index of `default_glyph`; `find_glyph(cp)` gives the
-  glyph's own index, else the default's, else nothing. `register_font(glyph_atlas&&)` takes
-  each glyph id as its code point; FM2's `glyph_mapping` adds a many-to-one overload.
+- **Glyph lookup (item 1):** each registered font keeps a code point → glyph index lookup
+  (many code points may share a glyph) and the index of `default_glyph`; `find_glyph(cp)`
+  gives the glyph's own index, else the default's, else nothing. `register_font(glyph_atlas&&)`
+  takes each glyph id as its code point. Since FM2 the lookup is a `glyph_mapping`.
   `build()` now rejects a glyph id used twice.
 - **Items 3–4, built differently:** no `font::from_bitmap`; onyx bitmap fonts go through an
   internal converter (`src/neutrino/video/text/onyx_bitmap_font.cc`) to a `glyph_atlas` and
   then `register_font`. Public: `bitmap_font_decoder` (re-exported onyx type, like
   `image_decoder`), `register_font_decoder`, `register_font(bytes, face)` (first decoder in
   onyx's `font_registry` that sniffs the data: GEM, Windows FNT / FON, custom),
-  `register_font(bytes, decoder, face)`, `register_bios_font(cga_8x8 | ega_8x14 | vga_8x16)`.
+  `register_font(bytes, decoder, face)`, `register_font(bios_font::cga_8x8 | ega_8x14 | vga_8x16)`.
   Glyph ids are the font's bytes; the lookup is built by passing every BMP code point
   through `encode_char`, because CP437 maps two code points to one byte (☺ U+263A and
   U+0001 → byte 1), which decoding bytes would miss (about 30 ms for BIOS 8×16, debug build).
@@ -615,7 +625,7 @@ tests of item 2 and a layout test on a real FON face (the exit criterion).
   `put_span` incl. coverage 0, span / put order, `put_mask` against per-pixel writes, clear
   masks, indexed runs; three cost cases;
   `register_font` stores the atlas and properties, `unregister_font` removes both and
-  tolerates repeats); `test/video/test_font.cc` (21 cases: lookup rules; ABC spacing on a
+  tolerates repeats); `test/video/test_font.cc` (22 cases: lookup rules incl. the id → index rewrite; ABC spacing on a
   synthetic font; every BIOS font incl. ░, é, ☺ / U+0001 and no €; CP437 and proportional FON
   files found by detection, from `test/video/data/fonts/`; custom decoder registered and found;
   explicit decoder; failures; every BIOS glyph pixel-exact against onyx; conversion cost; font
@@ -652,6 +662,40 @@ FM2 proves the general path against the hardest formats from the survey
    - brix-style mapping: case folding, `' '` offset.
 
 Exit: all four synthetic fonts lay out and rasterise correctly.
+
+**Progress (2026-11-09): built.**
+
+- **Item 1, built differently:** `glyph_mapping` is its own header
+  (`include/neutrino/video/text/glyph_mapping.hh`) and a sorted table of half-open code point
+  ranges, not a `std::function`: `[begin, end)` → `first_glyph`, `first_glyph + 1`, …;
+  `bind(begin, end, first_glyph)`, `bind(cp, glyph)`, a list constructor, `find`, `ranges()`.
+  Many-to-one, offsets, case folding and code pages are all ranges (brix: `{' ', '`', 0}` +
+  `{'a', '{', 'A' - ' '}`). Binding throws on an empty range, a range past U+10FFFF, glyph id
+  overflow, or overlap with a bound range; a range that continues its neighbour (next code
+  point, next glyph) is merged into it, so binding a table one code point at a time stays
+  small.
+- **Item 2:** `register_font(glyph_atlas&&, const glyph_mapping&, format, filter)` instead of
+  `font::from_glyphs`. Registration rewrites code point → glyph id as code point → glyph
+  index (a range splits only where pictures stop being consecutive), so drawing and layout
+  do one binary search. A mapping that names a glyph id the atlas does not have throws; the
+  default glyph needs no mapping. The internal `unordered_map` lookup is gone: the identity
+  overload builds the mapping from the glyph ids, and onyx bitmap fonts bind every BMP code
+  point their charset encodes (BIOS 8×16 ends up as a handful of ranges; conversion time
+  unchanged).
+- **Item 3:** indexed (INDEX8 + palette + key) and RGBA glyph atlases register like coverage
+  ones. Still open: the tint-multiplies pixel test needs drawing (FM3); palette variants
+  wait for `with_palette` ([P3.6b]) — until then a variant is a second font.
+- **Item 4:** decoders are plain functions that fill a `glyph_atlas_builder` in their native
+  kind and return the atlas and a `glyph_mapping`; the tests below are written that way.
+- **Item 5, tests:** `test/video/test_glyph_bank_fonts.cc` (5 cases): Westwood-v3-style (4-bit
+  nibbles as INDEX8, per-glyph height and Y offset, `A`/`a` sharing data; layout puts each
+  picture at caret + bearing, line top + Y offset), Jazz-style (0–25 = A–Z, unmapped → 126, no
+  space glyph → `space_advance`; measure and wrap), RA2-style (Latin / Greek / Cyrillic A and B
+  on two glyphs, `letter_spacing` 1), brix-style (RGBA, `' '` offset, case folding, own space
+  glyph); a mapping naming a missing glyph throws. `test/video/test_glyph_mapping.cc` (12
+  cases: ranges, order, touching, overlap from either side, nesting, U+10FFFF, glyph overflow,
+  merging, list constructor); `test_font.cc` checks the id → index rewrite with glyphs out of
+  id order.
 
 #### FM3 — Drawing text and CPU rendering; port KE
 
@@ -793,7 +837,7 @@ both.
 | Risk / question | Plan |
 |---|---|
 | Neutrino-owned layout (P1) diverges from onyx's `text_renderer` | Built on its own rules (word wrap, caret, snapping) with onyx's UTF-8 decoding; onyx's wrap breaks at any character, so results differ by design. Kerning (T4) comes later from the shared face |
-| `with_palette` and `image_bank_decoder` are not implemented yet ([P3.6b]) | FM2 works without them (variants as separate banks, decoders as plain functions); adopt them when they land |
+| `with_palette` and `image_bank_decoder` are not implemented yet ([P3.6b]) | FM2 built without them (variants as separate fonts, decoders as plain functions that fill a builder); adopt them when they land |
 | One quad per glyph on the immediate path is slow for long text | Acceptable for Phase A — KE draws far less than its current one-point-per-pixel loop; batching comes with the painter (FM5) |
 | Pixel fonts blurred by non-integer scale or position | T3: nearest filter, integer scale, snapped positions; a pixel test at scale 2 |
 | FreeType size (several MB) | P4: built from source with no optional deps, so available everywhere; size-sensitive games opt out in onyx_font |

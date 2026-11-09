@@ -62,14 +62,15 @@ namespace neutrino {
             builder.end_glyph();
         }
 
-        glyph_lookup lookup;
+        // Ascending code points: each bind appends or extends the last range.
+        glyph_mapping mapping;
         const auto set = font.get_charset();
         for (char32_t cp = 0; cp <= last_code_point; cp++) {
             if (const auto code = onyx_font::encode_char(set, cp); code && in_font(*code)) {
-                lookup.emplace(cp, *code - first);
+                mapping.bind(cp, static_cast <std::uint32_t>(*code));
             }
         }
 
-        return {std::move(builder).build(), std::move(lookup)};
+        return {std::move(builder).build(), std::move(mapping)};
     }
 }
