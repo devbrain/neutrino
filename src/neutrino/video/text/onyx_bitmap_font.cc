@@ -50,15 +50,15 @@ namespace neutrino {
             const auto code = static_cast <std::uint8_t>(ch);
             const auto glyph = font.get_glyph(code);
             const int a = font.get_spacing(code).a_space.value_or(0);
-            builder.start_glyph(ch, {.advance = to_int16(advance_of(font, code), "advance")});
+            builder.start_glyph(ch, {.advance = static_cast <float>(advance_of(font, code))});
+            bitmask mask(glyph.width(), glyph.height());
             for (std::uint16_t y = 0; y < glyph.height(); y++) {
                 for (std::uint16_t x = 0; x < glyph.width(); x++) {
-                    if (glyph.pixel(x, y)) {
-                        // Bitmap rows start at the cell top; the baseline is `ascent` below it.
-                        builder.put(a + x, y - ascent, 0xFF);
-                    }
+                    mask.set(x, y, glyph.pixel(x, y));
                 }
             }
+            // Bitmap rows start at the cell top; the baseline is `ascent` below it.
+            builder.put_mask(a, -ascent, mask, 0xFF);
             builder.end_glyph();
         }
 

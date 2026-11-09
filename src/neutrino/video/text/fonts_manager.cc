@@ -27,10 +27,11 @@ namespace neutrino {
             ENFORCE(index < glyph_props.size(), "Code point", static_cast <std::uint32_t>(code_point),
                     "maps to glyph index", index, "; the font has", glyph_props.size(), "glyphs");
         }
+        advances.reserve(glyph_props.size());
         for (std::size_t i = 0; i < glyph_props.size(); i++) {
-            if (glyph_props[i].glyph == font_props.default_glyph) {
+            advances.push_back(details::fixed26_6::from_float(glyph_props[i].advance));
+            if (!default_index && glyph_props[i].glyph == font_props.default_glyph) {
                 default_index = i;
-                break;
             }
         }
     }

@@ -5,13 +5,16 @@
 #pragma once
 
 #include <optional>
+#include <span>
 #include <unordered_set>
 #include <vector>
 #include <limits>
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 
 #include <neutrino/neutrino_export.h>
+#include <neutrino/video/atlas/bitmask.hh>
 #include <neutrino/video/atlas/image_atlas.hh>
 #include <neutrino/video/image/image_bank.hh>
 #include <neutrino/video/image/image_builder.hh>
@@ -36,8 +39,9 @@ namespace neutrino {
         /// The game's id for the glyph (character code, glyph number); the image bank entry id.
         std::uint32_t glyph = 0;
 
-        /// How far the pen moves right after drawing the glyph.
-        std::int16_t advance = 0;
+        /// How far the pen moves right after drawing the glyph, in pixels. May be fractional
+        /// (scalable fonts); kept to the nearest 1/64 pixel (P9).
+        float advance = 0.0f;
 
         /// Pen to the left edge of the glyph's picture. May be negative (ink left of the pen).
         std::int16_t bearing_x = 0;
@@ -134,13 +138,43 @@ namespace neutrino {
                       m_max_y(std::numeric_limits <int>::min()) {
                 }
 
+                /// One pixel, relative to the pen on the baseline (x right, y down).
                 void put(int x, int y, pixel_type pixel) {
-                    m_min_x = std::min(x, m_min_x);
-                    m_min_y = std::min(y, m_min_y);
-                    m_max_x = std::max(x, m_max_x);
-                    m_max_y = std::max(y, m_max_y);
+                    fill_run(x, y, 1, pixel);
+                }
 
-                    m_commands.emplace_back(x, y, pixel);
+                /// A run of pixels: @p pixels[i] goes to (@p x + i, @p y). Every pixel counts,
+                /// including coverage 0 (P6). Kept as one run, copied whole into the picture.
+                void put_span(int x, int y, std::span <const pixel_type> pixels) {
+                    if (pixels.empty()) {
+                        return;
+                    }
+                    const int n = static_cast <int>(pixels.size());
+                    grow(x, x + n - 1, y);
+                    m_commands.push_back({x, y, n, pixel_type{}, static_cast <std::uint32_t>(m_pool.size())});
+                    m_pool.insert(m_pool.end(), pixels.begin(), pixels.end());
+                }
+
+                /// @p mask with its top-left at (@p x, @p y): each solid pixel puts @p on, the
+                /// others write nothing. Each row's solid runs are kept as fills.
+                void put_mask(int x, int y, const bitmask& mask, pixel_type on) {
+                    for (int my = 0; my < mask.height(); my++) {
+                        const auto row = mask.row(my);
+                        const int w = mask.width();
+                        int i = 0;
+                        while (i < w) {
+                            while (i < w && !row[static_cast <std::size_t>(i)]) {
+                                i++;
+                            }
+                            const int run = i;
+                            while (i < w && row[static_cast <std::size_t>(i)]) {
+                                i++;
+                            }
+                            if (i > run) {
+                                fill_run(x + run, y + my, i - run, on);
+                            }
+                        }
+                    }
                 }
 
             protected:
@@ -150,6 +184,7 @@ namespace neutrino {
                     m_min_y = std::numeric_limits <int>::max();
                     m_max_y = std::numeric_limits <int>::min();
                     m_commands.clear();
+                    m_pool.clear();
                 }
 
                 [[nodiscard]] dim get_dims() const noexcept {
@@ -158,13 +193,26 @@ namespace neutrino {
                     return {w, h};
                 }
 
+                // Replays the writes in order (last write wins, P6) through row spans: the
+                // bounds are known, so no per-pixel check.
                 template<typename Builder>
                 void apply(Builder& builder) {
+                    const int h = m_max_y - m_min_y + 1;
+                    m_rows.clear();
+                    for (int y = 0; y < h; y++) {
+                        m_rows.push_back(builder.row(y).data());
+                    }
+                    using out_pixel = typename Builder::pixel_type;
                     for (const auto& c : m_commands) {
-                        if constexpr (format == glyph_atlas_format::alpha) {
-                            builder.set(c.x - m_min_x, c.y - m_min_y, color{0xFF, 0xFF, 0xFF, c.value});
+                        auto* dst = static_cast <out_pixel*>(m_rows[static_cast <std::size_t>(c.y - m_min_y)])
+                                    + (c.x - m_min_x);
+                        if (c.pool == no_pool) {
+                            std::fill_n(dst, c.count, to_picture(c.value));
+                        } else if constexpr (format == glyph_atlas_format::alpha) {
+                            std::transform(m_pool.begin() + c.pool, m_pool.begin() + c.pool + c.count, dst,
+                                           to_picture);
                         } else {
-                            builder.set(c.x - m_min_x, c.y - m_min_y, c.value);
+                            std::copy_n(m_pool.begin() + c.pool, c.count, dst);
                         }
                     }
                 }
@@ -173,13 +221,45 @@ namespace neutrino {
                     return m_commands.empty();
                 }
 
+            private:
+                static auto to_picture(pixel_type p) noexcept {
+                    if constexpr (format == glyph_atlas_format::alpha) {
+                        return color{0xFF, 0xFF, 0xFF, p};
+                    } else {
+                        return p;
+                    }
+                }
+
+                void fill_run(int x, int y, int count, pixel_type value) {
+                    grow(x, x + count - 1, y);
+                    m_commands.push_back({x, y, count, value, no_pool});
+                }
+
+                void grow(int x0, int x1, int y) noexcept {
+                    m_min_x = std::min(x0, m_min_x);
+                    m_max_x = std::max(x1, m_max_x);
+                    m_min_y = std::min(y, m_min_y);
+                    m_max_y = std::max(y, m_max_y);
+                }
+
             protected:
+                static constexpr std::uint32_t no_pool = std::numeric_limits <std::uint32_t>::max();
+
+                // A horizontal run of `count` pixels from (x, y): all `value` (a fill, pool ==
+                // no_pool), or m_pool[pool, pool + count) (a span).
                 struct command {
                     int x;
                     int y;
+                    int count;
                     pixel_type value;
+                    std::uint32_t pool;
                 };
 
+                // Pixels of the spans written to the current glyph.
+                std::vector <pixel_type> m_pool;
+
+                // Row starts of the picture being replayed, reused across glyphs.
+                std::vector <void*> m_rows;
                 int m_min_x;
                 int m_min_y;
                 int m_max_x;
@@ -266,12 +346,15 @@ namespace neutrino {
              * @param glyph_id The game's id for the glyph; also its picture's bank entry id.
              * @param props The glyph's @c advance; @c glyph, @c bearing_x and @c y_offset are
              *        set by the builder.
-             * @throws std::runtime_error when a glyph is already started.
+             * @throws std::runtime_error when a glyph is already started, or the advance is
+             *         not finite.
              */
             void start_glyph(std::uint32_t glyph_id, glyph_properties props = {}) {
                 ENFORCE(!m_in_glyph, "start_glyph(", glyph_id, "): the previous glyph is not ended");
+                ENFORCE(std::isfinite(props.advance), "start_glyph(", glyph_id, "): the advance is not finite");
                 this->clear();
                 props.glyph = glyph_id;
+                props.advance = std::round(props.advance * 64.0f) / 64.0f; // 26.6 (P9)
                 m_props.push_back(props);
                 m_in_glyph = true;
             }

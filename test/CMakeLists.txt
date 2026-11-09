@@ -51,6 +51,7 @@ add_executable(neutrino_tests
         video/test_register_atlas.cc
         video/test_glyph_atlas.cc
         video/test_font.cc
+        video/test_text_layout.cc
         video/test_texture.cc
         video/test_window_presentation.cc
         video/test_sprite_sheet.cc

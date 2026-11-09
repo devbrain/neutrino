@@ -13,6 +13,8 @@
 #include <neutrino/video/text/glyph_atlas.hh>
 #include <neutrino/video/text/font.hh>
 
+#include "video/text/fixed26_6.hh"
+
 namespace neutrino {
     /// Unicode code point -> glyph index (glyph i = picture i). Many code points may share a glyph.
     using glyph_lookup = std::unordered_map <char32_t, std::size_t>;
@@ -33,6 +35,8 @@ namespace neutrino {
         font_properties font_props;
         std::vector <glyph_properties> glyph_props;
         glyph_lookup lookup;
+        /// glyph_props[i].advance in 26.6, what layout adds up (P9).
+        std::vector <details::fixed26_6> advances;
         /// Index of the glyph whose id is font_props.default_glyph, when the font has it.
         std::optional <std::size_t> default_index;
     };

@@ -8,6 +8,7 @@
 
 #include <neutrino/video/text/font.hh>
 
+#include "image_atlas_access.hh"
 #include "test_application.hh"
 #include "services/service_access.hh"
 #include "video/sprite/texture_registry.hh"
@@ -18,6 +19,7 @@
 #include <onyx_font/bios_font.hh>
 
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -189,6 +191,97 @@ TEST_SUITE("neutrino::font onyx bitmap fonts") {
         for (std::size_t i = 0; i < 256; i++) {
             CHECK(c.glyphs.get_glyph_properties(i).advance == 8);
         }
+    }
+}
+
+TEST_SUITE("neutrino::font onyx bitmap pixels") {
+    TEST_CASE("every BIOS glyph's picture holds exactly the font's lit pixels") {
+        for (const auto* bios : {&onyx_font::bios_font_8x8(), &onyx_font::bios_font_8x14(),
+                                 &onyx_font::bios_font_8x16()}) {
+            const auto c = convert_bitmap_font(*bios);
+            const auto& atlas = details::glyph_atlas_access::atlas(c.glyphs);
+            int mismatches = 0;
+            for (unsigned ch = 0; ch < 256; ch++) {
+                const auto glyph = bios->get_glyph(static_cast <std::uint8_t>(ch));
+                const auto& p = c.glyphs.get_glyph_properties(ch);
+                const auto place = atlas_test::place(atlas, ch);
+                const dim size = atlas.picture_size(ch);
+                for (int y = 0; y < glyph.height(); y++) {
+                    for (int x = 0; x < glyph.width(); x++) {
+                        // BIOS glyphs have no A space; bitmap row 0 is the cell top.
+                        const int px = x - p.bearing_x;
+                        const int py = y - p.y_offset;
+                        bool lit = false;
+                        if (px >= 0 && py >= 0 && px < size.width && py < size.height) {
+                            const auto pixel = atlas_test::page(atlas, place.page)
+                                .get_pixel(place.dest.x + px, place.dest.y + py);
+                            REQUIRE(pixel.has_value());
+                            lit = pixel->a == 255;
+                        }
+                        if (lit != glyph.pixel(static_cast <std::uint16_t>(x), static_cast <std::uint16_t>(y))) {
+                            mismatches++;
+                        }
+                    }
+                }
+            }
+            CHECK(mismatches == 0);
+        }
+    }
+
+    TEST_CASE("BIOS 8x16 conversion cost") {
+        const auto t0 = std::chrono::steady_clock::now();
+        const auto c = convert_bitmap_font(onyx_font::bios_font_8x16());
+        const auto t1 = std::chrono::steady_clock::now();
+        CHECK(c.glyphs.glyph_count() == 256);
+        MESSAGE("BIOS 8x16 conversion (glyphs, pack, code point lookup): ",
+                std::chrono::duration <double, std::milli>(t1 - t0).count(), " ms");
+    }
+}
+
+TEST_SUITE("neutrino::font queries") {
+    TEST_CASE("properties and glyphs of a registered font") {
+        neutrino::test::test_application app("font queries");
+        const font_id id = register_bios_font(bios_font::vga_8x16);
+        const auto props = get_font_properties(id);
+        CHECK(props.line_height == 16);
+        CHECK(props.space_advance == 8);
+
+        const auto a = get_glyph_properties(id, U'A');
+        REQUIRE(a.has_value());
+        CHECK(a->glyph == 0x41);
+        CHECK(a->advance == 8);
+
+        CHECK(get_glyph_properties(id, U'☺')->glyph == 0x01);
+        const auto euro = get_glyph_properties(id, U'€'); // drawn as the default glyph
+        REQUIRE(euro.has_value());
+        CHECK(euro->glyph == props.default_glyph);
+
+        CHECK(has_glyph(id, U'A'));
+        CHECK(has_glyph(id, U'☺'));
+        CHECK_FALSE(has_glyph(id, U'€'));
+        unregister_font(id);
+    }
+
+    TEST_CASE("without a default glyph an unmapped code point has no glyph") {
+        neutrino::test::test_application app("font queries no default");
+        glyph_atlas_builder <glyph_atlas_format::alpha> b({.default_glyph = '?'});
+        b.start_glyph('x', {.advance = 3});
+        b.put(0, 0, 255);
+        b.end_glyph();
+        const font_id id = register_font(std::move(b).build());
+        CHECK(get_glyph_properties(id, U'x')->advance == 3);
+        CHECK_FALSE(get_glyph_properties(id, U'y').has_value());
+        CHECK_FALSE(has_glyph(id, U'y'));
+        unregister_font(id);
+    }
+
+    TEST_CASE("queries on an unknown font throw") {
+        neutrino::test::test_application app("font queries unknown");
+        const font_id id = register_bios_font(bios_font::cga_8x8);
+        unregister_font(id);
+        CHECK_THROWS_AS((void)get_font_properties(id), std::runtime_error);
+        CHECK_THROWS_AS((void)get_glyph_properties(id, U'A'), std::runtime_error);
+        CHECK_THROWS_AS((void)has_glyph(id, U'A'), std::runtime_error);
     }
 }
 

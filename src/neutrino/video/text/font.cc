@@ -54,6 +54,22 @@ namespace neutrino {
         return details::register_font(std::move(glyphs), std::move(lookup), format, filter);
     }
 
+    font_properties get_font_properties(font_id font) {
+        return require_fonts_manager().get(font).font_props;
+    }
+
+    std::optional <glyph_properties> get_glyph_properties(font_id font, char32_t code_point) {
+        const auto& f = require_fonts_manager().get(font);
+        if (const auto g = f.find_glyph(code_point)) {
+            return f.glyph_props[*g];
+        }
+        return std::nullopt;
+    }
+
+    bool has_glyph(font_id font, char32_t code_point) {
+        return require_fonts_manager().get(font).lookup.contains(code_point);
+    }
+
     void unregister_font(font_id font) {
         erase_if_live(font, maybe_fonts_manager());
     }

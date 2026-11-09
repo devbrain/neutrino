@@ -48,6 +48,11 @@ namespace neutrino {
         return m_bits[bit_index(x, y, m_width)] != 0;
     }
 
+    std::span <const std::uint8_t> bitmask::row(int y) const {
+        ENFORCE(y >= 0 && y < m_height, "bitmask row", y, "is outside a mask of height", m_height);
+        return {m_bits.data() + bit_index(0, y, m_width), static_cast <std::size_t>(m_width)};
+    }
+
     bool bitmask::overlaps(const bitmask& other, int dx, int dy) const noexcept {
         int x1 = std::max(0, dx);
         int y1 = std::max(0, dy);

@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <span>
 #include <neutrino/neutrino_export.h>
 
 namespace neutrino {
@@ -40,6 +41,12 @@ namespace neutrino {
              * @brief Get the collision bit at coordinates (x, y).
              */
             [[nodiscard]] bool get(int x, int y) const noexcept;
+
+            /**
+             * @brief The bits of row @p y, one byte per pixel (non-zero = solid).
+             * @throws std::runtime_error when @p y is outside the mask.
+             */
+            [[nodiscard]] std::span <const std::uint8_t> row(int y) const;
 
             /**
              * @brief Checks if this bitmask overlaps/collides with another bitmask.

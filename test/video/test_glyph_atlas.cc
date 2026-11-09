@@ -17,7 +17,10 @@
 #include "video/text/fonts_manager.hh"
 #include "video/text/glyph_atlas_access.hh"
 
+#include <chrono>
 #include <cstdint>
+#include <limits>
+#include <span>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -103,6 +106,107 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
         CHECK(picture_pixel(g, 0, 0, 0) == color{255, 255, 255, 255});
         CHECK(picture_pixel(g, 0, 1, 0) == color{255, 255, 255, 0});
         CHECK(picture_pixel(g, 0, 2, 0) == color{255, 255, 255, 128});
+    }
+
+    TEST_CASE("put_span writes a run; every pixel counts, coverage 0 too") {
+        alpha_builder b(font);
+        b.start_glyph(1);
+        const std::uint8_t run[] = {0, 255, 128, 0};
+        b.put_span(-1, -3, run);
+        b.put_span(5, 0, std::span <const std::uint8_t>{}); // empty: nothing, no bounds
+        b.end_glyph();
+        const glyph_atlas g = std::move(b).build();
+
+        const auto& p = g.get_glyph_properties(0);
+        CHECK(p.bearing_x == -1);
+        CHECK(p.y_offset == 4);
+        CHECK(atlas_of(g).picture_size(0) == dim{4, 1});
+        CHECK(picture_pixel(g, 0, 0, 0) == color{255, 255, 255, 0});
+        CHECK(picture_pixel(g, 0, 1, 0) == color{255, 255, 255, 255});
+        CHECK(picture_pixel(g, 0, 2, 0) == color{255, 255, 255, 128});
+        CHECK(picture_pixel(g, 0, 3, 0) == color{255, 255, 255, 0});
+    }
+
+    TEST_CASE("put_span and put mix in order: the last write wins") {
+        rgba_builder b(font);
+        b.start_glyph(1);
+        const color run[] = {colors::red, colors::green, colors::blue};
+        b.put(1, 0, colors::white);
+        b.put_span(0, 0, run);
+        b.put(2, 0, colors::yellow);
+        b.end_glyph();
+        const glyph_atlas g = std::move(b).build();
+
+        CHECK(picture_pixel(g, 0, 0, 0) == colors::red);
+        CHECK(picture_pixel(g, 0, 1, 0) == colors::green);
+        CHECK(picture_pixel(g, 0, 2, 0) == colors::yellow);
+    }
+
+    TEST_CASE("put_mask puts the solid pixels; the others write nothing") {
+        // .##....#
+        // #.......
+        bitmask mask(8, 2);
+        for (const int x : {1, 2, 7}) {
+            mask.set(x, 0, true);
+        }
+        mask.set(0, 1, true);
+
+        alpha_builder masked(font);
+        masked.start_glyph(1);
+        masked.put(4, -2, 77);           // under a clear mask pixel: kept
+        masked.put(5, -3, 99);           // under a solid one: replaced
+        masked.put_mask(3, -3, mask, 200);
+        masked.end_glyph();
+        alpha_builder pixels(font);
+        pixels.start_glyph(1);
+        pixels.put(4, -2, 77);
+        for (const int x : {4, 5, 10}) {
+            pixels.put(x, -3, 200);
+        }
+        pixels.put(3, -2, 200);
+        pixels.end_glyph();
+        const glyph_atlas a = std::move(masked).build();
+        const glyph_atlas b = std::move(pixels).build();
+
+        CHECK(a.get_glyph_properties(0).bearing_x == 3);
+        CHECK(a.get_glyph_properties(0).bearing_x == b.get_glyph_properties(0).bearing_x);
+        CHECK(a.get_glyph_properties(0).y_offset == b.get_glyph_properties(0).y_offset);
+        const dim size = atlas_of(a).picture_size(0);
+        REQUIRE(size == atlas_of(b).picture_size(0));
+        CHECK(size == dim{8, 2});
+        for (int y = 0; y < size.height; y++) {
+            for (int x = 0; x < size.width; x++) {
+                CAPTURE(x);
+                CAPTURE(y);
+                CHECK(picture_pixel(a, 0, x, y) == picture_pixel(b, 0, x, y));
+            }
+        }
+    }
+
+    TEST_CASE("put_mask of a clear mask leaves the glyph empty") {
+        alpha_builder b(font);
+        b.start_glyph(' ', {.advance = 4});
+        b.put_mask(0, 0, bitmask(8, 8), 255);
+        b.put_mask(0, 0, bitmask(), 255);
+        b.end_glyph();
+        const glyph_atlas g = std::move(b).build();
+        CHECK(atlas_of(g).picture_size(0) == dim{0, 0});
+    }
+
+    TEST_CASE("indexed spans and fills replay into the picture") {
+        const palette pal = four_colours();
+        indexed_builder b(font, pal, std::uint8_t{0});
+        b.start_glyph(1);
+        const std::uint8_t run[] = {1, 2, 3};
+        b.put_span(0, 0, run);
+        bitmask mask(2, 1);
+        mask.set(0, 0, true);
+        b.put_mask(1, 0, mask, 3); // replaces the span's middle pixel, leaves the last
+        b.end_glyph();
+        const glyph_atlas g = std::move(b).build();
+        CHECK(picture_index(g, 0, 0, 0) == 1);
+        CHECK(picture_index(g, 0, 1, 0) == 3);
+        CHECK(picture_index(g, 0, 2, 0) == 3);
     }
 
     TEST_CASE("rgba glyphs keep their colours; unwritten pixels are transparent black") {
@@ -224,6 +328,15 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
         CHECK_THROWS_AS(b.end_glyph(), std::runtime_error);
     }
 
+    TEST_CASE("advances are kept to the nearest 1/64 pixel; a non-finite advance throws") {
+        alpha_builder b(font);
+        b.empty_glyph('a', {.advance = 6.4f});
+        CHECK_THROWS_AS(b.start_glyph('b', {.advance = std::numeric_limits <float>::quiet_NaN()}),
+                        std::runtime_error);
+        const glyph_atlas g = std::move(b).build();
+        CHECK(g.get_glyph_properties(0).advance == 410.0f / 64.0f);
+    }
+
     TEST_CASE("a glyph id used twice throws at build") {
         alpha_builder b(font);
         b.empty_glyph('a');
@@ -288,5 +401,85 @@ TEST_SUITE("neutrino::video register_font") {
         unregister_font(f);
         CHECK_NOTHROW(unregister_font(f));
         CHECK_NOTHROW(unregister_font(font_id{}));
+    }
+}
+
+// Build cost of the glyph builder (font_plan.md FM1 item 2): timings go to the test log.
+TEST_SUITE("neutrino::glyph_atlas_builder cost") {
+    TEST_CASE("synthetic 20 000-glyph font, 16x16, one put per pixel") {
+        constexpr int glyphs = 20000;
+        const auto t0 = std::chrono::steady_clock::now();
+        alpha_builder b(font);
+        for (int g = 0; g < glyphs; g++) {
+            b.start_glyph(static_cast <std::uint32_t>(g), {.advance = 16});
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    if (((x * 7 + y * 3 + g) & 3) != 0) {
+                        b.put(x, y - 12, 0xFF);
+                    }
+                }
+            }
+            b.end_glyph();
+        }
+        const auto t1 = std::chrono::steady_clock::now();
+        const auto atlas = std::move(b).build();
+        const auto t2 = std::chrono::steady_clock::now();
+        CHECK(atlas.glyph_count() == glyphs);
+        MESSAGE("20000 glyphs per pixel: glyphs ", std::chrono::duration <double, std::milli>(t1 - t0).count(),
+                " ms, pack ", std::chrono::duration <double, std::milli>(t2 - t1).count(), " ms");
+    }
+
+    TEST_CASE("synthetic 20 000-glyph font, 16x16, one put_mask per glyph") {
+        constexpr int glyphs = 20000;
+        // The same pixels as the per-pixel case; the pattern repeats every 4 glyphs.
+        std::vector <bitmask> masks;
+        for (int v = 0; v < 4; v++) {
+            bitmask& m = masks.emplace_back(16, 16);
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    m.set(x, y, ((x * 7 + y * 3 + v) & 3) != 0);
+                }
+            }
+        }
+        const auto t0 = std::chrono::steady_clock::now();
+        alpha_builder b(font);
+        for (int g = 0; g < glyphs; g++) {
+            b.start_glyph(static_cast <std::uint32_t>(g), {.advance = 16});
+            b.put_mask(0, -12, masks[static_cast <std::size_t>(g & 3)], 0xFF);
+            b.end_glyph();
+        }
+        const auto t1 = std::chrono::steady_clock::now();
+        const auto atlas = std::move(b).build();
+        const auto t2 = std::chrono::steady_clock::now();
+        CHECK(atlas.glyph_count() == glyphs);
+        MESSAGE("20000 glyphs put_mask: glyphs ", std::chrono::duration <double, std::milli>(t1 - t0).count(),
+                " ms, pack ", std::chrono::duration <double, std::milli>(t2 - t1).count(), " ms");
+    }
+
+    TEST_CASE("synthetic 20 000-glyph font, 16x16, one put_span per row") {
+        constexpr int glyphs = 20000;
+        std::uint8_t rows[4][16][16]{};
+        for (int v = 0; v < 4; v++) {
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    rows[v][y][x] = ((x * 7 + y * 3 + v) & 3) != 0 ? 0xFF : 0;
+                }
+            }
+        }
+        const auto t0 = std::chrono::steady_clock::now();
+        alpha_builder b(font);
+        for (int g = 0; g < glyphs; g++) {
+            b.start_glyph(static_cast <std::uint32_t>(g), {.advance = 16});
+            for (int y = 0; y < 16; y++) {
+                b.put_span(0, y - 12, rows[g & 3][y]);
+            }
+            b.end_glyph();
+        }
+        const auto t1 = std::chrono::steady_clock::now();
+        const auto atlas = std::move(b).build();
+        const auto t2 = std::chrono::steady_clock::now();
+        CHECK(atlas.glyph_count() == glyphs);
+        MESSAGE("20000 glyphs put_span: glyphs ", std::chrono::duration <double, std::milli>(t1 - t0).count(),
+                " ms, pack ", std::chrono::duration <double, std::milli>(t2 - t1).count(), " ms");
     }
 }

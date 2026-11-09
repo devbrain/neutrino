@@ -2,6 +2,7 @@
 #include <neutrino/video/atlas/bitmask.hh>
 
 #include <limits>
+#include <stdexcept>
 
 TEST_SUITE("neutrino::video::atlas::bitmask") {
     TEST_CASE("Constructor and dimensions") {
@@ -166,5 +167,19 @@ TEST_SUITE("neutrino::video::atlas::bitmask") {
         // Offsets needed to make them collide
         CHECK_FALSE(mask1.overlaps(mask2, 0, 0));
         CHECK(mask1.overlaps(mask2, 63, 63));
+    }
+
+    TEST_CASE("row gives one byte per pixel; a row outside the mask throws") {
+        neutrino::bitmask mask(5, 2);
+        mask.set(1, 1, true);
+        mask.set(4, 1, true);
+        const auto row = mask.row(1);
+        REQUIRE(row.size() == 5);
+        CHECK(row[0] == 0);
+        CHECK(row[1] != 0);
+        CHECK(row[4] != 0);
+        CHECK(mask.row(0)[1] == 0);
+        CHECK_THROWS_AS((void)mask.row(2), std::runtime_error);
+        CHECK_THROWS_AS((void)mask.row(-1), std::runtime_error);
     }
 }

@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <span>
 
 #include <onyx_font/decoder.hh>
@@ -97,6 +98,30 @@ namespace neutrino {
     [[nodiscard]] NEUTRINO_EXPORT font_id register_bios_font(bios_font which,
         atlas_texture_format format = atlas_texture_format::automatic,
         texture_filter filter = texture_filter::linear);
+
+    // ------------------------------------------------------------------------------------
+    // Queries
+    // ------------------------------------------------------------------------------------
+
+    /// @brief The font's properties (line height, baseline, space advance, ...).
+    /// @throws std::runtime_error for an unknown font.
+    [[nodiscard]] NEUTRINO_EXPORT font_properties get_font_properties(font_id font);
+
+    /**
+     * @brief The glyph drawn for @p code_point: its own, else the font's default glyph.
+     *
+     * @return nullopt when the font has neither (the code point draws nothing).
+     * @throws std::runtime_error for an unknown font.
+     */
+    [[nodiscard]] NEUTRINO_EXPORT std::optional <glyph_properties> get_glyph_properties(font_id font,
+        char32_t code_point);
+
+    /**
+     * @brief Whether the font has a glyph of its own for @p code_point; the default glyph does
+     *        not count. For choosing between fonts.
+     * @throws std::runtime_error for an unknown font.
+     */
+    [[nodiscard]] NEUTRINO_EXPORT bool has_glyph(font_id font, char32_t code_point);
 
     /**
      * @brief Unregister a font and its texture atlas.

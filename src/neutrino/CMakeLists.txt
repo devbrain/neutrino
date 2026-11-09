@@ -291,14 +291,19 @@ neutrino_subsystem(text DIR video/text
             glyph_atlas.hh
             font.hh
             text.hh
+            text_layout.hh
         PRIVATE
             glyph_atlas.cc
             glyph_atlas_access.hh
             font.cc
+            fixed26_6.hh
             fonts_manager.cc
             fonts_manager.hh
             onyx_bitmap_font.cc
             onyx_bitmap_font.hh
+            text_layout.cc
+            text_layout_engine.cc
+            text_layout_engine.hh
 )
 # ----------------------------------------------------------------------------
 # Target

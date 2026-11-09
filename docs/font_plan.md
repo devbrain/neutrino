@@ -1,7 +1,7 @@
 # Fonts — implementation plan
 
-Status: **in progress** — FM0 done, FM1 started (written 2026-11-04, expanded 2026-11-05,
-updated 2026-11-08).
+Status: **in progress** — FM0 done, FM1 mostly built (written 2026-11-04, expanded 2026-11-05,
+updated 2026-11-09).
 
 This document is self-contained: it states the goal, the vocabulary, every decision that
 shapes the work, the target API and the order of the work. The *reasoning* behind the
@@ -57,7 +57,7 @@ right-to-left and complex scripts, and `printf`-style formatting (callers use
 
 | Piece | State |
 |---|---|
-| neutrino | links `neutrino::onyx_font`; `glyph_atlas` and `glyph_atlas_builder`, `font_id` with `register_font` / `unregister_font`, onyx bitmap fonts through decoders and `register_bios_font`, a code point → glyph lookup (FM1, 2026-11-08); no layout, no text API yet |
+| neutrino | links `neutrino::onyx_font`; `glyph_atlas` and `glyph_atlas_builder`, `font_id` with `register_font` / `unregister_font`, onyx bitmap fonts through decoders and `register_bios_font`, a code point → glyph lookup (FM1, 2026-11-08); layout queries in `text_layout.hh` (FM1, 2026-11-09); no drawing yet |
 | onyx_font | `bitmap_font` (1-bit, `uint8_t` glyph codes in a `charset` — CP437 for BIOS, ABC spacing), `vector_font` (BGI, Microsoft vector), `ttf_font` (behind `NEUTRINO_ONYX_FONT_LOADER_TTF`, needs FreeType), `font_factory` (`analyze`, `load_bitmap` / `load_vector` / `load_ttf`, `load_all_*`), `font_registry` (decoder plugins), `font_source` (one source over every kind), `glyph_cache<Surface>` (rasterises and packs glyphs on demand), `text_renderer` (draw / aligned / wrapped / measure), `bios_font_8x8/14/16` |
 | atlases | `image_atlas`, `build_atlas`, `register_atlas`, `atlas_address` (P3.6, P3.7 M0) — static only: no pictures can be added after registration |
 | drawing | immediate quads from atlas pictures (`draw.cc`); the painter ([P3.8], `render_model.md`) is designed, not built |
@@ -65,7 +65,7 @@ right-to-left and complex scripts, and `printf`-style formatting (callers use
 Prerequisites from other plans that are **not** in the tree yet:
 
 - `image_bank_decoder` and `with_palette` — card [P3.6b];
-- per-atlas filter mode and atlas growth after registration — built here (FM0, FM4.1);
+- per-atlas filter mode and atlas growth after registration — built here (FM0; growth in FM4 step 2, P8);
 - the painter (RM1), replacement in place (`render_model.md` §8.2) and device-reset
   handling (RM6) — card [P3.8].
 
@@ -106,7 +106,7 @@ confirmed before the milestone that depends on it.
 
 | # | Decision | Status |
 |---|---|---|
-| F1 | **Face × size.** A `font` is one face at one pixel size. Bitmap faces have their native size and scale only by integers. `font::at_size(px)` makes another `font` sharing the face data; each size has its own glyph atlas. | agreed |
+| F1 | **Face × size.** A `font` is one face at one pixel size. Bitmap faces have their native size and scale only by integers. `font::at_size(px)` makes another `font` sharing the face data; each size has its own glyph atlas. Since 2026-11-08 a font is a `font_id`; `font_at_size(id, px)` gives the other size, over a hidden shared face (P7). | agreed |
 | F2 | **Character sets.** Text is UTF-8. onyx bitmap faces are 8-bit (codes in a `charset`, CP437 for BIOS): the font maps UTF-8 → that charset and falls back to the face's default character. Glyph-bank fonts are not limited to 8 bits: their mapping takes any code point to a glyph id, many-to-one. | agreed |
 | F3 | **Game formats: the glyph bank is the general path.** A glyph-bank decoder is an `image_bank_decoder` (glyph numbers as ids; native pixel format; INDEX8 with a colour key for transparency) that also returns glyph metrics and a mapping. An onyx `bitmap_font`, re-exported as a plugin type, is the shortcut for formats onyx already models (1-bit, ≤ 256 glyphs, ABC spacing, no per-glyph Y offset). | agreed |
 | F4 | **Coloured glyph fonts.** A glyph bank with colour pixels makes a coloured font; `tint` multiplies. Colour variants (palette remaps) are separate fonts made with `with_palette`; fonts are small, so a dozen variants is cheap. | agreed |
@@ -114,7 +114,7 @@ confirmed before the milestone that depends on it.
 | F6 | **Glyph metrics.** Per glyph: advance, x bearing, y offset. Per font: line height, baseline, space advance (for formats without a space glyph), letter spacing, default glyph. The superset the surveyed formats need; onyx `bitmap_font` metrics map onto it. | agreed |
 | F7 | **Large static fonts.** A Unicode bitmap font with thousands of glyphs is still a static atlas, just multi-page. A lazily built variant only if size becomes a problem. | agreed |
 | F8 | **Decoders by analogy with images.** onyx_font keeps the formats it models (TTF/OTF/TTC, FNT, FON, GEM, BGI). Every other format is a glyph-bank decoder in the game or a formats add-on; nothing waits on onyx_font growing an indexed-colour glyph type. | agreed |
-| T1 | **Who packs TTF glyphs.** onyx_font's `glyph_cache` packs its own pages; the atlas learns to accept "pre-packed pages + rects" as pictures. (Alternative: onyx rasterises single glyphs and the atlas packer places them.) Since P5 the alternative is the natural fit — single glyphs go through the `glyph_atlas_builder` — so this is to be re-decided at the start of FM4. | open |
+| T1 | **Who packs TTF glyphs.** onyx_font's `glyph_cache` packs its own pages; the atlas learns to accept "pre-packed pages + rects" as pictures. (Alternative: onyx rasterises single glyphs and the atlas packer places them.) Since P5 the alternative is the natural fit — single glyphs go through the `glyph_atlas_builder` — so this is to be re-decided at the start of FM4. **Settled 2026-11-08:** onyx rasterises single glyphs into the `glyph_atlas_builder`, our packer places them; onyx's `glyph_cache` pages are not used (they would bypass the builder and the code point table). | agreed 2026-11-08 |
 | T2 | **The `font` type.** Settled by F1–F8. | agreed |
 | T3 | **Pixel fonts stay pixel-exact:** nearest filtering, integer scale, positions snapped like every quad. TTF gets sub-pixel positioning only if a game asks. | agreed |
 | T4 | **Kerning.** onyx's advances and bearings are kept; pair kerning for TTF only when a game needs it. | agreed |
@@ -123,12 +123,16 @@ confirmed before the milestone that depends on it.
 
 | # | Decision | Status |
 |---|---|---|
-| P1 | **Neutrino owns layout.** Measure, wrap, align and caret run in neutrino over the font's glyph table (P3), one code path for every font kind. Reason: glyph-bank fonts are not onyx fonts, so onyx's `text_renderer` (which works over its own `glyph_cache`) cannot lay them out. onyx stays the source of glyph pixels and metrics; its UTF-8 decoder (`utf8.hh`) and wrapping logic are reused where they fit. Refines `render_model.md` §9.2 ("onyx's `text_renderer` does the layout"). | proposed |
+| P1 | **Neutrino owns layout.** Measure, wrap, align and caret run in neutrino over the font's glyph table (P3), one code path for every font kind. Reason: glyph-bank fonts are not onyx fonts, so onyx's `text_renderer` (which works over its own `glyph_cache`) cannot lay them out. onyx stays the source of glyph pixels and metrics; its UTF-8 decoder (`utf8.hh`) is reused. onyx's wrapping was checked (2026-11-09) and not reused: it is tied to its `glyph_cache` / `font_source`, breaks at any character, and has no caret, fit or pixel snapping. Refines `render_model.md` §9.2 ("onyx's `text_renderer` does the layout"). | agreed, built 2026-11-09 |
 | P2 | **Fonts ship before the painter.** Phases A–B draw text through today's immediate draw path (one textured quad per glyph, `tint` = colour); Phase C moves the same calls onto the painter. The public API does not change between the two: `draw.hh` calls become painting when the painter's RM2 lands anyway. Reason: KE needs text now, and the painter is a large separate project. | proposed |
 | P3 | **One internal glyph table.** Every font, whatever its source, is normalised at construction into one table: mapping (code point → glyph id), glyph id → `{atlas_address, glyph metrics}`, and font metrics. Layout, drawing, CPU rendering and the later Nuklear binding read only this table, so a new font source never touches them. | proposed |
 | P5 | **Glyph pictures are made by a public `glyph_atlas_builder`.** One builder for every source: onyx bitmap faces, onyx's TTF / vector rasteriser, and game decoders (brix, Westwood, …). A glyph is written pixel by pixel relative to the pen on the baseline, between `start_glyph(id, props)` and `end_glyph()`; the builder finds the glyph's bounds from the pixels written, crops to them, and derives `bearing_x` / `y_offset` itself, so nobody sizes a glyph in advance and decoders only state the advance. The pixel kind is a template parameter, `glyph_atlas_builder<glyph_atlas_format>`: `alpha` (white + coverage), `indexed` (palette + transparent index, given to the constructor) or `rgba`; a pixel of the wrong kind does not compile. Font-wide `font_properties` are given to the constructor as they are. `build()` packs the pictures and returns a `glyph_atlas` — what `font::from_glyphs` takes. Refines F3: a glyph-bank decoder fills a builder rather than returning a bank and side tables. | agreed 2026-11-05, shape built 2026-11-08 |
 | P6 | **An empty glyph is a glyph without pixels.** `end_glyph()` with nothing written (or `empty_glyph(id, props)`) adds an empty picture: glyph *i* stays picture *i*, its region is 0×0 and nothing is packed; it only advances the pen. There is no separate "ink" rule: every pixel written counts, and a later write to the same pixel replaces it (all kinds). | agreed 2026-11-08 |
-| P4 | **TTF is optional at build time.** `load_font` handles TTF/OTF/TTC only when `NEUTRINO_ONYX_FONT_LOADER_TTF` is on (it pulls in FreeType). Without it those formats are reported as unsupported; bitmap and vector fonts still work. Reason: FreeType's size and availability on web / Android builds. | proposed |
+| P4 | **TTF is built in by default.** onyx_font's `NEUTRINO_ONYX_FONT_LOADER_TTF` defaults to ON and fetches FreeType 2.13.3 from source with every optional dependency off (zlib, bzip2, png, HarfBuzz, brotli), so it builds wherever CMake builds C, web and Android included; the cost is binary size, not availability. neutrino gates nothing: `register_font(bytes)` finds TTF/OTF/TTC through onyx's outline decoders like any format. The opt-out stays onyx's (warlords-style size savings); then TTF data finds no decoder and the error says TTF support is not built in. TTF tests sit behind `ONYX_FONT_HAS_LOADER_TTF`. | agreed 2026-11-08 (revised; was "optional at build time") |
+| P7 | **Scalable fonts: faces are hidden.** Users only see `font_id`. `register_font(bytes, face, font_options)` with a `pixel_size` makes one size; `font_at_size(id, px)` makes another. Internally `fonts_manager` keeps one shared face per source (the onyx `font_source`, which owns the TTF bytes or BGI strokes); each size's `font_id` references it and the last `unregister_font` frees it. The face is also what a device-reset rebuild (FM6) and later kerning (T4) use. (centurion's `font_bundle` shape, without public face ids.) | agreed 2026-11-08 |
+| P8 | **Scalable fonts: static atlases first.** BGI / Microsoft vector fonts are 8-bit (≤ 256 glyphs, a `charset`): every glyph is rasterised at registration into a static atlas, the FON path. TTF rasterises a glyph set at registration — default `glyph_set::latin1` (U+0020–U+007E, U+00A0–U+00FF, 190 glyphs), or `basic_latin`, plus `extra_glyphs` (€, Cyrillic, curly quotes, …); other code points draw the default glyph. The growing atlas (glyphs added on first use, sub-rect uploads) comes later, when a game needs CJK or typed text; it is internal to the font — `font_id`, layout and drawing do not change. | agreed 2026-11-08 |
+| P9 | **Advances in 26.6 fixed point.** `glyph_properties::advance` is in 1/64 px (FreeType's unit), so fractional TTF advances do not drift (ten glyphs of 6.4 px are 64 px, not 60). Layout carries the fractional pen and rounds each glyph's position to a whole pixel (T3's snapping). Bearings, offsets and font properties stay whole pixels. **As built (2026-11-09):** the public `glyph_properties::advance` is a `float` in pixels, rounded to 1/64 by `start_glyph` (NaN / infinity throw), so decoders write `8` or `6.4f`; the 26.6 type (`details::fixed26_6`, `src/neutrino/video/text/fixed26_6.hh`) is internal — a registered font keeps its advances in it and layout sums them. | agreed 2026-11-08, built 2026-11-09 |
+| P10 | **No foreign glyph cache.** Checked 2026-11-09: onyx_font's `glyph_cache<Surface>` (its own pages, onyx fonts only — T1), sdlpp's `font_cache` (one texture per glyph, colour mod, string textures — the centurion design) and warlords' `onyx_font_binding` (one hand-made strip atlas per onyx `bitmap_font`, ≤ 256 glyphs, for Nuklear). None can hold glyph-bank fonts or feed neutrino atlases (texture registry, filter, device reset, painter batching), so neutrino keeps one store, `fonts_manager`. Reused from them: onyx's rasterisers, metrics, `charset` / `encode_char`, UTF-8 and later kerning; the named ranges (`store_basic_latin` / `store_latin1` = P8's glyph sets). warlords' binding uses the same recipe as neutrino's FON path (white + alpha, gutter, nearest, colour at draw time) and shrinks to `register_font` + a Nuklear adaptor over layout once `draw_text` exists (FM7). | proposed 2026-11-09 |
 
 ## 4. Target API (sketch)
 
@@ -147,12 +151,16 @@ namespace neutrino {
     font bios_font(bios_size);
 
     // Standard containers through onyx_font: FNT, FON, GEM, BGI, MS vector; TTF/OTF/TTC (P4).
+    // Revised 2026-11-08 (P7, P8): these become register_font(bytes, face, font_options) -> font_id
+    // and font_at_size(font_id, px); the font value handle below is superseded by font_id.
+    enum class glyph_set { basic_latin, latin1 };   // P8; latin1 is the default
     struct font_options {
-        float        pixel_size{0};                 // 0 = native size (bitmap faces)
-        std::size_t  face_index{0};                 // which face in a FON / TTC
-        font_style   style{};                       // bold, italic, underline, strikethrough
-        atlas_filter filter{atlas_filter::automatic};   // nearest for bitmap, linear for scalable
-        std::u32string_view warm_up{};              // glyphs rasterised up front (growing fonts)
+        float        pixel_size{0};                 // required for scalable faces; 0 = native (bitmap)
+        glyph_set    glyphs{glyph_set::latin1};     // TTF: rasterised at registration (P8)
+        std::u32string_view extra_glyphs{};         // TTF: on top of the set (€, Cyrillic, ...)
+        bool         monochrome{false};             // TTF hinted to 1-bit (the Windows 95 look)
+        font_style   style{};                       // synthetic bold / italic (onyx render_style)
+        atlas_filter filter{atlas_filter::automatic};   // nearest for 1-bit (bitmap, BGI, monochrome), linear for antialiased
     };
     font load_font(const std::filesystem::path&, const font_options& = {});
     font load_font(std::span<const std::uint8_t>, const font_options& = {});
@@ -161,7 +169,7 @@ namespace neutrino {
     // Glyph atlases (F3, F6, P5, P6): built in include/neutrino/video/text/glyph_atlas.hh.
     struct glyph_properties {                       // per glyph
         std::uint32_t glyph = 0;                    // the game's id; also the bank entry id
-        std::int16_t  advance = 0;                  // stated by the decoder
+        float         advance = 0;                  // pixels, stated by the decoder; kept to 1/64 px (P9)
         std::int16_t  bearing_x = 0;                // derived: pen -> left edge of the picture
         std::int16_t  y_offset = 0;                 // derived: cell top -> top edge of the picture
     };
@@ -199,10 +207,9 @@ namespace neutrino {
             [[nodiscard]] glyph_atlas build(std::optional<pixel_format> = {}, std::optional<dim> max_page = {}) &&;
     };
 
-    // Not built yet (FM1 performance work, FM2):
-    enum class bit_order { msb_first, lsb_first };   // neutrino's own; no onyx type in the API
-    //   put_span(x, y, std::span<const pixel_type>);                       one call per row
-    //   put_bits(x, y, std::span<const std::byte> row, int width, bit_order, pixel_type on);
+    // Built (FM1, 2026-11-09): bulk writes, stored and replayed as whole runs
+    //   put_span(x, y, std::span<const pixel_type>);       a row of pixels, every one counts
+    //   put_mask(x, y, const bitmask&, pixel_type on);     solid pixels of neutrino's bitmask
 
     using glyph_mapping = std::function<std::optional<std::uint32_t>(char32_t)>;
     // plus a constructor from a table for the common contiguous case
@@ -228,13 +235,16 @@ namespace neutrino {
 ### 4.2 Measuring, drawing, rendering
 
 ```cpp
+// Built (FM1, include/neutrino/video/text/text_layout.hh):
 enum class text_align { left, center, right };
 struct text_params {
+    text_align align{text_align::left}; // within the wrap width, else the widest line
+    float      scale{1.0f};             // must be > 0; integer for pixel fonts (T3)
+    int        letter_spacing{0};       // on top of the font's
+    int        line_spacing{0};         // on top of the font's line height
+    int        tab_width{4};            // tab stops every tab_width space advances
+    // To add (FM3):
     color      colour{colors::white};   // tint; multiplies coloured fonts
-    text_align align{text_align::left};
-    float      scale{1.0f};             // integer for pixel fonts (T3)
-    float      letter_spacing{0};
-    float      line_spacing{0};
     // Proposed (2026-11-08, ideas from centurion / SDL_ttf), see FM3:
     std::optional<color> background{};  // "shaded": one opaque box per line behind the glyphs
     bool       underline{false};        // lines drawn by layout from the baseline, any font kind
@@ -243,14 +253,20 @@ struct text_params {
     point      shadow_offset{1, 1};
 };
 
-// Layout queries (text_layout.hh)
-dim                       measure(std::string_view, const font&, const text_params& = {});
-std::vector<line_range>   wrap(std::string_view, const font&, float width, const text_params& = {});
-point                     offset_of(std::string_view, const font&, std::size_t index);   // caret position
-std::size_t               index_at(std::string_view, const font&, point);                // hit test
-struct fit_result { std::size_t count; int extent; };                                     // proposed (centurion)
-fit_result                fit(std::string_view, const font&, int width, const text_params& = {}); // how much fits in width
-bool                      has_glyph(const font&, char32_t);   // proposed: own glyph only, no default fallback
+// Layout queries (text_layout.hh), built (FM1). Indices are byte offsets into the UTF-8 text.
+struct line_range { std::size_t begin, end; int width; };   // without break spaces and '\n'
+struct fit_result { std::size_t count; int extent; };       // bytes that fit, their width
+dim                     measure(std::string_view, font_id, const text_params& = {}, std::optional<int> wrap_width = {});
+std::vector<line_range> wrap(std::string_view, font_id, int width, const text_params& = {});
+fit_result              fit(std::string_view, font_id, int width, const text_params& = {});  // first line only
+point                   offset_of(std::string_view, font_id, std::size_t index, const text_params& = {},
+                                  std::optional<int> wrap_width = {});                       // caret position
+std::size_t             index_at(std::string_view, font_id, point, const text_params& = {},
+                                 std::optional<int> wrap_width = {});                        // hit test
+// Font queries (font.hh), built (FM1):
+font_properties                 get_font_properties(font_id);
+std::optional<glyph_properties> get_glyph_properties(font_id, char32_t);  // own glyph, else default
+bool                            has_glyph(font_id, char32_t);             // own glyph only
 
 // Drawing: one quad per glyph; returns the bounds actually drawn.
 rect draw_text(point position, std::string_view, const font&, const text_params& = {});
@@ -300,11 +316,11 @@ font f = font::from_glyphs(decode_brix_font(bytes, pal),
     });
 ```
 
-A TTF label at two sizes, with ASCII warmed up:
+A TTF label at two sizes (Latin-1 rasterised at registration, P8):
 
 ```cpp
-font ui = load_font("ui.ttf", {.pixel_size = 16, .warm_up = U" !\"#…~"});
-font title = ui.at_size(32);
+font_id ui = register_font(read_file("ui.ttf"), 0, {.pixel_size = 16, .extra_glyphs = U"€"});
+font_id title = font_at_size(ui, 32);
 rect r = draw_text(box, "Options", title, {.align = text_align::center});
 ```
 
@@ -326,14 +342,15 @@ code points ──mapping──► glyph ids ──glyph table (P3)──► {at
              (no pixels touched)      tint = colour → screen       source pixels → image
 ```
 
-For a growing font (TTF), a glyph missing from the atlas is rasterised and added during
-layout, before its quad is drawn — so every consumer sees a complete table.
+For a growing font (TTF, after P8's static first step), a glyph missing from the atlas is
+rasterised and added during layout, before its quad is drawn — so every consumer sees a
+complete table. Until then a code point outside the font's glyph set draws the default glyph.
 
 ## 6. Phases and milestones
 
 ```
 Phase A — bitmap fonts, immediate path      FM0 → FM1 → FM2 → FM3
-Phase B — scalable fonts                    FM3 → FM4 (needs atlas growth)
+Phase B — scalable fonts                    FM3 → FM4 (static atlases first; growth later, P8)
 Phase C — painter and lifetime              FM5 (needs painter RM1) → FM6 (needs RM6, §8.2)
 Phase D — later, on demand                  FM7…
 ```
@@ -511,8 +528,8 @@ prove them.
 Exit: a BIOS font and an onyx FNT face measure and wrap correctly; no `onyx_font` include
 in the public headers except the re-exported plugin type.
 
-**Progress (2026-11-08).** Items 2–4 are built in their first form; item 1 is started (the id,
-registry and glyph lookup exist, the font queries do not); items 5–6 are not started.
+**Progress (2026-11-09).** Items 1–6 are built in their first form. Left: the two drawing
+tests of item 2 and a layout test on a real FON face (the exit criterion).
 - **Built:** `glyph_atlas_builder<alpha | indexed | rgba>` (P5) and `glyph_atlas` in
   `include/neutrino/video/text/glyph_atlas.hh`; `glyph_properties` / `font_properties` (F6);
   Pixels are recorded relative to the pen, cropped to their bounds, and replayed into an `image_builder`; `bearing_x` = left edge, `y_offset` =
@@ -550,21 +567,61 @@ registry and glyph lookup exist, the font queries do not); items 5–6 are not s
   through `encode_char`, because CP437 maps two code points to one byte (☺ U+263A and
   U+0001 → byte 1), which decoding bytes would miss (about 30 ms for BIOS 8×16, debug build).
   Baseline = ascent, line height = pixel height + external leading, space advance = the break
-  char's advance, advance = A + B + C, pixels put at `(a + x, y - ascent)`. Pixels are put one
-  by one (no `put_bits` yet); the atlas filter is the caller's choice (default linear).
+  char's advance, advance = A + B + C; each glyph is copied into a `bitmask` and written with
+  one `put_mask` at `(a, -ascent)`; the atlas filter is the caller's choice (default linear).
 - **Changed in item 1:** a font is an id over an application registry (the
   `register_atlas` / `atlas_id` pattern), not the value handle over shared data that item 1
   and F1 describe. `font::at_size` (F1) has to fit this shape when scalable faces arrive.
-- **Still to do in item 1:** public font queries for layout (properties, glyph by code point).
-- **Still to do in item 2:** the row forms (`put_span`, `put_bits`) and the per-pixel cost
-  measurement (BIOS 8×16, 20 000-glyph synthetic font); the tint-over-black and ×3 linear-edge drawing tests.
-- **Tests:** `test/video/test_glyph_atlas.cc` (15 cases: crop, bearing and offset, pictures per
+- **Advances (P9), 2026-11-09:** `glyph_properties::advance` is a `float` rounded to 1/64 px by
+  `start_glyph`; a registered font keeps its advances as internal `details::fixed26_6`.
+- **Item 5, layout (2026-11-09):** `include/neutrino/video/text/text_layout.hh` (public:
+  `text_align`, `text_params`, `line_range`, `fit_result`, `measure`, `wrap`, `fit`, `offset_of`,
+  `index_at`) over an internal engine (`src/neutrino/video/text/text_layout_engine.*`) that
+  lays out every character once (line, caret x, advance, glyph and picture position), so
+  FM3's `draw_text` reads the same result. Rules:
+  - greedy word wrap at spaces and tabs; the spaces at a break belong to no line and do not
+    count in its width; a word wider than the box breaks between characters; every line
+    holds at least one character;
+  - `\n` ends a line (text ending in `\n` has an empty last line), `\r` takes no space,
+    tabs go to the next multiple of `tab_width` × the space advance;
+  - letter spacing (font + params) goes between characters, not before a line's first;
+  - pens run in 26.6 at unscaled size; each position is scaled and rounded to a whole
+    pixel (T3), so carets and pictures snap and long lines do not drift;
+  - alignment is within the wrap width, or the widest line when not wrapping, never
+    negative; height = (lines − 1) × line step + line height;
+  - `offset_of` / `index_at` round-trip for every character; `index_at` picks the caret
+    before the character whose left half holds x.
+  `fit` works on the first line only and is not wrapped.
+- **Item 1, font queries (2026-11-09):** `get_font_properties(font_id)`,
+  `get_glyph_properties(font_id, cp)` (own glyph, else the default, else nullopt) and
+  `has_glyph(font_id, cp)` (own glyph only, for fallback chains) in `font.hh`.
+- **Item 2, bulk writes (2026-11-09):** `put_span(x, y, pixels)` and `put_mask(x, y, bitmask,
+  on)` replace the planned `put_*_span` / `put_bits` / `bit_order`: 1-bit data uses the
+  existing `neutrino::bitmask` (which gained `row(y)`), so there is no second bit-row type.
+  The builder records every write as a horizontal run — a fill (`put`, each solid run of a
+  mask) or a span whose pixels go to a per-glyph pool in one insert — and replays runs in
+  order (last write wins) straight into the picture's rows with `fill_n` / `copy_n` /
+  `transform`, without per-pixel bounds checks. Measured (release, 20 000 glyphs of 16×16):
+  per-pixel `put` 34 ms, `put_mask` ~21 ms, `put_span` ~15 ms, packing 24–32 ms; BIOS 8×16
+  conversion 4.4 ms, most of it the code point lookup. Debug build per pixel: 1652 ms before,
+  ~500 ms after. The timings are printed by the cost test cases.
+- **Still to do in item 2:** the tint-over-black and ×3 linear-edge drawing tests.
+- **Still to do for the exit:** measure / wrap on a real proportional FON face (`HELVA.FON`).
+- **Open:** `font.hh` includes `onyx_font/font_factory.hh` (for `font_entry` in decoders'
+  `enumerate()`), more than the "plugin type only" exit rule allows.
+- **Tests:** `test/video/test_glyph_atlas.cc` (24 cases: crop, bearing and offset, pictures per
   kind, empty glyphs, entry ids, font properties, misuse, duplicate ids, all-empty font;
+  `put_span` incl. coverage 0, span / put order, `put_mask` against per-pixel writes, clear
+  masks, indexed runs; three cost cases;
   `register_font` stores the atlas and properties, `unregister_font` removes both and
-  tolerates repeats); `test/video/test_font.cc` (17 cases: lookup rules; ABC spacing on a
+  tolerates repeats); `test/video/test_font.cc` (21 cases: lookup rules; ABC spacing on a
   synthetic font; every BIOS font incl. ░, é, ☺ / U+0001 and no €; CP437 and proportional FON
   files found by detection, from `test/video/data/fonts/`; custom decoder registered and found;
-  explicit decoder; failures).
+  explicit decoder; failures; every BIOS glyph pixel-exact against onyx; conversion cost; font
+  queries); `test/video/test_bitmask.cc` adds `row`; `test/video/test_text_layout.cc` (23 cases on a synthetic
+  monospace font: empty text, newlines, `\r\n`, tabs, letter and line spacing, scale, word
+  wrap, long words, trailing spaces, alignment, fit, caret round trip, hit test, UTF-8,
+  missing glyphs); the builder test adds advance rounding (6.4 → 410/64) and NaN.
 
 #### FM2 — Glyph-bank fonts
 
@@ -621,45 +678,52 @@ Exit: KE shows identical text through `draw_text`; no file under `games/` includ
 
 #### FM4 — TTF / OTF / vector fonts
 
-Why: UI text at arbitrary sizes and DPI. Scalable fonts cannot be baked whole, so this is
-where atlases must learn to grow.
+Why: UI text at arbitrary sizes. Revised 2026-11-08 (P4, P7, P8, P9, T1 settled): scalable
+fonts arrive in two steps, and the first needs nothing new from the engine.
 
-1. **Atlas growth (engine):** a growing atlas accepts new pictures after registration,
+**Step 1 — static atlases (no engine changes):**
+
+1. **Shared faces (P7):** `fonts_manager` keeps one face per source (onyx `font_source`,
+   owning the TTF bytes / BGI strokes), referenced by every size's `font_id`; the last
+   `unregister_font` frees it.
+2. **Registration:** `register_font(bytes, face, font_options)` tries onyx's bitmap, then
+   vector (BGI, Microsoft vector FON), then outline (TTF / OTF / TTC) decoders;
+   `pixel_size` is required for scalable faces. `font_at_size(font_id, px)` makes another
+   size of the same face. `register_font_decoder` gains the vector and outline overloads.
+   With TTF opted out in onyx, TTF data reports "TTF support is not built in" (P4).
+3. **Rasterising into the builder (T1):** `font_source::rasterize_glyph(code_point, size,
+   target, x, y)` (`x` = pen, `y` = baseline) writes 8-bit coverage through onyx's
+   `raster_target` concept (`put_pixel`, `width()`, `height()`; optional `put_span`). A
+   small internal adaptor forwards that to an `alpha` `glyph_atlas_builder`, with the pen
+   at the origin of a large virtual canvas, so nothing clips and the builder's crop gives
+   the exact bounds — also for synthetic bold / italic (`rasterize_styled_glyph`), which
+   draw past the metrics box. onyx's `put_span` maps onto the builder's `put_span` row
+   form when that exists. (`glyph_rasterizer.hh`'s free functions are internal; not used.)
+4. **What is rasterised (P8):** BGI / vector faces: every glyph, through their `charset`
+   (the FON lookup). TTF: `font_options::glyphs` (default `latin1`) plus `extra_glyphs`;
+   other code points draw the default glyph.
+5. **Metrics:** font properties from `get_scaled_metrics(size)` (baseline = round(ascent),
+   line height = round(line_height)); advances in 26.6 from `get_glyph_metrics` (P9).
+   Filter: nearest for 1-bit (BGI, `monochrome`), linear for antialiased TTF.
+6. Tests: a BGI glyph and a TTF glyph land entirely inside their picture, with and without
+   bold / italic; Latin-1 present, a code point outside the set draws the default glyph;
+   `extra_glyphs` added; `font_at_size` shares the face (one face, two atlases), freed with
+   the last size; fractional advances accumulate without drift; TTF tests behind
+   `ONYX_FONT_HAS_LOADER_TTF`, with a freely licensed test font (not onyx's `ARIAL.TTF`).
+
+Exit (step 1): a TTF label and a BGI label draw correctly at two sizes.
+
+**Step 2 — growing atlas (when a game needs CJK or typed text):**
+
+7. **Atlas growth (engine):** a growing atlas accepts new pictures after registration,
    written into its page with a sub-rect texture upload (`SDL_UpdateTexture` on a static
    texture, never a render target); a full page adds a page; existing addresses never
    move.
-2. **Rasterising into the builder:** `font_source::rasterize_glyph(code_point, size,
-   target, x, y)` (`x` = pen, `y` = baseline) writes 8-bit coverage through onyx's
-   `raster_target` concept (`put_pixel`, `width()`, `height()`; optional `put_span`). A
-   small internal adaptor forwards that to an `alpha` `glyph_atlas_builder` at origin
-   (0, 0), so the builder's crop gives the exact bounds — no metrics box, no margin, no
-   measuring pass; bold / italic (`rasterize_styled_glyph`) drawing past the metrics box is
-   no longer a problem. To check: onyx passes the target's `width()` / `height()` to its
-   vector rasteriser, so the adaptor must report a size that never clips.
-   (`glyph_rasterizer.hh`'s free functions are `onyx_font::internal`; not used.)
-3. **Packing (T1):** rasterising one glyph at a time into the builder is T1's alternative
-   (onyx rasterises single glyphs, the atlas places them); using onyx's own packed
-   `glyph_cache` pages would bypass the builder. FM4 starts by deciding T1; the builder
-   path is the one this plan now assumes.
-4. `load_font(path | bytes, font_options)` and `list_faces(bytes)` over
-   `font_factory::analyze` / `load_*` (P4 for TTF); vector faces (BGI, Microsoft vector)
-   rasterised at `pixel_size` through the same path.
-5. **Warm-up set:** rasterised at creation; any other glyph on first use, added to the
-   atlas before its quad is drawn. *Proposed (from centurion's `store_basic_latin_glyphs`):*
-   named ranges (`basic_latin`, `latin1`, …) next to custom strings.
-6. `font::at_size(px)`: shares the face data, own glyph atlas (F1). `filter` defaults to
-   linear for scalable fonts.
-7. `register_font_decoder(…)`: the plugin point over `font_registry` (F8). The bitmap
-   overload exists since FM1; vector and outline decoders are added here.
-   **Open (F1, from centurion's `font_bundle`):** one face id shared by its sizes, each size
-   with its own atlas, and re-registering the same source returns the existing face — the
-   shape `at_size` needs over the `font_id` registry. Decide before scalable faces land.
-8. Tests: a BGI glyph and a TTF glyph (when built in) land entirely inside their picture,
-   with and without bold / italic; glyphs appear on first use without moving earlier addresses; a page overflow
-   adds a page; warm-up glyphs exist before any draw; `at_size` shares the face; a build
-   with `NEUTRINO_ONYX_FONT_LOADER_TTF=OFF` reports TTF as unsupported and passes the rest.
-
-Exit: a TTF label and a BGI label draw correctly at two sizes.
+8. Glyphs outside the set are rasterised on first use, during layout, before their quad
+   is drawn; `font_options::glyphs` becomes the warm-up set. *Proposed (from centurion's
+   `store_basic_latin_glyphs`):* named ranges next to custom strings, as in step 1.
+9. Tests: glyphs appear on first use without moving earlier addresses; a page overflow adds
+   a page; warm-up glyphs exist before any draw.
 
 ### Phase C — Painter integration and lifetime
 
@@ -715,7 +779,7 @@ Each item waits for a game that needs it.
 | FM1 | FM0 |
 | FM2 | FM1; `with_palette` ([P3.6b]) for palette variants, optional until then |
 | FM3 | FM2 |
-| FM4 | FM3; atlas growth (built in FM4.1) |
+| FM4 | FM3 (step 1 needs no engine changes); atlas growth for step 2 (FM4.7) |
 | FM5 | FM3; painter RM1 |
 | FM6 | FM4, FM5; painter RM6 and replacement in place (`render_model.md` §8.2) |
 | FM7 | FM5; painter RM3 (geometry) |
@@ -727,12 +791,12 @@ both.
 
 | Risk / question | Plan |
 |---|---|
-| Neutrino-owned layout (P1) diverges from onyx's `text_renderer` | Reuse onyx's UTF-8 decoding and wrap logic where possible; cross-check measure / wrap against `text_renderer` on onyx faces in tests |
+| Neutrino-owned layout (P1) diverges from onyx's `text_renderer` | Built on its own rules (word wrap, caret, snapping) with onyx's UTF-8 decoding; onyx's wrap breaks at any character, so results differ by design. Kerning (T4) comes later from the shared face |
 | `with_palette` and `image_bank_decoder` are not implemented yet ([P3.6b]) | FM2 works without them (variants as separate banks, decoders as plain functions); adopt them when they land |
 | One quad per glyph on the immediate path is slow for long text | Acceptable for Phase A — KE draws far less than its current one-point-per-pixel loop; batching comes with the painter (FM5) |
 | Pixel fonts blurred by non-integer scale or position | T3: nearest filter, integer scale, snapped positions; a pixel test at scale 2 |
-| FreeType size and availability (web, Android) | P4: TTF optional at build time |
-| Atlas growth touches the atlas core shared with sprites | Growth is append-only (addresses never move); tested in isolation in FM4.1 |
+| FreeType size (several MB) | P4: built from source with no optional deps, so available everywhere; size-sensitive games opt out in onyx_font |
+| Atlas growth touches the atlas core shared with sprites | Deferred to FM4 step 2 (P8); append-only (addresses never move), tested in isolation |
 | Unicode bitmap fonts with thousands of glyphs make large static atlases | Multi-page atlases already work (F7); lazy pages only if measured |
-| T1 is still open (P5 favours rasterising single glyphs) | Decide at the start of FM4; only FM4.3 depends on it |
-| A method call per pixel in `glyph_atlas_builder` | Inline hot path into an in-class buffer, reused scratch canvas, row forms (`put_*_span`, `put_bits`); measured in FM1 on BIOS 8×16 and a 20 000-glyph synthetic font |
+| Fixed glyph set misses characters a game needs (P8) | `extra_glyphs`; the default glyph shows the gap; step 2's growing atlas removes the limit |
+| A method call per pixel in `glyph_atlas_builder` | Resolved in FM1: writes are runs replayed into rows, `put_span` / `put_mask` for bulk producers; 20 000 glyphs build in 15–35 ms (release) |

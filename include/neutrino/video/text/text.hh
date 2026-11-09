@@ -6,3 +6,4 @@
 
 #include <neutrino/video/text/glyph_atlas.hh>
 #include <neutrino/video/text/font.hh>
+#include <neutrino/video/text/text_layout.hh>
