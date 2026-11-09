@@ -10,7 +10,11 @@
 
 #include <neutrino/video/text/glyph_mapping.hh>
 
+#include "video/text/glyph_mapping_access.hh"
+
 using neutrino::glyph_mapping;
+using access = neutrino::details::glyph_mapping_access;
+using range = access::range_view;
 
 TEST_SUITE("neutrino::glyph_mapping") {
     TEST_CASE("an empty mapping finds nothing") {
@@ -159,50 +163,36 @@ TEST_SUITE("neutrino::glyph_mapping") {
     }
 
     TEST_CASE("a range continuing its neighbour is merged into it") {
-        using range = glyph_mapping::range;
         glyph_mapping m;
         for (char32_t cp = U'A'; cp <= U'Z'; cp++) {
             m.bind(cp, static_cast <std::uint32_t>(cp - U'A'));
         }
-        CHECK(m.ranges().size() == 1);
-        CHECK(m.ranges()[0] == range{U'A', U'Z' + 1, 0});
+        CHECK(access::range_count(m) == 1);
+        CHECK(access::range(m, 0) == range{U'A', U'Z' + 1, 0});
 
         SUBCASE("a gap filled from the middle joins both sides") {
             glyph_mapping g;
             g.bind(10, 20, 100);
             g.bind(30, 40, 120);
             g.bind(20, 30, 110);
-            REQUIRE(g.ranges().size() == 1);
-            CHECK(g.ranges()[0] == range{10, 40, 100});
+            REQUIRE(access::range_count(g) == 1);
+            CHECK(access::range(g, 0) == range{10, 40, 100});
             CHECK(g.find(25) == 115u);
         }
         SUBCASE("touching ranges with other glyphs stay apart") {
             glyph_mapping g;
             g.bind(10, 20, 100);
             g.bind(20, 30, 0);
-            CHECK(g.ranges().size() == 2);
+            CHECK(access::range_count(g) == 2);
         }
         SUBCASE("no merge across the largest glyph id") {
             constexpr auto max = std::numeric_limits <std::uint32_t>::max();
             glyph_mapping g;
             g.bind(10, 11, max);
             g.bind(11, 12, 0);
-            CHECK(g.ranges().size() == 2);
+            CHECK(access::range_count(g) == 2);
             CHECK(g.find(10) == max);
             CHECK(g.find(11) == 0u);
         }
-    }
-
-    TEST_CASE("the list constructor binds ranges in any order") {
-        const glyph_mapping m{{U'a', U'z' + 1, 0}, {U'A', U'Z' + 1, 0}, {U' ', U' ' + 1, 26}};
-        CHECK(m.find(U'a') == 0u);
-        CHECK(m.find(U'A') == 0u);
-        CHECK(m.find(U'z') == 25u);
-        CHECK(m.find(U' ') == 26u);
-        CHECK_FALSE(m.find(U'!'));
-        CHECK(m.ranges().size() == 3);
-        CHECK_FALSE(m.empty());
-        CHECK(glyph_mapping{}.empty());
-        CHECK_THROWS_AS((glyph_mapping{{10, 20, 0}, {15, 25, 0}}), std::runtime_error);
     }
 }

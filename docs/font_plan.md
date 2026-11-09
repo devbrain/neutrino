@@ -215,12 +215,11 @@ namespace neutrino {
     // of half-open code point ranges, not a std::function (one binary search per lookup).
     class glyph_mapping {
         public:
-            struct range { char32_t begin, end; std::uint32_t first_glyph; };  // begin + k -> first_glyph + k
-            glyph_mapping(std::initializer_list<range>);
-            void bind(char32_t begin, char32_t end, std::uint32_t first_glyph); // throws on overlap
+            void bind(char32_t begin, char32_t end, std::uint32_t first_glyph); // begin + k -> first_glyph + k; throws on overlap
             void bind(char32_t cp, std::uint32_t glyph);
             std::optional<std::uint32_t> find(char32_t) const;
-            std::span<const range> ranges() const noexcept;                     // neighbours merged
+        private:
+            std::vector<range> m_ranges;   // sorted, neighbours merged; read by the registry via details access
     };
     font_id register_font(glyph_atlas&&, const glyph_mapping&, atlas_texture_format, texture_filter);
 
@@ -668,7 +667,8 @@ Exit: all four synthetic fonts lay out and rasterise correctly.
 - **Item 1, built differently:** `glyph_mapping` is its own header
   (`include/neutrino/video/text/glyph_mapping.hh`) and a sorted table of half-open code point
   ranges, not a `std::function`: `[begin, end)` → `first_glyph`, `first_glyph + 1`, …;
-  `bind(begin, end, first_glyph)`, `bind(cp, glyph)`, a list constructor, `find`, `ranges()`.
+  the public API is only `bind(begin, end, first_glyph)`, `bind(cp, glyph)` and `find`; the
+  ranges are private (the registry and tests read them through `details::glyph_mapping_access`).
   Many-to-one, offsets, case folding and code pages are all ranges (brix: `{' ', '`', 0}` +
   `{'a', '{', 'A' - ' '}`). Binding throws on an empty range, a range past U+10FFFF, glyph id
   overflow, or overlap with a bound range; a range that continues its neighbour (next code
@@ -692,9 +692,9 @@ Exit: all four synthetic fonts lay out and rasterise correctly.
   picture at caret + bearing, line top + Y offset), Jazz-style (0–25 = A–Z, unmapped → 126, no
   space glyph → `space_advance`; measure and wrap), RA2-style (Latin / Greek / Cyrillic A and B
   on two glyphs, `letter_spacing` 1), brix-style (RGBA, `' '` offset, case folding, own space
-  glyph); a mapping naming a missing glyph throws. `test/video/test_glyph_mapping.cc` (12
+  glyph); a mapping naming a missing glyph throws. `test/video/test_glyph_mapping.cc` (11
   cases: ranges, order, touching, overlap from either side, nesting, U+10FFFF, glyph overflow,
-  merging, list constructor); `test_font.cc` checks the id → index rewrite with glyphs out of
+  merging); `test_font.cc` checks the id → index rewrite with glyphs out of
   id order.
 
 #### FM3 — Drawing text and CPU rendering; port KE

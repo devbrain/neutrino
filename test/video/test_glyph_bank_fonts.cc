@@ -22,6 +22,7 @@
 #include "video/sprite/texture_registry.hh"
 #include "video/text/fonts_manager.hh"
 #include "video/text/glyph_atlas_access.hh"
+#include "video/text/glyph_mapping_access.hh"
 #include "video/text/text_layout_engine.hh"
 
 #include <array>
@@ -175,7 +176,9 @@ namespace {
             b.put(5, y, 255);
         }
         b.end_glyph();
-        return {std::move(b).build(), glyph_mapping{{U'A', U'Z' + 1, 0}}};
+        glyph_mapping m;
+        m.bind(U'A', U'Z' + 1, 0);
+        return {std::move(b).build(), std::move(m)};
     }
 
     // ---------------------------------------------------------------------------------------
@@ -219,7 +222,10 @@ namespace {
             }
             b.end_glyph();
         }
-        return {std::move(b).build(), glyph_mapping{{U' ', U'_' + 1, 0}, {U'a', U'z' + 1, U'A' - U' '}}};
+        glyph_mapping m;
+        m.bind(U' ', U'_' + 1, 0);
+        m.bind(U'a', U'z' + 1, U'A' - U' ');
+        return {std::move(b).build(), std::move(m)};
     }
 }
 
@@ -305,7 +311,7 @@ TEST_SUITE("neutrino::font glyph-bank fonts (FM2)") {
         CHECK(measure("A\xCE\x91\xD0\x90", id) == dim{20, 10});
         CHECK(offset_of("AB", id, 1) == point{7, 0});
         // Lookup ranges: A-B and Greek Alpha-Beta are single ranges; '?' and the Cyrillic two stand alone.
-        CHECK(loaded(id).lookup.ranges().size() == 5);
+        CHECK(details::glyph_mapping_access::range_count(loaded(id).lookup) == 5);
         unregister_font(id);
     }
 
@@ -335,7 +341,8 @@ TEST_SUITE("neutrino::font glyph-bank fonts (FM2)") {
     TEST_CASE("a mapping that names a missing glyph throws") {
         auto [glyphs, mapping] = decode_jazz();
         neutrino::test::test_application app("bad mapping");
-        CHECK_THROWS_AS((void)register_font(std::move(glyphs), glyph_mapping{{U'A', U'Z' + 2, 0}}),
-                        std::runtime_error); // '[' -> glyph 26
+        glyph_mapping too_far;
+        too_far.bind(U'A', U'Z' + 2, 0); // '[' -> glyph 26
+        CHECK_THROWS_AS((void)register_font(std::move(glyphs), too_far), std::runtime_error);
     }
 }

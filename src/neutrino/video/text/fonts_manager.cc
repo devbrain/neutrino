@@ -8,6 +8,7 @@
 #include <failsafe/enforce.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 #include "fonts_manager.hh"
+#include "video/text/glyph_mapping_access.hh"
 
 namespace neutrino {
     glyph_mapping glyph_ids_as_code_points(const std::vector <glyph_properties>& glyphs) {
@@ -35,18 +36,21 @@ namespace neutrino {
             }
             std::sort(by_id.begin(), by_id.end());
 
+            using access = details::glyph_mapping_access;
             glyph_mapping out;
-            for (const auto& r : mapping.ranges()) {
+            for (std::size_t i = 0, n = access::range_count(mapping); i < n; i++) {
+                const auto r = access::range(mapping, i);
+                const auto id_of = [&r](char32_t cp) { return r.first_glyph + (cp - r.begin); };
                 char32_t cp = r.begin;
                 while (cp < r.end) {
-                    const std::uint32_t id = r.map(cp);
+                    const std::uint32_t id = id_of(cp);
                     auto it = std::lower_bound(by_id.begin(), by_id.end(), id,
                                                [](const auto& e, std::uint32_t v) { return e.first < v; });
                     ENFORCE(it != by_id.end() && it->first == id, "Code point", static_cast <std::uint32_t>(cp),
                             "maps to glyph", id, "; the font has no such glyph");
                     const char32_t run_begin = cp;
                     const std::size_t first_index = it->second;
-                    for (++cp, ++it; cp < r.end && it != by_id.end() && it->first == r.map(cp) &&
+                    for (++cp, ++it; cp < r.end && it != by_id.end() && it->first == id_of(cp) &&
                                      it->second == first_index + (cp - run_begin); ++cp, ++it) {
                     }
                     out.bind(run_begin, cp, static_cast <std::uint32_t>(first_index));

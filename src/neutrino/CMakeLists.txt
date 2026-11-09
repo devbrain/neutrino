@@ -296,6 +296,7 @@ neutrino_subsystem(text DIR video/text
         PRIVATE
             glyph_atlas.cc
             glyph_atlas_access.hh
+            glyph_mapping_access.hh
             font.cc
             fixed26_6.hh
             fonts_manager.cc

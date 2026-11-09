@@ -10,22 +10,6 @@
 #include <failsafe/failsafe.hh>
 
 namespace neutrino {
-    namespace {
-        // Whether @p next starts where @p r ends, at the glyph after r's last (64-bit: r's
-        // last glyph may be the largest id).
-        bool continues(const glyph_mapping::range& r, const glyph_mapping::range& next) noexcept {
-            return r.end == next.begin &&
-                   std::uint64_t{r.first_glyph} + (r.end - r.begin) == std::uint64_t{next.first_glyph};
-        }
-    }
-
-    glyph_mapping::glyph_mapping(std::initializer_list <range> ranges) {
-        for (const auto& r : ranges) {
-            bind(r.begin, r.end, r.first_glyph);
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------------------------
     void glyph_mapping::bind(char32_t begin, char32_t end, std::uint32_t first_glyph) {
         const auto b = static_cast <std::uint32_t>(begin);
         const auto e = static_cast <std::uint32_t>(end);
@@ -43,12 +27,12 @@ namespace neutrino {
         ENFORCE(!hits_next && !hits_prev, "[", b, ", ", e, ") overlaps a bound range");
 
         auto pos = m_ranges.insert(itr, range{begin, end, first_glyph});
-        if (const auto next = std::next(pos); next != m_ranges.end() && continues(*pos, *next)) {
+        if (const auto next = std::next(pos); next != m_ranges.end() && pos->continued_by(*next)) {
             pos->end = next->end;
             m_ranges.erase(next);
         }
         if (pos != m_ranges.begin()) {
-            if (const auto prev = std::prev(pos); continues(*prev, *pos)) {
+            if (const auto prev = std::prev(pos); prev->continued_by(*pos)) {
                 prev->end = pos->end;
                 m_ranges.erase(pos);
             }

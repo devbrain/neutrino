@@ -14,6 +14,7 @@
 #include "video/sprite/texture_registry.hh"
 #include "video/text/fonts_manager.hh"
 #include "video/text/glyph_atlas_access.hh"
+#include "video/text/glyph_mapping_access.hh"
 #include "video/text/onyx_bitmap_font.hh"
 
 #include <onyx_font/bios_font.hh>
@@ -106,7 +107,7 @@ TEST_SUITE("neutrino::font lookup") {
         CHECK(mapping.find(U'b') == 'b');
         CHECK(mapping.find(U'?') == '?');
         CHECK_FALSE(mapping.find(U'c'));
-        CHECK(mapping.ranges().size() == 2); // a-b merged
+        CHECK(details::glyph_mapping_access::range_count(mapping) == 2); // a-b merged
     }
 
     TEST_CASE("a code point finds its glyph, else the default glyph") {
@@ -123,14 +124,22 @@ TEST_SUITE("neutrino::font lookup") {
     }
 
     TEST_CASE("a mapping naming a glyph id the font does not have throws") {
-        CHECK_THROWS_AS(loaded_font({}, {}, three_glyphs(), glyph_mapping{{U'x', U'y', 'c'}}), std::runtime_error);
-        CHECK_THROWS_AS(loaded_font({}, {}, three_glyphs(), glyph_mapping{{U'x', U'{', 'a'}}), std::runtime_error);
+        glyph_mapping missing;
+        missing.bind(U'x', 'c');
+        CHECK_THROWS_AS(loaded_font({}, {}, three_glyphs(), missing), std::runtime_error);
+        glyph_mapping runs_past;
+        runs_past.bind(U'x', U'{', 'a'); // x, y, z -> a, b, c
+        CHECK_THROWS_AS(loaded_font({}, {}, three_glyphs(), runs_past), std::runtime_error);
     }
 
     TEST_CASE("a mapping is kept as glyph indices, in any glyph order") {
         // Glyph ids 30, 10, 11, 12, 20: indices 0..4.
         std::vector <glyph_properties> g{{.glyph = 30}, {.glyph = 10}, {.glyph = 11}, {.glyph = 12}, {.glyph = 20}};
-        const glyph_mapping m{{U'a', U'd', 10}, {U'A', U'D', 10}, {U'x', U'y', 30}, {U'0', U'1', 20}};
+        glyph_mapping m;
+        m.bind(U'a', U'd', 10);
+        m.bind(U'A', U'D', 10);
+        m.bind(U'x', 30);
+        m.bind(U'0', 20);
         const loaded_font f({}, {.default_glyph = 30}, std::move(g), m);
         CHECK(f.find_glyph(U'a') == 1);
         CHECK(f.find_glyph(U'c') == 3);
@@ -140,7 +149,7 @@ TEST_SUITE("neutrino::font lookup") {
         CHECK(f.own_glyph(U'a') == 1);
         CHECK_FALSE(f.own_glyph(U'q'));
         CHECK(f.find_glyph(U'q') == 0); // the default glyph
-        CHECK(f.lookup.ranges().size() == 4);
+        CHECK(details::glyph_mapping_access::range_count(f.lookup) == 4);
     }
 }
 
@@ -183,7 +192,7 @@ TEST_SUITE("neutrino::font onyx bitmap fonts") {
         CHECK(c.mapping.find(U'C') == 'C');
         CHECK_FALSE(c.mapping.find(U'@'));
         CHECK_FALSE(c.mapping.find(U'D'));
-        CHECK(c.mapping.ranges().size() == 1);
+        CHECK(details::glyph_mapping_access::range_count(c.mapping) == 1);
     }
 
     TEST_CASE("BIOS 8x16: 256 CP437 glyphs, control-byte pictures reachable") {
