@@ -11,7 +11,6 @@
 #include <span>
 
 #include <onyx_font/decoder.hh>
-#include <onyx_font/font_factory.hh> // font_entry, for decoders' enumerate()
 
 #include <neutrino/video/text/glyph_atlas.hh>
 #include <neutrino/neutrino_export.h>

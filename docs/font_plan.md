@@ -607,8 +607,9 @@ tests of item 2 and a layout test on a real FON face (the exit criterion).
   ~500 ms after. The timings are printed by the cost test cases.
 - **Still to do in item 2:** the tint-over-black and ×3 linear-edge drawing tests.
 - **Still to do for the exit:** measure / wrap on a real proportional FON face (`HELVA.FON`).
-- **Open:** `font.hh` includes `onyx_font/font_factory.hh` (for `font_entry` in decoders'
-  `enumerate()`), more than the "plugin type only" exit rule allows.
+- **onyx include (2026-11-09):** `font.hh` includes only `onyx_font/decoder.hh`, the plugin
+  type. onyx_font moved `font_type` / `font_entry` from `font_factory.hh` into
+  `onyx_font/font_entry.hh` (onyx 30d57c8), so `decoder.hh` is complete on its own.
 - **Tests:** `test/video/test_glyph_atlas.cc` (24 cases: crop, bearing and offset, pictures per
   kind, empty glyphs, entry ids, font properties, misuse, duplicate ids, all-empty font;
   `put_span` incl. coverage 0, span / put order, `put_mask` against per-pixel writes, clear
