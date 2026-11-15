@@ -227,7 +227,7 @@ Rules:
 - **The CPU atlas is short-lived.** Load, define sprites from its addresses, upload. The
   upload consumes it, so its rects are never kept twice.
 - **The atlas id is minted at build time** from an engine-wide counter (no renderer
-  needed) and is preserved by moves. It is a `details::id_strong_type`, like every other
+  needed) and is preserved by moves. It is a `detail::id_strong_type`, like every other
   engine handle.
 - **Output format.** `indexed8` keeps indices and requires every entry to be INDEX8 with
   the same palette (the same refcounted SDL palette, or equal colours), else throws.
@@ -480,7 +480,7 @@ playhead owned by the actor and advanced with `update(dt)`, and `draw_tile(pos, 
 8. **Drawing resolves the address**: `registry.get(atlas, picture_idx)` → `{page texture,
    rect}`, one query. An address of an unregistered atlas, or out of range, fails through
    `DRAW_CHECK`.
-9. **Strong types reuse `details::id_strong_type`** + `details::id_access` (the existing
+9. **Strong types reuse `detail::id_strong_type`** + `detail::id_access` (the existing
    pattern of `gpu_texture_atlas_id`, `sprite_sheet_id`, …). The header moves from
    `video/sprite/detail/` to `neutrino/detail/`, next to `hash.hh`, because `atlas/` sits
    below `sprite/`. A hidden-friend `operator<<` on the base prints every id (for

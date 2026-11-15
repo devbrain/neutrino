@@ -11,7 +11,7 @@
 
 #include <neutrino/video/atlas/image_atlas.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     struct image_atlas_access {
         /// @brief Where a picture landed: its page and its rect on that page.
         struct placement {
@@ -37,14 +37,14 @@ namespace neutrino::details {
 
 namespace atlas_test {
     inline std::size_t page_count(const neutrino::image_atlas& a) {
-        return neutrino::details::image_atlas_access::page_count(a);
+        return neutrino::detail::image_atlas_access::page_count(a);
     }
 
     inline const neutrino::image& page(const neutrino::image_atlas& a, std::size_t p) {
-        return neutrino::details::image_atlas_access::page(a, p);
+        return neutrino::detail::image_atlas_access::page(a, p);
     }
 
-    inline neutrino::details::image_atlas_access::placement place(const neutrino::image_atlas& a, std::size_t i) {
-        return neutrino::details::image_atlas_access::place(a, i);
+    inline neutrino::detail::image_atlas_access::placement place(const neutrino::image_atlas& a, std::size_t i) {
+        return neutrino::detail::image_atlas_access::place(a, i);
     }
 }

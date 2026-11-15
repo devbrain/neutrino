@@ -11,7 +11,7 @@
 #include <failsafe/enforce.hh>
 #include <onyx_font/text/utf8.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     namespace {
         struct decoded_char {
             std::size_t index;

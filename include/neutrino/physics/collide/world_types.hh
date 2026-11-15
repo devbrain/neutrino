@@ -432,9 +432,9 @@ namespace neutrino::physics {
 template <>
 struct std::hash<neutrino::physics::collider_id> {
     [[nodiscard]] std::size_t operator()(const neutrino::physics::collider_id& id) const noexcept {
-        std::size_t h = neutrino::details::hash_value(id.value);
-        neutrino::details::hash_combine(h, neutrino::details::hash_value(id.generation));
-        neutrino::details::hash_combine(h, neutrino::details::hash_value(static_cast<std::uint32_t>(id.type_id)));
+        std::size_t h = neutrino::detail::hash_value(id.value);
+        neutrino::detail::hash_combine(h, neutrino::detail::hash_value(id.generation));
+        neutrino::detail::hash_combine(h, neutrino::detail::hash_value(static_cast<std::uint32_t>(id.type_id)));
         return h;
     }
 };

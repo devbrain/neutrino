@@ -13,7 +13,7 @@
 #include "video/text/glyph_mapping_access.hh"
 
 using neutrino::glyph_mapping;
-using access = neutrino::details::glyph_mapping_access;
+using access = neutrino::detail::glyph_mapping_access;
 using range = access::range_view;
 
 TEST_SUITE("neutrino::glyph_mapping") {

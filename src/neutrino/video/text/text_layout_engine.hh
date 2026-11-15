@@ -17,7 +17,7 @@
 
 #include "video/text/fonts_manager.hh"
 
-namespace neutrino::details {
+namespace neutrino::detail {
     struct laid_out_char {
         std::size_t index = 0;        ///< byte offset in the text
         char32_t code_point = 0;

@@ -12,7 +12,7 @@
 
 #include <neutrino/video/text/glyph_atlas.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     struct glyph_atlas_access {
         static image_atlas extract_atlas(glyph_atlas&& atlas) {
             return std::move(atlas.m_atlas);

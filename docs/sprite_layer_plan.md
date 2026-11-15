@@ -206,7 +206,7 @@ Goal: the WIP commit compiles and every test passes, with the *current* sprite A
 onto `atlas_id` / `atlas_address`. No new sprite concepts yet. What was done:
 
 1. Atlas tests: `.dest` / `page()` replaced by `picture_size` and a test-only
-   `details::image_atlas_access` (`test/video/image_atlas_access.hh`, a friend of
+   `detail::image_atlas_access` (`test/video/image_atlas_access.hh`, a friend of
    `image_atlas`) for the page / placement pixel checks.
 2. `test_atlas_packer.cc` and `test_image_atlas.cc` deleted (they tested deleted code; the
    `atlas_frame_old` bitmask cases went with it). An `atlas_id` hashing / `operator<<` case

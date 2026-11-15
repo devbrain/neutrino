@@ -28,10 +28,10 @@ namespace neutrino {
         const font_properties props = glyphs.get_font_properties();
         // The two extracts move out different members of glyphs.
         const atlas_id atlas = textures.add(service_locator::instance().get_renderer(),
-                                            details::glyph_atlas_access::extract_atlas(std::move(glyphs)),
+                                            detail::glyph_atlas_access::extract_atlas(std::move(glyphs)),
                                             format, filter);
         try {
-            return fonts.add({atlas, props, details::glyph_atlas_access::extract_glyphs(std::move(glyphs)),
+            return fonts.add({atlas, props, detail::glyph_atlas_access::extract_glyphs(std::move(glyphs)),
                               mapping});
         } catch (...) {
             unregister_atlas(atlas);
@@ -48,7 +48,7 @@ namespace neutrino {
     }
 
     font_id register_font(glyph_atlas&& glyphs, atlas_texture_format format, texture_filter filter) {
-        const auto mapping = glyph_ids_as_code_points(details::glyph_atlas_access::glyphs(glyphs));
+        const auto mapping = glyph_ids_as_code_points(detail::glyph_atlas_access::glyphs(glyphs));
         return register_font(std::move(glyphs), mapping, format, filter);
     }
 

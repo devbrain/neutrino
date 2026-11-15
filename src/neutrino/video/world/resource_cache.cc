@@ -32,7 +32,7 @@ namespace neutrino {
             std::uint64_t length = 0;
 
             const auto fold_u = [&] (std::uint64_t v) {
-                details::hash_combine64(digest, v);
+                detail::hash_combine64(digest, v);
             };
             const auto fold_image = [&] (const world_image& img) {
                 fold_image_identity(digest, length, identifier, img);

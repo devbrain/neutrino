@@ -14,7 +14,7 @@
 
 #include <sdlpp/video/surface.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     class surface_pixel_lock {
         public:
             explicit surface_pixel_lock(const sdlpp::surface& s)

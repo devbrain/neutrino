@@ -11,7 +11,7 @@
 #include <neutrino/neutrino_export.h>
 
 namespace neutrino {
-    namespace details {
+    namespace detail {
         struct glyph_mapping_access;
     }
 
@@ -29,7 +29,7 @@ namespace neutrino {
      * time keeps few ranges.
      */
     class NEUTRINO_EXPORT glyph_mapping {
-        friend struct details::glyph_mapping_access;
+        friend struct detail::glyph_mapping_access;
 
         public:
             /// The largest Unicode code point.

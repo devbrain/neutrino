@@ -29,7 +29,7 @@ namespace neutrino {
         // let it draw, and flush -- so depth sorting is scoped to the slot. The visible
         // rect uses the same eval_layer_origin transform tile culling does (no drift).
         auto draw_slot = [&](render_layer& layer) {
-            const world_point origin = details::eval_layer_origin(
+            const world_point origin = detail::eval_layer_origin(
                 view, {layer.plane.parallax_x, layer.plane.parallax_y}, layer.plane.offset, vp);
             const layer_view lv{
                 world_rect{origin.x, origin.y,

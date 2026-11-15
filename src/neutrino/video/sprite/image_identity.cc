@@ -38,7 +38,7 @@ namespace neutrino {
             if (!canonical) {
                 return content_key{0, 0};
             }
-            const details::surface_pixel_lock lock(*canonical);
+            const detail::surface_pixel_lock lock(*canonical);
             if (!lock.ready()) {
                 return content_key{0, 0};
             }
@@ -105,11 +105,11 @@ namespace neutrino {
     void fold_image_identity(std::uint64_t& digest, std::uint64_t& length,
                              image_identifier& ident, const world_image& img) {
         const content_key id = ident.identity(img);
-        details::hash_combine64(digest, img.source.index());
-        details::hash_combine64(digest, id.hash);
-        details::hash_combine64(digest, id.length);
-        details::hash_combine64(digest, img.width);
-        details::hash_combine64(digest, img.height);
+        detail::hash_combine64(digest, img.source.index());
+        detail::hash_combine64(digest, id.hash);
+        detail::hash_combine64(digest, id.length);
+        detail::hash_combine64(digest, img.width);
+        detail::hash_combine64(digest, img.height);
         length += id.length;
     }
 }

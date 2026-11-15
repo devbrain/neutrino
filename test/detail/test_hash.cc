@@ -10,11 +10,11 @@
 #include <type_traits>
 #include <unordered_set>
 
-TEST_SUITE("neutrino::details::hash") {
-    using neutrino::details::hash_value;
-    using neutrino::details::hash_bytes;
-    using neutrino::details::hash_combine;
-    using neutrino::details::hash_combine64;
+TEST_SUITE("neutrino::detail::hash") {
+    using neutrino::detail::hash_value;
+    using neutrino::detail::hash_bytes;
+    using neutrino::detail::hash_combine;
+    using neutrino::detail::hash_combine64;
 
     TEST_CASE("hash_value accepts every integer type and mixes distinctly") {
         // Narrow unsigned, exact 64-bit, and signed all compile and hash.

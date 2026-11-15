@@ -5,7 +5,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <neutrino/detail/hash.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     std::uint64_t hash_bytes(const void* data, std::size_t length) noexcept {
         static constexpr Uint32 SEED_A = 1;
         static constexpr Uint32 SEED_B = 2;

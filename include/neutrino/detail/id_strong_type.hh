@@ -13,7 +13,7 @@
 
 #include <neutrino/detail/hash.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     /**
      * @brief Passkey factory so internal registries can mint strong ids without
      *        public headers befriending internal manager classes.
@@ -81,9 +81,9 @@ namespace neutrino::details {
 }
 
 template<typename Tag>
-struct std::hash <neutrino::details::id_strong_type<Tag>> {
-    [[nodiscard]] std::size_t operator()(const neutrino::details::id_strong_type<Tag>& id) const noexcept {
-        return neutrino::details::hash_value(id.m_value);
+struct std::hash <neutrino::detail::id_strong_type<Tag>> {
+    [[nodiscard]] std::size_t operator()(const neutrino::detail::id_strong_type<Tag>& id) const noexcept {
+        return neutrino::detail::hash_value(id.m_value);
     }
 };
 

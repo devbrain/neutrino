@@ -64,7 +64,7 @@ namespace neutrino {
                 ENFORCE(s->pixels != nullptr, "image_from_surface has null pixels");
                 source = s->pixels.get();
             } else {
-                owned = details::load_encoded_image(img->source);
+                owned = detail::load_encoded_image(img->source);
                 source = &*owned;
             }
             // Convert once per source (a colour key becomes alpha 0), with blending off so

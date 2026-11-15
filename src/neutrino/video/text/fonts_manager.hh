@@ -42,7 +42,7 @@ namespace neutrino {
         /// Code point -> glyph index (glyph i = picture i).
         glyph_mapping lookup;
         /// glyph_props[i].advance in 26.6, what layout adds up (P9).
-        std::vector <details::fixed26_6> advances;
+        std::vector <detail::fixed26_6> advances;
         /// Index of the glyph whose id is font_props.default_glyph, when the font has it.
         std::optional <std::size_t> default_index;
     };

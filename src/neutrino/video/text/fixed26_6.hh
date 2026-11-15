@@ -8,7 +8,7 @@
 #include <compare>
 #include <cstdint>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     /**
      * @brief A length in 1/64 pixel: 26.6 fixed point, FreeType's unit (font_plan.md P9).
      *

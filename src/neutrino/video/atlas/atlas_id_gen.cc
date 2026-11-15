@@ -5,9 +5,9 @@
 #include <atomic>
 #include "atlas_id_gen.hh"
 
-namespace neutrino::details {
+namespace neutrino::detail {
     atlas_id make_atlas_id() {
         static std::atomic <uint32_t> atlas_id_counter = 0;
-        return details::id_access::make <atlas_id>(atlas_id_counter.fetch_add(1, std::memory_order_relaxed));
+        return detail::id_access::make <atlas_id>(atlas_id_counter.fetch_add(1, std::memory_order_relaxed));
     }
 }

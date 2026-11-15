@@ -84,7 +84,7 @@ TEST_SUITE("neutrino::video world_compositor") {
         REQUIRE(s.draws == 1);
         camera view = cam;
         view.parallax_rest = r.parallax_rest(); // (0,0) by default
-        const world_point o = details::eval_layer_origin(view, {1.0f, 1.0f}, {0.0f, 0.0f},
+        const world_point o = detail::eval_layer_origin(view, {1.0f, 1.0f}, {0.0f, 0.0f},
                                                           viewport.dimensions());
         CHECK(s.last.visible.x == doctest::Approx(o.x));
         CHECK(s.last.visible.y == doctest::Approx(o.y));

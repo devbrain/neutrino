@@ -24,7 +24,7 @@
 namespace neutrino {
     class sprite_sheet;
 
-    namespace details {
+    namespace detail {
         struct sprite_sheet_id_tag;
     }
 
@@ -35,8 +35,8 @@ namespace neutrino {
      * resource manager. It does not identify a world object and carries no position.
      */
     class NEUTRINO_EXPORT sprite_sheet_id
-        : public details::id_strong_type <details::sprite_sheet_id_tag> {
-        friend struct details::id_access;
+        : public detail::id_strong_type <detail::sprite_sheet_id_tag> {
+        friend struct detail::id_access;
 
         public:
             /**
@@ -50,7 +50,7 @@ namespace neutrino {
             }
     };
 
-    namespace details {
+    namespace detail {
         struct sprite_visual_id_tag;
     }
 
@@ -61,7 +61,7 @@ namespace neutrino {
      * live world object; runtime appearance stores @ref sprite_visual_ref values.
      */
     class NEUTRINO_EXPORT sprite_visual_id
-        : public details::id_strong_type <details::sprite_visual_id_tag> {
+        : public detail::id_strong_type <detail::sprite_visual_id_tag> {
         friend class sprite_sheet;
         friend struct std::hash <sprite_visual_id>;
 
@@ -309,7 +309,7 @@ namespace neutrino {
             std::unordered_map <
                 std::string,
                 sprite_visual_id,
-                details::transparent_string_hash,
+                detail::transparent_string_hash,
                 std::equal_to <>> m_names;
     };
 
@@ -385,7 +385,7 @@ namespace neutrino {
  */
 template<>
 struct std::hash <neutrino::sprite_sheet_id>
-    : std::hash <neutrino::details::id_strong_type <neutrino::details::sprite_sheet_id_tag>> {
+    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::sprite_sheet_id_tag>> {
 };
 
 /**
@@ -395,9 +395,9 @@ struct std::hash <neutrino::sprite_sheet_id>
 template<>
 struct std::hash <neutrino::sprite_visual_id> {
     [[nodiscard]] std::size_t operator()(const neutrino::sprite_visual_id& id) const noexcept {
-        using base_type = neutrino::details::id_strong_type <neutrino::details::sprite_visual_id_tag>;
+        using base_type = neutrino::detail::id_strong_type <neutrino::detail::sprite_visual_id_tag>;
         auto result = std::hash <base_type>{}(static_cast <const base_type&>(id));
-        neutrino::details::hash_combine(result, neutrino::details::hash_value(id.m_owner));
+        neutrino::detail::hash_combine(result, neutrino::detail::hash_value(id.m_owner));
         return result;
     }
 };
@@ -410,7 +410,7 @@ template<>
 struct std::hash <neutrino::sprite_visual_ref> {
     [[nodiscard]] std::size_t operator()(const neutrino::sprite_visual_ref& ref) const noexcept {
         auto result = std::hash <neutrino::sprite_sheet_id>{}(ref.sheet);
-        neutrino::details::hash_combine(result, std::hash <neutrino::sprite_visual_id>{}(ref.visual));
+        neutrino::detail::hash_combine(result, std::hash <neutrino::sprite_visual_id>{}(ref.visual));
         return result;
     }
 };

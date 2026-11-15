@@ -15,7 +15,7 @@
 #include <neutrino/video/sprite/sprite_appearance.hh>
 
 namespace neutrino {
-    namespace details {
+    namespace detail {
         struct sprite_animation_id_tag;
     }
 
@@ -26,8 +26,8 @@ namespace neutrino {
      * manager. It is not a playback clock and carries no world position.
      */
     class NEUTRINO_EXPORT sprite_animation_id
-        : public details::id_strong_type <details::sprite_animation_id_tag> {
-        friend struct details::id_access;
+        : public detail::id_strong_type <detail::sprite_animation_id_tag> {
+        friend struct detail::id_access;
 
         public:
             /**
@@ -179,5 +179,5 @@ namespace neutrino {
  */
 template<>
 struct std::hash <neutrino::sprite_animation_id>
-    : std::hash <neutrino::details::id_strong_type <neutrino::details::sprite_animation_id_tag>> {
+    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::sprite_animation_id_tag>> {
 };

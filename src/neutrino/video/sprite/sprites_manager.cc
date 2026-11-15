@@ -33,15 +33,15 @@ namespace neutrino {
     }
 
     sprite_sheet_id sprites_manager::make_sheet_id(std::uint32_t value) {
-        return details::id_access::make <sprite_sheet_id>(value);
+        return detail::id_access::make <sprite_sheet_id>(value);
     }
 
     sprite_animation_id sprites_manager::make_animation_id(std::uint32_t value) {
-        return details::id_access::make <sprite_animation_id>(value);
+        return detail::id_access::make <sprite_animation_id>(value);
     }
 
     sprite_state_id sprites_manager::make_state_id(std::uint32_t value) {
-        return details::id_access::make <sprite_state_id>(value);
+        return detail::id_access::make <sprite_state_id>(value);
     }
 
     void sprites_manager::validate_sheet(const sprite_sheet& sheet) const {
@@ -119,7 +119,7 @@ namespace neutrino {
     }
 
     bool sprites_manager::uses(sprite_animation_id id) const {
-        return id.valid() && m_states.any_of([id](const details::sprite_state_record& state) {
+        return id.valid() && m_states.any_of([id](const detail::sprite_state_record& state) {
             return state.animation == id;
         });
     }
@@ -127,7 +127,7 @@ namespace neutrino {
     sprite_state_id sprites_manager::create(sprite_appearance appearance) {
         validate_appearance(appearance);
 
-        details::sprite_state_record state;
+        detail::sprite_state_record state;
         state.appearance = appearance;
         return m_states.store(make_state_id, state);
     }
@@ -135,7 +135,7 @@ namespace neutrino {
     sprite_state_id sprites_manager::create(sprite_animation_id animation) {
         ENFORCE(!get(animation).empty());
 
-        details::sprite_state_record state;
+        detail::sprite_state_record state;
         state.animation = animation;
         return m_states.store(make_state_id, state);
     }
@@ -193,7 +193,7 @@ namespace neutrino {
             return;
         }
 
-        m_states.for_each_resource([this, dt](details::sprite_state_record& state) {
+        m_states.for_each_resource([this, dt](detail::sprite_state_record& state) {
             if (!state.animation.valid()) {
                 return;
             }
@@ -223,7 +223,7 @@ namespace neutrino {
         return m_animations.any_of([id](const sprite_animation& animation) {
                 return uses_sheet(animation, id);
             })
-            || m_states.any_of([id](const details::sprite_state_record& state) {
+            || m_states.any_of([id](const detail::sprite_state_record& state) {
                 return !state.animation.valid() && uses_sheet(state.appearance, id);
             });
     }

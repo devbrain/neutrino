@@ -35,7 +35,7 @@ namespace {
     using indexed_builder = glyph_atlas_builder <glyph_atlas_format::indexed>;
 
     const image_atlas& atlas_of(const glyph_atlas& g) {
-        return details::glyph_atlas_access::atlas(g);
+        return detail::glyph_atlas_access::atlas(g);
     }
 
     // Pixel (x, y) of picture i, read from its atlas page.
@@ -290,7 +290,7 @@ TEST_SUITE("neutrino::glyph_atlas_builder") {
         b.empty_glyph(32);
         const glyph_atlas g = std::move(b).build();
 
-        const auto& f = details::glyph_atlas_access::font(g);
+        const auto& f = detail::glyph_atlas_access::font(g);
         CHECK(f.line_height == 10);
         CHECK(f.baseline == 8);
         CHECK(f.space_advance == 4);

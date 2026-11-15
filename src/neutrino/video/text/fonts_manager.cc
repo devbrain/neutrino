@@ -36,7 +36,7 @@ namespace neutrino {
             }
             std::sort(by_id.begin(), by_id.end());
 
-            using access = details::glyph_mapping_access;
+            using access = detail::glyph_mapping_access;
             glyph_mapping out;
             for (std::size_t i = 0, n = access::range_count(mapping); i < n; i++) {
                 const auto r = access::range(mapping, i);
@@ -68,7 +68,7 @@ namespace neutrino {
           lookup(to_glyph_indices(mapping, glyph_props)) {
         advances.reserve(glyph_props.size());
         for (std::size_t i = 0; i < glyph_props.size(); i++) {
-            advances.push_back(details::fixed26_6::from_float(glyph_props[i].advance));
+            advances.push_back(detail::fixed26_6::from_float(glyph_props[i].advance));
             if (!default_index && glyph_props[i].glyph == font_props.default_glyph) {
                 default_index = i;
             }
@@ -88,7 +88,7 @@ namespace neutrino {
 
     font_id fonts_manager::add(loaded_font&& f) {
         static std::atomic <uint32_t> font_id_counter = 0;
-        auto fid = details::id_access::make <font_id>(font_id_counter.fetch_add(1, std::memory_order_relaxed));
+        auto fid = detail::id_access::make <font_id>(font_id_counter.fetch_add(1, std::memory_order_relaxed));
         m_fonts.emplace(fid, std::move(f));
         return fid;
     }

@@ -6,6 +6,6 @@
 
 #include <neutrino/video/atlas/atlas_id.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     atlas_id make_atlas_id();
 }

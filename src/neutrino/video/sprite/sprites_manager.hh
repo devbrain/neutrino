@@ -13,7 +13,7 @@
 #include "resource_registry.hh"
 
 namespace neutrino {
-    namespace details {
+    namespace detail {
         /**
          * @brief Runtime render state: animation playback when @ref animation is
          *        valid, otherwise the fixed @ref appearance.
@@ -173,8 +173,8 @@ namespace neutrino {
             void validate_appearance(const sprite_appearance& appearance) const;
             void validate_animation(const sprite_animation& animation) const;
 
-            details::resource_registry <sprite_sheet_id, sprite_sheet> m_sheets;
-            details::resource_registry <sprite_animation_id, sprite_animation> m_animations;
-            details::resource_registry <sprite_state_id, details::sprite_state_record> m_states;
+            detail::resource_registry <sprite_sheet_id, sprite_sheet> m_sheets;
+            detail::resource_registry <sprite_animation_id, sprite_animation> m_animations;
+            detail::resource_registry <sprite_state_id, detail::sprite_state_record> m_states;
     };
 }

@@ -13,11 +13,11 @@
 #include <vector>
 
 using namespace neutrino;
-using neutrino::details::shelf_layout;
-using neutrino::details::shelf_pack;
+using neutrino::detail::shelf_layout;
+using neutrino::detail::shelf_pack;
 
 template<>
-struct neutrino::details::dimensions_access <dim> {
+struct neutrino::detail::dimensions_access <dim> {
     static dim load_dim(const dim& d) { return d; }
 };
 
@@ -88,7 +88,7 @@ namespace {
     }
 }
 
-TEST_SUITE("neutrino::details::shelf_pack") {
+TEST_SUITE("neutrino::detail::shelf_pack") {
     TEST_CASE("empty input gives no pages and no placements") {
         const std::vector <dim> sizes;
         const auto l = pack(sizes, {64, 64}, 1);

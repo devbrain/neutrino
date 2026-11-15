@@ -71,7 +71,7 @@ namespace neutrino {
                                    const camera& cam, dim viewport) {
         ENFORCE(cam.zoom > 0.0f && std::isfinite(cam.zoom));
 
-        auto o = details::eval_layer_origin(cam,
+        auto o = detail::eval_layer_origin(cam,
                                             {layer.parallax_x, layer.parallax_y},
                                             layer.offset, viewport);
 

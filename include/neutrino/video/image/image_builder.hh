@@ -32,7 +32,7 @@ namespace neutrino {
         rgba     ///< RGBA32: bytes R, G, B, A in memory on every platform.
     };
 
-    namespace details {
+    namespace detail {
         template<image_kind K>
         struct image_pixel;
 
@@ -72,7 +72,7 @@ namespace neutrino {
     class image_builder {
         public:
             /// @brief One pixel: a palette index (indexed) or a @ref color (RGBA).
-            using pixel_type = typename details::image_pixel <K>::type;
+            using pixel_type = typename detail::image_pixel <K>::type;
 
             static constexpr image_kind kind = K;
 

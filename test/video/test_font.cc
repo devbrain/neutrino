@@ -107,7 +107,7 @@ TEST_SUITE("neutrino::font lookup") {
         CHECK(mapping.find(U'b') == 'b');
         CHECK(mapping.find(U'?') == '?');
         CHECK_FALSE(mapping.find(U'c'));
-        CHECK(details::glyph_mapping_access::range_count(mapping) == 2); // a-b merged
+        CHECK(detail::glyph_mapping_access::range_count(mapping) == 2); // a-b merged
     }
 
     TEST_CASE("a code point finds its glyph, else the default glyph") {
@@ -149,7 +149,7 @@ TEST_SUITE("neutrino::font lookup") {
         CHECK(f.own_glyph(U'a') == 1);
         CHECK_FALSE(f.own_glyph(U'q'));
         CHECK(f.find_glyph(U'q') == 0); // the default glyph
-        CHECK(details::glyph_mapping_access::range_count(f.lookup) == 4);
+        CHECK(detail::glyph_mapping_access::range_count(f.lookup) == 4);
     }
 }
 
@@ -166,7 +166,7 @@ TEST_SUITE("neutrino::font onyx bitmap fonts") {
 
     TEST_CASE("ABC spacing gives the advance; ink position gives bearing and offset") {
         const auto c = convert_bitmap_font(synthetic_font());
-        const auto& atlas = details::glyph_atlas_access::atlas(c.glyphs);
+        const auto& atlas = detail::glyph_atlas_access::atlas(c.glyphs);
 
         const auto& a = c.glyphs.get_glyph_properties(0);
         CHECK(a.glyph == 'A');
@@ -192,7 +192,7 @@ TEST_SUITE("neutrino::font onyx bitmap fonts") {
         CHECK(c.mapping.find(U'C') == 'C');
         CHECK_FALSE(c.mapping.find(U'@'));
         CHECK_FALSE(c.mapping.find(U'D'));
-        CHECK(details::glyph_mapping_access::range_count(c.mapping) == 1);
+        CHECK(detail::glyph_mapping_access::range_count(c.mapping) == 1);
     }
 
     TEST_CASE("BIOS 8x16: 256 CP437 glyphs, control-byte pictures reachable") {
@@ -212,7 +212,7 @@ TEST_SUITE("neutrino::font onyx bitmap fonts") {
         CHECK(c.mapping.find(U'⌂') == 0x7Fu); // house
         CHECK_FALSE(c.mapping.find(U'€')); // no euro in CP437
 
-        const auto& atlas = details::glyph_atlas_access::atlas(c.glyphs);
+        const auto& atlas = detail::glyph_atlas_access::atlas(c.glyphs);
         CHECK(atlas.picture_size(0xDB) == dim{8, 16}); // full block fills the cell
         CHECK(c.glyphs.get_glyph_properties(0xDB).bearing_x == 0);
         CHECK(c.glyphs.get_glyph_properties(0xDB).y_offset == 0);
@@ -228,7 +228,7 @@ TEST_SUITE("neutrino::font onyx bitmap pixels") {
         for (const auto* bios : {&onyx_font::bios_font_8x8(), &onyx_font::bios_font_8x14(),
                                  &onyx_font::bios_font_8x16()}) {
             const auto c = convert_bitmap_font(*bios);
-            const auto& atlas = details::glyph_atlas_access::atlas(c.glyphs);
+            const auto& atlas = detail::glyph_atlas_access::atlas(c.glyphs);
             int mismatches = 0;
             for (unsigned ch = 0; ch < 256; ch++) {
                 const auto glyph = bios->get_glyph(static_cast <std::uint8_t>(ch));

@@ -11,7 +11,7 @@
 
 #include <failsafe/enforce.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     /**
      * @brief Shared storage for registries keyed by opaque resource handles.
      *

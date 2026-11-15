@@ -104,7 +104,7 @@ texture_registry / sprites_manager    ── Tier 1: dumb id stores (exist, hard
 | Atlas value type (surface+frames) | `image_atlas` | `include/neutrino/video/sprite/` |
 | GPU atlas / sheet registration | `register_atlas`, `register_sprite_sheet` | sprite subsystem |
 | Errors | `THROW_*` / `ENFORCE` | `failsafe` |
-| hash_combine, transparent string hash | `neutrino::details::` | `include/neutrino/detail/hash.hh` |
+| hash_combine, transparent string hash | `neutrino::detail::` | `include/neutrino/detail/hash.hh` |
 
 Not available / do **not** use: xxHash via zstd (optional dep + private header).
 
@@ -133,7 +133,7 @@ P6 onward is largely linear.
 from two seeded `SDL_murmur3_32`.
 
 **Deliverables.** (all landed; `content_key` in `include/neutrino/world/content_key.hh`.)
-- `details::hash_bytes(const void*, size_t)` / `hash_bytes(std::span<T>)` —
+- `detail::hash_bytes(const void*, size_t)` / `hash_bytes(std::span<T>)` —
   composes two seeded `SDL_murmur3_32` into a fixed 64-bit digest, identical on
   every platform. **Done.**
 - `struct content_key { std::uint64_t hash; std::uint64_t length; auto operator<=>() = default; };`

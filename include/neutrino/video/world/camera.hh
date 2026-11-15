@@ -41,7 +41,7 @@ namespace neutrino {
         world_point parallax_rest{0.0f, 0.0f}; ///< The target value at which every parallax layer aligns (the map's parallax origin).
     };
 
-    namespace details {
+    namespace detail {
         /**
          * @brief World point a layer draws at the viewport's top-left corner.
          *
@@ -85,7 +85,7 @@ namespace neutrino {
      */
     [[nodiscard]] inline
     point to_screen(const camera& cam, const world_layer_header& layer, dim viewport, const world_point& p) {
-        auto layer_origin = details::eval_layer_origin(cam,
+        auto layer_origin = detail::eval_layer_origin(cam,
                                                        {layer.parallax_x, layer.parallax_y},
                                                        layer.offset, viewport);
 
@@ -107,7 +107,7 @@ namespace neutrino {
      */
     [[nodiscard]] inline
     point to_screen(const camera& cam, dim viewport, const world_point& p) {
-        auto layer_origin = details::eval_layer_origin(cam, {1.0f, 1.0f}, world_point{0.0f, 0.0f}, viewport);
+        auto layer_origin = detail::eval_layer_origin(cam, {1.0f, 1.0f}, world_point{0.0f, 0.0f}, viewport);
         auto temp = (p - layer_origin) * cam.zoom;
         return {static_cast <int>(std::round(temp.x)), static_cast <int>(std::round(temp.y))};
     }

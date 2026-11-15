@@ -13,7 +13,7 @@
 
 #include <neutrino/video/text/glyph_mapping.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     struct glyph_mapping_access {
         /// One bound range: code points [begin, end) -> glyphs first_glyph, first_glyph + 1, ...
         struct range_view {

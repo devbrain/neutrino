@@ -13,7 +13,7 @@
 #include <failsafe/enforce.hh>
 #include <neutrino/video/geometry_types.hh>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     struct shelf_placement {
         unsigned page = 0;
         rect dest; // picture rect, inside its gutter

@@ -19,7 +19,7 @@
 #include <vector>
 
 using namespace neutrino;
-using neutrino::details::layout_text;
+using neutrino::detail::layout_text;
 
 namespace {
     // Monospace 8 px: a-z, A-Z, é, ö, '?'; no space glyph (space_advance 4); line height 10.
@@ -56,12 +56,12 @@ namespace {
 
     point caret(std::string_view text, const loaded_font& f, std::size_t i, const text_params& p = {},
                 std::optional <int> w = {}) {
-        return details::caret_position(layout_text(text, f, p, w), text, i);
+        return detail::caret_position(layout_text(text, f, p, w), text, i);
     }
 
     std::size_t hit(std::string_view text, const loaded_font& f, point pos, const text_params& p = {},
                     std::optional <int> w = {}) {
-        return details::hit_test(layout_text(text, f, p, w), text, pos);
+        return detail::hit_test(layout_text(text, f, p, w), text, pos);
     }
 }
 
@@ -239,10 +239,10 @@ TEST_SUITE("neutrino::text_layout align, carets, hit tests") {
 TEST_SUITE("neutrino::text_layout fit") {
     TEST_CASE("the longest start of the first line that fits") {
         const auto f = mono();
-        CHECK(details::fit_text("abcdef", f, 20, {}) == fit_result{2, 16});
-        CHECK(details::fit_text("abcdef", f, 0, {}) == fit_result{0, 0});
-        CHECK(details::fit_text("ab\ncd", f, 100, {}) == fit_result{2, 16});
-        CHECK(details::fit_text("aéb", f, 16, {}) == fit_result{3, 16}); // é is two bytes
+        CHECK(detail::fit_text("abcdef", f, 20, {}) == fit_result{2, 16});
+        CHECK(detail::fit_text("abcdef", f, 0, {}) == fit_result{0, 0});
+        CHECK(detail::fit_text("ab\ncd", f, 100, {}) == fit_result{2, 16});
+        CHECK(detail::fit_text("aéb", f, 16, {}) == fit_result{3, 16}); // é is two bytes
     }
 }
 

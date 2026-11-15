@@ -418,7 +418,7 @@ flowchart TD
   * **`video/atlas/`: atlas building and management** (no decoders, no files):
     ```cpp
     // image_atlas.hh -- pages + a flat list of regions
-    class atlas_id;                          // details::id_strong_type, minted by build_atlas (no GPU)
+    class atlas_id;                          // detail::id_strong_type, minted by build_atlas (no GPU)
     struct atlas_region {                    // a picture's complete address, valid from load time
         atlas_id                  atlas;     // which atlas
         unsigned                  page = 0;  // which page of it
@@ -452,7 +452,7 @@ flowchart TD
     image_atlas load_atlas(bytes, const image_bank_decoder&, opts = {});   // decode + build_atlas
     ```
     A decoder returns a value and throws on corrupt input, like the rest of the loading API.
-  * **GPU**: `register_atlas(image_atlas&&)` uploads every page and stores the textures in the registry **under the atlas's existing `atlas_id`** (registry: hash map `atlas_id` -> page textures); one handle per atlas, pages internal. `draw_sprite(pos, region)` = `registry[region.atlas].pages[region.page]` + `region.dest`; a region of an unregistered atlas fails through `DRAW_CHECK`. This replaces the earlier per-page `atlas_texture_id` (and `gpu_texture_atlas_id`): regions carry their page, so nobody outside the registry needs a per-page handle. `atlas_id` reuses `details::id_strong_type` / `id_access`, whose header moves from `video/sprite/detail/` to `neutrino/detail/` (atlas sits below sprite).
+  * **GPU**: `register_atlas(image_atlas&&)` uploads every page and stores the textures in the registry **under the atlas's existing `atlas_id`** (registry: hash map `atlas_id` -> page textures); one handle per atlas, pages internal. `draw_sprite(pos, region)` = `registry[region.atlas].pages[region.page]` + `region.dest`; a region of an unregistered atlas fails through `DRAW_CHECK`. This replaces the earlier per-page `atlas_texture_id` (and `gpu_texture_atlas_id`): regions carry their page, so nobody outside the registry needs a per-page handle. `atlas_id` reuses `detail::id_strong_type` / `id_access`, whose header moves from `video/sprite/detail/` to `neutrino/detail/` (atlas sits below sprite).
   * **`palette.hh`**: `palette` (= `sdlpp::palette`), `palette_encoding { vga6, rgb8 }`, `load_palette(bytes, enc)`. Shared with P3.5. Done.
   * **sdlpp**: add `surface::set_color_key` / `color_key` (no wrapper for `SDL_SetSurfaceColorKey` today).
 * **Rules**:

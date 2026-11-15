@@ -20,13 +20,13 @@
 #include <neutrino/video/sprite/texture_atlas.hh>
 
 namespace neutrino {
-    namespace details {
+    namespace detail {
         struct font_id_tag;
     }
 
     class NEUTRINO_EXPORT font_id
-        : public details::id_strong_type <details::font_id_tag> {
-        friend struct details::id_access;
+        : public detail::id_strong_type <detail::font_id_tag> {
+        friend struct detail::id_access;
 
         public:
             font_id() = default;
@@ -150,5 +150,5 @@ namespace neutrino {
 
 template<>
 struct std::hash <neutrino::font_id>
-    : std::hash <neutrino::details::id_strong_type <neutrino::details::font_id_tag>> {
+    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::font_id_tag>> {
 };

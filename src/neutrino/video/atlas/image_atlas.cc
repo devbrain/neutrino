@@ -17,7 +17,7 @@
 #include "atlas_id_gen.hh"
 
 namespace neutrino {
-    namespace details {
+    namespace detail {
         template<>
         struct dimensions_access <image_bank::entry> {
             static dim load_dim(const image_bank::entry& e) {
@@ -233,7 +233,7 @@ namespace neutrino {
                                               [](const auto& e) { return !is_empty(e.pixels); });
         pixel_format format = deduce_image_format(atlas_texture_format, indexed_like, has_pictures);
 
-        const auto layout = details::shelf_pack(std::span(bank.entries), max_dims, gutter);
+        const auto layout = detail::shelf_pack(std::span(bank.entries), max_dims, gutter);
 
         std::vector <image> pages;
         pages.reserve(layout.pages.size());
@@ -250,7 +250,7 @@ namespace neutrino {
         std::vector <atlas_region> regions;
         regions.reserve(bank.entries.size());
 
-        auto current_atlas_id = details::make_atlas_id();
+        auto current_atlas_id = detail::make_atlas_id();
 
         for (std::size_t i = 0; i < bank.entries.size(); ++i) {
             const auto& entry = bank.entries[i];
@@ -288,7 +288,7 @@ namespace neutrino {
         ENFORCE(size.width > 0 && size.height > 0, "Can not build atlas from the empty image");
         ENFORCE(size.width <= cap && size.height <= cap, "Image size is larger than the maximal texture size");
 
-        auto current_atlas_id = details::make_atlas_id();
+        auto current_atlas_id = detail::make_atlas_id();
 
         const image* indexed_like = indexed_source(img);
         pixel_format format = deduce_image_format(atlas_texture_format, indexed_like);
@@ -301,7 +301,7 @@ namespace neutrino {
 
         std::vector <image_atlas::atlas_placement> picture_rects;
 
-        const auto placement = details::shelf_placement{
+        const auto placement = detail::shelf_placement{
             .page = 0,
             .dest = rect{point{0, 0}, img.dimensions <dim>()}
         };

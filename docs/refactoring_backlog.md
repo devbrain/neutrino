@@ -30,7 +30,7 @@ sweep are highest-confidence. Ordered by value ÷ risk. Check off as done.
 ## Tier 2 — clear dedup, moderate effort
 
 - [x] **F. Image-source decode dedup.** ✅ New internal `src/…/video/sprite/image_decode.hh`
-  with `details::load_encoded_image(source)` for the identical disk/memory arms; `tileset_bundle.cc`
+  with `detail::load_encoded_image(source)` for the identical disk/memory arms; `tileset_bundle.cc`
   (surface_for) and `sprite_set.cc` (`decode`) both use it, keeping their differing surface-arm
   policies local (tile borrows, sprite clones). Suite green.
 - [x] **G. `erase_if_live`.** ✅ Added `erase_if_live(id, manager)` to `service_access.hh`; the

@@ -38,7 +38,7 @@ namespace neutrino {
                 ENFORCE(converted.has_value(), "build_sprite_set: cannot convert source surface");
                 return std::move(*converted);
             }
-            return details::load_encoded_image(img.source);
+            return detail::load_encoded_image(img.source);
         }
 
         // Grid frames first (named "0".."N-1"), then explicit visuals in declared order.

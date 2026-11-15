@@ -8,13 +8,13 @@
 #include <neutrino/neutrino_export.h>
 
 namespace neutrino {
-    namespace details {
+    namespace detail {
         struct atlas_id_tag;
     }
 
     class NEUTRINO_EXPORT atlas_id
-        : public details::id_strong_type <details::atlas_id_tag> {
-        friend struct details::id_access;
+        : public detail::id_strong_type <detail::atlas_id_tag> {
+        friend struct detail::id_access;
 
         public:
             atlas_id() = default;
@@ -28,5 +28,5 @@ namespace neutrino {
 
 template<>
 struct std::hash <neutrino::atlas_id>
-    : std::hash <neutrino::details::id_strong_type <neutrino::details::atlas_id_tag>> {
+    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::atlas_id_tag>> {
 };

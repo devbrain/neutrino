@@ -84,14 +84,14 @@ namespace neutrino {
         std::uint64_t digest = 0;
         std::uint64_t length = 0;
 
-        const auto fold_u = [&] (std::uint64_t v) { details::hash_combine64(digest, v); };
+        const auto fold_u = [&] (std::uint64_t v) { detail::hash_combine64(digest, v); };
         const auto fold_f = [&] (float v) {
-            details::hash_combine64(digest, std::bit_cast <std::uint32_t>(v));
+            detail::hash_combine64(digest, std::bit_cast <std::uint32_t>(v));
         };
         const auto fold_s = [&] (std::string_view s) {
             const content_key h = content_hash(std::as_bytes(std::span <const char>(s.data(), s.size())));
-            details::hash_combine64(digest, h.hash);
-            details::hash_combine64(digest, h.length);
+            detail::hash_combine64(digest, h.hash);
+            detail::hash_combine64(digest, h.length);
         };
 
         fold_image_identity(digest, length, ident, def.image);

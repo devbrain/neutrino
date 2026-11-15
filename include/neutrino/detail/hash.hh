@@ -15,7 +15,7 @@
 
 #include <neutrino/neutrino_export.h>
 
-namespace neutrino::details {
+namespace neutrino::detail {
     /**
      * @brief Terminal hash for a single integer value.
      *

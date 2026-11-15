@@ -36,11 +36,11 @@ using namespace neutrino;
 
 namespace {
     const image_atlas& atlas_of(const glyph_atlas& g) {
-        return details::glyph_atlas_access::atlas(g);
+        return detail::glyph_atlas_access::atlas(g);
     }
 
     const glyph_properties& props_of(const glyph_atlas& g, std::uint32_t id) {
-        const auto& all = details::glyph_atlas_access::glyphs(g);
+        const auto& all = detail::glyph_atlas_access::glyphs(g);
         for (const auto& p : all) {
             if (p.glyph == id) {
                 return p;
@@ -51,7 +51,7 @@ namespace {
     }
 
     std::size_t index_of(const glyph_atlas& g, std::uint32_t id) {
-        const auto& all = details::glyph_atlas_access::glyphs(g);
+        const auto& all = detail::glyph_atlas_access::glyphs(g);
         for (std::size_t i = 0; i < all.size(); i++) {
             if (all[i].glyph == id) {
                 return i;
@@ -262,7 +262,7 @@ TEST_SUITE("neutrino::font glyph-bank fonts (FM2)") {
         CHECK_FALSE(has_glyph(id, U'Z'));
 
         // Laid out, pictures sit at caret + bearing, line top + Y offset.
-        const auto l = details::layout_text("Aa.\nA", loaded(id), {}, {});
+        const auto l = detail::layout_text("Aa.\nA", loaded(id), {}, {});
         REQUIRE(l.lines.size() == 2);
         CHECK(l.lines[0].chars[0].picture == point{0, 2});
         CHECK(l.lines[0].chars[1].picture == point{4, 4});
@@ -311,7 +311,7 @@ TEST_SUITE("neutrino::font glyph-bank fonts (FM2)") {
         CHECK(measure("A\xCE\x91\xD0\x90", id) == dim{20, 10});
         CHECK(offset_of("AB", id, 1) == point{7, 0});
         // Lookup ranges: A-B and Greek Alpha-Beta are single ranges; '?' and the Cyrillic two stand alone.
-        CHECK(details::glyph_mapping_access::range_count(loaded(id).lookup) == 5);
+        CHECK(detail::glyph_mapping_access::range_count(loaded(id).lookup) == 5);
         unregister_font(id);
     }
 

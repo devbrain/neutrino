@@ -14,7 +14,7 @@
 #include <neutrino/video/sprite/sprite_appearance.hh>
 
 namespace neutrino {
-    namespace details {
+    namespace detail {
         struct sprite_state_id_tag;
     }
 
@@ -26,8 +26,8 @@ namespace neutrino {
      * provide position when drawing.
      */
     class NEUTRINO_EXPORT sprite_state_id
-        : public details::id_strong_type <details::sprite_state_id_tag> {
-        friend struct details::id_access;
+        : public detail::id_strong_type <detail::sprite_state_id_tag> {
+        friend struct detail::id_access;
 
         public:
             /**
@@ -125,5 +125,5 @@ namespace neutrino {
  */
 template<>
 struct std::hash <neutrino::sprite_state_id>
-    : std::hash <neutrino::details::id_strong_type <neutrino::details::sprite_state_id_tag>> {
+    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::sprite_state_id_tag>> {
 };

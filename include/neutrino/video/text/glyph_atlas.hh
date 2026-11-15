@@ -24,7 +24,7 @@
 #include <failsafe/enforce.hh>
 
 namespace neutrino {
-    namespace details {
+    namespace detail {
         struct glyph_atlas_access;
     }
 
@@ -83,7 +83,7 @@ namespace neutrino {
     class glyph_atlas_builder;
 
     class NEUTRINO_EXPORT glyph_atlas {
-        friend struct details::glyph_atlas_access;
+        friend struct detail::glyph_atlas_access;
 
         template<glyph_atlas_format format>
         friend class glyph_atlas_builder;
@@ -104,7 +104,7 @@ namespace neutrino {
             std::vector <glyph_properties> m_props;
     };
 
-    namespace details {
+    namespace detail {
         template<glyph_atlas_format format>
         struct glyph_canvas_pixel;
 
@@ -321,7 +321,7 @@ namespace neutrino {
     }
 
     template<glyph_atlas_format format>
-    class glyph_atlas_builder : public details::glyph_canvas <format> {
+    class glyph_atlas_builder : public detail::glyph_canvas <format> {
         public:
             explicit glyph_atlas_builder(font_properties props)
                 : m_font_props(props) {
@@ -329,14 +329,14 @@ namespace neutrino {
 
             glyph_atlas_builder(font_properties props, std::optional <std::uint8_t> transparent_index)
                 requires (format == glyph_atlas_format::indexed)
-                : details::glyph_canvas <glyph_atlas_format::indexed>(transparent_index),
+                : detail::glyph_canvas <glyph_atlas_format::indexed>(transparent_index),
                   m_font_props(props) {
             }
 
             glyph_atlas_builder(font_properties props, const palette& pal,
                                 std::optional <std::uint8_t> transparent_index)
                 requires (format == glyph_atlas_format::indexed)
-                : details::glyph_canvas <glyph_atlas_format::indexed>(pal, transparent_index),
+                : detail::glyph_canvas <glyph_atlas_format::indexed>(pal, transparent_index),
                   m_font_props(props) {
             }
 

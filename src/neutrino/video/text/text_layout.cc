@@ -16,11 +16,11 @@ namespace neutrino {
     }
 
     dim measure(std::string_view text, font_id font, const text_params& params, std::optional <int> wrap_width) {
-        return details::layout_text(text, font_of(font), params, wrap_width).size;
+        return detail::layout_text(text, font_of(font), params, wrap_width).size;
     }
 
     std::vector <line_range> wrap(std::string_view text, font_id font, int width, const text_params& params) {
-        const auto layout = details::layout_text(text, font_of(font), params, width);
+        const auto layout = detail::layout_text(text, font_of(font), params, width);
         std::vector <line_range> out;
         out.reserve(layout.lines.size());
         for (const auto& line : layout.lines) {
@@ -30,16 +30,16 @@ namespace neutrino {
     }
 
     fit_result fit(std::string_view text, font_id font, int width, const text_params& params) {
-        return details::fit_text(text, font_of(font), width, params);
+        return detail::fit_text(text, font_of(font), width, params);
     }
 
     point offset_of(std::string_view text, font_id font, std::size_t index, const text_params& params,
                     std::optional <int> wrap_width) {
-        return details::caret_position(details::layout_text(text, font_of(font), params, wrap_width), text, index);
+        return detail::caret_position(detail::layout_text(text, font_of(font), params, wrap_width), text, index);
     }
 
     std::size_t index_at(std::string_view text, font_id font, point position, const text_params& params,
                          std::optional <int> wrap_width) {
-        return details::hit_test(details::layout_text(text, font_of(font), params, wrap_width), text, position);
+        return detail::hit_test(detail::layout_text(text, font_of(font), params, wrap_width), text, position);
     }
 }
