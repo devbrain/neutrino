@@ -134,8 +134,8 @@ namespace neutrino {
 
             /// @brief Wrap an existing SDL texture (interop with code that creates its own). Keeps
             ///        the texture's blend and filter state as-is -- no engine defaults applied.
-            ///        @p access must describe how @p raw was created.
-            [[nodiscard]] static texture adopt(sdlpp::texture raw, texture_access access); // sdlpp-ok
+            ///        The size and access are read from @p raw.
+            [[nodiscard]] static texture adopt(sdlpp::texture raw); // sdlpp-ok
 
             texture(texture&&) noexcept = default;
             texture& operator=(texture&&) noexcept = default;

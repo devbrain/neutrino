@@ -48,7 +48,7 @@ namespace neutrino {
                 tex = sdlpp::texture::create(renderer, *converted);
             }
             if (tex) {
-                m_pages.emplace_back(texture::adopt(std::move(*tex), texture_access::fixed)).set_filter(filter);
+                m_pages.emplace_back(texture::adopt(std::move(*tex))).set_filter(filter);
             } else {
                 THROW_RUNTIME(tex.error());
             }

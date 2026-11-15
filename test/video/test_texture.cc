@@ -14,6 +14,7 @@
 
 #include <array>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 using namespace neutrino;
@@ -214,8 +215,22 @@ TEST_SUITE("neutrino::video::texture") {
         test::test_application app("texture adopt");
         auto raw = sdlpp::texture::create(get_renderer(), pixel_format::RGBA8888, sdlpp::texture_access::target, 5, 3);
         REQUIRE(raw.has_value());
-        const auto t = texture::adopt(std::move(*raw), texture_access::target);
+        const auto t = texture::adopt(std::move(*raw));
         CHECK(t.size() == dim{5, 3});
         CHECK(t.access() == texture_access::target);
+    }
+
+    TEST_CASE("adopt reads the access the texture was created with") {
+        test::test_application app("texture adopt access");
+        const std::array cases{
+            std::pair{sdlpp::texture_access::static_access, texture_access::fixed},
+            std::pair{sdlpp::texture_access::streaming, texture_access::streaming},
+            std::pair{sdlpp::texture_access::target, texture_access::target},
+        };
+        for (const auto& [raw_access, access] : cases) {
+            auto raw = sdlpp::texture::create(get_renderer(), pixel_format::RGBA8888, raw_access, 4, 4);
+            REQUIRE(raw.has_value());
+            CHECK(texture::adopt(std::move(*raw)).access() == access);
+        }
     }
 }

@@ -30,6 +30,15 @@ namespace neutrino {
             return sdlpp::texture_access::static_access;
         }
 
+        [[nodiscard]] texture_access from_sdl(sdlpp::texture_access access) noexcept {
+            switch (access) {
+                case sdlpp::texture_access::streaming: return texture_access::streaming;
+                case sdlpp::texture_access::target: return texture_access::target;
+                case sdlpp::texture_access::static_access: break;
+            }
+            return texture_access::fixed;
+        }
+
         // Engine defaults for every texture: alpha-blended (a texture with transparent regions
         // composites over what it is drawn onto) and nearest-filtered (pixel art stays crisp).
         void apply_defaults(sdlpp::texture& tex) {
@@ -114,10 +123,12 @@ namespace neutrino {
         return texture(std::move(*tex), size, access);
     }
 
-    texture texture::adopt(sdlpp::texture raw, texture_access access) {
+    texture texture::adopt(sdlpp::texture raw) {
         const auto size = raw.get_size();
         ENFORCE(size.has_value(), "adopting a texture whose size cannot be queried");
-        return {std::move(raw), dim{size->width, size->height}, access};
+        const auto access = raw.get_access();
+        ENFORCE(access.has_value(), "adopting a texture whose access cannot be queried");
+        return {std::move(raw), dim{size->width, size->height}, from_sdl(*access)};
     }
 
     void texture::set_filter(texture_filter filter) {
