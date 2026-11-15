@@ -9,7 +9,9 @@
 //
 #include <doctest/doctest.h>
 
+#include <exception>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -18,6 +20,7 @@
 #include <sdlpp/events/events.hh>
 
 #include <neutrino/scene/base_scene.hh>
+#include <neutrino/scene/scene_transitions.hh>
 
 #include "scene/scenes_manager.hh"        // internal: the shutdown path under test
 #include "services/service_locator.hh"    // ...reached through the app's own instance
@@ -58,6 +61,9 @@ namespace {
         int pauses = 0;
         int resumes = 0;
         int actions = 0;
+        int enters = 0;
+        int exits = 0;
+        int resizes = 0;
     };
 
     // A scene with chosen flags that records every call the manager makes on it. Renders also go
@@ -71,6 +77,11 @@ namespace {
             }
 
             [[nodiscard]] scene_flags flags() const override { return m_flags; }
+
+            // passes_input may change while the scene is on the stack.
+            void set_flags(scene_flags flags) { m_flags = flags; }
+            // Flags to switch to inside the next handle_action, as a console does when it opens.
+            void set_flags_on_action(scene_flags flags) { m_flags_on_action = flags; }
 
             void fixed_update(sim_duration, const input_snapshot& in) override {
                 ++m_counts.updates;
@@ -88,10 +99,20 @@ namespace {
 
             void on_pause() override { ++m_counts.pauses; }
             void on_resume() override { ++m_counts.resumes; }
-            void handle_action(const event&) override { ++m_counts.actions; }
+            void on_enter() override { ++m_counts.enters; }
+            void on_exit() override { ++m_counts.exits; }
+            void on_resize(dim) override { ++m_counts.resizes; }
+            void handle_action(const event&) override {
+                ++m_counts.actions;
+                if (m_flags_on_action) {
+                    m_flags = *m_flags_on_action;
+                    m_flags_on_action.reset();
+                }
+            }
 
         private:
             scene_flags m_flags;
+            std::optional <scene_flags> m_flags_on_action;
             probe_counts& m_counts;
             const input_snapshot* m_live;
             std::vector <std::string>* m_render_log;
@@ -116,13 +137,57 @@ namespace {
         mgr.render();
     }
 
-    // pop_scene() only queues a request; deliver it the way the main loop does.
-    void pop_now(scenes_manager& mgr) {
-        scenes_manager::pop_scene();
+    // A key press delivered straight to the manager, as the main loop delivers raw events.
+    void key_event(scenes_manager& mgr) {
+        SDL_Event raw{};
+        raw.type = SDL_EVENT_KEY_DOWN;
+        mgr.handle_action(sdlpp::event(raw));
+    }
+
+    // Transition requests are only queued; deliver them the way the main loop does. The main loop
+    // contains each event's exception (application::event) and keeps polling, so this does too and
+    // rethrows the first one at the end. Stopping at a throw would leave SDL's poll sentinel in the
+    // queue, and the next drain would end at it before reaching the events queued after it.
+    void deliver(scenes_manager& mgr) {
+        std::exception_ptr failure;
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
-            mgr.handle_action(sdlpp::event(ev));
+            try {
+                mgr.handle_action(sdlpp::event(ev));
+            } catch (...) {
+                if (!failure) {
+                    failure = std::current_exception();
+                }
+            }
         }
+        if (failure) {
+            std::rethrow_exception(failure);
+        }
+    }
+
+    void pop_now(scenes_manager& mgr) {
+        scenes_manager::pop_scene();
+        deliver(mgr);
+    }
+
+    void push_now(scenes_manager& mgr, std::unique_ptr <base_scene> scene) {
+        neutrino::push_scene(std::move(scene));
+        deliver(mgr);
+    }
+
+    void replace_now(scenes_manager& mgr, std::unique_ptr <base_scene> scene) {
+        neutrino::replace_scene(std::move(scene));
+        deliver(mgr);
+    }
+
+    void pin_now(scenes_manager& mgr, std::unique_ptr <base_scene> scene) {
+        neutrino::pin_scene(std::move(scene));
+        deliver(mgr);
+    }
+
+    void unpin_now(scenes_manager& mgr) {
+        neutrino::unpin_scene();
+        deliver(mgr);
     }
 } // namespace
 
@@ -421,5 +486,387 @@ TEST_SUITE("neutrino::scene scenes_manager flags") {
         CHECK(below.pauses == 0);
         CHECK(below.resumes == 0);
         mgr.finish();
+    }
+}
+
+// passes_input: the scene sees the live input and the events and passes them on to the scene
+// below. Input runs from the top down through such scenes, stops at the first scene without the
+// flag, and never reaches a scene paused by pauses_below.
+TEST_SUITE("neutrino::scene scenes_manager passes_input") {
+    TEST_CASE("the live snapshot follows passes_input down the stack") {
+        probe_counts game;
+        probe_counts top;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager passes_input snapshot");
+        scenes_manager& mgr = empty_manager();
+
+        scene_flags top_flags = scene_flags::none;
+        int game_updates = 0;
+        int game_live = 0;
+        SUBCASE("passes_input (an FPS counter): both see the live input") {
+            top_flags = scene_flags::passes_input;
+            game_updates = 1;
+            game_live = 1;
+        }
+        SUBCASE("none (a busy spinner): the game updates with neutral input") {
+            top_flags = scene_flags::none;
+            game_updates = 1;
+            game_live = 0;
+        }
+        SUBCASE("pauses_below (a pause menu): the game is not updated") {
+            top_flags = scene_flags::pauses_below;
+            game_updates = 0;
+            game_live = 0;
+        }
+        SUBCASE("pauses_below | passes_input: a paused scene gets no input") {
+            top_flags = scene_flags::pauses_below | scene_flags::passes_input;
+            game_updates = 0;
+            game_live = 0;
+        }
+
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live));
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(top_flags, top, &live));
+        frame(mgr, live);
+
+        CHECK(top.updates == 1);
+        CHECK(top.live_input == 1);
+        CHECK(game.updates == game_updates);
+        CHECK(game.live_input == game_live);
+        mgr.finish();
+    }
+
+    TEST_CASE("events follow the same chain as the live snapshot") {
+        probe_counts game;
+        probe_counts top;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager passes_input events");
+        scenes_manager& mgr = empty_manager();
+
+        scene_flags top_flags = scene_flags::none;
+        int game_actions = 0;
+        SUBCASE("passes_input: the scene below gets the event too") {
+            top_flags = scene_flags::passes_input;
+            game_actions = 1;
+        }
+        SUBCASE("none: the event stops at the top scene") {
+            top_flags = scene_flags::none;
+            game_actions = 0;
+        }
+        SUBCASE("pauses_below | passes_input: a paused scene gets no events") {
+            top_flags = scene_flags::pauses_below | scene_flags::passes_input;
+            game_actions = 0;
+        }
+
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live));
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(top_flags, top, &live));
+        key_event(mgr);
+
+        CHECK(top.actions == 1);
+        CHECK(game.actions == game_actions);
+        mgr.finish();
+    }
+
+    TEST_CASE("input stops at the first scene without passes_input") {
+        // bottom: both, mid: none, top: passes_input. All three update (the only pauses_below is
+        // at the bottom); top and mid see the live input and the event, bottom sees neither.
+        probe_counts bottom;
+        probe_counts mid;
+        probe_counts top;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager passes_input chain");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, bottom, &live));
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(scene_flags::none, mid, &live));
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(scene_flags::passes_input, top, &live));
+
+        frame(mgr, live);
+        key_event(mgr);
+
+        CHECK(top.live_input == 1);
+        CHECK(mid.live_input == 1);
+        CHECK(bottom.updates == 1);
+        CHECK(bottom.live_input == 0);
+        CHECK(top.actions == 1);
+        CHECK(mid.actions == 1);
+        CHECK(bottom.actions == 0);
+        mgr.finish();
+    }
+
+    TEST_CASE("a scene that drops passes_input while handling an event still passes that event on") {
+        // A closed console sees its toggle key and opens: the key that opened it still reaches
+        // the game, the next one does not.
+        probe_counts game;
+        probe_counts console;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager passes_input read before delivery");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live));
+        auto top = std::make_unique <flagged_scene>(scene_flags::passes_input, console, &live);
+        top->set_flags_on_action(scene_flags::none);
+        mgr.push_scene_sync(std::move(top));
+
+        key_event(mgr);
+        CHECK(console.actions == 1);
+        CHECK(game.actions == 1);
+
+        key_event(mgr);
+        CHECK(console.actions == 2);
+        CHECK(game.actions == 1);
+        mgr.finish();
+    }
+
+    TEST_CASE("changing passes_input at run time reroutes the next frame") {
+        probe_counts game;
+        probe_counts top;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager passes_input at run time");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live));
+        auto scene = std::make_unique <flagged_scene>(scene_flags::none, top, &live);
+        flagged_scene* const raw = scene.get();
+        mgr.push_scene_sync(std::move(scene));
+
+        frame(mgr, live);
+        CHECK(game.live_input == 0);
+
+        raw->set_flags(scene_flags::passes_input);
+        frame(mgr, live);
+        CHECK(game.live_input == 1);
+
+        raw->set_flags(scene_flags::none);
+        frame(mgr, live);
+        CHECK(game.live_input == 1);
+        CHECK(top.live_input == 3);
+        mgr.finish();
+    }
+}
+
+// The pinned scene: one slot above the stack. push, pop and replace act below it; otherwise it is
+// the topmost scene, with all its flags.
+TEST_SUITE("neutrino::scene scenes_manager pinned scene") {
+    using strings = std::vector <std::string>;
+
+    TEST_CASE("the pinned scene stays above scenes pushed after it") {
+        probe_counts game;
+        probe_counts menu;
+        probe_counts fps;
+        strings drawn;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager pinned above pushes");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live, &drawn, "game"));
+        pin_now(mgr, std::make_unique <flagged_scene>(scene_flags::passes_input, fps, &live, &drawn, "fps"));
+        push_now(mgr, std::make_unique <flagged_scene>(scene_flags::none, menu, &live, &drawn, "menu"));
+
+        mgr.render();
+        CHECK(drawn == strings{"game", "menu", "fps"});
+
+        // The pinned scene is the top of the input chain: it passes the input on to the menu.
+        mgr.fixed_update(sim_duration{1.0f / 60.0f}, live);
+        CHECK(fps.live_input == 1);
+        CHECK(menu.live_input == 1);
+        CHECK(game.live_input == 0);
+        mgr.finish();
+    }
+
+    TEST_CASE("pop and replace act below the pinned scene") {
+        probe_counts game;
+        probe_counts menu;
+        probe_counts level;
+        probe_counts fps;
+        strings drawn;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager pop and replace below the pin");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live, &drawn, "game"));
+        pin_now(mgr, std::make_unique <flagged_scene>(scene_flags::passes_input, fps, &live, &drawn, "fps"));
+        push_now(mgr, std::make_unique <flagged_scene>(scene_flags::none, menu, &live, &drawn, "menu"));
+
+        pop_now(mgr);
+        CHECK(menu.exits == 1);
+        CHECK(fps.exits == 0);
+
+        replace_now(mgr, std::make_unique <flagged_scene>(both, level, &live, &drawn, "level"));
+        CHECK(game.exits == 1);
+        CHECK(level.enters == 1);
+        CHECK(fps.exits == 0);
+
+        mgr.render();
+        CHECK(drawn == strings{"level", "fps"});
+        mgr.finish();
+    }
+
+    TEST_CASE("with only the pinned scene left, pop and replace are errors") {
+        probe_counts fps;
+        probe_counts other;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager nothing below the pin");
+        scenes_manager& mgr = empty_manager();
+        pin_now(mgr, std::make_unique <flagged_scene>(scene_flags::passes_input, fps, &live));
+
+        CHECK_THROWS(pop_now(mgr));
+        CHECK_THROWS(replace_now(mgr, std::make_unique <flagged_scene>(both, other, &live)));
+        CHECK(fps.exits == 0);
+        CHECK(other.enters == 0);
+        CHECK_FALSE(mgr.empty());
+        mgr.finish();
+    }
+
+    TEST_CASE("a pause menu pushed below the pinned scene pauses the active scene") {
+        probe_counts game;
+        probe_counts menu;
+        probe_counts fps;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager pause below the pin");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live));
+        pin_now(mgr, std::make_unique <flagged_scene>(scene_flags::passes_input, fps, &live));
+
+        push_now(mgr, std::make_unique <flagged_scene>(scene_flags::pauses_below, menu, &live));
+        CHECK(game.pauses == 1);
+        CHECK(fps.pauses == 0);
+
+        pop_now(mgr);
+        CHECK(game.resumes == 1);
+        CHECK(fps.resumes == 0);
+        mgr.finish();
+    }
+
+    TEST_CASE("a pinned scene with pauses_below pauses the stack, and unpinning resumes it") {
+        probe_counts game;
+        probe_counts console;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager pausing pin");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live));
+        pin_now(mgr, std::make_unique <flagged_scene>(scene_flags::pauses_below, console, &live));
+        CHECK(game.pauses == 1);
+
+        frame(mgr, live);
+        CHECK(console.updates == 1);
+        CHECK(console.live_input == 1);
+        CHECK(game.updates == 0);
+
+        unpin_now(mgr);
+        CHECK(console.exits == 1);
+        CHECK(game.resumes == 1);
+
+        frame(mgr, live);
+        CHECK(game.updates == 1);
+        CHECK(game.live_input == 1);
+        mgr.finish();
+    }
+
+    TEST_CASE("pinning replaces the pinned scene") {
+        probe_counts game;
+        probe_counts first;
+        probe_counts second;
+        strings drawn;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager pin replaces");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live, &drawn, "game"));
+        pin_now(mgr, std::make_unique <flagged_scene>(scene_flags::none, first, &live, &drawn, "first"));
+        pin_now(mgr, std::make_unique <flagged_scene>(scene_flags::none, second, &live, &drawn, "second"));
+
+        CHECK(first.enters == 1);
+        CHECK(first.exits == 1);
+        CHECK(second.enters == 1);
+        mgr.render();
+        CHECK(drawn == strings{"game", "second"});
+        mgr.finish();
+    }
+
+    TEST_CASE("unpinning with nothing pinned is a no-op") {
+        probe_counts game;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager unpin nothing");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live));
+
+        CHECK_NOTHROW(unpin_now(mgr));
+        CHECK(game.exits == 0);
+        CHECK_FALSE(mgr.empty());
+        mgr.finish();
+    }
+
+    TEST_CASE("a pinned scene whose on_enter throws is rolled back") {
+        class failing_scene : public base_scene {
+            public:
+                [[nodiscard]] scene_flags flags() const override { return scene_flags::pauses_below; }
+                void on_enter() override { throw std::runtime_error("cannot enter"); }
+                void fixed_update(sim_duration, const input_snapshot&) override {}
+                void render() override {}
+        };
+
+        probe_counts game;
+        probe_counts menu;
+        strings drawn;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager pin rollback");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live, &drawn, "game"));
+
+        CHECK_NOTHROW(pin_now(mgr, std::make_unique <failing_scene>()));
+        CHECK(game.pauses == 1);
+        CHECK(game.resumes == 1);
+
+        // Nothing is pinned: a pushed scene is the top, and pop removes it.
+        push_now(mgr, std::make_unique <flagged_scene>(scene_flags::none, menu, &live, &drawn, "menu"));
+        mgr.render();
+        CHECK(drawn == strings{"game", "menu"});
+        pop_now(mgr);
+        CHECK(menu.exits == 1);
+        CHECK(game.exits == 0);
+        mgr.finish();
+    }
+
+    TEST_CASE("resize notices reach the active scene and the pinned scene") {
+        probe_counts game;
+        probe_counts menu;
+        probe_counts fps;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager pinned resize");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, game, &live));
+        CHECK(game.resizes == 1);
+
+        pin_now(mgr, std::make_unique <flagged_scene>(scene_flags::passes_input, fps, &live));
+        CHECK(fps.resizes == 1);
+        CHECK(game.resizes == 1);
+
+        push_now(mgr, std::make_unique <flagged_scene>(scene_flags::none, menu, &live));
+        CHECK(menu.resizes == 1); // sized when it becomes active, though the pinned scene is on top
+        CHECK(fps.resizes == 1);
+
+        mgr.notify_resize(dim{320, 200});
+        CHECK(menu.resizes == 2);
+        CHECK(fps.resizes == 2);
+        CHECK(game.resizes == 1);
+
+        pop_now(mgr);
+        CHECK(game.resizes == 2); // active again
+        CHECK(fps.resizes == 2);
+        mgr.finish();
+    }
+
+    TEST_CASE("finish exits the pinned scene first and clears the slot") {
+        std::vector <int> exited;
+        probe_counts again;
+        const input_snapshot live{};
+        neutrino::test::test_application app("scenes_manager finish with a pin");
+        scenes_manager& mgr = empty_manager();
+        mgr.push_scene_sync(std::make_unique <recording_scene>(exited, 0, /*throw=*/false));
+        pin_now(mgr, std::make_unique <recording_scene>(exited, 1, /*throw=*/false));
+
+        mgr.finish();
+        CHECK(exited == std::vector <int>{1, 0});
+        CHECK(mgr.empty());
+
+        // Nothing stays pinned: a pushed scene is the top again and pop removes it.
+        mgr.push_scene_sync(std::make_unique <flagged_scene>(both, again, &live));
+        CHECK_NOTHROW(pop_now(mgr));
+        CHECK(again.exits == 1);
+        CHECK(mgr.empty());
     }
 }

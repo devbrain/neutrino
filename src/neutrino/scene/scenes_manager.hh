@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <vector>
 
@@ -10,9 +11,11 @@
 
 namespace neutrino {
     /// @brief Manages a stack of base_scene instances, dispatching lifecycle and frame events.
-    /// Only the topmost scene receives input. Rendering walks down to the nearest scene with
-    /// scene_flags::hides_below, updating to the nearest one with scene_flags::pauses_below.
-    /// on_pause / on_resume of the scene below follow pauses_below.
+    /// Input runs from the top down through scene_flags::passes_input scenes. Rendering walks
+    /// down to the nearest scene with scene_flags::hides_below, updating to the nearest one with
+    /// scene_flags::pauses_below. on_pause / on_resume of the scene below follow pauses_below.
+    /// An optional pinned scene sits above the stack: push, pop and replace act below it, and
+    /// otherwise it is the topmost scene (kept as the last element of the stack).
     class scenes_manager {
         public:
             scenes_manager();
@@ -26,6 +29,10 @@ namespace neutrino {
             static void pop_scene();
             /// @brief Replace the topmost scene (pop + push as a single operation).
             static void replace_scene(std::unique_ptr <base_scene>&& scene);
+            /// @brief Pin a scene above the stack, replacing the pinned scene if there is one.
+            static void pin_scene(std::unique_ptr <base_scene>&& scene);
+            /// @brief Exit and destroy the pinned scene; a no-op when none is pinned.
+            static void unpin_scene();
 
             /// @brief Push a scene synchronously, bypassing the event queue.
             /// Only safe while no scene callbacks are running; used by
@@ -36,7 +43,8 @@ namespace neutrino {
             void render();
             void handle_action(const sdlpp::event& ev);
 
-            /// @brief Deliver a render-space size change to the active (top) scene.
+            /// @brief Deliver a render-space size change to the active (top) scene and to the
+            /// pinned scene.
             /// Called by application when the drawable changes; scene activation
             /// fires on_resize on its own. No-op when the stack is empty.
             void notify_resize(dim size);
@@ -50,10 +58,19 @@ namespace neutrino {
             void apply_push(std::unique_ptr <base_scene>&& scene);
             void apply_pop();
             void apply_replace(std::unique_ptr <base_scene>&& scene);
-            /// Fire on_resize on the current top scene with the live render_size().
+            void apply_pin(std::unique_ptr <base_scene>&& scene);
+            void apply_unpin();
+            /// Fire on_resize on the top stack scene (below the pinned one) with the live
+            /// render_size().
             void notify_top_resized();
+            /// Run on_enter; if it throws, give the scene on_exit and erase it. False on rollback.
+            bool enter_or_roll_back(base_scene* scene);
+            /// The scenes push, pop and replace act on: the stack without the pinned scene.
+            [[nodiscard]] std::size_t active_count() const noexcept;
+            /// The top of those scenes, or nullptr.
+            [[nodiscard]] base_scene* active_top() const noexcept;
 
-        private:
             std::vector <std::unique_ptr <base_scene>> m_stack;
+            bool m_pinned = false; ///< m_stack.back() is the pinned scene
     };
 }

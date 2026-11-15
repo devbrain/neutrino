@@ -25,14 +25,19 @@ namespace neutrino {
     ///        @ref base_scene::handle_action and application::event.
     using event = sdlpp::event; // sdlpp-ok
 
-    /// @brief What a scene does to the scenes beneath it on the stack. The two bits are
+    /// @brief What a scene does to the scenes beneath it on the stack. The bits are
     ///        independent; the scene carrying them is always updated and drawn itself.
     enum class scene_flags : std::uint8_t {
         none         = 0, ///< An overlay: the scenes below keep updating and are drawn.
         hides_below  = 1, ///< The scenes below are not drawn (this scene covers the display).
-        pauses_below = 2  ///< The scenes below are not updated; the one directly below gets
+        pauses_below = 2, ///< The scenes below are not updated; the one directly below gets
                           ///< on_pause when this scene is pushed and on_resume when it is popped.
+        passes_input = 4  ///< The scene sees the live input and the events, and passes them on
+                          ///< to the scene below. Input runs from the top down through such
+                          ///< scenes and stops at the first scene without this flag; it never
+                          ///< reaches a scene paused by pauses_below.
     };
+
     d_NEUTRINO_PROMOTE_ENUM(scene_flags);
 
     /// @brief Abstract scene interface with lifecycle hooks and per-frame callbacks.
@@ -70,7 +75,8 @@ namespace neutrino {
             /// @brief Fixed-timestep logic update. Called 0..N times per frame with a CONSTANT @p dt
             /// and the frame's @p in input snapshot. The first substep receives input edges;
             /// later substeps receive held state without edges. Covered scenes receive neutral
-            /// input. This is where input is polled and state advances.
+            /// input, unless every scene above them carries scene_flags::passes_input. This is
+            /// where input is polled and state advances.
             virtual void fixed_update(sim_duration dt, const input_snapshot& in) = 0;
             /// @brief Render the scene; called every frame after fixed_update. Draws the latest
             /// committed state -- no time argument and no interpolation factor (for integer-scaled
@@ -80,9 +86,11 @@ namespace neutrino {
             virtual void handle_action(const event& ev);
             /// @brief What this scene does to the scenes beneath it (see @ref scene_flags).
             /// Default: `hides_below | pauses_below` -- a full-screen scene. Overlays override it:
-            /// a pause menu returns `pauses_below`, a busy spinner returns `none`. The value must
-            /// not change while the scene is on the stack: push and pop each read it, and a change
-            /// in between would unbalance on_pause / on_resume.
+            /// a pause menu returns `pauses_below`, a busy spinner returns `none`.
+            /// `passes_input` may change at any time: it only routes input and is read on every
+            /// update and every event. The other bits must not change while the scene is on the
+            /// stack: push and pop each read `pauses_below`, and a change in between would
+            /// unbalance on_pause / on_resume.
             [[nodiscard]] virtual scene_flags flags() const;
     };
 }

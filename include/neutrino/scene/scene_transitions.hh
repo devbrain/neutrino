@@ -20,4 +20,11 @@ namespace neutrino {
     NEUTRINO_EXPORT void pop_scene();
     /// @brief Replace the topmost scene (pop + push as a single operation).
     NEUTRINO_EXPORT void replace_scene(std::unique_ptr <base_scene> scene);
+    /// @brief Pin a scene above the stack, replacing the pinned scene if there is one.
+    ///
+    /// push_scene, pop_scene and replace_scene act on the stack below it; otherwise the pinned
+    /// scene is the topmost scene, with all its flags: an FPS counter, a debug console.
+    NEUTRINO_EXPORT void pin_scene(std::unique_ptr <base_scene> scene);
+    /// @brief Exit and destroy the pinned scene. A no-op when none is pinned.
+    NEUTRINO_EXPORT void unpin_scene();
 }
