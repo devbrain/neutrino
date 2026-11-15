@@ -1,5 +1,5 @@
 #include <neutrino/input/input_snapshot.hh>
-#include <SDL3/SDL_keyboard.h>
+#include <sdlpp/events/keyboard_codes.hh>
 #include <algorithm>
 
 namespace neutrino {
@@ -71,8 +71,7 @@ namespace neutrino {
     }
 
     button_state input_snapshot::key(sdlpp::keycode code) const noexcept {
-        SDL_Scancode scan = SDL_GetScancodeFromKey(static_cast<SDL_Keycode>(code), nullptr);
-        return key(static_cast<sdlpp::scancode>(scan));
+        return key(sdlpp::keycode_to_scancode(code));
     }
 
     void input_snapshot::set_key(sdlpp::scancode scan, button_state s) noexcept {

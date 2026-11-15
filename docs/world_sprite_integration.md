@@ -1612,9 +1612,10 @@ and the blit primitive land.
 
 - **Silent wrong-texture on hash collision.** Mitigated by the length
   discriminator (Phase 1) and the stat-key primary path. Keep both.
-- **sdlpp `surface::lock_guard` bug.** It misreads SDL3's `bool` return from
-  `SDL_LockSurface` (treats success as failure). `image_atlas.cc` already
-  uses a correct local RAII; do **not** "reuse" `lock_guard` until fixed upstream.
+- **sdlpp `surface::lock_guard` bug — fixed upstream (2026-11-15).** It misread
+  SDL3's `bool` return from `SDL_LockSurface` (treated success as failure), so
+  neutrino carried a local RAII (`surface_lock.hh`). sdlpp's `surface::lock()` is
+  now correct and `image_identity.cc` uses `lock_guard`; the local RAII is gone.
 - **Gutter/extrude omission** re-introduces tile bleed under scale/filtering —
   build it in Phase 3, don't defer.
 - **Acquire-before-release ordering** is the one contract a level manager can get

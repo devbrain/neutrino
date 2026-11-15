@@ -4,6 +4,7 @@
 #include <memory>
 #include <neutrino/simplex/application.hh>
 #include <sdlpp/app/entry_point.hh>
+#include <failsafe/logger.hh>
 
 namespace neutrino::simplex::detail {
     struct application_access {
@@ -27,11 +28,9 @@ namespace neutrino::simplex::detail {
             *appstate = app.release();
             return sdlpp::detail::app_init(runtime, argc, argv);  // sdlpp-ok: SDL callback plumbing
         } catch (const std::exception& error) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                         "Simplex application construction failed: %s", error.what());
+            LOG_ERROR("Simplex application construction failed:", error.what());
         } catch (...) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                         "Simplex application construction failed: unknown exception");
+            LOG_ERROR("Simplex application construction failed: unknown exception");
         }
         return SDL_APP_FAILURE;
     }
@@ -46,10 +45,10 @@ namespace neutrino::simplex::detail {
         try {
             application_access::rethrow_failure(app);
         } catch (const std::exception& error) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error in iterate: %s", error.what());
+            LOG_ERROR("Error in iterate:", error.what());
             return SDL_APP_FAILURE;
         } catch (...) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error in iterate: unknown exception");
+            LOG_ERROR("Error in iterate: unknown exception");
             return SDL_APP_FAILURE;
         }
         return result;

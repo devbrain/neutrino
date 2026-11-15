@@ -5,22 +5,24 @@
 
 #include <cstdint>
 #include <neutrino/input/hotkey.hh> // modifier
+#include <sdlpp/events/keyboard_codes.hh>
 #include <sdlpp/input/keyboard.hh>
-#include <SDL3/SDL_keyboard.h>
 
 namespace neutrino::input_detail {
 
     inline modifier translate_keymod(sdlpp::keymod sdl_mods) noexcept {
+        const auto held = [sdl_mods](sdlpp::keymod k) noexcept {
+            return (sdl_mods & k) != sdlpp::keymod::none;
+        };
         modifier m = modifier::none;
-        auto val = static_cast<std::uint16_t>(sdl_mods);
-        if (val & SDL_KMOD_LSHIFT) m = m | modifier::lshift;
-        if (val & SDL_KMOD_RSHIFT) m = m | modifier::rshift;
-        if (val & SDL_KMOD_LCTRL)  m = m | modifier::lctrl;
-        if (val & SDL_KMOD_RCTRL)  m = m | modifier::rctrl;
-        if (val & SDL_KMOD_LALT)   m = m | modifier::lalt;
-        if (val & SDL_KMOD_RALT)   m = m | modifier::ralt;
-        if (val & SDL_KMOD_LGUI)   m = m | modifier::lgui;
-        if (val & SDL_KMOD_RGUI)   m = m | modifier::rgui;
+        if (held(sdlpp::keymod::lshift)) m = m | modifier::lshift;
+        if (held(sdlpp::keymod::rshift)) m = m | modifier::rshift;
+        if (held(sdlpp::keymod::lctrl))  m = m | modifier::lctrl;
+        if (held(sdlpp::keymod::rctrl))  m = m | modifier::rctrl;
+        if (held(sdlpp::keymod::lalt))   m = m | modifier::lalt;
+        if (held(sdlpp::keymod::ralt))   m = m | modifier::ralt;
+        if (held(sdlpp::keymod::lgui))   m = m | modifier::lgui;
+        if (held(sdlpp::keymod::rgui))   m = m | modifier::rgui;
         return m;
     }
 

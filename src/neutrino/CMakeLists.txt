@@ -215,7 +215,6 @@ neutrino_subsystem(video_sprite DIR video/sprite
         sprite_state.cc
         sprites_manager.cc
         sprites_manager.hh
-        surface_lock.hh
         texture_atlas.cc
         texture_registry.cc
         texture_registry.hh

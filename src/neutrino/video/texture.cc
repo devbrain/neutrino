@@ -6,7 +6,7 @@
 #include <neutrino/video/globals.hh>
 
 #include <failsafe/enforce.hh>
-#include <SDL3/SDL.h>
+#include <failsafe/exception.hh>
 
 #include <utility>
 
@@ -47,23 +47,35 @@ namespace neutrino {
         }
 
         [[nodiscard]] image read_current_target() {
-            SDL_Surface* raw = SDL_RenderReadPixels(get_renderer().get(), nullptr);
-            ENFORCE(raw != nullptr, "reading the render target back failed: ", SDL_GetError());
-            return image(raw);
+            auto pixels = get_renderer().read_pixels();
+            if (!pixels) {
+                THROW_RUNTIME("reading the render target back failed:", pixels.error());
+            }
+            return std::move(*pixels);
+        }
+
+        // Make @p tex the render target; a failure is an error, not a no-op.
+        void set_render_target(const sdlpp::texture& tex) {
+            if (const auto bound = get_renderer().set_target(tex); !bound) {
+                THROW_RUNTIME("binding the render target failed:", bound.error());
+            }
         }
     }
 
     // ---- target_scope ---------------------------------------------------------------------------
 
+    // The guard restores on destruction and a moved-from guard restores nothing, so moving and
+    // resetting the optional is all the bookkeeping a scope needs.
     target_scope::target_scope(target_scope&& other) noexcept
-        : m_previous(other.m_previous), m_active(std::exchange(other.m_active, false)) {
+        : m_guard(std::move(other.m_guard)) {
+        other.m_guard.reset();
     }
 
     target_scope& target_scope::operator=(target_scope&& other) noexcept {
         if (this != &other) {
             end();
-            m_previous = other.m_previous;
-            m_active = std::exchange(other.m_active, false);
+            m_guard = std::move(other.m_guard);
+            other.m_guard.reset();
         }
         return *this;
     }
@@ -73,10 +85,7 @@ namespace neutrino {
     }
 
     void target_scope::end() noexcept {
-        if (m_active) {
-            SDL_SetRenderTarget(get_renderer().get(), m_previous);
-            m_active = false;
-        }
+        m_guard.reset();
     }
 
     // ---- pixel_lock -----------------------------------------------------------------------------
@@ -112,8 +121,7 @@ namespace neutrino {
         if (size.width <= 0 || size.height <= 0) {
             return std::nullopt;
         }
-        ENFORCE(access != texture_access::streaming
-                || SDL_BYTESPERPIXEL(static_cast <SDL_PixelFormat>(format)) == 4,
+        ENFORCE(access != texture_access::streaming || sdlpp::bytes_per_pixel(format) == 4,
             "streaming textures must use a 32-bit pixel format");
         auto tex = sdlpp::texture::create(get_renderer(), format, to_sdl(access), size.width, size.height);
         if (!tex) {
@@ -156,27 +164,25 @@ namespace neutrino {
 
     target_scope texture::bind(std::optional <color> clear) {
         ENFORCE(m_access == texture_access::target, "bind() needs a target texture");
-        auto* r = get_renderer().get();
-        SDL_Texture* previous = SDL_GetRenderTarget(r);
-        ENFORCE(SDL_SetRenderTarget(r, m_texture.get()), "binding the render target failed: ", SDL_GetError());
-        target_scope scope(previous);
+        auto& r = get_renderer();
+        target_scope scope(r);
+        set_render_target(m_texture);
         if (clear) {
             // Clearing uses the renderer's draw colour; restore it so a bind leaves it untouched.
-            Uint8 pr = 0, pg = 0, pb = 0, pa = 0;
-            SDL_GetRenderDrawColor(r, &pr, &pg, &pb, &pa);
-            SDL_SetRenderDrawColor(r, clear->r, clear->g, clear->b, clear->a);
-            SDL_RenderClear(r);
-            SDL_SetRenderDrawColor(r, pr, pg, pb, pa);
+            const auto previous = r.get_draw_color();
+            (void) r.set_draw_color(*clear);
+            (void) r.clear();
+            if (previous) {
+                (void) r.set_draw_color(*previous);
+            }
         }
         return scope;
     }
 
     image texture::to_image() const {
         ENFORCE(m_access == texture_access::target, "to_image() needs a target texture");
-        auto* r = get_renderer().get();
-        SDL_Texture* previous = SDL_GetRenderTarget(r);
-        ENFORCE(SDL_SetRenderTarget(r, m_texture.get()), "binding the render target failed: ", SDL_GetError());
-        target_scope restore(previous);
+        target_scope restore(get_renderer());
+        set_render_target(m_texture);
         return read_current_target();
     }
 

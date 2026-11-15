@@ -1,7 +1,7 @@
 #include <neutrino/input/hotkey.hh>
 #include <neutrino/input/input_snapshot.hh>
 #include "modifier_match.hh"
-#include <SDL3/SDL_keyboard.h>
+#include <sdlpp/events/keyboard_codes.hh>
 
 namespace neutrino {
 
@@ -9,9 +9,7 @@ namespace neutrino {
         if (std::holds_alternative<sdlpp::scancode>(m_key)) {
             return std::get<sdlpp::scancode>(m_key);
         }
-        auto key = std::get<sdlpp::keycode>(m_key);
-        SDL_Scancode scan = SDL_GetScancodeFromKey(static_cast<SDL_Keycode>(key), nullptr);
-        return static_cast<sdlpp::scancode>(scan);
+        return sdlpp::keycode_to_scancode(std::get<sdlpp::keycode>(m_key));
     }
 
     namespace {

@@ -11,6 +11,7 @@
 #include <iterator>
 #include <span>
 #include <system_error>
+#include <utility>
 #include <vector>
 
 #include <failsafe/exception.hh>
@@ -18,8 +19,6 @@
 #include <neutrino/detail/hash.hh>
 
 #include <sdlpp/video/surface.hh>
-
-#include "video/sprite/surface_lock.hh"
 
 namespace neutrino {
     namespace {
@@ -31,25 +30,21 @@ namespace neutrino {
         // Content identity of a decoded surface: hash the canonical RGBA8888 the packer
         // uploads (atlas_packer converts every source), so identical raw bytes under a
         // different pixel format or palette -- which render differently -- get distinct
-        // keys, and a freed address cannot alias a cold-pool entry. Locks directly
-        // (sdlpp's surface::lock_guard misreads SDL3's bool return; see the risks note).
+        // keys, and a freed address cannot alias a cold-pool entry.
         content_key hash_surface_identity(const sdlpp::surface& surf) {
-            const auto canonical = surf.convert(sdlpp::pixel_format_enum::RGBA8888);
+            auto canonical = surf.convert(sdlpp::pixel_format_enum::RGBA8888);
             if (!canonical) {
                 return content_key{0, 0};
             }
-            const detail::surface_pixel_lock lock(*canonical);
-            if (!lock.ready()) {
+            const sdlpp::surface::lock_guard lock(*canonical);
+            if (!lock.is_locked()) {
                 return content_key{0, 0};
             }
-            SDL_Surface* raw = canonical->get();
-            if (raw == nullptr || raw->pixels == nullptr || raw->pitch <= 0 || raw->h <= 0) {
+            const auto pixels = std::as_const(*canonical).pixels();
+            if (pixels.empty()) {
                 return content_key{0, 0};
             }
-            const std::size_t bytes =
-                static_cast <std::size_t>(raw->pitch) * static_cast <std::size_t>(raw->h);
-            const auto* p = static_cast <const std::uint8_t*>(raw->pixels);
-            return content_hash(std::as_bytes(std::span <const std::uint8_t>(p, bytes)));
+            return content_hash(std::as_bytes(pixels));
         }
 
         // Content identity of a file's bytes (read whole; callers cache the result by

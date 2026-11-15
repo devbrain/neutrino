@@ -13,7 +13,7 @@
 #include <limits>
 #include <string>
 
-#include <SDL3/SDL_stdinc.h>
+#include <sdlpp/utility/hash.hh>
 
 #if defined(NEUTRINO_TMX_ENABLE_ZSTD)
 #include <zstd.h>
@@ -193,7 +193,7 @@ namespace neutrino::world_tmx {
 
         const auto expected_crc = read_le32(input, input.size() - 8);
         const auto expected_size = read_le32(input, input.size() - 4);
-        if (SDL_crc32(0, output.data(), output.size()) != expected_crc) {
+        if (sdlpp::crc32(0, output.data(), output.size()) != expected_crc) {
             fail("gzip data CRC check failed");
         }
         if ((output.size() & 0xffffffffu) != expected_size) {

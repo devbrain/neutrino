@@ -4,8 +4,9 @@
 #include <neutrino/application.hh>
 #include <neutrino/input/input_snapshot.hh>
 #include <neutrino/scene/scene_transitions.hh>
+#include <sdlpp/core/error.hh>
+#include <sdlpp/input/mouse.hh>
 #include <sdlpp/video/display.hh>
-#include <SDL3/SDL.h>
 #include <failsafe/enforce.hh>
 #include <failsafe/logger.hh>
 #include <failsafe/logger/backend/sdl_backend.hh>
@@ -24,14 +25,14 @@
 
 namespace neutrino {
     namespace {
-        [[nodiscard]] SDL_RendererLogicalPresentation to_sdl(scale_mode mode) noexcept {
+        [[nodiscard]] sdlpp::logical_presentation to_sdl(scale_mode mode) noexcept {
             switch (mode) {
-                case scale_mode::letterbox:      return SDL_LOGICAL_PRESENTATION_LETTERBOX;
-                case scale_mode::integer_scale:  return SDL_LOGICAL_PRESENTATION_INTEGER_SCALE;
-                case scale_mode::overscan:       return SDL_LOGICAL_PRESENTATION_OVERSCAN;
-                case scale_mode::stretch:        return SDL_LOGICAL_PRESENTATION_STRETCH;
+                case scale_mode::letterbox:      return sdlpp::logical_presentation::letterbox;
+                case scale_mode::integer_scale:  return sdlpp::logical_presentation::integer_scale;
+                case scale_mode::overscan:       return sdlpp::logical_presentation::overscan;
+                case scale_mode::stretch:        return sdlpp::logical_presentation::stretch;
             }
-            return SDL_LOGICAL_PRESENTATION_LETTERBOX;
+            return sdlpp::logical_presentation::letterbox;
         }
     }
 
@@ -160,9 +161,9 @@ namespace neutrino {
         // space, not the raw drawable size.
         if (m_pimpl->m_cfg.logical_size) {
             const auto ls = *m_pimpl->m_cfg.logical_size;
-            if (!SDL_SetRenderLogicalPresentation(
-                    get_renderer().get(), ls.width, ls.height, to_sdl(m_pimpl->m_cfg.scale))) {
-                LOG_ERROR("Failed to set logical presentation:", SDL_GetError());
+            if (const auto lp = get_renderer().set_logical_presentation(
+                    ls.width, ls.height, to_sdl(m_pimpl->m_cfg.scale)); !lp) {
+                LOG_ERROR("Failed to set logical presentation:", lp.error());
             }
         }
         set_pixel_snap(m_pimpl->m_cfg.snap);
@@ -182,10 +183,10 @@ namespace neutrino {
 
 
         // sdlpp initializes SDL with video|events only; without the gamepad
-        // subsystem SDL emits no gamepad events at all. Ref-counted, and
-        // SDL_Quit at teardown releases it.
-        if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
-            LOG_ERROR("Failed to initialize gamepad subsystem:", SDL_GetError());
+        // subsystem SDL emits no gamepad events at all. Optional: a failure is
+        // logged, not fatal. Ref-counted, and SDL_Quit at teardown releases it.
+        if (!init_subsystem(sdlpp::init_flags::gamepad)) {
+            LOG_ERROR("Failed to initialize gamepad subsystem:", sdlpp::get_error());
         }
         // Everything teardown() promises is now true. Marked BEFORE ready() rather than after, so
         // a ready() that allocates and then throws still gets its release hook -- the services it
@@ -265,14 +266,12 @@ namespace neutrino {
         // Position comes from SDL directly, NOT from the event-tracked position: the latter starts
         // at {0,0} and stays there until the first mouse event, so the opening frames would report
         // the top-left corner as a real pointer position (a scene steering from it would snap to
-        // the origin before the player ever moved the mouse). SDL_GetMouseState answers the live
+        // the origin before the player ever moved the mouse). The mouse state answers the live
         // position from frame one; mouse FOCUS says whether that position means anything at all.
-        float mx = 0.0f;
-        float my = 0.0f;
-        SDL_GetMouseState(&mx, &my);
-        const window_pos window{mx, my};
+        const auto mouse = sdlpp::get_mouse_state_f();
+        const window_pos window{mouse.x, mouse.y};
         const pointer_state pointer{window, to_render_coords(window),
-                                    SDL_GetMouseFocus() != nullptr};
+                                    sdlpp::get_mouse_focus() != nullptr};
         // Buttons still come from the tracked state -- it carries the per-frame edges, which a
         // stateless SDL query cannot.
         const auto conv = [](sdlpp::button_state b) {

@@ -36,8 +36,6 @@
 #include <neutrino/video/image/image.hh>
 #include <sdlpp/video/texture.hh>
 
-struct SDL_Texture;
-
 namespace neutrino {
     /// @brief How drawn pixels combine with the target: @c blend_mode::none, @c ::blend, ...
     using blend_mode = sdlpp::blend_mode;   // sdlpp-ok
@@ -78,11 +76,10 @@ namespace neutrino {
 
         private:
             friend class texture;
-            explicit target_scope(SDL_Texture* previous) noexcept
-                : m_previous(previous), m_active(true) {}
+            /// Saves @p r's current target; restores it when the scope ends.
+            explicit target_scope(sdlpp::renderer& r) { m_guard.emplace(r); } // sdlpp-ok: private
 
-            SDL_Texture* m_previous{nullptr};
-            bool m_active{false};
+            std::optional <sdlpp::renderer::target_guard> m_guard; // sdlpp-ok: private
     };
 
     /**

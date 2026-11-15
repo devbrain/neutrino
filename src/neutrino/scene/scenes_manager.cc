@@ -101,9 +101,7 @@ namespace neutrino {
     void scenes_manager::finish() {
         // Remove queued transition notifications, then reclaim pending scenes,
         // including requests whose events were ignored by an application override.
-        // Note: using SDL_PeepEvents directly — no sdlpp wrapper available
-        SDL_Event ev;
-        while (SDL_PeepEvents(&ev, 1, SDL_GETEVENT, s_event_type, s_event_type) > 0) {}
+        sdlpp::event_queue::flush(static_cast <sdlpp::event_type>(s_event_type));
         {
             decltype(s_pending_scenes) discarded;
             {
