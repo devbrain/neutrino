@@ -132,6 +132,11 @@ namespace neutrino {
     }
 
     texture texture::adopt(sdlpp::texture raw) {
+        // SDL can bind and draw a texture only with the renderer that created it; neutrino uses
+        // the application's for both, so a texture from another one would fail at first use.
+        const auto owner = raw.get_renderer();
+        ENFORCE(owner.has_value() && *owner == get_renderer().get(),
+                "adopting a texture created on another renderer");
         const auto size = raw.get_size();
         ENFORCE(size.has_value(), "adopting a texture whose size cannot be queried");
         const auto access = raw.get_access();

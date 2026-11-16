@@ -38,6 +38,7 @@
 #include <neutrino/video/world.hh>
 #include <neutrino/video/palette.hh>
 #include <neutrino/video/text/text.hh>
+#include <neutrino/video/texture_pool_stats.hh>
 
 // ---- world (tile maps) -------------------------------------------------------------------------
 #include <neutrino/world/world.hh>

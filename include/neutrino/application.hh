@@ -196,6 +196,7 @@ namespace neutrino {
             void on_update(float dt) final;
             void on_render(renderer& r) final;
             void handle_event(const neutrino::event& e) final;
+            void on_low_memory() final;
             void on_quit() noexcept final;
             /// @brief Build this frame's input snapshot from the tracked input state (pointer mapped
             /// into render space, mouse-button edge/held), sampled once per frame for update_scene.

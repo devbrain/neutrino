@@ -26,6 +26,7 @@ namespace neutrino {
         ENFORCE(m != nullptr, "sprites_manager is not available; is the application ready?");
         return *m;
     }
+
     [[nodiscard]] inline sprites_manager* maybe_sprites_manager() noexcept {
         return service_locator::instance().get_sprites_manager();
     }
@@ -35,6 +36,7 @@ namespace neutrino {
         ENFORCE(r != nullptr, "texture_registry is not available; is the application ready?");
         return *r;
     }
+
     [[nodiscard]] inline texture_registry* maybe_texture_registry() noexcept {
         return service_locator::instance().get_texture_registry();
     }
@@ -44,6 +46,7 @@ namespace neutrino {
         ENFORCE(s != nullptr, "sound_system is not available; is the application ready?");
         return *s;
     }
+
     [[nodiscard]] inline sound_system* maybe_sound_system() noexcept {
         return service_locator::instance().get_sound_system();
     }
@@ -61,6 +64,7 @@ namespace neutrino {
         ENFORCE(c != nullptr, "sprite_cache is not available; is the application ready?");
         return *c;
     }
+
     [[nodiscard]] inline sprite_cache* maybe_sprite_cache() noexcept {
         return service_locator::instance().get_sprite_cache();
     }
@@ -70,15 +74,25 @@ namespace neutrino {
         ENFORCE(c != nullptr, "fonts_manager is not available; is the application ready?");
         return *c;
     }
+
     [[nodiscard]] inline fonts_manager* maybe_fonts_manager() noexcept {
         return service_locator::instance().get_fonts_manager();
     }
 
+    [[nodiscard]] inline detail::texture_allocator& require_texture_allocator() {
+        auto* c = service_locator::instance().get_texture_allocator();
+        ENFORCE(c != nullptr, "texture_allocator is not available; is the application ready?");
+        return *c;
+    }
+
+    [[nodiscard]] inline detail::texture_allocator* maybe_texture_allocator() noexcept {
+        return service_locator::instance().get_texture_allocator();
+    }
 
     /// @brief Shutdown-safe unregister: erase @p id from @p manager when the id is live and
     ///        the manager still exists ("already torn down" means nothing to do).
-    template <class Id, class Manager>
-    inline void erase_if_live(Id id, Manager* manager) {
+    template<class Id, class Manager>
+    void erase_if_live(Id id, Manager* manager) {
         if (id.valid() && manager != nullptr) {
             manager->erase(id);
         }

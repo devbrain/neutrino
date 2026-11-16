@@ -220,6 +220,18 @@ TEST_SUITE("neutrino::video::texture") {
         CHECK(t.access() == texture_access::target);
     }
 
+    TEST_CASE("adopt rejects a texture created on another renderer") {
+        test::test_application app("texture adopt foreign");
+        auto surf = sdlpp::surface::create_rgb(4, 4, pixel_format::RGBA8888);
+        REQUIRE(surf.has_value());
+        auto other = sdlpp::renderer::create_software(surf->get());
+        REQUIRE(other.has_value());
+        auto raw = sdlpp::texture::create(*other, pixel_format::RGBA8888, sdlpp::texture_access::target, 4, 4);
+        REQUIRE(raw.has_value());
+        CHECK_THROWS_WITH((void) texture::adopt(std::move(*raw)),
+                          doctest::Contains("another renderer"));
+    }
+
     TEST_CASE("adopt reads the access the texture was created with") {
         test::test_application app("texture adopt access");
         const std::array cases{

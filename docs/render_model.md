@@ -718,7 +718,11 @@ window. Only that case pays for the extra pass.
 **The texture allocator** (R20, amended 2026-11-15). Every layer target and every canvas —
 of scenes and of explicit painters — is a `texture_handle` from one internal
 `texture_allocator`, owned by the application next to the renderer
-([`painter.md`](painter.md) §3.3):
+([`painter.md`](painter.md) §3.3). It owns only those. Textures made with
+`texture::create`, `from_image` or `adopt` — baked results, streaming textures, atlas
+pages — belong to whoever made them, are not pooled, and are rebuilt by their owners after
+a reset (§8.3). Every texture, the allocator's included, is made on the application's
+renderer; `adopt` rejects one made on another.
 
 - **`acquire` takes a pooled texture of the same size or creates one, and always clears
   it**; the handle starts needing a redraw. A pooled texture's old pixels and a new one's
@@ -1461,7 +1465,8 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
 - **R20 — The texture allocator** (amended 2026-11-15; was "the dead layers pool"). One
   internal `texture_allocator`, owned by the application, hands out every layer target and
   canvas — of scenes and of explicit painters — as a move-only `texture_handle`, and keeps
-  the textures given back for reuse by size. `acquire` always clears; the handle carries
+  the textures given back for reuse by size. It owns only those: textures from the public
+  `texture::create` / `from_image` / `adopt` stay with their owners. `acquire` always clears; the handle carries
   `needs_redraw()`; a resize destroys the old texture instead of pooling it, and the pooled
   textures of the old render size; `SDL_EVENT_LOW_MEMORY` trims the pool at the start of
   the next frame; the render resets go through `on_targets_reset()` /

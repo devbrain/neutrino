@@ -131,7 +131,9 @@ namespace neutrino {
 
             /// @brief Wrap an existing SDL texture (interop with code that creates its own). Keeps
             ///        the texture's blend and filter state as-is -- no engine defaults applied.
-            ///        The size and access are read from @p raw.
+            ///        The size and access are read from @p raw. @p raw must have been created on
+            ///        the application's renderer, the only one neutrino draws with: a texture from
+            ///        another renderer fails ENFORCE.
             [[nodiscard]] static texture adopt(sdlpp::texture raw); // sdlpp-ok
 
             texture(texture&&) noexcept = default;
@@ -168,6 +170,12 @@ namespace neutrino {
             void compose(Fn&& draw, std::optional <color> clear = colors::transparent) {
                 auto scope = bind(clear);
                 std::forward <Fn>(draw)();
+            }
+
+            /// @brief Clear the texture to @p c (target textures only). The render target and the
+            ///        draw colour are left as they were.
+            void fill(const color& c) {
+                auto scope = bind(c);
             }
 
             /// @brief Read the texture's pixels back to the CPU (target textures only).

@@ -151,12 +151,20 @@ neutrino_subsystem(video
         sprites.hh
         texture.hh
         world.hh
+        texture_pool_stats.hh
     PRIVATE
         draw.cc
         globals.cc
         palette.cc
         sprites.cc
         texture.cc
+        texture_handle.cc
+        texture_handle.hh
+        texture_spec.hh
+        texture_table.cc
+        texture_table.hh
+        texture_allocator.hh
+        texture_allocator.cc
 )
 
 neutrino_subsystem(video_image DIR video/image

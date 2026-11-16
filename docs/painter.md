@@ -136,6 +136,7 @@ nuts and bolts — full state, inspection, explicit painters (§2.4, §2.12, §2
 |---|---|
 | `draw.hh` free functions, all overloads (`int` and `render_pos`), and their names | same signatures and meaning; they draw with the current painter |
 | `set_draw_color` / `set_draw_blend_mode` / `set_line_style` and their getters | same calls; the values are the current painter's state (§2.4) |
+| `texture::create`, `from_image`, `adopt` | unchanged; what they make belongs to the caller, not to the texture allocator (§3.3); `adopt` rejects a texture made on another renderer |
 | `texture::bind()`, `target_scope`, `compose()`, `draw_texture`, `draw_texture_quad` | unchanged; inside a layer, `bind()` redirects drawing into the texture, and the layer is current again when the scope ends |
 | `capture_frame()` | unchanged; it combines first, so it sees what will be shown |
 | `render_size()`, `pixel_snap`, `draw_failure_count()` | unchanged |
@@ -761,66 +762,162 @@ the painter, after the allocator's `begin_frame()` (§3.3):
 
 ### 3.3 Targets and the texture allocator
 
-Every layer target and every canvas comes from one internal `texture_allocator`; nothing
-else in the painter creates or destroys a render target. *Why one class:* clearing, reuse,
-loss, resize and device reset are decided in one place and tested without a scene manager.
+The texture allocator is the internal owner of the painter's render targets: every layer
+target and every canvas, of scene painters and of explicit painters. It creates them, hands
+them out as handles, takes them back when the handles die and keeps them for reuse. It also
+keeps each handle's "needs a redraw" flag true to what the texture holds, through resizes,
+resets and low memory. *Why one class:* clearing, reuse, loss, resize and device reset are
+decided in one place and tested without a scene manager.
+
+**What it owns, and what it does not.** The public ways to make a texture stay (§2.2):
+`texture::create`, `from_image` and `adopt`. What they make is not the allocator's.
+
+| Texture | Made by | Owned by | Pooled | After a reset (§3.8) |
+|---|---|---|---|---|
+| layer targets, scene canvases, explicit painters' canvases | `acquire` | the painter, through a handle | yes | the allocator clears or recreates it and marks it for redraw |
+| baked results (`compose()`), streaming textures, any other game texture | `texture::create`, `from_image` | the game | no | its owner re-bakes or re-creates it |
+| sprite and glyph atlas pages | the texture registry (`adopt`, `from_image`) | the registry | no | re-uploaded or rebuilt |
+
+The simplex canvas is a game texture today. It becomes the simplex scene's retained canvas
+([`render_model.md`](render_model.md) §5.6), and then comes from the allocator.
+
+**The renderer.** Every texture, the allocator's included, is made on the application's
+renderer. The allocator creates through `texture::create`, which uses it, and takes no
+renderer of its own.
+
+- *Why not another renderer:* SDL binds and draws a texture only with the renderer that
+  created it, and `bind()`, `compose()`, `to_image()` and `draw_texture()` all use the
+  application's. A target made on another renderer would fail at its first use.
+- *Why not a renderer per call:* one pool would then hold several renderers' textures and
+  could hand one renderer's texture to another; resizes and resets are per renderer too.
+- **`texture::adopt` checks it:** a texture created on another renderer fails ENFORCE.
+- If neutrino ever drives several renderers, `texture` learns its renderer and each
+  renderer gets an allocator of its own. The rules below stay as they are.
 
 ```cpp
 namespace neutrino::detail {                     // src/, not installed
-    struct target_spec {
+    struct texture_spec {
         dim   size;
-        color clear{colors::transparent};        // a mod layer asks for opaque white
+        color clear_color;                       // opaque white for a mod layer, else transparent
     };                                           // ARGB8888, target access, nearest: fixed
 
-    class texture_handle {                            // move-only
+    class texture_handle {                       // move-only; a moved-from handle is empty
         public:
-            texture_handle() = default;               // empty
-            ~texture_handle();                        // gives the texture back to the pool
-            [[nodiscard]] const texture& get() const;
-            [[nodiscard]] dim size() const;
-            [[nodiscard]] bool needs_redraw() const;  // holds only its clear colour
-            void mark_drawn();                        // its owner has drawn it
-            void clear();                             // to its clear colour; needs_redraw() unchanged
-            explicit operator bool() const;           // false: empty, or SDL could not create it
+            texture_handle() = default;                         // empty
+            texture_handle(texture_handle&&) noexcept;
+            texture_handle& operator=(texture_handle&&) noexcept; // gives its own back first
+            ~texture_handle();                                  // gives the texture back
+
+            [[nodiscard]] const texture& get() const;  // live only, else ENFORCE
+            [[nodiscard]] texture& get();              // to draw into it (bind()); live only
+            [[nodiscard]] dim size() const;            // {0, 0} when empty or detached
+            [[nodiscard]] bool needs_redraw() const;   // false only when live and drawn
+            void mark_drawn();                         // its owner has drawn it
+            void clear();                              // to its clear colour; flag unchanged
+            explicit operator bool() const;            // true only when live
     };
 
-    class texture_allocator {                    // one per renderer
+    class texture_allocator {                    // one per renderer, owned by the application
         public:
-            [[nodiscard]] texture_handle acquire(const target_spec&);
+            [[nodiscard]] texture_handle acquire(const texture_spec&);
             void resize(texture_handle&, dim);
             void drop_pooled(dim);               // destroys the pooled textures of this size
             void trim();                         // destroys every pooled texture
-            void request_trim();                 // thread-safe: trim at the next begin_frame()
+            void request_trim();                 // any thread: trim at the next begin_frame()
             void begin_frame();                  // runs a requested trim
             [[nodiscard]] pool_stats stats() const;
             void on_targets_reset();
             void on_device_reset();
     };
 }
+
+namespace neutrino {
+    struct pool_stats {                          // public: texture_pool_stats() (§2.14)
+        std::size_t held{0};                     // textures in live handles
+        std::size_t pooled{0};                   // textures waiting for reuse
+        std::size_t held_bytes{0};               // width × height × 4 per texture
+        std::size_t pooled_bytes{0};
+        std::size_t created{0};                  // since the application started
+        std::size_t reused{0};                   // acquires served from the pool
+        std::size_t destroyed{0};
+    };
+}
 ```
 
-**Acquiring and giving back.**
+**Terms.**
 
-- **`acquire` takes a pooled texture of the same size, or creates one.** Format, access and
-  filtering are fixed, so size is the only key.
-- **It always clears the texture** to the spec's clear colour, and the handle starts
-  needing a redraw. *Why:* a pooled texture holds another scene's pixels, and a new one
-  holds whatever SDL left in it; neither may ever be shown.
+- A **held** texture belongs to a live handle. A **pooled** texture was given back and
+  waits for reuse, keyed by its size; nothing ever shows a pooled texture, so its contents
+  never matter.
+- A **slot** is the allocator's record of one handle: its spec, its texture if it has one,
+  and its redraw flag.
+
+**Handle states.**
+
+| State | Reached by | `bool` | `size()` | `needs_redraw()` | `get()` |
+|---|---|---|---|---|---|
+| empty | default construction; being moved from | false | `{0, 0}` | true | ENFORCE |
+| live | `acquire`, `resize` or `on_device_reset()` gave it a texture | true | its texture's | its flag | the texture |
+| failed | its texture could not be made (*Failure*, below) | false | the size asked for | true | ENFORCE |
+| detached | the allocator was destroyed while the handle was live or failed | false | `{0, 0}` | true | ENFORCE |
+
+What each call does in each state:
+
+| Call | empty | live | failed | detached |
+|---|---|---|---|---|
+| `mark_drawn()` | nothing | clears the flag | nothing: it still needs a redraw | nothing |
+| `clear()` | nothing | clears to the spec's colour; the flag is unchanged | nothing | nothing |
+| `resize(h, size)` | nothing | a new texture (*Resize*) | tries again at the new size | — (no allocator) |
+| destroyed, or assigned over | nothing | its texture goes to the pool | its slot is freed | nothing |
+| `on_targets_reset()` | — | cleared, marked for redraw | unchanged | — |
+| `on_device_reset()` | — | recreated, cleared, marked for redraw | tried again | — |
+
+*Why only `get()` enforces:* every other call has a harmless answer for a handle without a
+texture; `get()` has nothing to return. Callers test the handle first, as the painter does
+before drawing into a layer or combining it.
+
+**The spec.**
+
+- **A spec is a size and a clear colour.** Format (ARGB8888), access (target) and filtering
+  (nearest) are fixed, so the pool key is the size alone.
+- **The clear colour belongs to the handle, not to the texture.** `acquire` clears a reused
+  texture to the new handle's colour; `clear()` and the resets use the handle's.
+- **A `mod` layer asks for opaque white** (§3.4); every other target for transparent.
+
+**Acquiring.** `acquire(spec)`:
+
+1. A size with a zero or negative side gives a failed handle.
+2. Otherwise it takes a pooled texture of that size — the one given back last — and counts
+   it in `reused`. With none pooled it creates one and counts it in `created`; if SDL
+   cannot create it, the handle is failed.
+3. It clears the texture to the spec's colour, and the handle needs a redraw. *Why always:*
+   a pooled texture holds another scene's pixels, and a new one holds whatever SDL left in
+   it; neither may ever be shown.
+
 - **A painter acquires when it is first drawn**, not at `declare_layer`: a scene painter at
   its scene's first frame, an explicit painter when it is first made current. A scene that
   was never drawn holds nothing.
-- **Destroying a handle gives its texture back to the pool.** A scene's handles die with its
-  painter when the scene leaves the stack; a covered scene keeps them. Pushing and popping a
-  pause menu allocates nothing after the first time.
-- **A transition keeps the old scene's canvas** by moving its handle out of the painter; the
-  texture goes back to the pool when the transition ends.
+
+**Giving back.**
+
+- **Destroying a live handle gives its texture to the pool**, under its size and uncleared:
+  `acquire` clears. Assigning over a handle gives its own texture back first.
+- **Moving a handle moves its texture.** The moved-from handle is empty and gives nothing
+  back.
+- **A failed handle frees its slot; an empty or detached one does nothing.**
+- **A scene's handles die with its painter** when the scene leaves the stack; a covered
+  scene keeps them. Pushing and popping a pause menu allocates nothing after the first
+  time.
+- **A transition keeps the old scene's canvas** by moving its handle out of the painter;
+  the texture goes back to the pool when the transition ends.
 
 **`needs_redraw()` and `mark_drawn()`.**
 
-- **A handle that needs a redraw holds only its clear colour.** The allocator keeps this
-  true: it clears the texture everywhere it sets the flag — `acquire`, `resize`,
-  `on_targets_reset()`, `on_device_reset()`.
-- **Only the allocator sets `needs_redraw`; only `mark_drawn()` clears it.**
+- **A handle that needs a redraw holds only its clear colour, or no texture at all.** The
+  allocator keeps this true: it clears the texture everywhere it sets the flag — `acquire`,
+  `resize`, `on_targets_reset()`, `on_device_reset()`.
+- **Only the allocator sets `needs_redraw`; only `mark_drawn()` clears it, and only on a
+  live handle.** An empty, failed or detached handle always needs a redraw.
 - **Only the painter calls `mark_drawn()`**, at the end of its frame (§3.2, step 1.7), on
   each handle drawn on in that frame: every layer pushed, and the canvas if anything was
   drawn on it. An explicit painter marks its canvas when the canvas is final. *Why at the
@@ -836,23 +933,34 @@ namespace neutrino::detail {                     // src/, not installed
 
 - **When the render size changes, the painter resizes its canvas and every layer without a
   `size` of its own.** A layer with its own size keeps its texture and its contents.
-- **The old texture is destroyed, not pooled.** *Why:* pooling it would keep a set of
-  textures for every size the window has had.
+- **`resize(handle, size)` on a live handle:**
+  - at the same size it does nothing; the texture keeps its contents and its flag;
+  - at another size it destroys the old texture — not pooled — before taking the new one
+    the way `acquire` does: pooled at the new size, or created. The new texture is cleared
+    and the handle needs a redraw. *Why destroy first:* the old pixels are lost either way,
+    and the peak is one texture instead of two;
+  - if the new texture cannot be made, the handle is failed at the new size.
+- **On a failed handle it tries again at the new size; on an empty one it does nothing.** A
+  layer that was never drawn takes the new size when the painter acquires it.
+- **Why the old texture is not pooled:** pooling it would keep a set of textures for every
+  size the window has had.
 - **The pooled textures of the old render size are destroyed too**
   (`drop_pooled(old_size)`): those of a pause menu closed before the resize, for example.
   *Why:* they would be reused only if the window came back to exactly that size. Pooled
   textures of other sizes stay.
-- The new texture is cleared and the handle needs a redraw.
 
 **Resets** (§3.8).
 
-- **`on_targets_reset()`** clears every handle's texture and marks it as needing a redraw.
-  The pool is left alone: pooled contents never matter.
-- **`on_device_reset()`** destroys the pool and recreates every handle's texture in place,
-  at the same size, cleared and needing a redraw. *Why in place:* the painters' handles
-  stay valid, so nothing has to find and replace them.
+- **`on_targets_reset()`** clears every live handle's texture and marks it as needing a
+  redraw. Failed handles already need one. The pool is left alone: pooled contents never
+  matter.
+- **`on_device_reset()`** destroys the pool first, then recreates every live and failed
+  handle's texture in place, at its size, cleared and needing a redraw; a texture that
+  cannot be made leaves its handle failed. *Why in place:* the painters' handles stay
+  valid, so nothing has to find and replace them.
 
-**Leaving the pool.** A pooled texture is reused by `acquire` for its size, or destroyed:
+**Leaving the pool.** A pooled texture is reused by `acquire` or `resize` for its size, or
+destroyed:
 
 - when the render size changes and it has the old render size (above);
 - when the system is low on memory (below);
@@ -860,11 +968,11 @@ namespace neutrino::detail {                     // src/, not installed
 - on a device reset;
 - when the allocator is destroyed.
 
-Nothing else evicts it: there is no age or budget policy. Using the pool does not make it
-grow. A texture is created only when none of its size is pooled, so the textures of one
-size, held and pooled, never outnumber the most that were held at once. Only many
-different sizes make it grow: the render size is handled above, and layers with a `size`
-of their own are the game's choice.
+Nothing else evicts it: there is no age or budget policy (O15). Using the pool does not
+make it grow. A texture is created only when none of its size is pooled, so the textures
+of one size, held and pooled, never outnumber the most of that size that were held at
+once. Only many different sizes make it grow: the render size is handled above, and layers
+with a `size` of their own are the game's choice.
 
 **Low memory.**
 
@@ -877,25 +985,48 @@ of their own are the game's choice.
   `SDL_DestroyTexture` may only be called on the main thread (`SDL_render.h:2623`). The
   event handler calls `request_trim()`, which only sets an atomic flag; `begin_frame()`,
   at the start of `application::on_render`, runs the trim.
+- **`begin_frame()` does nothing else.** Evicting by age (O15) would count frames there.
 
-**Failure.** When SDL cannot create a texture, `acquire` and `resize` log it, count it in
-`draw_failure_count()` (§2.15) and leave the handle empty. An empty handle always needs a
-redraw; drawing into it and combining it do nothing.
+**Failure.** A texture cannot be made when its size has a zero or negative side, or when
+SDL refuses to create it. `acquire`, `resize` and `on_device_reset()` then log it, count
+it in `draw_failure_count()` (§2.15) and leave the handle failed. A failed handle always
+needs a redraw; drawing into it and combining it do nothing; the next `resize` or device
+reset tries again.
 
-**Ownership.**
+**Threads.** Everything runs on the main thread except `request_trim()`, which only sets an
+atomic flag. Nothing else locks.
 
-- **The application owns the allocator**, created right after the renderer and destroyed
-  right before it. It is never a static, whose destruction order nobody controls.
-- **Each handle shares a small slot with the allocator** — the texture, its spec and the
-  redraw flag — so the allocator reaches every live handle for a reset, and a handle can
-  tell that the allocator is gone.
+**Ownership and lifetime.**
+
+- **The application owns the allocator.** It is never a static, whose destruction order
+  nobody controls.
+- **It is created in `on_ready()`**, once the renderer is published and before the first
+  scene enters.
+- **It is released in `on_quit()`**: after `finish()` has emptied the scene stack,
+  `teardown()` has run and the resource caches are gone, and before
+  `game_application::on_quit()`. *Why there, not in the application's destructor:* sdlpp's
+  quit callback calls `SDL_Quit` right after `on_quit()`. That destroys the window and its
+  renderer, and with the renderer every texture made on it, long before the application's
+  members are destroyed.
 - **Destroying the allocator frees every texture**, pooled or held, and detaches the live
-  handles: a detached handle is empty and its destructor does nothing. *Why:* an explicit
-  painter that outlives the application is harmless.
+  and failed handles: a detached handle is empty and its destructor does nothing. *Why:* an
+  explicit painter that outlives the application, or a handle in a static, is harmless.
+- **How a handle reaches its slot is the implementation's choice** — a slot it shares with
+  the allocator, or a slot number looked up through the application — with one
+  requirement: once the allocator is gone, a handle finds that out without touching freed
+  memory.
+
+**Invariants.** The allocator's tests (RM1) check them after every operation:
+
+- every texture the allocator made is in exactly one place: a live handle or the pool;
+- `created − destroyed = held + pooled`;
+- a live handle's texture has the handle's size;
+- a live handle that needs a redraw holds only its clear colour;
+- the textures of one size, held and pooled, never outnumber the most of that size that
+  were held at once.
 
 **Statistics.** `texture_pool_stats()` and `trim_texture_pool()` (§2.14) forward to the
-application's allocator. `pool_stats` counts the textures held and pooled, their bytes, and
-the textures created, reused and destroyed.
+application's allocator. The byte counts assume four bytes a pixel; the driver may pad.
 
 ### 3.4 Combining
 
@@ -1101,13 +1232,16 @@ The public contract of §2, without effects.
   `below()` returns the lower scenes' canvases;
 - a custom compositor draws one layer twice, mirrored, and hides another; a wrapping
   compositor calls the one it wraps;
-- the allocator alone: a texture given back is reused at the same size and not at another;
-  `acquire` clears, to white for a `mod` spec; a new, resized or reset handle needs a
-  redraw until `mark_drawn()`; `resize` destroys the old texture instead of pooling it;
-  `on_device_reset()` leaves the handles valid; destroying the allocator detaches the live
-  handles; a texture SDL cannot create leaves an empty handle; a resize destroys the
-  pooled textures of the old render size and keeps the others; `request_trim()` empties
-  the pool at the next `begin_frame()` and not before;
+- the allocator alone, with its invariants (§3.3) checked after every step: a texture
+  given back is reused at the same size and not at another; `acquire` clears, to white for
+  a `mod` spec; a new, resized or reset handle needs a redraw until `mark_drawn()`;
+  `resize` to the same size keeps the contents, to another destroys the old texture
+  instead of pooling it; `on_device_reset()` leaves the handles valid; destroying the
+  allocator detaches the live handles; a texture SDL cannot create, or a degenerate size,
+  leaves a failed handle, on which `mark_drawn()` and `clear()` do nothing and which the
+  next `resize` or device reset retries; a resize destroys the pooled textures of the old
+  render size and keeps the others; `request_trim()` empties the pool at the next
+  `begin_frame()` and not before;
 - `needs_redraw(id)` gives one answer for a whole frame and turns false after a frame that
   pushes the layer; a retained layer that needs a redraw and is not pushed shows nothing;
   a retained layer that takes a pooled texture never shows its previous owner's pixels; a

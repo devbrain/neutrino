@@ -19,6 +19,8 @@
 #include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
 #include "video/text/fonts_manager.hh"
+#include "video/texture_allocator.hh"
+
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/sprite/sprite_cache.hh>
 #include <neutrino/video/world/resource_cache.hh>
@@ -27,10 +29,10 @@ namespace neutrino {
     namespace {
         [[nodiscard]] sdlpp::logical_presentation to_sdl(scale_mode mode) noexcept {
             switch (mode) {
-                case scale_mode::letterbox:      return sdlpp::logical_presentation::letterbox;
-                case scale_mode::integer_scale:  return sdlpp::logical_presentation::integer_scale;
-                case scale_mode::overscan:       return sdlpp::logical_presentation::overscan;
-                case scale_mode::stretch:        return sdlpp::logical_presentation::stretch;
+                case scale_mode::letterbox: return sdlpp::logical_presentation::letterbox;
+                case scale_mode::integer_scale: return sdlpp::logical_presentation::integer_scale;
+                case scale_mode::overscan: return sdlpp::logical_presentation::overscan;
+                case scale_mode::stretch: return sdlpp::logical_presentation::stretch;
             }
             return sdlpp::logical_presentation::letterbox;
         }
@@ -47,9 +49,10 @@ namespace neutrino {
         // The shared tileset render-resource cache. Held by pointer and
         // torn down explicitly in ~application while m_textures/m_sprites are still
         // published, since destroy_bundle unregisters through the service_locator.
-        std::unique_ptr<resource_cache> m_resource_cache;
-        std::unique_ptr<sprite_cache> m_sprite_cache;
-        std::unique_ptr<fonts_manager> m_fonts_manager;
+        std::unique_ptr <resource_cache> m_resource_cache;
+        std::unique_ptr <sprite_cache> m_sprite_cache;
+        std::unique_ptr <fonts_manager> m_fonts_manager;
+        std::unique_ptr <detail::texture_allocator> m_texture_allocator;
         // A scene faulted during this frame's update: its pop is already queued and
         // this frame's render is skipped. Reset at the start of every update.
         bool m_scene_faulted = false;
@@ -92,15 +95,15 @@ namespace neutrino {
         // presents as a silently frozen game.
         const fixed_step_config& fx = m_pimpl->m_cfg.fixed;
         ENFORCE(std::isfinite(fx.period.count()) && fx.period.count() > 0.0f,
-            "application_config.fixed.period must be finite and > 0 (got ", fx.period.count(), ")");
+                "application_config.fixed.period must be finite and > 0 (got ", fx.period.count(), ")");
         ENFORCE(fx.max_substeps > 0,
-            "application_config.fixed.max_substeps must be > 0 (got ", fx.max_substeps, ")");
+                "application_config.fixed.max_substeps must be > 0 (got ", fx.max_substeps, ")");
         // Only positivity is required. A clamp SMALLER than the period is legitimate -- e.g. a
         // 120 Hz render cadence driving a 60 Hz simulation -- because the accumulator carries
         // across frames: successive clamped deltas still add up to a step. Only a non-positive
         // clamp truly starves it.
         ENFORCE(std::isfinite(fx.max_frame.count()) && fx.max_frame.count() > 0.0f,
-            "application_config.fixed.max_frame must be finite and > 0 (got ", fx.max_frame.count(), ")");
+                "application_config.fixed.max_frame must be finite and > 0 (got ", fx.max_frame.count(), ")");
     }
 
     application::~application() {
@@ -162,7 +165,7 @@ namespace neutrino {
         if (m_pimpl->m_cfg.logical_size) {
             const auto ls = *m_pimpl->m_cfg.logical_size;
             if (const auto lp = get_renderer().set_logical_presentation(
-                    ls.width, ls.height, to_sdl(m_pimpl->m_cfg.scale)); !lp) {
+                ls.width, ls.height, to_sdl(m_pimpl->m_cfg.scale)); !lp) {
                 LOG_ERROR("Failed to set logical presentation:", lp.error());
             }
         }
@@ -174,13 +177,14 @@ namespace neutrino {
         service_locator::instance().set_scenes_manager(m_pimpl->m_scenes_manager);
         service_locator::instance().set_texture_registry(m_pimpl->m_textures);
         service_locator::instance().set_sprites_manager(m_pimpl->m_sprites);
-        m_pimpl->m_resource_cache = std::make_unique<resource_cache>();
+        m_pimpl->m_resource_cache = std::make_unique <resource_cache>();
         service_locator::instance().set_resource_cache(*m_pimpl->m_resource_cache);
-        m_pimpl->m_sprite_cache = std::make_unique<sprite_cache>();
+        m_pimpl->m_sprite_cache = std::make_unique <sprite_cache>();
         service_locator::instance().set_sprite_cache(*m_pimpl->m_sprite_cache);
-        m_pimpl->m_fonts_manager = std::make_unique<fonts_manager>();
+        m_pimpl->m_fonts_manager = std::make_unique <fonts_manager>();
         service_locator::instance().set_fonts_manager(*m_pimpl->m_fonts_manager);
-
+        m_pimpl->m_texture_allocator = std::make_unique <detail::texture_allocator>();
+        service_locator::instance().set_texture_allocator(*m_pimpl->m_texture_allocator);
 
         // sdlpp initializes SDL with video|events only; without the gamepad
         // subsystem SDL emits no gamepad events at all. Optional: a failure is
@@ -270,8 +274,10 @@ namespace neutrino {
         // position from frame one; mouse FOCUS says whether that position means anything at all.
         const auto mouse = sdlpp::get_mouse_state_f();
         const window_pos window{mouse.x, mouse.y};
-        const pointer_state pointer{window, to_render_coords(window),
-                                    sdlpp::get_mouse_focus() != nullptr};
+        const pointer_state pointer{
+            window, to_render_coords(window),
+            sdlpp::get_mouse_focus() != nullptr
+        };
         // Buttons still come from the tracked state -- it carries the per-frame edges, which a
         // stateless SDL query cannot.
         const auto conv = [](sdlpp::button_state b) {
@@ -290,7 +296,7 @@ namespace neutrino {
         // Keyboard
         snap.set_modifiers(input_detail::current_modifiers());
         for (std::size_t i = 0; i < input_snapshot::max_scancodes; ++i) {
-            const auto scan = static_cast<sdlpp::scancode>(i);
+            const auto scan = static_cast <sdlpp::scancode>(i);
             const auto state = get_key(scan);
             if (state.held || state.pressed || state.released) {
                 snap.set_key(scan, conv(state));
@@ -298,20 +304,20 @@ namespace neutrino {
         }
 
         // Gamepads
-        for (int slot = 0; slot < static_cast<int>(input_snapshot::max_gamepad_slots); ++slot) {
+        for (int slot = 0; slot < static_cast <int>(input_snapshot::max_gamepad_slots); ++slot) {
             if (!m_pimpl->m_gamepads.is_gamepad_connected(slot)) {
                 continue;
             }
             snap.set_gamepad_connected(slot, true);
             for (std::size_t b = 0; b < input_snapshot::max_gamepad_buttons; ++b) {
-                const auto btn = static_cast<sdlpp::gamepad_button>(b);
+                const auto btn = static_cast <sdlpp::gamepad_button>(b);
                 const auto bs = m_pimpl->m_gamepads.get_gamepad_button_state(slot, btn);
                 if (bs.held || bs.pressed || bs.released) {
                     snap.set_gamepad_button(slot, btn, conv(bs));
                 }
             }
             for (std::size_t a = 0; a < input_snapshot::max_gamepad_axes; ++a) {
-                const auto axis = static_cast<sdlpp::gamepad_axis>(a);
+                const auto axis = static_cast <sdlpp::gamepad_axis>(a);
                 const float val = m_pimpl->m_gamepads.get_gamepad_axis(slot, axis);
                 if (val != 0.0f) {
                     snap.set_gamepad_axis(slot, axis, val);
@@ -323,6 +329,10 @@ namespace neutrino {
     }
 
     void application::on_render(renderer& r) {
+        // A trim requested since the last frame (low memory) runs here, on the main thread.
+        if (m_pimpl->m_texture_allocator) {
+            m_pimpl->m_texture_allocator->begin_frame();
+        }
         r.set_draw_color(sdlpp::colors::black);
         r.clear();
         render_scene();
@@ -359,13 +369,21 @@ namespace neutrino {
                 on_gamepad_disconnected(change->index);
             }
         }
+        // Render resets (painter.md §3.8): the allocator restores its layer targets and
+        // canvases. Atlases and game-owned textures are not covered yet (RM6).
+        if (m_pimpl->m_texture_allocator) {
+            if (e.type() == sdlpp::event_type::render_targets_reset) {
+                m_pimpl->m_texture_allocator->on_targets_reset();
+            } else if (e.type() == sdlpp::event_type::render_device_reset) {
+                m_pimpl->m_texture_allocator->on_device_reset();
+            }
+        }
         // The drawable changed (resize, fullscreen toggle, HiDPI move). Recompute
         // the render space and, if it actually changed, deliver it to the resize hook.
         // In logical mode the render space is fixed, so this dedups to nothing.
         if (e.type() == sdlpp::event_type::window_pixel_size_changed) {
-            const dim now = render_size();
-            if (now.width != m_pimpl->m_last_render_size.width
-                || now.height != m_pimpl->m_last_render_size.height) {
+            if (const dim now = render_size(); now.width != m_pimpl->m_last_render_size.width
+                                               || now.height != m_pimpl->m_last_render_size.height) {
                 m_pimpl->m_last_render_size = now;
                 resize_scene(now);
             }
@@ -390,6 +408,14 @@ namespace neutrino {
             LOG_ERROR("Scene resize handler threw:", ex.what());
         } catch (...) {
             LOG_ERROR("Scene resize handler threw an unknown exception");
+        }
+    }
+
+    void application::on_low_memory() {
+        // SDL may deliver this from any thread (painter.md §3.3), and textures may only be
+        // destroyed on the main thread: only flag the trim; the next begin_frame() runs it.
+        if (m_pimpl->m_texture_allocator) {
+            m_pimpl->m_texture_allocator->request_trim();
         }
     }
 
@@ -427,8 +453,9 @@ namespace neutrino {
         // unregisters through the still-published services.
         m_pimpl->m_resource_cache.reset();
         m_pimpl->m_sprite_cache.reset();
+        service_locator::instance().clear_texture_allocator();
+        m_pimpl->m_texture_allocator.reset();
         game_application::on_quit();
         service_locator::instance().clear_application(*this);
     }
-
 }

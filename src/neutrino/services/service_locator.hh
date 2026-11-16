@@ -19,6 +19,10 @@ namespace neutrino {
     class resource_cache;
     class sprite_cache;
     class fonts_manager;
+    namespace detail {
+        class texture_allocator;
+    }
+
 
     class service_locator {
         friend class application;
@@ -80,6 +84,12 @@ namespace neutrino {
             [[nodiscard]] fonts_manager* get_fonts_manager() const {
                 return m_fonts_manager;
             }
+
+            [[nodiscard]] detail::texture_allocator* get_texture_allocator() const {
+                return m_texture_allocator;
+            }
+
+
         private:
             void set_window(sdlpp::window& w);
             void set_renderer(sdlpp::renderer& r);
@@ -92,8 +102,9 @@ namespace neutrino {
             void set_resource_cache(resource_cache& c);
             void set_sprite_cache(sprite_cache& c);
             void set_fonts_manager(fonts_manager& f);
+            void set_texture_allocator(detail::texture_allocator& t);
             void clear_application(application& a) noexcept;
-
+            void clear_texture_allocator() noexcept;
         private:
             sdlpp::renderer* m_renderer = nullptr;
             sdlpp::window* m_window = nullptr;
@@ -106,6 +117,7 @@ namespace neutrino {
             resource_cache* m_resource_cache = nullptr;
             sprite_cache* m_sprite_cache = nullptr;
             fonts_manager* m_fonts_manager = nullptr;
+            detail::texture_allocator* m_texture_allocator = nullptr;
             int m_max_texture_size = 0;
     };
 
