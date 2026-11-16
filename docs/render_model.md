@@ -196,10 +196,11 @@ painter's result — not only an atlas picture (the Doom melt, §6.1).
 - Unknown atlas or picture index: ENFORCE at the caller's line, as `draw.hh` today. An
   invalid address ("no picture") is a silent no-op.
 - `push_layer` with a layer the painter did not declare (another scene's layer included),
-  `pop_layer` with nothing pushed, a frame ending with a layer still pushed (the message
-  names it), drawing a layer's or a painter's own texture into itself, drawing with no
-  layer pushed in a painter that declared layers, pushing a layer inside a compositor: all
-  ENFORCE.
+  `push_layer` outside the painter's frame, `pop_layer` with nothing pushed, `pop_layer`
+  when the layer's target is no longer bound, a frame ending with a layer still pushed
+  (the message names it), drawing a layer's or a painter's own texture into itself,
+  `base_layer()` in a painter without layers, pushing a layer inside a compositor: all
+  ENFORCE. Drawing with no layer pushed goes to the base layer (R31).
 - What only SDL can reject (a failed call, target creation) stays in the painter's
   per-frame reporting (`draw_stats.failed`, `DRAW_CHECK`).
 
@@ -278,6 +279,7 @@ public:
     void clear();                                   // the current layer, or the canvas without layers
     layer_composite& composite(layer_id);
     [[nodiscard]] bool needs_redraw(layer_id) const;
+    [[nodiscard]] layer_id base_layer() const;      // drawing with no layer pushed goes to it (R31)
 
     // canvas
     layer_composite& canvas_composite();            // how a scene's canvas is drawn into the window
@@ -319,10 +321,15 @@ void trim_texture_pool();
 
 Everything below the painter lives in `src/` and is not installed:
 
-- **the texture allocator** (R20): every layer target and canvas is a handle from it,
-  acquired when its painter is first drawn and given back when the painter is destroyed;
-  resized with the render size unless a layer has its own size; cleared at the first push
-  of a frame unless retained (§5.3, §5.6);
+- **the texture allocator** (R20): every layer target and canvas is a handle from it. A
+  canvas is acquired when its painter is first drawn, a layer's target at the layer's
+  first push (R32); both are given back when the painter is destroyed, and a layer that is
+  not retained gives its target back after a frame that did not push it. Resized with the
+  render size, at the painter's next frame, unless a layer has its own size; cleared at
+  the first push of a frame unless retained (§5.3, §5.6);
+- **the layer stack** (R32): one painter's layers, their targets, the push stack and the
+  frame hooks the scene manager calls around `render()`
+  ([`painter.md`](painter.md) §3.4);
 - **combining** (§5.4) and the frame boundary. `application::on_render`
   (`src/neutrino/application.cc:326`) clears, calls `render_scene()` and presents. In
   `render_scene()` the scene manager renders each visible scene with its painter current,
@@ -339,14 +346,12 @@ the default compositor follows.
 
 ```cpp
 struct layer_entry {
-    layer_settings  settings;        // size, retained
-    layer_composite composite;       // live settings, read when combining
-    texture_handle  target;          // from the texture allocator; knows if it needs a redraw
+    layer_settings  settings;        // size, retained, composite (live; read when combining)
+    texture_handle  target;          // from the texture allocator; taken at the first push
     bool            pushed{false};   // pushed this frame
 };
-std::vector<layer_entry>   m_layers;      // declare_layer appends: declaration order; layer_id is the index
-std::vector<layer_id>      m_stack;       // push_layer / pop_layer: which target is current
-std::vector<painter_state> m_states;      // saved by push_layer / push_state
+detail::layer_stack        m_layers;      // the base layer, then declaration order; the push stack (R32)
+std::vector<painter_state> m_states;      // saved by push_state
 texture_handle             m_canvas;      // the result, from the texture allocator
 layer_composite            m_canvas_composite;
 compositor                 m_compositor{default_compositor};
@@ -461,9 +466,9 @@ optimisation, not part of the model.
   switch, §4).
 - Pushes nest: a helper may push the HUD while the world is current. Nesting changes only
   the current target, never the z-order.
-- In a painter with declared layers, `render()` starts with no layer pushed; drawing before
-  a push is an ENFORCE error (R23). Without declared layers there is nothing to push: draw
-  calls go onto the canvas.
+- In a painter with declared layers, `render()` starts with the base layer current:
+  drawing with no layer pushed goes to it, under every declared layer (R31). Without
+  declared layers there is nothing to push: draw calls go onto the canvas.
 - A frame that ends with a layer pushed is an error (§3.5).
 
 ### 5.4 Combining — the compositor
@@ -482,8 +487,8 @@ scene this happens right after its `render()` (§5.6).
 
 - **No declared layers:** draw calls go straight onto the canvas, as today. There is
   nothing to combine, and the compositor is not called.
-- **Declared layers:** draw calls go only to layers; drawing with none pushed is an
-  ENFORCE error. The canvas belongs to the compositor: it is cleared at the start of the
+- **Declared layers:** draw calls go only to layers; with none pushed, to the base layer
+  (R31). The canvas belongs to the compositor: it is cleared at the start of the
   frame unless retained, and the compositor draws the layers onto it.
 - **The canvas's composite settings** say how a scene's canvas is drawn into the window
   over the scenes below; fading a whole pause menu in is
@@ -492,8 +497,8 @@ scene this happens right after its `render()` (§5.6).
   shows what is below) (R27).
 - **An explicit painter's canvas** is its result texture (§5.5).
 
-Every layer is an ordinary layer: a custom compositor may draw any of them in any order,
-twice, mirrored, or not at all.
+Every layer is an ordinary layer, the base layer included: a custom compositor may draw
+any of them in any order, twice, mirrored, or not at all.
 
 An earlier version of this section (also 2026-11-10) made the bottom layer the result, to
 save a texture. It needed four rules no other layer had — not a source, not retained under
@@ -1479,8 +1484,8 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
 - **R23 — The canvas is the result, not a layer.** `declare_layer` says which layers exist
   and their default order; `push_layer` / `pop_layer` say where drawing goes; the
   compositor decides the final z-order. Without declared layers draw calls go onto the
-  canvas; with layers they go only to layers, and drawing with none pushed is an ENFORCE
-  error. No default layer (§5.4).
+  canvas; with layers they go only to layers (§5.4). Amended 2026-11-16 by R31: drawing
+  with none pushed goes to the base layer; it was an ENFORCE error, with no default layer.
 - **R24 — `push_state` / `pop_state`** (resolves O2) (§3.3).
 - **R25 — A clip rect in the painter state** (§3.7).
 - **R26 — Custom blend modes** through `SDL_ComposeCustomBlendMode` (§3.7).
@@ -1497,6 +1502,27 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
   `on_resume` when it starts again; `flags()` may change at any time (§5.7).
 - **R30 — `passes_input`** (implemented 2026-11-14). A scene with it sees input and events and passes them on to
   the scene below; input stops at the first scene without it (§5.7).
+
+**Agreed (2026-11-16):**
+
+- **R31 — The base layer** (amends R23). The first `declare_layer` also makes a base
+  layer, the bottom of the declaration order; drawing with no layer pushed goes to it.
+  `base_layer()` gives its id. It is an ordinary layer at the painter's size, not
+  retained, pushed every frame, so a compositor can move, fade or skip it like any other.
+  Declaring only adds a layer, so a scene adopts layers one at a time. Considered: R23 as
+  it was (drawing with none pushed an error: adopting layers is all or nothing), and such
+  draws going onto the canvas under the layers (free, but the compositor cannot move that
+  content). Not R19 again: the canvas stays the result, and the base layer has no special
+  rules. Cost: one clear and one combine a frame per scene with layers.
+- **R32 — The layer stack.** One painter's layers live in an internal `layer_stack`
+  ([`painter.md`](painter.md) §3.4): settings, targets, the push stack and the frame
+  hooks the scene manager calls around `render()`. A layer takes its target at its first
+  push, not when its scene is first drawn; a layer that is not retained gives it back
+  after a frame that did not push it; a painter resizes its layers at its next frame, so
+  scenes below the top follow the render size; a `layer_id` carries its stack's serial,
+  so another painter's layer is rejected; `pop_layer` checks that the layer's target is
+  still bound. RM1's order changes with it: layers before canvases and painter state
+  (§14).
 
 **Proposed, not yet agreed:**
 
@@ -1561,10 +1587,11 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
   its operations (set an entry, cycle a range, fade toward a target palette); whether
   `with_palette` recolouring (`images_atlases_sprites.md`) becomes a palette swap on the
   GPU.
-- **O12 — Declaring a scene's layers:** in the constructor, in `on_enter`, or in a
-  `declare_layers(painter&)` hook the scene manager calls on push; how a scene reaches its
-  painter (`base_scene::get_painter()` in the §3 sketch — a member function named
-  `painter()` would hide the type).
+- **O12 — Declaring a scene's layers.** Resolved 2026-11-16 (R32): in the constructor,
+  normally in member initialisers. `base_scene` owns the scene's painter, so
+  `get_painter()` works there; a member function named `painter()` would hide the type.
+  Considered: `on_enter`, and a `declare_layers(painter&)` hook the scene manager calls on
+  push.
 - **O13 — Paused scenes:** a scene under a `pauses_below` scene gets no `fixed_update`, so
   its picture does not change; the scene manager could skip its `render()` and reuse last
   frame's canvas (brix's options menu over the board, §7.1). An optimisation, not part of
@@ -1614,49 +1641,34 @@ Rewritten 2026-11-09 for the immediate model. The numbers keep their old subject
 survives (RM1 the painter and quads, RM3 geometry, RM4 meshes, RM6 device reset, RM7 text,
 RM8 Nuklear), so references from `font_plan.md` and `sprite_layer_plan.md` stay meaningful.
 
-- **RM1 — The painter.** The public contract of §3.7. Proposed order of work, each step
-  green and committed on its own:
-  1. *Painter core* — `painter`, `painter_state` (colour, blend, line style, clip),
-     `push_state` / `pop_state`, `current_painter()`; `draw.hh` forwards to it; outside a
-     scene, the bound target or the window, as today; `custom_blend`. Every existing test
+- **RM1 — The painter.** The public contract of §3.7. Order of work, each step green and
+  committed on its own (reordered 2026-11-16, R32: layers first, because they only add to
+  what exists and hold most of the open questions; painter state, a refactor with nothing
+  new to show, last):
+  1. *The texture allocator* — `texture_allocator` and `texture_handle`, tested alone,
+     with the `SDL_EVENT_LOW_MEMORY` and render-reset handlers (R20). Done 2026-11-16.
+  2. *Layers* — the `layer_stack` (R32) on a `painter` that has only its layer calls,
+     owned by `base_scene`; the base layer (R31); `declare_layer`, `push_layer` /
+     `pop_layer` / `scoped_layer`, clear on first push, retained layers and
+     `needs_redraw()`; the frame hooks; the default compositor, drawing into the window
+     until step 3; composite settings without effects (blend, opacity, tint, flat
+     transform, source), the alpha rules of §5.4.1, inspection (`layers()`, `info()`,
+     `layer_texture()`, `stats()`).
+  3. *Canvases* — each scene's canvas from the allocator, drawn into the window in stack
+     order with the canvas composite settings (default blend from `hides_below`);
+     `canvas_needs_redraw()`; the simplex canvas as the simplex scene's retained canvas;
+     `below()`; `capture_frame()` combines first.
+  4. *Painter state* — `painter_state` (colour, blend, line style, clip), `push_state` /
+     `pop_state`, `current_painter()`; `draw.hh` forwards to it; outside a scene, the
+     bound target or the window, as today; `custom_blend`. Every existing test
      pixel-identical.
-  2. *Scene painters and canvases* — first the `texture_allocator` and `texture_handle`,
-     tested alone, with the `SDL_EVENT_LOW_MEMORY` handler (R20); then each scene's
-     painter current during its `render()`; canvases from the allocator, drawn into the
-     window in stack order with the canvas composite settings (default blend from
-     `hides_below`); `canvas_needs_redraw()`; targets resized with the render size; the
-     simplex canvas as the simplex scene's retained canvas; `below()`; `capture_frame()`
-     combines first.
-  3. *Declared layers and the default compositor* — `declare_layer`, `push_layer` /
-     `pop_layer` / `scoped_layer`, clear on first push, retained layers and `needs_redraw()`,
-     composite settings without effects (blend, opacity, tint, flat transform, source),
-     the alpha rules of §5.4.1, inspection (`layers()`, `info()`, `layer_texture()`,
-     `stats()`).
-  4. *Custom compositors* — `set_compositor` / `get_compositor`, `composition`, wrapping.
-  5. *Quads* — tint, crop and `draw_picture` with the fit modes; independent of the
+  5. *Custom compositors* — `set_compositor` / `get_compositor`, `composition`, wrapping.
+  6. *Quads* — tint, crop and `draw_picture` with the fit modes; independent of the
      painter, so it may go first. Preserve every placement rule of §3.2.
 
-  Tests: every existing test pixel-identical after step 1; z-order independent of call
-  order; clear on first push; a retained layer survives a frame and is drawn in a frame
-  that does not push it; a non-retained layer not pushed shows nothing; premultiplied
-  combining (no dark fringe); half opacity on a premultiplied layer halves colour as well
-  as alpha; a mul layer sees only itself; a mod layer leaves uncovered pixels unchanged;
-  the canvas's opacity fades the whole scene; an overlay scene over a full-screen one;
-  `below()` returns the lower scenes' canvases; a custom compositor draws one layer twice,
-  mirrored, and hides another; a wrapping compositor calls the one it wraps; popping and
-  pushing a scene again reuses its textures from the pool; the allocator alone (reuse by
-  size, clear on acquire, `needs_redraw` until `mark_drawn()`, resize destroys instead of
-  pooling, handles valid across a device reset, detached when the allocator dies, pooled
-  textures of the old render size destroyed on resize, a requested trim run at the next
-  frame, an empty handle when SDL cannot create a texture); `needs_redraw(id)` gives one
-  answer for a whole frame; a retained layer on a pooled texture never shows the previous
-  owner's pixels; the clip rect clips; a draw colour set in one scene does not leak into
-  the next; unbalanced `push_layer` / `pop_layer`, drawing a layer into itself, drawing
-  with no layer pushed in a layered painter, another scene's layer and pushing a layer
-  inside a compositor ENFORCE; pixel tests for tint, crop and each fit mode. Exit:
-  tutorials, demos, simplex and the games draw unchanged on their canvases (±1 on blended
-  pixels in overlays, one copy per visible scene); a layered test scene renders as
-  specified.
+  Tests: [`painter.md`](painter.md) §5, RM1. Exit: tutorials, demos, simplex and the games
+  draw unchanged on their canvases (±1 on blended pixels in overlays, one copy per visible
+  scene); a layered test scene renders as specified.
 - **RM2 — Producers on layers.** `world_compositor`'s slots become declared layers;
   `world_renderer`, `sprite_batch` and `texture_layer` draw on the current layer; KE and
   Luxor declare their layers; `get_renderer()` becomes hidden (tests move to an internal

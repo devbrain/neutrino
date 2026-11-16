@@ -369,7 +369,7 @@ namespace neutrino {
                 on_gamepad_disconnected(change->index);
             }
         }
-        // Render resets (painter.md §3.8): the allocator restores its layer targets and
+        // Render resets (painter.md §3.9): the allocator restores its layer targets and
         // canvases. Atlases and game-owned textures are not covered yet (RM6).
         if (m_pimpl->m_texture_allocator) {
             if (e.type() == sdlpp::event_type::render_targets_reset) {
