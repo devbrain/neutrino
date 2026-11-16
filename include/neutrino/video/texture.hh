@@ -31,15 +31,13 @@
 #include <utility>
 
 #include <neutrino/neutrino_export.h>
+#include <neutrino/video/blend_mode.hh>
 #include <neutrino/video/color.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/image/image.hh>
 #include <sdlpp/video/texture.hh>
 
 namespace neutrino {
-    /// @brief How drawn pixels combine with the target: @c blend_mode::none, @c ::blend, ...
-    using blend_mode = sdlpp::blend_mode;   // sdlpp-ok
-
     /// @brief How a texture's pixels get in. See @ref texture.
     enum class texture_access : std::uint8_t {
         fixed,     ///< Uploaded once (from_image()); immutable afterwards.

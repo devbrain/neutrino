@@ -25,11 +25,11 @@ namespace {
         d.grid = sprite_grid{16, 16, 4, 16, 0, 0, sprite_origin_rule::bottom_center};
         d.clips = {
             sprite_clip_def{"idle",
-                            {sprite_frame_def{"0", sprite_animation_duration{100.0f}, sprite_flip::none}},
+                            {sprite_frame_def{"0", sprite_animation_duration{100.0f}, flip_mode::none}},
                             true},
             sprite_clip_def{"walk",
-                            {sprite_frame_def{"1", sprite_animation_duration{90.0f}, sprite_flip::none},
-                             sprite_frame_def{"2", sprite_animation_duration{90.0f}, sprite_flip::none}},
+                            {sprite_frame_def{"1", sprite_animation_duration{90.0f}, flip_mode::none},
+                             sprite_frame_def{"2", sprite_animation_duration{90.0f}, flip_mode::none}},
                             true},
         };
         return d;
@@ -275,7 +275,7 @@ TEST_SUITE("neutrino::video sprite_set") {
         SUBCASE("duplicate clip name") {
             sprite_def d = grid_def();
             d.clips.push_back(sprite_clip_def{"idle",
-                              {sprite_frame_def{"3", sprite_animation_duration{50.0f}, sprite_flip::none}},
+                              {sprite_frame_def{"3", sprite_animation_duration{50.0f}, flip_mode::none}},
                               true});
             CHECK_THROWS(build_sprite_set(d));
         }
@@ -283,7 +283,7 @@ TEST_SUITE("neutrino::video sprite_set") {
         SUBCASE("a clip referencing an unknown visual") {
             sprite_def d = grid_def();
             d.clips = {sprite_clip_def{"bad",
-                       {sprite_frame_def{"does_not_exist", sprite_animation_duration{50.0f}, sprite_flip::none}},
+                       {sprite_frame_def{"does_not_exist", sprite_animation_duration{50.0f}, flip_mode::none}},
                        true}};
             CHECK_THROWS(build_sprite_set(d));
         }

@@ -152,7 +152,7 @@ namespace {
                     m_player.state(),
                     neutrino::sprite_draw_params{
                         .scale = sprite_scale,
-                        .flip = neutrino::sprite_flip::none,
+                        .flip = neutrino::flip_mode::none,
                         .rotation_degrees = 0.0f,
                     }
                 );

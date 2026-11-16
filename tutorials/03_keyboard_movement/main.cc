@@ -6,7 +6,7 @@
 // 2. Continuous held state (`in.held(...)`) for horizontal running.
 // 3. Discrete edge transitions (`in.pressed(...)`) for jump impulses.
 // 4. Substep safety: why edges fire once per frame while held state persists.
-// 5. Directing sprite visual facing with `neutrino::sprite_flip::horizontal`.
+// 5. Directing sprite visual facing with `neutrino::flip_mode::horizontal`.
 // 6. Switching and restarting animation clips with `sprite_instance`.
 //
 
@@ -198,8 +198,8 @@ namespace {
             // 4. Draw player sprite with horizontal flipping
             if (m_player.valid()) {
                 const auto flip = m_facing_left 
-                    ? neutrino::sprite_flip::horizontal 
-                    : neutrino::sprite_flip::none;
+                    ? neutrino::flip_mode::horizontal 
+                    : neutrino::flip_mode::none;
 
                 neutrino::draw_sprite(
                     neutrino::render_pos{m_player_x, m_player_y},

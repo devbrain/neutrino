@@ -165,7 +165,7 @@ namespace neutrino {
             /// and tiled objects meet exactly under fractional zoom; rotated/diagonal
             /// ones use the anchor/scale path. Shared by tile cells and tile objects.
             /// An unresolvable gid counts a skip; never throws.
-            void draw_gid_at(world_tile_id gid, const world_point& anchor, sprite_flip flip, float rotation,
+            void draw_gid_at(world_tile_id gid, const world_point& anchor, flip_mode flip, float rotation,
                              const world_layer_header& layer, const camera& cam, const rect& viewport,
                              draw_stats& stats) const;
             /// Draw one tile cell at world grid coordinate (@p cx, @p cy). Shared by the

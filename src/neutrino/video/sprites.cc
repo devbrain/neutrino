@@ -25,7 +25,7 @@ namespace neutrino {
 
     sprite_appearance make_sprite_appearance(
         sprite_visual_ref visual,
-        sprite_flip flip,
+        flip_mode flip,
         bool visible) {
         return sprite_appearance{
             .visual = visual,
@@ -37,7 +37,7 @@ namespace neutrino {
     sprite_appearance make_sprite_appearance(
         sprite_sheet_id sheet,
         std::size_t index,
-        sprite_flip flip,
+        flip_mode flip,
         bool visible) {
         return make_sprite_appearance(visual_ref(sheet, index), flip, visible);
     }
@@ -45,7 +45,7 @@ namespace neutrino {
     sprite_appearance make_sprite_appearance(
         sprite_sheet_id sheet,
         std::string_view name,
-        sprite_flip flip,
+        flip_mode flip,
         bool visible) {
         return make_sprite_appearance(visual_ref(sheet, name), flip, visible);
     }
@@ -86,7 +86,7 @@ namespace neutrino {
         std::initializer_list <std::size_t> indexes,
         sprite_animation_duration frame_duration,
         bool loop,
-        sprite_flip flip) {
+        flip_mode flip) {
         validate_animation_parts(indexes.size(), frame_duration);
 
         std::vector <sprite_animation_frame> frames;
@@ -104,7 +104,7 @@ namespace neutrino {
         std::initializer_list <std::string_view> names,
         sprite_animation_duration frame_duration,
         bool loop,
-        sprite_flip flip) {
+        flip_mode flip) {
         validate_animation_parts(names.size(), frame_duration);
 
         std::vector <sprite_animation_frame> frames;
@@ -123,7 +123,7 @@ namespace neutrino {
         std::size_t count,
         sprite_animation_duration frame_duration,
         bool loop,
-        sprite_flip flip) {
+        flip_mode flip) {
         validate_animation_parts(count, frame_duration);
 
         std::vector <sprite_animation_frame> frames;

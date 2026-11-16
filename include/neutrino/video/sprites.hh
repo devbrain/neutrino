@@ -197,7 +197,7 @@ namespace neutrino {
      */
     NEUTRINO_EXPORT sprite_appearance make_sprite_appearance(
         sprite_visual_ref visual,
-        sprite_flip flip = sprite_flip::none,
+        flip_mode flip = flip_mode::none,
         bool visible = true);
 
     /**
@@ -208,7 +208,7 @@ namespace neutrino {
     NEUTRINO_EXPORT sprite_appearance make_sprite_appearance(
         sprite_sheet_id sheet,
         std::size_t index,
-        sprite_flip flip = sprite_flip::none,
+        flip_mode flip = flip_mode::none,
         bool visible = true);
 
     /**
@@ -219,7 +219,7 @@ namespace neutrino {
     NEUTRINO_EXPORT sprite_appearance make_sprite_appearance(
         sprite_sheet_id sheet,
         std::string_view name,
-        sprite_flip flip = sprite_flip::none,
+        flip_mode flip = flip_mode::none,
         bool visible = true);
 
     /**
@@ -266,7 +266,7 @@ namespace neutrino {
         std::initializer_list <std::size_t> indexes,
         sprite_animation_duration frame_duration,
         bool loop = true,
-        sprite_flip flip = sprite_flip::none);
+        flip_mode flip = flip_mode::none);
 
     /**
      * @brief Build an animation from registered sheet visual names.
@@ -282,7 +282,7 @@ namespace neutrino {
         std::initializer_list <std::string_view> names,
         sprite_animation_duration frame_duration,
         bool loop = true,
-        sprite_flip flip = sprite_flip::none);
+        flip_mode flip = flip_mode::none);
 
     /**
      * @brief Build an animation from a contiguous range of sheet visual indexes.
@@ -299,5 +299,5 @@ namespace neutrino {
         std::size_t count,
         sprite_animation_duration frame_duration,
         bool loop = true,
-        sprite_flip flip = sprite_flip::none);
+        flip_mode flip = flip_mode::none);
 }

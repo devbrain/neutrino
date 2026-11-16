@@ -23,7 +23,7 @@ namespace neutrino {
      */
     struct world_tile_cell {
         world_tile_id gid{};                 ///< Global tile id drawn here; 0 is the empty cell (see @ref empty).
-        sprite_flip flip{sprite_flip::none}; ///< Horizontal/vertical/diagonal flips applied to the tile graphic.
+        flip_mode flip{flip_mode::none}; ///< Horizontal/vertical/diagonal flips applied to the tile graphic.
         /// Draw-time rotation in degrees (clockwise), composed with @ref flip.
         /// A TMX hexagonal 120-degree cell decodes to 120; loaders without hex
         /// rotation leave it 0.
@@ -36,17 +36,17 @@ namespace neutrino {
 
         /// @brief True if the tile graphic is mirrored horizontally.
         [[nodiscard]] bool horizontally_flipped() const noexcept {
-            return (flip & sprite_flip::horizontal) == sprite_flip::horizontal;
+            return (flip & flip_mode::horizontal) == flip_mode::horizontal;
         }
 
         /// @brief True if the tile graphic is mirrored vertically.
         [[nodiscard]] bool vertically_flipped() const noexcept {
-            return (flip & sprite_flip::vertical) == sprite_flip::vertical;
+            return (flip & flip_mode::vertical) == flip_mode::vertical;
         }
 
         /// @brief True if the tile graphic is flipped along its main diagonal (TMX anti-diagonal bit).
         [[nodiscard]] bool diagonally_flipped() const noexcept {
-            return (flip & sprite_flip::diagonal) == sprite_flip::diagonal;
+            return (flip & flip_mode::diagonal) == flip_mode::diagonal;
         }
     };
 
@@ -131,7 +131,7 @@ namespace neutrino {
         double rotation{}; ///< Clockwise degrees; a TMX hex-120 tile object folds +120 in here.
         bool visible{true};     ///< Whether the object is drawn.
         world_tile_id gid{};    ///< Tile gid for a tile object; 0 for a shape/text object.
-        sprite_flip flip{sprite_flip::none}; ///< Flip applied to a tile object's graphic.
+        flip_mode flip{flip_mode::none}; ///< Flip applied to a tile object's graphic.
     };
 
     /// @brief A rectangular-region object; the rect is @ref world_object_base::origin

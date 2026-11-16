@@ -81,7 +81,7 @@ namespace neutrino {
     struct sprite_frame_def {
         std::string               visual;               ///< Name of the visual shown for this step.
         sprite_animation_duration duration{0.0f};       ///< How long the frame is shown.
-        sprite_flip               flip{sprite_flip::none}; ///< Flip applied to the visual this step.
+        flip_mode               flip{flip_mode::none}; ///< Flip applied to the visual this step.
     };
 
     /// @brief A named animation over visuals.

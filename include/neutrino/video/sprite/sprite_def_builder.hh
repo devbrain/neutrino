@@ -56,13 +56,13 @@ namespace neutrino {
             sprite_clip_builder& frame(
                 std::string visual,
                 sprite_animation_duration duration,
-                sprite_flip flip = sprite_flip::none);
+                flip_mode flip = flip_mode::none);
 
             /// @brief Append a frame by visual index (e.g. for grid frames "0", "1", ...).
             sprite_clip_builder& frame(
                 std::size_t visual_index,
                 sprite_animation_duration duration,
-                sprite_flip flip = sprite_flip::none);
+                flip_mode flip = flip_mode::none);
 
             /// @brief Set whether playback repeats after the last frame.
             sprite_clip_builder& loop(bool enable = true) noexcept;
@@ -203,7 +203,7 @@ namespace neutrino {
                 std::initializer_list <std::string_view> visuals,
                 sprite_animation_duration frame_duration,
                 bool loop = true,
-                sprite_flip flip = sprite_flip::none);
+                flip_mode flip = flip_mode::none);
 
             /// @brief Add a clip with uniform frame duration over a list of grid visual indices.
             sprite_def_builder& add_clip(
@@ -211,7 +211,7 @@ namespace neutrino {
                 std::initializer_list <std::size_t> visual_indices,
                 sprite_animation_duration frame_duration,
                 bool loop = true,
-                sprite_flip flip = sprite_flip::none);
+                flip_mode flip = flip_mode::none);
 
             /// @brief Add a clip over a contiguous range of grid indices [first_index, first_index + count).
             sprite_def_builder& add_clip_range(
@@ -220,7 +220,7 @@ namespace neutrino {
                 std::size_t count,
                 sprite_animation_duration frame_duration,
                 bool loop = true,
-                sprite_flip flip = sprite_flip::none);
+                flip_mode flip = flip_mode::none);
 
             // ------------------------------------------------------------------------
             // Metadata & Resource File integration

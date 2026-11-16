@@ -39,7 +39,7 @@ namespace neutrino {
     // Unsigned, not promoted.
     enum class enum_test_plain : std::uint8_t { a = 1, b = 2 };
 
-    // Not promoted, with its own operator (like sprite_flip): must keep using it.
+    // Not promoted, with its own operator: must keep using it.
     enum class enum_test_own : std::uint8_t { a = 1, b = 2, marker = 0x80 };
     constexpr enum_test_own operator|(enum_test_own, enum_test_own) {
         return enum_test_own::marker;

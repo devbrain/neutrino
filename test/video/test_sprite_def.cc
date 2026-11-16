@@ -21,8 +21,8 @@ namespace {
                              sprite_origin_rule::top_left};
         d.clips = {
             sprite_clip_def{"idle",
-                            {sprite_frame_def{"0", sprite_animation_duration{100.0f}, sprite_flip::none},
-                             sprite_frame_def{"1", sprite_animation_duration{100.0f}, sprite_flip::none}},
+                            {sprite_frame_def{"0", sprite_animation_duration{100.0f}, flip_mode::none},
+                             sprite_frame_def{"1", sprite_animation_duration{100.0f}, flip_mode::none}},
                             true}
         };
         return d;

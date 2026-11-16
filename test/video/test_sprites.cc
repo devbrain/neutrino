@@ -48,15 +48,15 @@ TEST_SUITE("neutrino::video::sprites") {
 
         const auto direct = neutrino::make_sprite_appearance(
             idle,
-            neutrino::sprite_flip::horizontal,
+            neutrino::flip_mode::horizontal,
             false);
         CHECK(direct.visual == idle);
-        CHECK(direct.flip == neutrino::sprite_flip::horizontal);
+        CHECK(direct.flip == neutrino::flip_mode::horizontal);
         CHECK_FALSE(direct.visible);
 
-        const auto by_index = neutrino::make_sprite_appearance(sheet, 1, neutrino::sprite_flip::vertical);
+        const auto by_index = neutrino::make_sprite_appearance(sheet, 1, neutrino::flip_mode::vertical);
         CHECK(by_index.visual == neutrino::visual_ref(sheet, 1));
-        CHECK(by_index.flip == neutrino::sprite_flip::vertical);
+        CHECK(by_index.flip == neutrino::flip_mode::vertical);
         CHECK(by_index.visible);
 
         const auto by_name = neutrino::make_sprite_appearance(sheet, "run.1");
@@ -76,7 +76,7 @@ TEST_SUITE("neutrino::video::sprites") {
         const auto run = neutrino::make_sprite_appearance(
             sheet,
             "run.0",
-            neutrino::sprite_flip::horizontal);
+            neutrino::flip_mode::horizontal);
 
         const auto single = neutrino::make_sprite_animation_frame(
             idle,
@@ -92,7 +92,7 @@ TEST_SUITE("neutrino::video::sprites") {
         REQUIRE(animation.frame_count() == 2);
         CHECK(animation.total_duration().count() == doctest::Approx(100.0f));
         CHECK(animation.frame(0).appearance.visual == idle.visual);
-        CHECK(animation.frame(1).appearance.flip == neutrino::sprite_flip::horizontal);
+        CHECK(animation.frame(1).appearance.flip == neutrino::flip_mode::horizontal);
 
         const auto variable = neutrino::make_sprite_animation({
             neutrino::make_sprite_animation_frame(idle, neutrino::sprite_animation_duration{10.0f}),
@@ -122,11 +122,11 @@ TEST_SUITE("neutrino::video::sprites") {
             {0u, 1u, 2u},
             neutrino::sprite_animation_duration{30.0f},
             true,
-            neutrino::sprite_flip::vertical);
+            neutrino::flip_mode::vertical);
         REQUIRE(by_index.frame_count() == 3);
         CHECK(by_index.frame(0).appearance.visual == neutrino::visual_ref(sheet, 0));
         CHECK(by_index.frame(2).appearance.visual == neutrino::visual_ref(sheet, 2));
-        CHECK(by_index.frame(1).appearance.flip == neutrino::sprite_flip::vertical);
+        CHECK(by_index.frame(1).appearance.flip == neutrino::flip_mode::vertical);
 
         const auto by_name = neutrino::make_sprite_animation(
             sheet,

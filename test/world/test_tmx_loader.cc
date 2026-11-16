@@ -518,9 +518,9 @@ TEST_CASE("tmx loader accepts flipped object gids") {
     const auto* object = std::get_if <neutrino::world_rectangle_object>(&objects[0]);
     REQUIRE(object);
     CHECK(object->gid == 5);
-    CHECK((object->flip & neutrino::sprite_flip::horizontal) == neutrino::sprite_flip::horizontal);
-    CHECK((object->flip & neutrino::sprite_flip::vertical) == neutrino::sprite_flip::vertical);
-    CHECK((object->flip & neutrino::sprite_flip::diagonal) == neutrino::sprite_flip::none);
+    CHECK((object->flip & neutrino::flip_mode::horizontal) == neutrino::flip_mode::horizontal);
+    CHECK((object->flip & neutrino::flip_mode::vertical) == neutrino::flip_mode::vertical);
+    CHECK((object->flip & neutrino::flip_mode::diagonal) == neutrino::flip_mode::none);
 }
 
 TEST_CASE("tmx loader ignores tile authoring metadata (probability)") {
@@ -970,7 +970,7 @@ TEST_CASE("tmx loader decodes hexagonal 120 degree rotation as degrees") {
     REQUIRE(layer.cells.size() == 2);
 
     CHECK(layer.cells[0].gid == 1);
-    CHECK(layer.cells[0].flip == neutrino::sprite_flip::none);
+    CHECK(layer.cells[0].flip == neutrino::flip_mode::none);
     CHECK(layer.cells[0].rotation_degrees == 120.0f);
 
     CHECK(layer.cells[1].gid == 1);

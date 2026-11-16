@@ -160,23 +160,23 @@ TEST_SUITE("neutrino::video::draw") {
         CHECK_DRAWS(neutrino::draw_sprite(
             neutrino::point{24, 20},
             sprite,
-            {.flip = neutrino::sprite_flip::horizontal | neutrino::sprite_flip::vertical}));
+            {.flip = neutrino::flip_mode::horizontal | neutrino::flip_mode::vertical}));
         CHECK_DRAWS(neutrino::draw_sprite(
             neutrino::point{28, 20},
             sprite,
-            {.flip = neutrino::sprite_flip::diagonal}));
+            {.flip = neutrino::flip_mode::diagonal}));
         CHECK_DRAWS(neutrino::draw_sprite(
             neutrino::point{32, 20},
             sprite,
-            {.flip = neutrino::sprite_flip::diagonal | neutrino::sprite_flip::horizontal}));
+            {.flip = neutrino::flip_mode::diagonal | neutrino::flip_mode::horizontal}));
         CHECK_DRAWS(neutrino::draw_sprite(
             neutrino::point{36, 20},
             sprite,
-            {.flip = neutrino::sprite_flip::diagonal | neutrino::sprite_flip::vertical}));
+            {.flip = neutrino::flip_mode::diagonal | neutrino::flip_mode::vertical}));
         CHECK_DRAWS(neutrino::draw_sprite(
             neutrino::point{40, 20},
             sprite,
-            {.flip = neutrino::sprite_flip::diagonal | neutrino::sprite_flip::horizontal | neutrino::sprite_flip::vertical}));
+            {.flip = neutrino::flip_mode::diagonal | neutrino::flip_mode::horizontal | neutrino::flip_mode::vertical}));
         CHECK_DRAWS(neutrino::draw_sprite(
             neutrino::point{52, 20},
             sprite,
@@ -184,11 +184,11 @@ TEST_SUITE("neutrino::video::draw") {
         CHECK_DRAWS(neutrino::draw_sprite(
             neutrino::point{60, 20},
             sprite,
-            {.scale = 2.0f, .flip = neutrino::sprite_flip::diagonal | neutrino::sprite_flip::horizontal}));
+            {.scale = 2.0f, .flip = neutrino::flip_mode::diagonal | neutrino::flip_mode::horizontal}));
 
         const neutrino::sprite_appearance appearance{
             .visual = sprite,
-            .flip = neutrino::sprite_flip::horizontal,
+            .flip = neutrino::flip_mode::horizontal,
             .visible = true
         };
         CHECK_DRAWS(neutrino::draw_sprite(neutrino::point{44, 20}, appearance));
@@ -197,7 +197,7 @@ TEST_SUITE("neutrino::video::draw") {
         CHECK_DRAWS(neutrino::draw_sprite(
             neutrino::point{72, 20},
             appearance,
-            {.flip = neutrino::sprite_flip::horizontal}));
+            {.flip = neutrino::flip_mode::horizontal}));
 
         const auto state = neutrino::create_sprite_state(appearance);
         CHECK_DRAWS(neutrino::draw_sprite(neutrino::point{46, 20}, state));
@@ -205,7 +205,7 @@ TEST_SUITE("neutrino::video::draw") {
         CHECK_DRAWS(neutrino::draw_sprite(
             neutrino::point{80, 20},
             state,
-            {.scale = 2.0f, .flip = neutrino::sprite_flip::horizontal}));
+            {.scale = 2.0f, .flip = neutrino::flip_mode::horizontal}));
 
         const neutrino::sprite_appearance hidden{
             .visual = sprite,
@@ -218,13 +218,13 @@ TEST_SUITE("neutrino::video::draw") {
     }
 
     TEST_CASE("sprite flip composition toggles flags") {
-        using neutrino::sprite_flip;
-        CHECK((sprite_flip::horizontal ^ sprite_flip::horizontal) == sprite_flip::none);
-        CHECK((sprite_flip::none ^ sprite_flip::horizontal) == sprite_flip::horizontal);
-        CHECK(((sprite_flip::horizontal | sprite_flip::diagonal) ^ sprite_flip::horizontal) == sprite_flip::diagonal);
-        auto flip = sprite_flip::vertical;
-        flip ^= sprite_flip::vertical | sprite_flip::horizontal;
-        CHECK(flip == sprite_flip::horizontal);
+        using neutrino::flip_mode;
+        CHECK((flip_mode::horizontal ^ flip_mode::horizontal) == flip_mode::none);
+        CHECK((flip_mode::none ^ flip_mode::horizontal) == flip_mode::horizontal);
+        CHECK(((flip_mode::horizontal | flip_mode::diagonal) ^ flip_mode::horizontal) == flip_mode::diagonal);
+        auto flip = flip_mode::vertical;
+        flip ^= flip_mode::vertical | flip_mode::horizontal;
+        CHECK(flip == flip_mode::horizontal);
     }
 
     TEST_CASE("sprite rotation renders through both draw paths") {
@@ -238,21 +238,21 @@ TEST_SUITE("neutrino::video::draw") {
         const auto sprite = neutrino::visual_ref(sheet, 0);
         const neutrino::point at{20, 20};
 
-        using neutrino::sprite_flip;
+        using neutrino::flip_mode;
 
         // Non-diagonal path (copy_ex): rotation alone, hex-120, and rotation + flip.
         CHECK_DRAWS(neutrino::draw_sprite(at, sprite, {.rotation_degrees = 90.0f}));
         CHECK_DRAWS(neutrino::draw_sprite(at, sprite, {.rotation_degrees = 120.0f}));
         CHECK_DRAWS(neutrino::draw_sprite(
-            at, sprite, {.flip = sprite_flip::horizontal, .rotation_degrees = 45.0f}));
+            at, sprite, {.flip = flip_mode::horizontal, .rotation_degrees = 45.0f}));
 
         // Diagonal path (render_geometry): rotation composed with a diagonal flip.
         CHECK_DRAWS(neutrino::draw_sprite(
-            at, sprite, {.flip = sprite_flip::diagonal, .rotation_degrees = 90.0f}));
+            at, sprite, {.flip = flip_mode::diagonal, .rotation_degrees = 90.0f}));
         CHECK_DRAWS(neutrino::draw_sprite(
             at, sprite,
             {.scale = 2.0f,
-             .flip = sprite_flip::diagonal | sprite_flip::horizontal,
+             .flip = flip_mode::diagonal | flip_mode::horizontal,
              .rotation_degrees = 120.0f}));
 
         // Negative angle and a full turn are accepted.

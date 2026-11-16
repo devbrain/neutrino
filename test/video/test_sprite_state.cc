@@ -15,7 +15,7 @@
 TEST_SUITE("neutrino::video::sprite_state") {
     namespace {
         [[nodiscard]] neutrino::sprite_animation_frame frame(
-            neutrino::sprite_flip flip,
+            neutrino::flip_mode flip,
             float milliseconds) {
             return neutrino::sprite_animation_frame{
                 .appearance = {
@@ -78,22 +78,22 @@ TEST_SUITE("neutrino::video::sprite_state") {
         neutrino::test::test_application test_app("Sprite state fixed appearance test");
 
         const neutrino::sprite_appearance fixed{
-            .flip = neutrino::sprite_flip::horizontal,
+            .flip = neutrino::flip_mode::horizontal,
             .visible = false
         };
         const auto state = neutrino::create_sprite_state(fixed);
 
         auto resolved = neutrino::sprite_state_appearance(state);
-        CHECK(resolved.flip == neutrino::sprite_flip::horizontal);
+        CHECK(resolved.flip == neutrino::flip_mode::horizontal);
         CHECK_FALSE(resolved.visible);
 
         neutrino::set_sprite_state_appearance(state, neutrino::sprite_appearance{
-            .flip = neutrino::sprite_flip::vertical,
+            .flip = neutrino::flip_mode::vertical,
             .visible = true
         });
 
         resolved = neutrino::sprite_state_appearance(state);
-        CHECK(resolved.flip == neutrino::sprite_flip::vertical);
+        CHECK(resolved.flip == neutrino::flip_mode::vertical);
         CHECK(resolved.visible);
     }
 
@@ -107,26 +107,26 @@ TEST_SUITE("neutrino::video::sprite_state") {
         neutrino::test::test_application test_app(cfg);
 
         const auto animation = neutrino::register_sprite_animation(neutrino::sprite_animation({
-            frame(neutrino::sprite_flip::none, 1.0f),
-            frame(neutrino::sprite_flip::horizontal, 50.0f)
+            frame(neutrino::flip_mode::none, 1.0f),
+            frame(neutrino::flip_mode::horizontal, 50.0f)
         }, false));
         const auto state = neutrino::create_sprite_state(animation);
 
-        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::none);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::flip_mode::none);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
         test_app.iterate();
 
-        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::horizontal);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::flip_mode::horizontal);
 
         neutrino::set_sprite_state_appearance(state, neutrino::sprite_appearance{
-            .flip = neutrino::sprite_flip::vertical,
+            .flip = neutrino::flip_mode::vertical,
             .visible = true
         });
-        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::vertical);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::flip_mode::vertical);
 
         neutrino::restart_sprite_animation(state, animation);
-        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::none);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::flip_mode::none);
     }
 
     TEST_CASE("sprite animation switch preserves elapsed time when unchanged") {
@@ -139,31 +139,31 @@ TEST_SUITE("neutrino::video::sprite_state") {
         neutrino::test::test_application test_app(cfg);
 
         const auto walk = neutrino::register_sprite_animation(neutrino::sprite_animation({
-            frame(neutrino::sprite_flip::none, 1.0f),
-            frame(neutrino::sprite_flip::horizontal, 50.0f)
+            frame(neutrino::flip_mode::none, 1.0f),
+            frame(neutrino::flip_mode::horizontal, 50.0f)
         }));
         const auto jump = neutrino::register_sprite_animation(neutrino::sprite_animation({
-            frame(neutrino::sprite_flip::vertical, 1.0f),
-            frame(neutrino::sprite_flip::diagonal, 50.0f)
+            frame(neutrino::flip_mode::vertical, 1.0f),
+            frame(neutrino::flip_mode::diagonal, 50.0f)
         }, false));
         const auto state = neutrino::create_sprite_state(walk);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
         test_app.iterate();
-        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::horizontal);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::flip_mode::horizontal);
 
         CHECK_FALSE(neutrino::switch_sprite_animation(state, walk));
-        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::horizontal);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::flip_mode::horizontal);
 
         CHECK(neutrino::switch_sprite_animation(state, jump));
-        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::vertical);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::flip_mode::vertical);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
         test_app.iterate();
-        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::diagonal);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::flip_mode::diagonal);
 
         neutrino::restart_sprite_animation(state, jump);
-        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::sprite_flip::vertical);
+        CHECK(neutrino::sprite_state_appearance(state).flip == neutrino::flip_mode::vertical);
     }
 
     TEST_CASE("sprite_state_finished reports completed non-looping animations") {
@@ -179,12 +179,12 @@ TEST_SUITE("neutrino::video::sprite_state") {
         CHECK_FALSE(neutrino::sprite_state_finished(fixed));
 
         const auto looping_animation = neutrino::register_sprite_animation(neutrino::sprite_animation({
-            frame(neutrino::sprite_flip::none, 1.0f)
+            frame(neutrino::flip_mode::none, 1.0f)
         }));
         const auto looping = neutrino::create_sprite_state(looping_animation);
 
         const auto one_shot_animation = neutrino::register_sprite_animation(neutrino::sprite_animation({
-            frame(neutrino::sprite_flip::horizontal, 1.0f)
+            frame(neutrino::flip_mode::horizontal, 1.0f)
         }, false));
         const auto one_shot = neutrino::create_sprite_state(one_shot_animation);
 

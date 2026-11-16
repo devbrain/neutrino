@@ -18,15 +18,15 @@ namespace neutrino::world_tmx {
         static constexpr std::uint32_t flipped_diagonally = 0x20000000u;
         static constexpr std::uint32_t rotated_hexagonal_120 = 0x10000000u;
 
-        sprite_flip flip = sprite_flip::none;
+        flip_mode flip = flip_mode::none;
         if ((raw & flipped_horizontally) != 0) {
-            flip |= sprite_flip::horizontal;
+            flip |= flip_mode::horizontal;
         }
         if ((raw & flipped_vertically) != 0) {
-            flip |= sprite_flip::vertical;
+            flip |= flip_mode::vertical;
         }
         if ((raw & flipped_diagonally) != 0) {
-            flip |= sprite_flip::diagonal;
+            flip |= flip_mode::diagonal;
         }
         const float rotation_degrees = (raw & rotated_hexagonal_120) != 0 ? 120.0f : 0.0f;
 

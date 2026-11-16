@@ -22,10 +22,10 @@ namespace {
         d.grid = sprite_grid{16, 16, 0, 0, 0, 0, sprite_origin_rule::bottom_center};
         d.clips = {
             sprite_clip_def{"idle",
-                            {sprite_frame_def{"0", sprite_animation_duration{100.0f}, sprite_flip::none}},
+                            {sprite_frame_def{"0", sprite_animation_duration{100.0f}, flip_mode::none}},
                             true},
             sprite_clip_def{"walk",
-                            {sprite_frame_def{"1", sprite_animation_duration{90.0f}, sprite_flip::none}},
+                            {sprite_frame_def{"1", sprite_animation_duration{90.0f}, flip_mode::none}},
                             true},
         };
         return d;

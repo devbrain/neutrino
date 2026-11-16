@@ -152,9 +152,15 @@ neutrino_subsystem(video
         texture.hh
         world.hh
         texture_pool_stats.hh
+        layer_id.hh
+        layer_settings.hh
+        layer_composite_settings.hh
+        flip_mode.hh
+        blend_mode.hh
     PRIVATE
         draw.cc
         draw_failures.hh
+        blend_mode_sdl.hh
         globals.cc
         palette.cc
         sprites.cc
@@ -166,6 +172,9 @@ neutrino_subsystem(video
         texture_table.hh
         texture_allocator.hh
         texture_allocator.cc
+        layer_stack.cc
+        layer_stack.hh
+        layer_id.cc
 )
 
 neutrino_subsystem(video_image DIR video/image

@@ -6,65 +6,10 @@
 
 #include <cstdint>
 
+#include <neutrino/video/flip_mode.hh>
 #include <neutrino/video/sprite/sprite_sheet.hh>
 
 namespace neutrino {
-    /**
-     * @brief Render-time flip flags for sprite drawing.
-     *
-     * The sprite position supplied to drawing is always the visual origin/anchor
-     * after the requested flips are applied. @ref diagonal uses Tiled's
-     * orthogonal/isometric diagonal flag semantics: it is applied before
-     * horizontal/vertical flags and swaps the bottom-left and top-right corners,
-     * effectively an x/y axis swap.
-     */
-    enum class sprite_flip : std::uint8_t {
-        none = 0,
-        horizontal = 1u << 0u,
-        vertical = 1u << 1u,
-        diagonal = 1u << 2u
-    };
-
-    /// @brief Union of two flip sets (set every flag present in either).
-    [[nodiscard]] constexpr sprite_flip operator |(sprite_flip lhs, sprite_flip rhs) noexcept {
-        return static_cast <sprite_flip>(
-            static_cast <std::uint8_t>(lhs) | static_cast <std::uint8_t>(rhs));
-    }
-
-    /// @brief Intersection of two flip sets (keep only flags present in both).
-    [[nodiscard]] constexpr sprite_flip operator &(sprite_flip lhs, sprite_flip rhs) noexcept {
-        return static_cast <sprite_flip>(
-            static_cast <std::uint8_t>(lhs) & static_cast <std::uint8_t>(rhs));
-    }
-
-    /// @brief Add @p rhs's flags to @p lhs in place (see operator|).
-    constexpr sprite_flip& operator |=(sprite_flip& lhs, sprite_flip rhs) noexcept {
-        lhs = lhs | rhs;
-        return lhs;
-    }
-
-    /// @brief Restrict @p lhs to the flags it shares with @p rhs in place (see operator&).
-    constexpr sprite_flip& operator &=(sprite_flip& lhs, sprite_flip rhs) noexcept {
-        lhs = lhs & rhs;
-        return lhs;
-    }
-
-    /**
-     * @brief Compose two flip transforms by toggling flags.
-     *
-     * Each flip flag is an involution, so applying the same flag twice cancels
-     * out. Draw-time flips compose with an appearance's intrinsic flip this way.
-     */
-    [[nodiscard]] constexpr sprite_flip operator ^(sprite_flip lhs, sprite_flip rhs) noexcept {
-        return static_cast <sprite_flip>(
-            static_cast <std::uint8_t>(lhs) ^ static_cast <std::uint8_t>(rhs));
-    }
-
-    constexpr sprite_flip& operator ^=(sprite_flip& lhs, sprite_flip rhs) noexcept {
-        lhs = lhs ^ rhs;
-        return lhs;
-    }
-
     /**
      * @brief Sprite render state without world position.
      *
@@ -81,7 +26,7 @@ namespace neutrino {
         /**
          * @brief Sprite-local render transform.
          */
-        sprite_flip flip{sprite_flip::none};
+        flip_mode flip{flip_mode::none};
 
         /**
          * @brief False means the appearance is skipped by draw helpers.

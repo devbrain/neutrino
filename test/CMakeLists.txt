@@ -54,6 +54,7 @@ add_executable(neutrino_tests
         video/test_text_layout.cc
         video/test_texture.cc
         video/test_texture_allocator.cc
+        video/test_blend_mode.cc
         video/test_window_presentation.cc
         video/test_sprite_sheet.cc
         video/test_glyph_mapping.cc

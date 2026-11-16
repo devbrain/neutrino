@@ -5,6 +5,8 @@
 #include <neutrino/video/texture.hh>
 #include <neutrino/video/globals.hh>
 
+#include "video/blend_mode_sdl.hh"
+
 #include <failsafe/enforce.hh>
 #include <failsafe/exception.hh>
 
@@ -149,7 +151,7 @@ namespace neutrino {
     }
 
     void texture::set_blend_mode(blend_mode mode) {
-        (void) m_texture.set_blend_mode(mode);
+        (void) m_texture.set_blend_mode(detail::to_sdl_blend(mode));
     }
 
     void texture::update(std::span <const std::uint32_t> pixels) {

@@ -168,7 +168,7 @@ TEST_SUITE("neutrino::video::texture") {
         auto src = make_red_blue();
         auto out = make_target(2, 1);
 
-        out.compose([&] { draw_texture(src, rect{0, 0, 2, 1}, {.flip = sprite_flip::horizontal}); },
+        out.compose([&] { draw_texture(src, rect{0, 0, 2, 1}, {.flip = flip_mode::horizontal}); },
                     colors::black);
         CHECK(same_rgb(pixel_at(out.to_image(), 0, 0), colors::blue));
         CHECK(same_rgb(pixel_at(out.to_image(), 1, 0), colors::red));
@@ -183,7 +183,7 @@ TEST_SUITE("neutrino::video::texture") {
         out.compose([&] { draw_texture(src); }, colors::black);       // tint did not stick
         CHECK(same_rgb(pixel_at(out.to_image(), 0, 0), colors::red));
 
-        CHECK_THROWS(draw_texture(src, rect{0, 0, 2, 1}, {.flip = sprite_flip::diagonal}));
+        CHECK_THROWS(draw_texture(src, rect{0, 0, 2, 1}, {.flip = flip_mode::diagonal}));
     }
 
     TEST_CASE("draw_texture_quad maps the texture onto arbitrary corners") {

@@ -39,6 +39,7 @@
 #include <neutrino/video/palette.hh>
 #include <neutrino/video/text/text.hh>
 #include <neutrino/video/texture_pool_stats.hh>
+#include <neutrino/video/layer_id.hh>
 
 // ---- world (tile maps) -------------------------------------------------------------------------
 #include <neutrino/world/world.hh>

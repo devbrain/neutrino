@@ -78,7 +78,7 @@ namespace {
     }
 
     [[nodiscard]] neutrino::sprite_frame_def frame(std::string_view visual, float duration) {
-        return neutrino::sprite_frame_def{std::string(visual), ms(duration), neutrino::sprite_flip::none};
+        return neutrino::sprite_frame_def{std::string(visual), ms(duration), neutrino::flip_mode::none};
     }
 
     // The whole sprite asset as pure data: the matted sheet as the atlas image, the named
@@ -186,7 +186,7 @@ namespace {
                 neutrino::draw_sprite(neutrino::point{430, ground_y - 4}, m_torch.state(), {.scale = prop_scale});
                 neutrino::draw_sprite(neutrino::point{470, ground_y - 4}, m_coin.state(), {.scale = prop_scale});
 
-                const auto player_flip = m_facing_left ? neutrino::sprite_flip::horizontal : neutrino::sprite_flip::none;
+                const auto player_flip = m_facing_left ? neutrino::flip_mode::horizontal : neutrino::flip_mode::none;
                 neutrino::draw_sprite(
                     neutrino::render_pos{m_player_x, m_player_y},
                     m_player.state(),

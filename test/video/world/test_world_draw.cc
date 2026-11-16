@@ -100,7 +100,7 @@ namespace {
     // One tile object at (0,16) with the given gid/visibility/transform.
     world_object_layer tile_object_layer(world_tile_id gid, bool visible = true,
                                          double rotation = 0.0,
-                                         sprite_flip flip = sprite_flip::none) {
+                                         flip_mode flip = flip_mode::none) {
         world_object_layer layer;
         layer.visible = true;
         world_rectangle_object obj;
@@ -232,8 +232,8 @@ TEST_SUITE("neutrino::video world draw") {
         resource_cache cache;
 
         world_tile_layer layer = filled_layer(2, 1, 1);
-        layer.cells[0].flip = sprite_flip::horizontal;
-        layer.cells[1].flip = sprite_flip::diagonal;
+        layer.cells[0].flip = flip_mode::horizontal;
+        layer.cells[1].flip = flip_mode::diagonal;
         layer.cells[1].rotation_degrees = 120.0f; // hex-120
         world w = make_world(square_ts(), std::move(layer));
         world_renderer r(w, cache);
@@ -355,7 +355,7 @@ TEST_SUITE("neutrino::video world draw") {
         resource_cache cache;
 
         world_tile_layer layer = filled_layer(1, 1, 2);
-        layer.cells[0].flip = sprite_flip::horizontal;
+        layer.cells[0].flip = flip_mode::horizontal;
         world w = make_world(animated_ts(), std::move(layer));
         world_renderer r(w, cache);
 
@@ -426,7 +426,7 @@ TEST_SUITE("neutrino::video world draw") {
         neutrino::test::test_application app("world draw object transform");
         resource_cache cache;
 
-        world w = world_with(square_ts(), tile_object_layer(1, true, 120.0, sprite_flip::diagonal));
+        world w = world_with(square_ts(), tile_object_layer(1, true, 120.0, flip_mode::diagonal));
         world_renderer r(w, cache);
 
         const draw_stats stats = r.draw(origin_camera(rect{0, 0, 64, 64}), rect{0, 0, 64, 64});

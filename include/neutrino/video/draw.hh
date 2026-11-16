@@ -31,6 +31,7 @@
 
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/color.hh>
+#include <neutrino/video/flip_mode.hh>
 #include <neutrino/video/texture.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprite/sprite_state.hh>
@@ -124,7 +125,7 @@ namespace neutrino {
      */
     struct sprite_draw_params {
         float scale{1.0f};
-        sprite_flip flip{sprite_flip::none};
+        flip_mode flip{flip_mode::none};
         float rotation_degrees{0.0f};
     };
 
@@ -164,7 +165,7 @@ namespace neutrino {
     NEUTRINO_EXPORT void draw_sprite(
         const rect& dst,
         sprite_visual_ref visual,
-        sprite_flip flip = sprite_flip::none);
+        flip_mode flip = flip_mode::none);
 
     /**
      * @brief Draw a sprite appearance at a caller-supplied position.
@@ -294,7 +295,7 @@ namespace neutrino {
      */
     struct texture_draw_params {
         std::optional <rect> src{};
-        sprite_flip flip{sprite_flip::none};
+        flip_mode flip{flip_mode::none};
         float rotation_degrees{0.0f};
         std::optional <render_pos> pivot{};
         color tint{255, 255, 255, 255};

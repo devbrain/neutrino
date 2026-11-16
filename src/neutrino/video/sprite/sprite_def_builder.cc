@@ -30,7 +30,7 @@ namespace neutrino {
     sprite_clip_builder& sprite_clip_builder::frame(
         std::string visual,
         sprite_animation_duration duration,
-        sprite_flip flip) {
+        flip_mode flip) {
         m_clip.frames.push_back(sprite_frame_def{std::move(visual), duration, flip});
         return *this;
     }
@@ -38,7 +38,7 @@ namespace neutrino {
     sprite_clip_builder& sprite_clip_builder::frame(
         std::size_t visual_index,
         sprite_animation_duration duration,
-        sprite_flip flip) {
+        flip_mode flip) {
         return frame(std::to_string(visual_index), duration, flip);
     }
 
@@ -237,7 +237,7 @@ namespace neutrino {
         std::initializer_list <std::string_view> visuals,
         sprite_animation_duration frame_duration,
         bool loop,
-        sprite_flip flip) {
+        flip_mode flip) {
         sprite_clip_def c;
         c.name = std::move(name);
         c.loop = loop;
@@ -253,7 +253,7 @@ namespace neutrino {
         std::initializer_list <std::size_t> visual_indices,
         sprite_animation_duration frame_duration,
         bool loop,
-        sprite_flip flip) {
+        flip_mode flip) {
         sprite_clip_def c;
         c.name = std::move(name);
         c.loop = loop;
@@ -270,7 +270,7 @@ namespace neutrino {
         std::size_t count,
         sprite_animation_duration frame_duration,
         bool loop,
-        sprite_flip flip) {
+        flip_mode flip) {
         sprite_clip_def c;
         c.name = std::move(name);
         c.loop = loop;
@@ -330,7 +330,7 @@ namespace neutrino {
                     clip_def.frames.push_back(sprite_frame_def{
                         std::to_string(idx),
                         sprite_animation_duration{static_cast <float>(dur)},
-                        sprite_flip::none});
+                        flip_mode::none});
                 };
 
                 if (dir == "reverse") {

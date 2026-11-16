@@ -197,7 +197,7 @@ TEST_SUITE("neutrino::video sprite_def_builder") {
             // 1. Fluent sub-builder
             .clip("walk", /*loop=*/true)
                 .frame("0", 100ms)
-                .frame("1", 120ms, sprite_flip::horizontal)
+                .frame("1", 120ms, flip_mode::horizontal)
                 .frame("2", 100ms)
                 .end_clip()
             // 2. Convenience by visual names
@@ -216,10 +216,10 @@ TEST_SUITE("neutrino::video sprite_def_builder") {
         REQUIRE(def.clips[0].frames.size() == 3);
         CHECK(def.clips[0].frames[0].visual == "0");
         CHECK(def.clips[0].frames[0].duration.count() == doctest::Approx(100.0f));
-        CHECK(def.clips[0].frames[0].flip == sprite_flip::none);
+        CHECK(def.clips[0].frames[0].flip == flip_mode::none);
         CHECK(def.clips[0].frames[1].visual == "1");
         CHECK(def.clips[0].frames[1].duration.count() == doctest::Approx(120.0f));
-        CHECK(def.clips[0].frames[1].flip == sprite_flip::horizontal);
+        CHECK(def.clips[0].frames[1].flip == flip_mode::horizontal);
 
         // run
         CHECK(def.clips[1].name == "run");

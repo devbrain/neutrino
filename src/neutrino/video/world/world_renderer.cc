@@ -242,7 +242,7 @@ namespace neutrino {
         return stats;
     }
 
-    void world_renderer::draw_gid_at(world_tile_id gid, const world_point& anchor, sprite_flip flip,
+    void world_renderer::draw_gid_at(world_tile_id gid, const world_point& anchor, flip_mode flip,
                                      float rotation, const world_layer_header& layer, const camera& cam,
                                      const rect& viewport, draw_stats& stats) const {
         const world_tileset* ts = m_world->tileset_for(gid);
@@ -281,7 +281,7 @@ namespace neutrino {
         const world_orientation orient = m_world->orientation();
         const bool grid_aligned = orient == world_orientation::orthogonal
                                   || orient == world_orientation::unknown;
-        if (rotation != 0.0f || (flip & sprite_flip::diagonal) == sprite_flip::diagonal
+        if (rotation != 0.0f || (flip & flip_mode::diagonal) == flip_mode::diagonal
             || !grid_aligned) {
             const point sp = to_screen(cam, layer, vp, anchor);
             const point pos{viewport.x + sp.x, viewport.y + sp.y};

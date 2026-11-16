@@ -18,6 +18,7 @@
 #include <optional>
 
 #include "services/service_access.hh"
+#include "video/blend_mode_sdl.hh"
 #include "video/draw_failures.hh"
 
 namespace neutrino {
@@ -64,20 +65,20 @@ namespace neutrino {
             return fn(renderer);
         }
 
-        [[nodiscard]] bool has_flip(sprite_flip flags, sprite_flip flag) noexcept {
+        [[nodiscard]] bool has_flip(flip_mode flags, flip_mode flag) noexcept {
             return static_cast <std::uint8_t>(flags & flag) != 0;
         }
 
-        [[nodiscard]] bool has_diagonal_flip(sprite_flip flags) noexcept {
-            return has_flip(flags, sprite_flip::diagonal);
+        [[nodiscard]] bool has_diagonal_flip(flip_mode flags) noexcept {
+            return has_flip(flags, flip_mode::diagonal);
         }
 
-        [[nodiscard]] sdlpp::flip_mode to_sdl_flip(sprite_flip flags) noexcept {
+        [[nodiscard]] sdlpp::flip_mode to_sdl_flip(flip_mode flags) noexcept {
             auto result = sdlpp::flip_mode::none;
-            if (has_flip(flags, sprite_flip::horizontal)) {
+            if (has_flip(flags, flip_mode::horizontal)) {
                 result |= sdlpp::flip_mode::horizontal;
             }
-            if (has_flip(flags, sprite_flip::vertical)) {
+            if (has_flip(flags, flip_mode::vertical)) {
                 result |= sdlpp::flip_mode::vertical;
             }
             return result;
@@ -112,17 +113,17 @@ namespace neutrino {
         };
 
         [[nodiscard]] local_point transform_local_tiled(local_point p, float width, float height,
-                                                        sprite_flip flip) noexcept {
+                                                        flip_mode flip) noexcept {
             // Match Tiled orthogonal/isometric GID flags: diagonal first, then H/V.
             // The diagonal flag swaps bottom-left and top-right corners (x/y axis swap).
-            if (has_flip(flip, sprite_flip::diagonal)) {
+            if (has_flip(flip, flip_mode::diagonal)) {
                 std::swap(p.x, p.y);
                 std::swap(width, height);
             }
-            if (has_flip(flip, sprite_flip::horizontal)) {
+            if (has_flip(flip, flip_mode::horizontal)) {
                 p.x = width - p.x;
             }
-            if (has_flip(flip, sprite_flip::vertical)) {
+            if (has_flip(flip, flip_mode::vertical)) {
                 p.y = height - p.y;
             }
             return p;
@@ -140,7 +141,7 @@ namespace neutrino {
 
         [[nodiscard]] tiled_sprite_geometry build_tiled_geometry(
             const sprite_visual& visual,
-            sprite_flip flip,
+            flip_mode flip,
             float scale,
             bool snap) noexcept {
             const auto& src = visual.texture_rect;
@@ -232,7 +233,7 @@ namespace neutrino {
             const resolved_visual& resolved,
             const sprite_visual& visual,
             render_pos position,
-            sprite_flip flip,
+            flip_mode flip,
             float scale,
             float rotation,
             bool snap) {
@@ -294,7 +295,7 @@ namespace neutrino {
             const sprite_sheet& sheet,
             sprite_visual_id visual_id,
             render_pos position,
-            sprite_flip flip,
+            flip_mode flip,
             float scale,
             float rotation) {
             ENFORCE(std::isfinite(scale) && scale > 0.0f, "sprite scale must be finite and greater than zero");
@@ -314,10 +315,10 @@ namespace neutrino {
             const auto dst_h = scaled_extent(static_cast <float>(visual.texture_rect.h), scale, snap);
             auto origin_x = scaled_offset(static_cast <float>(visual.origin.x), scale, snap);
             auto origin_y = scaled_offset(static_cast <float>(visual.origin.y), scale, snap);
-            if (has_flip(flip, sprite_flip::horizontal)) {
+            if (has_flip(flip, flip_mode::horizontal)) {
                 origin_x = dst_w - origin_x;
             }
-            if (has_flip(flip, sprite_flip::vertical)) {
+            if (has_flip(flip, flip_mode::vertical)) {
                 origin_y = dst_h - origin_y;
             }
 
@@ -399,12 +400,16 @@ namespace neutrino {
         return DRAW_CHECK(get_renderer().get_draw_color());
     }
 
-    void set_draw_blend_mode(sdlpp::blend_mode mode) {
-        DRAW_CHECK(get_renderer().set_draw_blend_mode(mode));
+    void set_draw_blend_mode(blend_mode mode) {
+        DRAW_CHECK(get_renderer().set_draw_blend_mode(detail::to_sdl_blend(mode)));
     }
 
-    sdlpp::blend_mode get_draw_blend_mode() {
-        return DRAW_CHECK(get_renderer().get_draw_blend_mode());
+    blend_mode get_draw_blend_mode() {
+        const auto mode = detail::from_sdl_blend(DRAW_CHECK(get_renderer().get_draw_blend_mode()));
+        if (!mode) {
+            THROW_RUNTIME("the renderer's blend mode has no neutrino name (set through native()?)");
+        }
+        return *mode;
     }
 
     void set_line_style(const sdlpp::line_style& style) {
@@ -660,7 +665,7 @@ namespace neutrino {
     void draw_sprite(
         const rect& dst,
         sprite_visual_ref visual,
-        sprite_flip flip) {
+        flip_mode flip) {
         if (!visual.valid() || dst.w <= 0 || dst.h <= 0) {
             return; // nothing to draw
         }
@@ -904,7 +909,7 @@ namespace neutrino {
             auto& native = drawable(t);
             const tint_scope tint(native, params.tint);
             const std::optional <sdlpp::rect <float>> target{to_sdl(dst, snapping())};
-            if (params.rotation_degrees == 0.0f && params.flip == sprite_flip::none) {
+            if (params.rotation_degrees == 0.0f && params.flip == flip_mode::none) {
                 DRAW_CHECK(get_renderer().copy(native, params.src, target));
                 return;
             }
