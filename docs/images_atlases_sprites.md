@@ -287,7 +287,7 @@ region's id).
 
 | Name | What | Owns time? |
 |---|---|---|
-| `sprite_flip` | Horizontal / vertical / diagonal flags; compose with `^`. | no |
+| `flip_mode` | Horizontal / vertical / diagonal flags; compose with `^`. | no |
 | `sprite_appearance` | Visual + flip + visible. | no |
 | `sprite_animation_frame` | Appearance + duration. **The** frame. | no |
 | `sprite_animation` / `sprite_animation_id` | Ordered frames + loop flag; registered, immutable. | no |

@@ -60,7 +60,7 @@ texture_registry / sprites_manager    ── Tier 1: dumb id stores (exist, hard
   loader-private detail. Uniform tilesets, collection-of-images tilesets, and
   LDtk tilesets all satisfy the same interface.
 
-- **Transform superset.** `sprite_flip` (H/V/diagonal) + a general `rotation`
+- **Transform superset.** `flip_mode` (H/V/diagonal) + a general `rotation`
   (degrees). TMX hex-120 maps to +120°; TMX object rotation and LDtk's H/V
   subset use the same field. `cell.flip` composes with a draw-time flip via the
   `^` operator (each flip is an involution).

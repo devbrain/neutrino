@@ -75,7 +75,7 @@ struct sprite_visual_def {                 // an explicit / named frame (packed 
 struct sprite_frame_def {                  // one step of a clip; references a visual by name
     std::string               visual;      // a grid frame ("3") or an explicit name
     sprite_animation_duration duration;
-    sprite_flip               flip{sprite_flip::none};
+    flip_mode               flip{flip_mode::none};
 };
 
 struct sprite_clip_def {                   // a named animation

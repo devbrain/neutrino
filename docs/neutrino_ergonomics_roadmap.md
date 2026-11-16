@@ -335,7 +335,7 @@ flowchart TD
     `std::nullopt` as the clear colour composes onto the existing contents (persistent canvases).
   * **One way to draw any texture**, in `draw.hh`, with the same contract as the rest of it (float render space, `pixel_snap`, `DRAW_CHECK`):
     ```cpp
-    struct texture_draw_params { std::optional<rect> src; sprite_flip flip{}; float rotation_degrees{};
+    struct texture_draw_params { std::optional<rect> src; flip_mode flip{}; float rotation_degrees{};
                                  std::optional<render_pos> pivot; color tint{colors::white}; };
     void draw_texture(const texture& t, const render_rect& dst, const texture_draw_params& p = {});
     void draw_texture(const texture& t);                                   // fill the current target
