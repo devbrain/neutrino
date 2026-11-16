@@ -18,4 +18,8 @@ namespace neutrino {
         std::size_t reused{0}; // acquires served from the pool
         std::size_t destroyed{0};
     };
+
+    /// @brief The texture allocator's counts now (painter.md §2.14). ENFORCE: the application is
+    ///        ready.
+    NEUTRINO_EXPORT [[nodiscard]] pool_stats texture_pool_stats();
 }

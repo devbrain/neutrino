@@ -18,6 +18,7 @@
 #include <optional>
 
 #include "services/service_access.hh"
+#include "video/draw_failures.hh"
 
 namespace neutrino {
     namespace {
@@ -951,6 +952,10 @@ namespace neutrino {
 
     std::uint64_t draw_failure_count() noexcept {
         return g_draw_failures;
+    }
+
+    void detail::count_draw_failure() noexcept {
+        ++g_draw_failures;
     }
 }
 

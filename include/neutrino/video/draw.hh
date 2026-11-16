@@ -61,8 +61,9 @@ namespace neutrino {
     /// @brief Read the renderer's current line style.
     NEUTRINO_EXPORT [[nodiscard]] line_style get_line_style();
 
-    /// @brief Total draw calls that SDL rejected since startup (monotonic). Tests and tools take
-    ///        the difference across a span of draws; 0 new failures means everything was submitted.
+    /// @brief Total draw calls that SDL rejected since startup, plus the painter's render targets
+    ///        that could not be made (monotonic). Tests and tools take the difference across a
+    ///        span of draws; 0 new failures means everything was submitted.
     NEUTRINO_EXPORT [[nodiscard]] std::uint64_t draw_failure_count() noexcept;
 
     /// @brief Draw a single pixel at (@p x, @p y) in the current draw colour.

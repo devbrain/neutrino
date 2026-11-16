@@ -14,6 +14,8 @@
 
 namespace neutrino::detail {
     class texture_allocator;
+    /// @brief Test-only access to a table of its own. Defined only in the test TU.
+    struct texture_table_test_access;
 
     /**
      * @brief The texture allocator's record of one live or failed handle (painter.md §3.3).
@@ -36,6 +38,7 @@ namespace neutrino::detail {
      */
     class texture_table {
         friend class texture_allocator;
+        friend struct texture_table_test_access;
         public:
             /// @brief The index of no slot: what an empty handle holds.
             static constexpr std::size_t INVALID_SLOT = std::numeric_limits<std::size_t>::max();

@@ -2,6 +2,7 @@
 
 #include <neutrino/application.hh>
 
+#include <sdlpp/events/events.hh>
 #include <SDL3/SDL.h>
 
 #include <memory>
@@ -26,13 +27,17 @@ namespace neutrino::test {
             }
     };
 
-    class test_application {
+    /// Runs @p App -- an application constructible from an application_config -- through its
+    /// real SDL lifecycle on the dummy drivers: on_init() in the constructor, on_quit() in
+    /// shutdown() or the destructor.
+    template<typename App>
+    class basic_test_application {
         public:
-            explicit test_application(std::string title = "Neutrino test application")
-                : test_application(make_config(std::move(title))) {
+            explicit basic_test_application(std::string title = "Neutrino test application")
+                : basic_test_application(make_config(std::move(title))) {
             }
 
-            explicit test_application(const application_config& cfg)
+            explicit basic_test_application(const application_config& cfg)
                 : m_app(cfg) {
                 SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, "dummy", SDL_HINT_OVERRIDE);
                 SDL_SetHintWithPriority(SDL_HINT_VIDEO_DRIVER, "dummy", SDL_HINT_OVERRIDE);
@@ -43,26 +48,32 @@ namespace neutrino::test {
                 m_started = true;
             }
 
-            ~test_application() {
+            ~basic_test_application() {
                 shutdown();
             }
 
-            test_application(const test_application&) = delete;
-            test_application& operator =(const test_application&) = delete;
-            test_application(test_application&&) = delete;
-            test_application& operator =(test_application&&) = delete;
+            basic_test_application(const basic_test_application&) = delete;
+            basic_test_application& operator =(const basic_test_application&) = delete;
+            basic_test_application(basic_test_application&&) = delete;
+            basic_test_application& operator =(basic_test_application&&) = delete;
 
-            [[nodiscard]] application& app() noexcept {
+            [[nodiscard]] App& app() noexcept {
                 return m_app;
             }
 
-            [[nodiscard]] const application& app() const noexcept {
+            [[nodiscard]] const App& app() const noexcept {
                 return m_app;
             }
 
             void iterate() {
                 auto* app = neutrino::detail::application_access::base(m_app);
                 app->on_iterate();
+            }
+
+            /// Deliver one synthetic SDL event through the real dispatch: sdlpp's on_event(),
+            /// its lifecycle hooks (on_low_memory(), ...), then the application's handle_event().
+            void feed(const SDL_Event& ev) {
+                neutrino::detail::application_access::base(m_app)->on_event(sdlpp::event(ev));
             }
 
             void shutdown() noexcept {
@@ -86,7 +97,10 @@ namespace neutrino::test {
                 return cfg;
             }
 
-            harness_application m_app;
+            App m_app;
             bool m_started{false};
     };
+
+    /// The harness most tests use: the stock engine with an idle first scene.
+    using test_application = basic_test_application <harness_application>;
 }

@@ -65,6 +65,8 @@ namespace neutrino::detail {
             /// @brief The textures held and pooled and their bytes (four a pixel); the textures
             ///        created, reused and destroyed since the allocator was made.
             [[nodiscard]] const pool_stats& stats() const noexcept;
+            /// @brief The pooled textures of @p size (the tests' invariants need it per size).
+            [[nodiscard]] std::size_t pooled_count(const dim& size) const;
 
             /// @brief SDL_EVENT_RENDER_TARGETS_RESET: clear every live handle's texture and mark
             ///        it for redraw. Failed handles already need one; the pool is left alone.

@@ -48,6 +48,11 @@ namespace neutrino {
     /// @brief The snapping policy currently applied by draw calls.
     NEUTRINO_EXPORT [[nodiscard]] pixel_snap get_pixel_snap() noexcept;
 
+    /// @brief Destroy every texture the texture allocator has pooled for reuse (painter.md §2.14);
+    ///        the render targets in use are untouched. Main thread only. ENFORCE: the application
+    ///        is ready.
+    NEUTRINO_EXPORT void trim_texture_pool();
+
     /// @brief Map a window point (as delivered in mouse/touch events) into render
     /// coordinates. One call accounts for BOTH the HiDPI scale AND logical-
     /// presentation letterboxing, so all input coordinates must go through it.

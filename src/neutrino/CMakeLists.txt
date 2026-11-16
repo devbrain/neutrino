@@ -154,6 +154,7 @@ neutrino_subsystem(video
         texture_pool_stats.hh
     PRIVATE
         draw.cc
+        draw_failures.hh
         globals.cc
         palette.cc
         sprites.cc

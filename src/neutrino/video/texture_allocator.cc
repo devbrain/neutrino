@@ -7,9 +7,12 @@
 
 #include <failsafe/enforce.hh>
 #include <failsafe/logger.hh>
+#include <neutrino/video/globals.hh>
 
 #include "texture_allocator.hh"
 #include "texture_table.hh"
+#include "services/service_access.hh"
+#include "video/draw_failures.hh"
 
 namespace neutrino::detail {
     namespace {
@@ -107,9 +110,14 @@ namespace neutrino::detail {
         return m_stats;
     }
 
+    std::size_t texture_allocator::pooled_count(const dim& size) const {
+        return m_pool.count(size);
+    }
+
     std::optional <texture> texture_allocator::take_texture(dim size) {
         if (size.width <= 0 || size.height <= 0) {
             LOG_ERROR("can not handle textures with invalid size", size);
+            count_draw_failure();
             return std::nullopt;
         }
 
@@ -118,6 +126,7 @@ namespace neutrino::detail {
             auto t = texture::create(size, texture_access::target, TARGET_FORMAT);
             if (!t) {
                 LOG_ERROR("failed to create texture with size", size);
+                count_draw_failure();
                 return std::nullopt;
             }
             ++m_stats.created;
@@ -179,5 +188,15 @@ namespace neutrino::detail {
 
     bool texture_allocator::is_valid(std::size_t idx) const noexcept {
         return m_table.is_valid(idx);
+    }
+}
+
+namespace neutrino {
+    pool_stats texture_pool_stats() {
+        return require_texture_allocator().stats();
+    }
+
+    void trim_texture_pool() {
+        require_texture_allocator().trim();
     }
 }
