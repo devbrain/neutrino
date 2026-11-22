@@ -1694,7 +1694,11 @@ painter, so there are no scene painters to build.
    call needs; the saves hold it instead of the renderer's; drawing into a failed layer
    does nothing; `custom_blend`. *Exit:* every existing test pixel-identical.
 5. **Custom compositors.** `set_compositor` / `get_compositor` on the scene,
-   `composition`, wrapping.
+   `composition`, wrapping. *Done (2026-11-22):* all of it, built with step 3 (R43);
+   wrapping tested in `test/scene/test_compositor.cc` (suite `neutrino::compositor
+   wrapping`: the default compositor and a game's own wrapped and put back, nested
+   wrappers, a wrapper reading `below()`). Transitions over the old scene's last frame
+   come with RM5.
 6. **Quads.** `quad_params` with tint and crop; `draw_picture` with the fit modes; every
    placement rule of §2.13. Independent of the painter; may go first.
 

@@ -960,3 +960,92 @@ TEST_SUITE("neutrino::layer members") {
         CHECK(f.at(1, 1) == RED);                  // kept without being drawn again
     }
 }
+
+TEST_SUITE("neutrino::compositor wrapping") {
+    // What a transition does (painter.md §2.9): wrap whatever compositor the scene has, the
+    // default or the game's own, draw over what it composes, and put it back when done.
+    [[nodiscard]] compositor wrap_with(const compositor& inner, rect mark, color c) {
+        return [inner, mark, c](composition& comp) {
+            inner(comp);                                   // the scene, composed as it is
+            draw_rect_fill(mark, c);                       // then the wrapper's own drawing
+        };
+    }
+
+    TEST_CASE("a wrapper calls the compositor it wraps, draws over it, and is put back") {
+        fixture f;
+        const layer_id a = f.scene->add();
+        f.scene->draw = [&] { paint(a, rect{0, 0, 8, 8}, RED); };
+        const compositor inner = f.scene->get_compositor();
+        f.scene->set_compositor(wrap_with(inner, rect{0, 0, 2, 2}, BLUE));
+        f.frame();
+        CHECK(f.at(1, 1) == BLUE);                         // the wrapper's, over the layer
+        CHECK(f.at(5, 5) == RED);                          // the wrapped default compositor's
+
+        f.scene->set_compositor(inner);                    // the transition ends
+        f.frame();
+        CHECK(f.at(1, 1) == RED);
+        using fn = void (*)(composition&);
+        REQUIRE(f.scene->get_compositor().target <fn>() != nullptr);
+        CHECK(*f.scene->get_compositor().target <fn>() == &default_compositor);
+    }
+
+    TEST_CASE("a wrapper keeps a compositor of the game's own as the game wrote it") {
+        fixture f;
+        const layer_id a = f.scene->add();
+        f.scene->draw = [&] { paint(a, rect{0, 0, 2, 2}, RED); };
+        f.scene->set_compositor([a](composition& c) {      // the game's: the layer twice
+            c.draw_layer(a);
+            c.draw_layer(a, {.offset = {4, 4}});
+        });
+        f.scene->set_compositor(wrap_with(f.scene->get_compositor(), rect{6, 0, 2, 2}, BLUE));
+        f.frame();
+        CHECK(f.at(1, 1) == RED);                          // the game's first copy
+        CHECK(f.at(5, 5) == RED);                          // and its second
+        CHECK(f.at(7, 1) == BLUE);                         // the wrapper's
+    }
+
+    TEST_CASE("wrappers nest: the outer one draws last") {
+        fixture f;
+        const layer_id a = f.scene->add();
+        f.scene->draw = [&] { paint(a, rect{0, 0, 8, 8}, RED); };
+        const compositor original = f.scene->get_compositor();
+        f.scene->set_compositor(wrap_with(original, rect{0, 0, 4, 4}, GREEN));
+        f.scene->set_compositor(wrap_with(f.scene->get_compositor(), rect{2, 2, 4, 4}, BLUE));
+        f.frame();
+        CHECK(f.at(1, 1) == GREEN);                        // the inner wrapper only
+        CHECK(f.at(3, 3) == BLUE);                         // the outer wrapper, over the inner
+        CHECK(f.at(7, 7) == RED);                          // the scene
+        f.scene->set_compositor(original);
+        f.frame();
+        CHECK(f.at(3, 3) == RED);
+    }
+
+    TEST_CASE("a wrapper reads the scenes below, as a transition over the old scene would") {
+        fixture f;                                         // the bottom scene, without layers
+        f.scene->draw = [&] { draw_rect_fill(rect{0, 0, 8, 8}, RED); };
+        auto owned = std::make_unique <layer_scene>(scene_flags::none);
+        layer_scene* incoming = owned.get();
+        const layer_id a = incoming->add();
+        incoming->draw = [&] { paint(a, rect{0, 0, 4, 4}, BLUE); };
+        std::size_t seen_below = 0;
+        const texture* first_below = nullptr;
+        const compositor inner = incoming->get_compositor();
+        incoming->set_compositor([inner, &seen_below, &first_below](composition& c) {
+            seen_below = c.below().size();
+            first_below = seen_below > 0 ? c.below().front() : nullptr;
+            inner(c);
+        });
+        f.mgr.push_scene_sync(std::move(owned));
+        f.frame();
+        REQUIRE(seen_below == 1);                          // not drawn straight into the window
+        CHECK(first_below == scene_context_access::canvas_of(f.scene)->get());
+        CHECK(f.at(1, 1) == BLUE);
+        CHECK(f.at(6, 6) == RED);
+
+        incoming->set_compositor(inner);                   // back to the default
+        f.frame();
+        CHECK(scene_context_access::canvas_of(f.scene)->get() == nullptr);   // straight in again (R44)
+        CHECK(f.at(1, 1) == BLUE);
+        CHECK(f.at(6, 6) == RED);
+    }
+}
