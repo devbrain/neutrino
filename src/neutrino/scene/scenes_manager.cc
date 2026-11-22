@@ -147,19 +147,15 @@ namespace neutrino {
         return n == 0 ? nullptr : m_stack[n - 1].get();
     }
 
-    void scenes_manager::prepare_canvas(base_scene* scene) {
-        // The canvas's default blend follows the flags (painter.md §2.3): a full-screen scene
-        // is a plain copy, an overlay is blended over what is below. Set before on_enter(), so
-        // the scene can choose another there. A transparent window shows what its alpha says:
-        // a none copy would leave see-through what the canvas left empty, where the cleared
-        // window was opaque black, so there a full-screen canvas blends over the clear too.
-        if (detail::canvas* canvas = detail::scene_context_access::canvas_of(scene)) {
-            const sdlpp::window* window = service_locator::instance().maybe_window(); // sdlpp-ok: internal
-            const bool see_through = window != nullptr
+    blend_mode scenes_manager::scene_blend(const base_scene* scene) {
+        // The scene's flags are the only source (painter.md §2.3, R45): a full-screen scene is
+        // a plain copy, an overlay is blended over what is below. A transparent window shows
+        // what its alpha says: a none copy would leave see-through what the scene left empty,
+        // where the cleared window was opaque black, so there every scene blends.
+        const sdlpp::window* window = service_locator::instance().maybe_window(); // sdlpp-ok: internal
+        const bool see_through = window != nullptr
                 && (window->get_flags() & sdlpp::window_flags::transparent) != sdlpp::window_flags::none; // sdlpp-ok: internal
-            const bool plain_copy = has(scene->flags(), scene_flags::hides_below) && !see_through;
-            canvas->composite().blend = plain_copy ? blend_mode::none : blend_mode::blend;
-        }
+        return has(scene->flags(), scene_flags::hides_below) && !see_through ? blend_mode::none : blend_mode::blend;
     }
 
     bool scenes_manager::enter_or_roll_back(base_scene* scene) {
@@ -168,7 +164,6 @@ namespace neutrino {
         // entered scene a chance to clean up and drop it from the stack. The
         // app stays responsive instead of letting the exception escape to
         // SDL, which would turn it into SDL_APP_FAILURE and terminate.
-        prepare_canvas(scene);
         try {
             scene->on_enter();
             return true;
@@ -230,7 +225,6 @@ namespace neutrino {
         auto& slot = m_stack[active_count() - 1];
         slot->on_exit();
         slot = std::move(scene);
-        prepare_canvas(slot.get());
         slot->on_enter();
         notify_top_resized();
     }
@@ -336,13 +330,12 @@ namespace neutrino {
         if (!canvas) {
             return p;
         }
-        const layer_composite_settings& s = canvas->composite();
-        // Straight into the target (R44) when the canvas would only copy the scene 1:1: no
-        // layers, an every-frame canvas, its settings the identity, and nothing above that can
-        // read below() — only a compositor of a scene's own can.
+        // Straight into the target (R44) when the canvas would only copy the scene: no layers,
+        // an every-frame canvas, and nothing above that can read below() — only a compositor
+        // of a scene's own can. A canvas is always copied as it is (R45).
         bool direct = detail::shortcuts().bottom_scene_into_target
                       && detail::scene_context_access::of(bottom) == nullptr
-                      && canvas->redraw() == redraw_mode::every_frame && detail::is_identity_composite(s);
+                      && canvas->redraw() == redraw_mode::every_frame;
         for (size_t i = p.bottom + 1; direct && i < m_stack.size(); i++) {
             base_scene* const above = m_stack[i].get();
             if (detail::scene_context_access::of(above) != nullptr
@@ -351,9 +344,8 @@ namespace neutrino {
             }
         }
         p.direct = direct;
-        // Otherwise a none copy in place, unmoved and unscaled, writes every pixel of the target.
-        p.covers = !direct && s.blend == blend_mode::none && s.offset == point{0, 0}
-                   && s.scale == layer_scale{1.0f} && s.rotation_degrees == 0.0f && !s.source && !s.destination;
+        // Otherwise its none copy writes every pixel of the target.
+        p.covers = !direct && scene_blend(bottom) == blend_mode::none;
         return p;
     }
 
@@ -425,6 +417,9 @@ namespace neutrino {
                     frame.finish();
                 }
                 detail::canvas* canvas = detail::scene_context_access::canvas_of(scene);
+                if (canvas) {
+                    canvas->set_blend(scene_blend(scene));
+                }
                 finished.push_back(canvas);
                 if (canvas && canvas->has_content()) {
                     below.push_back(canvas->get());

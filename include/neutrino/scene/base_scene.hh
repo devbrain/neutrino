@@ -137,6 +137,21 @@ namespace neutrino {
              */
             [[nodiscard]] layer_id declare_layer(const layer_settings& settings = {});
 
+            /**
+             * @brief How the layer @p lid is drawn when the scene's layers are combined: its
+             *        style, live (painter.md §2.7).
+             *
+             * Change it at any time — in fixed_update(), in render() — and the compositor reads
+             * it after render(): `style_of(m_world).offset = m_shake.offset();`. Animating it
+             * frame by frame is how a layer fades, shakes or turns; nothing is redrawn into the
+             * layer. Its first value is layer_settings::style.
+             *
+             * ENFORCE: the scene declared layers, and @p lid is one of them. The base layer —
+             * where drawing with no layer pushed goes — has no style of its own: it is drawn
+             * as it is; declare a layer for drawing that must move or fade (R45).
+             */
+            [[nodiscard]] layer_style& style_of(layer_id lid);
+
         private:
             /// The scene's layers; made by the first declare_layer(), null until then. Reached
             /// by the scene manager through detail::scene_context_access.

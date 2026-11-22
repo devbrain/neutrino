@@ -35,19 +35,21 @@ namespace neutrino {
     };
 
     /**
-     * @brief How a finished layer — or a scene's canvas — is drawn when it is combined
-     *        (painter.md §2.7).
+     * @brief How a finished layer is drawn when its scene's layers are combined: its style
+     *        (painter.md §2.7, R45).
      *
-     * The settings are live: change them at any time, and the compositor reads them when it
-     * runs, after `render()`. Animating them frame by frame is how layer effects move; nothing
-     * is redrawn into the layer. The flat settings place the layer as one quad (R43): flipped,
+     * Given at declaration as layer_settings::style, changed through base_scene::style_of(id).
+     * It is live: change it at any time, and the compositor reads it when it runs, after
+     * `render()`. Animating it frame by frame is how a layer fades, shakes or turns; nothing
+     * is redrawn into the layer. A scene itself has no style: its picture is copied as it is,
+     * with the blend its flags give. The flat settings place the layer as one quad (R43): flipped,
      * then scaled and rotated about the pivot, then moved by the offset. Mesh effects come with
      * RM4.
      *
      * Positions and sizes are in render units: offset, pivot, destination, and source unless
      * the layer has a size of its own, when source is in its own pixels.
      */
-    struct NEUTRINO_EXPORT layer_composite_settings {
+    struct NEUTRINO_EXPORT layer_style {
         /// @brief How the layer combines with what is below; the painter uses the premultiplied
         ///        form of @c blend and @c add (painter.md §2.8).
         blend_mode blend{blend_mode::blend};
@@ -68,9 +70,9 @@ namespace neutrino {
         /// @brief Mirrors the layer horizontally, vertically or both. A diagonal flip is refused
         ///        (render_model.md R35).
         flip_mode  flip{};
-        /// @brief Only this part of the layer. In render units for a layer that mirrors the
-        ///        canvas, and for a canvas, like everything drawn into them; in its own pixels for
-        ///        a layer with a size of its own. Unset: all of it.
+        /// @brief Only this part of the layer. In render units for a layer without a size of
+        ///        its own, like everything drawn into it; in its own pixels for a layer with one.
+        ///        Unset: all of it.
         std::optional <rect> source;
         /// @brief Where the layer, or its @ref source part, lands: stretched onto this
         ///        rectangle. Unset: in place — a layer that mirrors the canvas lands on the same

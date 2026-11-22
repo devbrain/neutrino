@@ -3,7 +3,7 @@
 //
 
 /// @file layer_ops.hh
-/// @brief Pushing and popping the layers of the scene being rendered (painter.md §2.5).
+/// @brief The layers of the scene being rendered: pushing, popping, clearing (painter.md §2.5).
 
 #pragma once
 
@@ -35,4 +35,55 @@ namespace neutrino {
      * texture::bind() scope that outlived the layer fails here.
      */
     NEUTRINO_EXPORT void pop_layer();
+
+    class layer_scope;
+
+    /// @brief push_layer(@p lid) now; pop_layer() when the returned scope ends, also on an
+    ///        exception. ENFORCE: as push_layer().
+    NEUTRINO_EXPORT [[nodiscard]] layer_scope scoped_layer(layer_id lid);
+
+    /**
+     * @brief Ends a scoped_layer() push when it is destroyed.
+     *
+     * Movable, not assignable: scopes end in the reverse order of their creation, as pushes
+     * and pops do, and assigning a newer scope over an older one would pop the newer push.
+     * Ending one never throws: a failure is logged.
+     */
+    class NEUTRINO_EXPORT layer_scope {
+        friend layer_scope scoped_layer(layer_id lid);
+
+        public:
+            /// @brief Takes @p other's push; @p other ends nothing.
+            layer_scope(layer_scope&& other) noexcept;
+            layer_scope& operator=(layer_scope&&) = delete;
+            layer_scope(const layer_scope&) = delete;
+            layer_scope& operator=(const layer_scope&) = delete;
+            /// @brief Pops the push this scope owns, if it still owns one.
+            ~layer_scope();
+        private:
+            /// push_layer(@p lid), owned by the new scope.
+            explicit layer_scope(layer_id lid);
+            /// True while the scope owns a push it has not ended.
+            bool m_valid{false};
+    };
+
+    /**
+     * @brief Clears what the scene being rendered draws on now: its current layer (the newest
+     *        push, or the base layer) to the layer's clear colour — transparent, or opaque
+     *        white for a @c mod layer — or, in a scene without layers, the scene's picture.
+     *
+     * For an on-demand layer, the way to start again; an every-frame layer is cleared at its
+     * first push anyway. ENFORCE: a scene is being rendered.
+     */
+    NEUTRINO_EXPORT void clear();
+
+    /**
+     * @brief For an on-demand layer of the scene being rendered: true when it must be drawn in
+     *        full — never drawn yet, or its contents lost to a resize, a change of logical
+     *        presentation or a device reset — until the end of a frame that pushes it.
+     *
+     * One answer for the whole frame. Always false for an every-frame layer, which keeps
+     * nothing. ENFORCE: a scene with layers is being rendered, and @p lid is one of them.
+     */
+    NEUTRINO_EXPORT [[nodiscard]] bool needs_redraw(layer_id lid);
 }

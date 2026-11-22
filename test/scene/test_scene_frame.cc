@@ -609,7 +609,7 @@ TEST_SUITE("neutrino::scene layers") {
         REQUIRE(layers.target(tint) != nullptr);
         CHECK(pixel_is(*layers.target(tint), 0, 0, colors::transparent));
 
-        layers.composite(tint).blend = blend_mode::mod;           // the settings are live
+        layers.style(tint).blend = blend_mode::mod;           // the settings are live
         {
             texture out = make_output(dim{16, 16});               // a resize refills it
             auto scope = out.bind();

@@ -63,7 +63,7 @@ is in [`render_model.md`](render_model.md).
   layer can be moved, faded, rotated or warped as a whole, and the z-order no longer
   depends on the order the code draws in.
 - **The compositor combines the layers onto the canvas** — by default in declaration order,
-  each with its composite settings; a scene can replace it with its own. *Why:* the
+  each with its style; a scene can replace it with its own. *Why:* the
   settings cover the common effects; anything else is ordinary drawing code.
 - **The canvas is the result.** Without layers, drawing goes straight onto it; with
   layers, drawing outside every layer goes to the base layer, the bottom one. A scene's
@@ -89,7 +89,7 @@ is in [`render_model.md`](render_model.md).
 | **base layer** | in a scene with layers, the bottom layer, made with the first `declare_layer`: drawing with no layer pushed goes to it |
 | **redraw mode** | how a layer or canvas is kept: `every_frame` (the default) clears it at its first push in each frame, so it shows only what that frame drew; `on_demand` keeps its contents between frames and shows them in frames that do not draw it. An *on-demand layer* has `on_demand`; an *every-frame layer* the default |
 | **canvas** | a scene's result; not a layer |
-| **composite settings** | how a layer — or a canvas — is drawn when combined: blend, opacity, tint, transform, effects |
+| **layer style** | how a layer is drawn when combined (`layer_style`, `style_of(id)`): blend, opacity, tint, transform, effects |
 | **compositor** | the function that draws a scene's layers onto its canvas |
 | **composition** | what a compositor receives: the layers, their textures, the canvases below |
 | **combining** | running the compositor, then drawing the canvases into the window |
@@ -251,13 +251,12 @@ enum class redraw_mode : std::uint8_t {
 struct layer_settings {                      // every field has a default
     std::optional<dim> size;                 // default: the target's pixel size (R42)
     redraw_mode        redraw{redraw_mode::every_frame};
-    layer_composite_settings composite{};    // §2.7
+    layer_style        style{};              // how it is drawn when combined (§2.7)
 };
 
-// base_scene members: the scene's layers and their settings
+// base_scene members, protected: the scene's own layers
 layer_id declare_layer(const layer_settings& = {});
-layer_composite_settings& composite(layer_id);
-[[nodiscard]] layer_id base_layer() const;          // the bottom layer (below)
+layer_style& style_of(layer_id);                    // live: change it any time (§2.7)
 
 // free functions on the painter: during the scene's render()
 void push_layer(layer_id);
@@ -284,9 +283,10 @@ the declared one: it is always the bottom of the default z-order.
 
 - **Drawing with no layer pushed goes to it.** It is current at the start of every frame,
   under every push.
-- **It is an ordinary layer**, at the scene's size and redrawn every frame.
-  `base_layer()` gives its id: `composite(base_layer())` shakes or fades it, and a
-  compositor may draw it anywhere, twice, or not at all.
+- **It is internal** (R45): at the scene's size, redrawn every frame, and drawn as it is —
+  it has no style, and `style_of` refuses it. Drawing that must move or fade goes on a
+  declared layer. A compositor of the scene's own reaches it as `layers().front()` and
+  may draw it anywhere, twice, or not at all.
 - **It is pushed every frame,** so it is cleared at the start of each frame and always
   combined.
 - **Pushing it** makes it current again over the layers pushed above it. It cannot be
@@ -296,8 +296,8 @@ the declared one: it is always the bottom of the default z-order.
   canvas belongs to the compositor, and content drawn outside every layer can still be
   moved or faded as a whole.
 - *Cost:* a scene with layers pays for its base layer — one clear a frame — whether it
-  draws on it or not. While its composite settings are the identity its texture is the
-  canvas, so it adds no combine (R41, §3.8).
+  draws on it or not. With the default compositor its texture is the canvas, so it adds
+  no combine (R41, §3.8).
 
 **Pushing.**
 
@@ -376,55 +376,44 @@ opaque white (§2.8).
 
 **`size`** gives a layer its own resolution; it is scaled to the canvas when combined.
 
-### 2.6 The canvas
+### 2.6 How a scene is drawn
 
-```cpp
-// base_scene members
-layer_composite_settings& canvas_composite();  // how the scene's canvas is drawn into the window
-void set_canvas_redraw(redraw_mode);            // on_demand: the canvas persists between frames
-[[nodiscard]] bool canvas_needs_redraw() const; // needs_redraw(id) for an on-demand canvas
-[[nodiscard]] const texture& canvas() const;    // the result
-```
+A scene is a logical part of the game — brix's main menu, play scene, game-over scene —
+and its flags say how it relates to the scenes below (§2.10). Everything visual about it —
+fades, shakes, a picture kept between frames — is done with its layers (R45). The game
+sees no canvas and sets nothing about how its scene is drawn:
 
-- **The canvas is the scene's result, not a layer.** It has the pixel size and the logical
-  presentation of the target the scene manager draws into, the window or a bound texture,
-  so drawing onto it lands on the same pixels as drawing into that target (R42).
-- **Without declared layers, drawing goes straight onto the canvas**, as today; there is
-  nothing to combine and the compositor is not called.
-- **With declared layers, the canvas belongs to the compositor.** It is cleared when the
-  compositor starts, unless it is redrawn on demand, and the compositor draws the layers
-  onto it. Drawing with no layer pushed goes to the base layer (§2.5), not to the canvas.
-- **Its texture is taken when something is drawn onto it** (R41): at the first frame of a
-  scene without layers; at combining in a scene with layers, and only when the base
-  layer's own texture cannot serve as the result (§3.5). A scene hidden under one with
-  `hides_below` gives the textures of its every-frame canvas and layers back to the pool,
-  and takes them again when it is next drawn.
-- **The canvas's composite settings** say how a scene's canvas is drawn into the window over
-  the scenes below, every flat setting included, as for a layer that mirrors the canvas
-  (§2.7, R43). Fading a whole pause menu in is `canvas_composite().opacity = t`; a
-  transition can shrink or turn a whole scene. The default blend is `none` with
-  `hides_below` and `blend` without.
-- **`set_canvas_redraw(redraw_mode::on_demand)`** keeps the canvas between frames:
-  simplex's persistent canvas.
-- **`canvas_needs_redraw()`** is `needs_redraw(id)` for an on-demand canvas, with the same
-  rules: true in the first frame and after a resize, a reset or a change of the logical
-  presentation at the same pixel size, false at the end of a frame
-  that drew on the canvas, always false for an every-frame canvas. Simplex records
-  nothing, so its canvas after a reset stays empty.
-- *Why the canvas is not a layer:* every layer stays an ordinary layer that a compositor
-  can draw in any order, any number of times, or not at all; the result has no special
-  rules to remember.
+- **Each scene's picture is copied over the scenes below as it is**, 1:1, with the blend
+  its flags give: `none` with `hides_below` (a plain copy), `blend` without (an overlay
+  shows what is below), and `blend` for every scene in a transparent window. The flags are
+  the only source; nothing else can change it.
+- **Without declared layers, drawing goes straight onto the scene's picture**, as today;
+  there is nothing to combine and the compositor is not called. The bottom full-screen
+  scene draws straight into the window (R44).
+- **With declared layers, the picture belongs to the compositor**, which draws the layers
+  onto it after `render()` (§2.9). Drawing with no layer pushed goes to the base layer.
+- **To fade, shake or turn a scene**, the scene does it to its own layers:
+  `style_of(m_menu).opacity = t`.
+- **To keep a picture between frames** (simplex), a scene declares an on-demand layer and
+  draws into it; `needs_redraw(id)` says when to draw it in full.
+
+Internally the picture is the scene's canvas (`detail::canvas`, §3.1): at the pixel size
+and logical presentation of the target it is drawn into (R42), its texture taken when
+something is drawn onto it (R41). A scene hidden under one with `hides_below` gives the
+textures of its every-frame canvas and layers back to the pool, and takes them again when
+it is next drawn.
 
 | Concept | Job |
 |---|---|
 | `declare_layer` | which layers exist, and their default order |
 | `push_layer` / `pop_layer` | where draw calls go now |
-| compositor | how the layers become the canvas: the final z-order |
+| `style_of(id)` | how a layer looks when combined: live |
+| compositor | how the layers become the scene's picture: the final z-order |
 
-### 2.7 Composite settings
+### 2.7 Layer style
 
 ```cpp
-struct layer_composite_settings {
+struct layer_style {
     blend_mode blend{blend_mode::blend};   // none, blend, add, mul, mod (§2.8)
     float      opacity{1.0f};
     color      tint{colors::white};        // fade to black, damage flash, night
@@ -438,17 +427,21 @@ struct layer_composite_settings {
     std::vector<mesh_effect> effects;      // ordered: rotate_3d, wave, perspective… (§4)
 };
 
-p.composite(m_world).offset  = m_shake.offset();
-p.composite(m_hud).opacity   = m_fade.value();
-p.composite(m_board).effects = {rotate_3d{.yaw = m_angle}};
+style_of(m_world).offset  = m_shake.offset();
+style_of(m_hud).opacity   = m_fade.value();
+style_of(m_board).effects = {rotate_3d{.yaw = m_angle}};
 ```
 
 - **Coordinate types follow docs/coordinates.md (R40):** `offset` and `pivot` become
   `render_delta`s, `destination` a `render_rect`, and `source` a `render_rect` for a layer
-  that mirrors the canvas and for a canvas, a texel rectangle for a layer with its own
-  `size`; the struct above shows today's types.
-- **Live:** change them at any time; the compositor reads them when it runs. Animating
-  them each frame on the scene's clock is how layer effects move.
+  that mirrors the canvas, a texel rectangle for a layer with its own `size`; the struct
+  above shows today's types.
+- **Named for what it is** (R45): how a layer looks when combined — `layer_style`, read
+  and changed through `style_of(id)`, first given as `layer_settings::style`. Was
+  `layer_composite_settings` and `composite(id)`.
+- **Live:** change it at any time — in `fixed_update()`, in `render()` — and the
+  compositor reads it when it runs. Animating it each frame on the scene's clock is how
+  layer effects move.
 - **Flat transforms** draw the layer as one quad (R43). The rectangle it is drawn onto is
   `destination`, or, unset, the layer in place: a layer that mirrors the canvas lands on
   the same pixels, a layer with its own `size` is stretched over the render area (not the
@@ -458,10 +451,11 @@ p.composite(m_board).effects = {rotate_3d{.yaw = m_angle}};
   Then the layer is flipped, scaled and rotated about the pivot (unset: the rectangle's
   centre), and moved by the offset. A scale of 0 hides it.
 - **Brix's plasma** (render_model.md §7.1) as a layer: one texel per 4×4 cell,
-  `declare_layer({.size = {w / 4, h / 4}, .composite = {.destination = board}})`, with
+  `declare_layer({.size = {w / 4, h / 4}, .style = {.destination = board}})`, with
   `board` rounded down to whole cells.
 - **Effects** draw the layer through a subdivided mesh (§4.2).
-- The same struct describes a scene's canvas (`canvas_composite()`).
+- **Layers only.** A scene's picture has no style: it is copied as it is, with the blend
+  its flags give (§2.6, R45).
 
 ### 2.8 Alpha and blend modes
 
@@ -501,7 +495,7 @@ void set_compositor(compositor);
 void default_compositor(composition& c) {
     for (const layer_id id : c.layers()) {    // declaration order
         if (c.has_content(id)) {              // pushed this frame, or on demand and not needing a redraw
-            c.draw_layer(id);                 // onto the canvas, with its composite settings
+            c.draw_layer(id);                 // onto the canvas, with its style
         }
     }
 }
@@ -515,7 +509,7 @@ puts it back.
 |---|---|
 | `layers()` | the base layer, then the declared layers, in declaration order |
 | `has_content(id)` | pushed this frame, or on demand and not needing a redraw |
-| `draw_layer(id)` | draws the layer onto the canvas with its composite settings |
+| `draw_layer(id)` | draws the layer onto the canvas with its style |
 | `draw_layer(id, settings)` | draws it with other settings: a second copy, a part, another blend |
 | `draw_layers(first, last)` | `draw_layer(id)` for each layer with content from `first` to `last` |
 | `texture(id)` | a layer's texture, for `draw_texture`, `draw_mesh` or quads with source rects |
@@ -594,7 +588,7 @@ class play_scene : public neutrino::base_scene {
   one with `hides_below`. For each it makes the scene's context the painter's, restoring
   its saved state, calls `render()`, and, if the scene declared layers, runs its
   compositor; the pinned scene comes last (§2.11). Then the canvases are drawn into the
-  window in that order, each with its canvas composite settings.
+  window in that order, each as it is, with the blend its flags give.
 - **Overlays** are scenes whose canvas is blended over the scenes below.
 - **Layers are private to their scene.** Pushing another scene's layer is an error. A
   compositor reads other scenes only through `below()`: their canvases, never their
@@ -676,6 +670,7 @@ closed console must see its toggle key.
 class console_scene : public neutrino::base_scene {
     bool  m_open  = false;
     float m_slide = 0.0f;                                // 0: hidden, 1: fully down
+    layer_id m_panel{declare_layer()};                   // what slides
 
     scene_flags flags() const override {
         return m_open ? scene_flags::pauses_below : scene_flags::passes_input;
@@ -688,22 +683,24 @@ class console_scene : public neutrino::base_scene {
         m_slide = approach(m_slide, m_open ? 1.0f : 0.0f, dt.count() / 0.25f);   // always updated
     }
     void render() override {
-        if (m_slide == 0.0f) return;                     // nothing drawn: nothing copied (§3.2)
-        canvas_composite().offset = {0, int((m_slide - 1.0f) * m_height)};
+        draw_fps();                                      // on the base layer: never slides
+        if (m_slide == 0.0f) return;                     // the panel not pushed: not shown
+        style_of(m_panel).offset = {0, int((m_slide - 1.0f) * m_height)};
+        auto panel = scoped_layer(m_panel);
+        set_draw_blend_mode(blend_mode::blend);
         draw_rect_fill({0, 0, render_size().width, m_height}, color{0, 0, 0, 200});
         draw_log_lines();
         draw_prompt();
-        draw_fps();
     }
 };
 
 pin_scene(std::make_unique<console_scene>());            // once, at startup
 ```
 
-The slide is the canvas's composite `offset`; the translucency is the canvas's blend.
-Beyond the scene manager and the painter, the console needs text input (sdlpp's
-`text_input_session`, not exposed by neutrino yet), `draw_text` (FM3), a log backend
-(failsafe's `logger::set_backend`) and a command registry.
+The slide is the panel layer's `offset`; the translucency is the scene's blend over the
+game — an overlay's, from its flags. Beyond the scene manager and the painter, the console
+needs text input (sdlpp's `text_input_session`, not exposed by neutrino yet), `draw_text`
+(FM3), a log backend (failsafe's `logger::set_backend`) and a command registry.
 
 **The mouse cursor is not a scene.** It is SDL's hardware cursor, drawn by the OS: no layer
 and no lag. sdlpp wraps `SDL_CreateColorCursor`; SDL 3.4 adds `SDL_CreateAnimatedCursor`.
@@ -800,14 +797,13 @@ canvases can be dumped with `texture::to_image()`.
     outlived the layer;
   - a frame ending with a layer still pushed (the message names it);
   - drawing a layer's or a canvas's own texture into itself;
-  - `base_layer()` in a scene that declared no layers;
+  - `style_of` in a scene that declared no layers, or on the base layer;
   - pushing a layer inside a compositor;
   - a scene's frame, or a compositor, that ends with a `push_state()` not popped (the push
     is undone first);
   - `set_compositor` with an empty compositor, or inside the scene's own compositor;
   - a diagonal flip, a non-finite rotation or opacity, or a negative or non-finite scale
-    in the composite settings of a layer being drawn, or of a canvas at the end of its
-    scene's frame (a canvas whose settings go bad later is skipped and counted instead);
+    in the style of a layer being drawn;
   - `pop_scene` or `replace_scene` with no scene below the pinned scene.
 - **Silent no-op:** an invalid address ("no picture").
 - **Wrong arguments throw**, as today: a non-finite or non-positive scale, a non-finite
@@ -877,11 +873,12 @@ class painter {                              // one: application_scoped<painter>
   layers' and canvas's lifetime.
 - **`m_context` is set by the scene manager around each `render()`** and is null
   otherwise; drawing then goes to the bound target, as today.
-- **`detail::canvas`** (`src/neutrino/video/canvas.hh`) owns a scene's canvas: its
-  texture from the allocator, its composite settings, its redraw mode and the frame's
-  `drawn` flag. It knows its size and the allocator, not scenes, so it is tested alone.
-  It is made with its scene; its texture is taken when first needed, and for a frame it
-  may show the base layer's texture instead of its own (R41, §3.5). Its frame:
+- **`detail::canvas`** (`src/neutrino/video/canvas.hh`) owns a scene's canvas: its texture
+  from the allocator, its blend (set from its scene's flags before each copy, R45), its
+  redraw mode (every frame; on demand only in its own tests) and the frame's `drawn` flag.
+  It knows its size and the allocator, not scenes, so it is tested alone. It is made with
+  its scene; its texture is taken when first needed, and for a frame it may show the base
+  layer's texture instead of its own (R41, §3.5). Its frame:
   - `begin_frame(geometry)` takes the geometry of the target the scene manager draws into
     (`detail::target_geometry`: its pixel size and logical presentation, R42), resizes a
     texture it holds, and resets the frame's flags;
@@ -896,8 +893,8 @@ class painter {                              // one: application_scoped<painter>
     of the frame, so the scenes drawn can reuse it.
 
   `draw_canvases()` copies the canvases into the target inside a `detail::pixel_space`
-  (§3.4): its logical presentation and clip off, each canvas with every flat composite
-  setting, as a layer that mirrors the target, so in place it lands 1:1 (R43).
+  (§3.4): its logical presentation and clip off, each canvas as it is, 1:1, with the
+  premultiplied form of the blend its scene's flags give (R45).
   `has_content()` says whether a canvas is copied, and whether the scenes above see it in
   `below()`.
 - **`detail::scene_frame`** (`src/neutrino/scene/scene_frame.hh`) runs one scene's frame
@@ -955,8 +952,8 @@ walks the visible scenes bottom to top. With the painter, after the allocator's
 3. Do the same for the pinned scene, last.
 4. Clear the window now if it was not cleared because the bottom canvas would cover it,
    and that canvas has nothing to show. Draw the canvases into the window in that order,
-   each with its canvas composite settings. An every-frame canvas that had nothing drawn
-   on it this frame is not copied, so a hidden pinned scene costs nothing.
+   each as it is, with the blend its scene's flags give. An every-frame canvas that had
+   nothing drawn on it this frame is not copied, so a hidden pinned scene costs nothing.
 5. Present.
 
 `capture_frame()` runs the combining first, so it reads what will be shown.
@@ -1129,7 +1126,7 @@ before drawing into a layer or combining it.
   1.7), on each handle drawn on in that frame: every layer pushed, and the canvas if
   anything was drawn on it. *Why at the end of the frame:* `needs_redraw(id)` then gives
   one answer for the whole frame (§2.5).
-- **The painter reports it** through `needs_redraw(id)` and `canvas_needs_redraw()`, for
+- **The painter reports it** through `needs_redraw(id)`, for
   on-demand layers and canvases; for the others it answers `false`.
 - **`has_content(id)` is `pushed || (on_demand && !needs_redraw())`**: an on-demand layer
   that needs a redraw and was not pushed is not combined.
@@ -1257,15 +1254,15 @@ namespace neutrino::detail {
 
             // the scene's layer calls (§2.5)
             layer_id declare(const layer_settings& = {}); // the first also makes the base layer
-            layer_id base_layer() const;
-            layer_composite_settings& composite(layer_id);
+            layer_id base_layer() const;                 // internal: the scene never names it (R45)
+            layer_style& style(layer_id);                // base_scene::style_of() forwards here
             bool needs_redraw(layer_id) const;           // false for an every-frame layer
 
             // push_layer, pop_layer and clear() on the scene being rendered
             void push(layer_id);                         // take the target, bind it, clear at the first push
             void pop();
             const texture* target(layer_id) const;       // the layer's texture; null if it has none
-            void clear(layer_id);                        // to the layer's clear colour
+            void clear_current();                        // the newest push, to its clear colour
 
             // around render() (§3.2)
             void begin_frame(const target_geometry&);    // resize, reset the flags, push the base layer
@@ -1277,9 +1274,8 @@ namespace neutrino::detail {
             void end_combine() noexcept;
             bool combining() const noexcept;
             std::span<const layer_id> layers() const;    // the base layer, then declaration order
-            layer_composite_settings& composite(layer_id);
             bool has_content(layer_id) const;            // a texture, and pushed || (on_demand && !needs_redraw)
-            void draw_layer(layer_id, const layer_composite_settings&);
+            void draw_layer(layer_id, const layer_style&);
             void draw_layers(layer_id first, layer_id last);
             void mark_drawn();                           // every layer pushed this frame, after combining
 
@@ -1311,7 +1307,8 @@ pointer to the stack:* a destroyed scene's memory can be reused by a new one, an
 id would then match. `layer_id{}` names no layer.
 
 **Declaring.** The first `declare` makes the base layer, at index 0, before the declared
-one: at the stack's size, redrawn every frame, with the default composite settings.
+one: at the stack's size, redrawn every frame, with the default style, which nothing
+changes (R45).
 `declare` appends and takes no texture. It is allowed at any time except while combining.
 
 **Pushing.** `push(id)`:
@@ -1446,17 +1443,19 @@ For each layer the compositor draws, and for each canvas drawn into the window:
 
 Both go through `src/neutrino/video/composite_draw.hh`: `pixel_space`, and
 `draw_composited()` with every flat setting and the alpha rules (`premultiplied()`,
-`apply_composite_modulation()`). A canvas is drawn as a layer that mirrors the target.
+`apply_style_modulation()`). A canvas is drawn as a layer that mirrors the target, with
+only a blend.
 
 A `mod` layer is cleared to opaque white at its first push; every other layer and every
 canvas to transparent. For a layer, `layer_stack::draw_layer` does all of this (§3.4).
 
 **The base layer's texture as the canvas** (R41, built 2026-11-22). Combining a scene
 with layers first chooses the canvas's texture for the frame. The base layer's texture
-serves when the compositor is the default one, the base layer's composite settings are
-the identity (opacity 1, a white tint, no offset, scale, rotation, flip, `source` or
-`destination`; a blend of `none` or `blend`, not `add`, which keeps the target's alpha),
-and the canvas is redrawn every frame. Drawing the base layer onto a
+serves when the compositor is the default one and the canvas is redrawn every frame; the
+base layer's style is the identity then — it always is, since nothing can change it
+(R45), and the check stays: opacity 1, a white tint, no offset, scale, rotation, flip,
+`source` or `destination`; a blend of `none` or `blend`, not `add`, which keeps the
+target's alpha. Drawing the base layer onto a
 cleared transparent canvas would then copy it exactly, so the copy is skipped: the
 declared layers are drawn straight onto the base layer's texture, which the canvas shows
 until the scene's next frame (`canvas::share()`, `layer_stack::bind_base()` and
@@ -1577,7 +1576,7 @@ not (five 1080p layers ≈ 30 ms); the tests use small sizes.
 |---|---|---|
 | primitive with animated parameters | brix's laser and cursor | a producer drawing geometry |
 | deformed picture | a waving flag, a 3-D card flip | `draw_mesh` on an atlas picture |
-| whole-layer transform or deformation | brix's board rotation, an underwater wobble, screen shake | the layer's composite settings, or a texture made with `compose()` drawn through a mesh |
+| whole-layer transform or deformation | brix's board rotation, an underwater wobble, screen shake | the layer's style, or a texture made with `compose()` drawn through a mesh |
 | part of a layer | heat haze over a fire, a ripple | a mesh over part of a layer's texture, drawn by a compositor |
 | transition over the finished picture | Doom melt, crossfade, wipe | the old scene's canvas, kept until the transition ends, drawn with the new scene by a wrapping compositor |
 | many short-lived quads | particles, sparks | a producer drawing quads |
@@ -1659,41 +1658,36 @@ painter, so there are no scene painters to build.
    (suites `neutrino::detail::texture_allocator` and `neutrino::detail::texture_table`),
    which check the invariants after every step.
 2. **Layers.** `detail::layer_stack` (§3.4), tested alone; a scene context owned by
-   `base_scene`, with `declare_layer`, `composite(id)` and `base_layer()` as scene
-   members; the one painter, owned by the application, with its save stack and the free
-   `push_layer` / `pop_layer` / `scoped_layer`, `push_state` / `pop_state` /
-   `scoped_state`, `clear()` and `needs_redraw()`; the base layer; on-demand layers; the
-   frame steps of §3.2 in the scene manager, with `abort_frame()` when `render()` throws;
-   the default compositor; composite settings without effects (§2.7) and the alpha rules
-   of §2.8; inspection (§2.14). Until step 3 the compositor draws into the window. Until
-   step 4 the state saves hold the renderer's draw colour, blend mode and line style, and
-   drawing into a failed layer lands on the target below it. *Done so far (2026-11-18):*
-   the layer stack's declare, the base layer, push, pop, begin_frame, end_frame,
-   abort_frame and target; layer pushes independent of the painter state, the clip
-   following the painter (R39); tests in `test/video/test_layer_stack.cc`. *Exit:* scenes
-   without layers draw exactly as today; a layered test scene renders as specified.
-3. **Canvases.** Each scene's canvas from the allocator, drawn into the window in stack
-   order with the canvas composite settings and the default blend from `hides_below`; the
-   compositor draws onto the canvas; `set_canvas_redraw` and `canvas_needs_redraw()`;
-   the simplex canvas as the simplex scene's canvas; the pooled textures of the old render
-   size dropped on a resize; `below()`; `capture_frame()` combines first; R41: the
-   canvas's texture taken when first needed, the base layer's texture as the canvas, with
-   a test switch, and the every-frame canvases of hidden scenes given back. *Done so far
-   (2026-11-22):* `detail::canvas` (§3.1), owned by `base_scene` and run by
-   `scene_frame`; a scene without layers draws onto it, and the scene manager copies the
-   canvases into the bound target with every flat composite setting; R42's mirrored
-   geometry for canvases and layers; hidden scenes give back the textures of their
-   every-frame canvases and layers.
-   The compositor (R43): `composition`, `default_compositor`, `set_compositor` /
-   `get_compositor`, `below()`, every flat composite setting with `layer_scale` and
-   `destination`. Tests in `test/video/test_canvas.cc`, `test/scene/test_scene_frame.cc`,
-   `test/scene/test_compositor.cc` and the layer presentation case in
-   `test/video/test_layer_stack.cc`. The base layer's texture as the canvas (R41), the
-   bottom full-screen scene straight into the window (R44), the default canvas blend from
-   `hides_below`, the window's clear skipped under a covering canvas. Not yet: the public
-   canvas and layer members (`canvas_composite`, `composite(id)`, …), the simplex canvas
-   as the simplex scene's, and `capture_frame()` combining first. *Exit:*
-   tutorials, demos, simplex and the games unchanged (±1 on blended pixels in overlays).
+   `base_scene`, with `declare_layer` and `style_of(id)` as protected scene members; the
+   one painter, owned by the application, with its save stack and the free `push_layer` /
+   `pop_layer` / `scoped_layer`, `push_state` / `pop_state` / `scoped_state`, `clear()`
+   and `needs_redraw()`; the base layer, internal (R45); on-demand layers; the frame steps
+   of §3.2 in the scene manager, with `abort_frame()` when `render()` throws; the default
+   compositor; layer styles without effects (§2.7) and the alpha rules of §2.8; inspection
+   (§2.14). *Done (2026-11-22):* all of it but inspection; tests in
+   `test/video/test_layer_stack.cc`, `test/scene/test_scene_frame.cc` and
+   `test/scene/test_compositor.cc`. *Exit:* scenes without layers draw exactly as today; a
+   layered test scene renders as specified.
+3. **Scenes' pictures.** Each scene's canvas (internal, R45) from the allocator, copied
+   into the window in stack order with the blend its flags give; the compositor draws onto
+   it; the simplex scene's persistent picture on an on-demand layer; the pooled textures
+   of the old render size dropped on a resize; `below()`; `capture_frame()` combines
+   first; R41: the canvas's texture taken when first needed, the base layer's texture as
+   the canvas, with a test switch, and the every-frame canvases of hidden scenes given
+   back. *Done so far (2026-11-22):* `detail::canvas` (§3.1), owned by `base_scene` and
+   run by `scene_frame`; a scene without layers draws onto it, and the scene manager
+   copies the canvases into the bound target, 1:1, with the blend from the scene's flags;
+   R42's mirrored geometry for canvases and layers; hidden scenes give back the textures
+   of their every-frame canvases and layers. The compositor (R43): `composition`,
+   `default_compositor`, `set_compositor` / `get_compositor`, `below()`, every flat
+   setting of `layer_style` with `layer_scale` and `destination`. The base layer's texture
+   as the canvas (R41), the bottom full-screen scene straight into the window (R44), the
+   window's clear skipped under a covering canvas. Tests in `test/video/test_canvas.cc`,
+   `test/scene/test_scene_frame.cc`, `test/scene/test_compositor.cc` and the layer
+   presentation case in `test/video/test_layer_stack.cc`. Not yet: the simplex scene on an
+   on-demand layer, the old render size's pooled textures dropped, and `capture_frame()`
+   combining first. *Exit:* tutorials, demos, simplex and the games unchanged (±1 on
+   blended pixels in overlays).
 4. **Painter state.** The painter's own `painter_state` (colour, blend, line style, clip),
    saved into each scene's context between its frames; `get_painter_state`,
    `push_state(s)` / `scoped_state(s)`; `draw.hh` reads it and sets the SDL state each
@@ -1707,8 +1701,8 @@ painter, so there are no scene painters to build.
 *Tests:*
 
 - z-order is independent of call order;
-- drawing with no layer pushed lands on the base layer, under every declared layer;
-  `composite(base_layer())` moves it;
+- drawing with no layer pushed lands on the base layer, under every declared layer, drawn
+  as it is; `style_of` refuses it;
 - a layer is cleared at its first push; an on-demand layer survives a frame and is combined
   in a frame that does not push it; an every-frame layer that is not pushed shows nothing
   and gives its texture back; a layer never pushed never takes one;

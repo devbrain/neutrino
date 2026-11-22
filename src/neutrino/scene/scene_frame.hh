@@ -120,6 +120,10 @@ namespace neutrino::detail {
             /// @brief The layers of the scene being rendered; null outside a frame, and in a
             ///        scene without layers.
             [[nodiscard]] static layer_stack* get_current_layers_stack() noexcept;
+            /// @brief clear() for the scene being rendered: its current layer; without layers,
+            ///        its canvas; drawing straight into the target, that target, to black.
+            ///        ENFORCE: a frame is open.
+            static void clear_current();
         private:
             /// Runs the compositor onto the canvas, then marks the pushed layers drawn.
             void combine();
@@ -139,5 +143,7 @@ namespace neutrino::detail {
             bool m_finished{false};
             static bool s_rendering;
             static layer_stack* s_current;
+            /// The frame open now; null outside one.
+            static scene_frame* s_frame;
     };
 }

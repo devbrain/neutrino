@@ -11,7 +11,7 @@
 #include <span>
 
 #include <neutrino/neutrino_export.h>
-#include <neutrino/video/layer_composite_settings.hh>
+#include <neutrino/video/layer_style.hh>
 #include <neutrino/video/layer_id.hh>
 
 namespace neutrino {
@@ -45,13 +45,13 @@ namespace neutrino {
             /// @brief True if the layer has something to show: pushed this frame, or redrawn on
             ///        demand and not needing a redraw. ENFORCE: a layer of this scene.
             [[nodiscard]] bool has_content(layer_id lid) const;
-            /// @brief Draws the layer onto the canvas with its own composite settings. Does
+            /// @brief Draws the layer onto the canvas with its own style. Does
             ///        nothing for a layer without content. ENFORCE: a layer of this scene.
             void draw_layer(layer_id lid);
             /// @brief Draws the layer onto the canvas with @p settings instead of its own: a
             ///        second copy, a part, another blend. Does nothing for a layer without
             ///        content. ENFORCE: a layer of this scene; @p settings as the struct says.
-            void draw_layer(layer_id lid, const layer_composite_settings& settings);
+            void draw_layer(layer_id lid, const layer_style& settings);
             /// @brief draw_layer() for each layer from @p first to @p last, both included, in
             ///        declaration order. ENFORCE: both are this scene's, @p first not after
             ///        @p last.
@@ -75,7 +75,7 @@ namespace neutrino {
 
     /**
      * @brief The compositor every scene starts with: each layer with content, in declaration
-     *        order, with its own composite settings.
+     *        order, with its own style.
      *
      * A public function: a compositor of the game's own can call it as a building block, and
      * `set_compositor(default_compositor)` puts it back.

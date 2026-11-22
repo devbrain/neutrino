@@ -79,7 +79,7 @@ TEST_SUITE("neutrino::detail::layer_stack") {
         layer_stack s(dim{4, 4});
         const layer_id normal = s.declare();
         layer_settings mod_settings;
-        mod_settings.composite.blend = blend_mode::mod;
+        mod_settings.style.blend = blend_mode::mod;
         const layer_id mod = s.declare(mod_settings);
 
         s.push(normal);

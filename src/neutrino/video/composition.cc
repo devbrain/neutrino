@@ -20,10 +20,10 @@ namespace neutrino {
     }
 
     void composition::draw_layer(layer_id lid) {
-        m_layers.draw_layer(lid, m_layers.composite(lid));
+        m_layers.draw_layer(lid, m_layers.style(lid));
     }
 
-    void composition::draw_layer(layer_id lid, const layer_composite_settings& settings) {
+    void composition::draw_layer(layer_id lid, const layer_style& settings) {
         m_layers.draw_layer(lid, settings);
     }
 
@@ -42,7 +42,7 @@ namespace neutrino {
     void default_compositor(composition& c) {
         for (const layer_id id : c.layers()) {    // declaration order
             if (c.has_content(id)) {              // pushed this frame, or on demand and not needing a redraw
-                c.draw_layer(id);                 // onto the canvas, with its composite settings
+                c.draw_layer(id);                 // onto the canvas, with its style
             }
         }
     }

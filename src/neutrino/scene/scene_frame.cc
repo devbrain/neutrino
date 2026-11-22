@@ -4,6 +4,7 @@
 
 #include <failsafe/enforce.hh>
 
+#include <neutrino/video/globals.hh>
 #include <neutrino/video/painter_state.hh>
 
 #include "scene_frame.hh"
@@ -17,6 +18,7 @@
 namespace neutrino::detail {
     bool scene_frame::s_rendering = false;
     layer_stack* scene_frame::s_current = nullptr;
+    scene_frame* scene_frame::s_frame = nullptr;
 
     render_shortcuts& shortcuts() noexcept {
         static render_shortcuts s;
@@ -61,6 +63,7 @@ namespace neutrino::detail {
         // Only now: if anything above throws, the destructor does not run, and nothing is set.
         s_rendering = true;
         s_current = m_layers;
+        s_frame = this;
     }
 
     void scene_frame::finish() {
@@ -79,11 +82,6 @@ namespace neutrino::detail {
         }
         m_canvas_binding.reset();              // the target from before the frame again
         check_state_balance(m_state_depth, "the frame");
-        if (m_canvas) {
-            // Here, so a bad setting fails this scene's frame, not the copy of every canvas
-            // into the window after the last scene.
-            validate_composite(m_canvas->composite());
-        }
     }
 
     void scene_frame::check_state_balance(std::size_t expected, const char* what) {
@@ -113,7 +111,7 @@ namespace neutrino::detail {
         const bool share = shortcuts().base_layer_as_canvas && base && m_canvas
                            && m_canvas->redraw() == redraw_mode::every_frame && m_compositor
                            && is_default_compositor(*m_compositor)
-                           && is_identity_composite(m_layers->composite(m_layers->base_layer()));
+                           && is_identity_style(m_layers->style(m_layers->base_layer()));
         if (share) {
             if (auto binding = m_layers->bind_base()) {
                 m_layers->draw_declared();     // the default compositor, the base layer aside
@@ -149,6 +147,23 @@ namespace neutrino::detail {
         pop_painter_saves_to(m_state_depth);   // render() threw with pushes left; never throws
         s_rendering = false;
         s_current = nullptr;
+        s_frame = nullptr;
+    }
+
+    void scene_frame::clear_current() {
+        ENFORCE(s_frame != nullptr, "clear() outside a scene's render()");
+        scene_frame& f = *s_frame;
+        if (f.m_layers) {
+            f.m_layers->clear_current();
+        } else if (f.m_canvas_binding) {
+            f.m_canvas->clear();
+        } else {
+            // Drawing straight into the target (R44), or the canvas could not be made: the
+            // scene's picture is the target, cleared as the window is, to black.
+            auto& r = get_renderer();
+            const sdlpp::renderer::draw_color_guard black(r, colors::black); // sdlpp-ok: internal
+            (void) r.clear();
+        }
     }
 
     bool scene_frame::draws_into_target() const {

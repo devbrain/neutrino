@@ -97,6 +97,7 @@ namespace {
             }
 
             [[nodiscard]] layer_id add(const layer_settings& s = {}) { return declare_layer(s); }
+            [[nodiscard]] layer_style& style(layer_id id) { return style_of(id); }
 
             [[nodiscard]] layer_id base() const {
                 const detail::layer_stack* s = scene_context_access::of(const_cast <layer_scene*>(this));
@@ -288,7 +289,7 @@ TEST_SUITE("neutrino::compositor") {
 
     TEST_CASE("destination stretches a layer with its own size onto a rectangle: brix's plasma") {
         fixture f;
-        const layer_id cells = f.scene->add({.size = dim{2, 2}, .composite = {.destination = rect{2, 2, 4, 4}}});
+        const layer_id cells = f.scene->add({.size = dim{2, 2}, .style = {.destination = rect{2, 2, 4, 4}}});
         f.scene->draw = [&] {
             push_layer(cells);                     // in the layer's own pixels: one per cell
             draw_rect_fill(rect{0, 0, 1, 1}, RED);
@@ -330,7 +331,7 @@ TEST_SUITE("neutrino::compositor") {
     TEST_CASE("under a logical presentation a layer lands 1:1; its offset is in render units") {
         fixture f;
         REQUIRE(get_renderer().set_logical_presentation(4, 4, sdlpp::logical_presentation::letterbox));
-        const layer_id a = f.scene->add({.composite = {.offset = {1, 0}}});
+        const layer_id a = f.scene->add({.style = {.offset = {1, 0}}});
         f.scene->draw = [&] { paint(a, rect{1, 1, 1, 1}, RED); };   // render unit (1, 1): pixels 2..3
         f.frame();
         CHECK(f.at(2, 2) == BLACK);
@@ -346,7 +347,7 @@ TEST_SUITE("neutrino::compositor") {
     TEST_CASE("scale per axis about the centre; a pivot moves the centre; 0 draws nothing") {
         fixture f;
         const layer_id a = f.scene->add();
-        layer_composite_settings s;
+        layer_style s;
         f.scene->draw = [&] { paint(a, rect{0, 0, 8, 8}, RED); };
         f.scene->set_compositor([&](composition& c) { c.draw_layer(a, s); });
 
@@ -372,7 +373,7 @@ TEST_SUITE("neutrino::compositor") {
     TEST_CASE("rotation about the centre and a flip mirror the layer") {
         fixture f;
         const layer_id a = f.scene->add();
-        layer_composite_settings s;
+        layer_style s;
         f.scene->draw = [&] { paint(a, rect{0, 0, 4, 8}, RED); };    // the left half
         f.scene->set_compositor([&](composition& c) { c.draw_layer(a, s); });
 
@@ -394,7 +395,7 @@ TEST_SUITE("neutrino::compositor") {
     TEST_CASE("a source part stays where it was; with a destination it is stretched onto it") {
         fixture f;
         const layer_id a = f.scene->add();
-        layer_composite_settings s{.source = rect{4, 0, 4, 8}};      // the right half
+        layer_style s{.source = rect{4, 0, 4, 8}};      // the right half
         f.scene->draw = [&] {
             paint(a, rect{0, 0, 4, 8}, RED);
             paint(a, rect{4, 0, 4, 8}, BLUE);
@@ -414,7 +415,7 @@ TEST_SUITE("neutrino::compositor") {
         fixture f;
         // 8×8 pixels, 4×2 render units: the picture in the rows 2..5, two pixels per unit.
         REQUIRE(get_renderer().set_logical_presentation(4, 2, sdlpp::logical_presentation::letterbox));
-        const layer_id a = f.scene->add({.composite = {.source = rect{0, 0, 2, 2}}});   // the left half
+        const layer_id a = f.scene->add({.style = {.source = rect{0, 0, 2, 2}}});   // the left half
         f.scene->draw = [&] { paint(a, rect{0, 0, 4, 2}, RED); };
         f.frame();
         REQUIRE(get_renderer().set_logical_presentation(0, 0, sdlpp::logical_presentation::disabled));
@@ -424,34 +425,9 @@ TEST_SUITE("neutrino::compositor") {
         CHECK(f.at(1, 1) == BLACK);                // nor the bar
     }
 
-    TEST_CASE("the canvas is drawn into the window with every flat setting") {
-        fixture f;                                 // no layers: drawn straight onto the canvas
-        f.scene->draw = [&] { draw_rect_fill(rect{0, 0, 8, 8}, RED); };
-        auto& composite = scene_context_access::canvas_of(f.scene)->composite();
-
-        composite.scale = 0.5f;                    // about the centre: the middle 4×4
-        f.frame();
-        CHECK(f.at(2, 2) == RED);
-        CHECK(f.at(5, 5) == RED);
-        CHECK(f.at(1, 1) == BLACK);
-        CHECK(f.at(6, 6) == BLACK);
-
-        composite.scale = 1.0f;
-        composite.destination = rect{0, 0, 4, 4};
-        f.frame();
-        CHECK(f.at(3, 3) == RED);
-        CHECK(f.at(4, 4) == BLACK);
-
-        composite.destination.reset();
-        composite.source = rect{0, 0, 2, 2};
-        f.frame();
-        CHECK(f.at(1, 1) == RED);
-        CHECK(f.at(3, 3) == BLACK);
-    }
-
     TEST_CASE("half opacity halves colour as well as alpha; blended drawing leaves no dark fringe") {
         fixture f;
-        const layer_id faded = f.scene->add({.composite = {.opacity = 0.5f}});
+        const layer_id faded = f.scene->add({.style = {.opacity = 0.5f}});
         const layer_id translucent = f.scene->add();
         f.scene->draw = [&] {
             paint(faded, rect{0, 0, 4, 8}, RED);
@@ -469,8 +445,8 @@ TEST_SUITE("neutrino::compositor") {
 
     TEST_CASE("a mod layer leaves uncovered pixels unchanged; a mul layer sees only itself") {
         fixture f;
-        const layer_id tint = f.scene->add({.composite = {.blend = blend_mode::mod}});
-        const layer_id shade = f.scene->add({.composite = {.blend = blend_mode::mul}});
+        const layer_id tint = f.scene->add({.style = {.blend = blend_mode::mod}});
+        const layer_id shade = f.scene->add({.style = {.blend = blend_mode::mul}});
         f.scene->draw = [&] {
             draw_rect_fill(rect{0, 0, 8, 8}, GREEN);                 // the base layer
             paint(tint, rect{0, 0, 2, 8}, RED);                      // green × red: black
@@ -487,8 +463,8 @@ TEST_SUITE("neutrino::compositor") {
 
     TEST_CASE("a mod layer below full opacity fades its tint; at 0 it leaves the picture unchanged") {
         fixture f;
-        const layer_id tint = f.scene->add({.composite = {.blend = blend_mode::mod}});
-        layer_composite_settings s{.blend = blend_mode::mod, .opacity = 0.5f};
+        const layer_id tint = f.scene->add({.style = {.blend = blend_mode::mod}});
+        layer_style s{.blend = blend_mode::mod, .opacity = 0.5f};
         f.scene->draw = [&] {
             draw_rect_fill(rect{0, 0, 8, 8}, GREEN);                 // the base layer
             paint(tint, rect{0, 0, 4, 8}, RED);                      // green × red: black, at full
@@ -513,7 +489,7 @@ TEST_SUITE("neutrino::compositor") {
         fixture f;
         // 8×8 pixels, 4×2 render units: the picture in the rows 2..5.
         REQUIRE(get_renderer().set_logical_presentation(4, 2, sdlpp::logical_presentation::letterbox));
-        const layer_id a = f.scene->add({.composite = {.scale = 0.5f, .pivot = point{0, 0}}});
+        const layer_id a = f.scene->add({.style = {.scale = 0.5f, .pivot = point{0, 0}}});
         f.scene->draw = [&] { paint(a, rect{0, 0, 4, 2}, RED); };   // the whole picture
         f.frame();
         REQUIRE(get_renderer().set_logical_presentation(0, 0, sdlpp::logical_presentation::disabled));
@@ -528,7 +504,7 @@ TEST_SUITE("neutrino::compositor") {
         fixture f;
         // 8×8 pixels, 4×2 render units: the picture in the rows 2..5, two pixels per unit.
         REQUIRE(get_renderer().set_logical_presentation(4, 2, sdlpp::logical_presentation::letterbox));
-        const layer_id a = f.scene->add({.composite = {.destination = rect{0, 0, 2, 1}}});
+        const layer_id a = f.scene->add({.style = {.destination = rect{0, 0, 2, 1}}});
         f.scene->draw = [&] { paint(a, rect{0, 0, 4, 2}, RED); };   // the whole picture
         f.frame();
         REQUIRE(get_renderer().set_logical_presentation(0, 0, sdlpp::logical_presentation::disabled));
@@ -540,16 +516,9 @@ TEST_SUITE("neutrino::compositor") {
 
     TEST_CASE("a non-finite opacity fails the frame") {
         fixture f;
-        const layer_id a = f.scene->add({.composite = {.opacity = std::numeric_limits <float>::quiet_NaN()}});
+        const layer_id a = f.scene->add({.style = {.opacity = std::numeric_limits <float>::quiet_NaN()}});
         f.scene->draw = [&] { paint(a, rect{0, 0, 8, 8}, RED); };
         CHECK_THROWS_WITH(f.frame(), doctest::Contains("opacity must be finite"));
-    }
-
-    TEST_CASE("a bad canvas setting fails that scene's own frame") {
-        fixture f;
-        f.scene->draw = [&] { draw_rect_fill(rect{0, 0, 8, 8}, RED); };
-        scene_context_access::canvas_of(f.scene)->composite().scale = -1.0f;
-        CHECK_THROWS_WITH(f.frame(), doctest::Contains("scale must be finite and not negative"));
     }
 
     TEST_CASE("a frame or a compositor that leaves a push_state() fails, and the push is undone") {
@@ -671,7 +640,7 @@ TEST_SUITE("neutrino::render shortcuts") {
         CHECK(pixel(f.out, 1, 1) == BLACK);        // as drawn into the window: opaque
     }
 
-    TEST_CASE("a compositor of a scene's own above, or moved canvas settings, keep the canvas") {
+    TEST_CASE("a compositor of a scene's own above keeps the bottom scene's canvas") {
         {
             fixture f;
             f.scene->draw = [&] { draw_rect_fill(rect{2, 2, 2, 2}, RED); };
@@ -685,15 +654,6 @@ TEST_SUITE("neutrino::render shortcuts") {
             CHECK(scene_context_access::canvas_of(f.scene)->get() != nullptr);   // below() may read it
             CHECK(seen_below == 1);
             CHECK(f.at(2, 2) == RED);
-        }
-        {
-            fixture f;
-            f.scene->draw = [&] { draw_rect_fill(rect{2, 2, 2, 2}, RED); };
-            scene_context_access::canvas_of(f.scene)->composite().offset = point{1, 0};
-            f.frame();
-            CHECK(scene_context_access::canvas_of(f.scene)->get() != nullptr);
-            CHECK(f.at(3, 2) == RED);
-            CHECK(f.at(2, 2) == BLACK);
         }
     }
 
@@ -749,24 +709,26 @@ TEST_SUITE("neutrino::render shortcuts") {
         const layer_id a = f.scene->add();
         f.scene->draw = [&] { paint(a, rect{0, 0, 2, 2}, RED); };
         detail::layer_stack* layers = scene_context_access::of(f.scene);
-        layers->composite(layers->base_layer()).opacity = 0.5f;
+        layers->style(layers->base_layer()).opacity = 0.5f;
         f.frame();
         CHECK_FALSE(scene_context_access::canvas_of(f.scene)->shared());
 
-        layers->composite(layers->base_layer()).opacity = 1.0f;
+        layers->style(layers->base_layer()).opacity = 1.0f;
         f.scene->set_compositor([](composition& c) { default_compositor(c); });
         f.frame();
         CHECK_FALSE(scene_context_access::canvas_of(f.scene)->shared());
         CHECK(f.at(1, 1) == RED);
     }
 
-    TEST_CASE("a full-screen scene's canvas copies with none; an overlay's is blended") {
+    TEST_CASE("the flags alone give the blend: none for a full screen, blend for an overlay") {
+        const shortcuts_set through_canvas{false, true};
         fixture f;
-        CHECK(scene_context_access::canvas_of(f.scene)->composite().blend == blend_mode::none);
         auto owned = std::make_unique <layer_scene>(scene_flags::none);
         layer_scene* overlay = owned.get();
         f.mgr.push_scene_sync(std::move(owned));
-        CHECK(scene_context_access::canvas_of(overlay)->composite().blend == blend_mode::blend);
+        f.frame();
+        CHECK(scene_context_access::canvas_of(f.scene)->blend() == blend_mode::none);
+        CHECK(scene_context_access::canvas_of(overlay)->blend() == blend_mode::blend);
     }
 
     TEST_CASE("a covering canvas replaces the window's clear; one that shows nothing is cleared late") {
@@ -814,12 +776,14 @@ TEST_SUITE("neutrino::render shortcuts, edges") {
         layer_scene* scene = owned.get();
         (void)scene->add();                        // through its canvas
         mgr.push_scene_sync(std::move(owned));
-        CHECK(scene_context_access::canvas_of(scene)->composite().blend == blend_mode::blend);
         CHECK_FALSE(mgr.covers_target());
+        mgr.render();
+        CHECK(scene_context_access::canvas_of(scene)->blend() == blend_mode::blend);
         mgr.finish();
     }
 
-    TEST_CASE("a replaced scene's canvas gets its default blend too") {
+    TEST_CASE("a replaced scene's blend comes from its flags too") {
+        const shortcuts_set through_canvas{false, true};
         fixture f;
         auto owned = std::make_unique <layer_scene>(scene_flags::none);
         layer_scene* overlay = owned.get();
@@ -828,7 +792,8 @@ TEST_SUITE("neutrino::render shortcuts, edges") {
         while (SDL_PollEvent(&ev)) {
             f.mgr.handle_action(sdlpp::event(ev));
         }
-        CHECK(scene_context_access::canvas_of(overlay)->composite().blend == blend_mode::blend);
+        f.frame();
+        CHECK(scene_context_access::canvas_of(overlay)->blend() == blend_mode::blend);
     }
 
     TEST_CASE("a frame says when render() draws straight into the target") {
@@ -854,11 +819,11 @@ TEST_SUITE("neutrino::render shortcuts, edges") {
     }
 
     TEST_CASE("add is not an identity copy: it keeps the target's alpha") {
-        CHECK(detail::is_identity_composite({}));
-        CHECK(detail::is_identity_composite({.blend = blend_mode::none}));
-        CHECK_FALSE(detail::is_identity_composite({.blend = blend_mode::add}));
-        CHECK_FALSE(detail::is_identity_composite({.opacity = 0.5f}));
-        CHECK_FALSE(detail::is_identity_composite({.destination = rect{0, 0, 1, 1}}));
+        CHECK(detail::is_identity_style({}));
+        CHECK(detail::is_identity_style({.blend = blend_mode::none}));
+        CHECK_FALSE(detail::is_identity_style({.blend = blend_mode::add}));
+        CHECK_FALSE(detail::is_identity_style({.opacity = 0.5f}));
+        CHECK_FALSE(detail::is_identity_style({.destination = rect{0, 0, 1, 1}}));
     }
 
     TEST_CASE("an on-demand canvas drawn under another presentation needs a redraw") {
@@ -885,5 +850,113 @@ TEST_SUITE("neutrino::render shortcuts, edges") {
         CHECK(c.needs_redraw());
         REQUIRE(c.get() != nullptr);
         CHECK(pixel(*c.get(), 1, 1).a == 0);       // cleared: no old picture at a wrong scale
+    }
+}
+
+TEST_SUITE("neutrino::layer members") {
+    TEST_CASE("style_of changes a layer's style live; the base layer has none") {
+        fixture f;
+        const layer_id a = f.scene->add();
+        f.scene->draw = [&] { paint(a, rect{0, 0, 2, 2}, RED); };
+        f.frame();
+        CHECK(f.at(1, 1) == RED);
+
+        f.scene->style(a).offset = point{4, 4};    // between frames, as fixed_update would
+        f.frame();
+        CHECK(f.at(5, 5) == RED);
+        CHECK(f.at(1, 1) == BLACK);
+        CHECK_THROWS_WITH((void)f.scene->style(f.scene->base()), doctest::Contains("base layer"));
+    }
+
+    TEST_CASE("style_of in a scene without layers fails") {
+        fixture f;
+        detail::layer_stack other(detail::target_geometry{});
+        const layer_id foreign = other.declare();
+        CHECK_THROWS_WITH((void)f.scene->style(foreign), doctest::Contains("declared no layers"));
+    }
+
+    TEST_CASE("scoped_layer pushes now and pops at the end of the scope, also on an exception") {
+        fixture f;
+        const layer_id top = f.scene->add();
+        bool fail = false;
+        f.scene->draw = [&] {
+            {
+                auto pushed = scoped_layer(top);
+                draw_rect_fill(rect{0, 0, 2, 2}, RED);
+                if (fail) {
+                    throw std::runtime_error("render failed");
+                }
+            }
+            draw_rect_fill(rect{0, 0, 8, 8}, BLUE);   // the base layer again: under the top layer
+        };
+        f.frame();
+        CHECK(f.at(1, 1) == RED);
+        CHECK(f.at(5, 5) == BLUE);
+
+        fail = true;
+        CHECK_THROWS_WITH(f.frame(), doctest::Contains("render failed"));
+        CHECK_FALSE(scene_frame::rendering());
+        fail = false;
+        f.frame();                                 // nothing was left pushed
+        CHECK(f.at(1, 1) == RED);
+    }
+
+    TEST_CASE("clear() empties the current layer, or the scene's picture without layers") {
+        {
+            fixture f;
+            const layer_id kept = f.scene->add({.redraw = redraw_mode::on_demand});
+            bool restart = false;
+            f.scene->draw = [&] {
+                push_layer(kept);
+                if (restart) {
+                    clear();                       // start the kept layer again
+                    draw_rect_fill(rect{6, 6, 1, 1}, BLUE);
+                } else {
+                    draw_rect_fill(rect{0, 0, 8, 8}, RED);
+                }
+                pop_layer();
+            };
+            f.frame();
+            CHECK(f.at(1, 1) == RED);
+            restart = true;
+            f.frame();
+            CHECK(f.at(1, 1) == BLACK);
+            CHECK(f.at(6, 6) == BLUE);
+        }
+        {
+            fixture f;                             // no layers: straight into the target
+            f.scene->draw = [&] {
+                draw_rect_fill(rect{0, 0, 8, 8}, RED);
+                clear();
+                draw_rect_fill(rect{0, 0, 1, 1}, BLUE);
+            };
+            f.frame();
+            CHECK(f.at(0, 0) == BLUE);
+            CHECK(f.at(4, 4) == BLACK);
+        }
+        CHECK_THROWS_WITH(clear(), doctest::Contains("outside a scene's render()"));
+    }
+
+    TEST_CASE("needs_redraw: true for an on-demand layer until a frame pushes it; never for every-frame") {
+        fixture f;
+        const layer_id kept = f.scene->add({.redraw = redraw_mode::on_demand});
+        const layer_id every = f.scene->add();
+        std::vector <bool> kept_seen;
+        std::vector <bool> every_seen;
+        f.scene->draw = [&] {
+            kept_seen.push_back(needs_redraw(kept));
+            every_seen.push_back(needs_redraw(every));
+            if (kept_seen.size() == 1) {
+                paint(kept, rect{0, 0, 2, 2}, RED);    // drawn in full once
+            }
+        };
+        f.frame();
+        f.frame();
+        REQUIRE(kept_seen.size() == 2);
+        CHECK(kept_seen[0]);
+        CHECK_FALSE(kept_seen[1]);
+        CHECK_FALSE(every_seen[0]);
+        CHECK_FALSE(every_seen[1]);
+        CHECK(f.at(1, 1) == RED);                  // kept without being drawn again
     }
 }

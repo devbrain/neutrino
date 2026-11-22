@@ -43,7 +43,7 @@
 #include <neutrino/video/layer_ops.hh>
 #include <neutrino/video/blend_mode.hh>
 #include <neutrino/video/flip_mode.hh>
-#include <neutrino/video/layer_composite_settings.hh>
+#include <neutrino/video/layer_style.hh>
 #include <neutrino/video/composition.hh>
 #include <neutrino/video/painter_state.hh>
 

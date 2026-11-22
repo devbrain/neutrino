@@ -149,10 +149,10 @@ Applied to the questions that started this:
 
 | Field | Type | Why |
 |---|---|---|
-| `layer_composite_settings::offset` | `render_delta` | a displacement, animated |
-| `layer_composite_settings::pivot` | `std::optional<render_delta>` | measured from the destination's top-left; unset is the centre (R43) |
-| `layer_composite_settings::source` | `std::optional<render_rect>`, or `texel_rect` for a layer with its own `size` | part of the layer: render units like everything drawn into a layer that mirrors the canvas (R43) |
-| `layer_composite_settings::destination` | `std::optional<render_rect>` | where the layer lands (R43) |
+| `layer_style::offset` | `render_delta` | a displacement, animated |
+| `layer_style::pivot` | `std::optional<render_delta>` | measured from the destination's top-left; unset is the centre (R43) |
+| `layer_style::source` | `std::optional<render_rect>`, or `texel_rect` for a layer with its own `size` | part of the layer: render units like everything drawn into a layer that mirrors the canvas (R43) |
+| `layer_style::destination` | `std::optional<render_rect>` | where the layer lands (R43) |
 | `layer_settings::size` | `std::optional<texel_extent>` | a texture size |
 | `texture_draw_params::src` | `std::optional<texel_rect>` | part of a texture |
 | `texture_draw_params::pivot` | `std::optional<render_delta>` | destination-local today, so a delta, not the `render_pos` it is declared as |
@@ -243,7 +243,7 @@ place in untyped geometry.
   render int types; `texture_draw_params` as in §4.
 - **World drawing:** the camera, `world_renderer`, `sprite_batch` and text layout map
   world to render through the camera (§5).
-- **Layers:** `layer_settings` and `layer_composite_settings` as in §4.
+- **Layers:** `layer_settings` and `layer_style` as in §4.
 - **Docs:** painter.md's signatures, window_presentation.md's boundary functions, and the
   examples.
 

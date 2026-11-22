@@ -59,7 +59,7 @@ namespace neutrino::detail {
         return premultiplied(mode);
     }
 
-    bool apply_composite_modulation(texture& t, const layer_composite_settings& s) {
+    bool apply_style_modulation(texture& t, const layer_style& s) {
         auto& native = t.native();
         const float opacity = std::clamp(s.opacity, 0.0f, 1.0f);
         const color mod{times(s.tint.r, opacity), times(s.tint.g, opacity), times(s.tint.b, opacity), 255};
@@ -126,7 +126,7 @@ namespace neutrino::detail {
         return m_mapping;
     }
 
-    bool is_identity_composite(const layer_composite_settings& s) noexcept {
+    bool is_identity_style(const layer_style& s) noexcept {
         // Not add: SDL's add keeps the target's alpha, so onto a transparent target it leaves
         // alpha 0 where the texture had some, which is not the texture.
         const bool copies = s.blend == blend_mode::none || s.blend == blend_mode::blend;
@@ -135,7 +135,7 @@ namespace neutrino::detail {
                && !s.source && !s.destination;
     }
 
-    void validate_composite(const layer_composite_settings& s) {
+    void validate_style(const layer_style& s) {
         ENFORCE(!has_diagonal_flip(s.flip), "a layer or canvas cannot be combined with a diagonal flip");
         ENFORCE(std::isfinite(s.rotation_degrees), "a layer's or canvas's rotation must be finite");
         ENFORCE(valid_scale(s.scale.x) && valid_scale(s.scale.y),
@@ -143,10 +143,10 @@ namespace neutrino::detail {
         ENFORCE(std::isfinite(s.opacity), "a layer's or canvas's opacity must be finite");
     }
 
-    void draw_composited(texture& t, const layer_composite_settings& s, in_place where,
+    void draw_composited(texture& t, const layer_style& s, in_place where,
                          const pixel_space& space) {
         const pixel_mapping& px = space.mapping();
-        validate_composite(s);
+        validate_style(s);
 
         const dim size = t.size();
         if (size.empty()) {
@@ -204,7 +204,7 @@ namespace neutrino::detail {
         pivot.x += offset.x - dst.x;
         pivot.y += offset.y - dst.y;
 
-        if (!apply_composite_modulation(t, s)) {
+        if (!apply_style_modulation(t, s)) {
             count_draw_failure();
             return;
         }

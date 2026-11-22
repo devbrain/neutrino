@@ -278,14 +278,13 @@ TEST_SUITE("neutrino::detail::canvas") {
         CHECK(pixel_is(*c.get(), 1, 1, colors::red));
     }
 
-    TEST_CASE("the composite settings start at their defaults and are live") {
-        test::test_application app("canvas composite");
+    TEST_CASE("a canvas is copied with blend until told otherwise") {
+        test::test_application app("canvas blend");
         canvas c;
-        CHECK(c.composite().blend == blend_mode::blend);
-        CHECK(c.composite().opacity == doctest::Approx(1.0f));
-        c.composite().opacity = 0.5f;
+        CHECK(c.blend() == blend_mode::blend);
+        c.set_blend(blend_mode::none);
         const canvas& view = c;
-        CHECK(view.composite().opacity == doctest::Approx(0.5f));
+        CHECK(view.blend() == blend_mode::none);
     }
 
     TEST_CASE("destroying a canvas gives its texture back to the pool") {
@@ -304,7 +303,7 @@ TEST_SUITE("neutrino::detail::canvas") {
         test::test_application app("canvas move");
         canvas a;
         a.set_redraw(redraw_mode::on_demand);
-        a.composite().opacity = 0.25f;
+        a.set_blend(blend_mode::none);
         draw_frame(a, dim{4, 4});
         const texture* t = a.get();
         REQUIRE(t != nullptr);
@@ -312,7 +311,7 @@ TEST_SUITE("neutrino::detail::canvas") {
         canvas b(std::move(a));
         CHECK(b.get() == t);
         CHECK(b.redraw() == redraw_mode::on_demand);
-        CHECK(b.composite().opacity == doctest::Approx(0.25f));
+        CHECK(b.blend() == blend_mode::none);
         CHECK(a.get() == nullptr);                            // NOLINT(bugprone-use-after-move)
     }
 }
@@ -381,23 +380,6 @@ TEST_SUITE("neutrino::detail::draw_canvases") {
         CHECK(pixel_is(out, 5, 5, colors::black));            // the idle canvas was skipped
     }
 
-    TEST_CASE("a canvas whose settings cannot be drawn is skipped and counted; the others are drawn") {
-        test::test_application app("canvases bad settings");
-        texture out = make_output(dim{8, 8});
-        auto scope = out.bind();
-        const target_geometry g = detail::bound_target_geometry();
-        canvas good;
-        draw_frame(good, g);                                  // red at (0, 0, 2, 2)
-        canvas bad;
-        draw_frame(bad, g);
-        bad.composite().rotation_degrees = std::numeric_limits <float>::quiet_NaN();
-        const auto failures = draw_failure_count();
-        canvas* list[] = {&bad, &good};
-        CHECK_NOTHROW(detail::draw_canvases(list));
-        CHECK(draw_failure_count() == failures + 1);
-        CHECK(pixel_is(out, 1, 1, colors::red));
-    }
-
     TEST_CASE("drawing the canvases leaves the target's own clip as it was") {
         test::test_application app("canvases own clip");
         texture out = make_output(dim{8, 8});
@@ -412,25 +394,40 @@ TEST_SUITE("neutrino::detail::draw_canvases") {
         CHECK(get_renderer().get_clip_rect <rect>().value() == own);
     }
 
-    TEST_CASE("opacity scales colour; offset moves the canvas") {
-        test::test_application app("canvases settings");
+    TEST_CASE("a canvas copied with none overwrites the target; with blend it is blended") {
+        test::test_application app("canvases blend");
         texture out = make_output(dim{8, 8});
         auto scope = out.bind();
         const target_geometry g = detail::bound_target_geometry();
-        canvas faded;
-        draw_frame(faded, g);
-        faded.composite().opacity = 0.5f;
-        faded.composite().offset = point{4, 0};
-        canvas* list[] = {&faded};
-        detail::draw_canvases(list);
-        const color px = pixel(out, 5, 1);
-        CHECK(px.r >= 126);
-        CHECK(px.r <= 129);
-        CHECK(px.g == 0);
-        CHECK(pixel_is(out, 1, 1, colors::black));            // moved away from here
+        canvas c;
+        c.begin_frame(g);
+        {
+            auto bind = c.bind();
+            set_draw_blend_mode(blend_mode::blend);
+            draw_rect_fill(rect{0, 0, 8, 8}, color{255, 0, 0, 128});
+            set_draw_blend_mode(blend_mode::none);
+            c.note_drawn();
+        }
+        c.end_frame();
+        out.fill(colors::blue);
+        canvas* list[] = {&c};
+        detail::draw_canvases(list);                          // blend: half red over blue
+        const color blended = pixel(out, 1, 1);
+        CHECK(blended.r >= 126);
+        CHECK(blended.r <= 129);
+        CHECK(blended.b >= 126);
+        CHECK(blended.b <= 129);
+
+        out.fill(colors::blue);
+        c.set_blend(blend_mode::none);
+        detail::draw_canvases(list);                          // none: the canvas, blue gone
+        const color copied = pixel(out, 1, 1);
+        CHECK(copied.b == 0);
+        CHECK(copied.r >= 126);
+        CHECK(copied.r <= 129);
     }
 
-    TEST_CASE("the target's presentation is off only while copying; offsets are in render units") {
+    TEST_CASE("the target's presentation is off only while copying; the copy lands 1:1") {
         test::test_application app("canvases presentation");
         texture out = make_output(dim{8, 8});
         auto scope = out.bind();
@@ -446,14 +443,12 @@ TEST_SUITE("neutrino::detail::draw_canvases") {
             c.note_drawn();
         }
         c.end_frame();
-        c.composite().offset = point{1, 0};                   // one render unit: 2 pixels
         canvas* list[] = {&c};
         detail::draw_canvases(list);
 
-        CHECK(pixel_is(out, 2, 0, colors::red));
-        CHECK(pixel_is(out, 3, 1, colors::red));
-        CHECK(pixel_is(out, 1, 1, colors::black));
-        CHECK(pixel_is(out, 4, 1, colors::black));
+        CHECK(pixel_is(out, 0, 0, colors::red));              // render unit (0, 0): 2 x 2 pixels
+        CHECK(pixel_is(out, 1, 1, colors::red));
+        CHECK(pixel_is(out, 2, 2, colors::black));
         CHECK(detail::bound_target_geometry() == g);          // put back
     }
 }

@@ -160,7 +160,7 @@ neutrino_subsystem(video
         layer_id.hh
         layer_ops.hh
         layer_settings.hh
-        layer_composite_settings.hh
+        layer_style.hh
         composition.hh
         flip_mode.hh
         blend_mode.hh

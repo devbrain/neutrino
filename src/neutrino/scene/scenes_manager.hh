@@ -72,8 +72,8 @@ namespace neutrino {
                 bool covers{false};
             };
             [[nodiscard]] frame_plan plan() const;
-            /// The scene's canvas before its on_enter(): its default blend from its flags.
-            static void prepare_canvas(base_scene* scene);
+            /// The blend @p scene's picture is copied with: from its flags alone (R45).
+            [[nodiscard]] static blend_mode scene_blend(const base_scene* scene);
 
             void apply_push(std::unique_ptr <base_scene>&& scene);
             void apply_pop();

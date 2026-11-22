@@ -36,7 +36,7 @@ namespace neutrino::detail {
     class layer_stack {
         struct entry {
             // one per layer: the base layer first
-            layer_settings settings; // size, redraw mode, composite (live; read when combining)
+            layer_settings settings; // size, redraw mode, style (live; read when combining)
             texture_handle target; // from the texture allocator; taken at the first push
             bool pushed{false}; // pushed this frame
         };
@@ -55,7 +55,7 @@ namespace neutrino::detail {
 
             /// @brief Adds a layer after the others; takes no texture yet. The first call also
             ///        makes the base layer, before the declared one: at the stack's geometry,
-            ///        redrawn every frame, with the default composite settings. ENFORCE: not
+            ///        redrawn every frame, with the default style. ENFORCE: not
             ///        combining.
             [[nodiscard]] layer_id declare(const layer_settings& = {});
             /// @brief The base layer: the bottom one, where drawing goes with no other layer
@@ -124,16 +124,26 @@ namespace neutrino::detail {
             /// @brief The layer's texture, or null while it has none (never pushed, given
             ///        back, or failed). ENFORCE: @p lid is a layer of this stack.
             [[nodiscard]] const texture* target(layer_id lid) const;
+            /// @brief For an on-demand layer: true when it must be drawn in full — never drawn,
+            ///        or its contents lost to a resize, a change of presentation or a reset —
+            ///        until the end of a frame that pushed it. Always false for an every-frame
+            ///        layer. ENFORCE: @p lid is a layer of this stack.
+            [[nodiscard]] bool needs_redraw(layer_id lid) const;
+            /// @brief Clears the current layer — the newest push, or the base layer — to its
+            ///        clear colour. A layer whose texture could not be made has nothing to
+            ///        clear. ENFORCE: a frame is open.
+            void clear_current();
 
             // ---- combining (painter.md §3.4, R43) ----------------------------------------
 
             /// @brief The base layer, then the declared layers, in declaration order; empty
             ///        while none is declared.
             [[nodiscard]] std::span <const layer_id> layers() const noexcept;
-            /// @brief The layer's composite settings (live). ENFORCE: a layer of this stack.
-            [[nodiscard]] layer_composite_settings& composite(layer_id lid);
-            /// @brief See composite(layer_id).
-            [[nodiscard]] const layer_composite_settings& composite(layer_id lid) const;
+            /// @brief The layer's style (live): how it is drawn when combined. ENFORCE: a layer
+            ///        of this stack.
+            [[nodiscard]] layer_style& style(layer_id lid);
+            /// @brief See style(layer_id).
+            [[nodiscard]] const layer_style& style(layer_id lid) const;
             /// @brief True if the layer has something to show: a texture, and pushed this
             ///        frame or redrawn on demand without needing a redraw. One answer for the
             ///        whole frame: the layers are marked drawn only after combining. ENFORCE:
@@ -147,7 +157,7 @@ namespace neutrino::detail {
              *        @c destination says where. Does nothing for a layer without content.
              *        ENFORCE: a layer of this stack; combining; @p settings valid.
              */
-            void draw_layer(layer_id lid, const layer_composite_settings& settings);
+            void draw_layer(layer_id lid, const layer_style& settings);
             /// @brief draw_layer() with its own settings for each layer from @p first to @p last,
             ///        both included. ENFORCE: both are layers of this stack, @p first not after
             ///        @p last; combining.
@@ -192,7 +202,7 @@ namespace neutrino::detail {
             /// has_content() of the layer at @p idx.
             [[nodiscard]] bool has_content_index(std::size_t idx) const;
             /// draw_layer() of the layer at @p idx.
-            void draw_index(std::size_t idx, const layer_composite_settings& settings);
+            void draw_index(std::size_t idx, const layer_style& settings);
             /// Each layer with content from @p first on, with its own settings, in one
             /// pixel_space.
             void draw_from(std::size_t first);

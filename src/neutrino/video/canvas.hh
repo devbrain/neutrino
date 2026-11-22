@@ -8,7 +8,7 @@
 #include <span>
 
 #include <neutrino/video/geometry_types.hh>
-#include <neutrino/video/layer_composite_settings.hh>
+#include <neutrino/video/layer_style.hh>
 #include <neutrino/video/layer_settings.hh>
 #include <neutrino/video/texture.hh>
 
@@ -22,13 +22,13 @@ namespace neutrino::detail {
      * @brief The internal owner of one scene's canvas, part of its scene context
      *        (painter.md §2.6, §3.1).
      *
-     * The canvas is the scene's result. In a scene without layers its render() draws
-     * straight onto it; in a scene with layers the compositor draws the layers onto it. The
-     * scene manager then draws it into the target with its composite settings
-     * (draw_canvases()).
+     * The canvas is the scene's result, an engine concept the game never sees (R45). In a
+     * scene without layers its render() draws straight onto it; in a scene with layers the
+     * compositor draws the layers onto it. The scene manager then copies it into the target
+     * as it is, 1:1, with the blend its scene's flags give (draw_canvases()).
      *
-     * It holds its texture from the texture allocator, its composite settings, its redraw
-     * mode and the frame's flags. It knows the target it mirrors and the allocator, not
+     * It holds its texture from the texture allocator, its blend, its redraw mode and the
+     * frame's flags. It knows the target it mirrors and the allocator, not
      * scenes. It is made with its scene and takes its texture at its first bind (R41): at the
      * pixel size of the target it mirrors, cleared to transparent (painter.md §2.8), with that
      * target's logical presentation, so render space maps onto it as onto the target (R42).
@@ -46,8 +46,7 @@ namespace neutrino::detail {
      */
     class canvas {
         public:
-            /// @brief A canvas with no texture yet, redrawn every frame, with the default
-            ///        composite settings.
+            /// @brief A canvas with no texture yet, redrawn every frame, copied with @c blend.
             canvas() = default;
 
             canvas(const canvas&) = delete;
@@ -55,11 +54,13 @@ namespace neutrino::detail {
             canvas(canvas&&) noexcept = default;
             canvas& operator =(canvas&&) noexcept = default;
 
-            /// @brief How the canvas is drawn into the target. Live: draw_canvases() reads
-            ///        them.
-            [[nodiscard]] layer_composite_settings& composite() noexcept;
-            /// @brief How the canvas is drawn into the target.
-            [[nodiscard]] const layer_composite_settings& composite() const noexcept;
+            /// @brief The blend the canvas is copied into the target with. Its scene's flags are
+            ///        the only source: the scene manager sets it before each frame — @c none
+            ///        for a scene with @c hides_below, @c blend otherwise and in a transparent
+            ///        window (painter.md §2.3, R45).
+            void set_blend(blend_mode mode) noexcept;
+            /// @brief See set_blend().
+            [[nodiscard]] blend_mode blend() const noexcept;
 
             /// @brief @c on_demand keeps the canvas between frames (simplex's persistent
             ///        canvas); @c every_frame clears it at its first bind in each frame. Takes
@@ -95,6 +96,8 @@ namespace neutrino::detail {
             /// @brief Ends a frame: if something was drawn on the canvas, its texture no longer
             ///        needs a redraw. drawn() keeps its answer until the next begin_frame().
             void end_frame();
+            /// @brief Clears the canvas to transparent, if it has a texture.
+            void clear();
             /// @brief Gives the texture back to the pool, and stops sharing one; the next bind
             ///        takes one again. What a scene that is not drawn in a frame does with an
             ///        every-frame canvas (R41).
@@ -140,16 +143,13 @@ namespace neutrino::detail {
              * @brief Draws the canvas into the bound target, 1:1, inside @p px, which turned the
              *        target's logical presentation off (draw_canvases() makes one).
              *
-             * With every flat composite setting, as a layer that mirrors the target is drawn
-             * (draw_composited(), R43): in place it lands 1:1; scale, rotation, flip, source
-             * and destination place it, and blend, tint and opacity colour it. Does nothing
-             * unless has_content(). A failed draw is counted in draw_failure_count(); invalid
-             * settings fail ENFORCE.
+             * As it is, 1:1, with the premultiplied form of its blend (R45). Does nothing
+             * unless has_content(). A failed draw is counted in draw_failure_count().
              */
             void draw_into_target(const pixel_space& px);
         private:
-            /// How the canvas is drawn into the target.
-            layer_composite_settings m_composite{};
+            /// The blend it is copied into the target with, from its scene's flags.
+            blend_mode m_blend{blend_mode::blend};
             /// Whether the canvas is kept between frames.
             redraw_mode m_redraw{redraw_mode::every_frame};
             /// The target the canvas mirrors: its pixel size and logical presentation (R42).

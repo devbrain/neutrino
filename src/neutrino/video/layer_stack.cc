@@ -21,7 +21,7 @@ namespace neutrino::detail {
         // so it starts opaque white, which leaves it unchanged; every other layer starts
         // transparent.
         [[nodiscard]] color clear_color_of(const layer_settings& s) noexcept {
-            return s.composite.blend == blend_mode::mod ? colors::white : colors::transparent;
+            return s.style.blend == blend_mode::mod ? colors::white : colors::transparent;
         }
     }
 
@@ -177,6 +177,19 @@ namespace neutrino::detail {
         }
     }
 
+    bool layer_stack::needs_redraw(layer_id lid) const {
+        ENFORCE(is_valid(lid), "layer", lid, "is not one of this stack's");
+        const auto& lr = m_layers[lid.m_index];
+        return lr.settings.redraw == redraw_mode::on_demand && lr.target.needs_redraw();
+    }
+
+    void layer_stack::clear_current() {
+        ENFORCE(!m_stack.empty(), "clear() with no layer frame open");
+        auto& lr = m_layers[m_stack.back().layer];
+        lr.target.set_clear_color(clear_color_of(lr.settings));
+        lr.target.clear();                     // nothing for a failed texture
+    }
+
     void layer_stack::release_every_frame() {
         ENFORCE(m_stack.empty(), "release_every_frame() with a frame open");
         for (auto& lr : m_layers) {
@@ -196,14 +209,14 @@ namespace neutrino::detail {
         return m_ids;
     }
 
-    layer_composite_settings& layer_stack::composite(layer_id lid) {
+    layer_style& layer_stack::style(layer_id lid) {
         ENFORCE(is_valid(lid), "layer", lid, "is not one of this stack's");
-        return m_layers[lid.m_index].settings.composite;
+        return m_layers[lid.m_index].settings.style;
     }
 
-    const layer_composite_settings& layer_stack::composite(layer_id lid) const {
+    const layer_style& layer_stack::style(layer_id lid) const {
         ENFORCE(is_valid(lid), "layer", lid, "is not one of this stack's");
-        return m_layers[lid.m_index].settings.composite;
+        return m_layers[lid.m_index].settings.style;
     }
 
     bool layer_stack::has_content(layer_id lid) const {
@@ -219,7 +232,7 @@ namespace neutrino::detail {
         return lr.pushed || (lr.settings.redraw == redraw_mode::on_demand && !lr.target.needs_redraw());
     }
 
-    void layer_stack::draw_layer(layer_id lid, const layer_composite_settings& settings) {
+    void layer_stack::draw_layer(layer_id lid, const layer_style& settings) {
         ENFORCE(is_valid(lid), "layer", lid, "is not one of this stack's");
         ENFORCE(m_combining, "draw_layer outside a compositor");
         draw_index(lid.m_index, settings);
@@ -231,11 +244,11 @@ namespace neutrino::detail {
         ENFORCE(first.m_index <= last.m_index, "draw_layers: layer", first, "comes after", last);
         ENFORCE(m_combining, "draw_layers outside a compositor");
         for (std::size_t idx = first.m_index; idx <= last.m_index; ++idx) {
-            draw_index(idx, m_layers[idx].settings.composite);
+            draw_index(idx, m_layers[idx].settings.style);
         }
     }
 
-    void layer_stack::draw_index(std::size_t idx, const layer_composite_settings& settings) {
+    void layer_stack::draw_index(std::size_t idx, const layer_style& settings) {
         if (!has_content_index(idx)) {
             return;
         }
@@ -285,7 +298,7 @@ namespace neutrino::detail {
                 px.emplace(bound_mapping());
             }
             auto& lr = m_layers[idx];
-            draw_composited(lr.target.get(), lr.settings.composite,
+            draw_composited(lr.target.get(), lr.settings.style,
                             lr.settings.size ? in_place::render_area : in_place::mirrored, *px);
         }
     }

@@ -8,7 +8,7 @@
 
 #include <neutrino/video/blend_mode.hh>
 #include <neutrino/video/geometry_types.hh>
-#include <neutrino/video/layer_composite_settings.hh>
+#include <neutrino/video/layer_style.hh>
 #include <sdlpp/utility/geometry.hh>
 
 #include "video/target_geometry.hh"
@@ -17,7 +17,7 @@ namespace neutrino {
     class texture;
 }
 
-// Drawing a finished layer or canvas with its composite settings (painter.md §2.7, §2.8,
+// Drawing a finished layer with its style, or a canvas with its blend (painter.md §2.7, §2.8,
 // §3.5; R42, R43): the placement and the alpha rules the compositor and the copy of the
 // canvases into the window share.
 
@@ -37,7 +37,7 @@ namespace neutrino::detail {
     /// colour too, because SDL's alpha modulation scales only alpha in the premultiplied
     /// modes). Set at every draw: a pooled texture keeps its last owner's. False if SDL refused
     /// one of them.
-    [[nodiscard]] bool apply_composite_modulation(texture& t, const layer_composite_settings& s);
+    [[nodiscard]] bool apply_style_modulation(texture& t, const layer_style& s);
 
     /**
      * @brief How render units land on the bound target's pixels: the target's geometry (R42)
@@ -100,13 +100,13 @@ namespace neutrino::detail {
     /// blend (add keeps the target's alpha). What
     /// lets a copy be skipped: the base layer's texture serving as the canvas (R41), the
     /// bottom scene drawing straight into the window (R44).
-    [[nodiscard]] bool is_identity_composite(const layer_composite_settings& s) noexcept;
+    [[nodiscard]] bool is_identity_style(const layer_style& s) noexcept;
 
     /// ENFORCE what draw_composited() needs of @p s: no diagonal flip; a finite rotation; a
     /// finite scale that is not negative; a finite opacity. A scene's frame checks its
     /// canvas's settings with it, so a bad one fails that scene's frame, not the copy into the
     /// window after every scene.
-    void validate_composite(const layer_composite_settings& s);
+    void validate_style(const layer_style& s);
 
     /// Where draw_composited() puts a texture whose settings leave @c destination unset.
     enum class in_place : std::uint8_t {
@@ -125,9 +125,9 @@ namespace neutrino::detail {
      * unset, where @p where says: its @c source part, or all of it, in place. It is then flipped, scaled and rotated
      * about the pivot, measured from that rectangle — from the render area for a texture that
      * mirrors the target drawn whole — and moved by the offset, with
-     * apply_composite_modulation(). A scale of 0 draws nothing. A draw SDL refuses is counted
-     * in draw_failure_count(). ENFORCE: validate_composite().
+     * apply_style_modulation(). A scale of 0 draws nothing. A draw SDL refuses is counted
+     * in draw_failure_count(). ENFORCE: validate_style().
      */
-    void draw_composited(texture& t, const layer_composite_settings& s, in_place where,
+    void draw_composited(texture& t, const layer_style& s, in_place where,
                          const pixel_space& space);
 }

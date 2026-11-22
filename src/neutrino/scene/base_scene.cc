@@ -41,6 +41,13 @@ namespace neutrino {
         return m_compositor;
     }
 
+    layer_style& base_scene::style_of(layer_id lid) {
+        ENFORCE(m_layer_stack != nullptr, "style_of in a scene that declared no layers");
+        ENFORCE(lid != m_layer_stack->base_layer(),
+                "the base layer is drawn as it is: declare a layer for drawing that must move or fade");
+        return m_layer_stack->style(lid);
+    }
+
     layer_id base_scene::declare_layer(const layer_settings& settings) {
         if (!m_layer_stack) {
             // No geometry yet: the first begin_frame() gives it the target's (R42).

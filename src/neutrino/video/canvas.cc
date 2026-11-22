@@ -16,12 +16,12 @@
 #include "video/texture_allocator.hh"
 
 namespace neutrino::detail {
-    layer_composite_settings& canvas::composite() noexcept {
-        return m_composite;
+    void canvas::set_blend(blend_mode mode) noexcept {
+        m_blend = mode;
     }
 
-    const layer_composite_settings& canvas::composite() const noexcept {
-        return m_composite;
+    blend_mode canvas::blend() const noexcept {
+        return m_blend;
     }
 
     void canvas::set_redraw(redraw_mode mode) noexcept {
@@ -80,6 +80,10 @@ namespace neutrino::detail {
         }
     }
 
+    void canvas::clear() {
+        m_target.clear();                      // nothing without a texture
+    }
+
     void canvas::release() noexcept {
         m_target = texture_handle{};
         m_shared = nullptr;
@@ -126,7 +130,8 @@ namespace neutrino::detail {
             return;
         }
         // The canvas mirrors the target: in place it lands 1:1 (R42, R43).
-        draw_composited(m_shared ? *m_shared : m_target.get(), m_composite, in_place::mirrored, px);
+        draw_composited(m_shared ? *m_shared : m_target.get(), layer_style{.blend = m_blend},
+                        in_place::mirrored, px);
     }
 
     void draw_canvases(std::span <canvas* const> canvases) {
@@ -136,8 +141,8 @@ namespace neutrino::detail {
             if (!c) {
                 continue;
             }
-            // Each scene's frame checked its canvas's settings; one changed since is skipped,
-            // so it does not fail the frame for every scene.
+            // A copy that fails is skipped and counted, so it does not fail the frame for every
+            // scene.
             try {
                 c->draw_into_target(px);
             } catch (const std::exception& e) {
