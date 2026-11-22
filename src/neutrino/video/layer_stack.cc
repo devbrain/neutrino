@@ -97,9 +97,8 @@ namespace neutrino::detail {
         if (top.target) {
             // A binding of the game's that outlived the layer would be ended by ours and leave
             // the wrong target bound; catch it here instead.
-            const auto bound = get_renderer().get_target();
             const auto& own = m_layers[top.layer].target;
-            ENFORCE(bound.has_value() && own && *bound == own.get().native().get(),
+            ENFORCE(own && get_renderer().is_target(own.get().native()),
                     "pop_layer while the bound target is not the layer's: a texture::bind() "
                     "scope outlived it");
         }
@@ -305,12 +304,11 @@ namespace neutrino::detail {
 
     const pixel_mapping& layer_stack::bound_mapping() {
         // Read once per target: every layer is drawn onto the same canvas, unless a compositor
-        // binds a texture of its own meanwhile.
-        const auto bound = get_renderer().get_target();
-        const void* now = bound ? static_cast <const void*>(*bound) : nullptr;
-        if (!m_mapping || m_mapping_target != now) {
+        // binds a texture of its own meanwhile, which switches the target.
+        const std::uint64_t now = target_switches();
+        if (!m_mapping || m_mapping_switches != now) {
             m_mapping = pixel_mapping::of_bound_target();
-            m_mapping_target = now;
+            m_mapping_switches = now;
         }
         return *m_mapping;
     }

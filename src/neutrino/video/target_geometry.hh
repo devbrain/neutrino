@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include <sdlpp/video/renderer.hh>
 
 #include <neutrino/video/geometry_types.hh>
@@ -45,4 +47,13 @@ namespace neutrino::detail {
     ///        does at every bind, since a pooled texture keeps its last owner's. A failure is
     ///        counted in draw_failure_count().
     void apply_presentation(const target_geometry& g);
+
+    /// @brief How many times neutrino has switched the render target: bound a texture, or
+    ///        bound the previous target again when a renderer_target_scope ended. The same
+    ///        count means the same target is bound, unless the game switched it through
+    ///        get_renderer(). Main thread only.
+    [[nodiscard]] std::uint64_t target_switches() noexcept;
+
+    /// @brief Counts one switch: called after every bind and restore neutrino makes.
+    void count_target_switch() noexcept;
 }

@@ -227,8 +227,8 @@ namespace neutrino::detail {
             std::vector<pushed_entry>  m_stack;    // back() is the current layer
             bool m_combining{false};               // between begin_combine() and end_combine()
             /// While combining: how render units land on the bound target, read at the first
-            /// draw_layer() onto it, and the target it was read on.
+            /// draw_layer() onto it, and the target_switches() count it was read at.
             std::optional <pixel_mapping> m_mapping;
-            const void* m_mapping_target{nullptr};
+            std::uint64_t m_mapping_switches{0};
     };
 }

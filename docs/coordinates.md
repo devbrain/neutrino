@@ -53,15 +53,18 @@ by a rule (§4), not by a discussion.
 | **render** | what draw calls take: the bound target's coordinates after logical presentation, the viewport and the scale. Inside a texture target, its pixels; inside a layer at the scene's size, render pixels | float | sdlpp |
 | **output** | the renderer's real output in pixels, ignoring logical presentation: `SDL_GetRenderOutputSize`, `SDL_RenderReadPixels`, the logical presentation rectangle | int | sdlpp |
 | **texel** | pixels inside a texture: source rectangles, atlas rectangles, texture sizes | int (SDL also takes float source rectangles) | sdlpp |
+| **uv** | fractions of a texture, 0 to 1 across it (beyond that with the wrap address mode): the texture coordinates of geometry | float | sdlpp |
 | **normalized** | fractions of the window, 0 to 1: touch finger positions | float | sdlpp |
 | **world** | gameplay and tile pixels; the camera maps it to render | float | neutrino |
 
 **Not typed**, so they stay plain numbers, documented where they are declared: mouse
 wheel scroll amounts, joystick ball motion, gamepad touchpad positions (fractions of the
-touchpad, not of a window), pen axes, tile grid indices (§10), and vertex texture
-coordinates — fractions of a texture, 0 to 1. *Why the last are not a space:* they appear
-only in vertices, which no public neutrino API takes yet, and the code that computes them
-from texel coordinates is internal to `draw.cc`.
+touchpad, not of a window), pen axes and tile grid indices (§10).
+
+*Why texture coordinates became a space after all* (2026-11-22): sdlpp's geometry calls
+took `SDL_Vertex`, a raw SDL type. Its replacement, `sdlpp::vertex`, holds a `render_pos`, so
+its texture coordinates are typed as well: a `uv_pos`, which `texture::to_uv()` makes from
+texels and `texture::to_texel()` turns back.
 
 *Why sdlpp owns all but world:* SDL defines those spaces and the mappings between them —
 logical presentation, pixel density, the bound target, `SDL_RenderCoordinatesFromWindow`.
@@ -75,7 +78,7 @@ Four kinds, each a template over a space tag, in a new sdlpp header:
 ```cpp
 namespace sdlpp {
     struct display_space; struct window_space; struct render_space; struct output_space;
-    struct texel_space;   struct normalized_space;
+    struct texel_space;   struct uv_space;      struct normalized_space;
 
     template <class Space, class T = float> struct pos    { T x{}, y{}; };   // a place
     template <class Space, class T = float> struct delta  { T x{}, y{}; };   // a displacement
@@ -209,8 +212,9 @@ nothing outside `window.hh` used the namespace.
   overloads go.
 - **Copies:** the source is a texel area (int, or float as SDL allows), the destination a
   `render_rect`, the rotation centre a `render_delta` from the destination's top-left.
-- **Geometry:** a vertex holds a `render_pos`, its texture coordinates as a plain float
-  pair, and a colour, with `SDL_Vertex`'s layout.
+- **Geometry** (done 2026-11-22): `sdlpp::vertex` holds a `render_pos`, an `fcolor` and a
+  `uv_pos`, with `SDL_Vertex`'s layout; `render_geometry` takes it and a `const texture&`, or
+  no texture.
 - **Viewport and clip rectangle:** render areas, the clip relative to the viewport (§10).
 - **Read pixels, the output size and the logical presentation rectangle:** output space.
   The current output size (adjusted by logical presentation) and the logical size: render

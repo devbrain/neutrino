@@ -24,9 +24,7 @@ using neutrino::detail::target_geometry;
 namespace {
     // The texture the renderer draws into now; null for the window.
     [[nodiscard]] SDL_Texture* bound() {
-        const auto t = get_renderer().get_target();
-        REQUIRE(t.has_value());
-        return *t;
+        return SDL_GetRenderTarget(get_renderer().get());
     }
 
     [[nodiscard]] SDL_Texture* raw(const texture* t) {

@@ -907,7 +907,7 @@ API yet (§10).
 Rotations, warps and deformations are first-class. The model takes them from lib_sdlpp's
 `simplex` (`include/simplex/mesh.hh`, `effects.hh`), which already implements them:
 
-- **`sprite_mesh`** — a quad subdivided into `cols × rows` cells (`SDL_Vertex`: position,
+- **`sprite_mesh`** — a quad subdivided into `cols × rows` cells (`sdlpp::vertex`: position,
   colour, uv) laid out over a destination rect and a source region; `transform_vertices`
   deforms positions.
 - **`mesh_effect`** — deformations applied to a laid-out mesh: `wave_horizontal` /

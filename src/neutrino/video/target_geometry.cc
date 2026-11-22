@@ -9,6 +9,18 @@
 #include "video/draw_failures.hh"
 
 namespace neutrino::detail {
+    namespace {
+        std::uint64_t s_target_switches = 0;
+    }
+
+    std::uint64_t target_switches() noexcept {
+        return s_target_switches;
+    }
+
+    void count_target_switch() noexcept {
+        ++s_target_switches;
+    }
+
     target_geometry bound_target_geometry() {
         auto& r = get_renderer();
         target_geometry g;

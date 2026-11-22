@@ -22,8 +22,7 @@ namespace neutrino {
         ENFORCE(maybe_application() != nullptr, "screenshot() needs a running application");
         ENFORCE(!detail::scene_frame::rendering(),
                 "screenshot() inside a scene's render() or compositor: frames do not nest");
-        const auto bound = get_renderer().get_target();
-        ENFORCE(bound.has_value() && *bound == nullptr,
+        ENFORCE(!get_renderer().has_texture_target(),
                 "screenshot() while a texture is bound: call it with the window as the target");
 
         // The window's size and its mapping of render space: the scenes land on the same

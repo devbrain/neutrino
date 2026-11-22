@@ -182,20 +182,20 @@ namespace neutrino {
             return scaled_offset(coordinate, scale, snap);
         }
 
-        [[nodiscard]] SDL_Vertex make_sprite_vertex(
+        [[nodiscard]] sdlpp::vertex make_sprite_vertex(
             local_point local,
             const tiled_sprite_geometry& geometry,
             const render_rect& dst,
             float scale,
             bool snap,
-            SDL_FPoint tex_coord) noexcept {
+            sdlpp::uv_pos tex_coord) noexcept {
             const auto x = scaled_coordinate(local.x - geometry.min.x, geometry.width, geometry.pixel_width, scale,
                                              snap);
             const auto y = scaled_coordinate(local.y - geometry.min.y, geometry.height, geometry.pixel_height, scale,
                                              snap);
-            return SDL_Vertex{
-                .position = {dst.x + x, dst.y + y},
-                .color = {1.0f, 1.0f, 1.0f, 1.0f},
+            return sdlpp::vertex{
+                .position = sdlpp::render_pos{dst.x + x, dst.y + y},
+                .color = sdlpp::colors::f::white,
                 .tex_coord = tex_coord
             };
         }
@@ -252,7 +252,7 @@ namespace neutrino {
                 geometry.pixel_height
             };
 
-            std::array <SDL_Vertex, 4> vertices{
+            std::array <sdlpp::vertex, 4> vertices{
                 make_sprite_vertex(geometry.corners[0], geometry, dst, scale, snap, {u0, v0}),
                 make_sprite_vertex(geometry.corners[1], geometry, dst, scale, snap, {u1, v0}),
                 make_sprite_vertex(geometry.corners[2], geometry, dst, scale, snap, {u1, v1}),
@@ -274,7 +274,7 @@ namespace neutrino {
             }
             constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
 
-            return renderer.render_geometry(resolved.page.native().get(), vertices, indices);
+            return renderer.render_geometry(resolved.page.native(), vertices, indices);
         }
 
         sdlpp::expected <void, std::string> draw_visual_impl(
@@ -928,18 +928,18 @@ namespace neutrino {
         const float v0 = static_cast <float>(s.y) / h;
         const float u1 = static_cast <float>(s.x + s.w) / w;
         const float v1 = static_cast <float>(s.y + s.h) / h;
-        const SDL_FColor c{static_cast <float>(tint.r) / 255.0f, static_cast <float>(tint.g) / 255.0f,
-                           static_cast <float>(tint.b) / 255.0f, static_cast <float>(tint.a) / 255.0f};
-        const std::array <SDL_FPoint, 4> uv{{{u0, v0}, {u1, v0}, {u1, v1}, {u0, v1}}};
+        const sdlpp::fcolor c{static_cast <float>(tint.r) / 255.0f, static_cast <float>(tint.g) / 255.0f,
+                              static_cast <float>(tint.b) / 255.0f, static_cast <float>(tint.a) / 255.0f};
+        const std::array <sdlpp::uv_pos, 4> uv{{{u0, v0}, {u1, v0}, {u1, v1}, {u0, v1}}};
 
         const bool snap = snapping();
-        std::array <SDL_Vertex, 4> vertices{};
+        std::array <sdlpp::vertex, 4> vertices{};
         for (std::size_t i = 0; i < vertices.size(); ++i) {
             const render_pos p = snap_pos(corners[i], snap);
-            vertices[i] = SDL_Vertex{.position = {p.x, p.y}, .color = c, .tex_coord = uv[i]};
+            vertices[i] = sdlpp::vertex{.position = sdlpp::render_pos{p.x, p.y}, .color = c, .tex_coord = uv[i]};
         }
         constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
-        DRAW_CHECK(get_renderer().render_geometry(drawable(t).get(), vertices, indices));
+        DRAW_CHECK(get_renderer().render_geometry(drawable(t), vertices, indices));
     }
 
     std::uint64_t draw_failure_count() noexcept {

@@ -6,6 +6,7 @@
 #include <neutrino/video/globals.hh>
 
 #include "video/painter_state_internal.hh"
+#include "video/target_geometry.hh"
 
 #include "video/blend_mode_sdl.hh"
 
@@ -60,7 +61,9 @@ namespace neutrino {
 
         // Make @p tex the render target; a failure is an error, not a no-op.
         void set_render_target(const sdlpp::texture& tex) {
-            if (const auto bound = get_renderer().set_target(tex); !bound) {
+            const auto bound = get_renderer().set_target(tex);
+            detail::count_target_switch();        // counted even on failure: the target may have changed
+            if (!bound) {
                 THROW_RUNTIME("binding the render target failed:", bound.error());
             }
         }
@@ -97,6 +100,7 @@ namespace neutrino {
     void renderer_target_scope::end() noexcept {
         if (m_guard) {
             m_guard.reset();                      // the previous target is bound again
+            detail::count_target_switch();
             detail::clip_after_scope(m_painter_clip);   // the painter's clip, or the target's own
         }
     }

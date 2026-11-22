@@ -46,9 +46,7 @@ namespace {
     constexpr color BLACK{0, 0, 0, 255};
 
     [[nodiscard]] SDL_Texture* bound() {
-        const auto t = get_renderer().get_target();
-        REQUIRE(t.has_value());
-        return *t;
+        return SDL_GetRenderTarget(get_renderer().get());
     }
 
     // Sets the render shortcuts for one test and puts them back after it (R41, R44).
