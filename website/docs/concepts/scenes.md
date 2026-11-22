@@ -1,7 +1,7 @@
 ---
 sidebar_position: 2
 title: Scenes
-description: The scene stack, lifecycle hooks, opaque versus overlay, and how transitions are applied.
+description: The scene stack, lifecycle hooks, what a scene does to the scenes below it, and how transitions are applied.
 ---
 
 # Scenes
@@ -22,62 +22,60 @@ class my_scene : public neutrino::base_scene {
 
 Everything else has a default, so override only what you need:
 
-- `is_opaque()` returns `true` (see below).
+- `flags()` returns `hides_below | pauses_below`: a full screen (see below).
 - `handle_action(ev)` ignores raw events.
 - The lifecycle hooks — `on_enter`, `on_exit`, `on_pause`, `on_resume`, `on_resize` — do nothing.
 
 See [Tutorial Step 1: A window and an empty scene](../tutorial/step-01-window-and-scene.md) for a working
 minimal scene implementation.
 
-## Opaque or overlay
+## Full screen or overlay: `scene_flags`
 
-`is_opaque()` is the single most consequential thing a scene declares. It answers "does this scene
-completely cover the screen?", and the engine uses that answer to decide how much of the stack
-stays alive.
+`flags()` is the single most consequential thing a scene declares: what it does to the scenes
+beneath it. The bits are independent; the scene carrying them is always updated and drawn itself.
 
-- **Opaque** (`true`, the default) — a full screen. Nothing below it is drawn.
-- **Overlay** (`false`, override to opt in) — a pause menu, a modal dialog, a loading spinner. The scene below keeps
-  drawing *and* keeps updating.
+| Flag | The scenes below |
+|---|---|
+| `hides_below` | are not drawn: this scene covers the display |
+| `pauses_below` | are not updated; the one directly below gets `on_pause` when this scene is pushed and `on_resume` when it is popped |
+| `passes_input` | see the live input and events after this scene: input runs from the top down through such scenes |
+| `none` | keep updating and are drawn: an overlay |
 
-Each frame the engine scans down from the top of the stack to the **first opaque scene**, and
-dispatches from there upward.
+The default, `hides_below | pauses_below`, is a full screen. Override `flags()` for the rest:
 
-```mermaid
-flowchart TD
-    subgraph Stack ["Scene Stack"]
-        Top["pause_overlay (is_opaque: false)"]
-        Mid["gameplay (is_opaque: true)"]
-        Bot["main_menu (is_opaque: true)"]
-        Top --- Mid
-        Mid --- Bot
-    end
+```cpp
+// A pause menu: the game stays visible but stops.
+neutrino::scene_flags flags() const override { return neutrino::scene_flags::pauses_below; }
 
-    Top -->|"Receives input snapshot & events"| ActiveInput["Input: Active"]
-    Mid -->|"Neutral input (pointer off-screen)"| NeutralInput["Input: Neutral"]
-    Bot -->|"Not evaluated"| Dormant["Input: None"]
-
-    Scan{"Scan down from Top"} --> OpaqueFound["First opaque: gameplay"]
-    OpaqueFound --> RenderGroup["Update & Render:\ngameplay + pause_overlay"]
-    OpaqueFound --> Prune["main_menu: Skipped"]
+// A loading spinner: what is below keeps running and drawing; its async work completes.
+neutrino::scene_flags flags() const override { return neutrino::scene_flags::none; }
 ```
 
+Each frame the engine draws from the topmost scene with `hides_below` upward, and updates from the
+topmost scene with `pauses_below` upward.
+
 ```text
-stack (top last)     is_opaque   updated?   rendered?   gets input?
-─────────────────────────────────────────────────────────────────────
-main_menu            true        no         no          no
-gameplay             true        yes        yes         no
-pause_overlay        false       yes        yes         yes   ← top
+stack (top last)     flags                         updated?   drawn?   gets input?
+──────────────────────────────────────────────────────────────────────────────────
+main_menu            hides_below | pauses_below    no         no       no
+gameplay             hides_below | pauses_below    yes        yes      no
+spinner_overlay      none                          yes        yes      yes   ← top
 ```
 
 `gameplay` is below an overlay, so it still runs — that is the entire point of an overlay. A
 spinner shown over a loading screen must not freeze the work it is waiting on.
 
-## Only the top scene receives input
+`passes_input` may change at any time; the other bits must not change while the scene is on the
+stack, because push and pop each read `pauses_below`.
+
+## Input runs from the top down
 
 Updating and input are deliberately *not* the same question.
 
-Covered scenes are updated, but they receive a **neutral input snapshot**: nothing held, nothing
-pressed, pointer off-screen. Raw SDL events go to the top scene alone.
+Live input and raw events go to the top scene, and on down through scenes with `passes_input`,
+stopping at the first scene without it — and never reaching a scene paused by `pauses_below`.
+Every other scene that is updated receives a **neutral input snapshot**: nothing held, nothing
+pressed, pointer off-screen.
 
 Without this, a background scene would react to clicks *through* a modal — the player dismisses a
 dialog and the button behind it also fires. Because covered scenes get a genuinely empty snapshot
@@ -91,19 +89,36 @@ position. It is false both when the cursor is outside the window and when the sc
 Acting on the position regardless snaps your object to a meaningless coordinate.
 :::
 
+## How scenes are drawn
+
+A scene is a logical part of the game, and the engine draws each visible one as it is over
+the scenes below, bottom to top. Its flags alone decide how: a scene with `hides_below` is
+a plain copy, an overlay is blended over what is below. Code that draws today draws
+unchanged, and a full screen costs nothing extra: the bottom full-screen scene draws
+straight into the window.
+
+- **An overlay is isolated.** It is drawn on its own, then blended over the scenes below. A
+  translucent colour drawn with blend `none` (the default draw blend) is therefore blended
+  over them, where drawing into the window used to overwrite them; to cover what is below,
+  draw opaque colour.
+- **Fades, shakes and transitions are the scene's layers' business**, not settings on the
+  scene: a pause menu fades in by fading its layer, `style_of(m_menu).opacity = t`. See
+  [Drawing, part 6](./drawing.md#6-layers-and-the-compositor).
+
 ## Lifecycle
 
 | Hook | Fires when |
 |---|---|
 | `on_enter` | The scene has been added to the stack |
 | `on_exit` | The scene is being removed |
-| `on_pause` | An **opaque** scene was pushed on top |
-| `on_resume` | The opaque scene above was popped |
+| `on_pause` | A scene with `pauses_below` was pushed directly on top |
+| `on_resume` | That scene was popped |
 | `on_resize` | The scene becomes active, and whenever the render space changes |
 
 ### Pause and resume are for mode changes, not overlays
 
-Pushing or popping an **overlay** does not fire `on_pause` / `on_resume` on the scene below.
+Pushing or popping a scene without `pauses_below` does not fire `on_pause` / `on_resume` on the
+scene below.
 
 This looks like an inconsistency and is a deliberate choice. Refresh logic naturally hangs off
 `on_resume` — "I was away, re-sync my state." If dismissing a spinner fired `on_resume`, every
@@ -126,6 +141,11 @@ neutrino::replace_scene(std::make_unique<game_over_scene>());
 
 These are free functions because the application is effectively a singleton.
 
+A scene can also be **pinned** above the stack — a console, an FPS counter:
+`neutrino::pin_scene(std::make_unique<console_scene>())`, and `unpin_scene()` to drop it. Push,
+pop and replace act on the stack below it; otherwise the pinned scene is the topmost one, drawn
+and updated last.
+
 **They are queued, not immediate.** Each posts a request to the SDL event queue, applied on the
 next event pump. That is what makes them safe to call from inside a scene callback — including from
 the scene being replaced. A scene can call `pop_scene()` on itself from `fixed_update` without
@@ -145,8 +165,9 @@ is *repaired* afterwards.
 to clean up, drops it from the stack, resumes the scene below, and logs. The application stays
 responsive on the scene that was already working.
 
-**A throwing `fixed_update` drops that scene.** The error is logged and the top scene is popped, so
-the next frame runs a known-good one.
+**A throwing `fixed_update` or `render` drops that scene.** The error is logged and the top scene is
+popped, so the next frame runs a known-good one. The scenes finished below a scene whose `render`
+threw are still shown in that frame.
 
 **At shutdown, every scene exits.** `on_exit` is guarded per scene and the scene is popped either
 way, so one scene failing to exit cannot strand the rest. This matters more than it looks: the
@@ -190,7 +211,7 @@ class gameplay_scene : public neutrino::base_scene {
         m_level.draw();
     }
 
-    // handle_action() and is_opaque() keep their defaults: continuous input is read
+    // handle_action() and flags() keep their defaults: continuous input is read
     // from the snapshot in fixed_update, and a gameplay scene is a full screen.
 };
 ```
@@ -205,8 +226,9 @@ See [Input](./input.md) for the hook boundaries and substep delivery rules.
 - **Expecting immediate stack changes:** Calling `push_scene()` or `pop_scene()` queues an event;
   it does *not* switch scenes on that exact line of code. Never write code that assumes the stack
   has changed before the current callback finishes.
-- **Accidentally setting `is_opaque() == false` on fullscreens:** If your gameplay or title scene returns
-  `false`, the engine continues updating and rendering whatever scene was underneath it, burning CPU/GPU cycles.
+- **Dropping `hides_below` on full screens:** If your gameplay or title scene's `flags()` leaves it
+  out, the engine keeps drawing whatever scene is underneath — and without `pauses_below`, keeps
+  updating it — burning CPU/GPU cycles.
 - **Polling window dimensions in `render()`:** Laying out your HUD or UI every frame is wasteful. Override
   `on_resize(neutrino::dim size)` instead, which fires whenever the scene becomes active and whenever the render
   canvas dimensions change.

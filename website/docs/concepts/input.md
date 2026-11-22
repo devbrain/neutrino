@@ -27,7 +27,7 @@ tracking, `handle_event()` detects render-space size changes and calls `resize_s
 when needed, then calls `event(e)`:
 
 - The default `event(e)` dispatches scene transitions and forwards other events to the
-  top scene's `handle_action(e)`. Overriding it replaces that dispatch; call
+  top scene's `handle_action(e)`, and on down through scenes with `passes_input`. Overriding it replaces that dispatch; call
   `application::event(e)` explicitly if you also want the default behavior.
 - The default `resize_scene(size)` calls the active scene's `on_resize(size)`. An override
   replaces this notification. Scene activation delivers an initial size separately;
@@ -180,7 +180,7 @@ const neutrino::window_pos w2 = neutrino::to_window_coords(r);
 
 The engine samples the live pointer position from SDL, including on the first frame, and
 uses mouse focus to determine availability. `on_screen` is false when there is no mouse
-focus and in the neutral snapshot supplied to a [covered scene](./scenes.md#only-the-top-scene-receives-input).
+focus and in the neutral snapshot supplied to a [covered scene](./scenes.md#input-runs-from-the-top-down).
 It does not depend on receiving a first mouse-motion event.
 
 ```cpp

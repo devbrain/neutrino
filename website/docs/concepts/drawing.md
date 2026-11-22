@@ -15,7 +15,7 @@ Neutrino resolves this tension by providing **two distinct, complementary render
 1. **Immediate Primitives ([`draw.hh`](pathname:///api/)):** Unbuffered, direct submissions to the GPU renderer in call order. Ideal for debug shapes, HUD frames, progress bars, and overlays.
 2. **Depth-Sorted Batches ([`sprite_batch`](pathname:///api/)):** A lightweight draw sink that decouples *when* entities decide to draw from *how* they are projected, depth-sorted, and painter-ordered.
 
-Alongside these paths, **Look-at Cameras ([`camera`](pathname:///api/))** provide mathematically exact, drift-free parallax projection, while **Textures ([`texture`](pathname:///api/))** let you bake complex or static scenes to VRAM once and draw them cheaply, or stream CPU-generated pixels every frame.
+Alongside these paths, **Look-at Cameras ([`camera`](pathname:///api/))** provide mathematically exact, drift-free parallax projection, while **Textures ([`texture`](pathname:///api/))** let you bake complex or static scenes to VRAM once and draw them cheaply, or stream CPU-generated pixels every frame. Underneath, a scene can declare **layers** that a **compositor** combines (part 6), and the **painter state** can be saved and restored (part 7).
 
 ```mermaid
 flowchart TD
@@ -61,6 +61,9 @@ flowchart TD
 | [`camera`](pathname:///api/) | `<neutrino/video/world/camera.hh>` | 2D look-at camera | Defines viewport center (`target`), `zoom`, and parallax origin (`parallax_rest`). |
 | [`texture`](pathname:///api/) | `<neutrino/video/texture.hh>` | GPU image | One type, three access modes (`fixed`, `streaming`, `target`). Draw it with `draw_texture()`; bake target textures once with `compose()`. |
 | [`render_layer`](pathname:///api/) | `<neutrino/video/world/render_layer.hh>` | Compositor slot | Game-owned layer slotted between static tile map layers in a `world_compositor`. |
+| [`layer_id`, `push_layer`, `scoped_layer`, `layer_style`](pathname:///api/) | `<neutrino/video/layer_ops.hh>` | A scene's layers | Declared with `declare_layer` in the scene's constructor; pushed and popped during its `render()`; styled live with `style_of(id)`. Not to be confused with `draw_layer`, a `sprite_batch` sort band. |
+| [`composition`, `compositor`](pathname:///api/) | `<neutrino/video/composition.hh>` | Combining the layers | What a scene's compositor receives after `render()`; `default_compositor` draws the layers in declaration order. |
+| [`painter_state`, `scoped_state`](pathname:///api/) | `<neutrino/video/painter_state.hh>` | Colour, blend, line style, clip | Saved and restored around helpers; every push popped within the scene's frame. |
 
 ---
 
@@ -510,9 +513,125 @@ neutrino::draw_texture(*canvas, viewport);
 
 ### Reading pixels back
 
-`target.to_image()` reads a target texture back into an `image`; `neutrino::capture_frame()` reads whatever target is currently bound (the window is only meaningful between drawing and present). `neutrino::save_bmp(img, path)` writes either to disk -- handy for screenshots and tests.
+`target.to_image()` reads a target texture back into an `image`; `neutrino::capture_frame()` reads whatever target is currently bound (the window is only meaningful between drawing and present; its pixels come back opaque, as the screen shows them). `neutrino::save_bmp(img, path)` writes either to disk -- handy for screenshots and tests.
 
-## 6. Putting It All Together: A Multi-Layer Scene Architecture
+## 6. Layers and the Compositor
+
+Headers: `<neutrino/video/layer_ops.hh>`, `<neutrino/video/composition.hh>`.
+
+A scene is a logical part of your game — a menu, the gameplay, a game-over screen — and is drawn as it is over the scenes below it (see [Scenes](./scenes.md#how-scenes-are-drawn)). Everything visual a scene wants beyond plain drawing — an order that does not depend on call order, a fade, a shake, a picture kept between frames — it does with **layers**: textures it declares ahead of time and draws into in any order, combined by its **compositor**. Drawing stays immediate: nothing is recorded or sorted.
+
+### Declaring layers
+
+Declare them in the scene's constructor, normally in member initialisers. Declaration order is the z-order, whatever order you draw them in:
+
+```cpp
+#include <neutrino/video/layer_ops.hh>
+
+class level_scene : public neutrino::base_scene {
+    neutrino::layer_id m_world{declare_layer()};          // under
+    neutrino::layer_id m_hud{declare_layer()};            // over
+    neutrino::layer_id m_map{declare_layer({.redraw = neutrino::redraw_mode::on_demand})};
+
+    void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
+        style_of(m_world).offset = m_shake.offset();      // the layer moves; nothing is redrawn
+    }
+
+    void render() override {
+        {
+            auto hud = neutrino::scoped_layer(m_hud);     // drawn first, still on top
+            draw_hud();
+        }
+        neutrino::push_layer(m_world);
+        draw_world();
+        neutrino::pop_layer();
+
+        if (neutrino::needs_redraw(m_map)) {              // kept between frames: drawn when lost
+            auto map = neutrino::scoped_layer(m_map);
+            draw_map();
+        }
+
+        draw_background();                                // no layer pushed: the base layer
+    }
+};
+```
+
+- **The base layer.** The first `declare_layer` also makes a base layer under every declared one; drawing with no layer pushed goes there, and it is drawn as it is. Drawing that must move or fade goes on a declared layer. A scene that declares no layer draws as before and pays nothing.
+- **Pushes are balanced.** Every `push_layer` is ended by a `pop_layer` before `render()` returns — `scoped_layer` does it for you, also on an exception; a frame left with a layer pushed fails, naming it. Pushing a layer does not change the colour, blend or clip (part 7).
+- **`layer_settings`:** `size` (the layer's own resolution; unset, the window's), `redraw` (`every_frame`, cleared at its first push each frame, or `on_demand`, kept between frames: a layer you redraw only when it changes or when `needs_redraw(id)` says it was lost) and `style`, how it is drawn when combined.
+- **`clear()`** empties the current layer — the way to start an on-demand layer again.
+- **Translucent drawing into a layer needs `blend_mode::blend`.** Layers are cleared to transparent and combined premultiplied; with the default `none`, a translucent colour is kept unmultiplied and comes out too bright.
+
+### Layer style
+
+`layer_style` says how a layer is drawn when the scene's layers are combined: `blend`, `opacity` (which fades colour as well as alpha), `tint`, `offset` (screen shake), a per-axis `scale` and `rotation_degrees` about an optional `pivot` (unset: the centre), `flip`, `source` (only part of the layer) and `destination` (where it lands). Positions and sizes are in render units; `source` is in the layer's own pixels for a layer with its own `size`.
+
+Give it at declaration as `layer_settings::style`, and change it at any time — in `fixed_update()`, in `render()` — through `style_of(id)`: the compositor reads it after `render()`. Animating it frame by frame is how a layer fades, shakes or turns; nothing is redrawn into the layer.
+
+```cpp
+// brix's plasma behind the options menu: one texel per 4x4 cell, stretched onto the board
+m_plasma = declare_layer({.size = neutrino::dim{board.w / 4, board.h / 4},
+                          .style = {.destination = board}});
+
+style_of(m_menu).opacity = m_fade_in.value();             // the pause menu fades in
+```
+
+| `blend` | Use |
+|---|---|
+| `none` | a layer that covers everything: a plain copy |
+| `blend` (default) | normal layers |
+| `add` | glow, light, fire |
+| `mul` | darkness, shadows: a transparent pixel leaves what is below unchanged |
+| `mod` | tinting everything below; it is cleared to opaque white |
+
+A layer is isolated: `mul` or `mod` draws inside it see only that layer — and only that scene: to dim the scenes below an overlay, the overlay draws a translucent rectangle.
+
+### A compositor of your own
+
+The default compositor draws each layer with content in declaration order, with its own style. Replace it to say anything a style cannot — a layer drawn twice, one left out, an effect over the result:
+
+```cpp
+#include <neutrino/video/composition.hh>
+
+// a water reflection: the world drawn a second time, mirrored and faded, under the HUD
+set_compositor([this](neutrino::composition& c) {
+    c.draw_layers(c.layers().front(), m_world);           // the base layer up to the world
+    c.draw_layer(m_world, {.opacity = 0.3f, .offset = {0, m_water_y}, .flip = neutrino::flip_mode::vertical});
+    c.draw_layer(m_hud);
+});
+```
+
+- `layers()` lists the base layer, then the declared ones; `has_content(id)`, `draw_layer(id)`, `draw_layer(id, style)`, `draw_layers(first, last)` and `texture(id)` reach them; `below()` gives the pictures of the visible scenes below, bottom to top.
+- The compositor runs right after `render()`, with the default painter state. The `draw.hh` functions draw onto the scene's picture meanwhile: a vignette, a debug overlay. Pushing a layer there fails: the layers are finished.
+- A layer the compositor does not draw is not shown. `set_compositor(neutrino::default_compositor)` puts the default back.
+
+---
+
+## 7. The Painter State
+
+Header: `<neutrino/video/painter_state.hh>`.
+
+The draw colour, the blend mode, the line style and the clip are the **painter state** — what every draw call reads. Set them as before (`set_draw_color()`, `set_draw_blend_mode()`, `set_line_style()`); save and restore them around a helper so its changes do not leak into the caller:
+
+```cpp
+#include <neutrino/video/painter_state.hh>
+
+void draw_panel(neutrino::rect area) {
+    neutrino::painter_state s = neutrino::get_painter_state();
+    s.clip = area;                                        // nothing outside it is drawn
+    s.blend = neutrino::blend_mode::blend;
+    auto panel = neutrino::scoped_state(s);               // the caller's state is back at the end
+    neutrino::draw_rect_fill(area, neutrino::color{0, 0, 0, 160});
+}
+```
+
+- `push_state()` saves, `push_state(s)` saves and replaces the whole state, `pop_state()` restores; `scoped_state()` / `scoped_state(s)` pop for you, also on an exception. A scene's frame must pop what it pushes: one that ends with a push left fails, after the push is undone.
+- **The clip follows the painter**, not the target: it applies to whichever texture or layer is bound. A clip set straight on the renderer — by a UI backend — is kept while the painter has none.
+- `line_style` is neutrino's own: `{.pattern = neutrino::line_pattern::dashed, .dash = 6, .gap = 3}`.
+
+---
+
+## 8. Putting It All Together: A Multi-Layer Scene Architecture
 
 Here is how a real game scene coordinates offscreen render textures, camera-aware sprite batches, and immediate-mode UI:
 
@@ -613,6 +732,8 @@ Neutrino's drawing architecture is designed so you never fight the engine:
 - Use **`sprite_batch`** when entities need camera transforms and depth sorting across categorical bands.
 - Use **`camera`** for drift-free look-at targeting and parallax math.
 - Use a **target `texture`** to turn expensive repeated draws into a single `draw_texture()`.
+- Use **layers** when parts of a scene must be ordered, faded, moved or redrawn on their own — `style_of(id)` animates them — and a **compositor** of your own for what a style cannot say.
+- Use **`scoped_state()`** around helpers that change the colour, blend or clip.
 
 For more details on how these pieces fit into the rest of the engine, continue to:
 - **[Sprites](./sprites.md)** — how definitions, cache leases, and runtime instances feed into visuals.
