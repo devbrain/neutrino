@@ -46,6 +46,10 @@ namespace neutrino {
             }
 
         private:
+            layer_id(std::uint32_t stack, std::uint32_t idx)
+                : m_stack(stack), m_index(idx) {
+            }
+
             /// The value of either field when it names nothing; no stack takes it as a serial.
             static constexpr auto INVALID = std::numeric_limits<std::uint32_t>::max();
 

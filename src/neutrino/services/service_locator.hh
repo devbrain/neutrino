@@ -11,7 +11,6 @@
 #include "video/sprite/texture_registry.hh"
 #include "video/sprite/sprites_manager.hh"
 
-
 namespace neutrino {
     class application;
     class scenes_manager;
@@ -19,10 +18,6 @@ namespace neutrino {
     class resource_cache;
     class sprite_cache;
     class fonts_manager;
-    namespace detail {
-        class texture_allocator;
-    }
-
 
     class service_locator {
         friend class application;
@@ -35,6 +30,17 @@ namespace neutrino {
 
             [[nodiscard]] sdlpp::renderer& get_renderer() const {
                 return *m_renderer;
+            }
+
+            // The window, or null before the application has one and after it is torn down.
+            [[nodiscard]] sdlpp::window* maybe_window() const noexcept {
+                return m_window;
+            }
+
+            // The renderer, or null before the application has one and after it is torn
+            // down: for what may run then, such as a scope ending late.
+            [[nodiscard]] sdlpp::renderer* maybe_renderer() const noexcept {
+                return m_renderer;
             }
 
             [[nodiscard]] scenes_manager& get_scenes_manager() const {
@@ -85,11 +91,6 @@ namespace neutrino {
                 return m_fonts_manager;
             }
 
-            [[nodiscard]] detail::texture_allocator* get_texture_allocator() const {
-                return m_texture_allocator;
-            }
-
-
         private:
             void set_window(sdlpp::window& w);
             void set_renderer(sdlpp::renderer& r);
@@ -102,9 +103,7 @@ namespace neutrino {
             void set_resource_cache(resource_cache& c);
             void set_sprite_cache(sprite_cache& c);
             void set_fonts_manager(fonts_manager& f);
-            void set_texture_allocator(detail::texture_allocator& t);
             void clear_application(application& a) noexcept;
-            void clear_texture_allocator() noexcept;
         private:
             sdlpp::renderer* m_renderer = nullptr;
             sdlpp::window* m_window = nullptr;
@@ -117,7 +116,6 @@ namespace neutrino {
             resource_cache* m_resource_cache = nullptr;
             sprite_cache* m_sprite_cache = nullptr;
             fonts_manager* m_fonts_manager = nullptr;
-            detail::texture_allocator* m_texture_allocator = nullptr;
             int m_max_texture_size = 0;
     };
 

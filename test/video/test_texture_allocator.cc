@@ -13,15 +13,19 @@
 #include <neutrino/video/texture_pool_stats.hh>
 
 #include "test_application.hh"
+#include "scene/scenes_manager.hh"
 #include "services/service_access.hh"
+#include "services/service_locator.hh"
 #include "video/texture_allocator.hh"
 #include "video/texture_table.hh"
 
 #include <algorithm>
+#include <atomic>
 #include <initializer_list>
 #include <memory>
 #include <optional>
 #include <set>
+#include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -38,6 +42,8 @@ namespace neutrino::detail {
 }
 
 using namespace neutrino;
+using neutrino::detail::bind_pooled;
+using neutrino::detail::target_geometry;
 using neutrino::detail::texture_allocator;
 using neutrino::detail::texture_handle;
 using neutrino::detail::texture_slot;
@@ -575,6 +581,9 @@ TEST_SUITE("neutrino::detail::texture_allocator") {
 
     TEST_CASE("low memory trims the pool at the start of the next frame") {
         test::test_application app("allocator low memory");
+        // No scene: a scene's frame would take a canvas texture after the trim (R41), one no
+        // handle here watches.
+        service_locator::instance().get_scenes_manager().finish();
         auto& a = require_texture_allocator();
         invariants inv(a);
 
@@ -593,6 +602,58 @@ TEST_SUITE("neutrino::detail::texture_allocator") {
         CHECK(a.stats().destroyed == 1);
         CHECK(held);                                 // held textures are untouched
         inv.check({{held, colors::blue}});
+    }
+
+    TEST_CASE("a trim request needs no allocator; a new allocator drops an old request") {
+        CHECK(maybe_texture_allocator() == nullptr);
+        CHECK_NOTHROW(texture_allocator::request_trim());          // nothing to reach: no fault
+
+        test::test_application app("allocator stale request");
+        auto& a = require_texture_allocator();
+        {
+            auto given_back = a.acquire(texture_spec{MEDIUM, colors::red});
+        }
+        CHECK(a.stats().pooled == 1);
+        app.iterate();                                             // on_render -> begin_frame()
+        CHECK(a.stats().pooled == 1);                              // the old request was dropped
+        texture_allocator::request_trim();
+        app.iterate();
+        CHECK(a.stats().pooled == 0);
+    }
+
+    TEST_CASE("low-memory requests from another thread across the application's quit") {
+        std::atomic <bool> stop{false};
+        std::atomic <long> sent{0};
+        std::thread low_memory([&] {
+            while (!stop.load()) {
+                texture_allocator::request_trim();                 // what on_low_memory() does
+                sent.fetch_add(1);
+            }
+        });
+        // Stopped and joined however the block below ends: a joinable thread's destructor
+        // would end the whole test run.
+        struct joiner {
+            std::atomic <bool>& stop;
+            std::thread& thread;
+            ~joiner() {
+                stop = true;
+                if (thread.joinable()) {
+                    thread.join();
+                }
+            }
+        } const join_at_exit{stop, low_memory};
+        {
+            test::test_application app("allocator low memory race");
+            {
+                auto given_back = require_texture_allocator().acquire(texture_spec{MEDIUM, colors::red});
+            }
+            app.iterate();
+            app.shutdown();                                        // destroys the allocator meanwhile
+        }
+        stop = true;
+        low_memory.join();
+        CHECK(sent.load() > 0);
+        CHECK(maybe_texture_allocator() == nullptr);
     }
 
     TEST_CASE("texture_pool_stats() and trim_texture_pool() reach the application's allocator") {
@@ -642,6 +703,34 @@ TEST_SUITE("neutrino::detail::texture_allocator") {
         }
     }
 
+    TEST_CASE("empty() is true without a slot; a failed handle is not empty") {
+        texture_handle detached;
+        {
+            test::test_application app("allocator empty");
+            auto& a = require_texture_allocator();
+
+            texture_handle none;
+            CHECK(none.empty());
+
+            auto live = a.acquire(texture_spec{MEDIUM, colors::red});
+            CHECK_FALSE(live.empty());
+
+            auto failed = a.acquire(texture_spec{dim{0, 8}, colors::red});
+            CHECK_FALSE(failed);
+            CHECK_FALSE(failed.empty());                     // keeps its slot and size
+
+            texture_handle moved = std::move(live);
+            CHECK(live.empty());
+            CHECK_FALSE(moved.empty());
+            moved = texture_handle{};                        // given back
+            CHECK(moved.empty());
+
+            detached = a.acquire(texture_spec{SMALL, colors::red});
+            CHECK_FALSE(detached.empty());
+        }
+        CHECK(detached.empty());
+    }
+
     TEST_CASE("a handle that outlives the application is detached") {
         texture_handle h;
         {
@@ -661,6 +750,46 @@ TEST_SUITE("neutrino::detail::texture_allocator") {
         CHECK_FALSE(h);
         CHECK(require_texture_allocator().stats().held == 0);
     }                                                // h's destructor does nothing
+}
+
+TEST_SUITE("neutrino::detail::bind_pooled") {
+    TEST_CASE("a texture taken from the pool is cleared once, as it is bound") {
+        test::test_application app("bind pooled clear");
+        auto& a = require_texture_allocator();
+        {
+            auto red = a.acquire(texture_spec{MEDIUM, colors::red});   // pooled with red in it
+        }
+        REQUIRE(a.stats().pooled == 1);
+        texture_handle h;
+        {
+            auto bound = bind_pooled(h, texture_spec{MEDIUM, colors::transparent}, false, target_geometry{});
+            REQUIRE(bound.has_value());
+        }
+        CHECK(a.stats().reused >= 1);
+        const image img = h.get().to_image();
+        const auto px = img.get_pixel(0, 0);
+        REQUIRE(px.has_value());
+        CHECK(px->a == 0);                         // not the previous owner's red
+        CHECK(h.needs_redraw());
+    }
+
+    TEST_CASE("a kept texture is cleared only when asked") {
+        test::test_application app("bind pooled keep");
+        texture_handle h;
+        {
+            auto bound = bind_pooled(h, texture_spec{MEDIUM, colors::transparent}, false, target_geometry{});
+            REQUIRE(bound.has_value());
+            draw_rect_fill(rect{0, 0, 4, 4}, colors::red);
+        }
+        {
+            auto bound = bind_pooled(h, texture_spec{MEDIUM, colors::transparent}, false, target_geometry{});
+        }
+        CHECK(h.get().to_image().get_pixel(1, 1)->r == 255);   // kept
+        {
+            auto bound = bind_pooled(h, texture_spec{MEDIUM, colors::transparent}, true, target_geometry{});
+        }
+        CHECK(h.get().to_image().get_pixel(1, 1)->a == 0);     // wiped
+    }
 }
 
 TEST_SUITE("neutrino::detail::texture_table") {

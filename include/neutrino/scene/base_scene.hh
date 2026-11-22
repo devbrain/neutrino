@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <memory>
 #include <cstdint>
 #include <chrono>
 
@@ -10,6 +11,9 @@
 #include <neutrino/neutrino_export.h>
 #include <neutrino/input/input_snapshot.hh>
 #include <neutrino/video/geometry_types.hh>
+#include <neutrino/video/composition.hh>
+#include <neutrino/video/layer_id.hh>
+#include <neutrino/video/layer_settings.hh>
 #include <neutrino/detail/enum.hh>
 
 namespace neutrino {
@@ -40,10 +44,21 @@ namespace neutrino {
 
     d_NEUTRINO_PROMOTE_ENUM(scene_flags);
 
+    namespace detail {
+        class layer_stack;
+        struct scene_context_access;
+        class canvas;
+    }
+
+    class texture;
+
     /// @brief Abstract scene interface with lifecycle hooks and per-frame callbacks.
     /// Scenes are managed in a stack by scenes_manager.
     class NEUTRINO_EXPORT base_scene {
+        friend struct detail::scene_context_access;
+
         public:
+            base_scene();
             virtual ~base_scene();
 
             /// @brief Called when the scene becomes the active (top) scene.
@@ -92,5 +107,43 @@ namespace neutrino {
             /// stack: push and pop each read `pauses_below`, and a change in between would
             /// unbalance on_pause / on_resume.
             [[nodiscard]] virtual scene_flags flags() const;
+
+            /**
+             * @brief Replaces the scene's compositor, which draws its layers onto its canvas
+             *        after each render() (painter.md §2.9). Every scene starts with
+             *        default_compositor; `set_compositor(default_compositor)` puts it back. A
+             *        scene that declares no layer draws straight onto its canvas, and its
+             *        compositor is not called.
+             *
+             * ENFORCE: @p c is not empty; the scene's compositor is not running.
+             */
+            void set_compositor(compositor c);
+            /// @brief The scene's compositor: to wrap it (a transition), or to put it back later.
+            [[nodiscard]] const compositor& get_compositor() const noexcept;
+
+        protected:
+            /**
+             * @brief Declares a layer of this scene, after the ones declared before it, and
+             *        returns its id (painter.md §2.5).
+             *
+             * Meant for the scene's constructor or member initialisers. The first call also
+             * makes the scene's base layer (R31), under every declared one. No texture is taken
+             * yet: a layer takes its target at its first push. A scene that declares no layer
+             * draws as before, straight onto the bound target, and pays nothing.
+             *
+             * The layers are pushed with the free push_layer() / pop_layer()
+             * (video/layer_ops.hh) during this scene's render(); an id of this scene's is
+             * refused while another scene renders.
+             */
+            [[nodiscard]] layer_id declare_layer(const layer_settings& settings = {});
+
+        private:
+            /// The scene's layers; made by the first declare_layer(), null until then. Reached
+            /// by the scene manager through detail::scene_context_access.
+            std::unique_ptr <detail::layer_stack> m_layer_stack;
+            /// The scene's result; made with the scene, its texture taken when first drawn (R41).
+            std::unique_ptr <detail::canvas> m_canvas;
+            /// Draws the layers onto the canvas after render(); run by detail::scene_frame.
+            compositor m_compositor{default_compositor};
     };
 }

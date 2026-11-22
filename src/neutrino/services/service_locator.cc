@@ -55,9 +55,6 @@ namespace neutrino {
         m_fonts_manager = &f;
     }
 
-    void service_locator::set_texture_allocator(detail::texture_allocator& t) {
-        m_texture_allocator = &t;
-    }
 
     void service_locator::clear_application(application& a) noexcept {
         if (m_application != &a) {
@@ -75,12 +72,7 @@ namespace neutrino {
         m_resource_cache = nullptr;
         m_sprite_cache = nullptr;
         m_fonts_manager = nullptr;
-        m_texture_allocator = nullptr;
 
         m_max_texture_size = 0;
-    }
-
-    void service_locator::clear_texture_allocator() noexcept {
-        m_texture_allocator = nullptr;
     }
 }

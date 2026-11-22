@@ -40,7 +40,15 @@ namespace neutrino {
             void push_scene_sync(std::unique_ptr <base_scene>&& scene);
 
             void fixed_update(sim_duration dt, const input_snapshot& in);
+            /// @brief Clears the target bound now to black, unless covers_target(), and draws
+            ///        the visible scenes into it, bottom to top (painter.md §3.2).
             void render();
+            /// @brief True when this frame's render() will cover the whole target with an
+            ///        opaque copy — the bottom visible scene's canvas, drawn with @c none in
+            ///        place — and so does not clear it first (R44). render() clears the target
+            ///        itself otherwise, and late if that canvas ends the frame with nothing to
+            ///        show.
+            [[nodiscard]] bool covers_target() const;
             void handle_action(const sdlpp::event& ev);
 
             /// @brief Deliver a render-space size change to the active (top) scene and to the
@@ -55,6 +63,18 @@ namespace neutrino {
             void finish();
 
         private:
+            /// What render() does this frame: the bottom visible scene (the topmost with
+            /// hides_below, or the first), whether it draws straight into the target (R44),
+            /// and whether its canvas's copy covers the target.
+            struct frame_plan {
+                std::size_t bottom{0};
+                bool direct{false};
+                bool covers{false};
+            };
+            [[nodiscard]] frame_plan plan() const;
+            /// The scene's canvas before its on_enter(): its default blend from its flags.
+            static void prepare_canvas(base_scene* scene);
+
             void apply_push(std::unique_ptr <base_scene>&& scene);
             void apply_pop();
             void apply_replace(std::unique_ptr <base_scene>&& scene);
@@ -71,6 +91,10 @@ namespace neutrino {
             [[nodiscard]] base_scene* active_top() const noexcept;
 
             std::vector <std::unique_ptr <base_scene>> m_stack;
+            /// render()'s lists, kept so a frame allocates nothing: the canvases drawn so far,
+            /// for below(), and the canvases to draw into the target.
+            std::vector <const texture*> m_below;
+            std::vector <detail::canvas*> m_finished;
             bool m_pinned = false; ///< m_stack.back() is the pinned scene
     };
 }

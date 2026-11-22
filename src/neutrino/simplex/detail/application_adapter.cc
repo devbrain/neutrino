@@ -70,7 +70,7 @@ namespace neutrino::simplex::detail {
 
             private:
                 sdlpp::renderer& m_renderer;
-                target_scope m_target;
+                renderer_target_scope m_target;
                 sdlpp::fcolor& m_color;
         };
     }

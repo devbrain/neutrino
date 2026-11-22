@@ -6,13 +6,21 @@
 #include <limits>
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 #include <sdlpp/events/events.hh>
+#include <sdlpp/video/window.hh>
 #include <failsafe/enforce.hh>
 #include <failsafe/logger.hh>
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/globals.hh>
 #include "scenes_manager.hh"
+#include "scene_context_access.hh"
+#include "scene_frame.hh"
+#include "services/service_locator.hh"
+#include "video/canvas.hh"
+#include "video/composite_draw.hh"
+#include "video/layer_stack.hh"
 
 namespace neutrino {
     static constexpr auto INVALID_EVENT = std::numeric_limits <uint32_t>::max();
@@ -139,12 +147,28 @@ namespace neutrino {
         return n == 0 ? nullptr : m_stack[n - 1].get();
     }
 
+    void scenes_manager::prepare_canvas(base_scene* scene) {
+        // The canvas's default blend follows the flags (painter.md §2.3): a full-screen scene
+        // is a plain copy, an overlay is blended over what is below. Set before on_enter(), so
+        // the scene can choose another there. A transparent window shows what its alpha says:
+        // a none copy would leave see-through what the canvas left empty, where the cleared
+        // window was opaque black, so there a full-screen canvas blends over the clear too.
+        if (detail::canvas* canvas = detail::scene_context_access::canvas_of(scene)) {
+            const sdlpp::window* window = service_locator::instance().maybe_window(); // sdlpp-ok: internal
+            const bool see_through = window != nullptr
+                && (window->get_flags() & sdlpp::window_flags::transparent) != sdlpp::window_flags::none; // sdlpp-ok: internal
+            const bool plain_copy = has(scene->flags(), scene_flags::hides_below) && !see_through;
+            canvas->composite().blend = plain_copy ? blend_mode::none : blend_mode::blend;
+        }
+    }
+
     bool scenes_manager::enter_or_roll_back(base_scene* scene) {
         // Isolate the new scene's on_enter. If initialization throws (missing
         // asset, bad data, etc.) we roll back cleanly: give the partially-
         // entered scene a chance to clean up and drop it from the stack. The
         // app stays responsive instead of letting the exception escape to
         // SDL, which would turn it into SDL_APP_FAILURE and terminate.
+        prepare_canvas(scene);
         try {
             scene->on_enter();
             return true;
@@ -206,6 +230,7 @@ namespace neutrino {
         auto& slot = m_stack[active_count() - 1];
         slot->on_exit();
         slot = std::move(scene);
+        prepare_canvas(slot.get());
         slot->on_enter();
         notify_top_resized();
     }
@@ -291,21 +316,141 @@ namespace neutrino {
         }
     }
 
-    void scenes_manager::render() {
-        if (m_stack.empty()) return;
-
-        // Draw every scene from the topmost hides_below one upward, bottom to top.
-        size_t index = 0;
+    scenes_manager::frame_plan scenes_manager::plan() const {
+        frame_plan p;
+        if (m_stack.empty()) {
+            return p;
+        }
+        // Every scene from the topmost hides_below one upward is drawn, bottom to top.
         for (size_t i = m_stack.size(); i-- > 0;) {
             if (has(m_stack[i]->flags(), scene_flags::hides_below)) {
-                index = i;
+                p.bottom = i;
                 break;
             }
         }
-
-        for (size_t i = index; i < m_stack.size(); i++) {
-            m_stack[i]->render();
+        base_scene* const bottom = m_stack[p.bottom].get();
+        if (!has(bottom->flags(), scene_flags::hides_below)) {
+            return p;                          // an overlay at the bottom: through its canvas
         }
+        const detail::canvas* canvas = detail::scene_context_access::canvas_of(bottom);
+        if (!canvas) {
+            return p;
+        }
+        const layer_composite_settings& s = canvas->composite();
+        // Straight into the target (R44) when the canvas would only copy the scene 1:1: no
+        // layers, an every-frame canvas, its settings the identity, and nothing above that can
+        // read below() — only a compositor of a scene's own can.
+        bool direct = detail::shortcuts().bottom_scene_into_target
+                      && detail::scene_context_access::of(bottom) == nullptr
+                      && canvas->redraw() == redraw_mode::every_frame && detail::is_identity_composite(s);
+        for (size_t i = p.bottom + 1; direct && i < m_stack.size(); i++) {
+            base_scene* const above = m_stack[i].get();
+            if (detail::scene_context_access::of(above) != nullptr
+                && !detail::is_default_compositor(*detail::scene_context_access::compositor_of(above))) {
+                direct = false;
+            }
+        }
+        p.direct = direct;
+        // Otherwise a none copy in place, unmoved and unscaled, writes every pixel of the target.
+        p.covers = !direct && s.blend == blend_mode::none && s.offset == point{0, 0}
+                   && s.scale == layer_scale{1.0f} && s.rotation_degrees == 0.0f && !s.source && !s.destination;
+        return p;
+    }
+
+    bool scenes_manager::covers_target() const {
+        return plan().covers;
+    }
+
+    void scenes_manager::render() {
+        // The target is cleared here, once, to black — unless the bottom scene's canvas will
+        // cover it with an opaque copy (R44). Then it is cleared only if nothing ends up
+        // covering it, or if that scene's own target could not be made and its render()
+        // draws straight into the target: until the copies, nothing else is drawn there.
+        auto& r = get_renderer();
+        bool cleared = false;
+        const auto clear_once = [&] {
+            if (!cleared) {
+                cleared = true;
+                const sdlpp::renderer::draw_color_guard black(r, colors::black); // sdlpp-ok: internal
+                (void) r.clear();
+            }
+        };
+        const auto bottom_shows = [this] {
+            return !m_finished.empty() && m_finished.front() && m_finished.front()->has_content();
+        };
+
+        // The canvases drawn so far, bottom to top: what each scene's compositor sees below,
+        // and what is drawn into the target at the end. Members, so a frame allocates nothing.
+        std::vector <const texture*>& below = m_below;
+        std::vector <detail::canvas*>& finished = m_finished;
+        below.clear();
+        finished.clear();
+        try {
+            const frame_plan p = plan();
+            if (!p.covers) {
+                clear_once();
+            }
+            if (m_stack.empty()) {
+                return;
+            }
+            const size_t index = p.bottom;
+
+            // A scene hidden under one with hides_below gives back the textures of its
+            // every-frame canvas and layers (R41), first, so the scenes drawn this frame can
+            // reuse them.
+            for (size_t i = 0; i < index; i++) {
+                base_scene* const hidden = m_stack[i].get();
+                if (detail::canvas* canvas = detail::scene_context_access::canvas_of(hidden)) {
+                    canvas->release_every_frame();
+                }
+                if (detail::layer_stack* layers = detail::scene_context_access::of(hidden)) {
+                    layers->release_every_frame();
+                }
+            }
+
+            for (size_t i = index; i < m_stack.size(); i++) {
+                base_scene* const scene = m_stack[i].get();
+                {
+                    // The scene draws onto its canvas, or into its layers, which its compositor
+                    // then combines onto the canvas; the free push_layer / pop_layer reach them
+                    // meanwhile. The bottom scene may draw straight into the target (R44). If
+                    // render() or the compositor throws, the frame unwinds.
+                    const auto onto = i == index && p.direct ? detail::frame_target::bound_target
+                                                             : detail::frame_target::canvas;
+                    detail::scene_frame frame(scene, below, onto);
+                    if (i == index && frame.draws_into_target()) {
+                        clear_once();          // its drawing lands in the target: clear it first
+                    }
+                    scene->render();
+                    frame.finish();
+                }
+                detail::canvas* canvas = detail::scene_context_access::canvas_of(scene);
+                finished.push_back(canvas);
+                if (canvas && canvas->has_content()) {
+                    below.push_back(canvas->get());
+                }
+            }
+        } catch (...) {
+            // The scenes finished below the one that threw still show, as they did when they
+            // drew straight into the window; the application then pops the scene.
+            try {
+                if (!bottom_shows()) {
+                    clear_once();
+                }
+                detail::draw_canvases(finished);
+            } catch (const std::exception& e) {
+                LOG_ERROR("cannot draw the scenes below a scene that threw:", e.what());
+            } catch (...) {
+                LOG_ERROR("cannot draw the scenes below a scene that threw");
+            }
+            throw;
+        }
+
+        // The canvases into the target bound now, bottom to top (painter.md §3.2).
+        if (!bottom_shows()) {
+            clear_once();
+        }
+        detail::draw_canvases(finished);
     }
 
     void scenes_manager::handle_action(const sdlpp::event& ev) {

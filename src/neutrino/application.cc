@@ -20,6 +20,8 @@
 #include "video/sprite/texture_registry.hh"
 #include "video/text/fonts_manager.hh"
 #include "video/texture_allocator.hh"
+#include "services/application_scoped.hh"
+#include "services/service_access.hh"
 
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/sprite/sprite_cache.hh>
@@ -52,7 +54,8 @@ namespace neutrino {
         std::unique_ptr <resource_cache> m_resource_cache;
         std::unique_ptr <sprite_cache> m_sprite_cache;
         std::unique_ptr <fonts_manager> m_fonts_manager;
-        std::unique_ptr <detail::texture_allocator> m_texture_allocator;
+        // This application opened the application scope (on_ready) and has not closed it.
+        bool m_scope_open = false;
         // A scene faulted during this frame's update: its pop is already queued and
         // this frame's render is skipped. Reset at the start of every update.
         bool m_scene_faulted = false;
@@ -107,8 +110,13 @@ namespace neutrino {
     }
 
     application::~application() {
-        // Normally on_quit() already reset the cache while the render services were
-        // live; this is an idempotent fallback for an abnormal teardown path.
+        // Normally on_quit() already closed the application scope and reset the cache while
+        // the render services were live; these are idempotent fallbacks for an abnormal
+        // teardown path.
+        if (m_pimpl->m_scope_open) {
+            m_pimpl->m_scope_open = false;
+            detail::close_application_scope();
+        }
         m_pimpl->m_resource_cache.reset();
         m_pimpl->m_sprite_cache.reset();
         service_locator::instance().clear_application(*this);
@@ -153,6 +161,9 @@ namespace neutrino {
         failsafe::logger::set_backend(failsafe::logger::backends::make_sdl_backend());
 
         service_locator::instance().set_application(*this);
+        // application_scoped objects may be made from here until on_quit() closes the scope.
+        detail::open_application_scope();
+        m_pimpl->m_scope_open = true;
         service_locator::instance().set_renderer(get_renderer());
         // The game_application path leaves vsync off; honor the config so apps present
         // without tearing by default (fast full-screen scrolling otherwise tears).
@@ -183,8 +194,9 @@ namespace neutrino {
         service_locator::instance().set_sprite_cache(*m_pimpl->m_sprite_cache);
         m_pimpl->m_fonts_manager = std::make_unique <fonts_manager>();
         service_locator::instance().set_fonts_manager(*m_pimpl->m_fonts_manager);
-        m_pimpl->m_texture_allocator = std::make_unique <detail::texture_allocator>();
-        service_locator::instance().set_texture_allocator(*m_pimpl->m_texture_allocator);
+        // The texture allocator is application_scoped (R38). Made here, early, so it is
+        // destroyed after anything made later that may hold its handles.
+        (void) require_texture_allocator();
 
         // sdlpp initializes SDL with video|events only; without the gamepad
         // subsystem SDL emits no gamepad events at all. Optional: a failure is
@@ -330,11 +342,15 @@ namespace neutrino {
 
     void application::on_render(renderer& r) {
         // A trim requested since the last frame (low memory) runs here, on the main thread.
-        if (m_pimpl->m_texture_allocator) {
-            m_pimpl->m_texture_allocator->begin_frame();
+        if (auto* allocator = maybe_texture_allocator()) {
+            allocator->begin_frame();
         }
         r.set_draw_color(sdlpp::colors::black);
-        r.clear();
+        // The scene manager clears the window itself, unless a full-screen canvas covers it
+        // (R44); without it running, the clear is here.
+        if (m_pimpl->m_scene_faulted) {
+            r.clear();
+        }
         render_scene();
         r.present();
 
@@ -371,11 +387,11 @@ namespace neutrino {
         }
         // Render resets (painter.md §3.9): the allocator restores its layer targets and
         // canvases. Atlases and game-owned textures are not covered yet (RM6).
-        if (m_pimpl->m_texture_allocator) {
+        if (auto* allocator = maybe_texture_allocator()) {
             if (e.type() == sdlpp::event_type::render_targets_reset) {
-                m_pimpl->m_texture_allocator->on_targets_reset();
+                allocator->on_targets_reset();
             } else if (e.type() == sdlpp::event_type::render_device_reset) {
-                m_pimpl->m_texture_allocator->on_device_reset();
+                allocator->on_device_reset();
             }
         }
         // The drawable changed (resize, fullscreen toggle, HiDPI move). Recompute
@@ -412,11 +428,11 @@ namespace neutrino {
     }
 
     void application::on_low_memory() {
-        // SDL may deliver this from any thread (painter.md §3.3), and textures may only be
-        // destroyed on the main thread: only flag the trim; the next begin_frame() runs it.
-        if (m_pimpl->m_texture_allocator) {
-            m_pimpl->m_texture_allocator->request_trim();
-        }
+        // SDL may deliver this from any thread (painter.md §3.3), even while on_quit() is
+        // destroying the texture allocator, and textures may only be destroyed on the main
+        // thread. So only set the trim flag, which lives outside the allocator: nothing here
+        // touches an object that may be going away. The next begin_frame() runs the trim.
+        detail::texture_allocator::request_trim();
     }
 
     void application::on_quit() noexcept {
@@ -447,14 +463,20 @@ namespace neutrino {
                 LOG_ERROR("application::teardown threw during shutdown");
             }
         }
+        // The application-scoped objects go next, newest first, while SDL is still up: the
+        // painter state stack, then the texture allocator (made early in on_ready()). The
+        // handles the scenes held are already back. They may use the services below, never
+        // the reverse.
+        if (m_pimpl->m_scope_open) {
+            m_pimpl->m_scope_open = false;
+            detail::close_application_scope();
+        }
         // Now that scenes (and their world_renderers) have released their handles,
         // tear the cache down while the renderer, texture registry and sprite
         // manager are still alive — destroy_bundle destroys GPU textures and
         // unregisters through the still-published services.
         m_pimpl->m_resource_cache.reset();
         m_pimpl->m_sprite_cache.reset();
-        service_locator::instance().clear_texture_allocator();
-        m_pimpl->m_texture_allocator.reset();
         game_application::on_quit();
         service_locator::instance().clear_application(*this);
     }

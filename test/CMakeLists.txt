@@ -30,6 +30,8 @@ add_executable(neutrino_tests
         audio/test_audio.cc
         scene/test_base_scene.cc
         scene/test_scenes_manager.cc
+        scene/test_scene_frame.cc
+        scene/test_compositor.cc
         input/test_input.cc
         input/test_input_snapshot.cc
         video/test_bitmask.cc
@@ -55,6 +57,10 @@ add_executable(neutrino_tests
         video/test_texture.cc
         video/test_texture_allocator.cc
         video/test_blend_mode.cc
+        video/test_line_style.cc
+        video/test_painter_state.cc
+        video/test_layer_stack.cc
+        video/test_canvas.cc
         video/test_window_presentation.cc
         video/test_sprite_sheet.cc
         video/test_glyph_mapping.cc
@@ -74,6 +80,7 @@ add_executable(neutrino_tests
         detail/test_hash.cc
         detail/test_content_hash.cc
         detail/test_enum.cc
+        detail/test_application_scoped.cc
 
         utils/test_lru.cc
 )

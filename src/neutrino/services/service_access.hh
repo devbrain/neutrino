@@ -20,6 +20,9 @@
 namespace neutrino {
     class sound_system; // fully declared where used; service_locator forward-declares it
     class application;
+    namespace detail {
+        class texture_allocator;
+    }
 
     [[nodiscard]] inline sprites_manager& require_sprites_manager() {
         auto* m = service_locator::instance().get_sprites_manager();
@@ -79,15 +82,15 @@ namespace neutrino {
         return service_locator::instance().get_fonts_manager();
     }
 
-    [[nodiscard]] inline detail::texture_allocator& require_texture_allocator() {
-        auto* c = service_locator::instance().get_texture_allocator();
-        ENFORCE(c != nullptr, "texture_allocator is not available; is the application ready?");
-        return *c;
-    }
+    // The texture allocator is application_scoped (R38): made in on_ready(), destroyed when
+    // on_quit() closes the application scope. Defined in video/texture_allocator.cc, where
+    // the type is complete.
 
-    [[nodiscard]] inline detail::texture_allocator* maybe_texture_allocator() noexcept {
-        return service_locator::instance().get_texture_allocator();
-    }
+    /// The application's texture allocator. ENFORCE: the application is running.
+    [[nodiscard]] detail::texture_allocator& require_texture_allocator();
+    /// The application's texture allocator, or null before on_ready() and once the
+    /// application has quit: what anything that may run during or after quit uses.
+    [[nodiscard]] detail::texture_allocator* maybe_texture_allocator() noexcept;
 
     /// @brief Shutdown-safe unregister: erase @p id from @p manager when the id is live and
     ///        the manager still exists ("already torn down" means nothing to do).

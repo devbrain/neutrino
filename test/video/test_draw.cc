@@ -112,7 +112,7 @@ namespace {
             [[nodiscard]] static SDL_Renderer* raw() { return neutrino::get_renderer().get(); }
 
             neutrino::texture m_texture;
-            neutrino::target_scope m_scope; // declared after m_texture: unbinds before it is destroyed
+            neutrino::renderer_target_scope m_scope; // declared after m_texture: unbinds before it is destroyed
     };
 
     [[nodiscard]] neutrino::sprite_visual_ref white_square_sprite() {

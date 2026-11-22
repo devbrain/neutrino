@@ -19,9 +19,15 @@
 
 #include "services/service_access.hh"
 #include "video/blend_mode_sdl.hh"
+#include "video/flip_mode_sdl.hh"
+#include "video/line_style_sdl.hh"
 #include "video/draw_failures.hh"
 
 namespace neutrino {
+    using detail::has_diagonal_flip;
+    using detail::has_flip;
+    using detail::to_sdl_flip;
+
     namespace {
 // Total draw failures since startup; read through draw_failure_count().
         std::uint64_t g_draw_failures = 0;
@@ -63,25 +69,6 @@ namespace neutrino {
             auto& renderer = get_renderer();
             sdlpp::renderer::draw_color_guard guard(renderer, c);
             return fn(renderer);
-        }
-
-        [[nodiscard]] bool has_flip(flip_mode flags, flip_mode flag) noexcept {
-            return static_cast <std::uint8_t>(flags & flag) != 0;
-        }
-
-        [[nodiscard]] bool has_diagonal_flip(flip_mode flags) noexcept {
-            return has_flip(flags, flip_mode::diagonal);
-        }
-
-        [[nodiscard]] sdlpp::flip_mode to_sdl_flip(flip_mode flags) noexcept {
-            auto result = sdlpp::flip_mode::none;
-            if (has_flip(flags, flip_mode::horizontal)) {
-                result |= sdlpp::flip_mode::horizontal;
-            }
-            if (has_flip(flags, flip_mode::vertical)) {
-                result |= sdlpp::flip_mode::vertical;
-            }
-            return result;
         }
 
         // Sprite metrics are computed in float. Snapped (pixel_snap::logical) every value is rounded
@@ -412,12 +399,12 @@ namespace neutrino {
         return *mode;
     }
 
-    void set_line_style(const sdlpp::line_style& style) {
-        DRAW_CHECK(get_renderer().set_line_style(style));
+    void set_line_style(const line_style& style) {
+        DRAW_CHECK(get_renderer().set_line_style(detail::to_sdl_line(style)));
     }
 
-    sdlpp::line_style get_line_style() {
-        return DRAW_CHECK(get_renderer().get_line_style());
+    line_style get_line_style() {
+        return detail::from_sdl_line(DRAW_CHECK(get_renderer().get_line_style()));
     }
 
     // --- Float render-space implementations -------------------------------------------------------

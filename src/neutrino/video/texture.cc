@@ -5,6 +5,8 @@
 #include <neutrino/video/texture.hh>
 #include <neutrino/video/globals.hh>
 
+#include "video/painter_state_internal.hh"
+
 #include "video/blend_mode_sdl.hh"
 
 #include <failsafe/enforce.hh>
@@ -64,30 +66,39 @@ namespace neutrino {
         }
     }
 
-    // ---- target_scope ---------------------------------------------------------------------------
+    // ---- renderer_target_scope ------------------------------------------------------------------
 
     // The guard restores on destruction and a moved-from guard restores nothing, so moving and
     // resetting the optional is all the bookkeeping a scope needs.
-    target_scope::target_scope(target_scope&& other) noexcept
-        : m_guard(std::move(other.m_guard)) {
+    renderer_target_scope::renderer_target_scope(sdlpp::renderer& r) // sdlpp-ok: private
+        : m_painter_clip(detail::painter_has_clip()) {
+        m_guard.emplace(r);
+    }
+
+    renderer_target_scope::renderer_target_scope(renderer_target_scope&& other) noexcept
+        : m_guard(std::move(other.m_guard)), m_painter_clip(other.m_painter_clip) {
         other.m_guard.reset();
     }
 
-    target_scope& target_scope::operator=(target_scope&& other) noexcept {
+    renderer_target_scope& renderer_target_scope::operator=(renderer_target_scope&& other) noexcept {
         if (this != &other) {
             end();
             m_guard = std::move(other.m_guard);
+            m_painter_clip = other.m_painter_clip;
             other.m_guard.reset();
         }
         return *this;
     }
 
-    target_scope::~target_scope() {
+    renderer_target_scope::~renderer_target_scope() {
         end();
     }
 
-    void target_scope::end() noexcept {
-        m_guard.reset();
+    void renderer_target_scope::end() noexcept {
+        if (m_guard) {
+            m_guard.reset();                      // the previous target is bound again
+            detail::clip_after_scope(m_painter_clip);   // the painter's clip, or the target's own
+        }
     }
 
     // ---- pixel_lock -----------------------------------------------------------------------------
@@ -169,11 +180,12 @@ namespace neutrino {
         return {&m_texture, locked->first, locked->second, m_size.width, m_size.height};
     }
 
-    target_scope texture::bind(std::optional <color> clear) {
+    renderer_target_scope texture::bind(std::optional <color> clear) {
         ENFORCE(m_access == texture_access::target, "bind() needs a target texture");
         auto& r = get_renderer();
-        target_scope scope(r);
+        renderer_target_scope scope(r);
         set_render_target(m_texture);
+        detail::clip_bound_texture();             // the painter's clip, or none (R39)
         if (clear) {
             // Clearing uses the renderer's draw colour; restore it so a bind leaves it untouched.
             const auto previous = r.get_draw_color();
@@ -188,12 +200,26 @@ namespace neutrino {
 
     image texture::to_image() const {
         ENFORCE(m_access == texture_access::target, "to_image() needs a target texture");
-        target_scope restore(get_renderer());
+        renderer_target_scope restore(get_renderer());
         set_render_target(m_texture);
         return read_current_target();
     }
 
     image capture_frame() {
-        return read_current_target();
+        image img = read_current_target();
+        const auto bound = get_renderer().get_target();
+        if (bound && *bound == nullptr) {
+            // A window has no alpha. Where a canvas copied with none left a transparent pixel —
+            // nothing drawn there, by a full-screen scene that covered the window instead of
+            // clearing it — the screen shows black; so does the capture. Through a format
+            // without alpha and back: two conversions, not a loop over the pixels.
+            const auto format = img.format();
+            if (auto opaque = img.convert(sdlpp::pixel_format_enum::RGB888)) { // sdlpp-ok: internal
+                if (auto back = opaque->convert(format)) {
+                    img = std::move(*back);
+                }
+            }
+        }
+        return img;
     }
 }

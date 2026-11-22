@@ -32,6 +32,7 @@
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/color.hh>
 #include <neutrino/video/flip_mode.hh>
+#include <neutrino/video/line_style.hh>
 #include <neutrino/video/texture.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprite/sprite_state.hh>
@@ -43,9 +44,6 @@
 #include <cstdint>
 
 namespace neutrino {
-    /// @brief Dash / dot pattern applied by line draws (see set_line_style()).
-    using line_style = sdlpp::line_style;   // sdlpp-ok
-
     /// @brief Set the renderer's current draw colour, used by all subsequent
     ///        colourless draw calls.
     NEUTRINO_EXPORT void set_draw_color(const color& c);
@@ -57,7 +55,8 @@ namespace neutrino {
     /// @brief Read the renderer's current draw blend mode.
     NEUTRINO_EXPORT [[nodiscard]] blend_mode get_draw_blend_mode();
 
-    /// @brief Set the line style (dash pattern, cap, etc.) used by subsequent line draws.
+    /// @brief Set the line style (solid, dashed or dotted, with its lengths) used by
+    ///        subsequent draw_line() calls.
     NEUTRINO_EXPORT void set_line_style(const line_style& style);
     /// @brief Read the renderer's current line style.
     NEUTRINO_EXPORT [[nodiscard]] line_style get_line_style();

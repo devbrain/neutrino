@@ -66,6 +66,8 @@ neutrino_subsystem(utils
 
 neutrino_subsystem(services
     PRIVATE
+        application_scoped.cc
+        application_scoped.hh
         service_access.hh
         service_locator.cc
         service_locator.hh
@@ -120,6 +122,9 @@ neutrino_subsystem(scene
         base_scene.cc
         scenes_manager.cc
         scenes_manager.hh
+        scene_context_access.hh
+        scene_frame.cc
+        scene_frame.hh
 )
 
 neutrino_subsystem(audio
@@ -153,14 +158,22 @@ neutrino_subsystem(video
         world.hh
         texture_pool_stats.hh
         layer_id.hh
+        layer_ops.hh
         layer_settings.hh
         layer_composite_settings.hh
+        composition.hh
         flip_mode.hh
         blend_mode.hh
+        line_style.hh
+        painter_state.hh
     PRIVATE
         draw.cc
         draw_failures.hh
         blend_mode_sdl.hh
+        flip_mode_sdl.hh
+        line_style_sdl.hh
+        painter_state.cc
+        painter_state_internal.hh
         globals.cc
         palette.cc
         sprites.cc
@@ -174,7 +187,15 @@ neutrino_subsystem(video
         texture_allocator.cc
         layer_stack.cc
         layer_stack.hh
+        canvas.cc
+        canvas.hh
+        composite_draw.cc
+        composite_draw.hh
+        composition.cc
+        target_geometry.cc
+        target_geometry.hh
         layer_id.cc
+        layer_ops.cc
 )
 
 neutrino_subsystem(video_image DIR video/image

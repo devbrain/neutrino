@@ -6,9 +6,9 @@
 
 #include <optional>
 #include <unordered_map>
-#include <atomic>
 
 #include <neutrino/video/texture_pool_stats.hh>
+#include "video/target_geometry.hh"
 #include "video/texture_handle.hh"
 #include "video/texture_spec.hh"
 #include "video/texture_table.hh"
@@ -16,7 +16,7 @@
 namespace neutrino::detail {
     /**
      * @brief The internal owner of the painter's render targets: every layer target and every
-     *        canvas, of scene painters and of explicit painters (painter.md §3.3).
+     *        scene's canvas (painter.md §3.3).
      *
      * acquire() hands out a texture_handle holding a pooled texture of the spec's size, or a new
      * one, always cleared to the spec's colour. Destroying the handle gives the texture back to
@@ -28,23 +28,28 @@ namespace neutrino::detail {
      * allocator's. Every texture, the allocator's included, is made on the application's
      * renderer.
      *
-     * The application owns the allocator: it is created in on_ready(), published in the service
-     * locator, and in on_quit() unpublished and destroyed before SDL shuts down. Main thread
-     * only, except request_trim().
+     * It is application_scoped (R38), reached with require_texture_allocator() and
+     * maybe_texture_allocator(). on_ready() makes it early, so it is destroyed after anything
+     * made later that may hold its handles; on_quit() destroys it when it closes the
+     * application scope, after the scenes and teardown() and before SDL shuts down. Main
+     * thread only, except request_trim().
      */
     class texture_allocator {
         friend class texture_handle;
         public:
             texture_allocator();
-            /// @brief Destroys every texture, pooled or held. Unpublish the allocator first
-            ///        (service_locator::clear_texture_allocator()): the handles still alive then
-            ///        find it gone and are detached.
+            /// @brief Destroys every texture, pooled or held. By then maybe_texture_allocator()
+            ///        answers null (application_scoped clears it first), so the handles still
+            ///        alive find it gone and are detached.
             ~texture_allocator();
 
             /// @brief A handle for @p spec: a pooled texture of its size, or a new one, cleared
-            ///        to its colour; the handle needs a redraw. A zero or negative size, or a
-            ///        texture SDL cannot create, gives a failed handle (logged).
-            [[nodiscard]] texture_handle acquire(const texture_spec& spec);
+            ///        to its colour unless @p clear is false — for a caller that clears it when
+            ///        it binds it, which saves binding it twice (bind_pooled()); its contents are
+            ///        then a previous owner's until it does. The handle needs a redraw. A zero or
+            ///        negative size, or a texture SDL cannot create, gives a failed handle
+            ///        (logged).
+            [[nodiscard]] texture_handle acquire(const texture_spec& spec, bool clear = true);
             /// @brief Give @p handle a texture of @p size. At the same size nothing changes. At
             ///        another the old texture is destroyed, not pooled, before a new one is taken
             ///        as acquire() takes it, cleared, needing a redraw. A failed handle is tried
@@ -56,9 +61,12 @@ namespace neutrino::detail {
             void drop_pooled(const dim& size);
             /// @brief Destroy every pooled texture. Held textures are untouched.
             void trim();
-            /// @brief Ask for a trim at the next begin_frame(). Any thread: it only sets an
-            ///        atomic flag (SDL_EVENT_LOW_MEMORY can arrive on any thread).
-            void request_trim();
+            /// @brief Ask for a trim at the next begin_frame(). Any thread, at any time — also
+            ///        while on_quit() is destroying the allocator, or when there is none: it
+            ///        only sets an atomic flag that lives outside every allocator
+            ///        (SDL_EVENT_LOW_MEMORY can arrive on any thread). A request made before an
+            ///        allocator exists is dropped when it is made.
+            static void request_trim() noexcept;
             /// @brief The start of a frame (application::on_render): runs a requested trim.
             void begin_frame();
 
@@ -96,10 +104,21 @@ namespace neutrino::detail {
         private:
             /// The slots of the live and failed handles.
             texture_table m_table;
-            /// Set by request_trim(), consumed by begin_frame().
-            std::atomic<bool> m_trim_requested;
             pool_stats m_stats;
             /// The textures given back, keyed by size.
             std::unordered_multimap<dim, texture> m_pool;
     };
+
+    /**
+     * @brief Binds a render target from the pool: what a canvas and a layer do at each bind
+     *        (painter.md §3.4).
+     *
+     * Takes a texture for @p handle from the allocator if it has none, at @p spec, and
+     * clears it to the spec's colour as it binds it, so it is bound once; a kept one takes the
+     * spec's clear colour for its later refills, and is cleared if @p wipe. Sets
+     * @p presentation on it: a pooled texture keeps its last owner's (R42). A failed handle binds nothing and is not retried here: only resize() or a device
+     * reset retries it.
+     */
+    [[nodiscard]] std::optional <renderer_target_scope> bind_pooled(texture_handle& handle, const texture_spec& spec,
+                                                                    bool wipe, const target_geometry& presentation);
 }

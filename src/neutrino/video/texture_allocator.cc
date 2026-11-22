@@ -2,6 +2,7 @@
 // Created by igor on 15/11/2026.
 //
 
+#include <atomic>
 #include <cstddef>
 #include <iterator>
 
@@ -11,6 +12,7 @@
 
 #include "texture_allocator.hh"
 #include "texture_table.hh"
+#include "services/application_scoped.hh"
 #include "services/service_access.hh"
 #include "video/draw_failures.hh"
 
@@ -18,6 +20,11 @@ namespace neutrino::detail {
     namespace {
         // Every target has this format (painter.md §3.3), so a size alone gives its bytes.
         constexpr auto TARGET_FORMAT = pixel_format::ARGB8888;
+
+        // Set by request_trim(), consumed by begin_frame(). Not a member: a low-memory request
+        // comes from any thread, possibly while on_quit() destroys the allocator, so it must
+        // not touch the allocator object.
+        std::atomic <bool> g_trim_requested{false};
 
         // In std::size_t throughout: int arithmetic overflows above ~23000 x 23000.
         [[nodiscard]] std::size_t texture_bytes(dim size) noexcept {
@@ -27,15 +34,17 @@ namespace neutrino::detail {
         }
     }
 
-    texture_allocator::texture_allocator()
-        : m_trim_requested(false) {
+    texture_allocator::texture_allocator() {
+        // A request from before this application, or from the last one's shutdown, is not
+        // about this pool.
+        g_trim_requested.store(false, std::memory_order_relaxed);
     }
 
     texture_allocator::~texture_allocator() = default;
 
-    texture_handle texture_allocator::acquire(const texture_spec& spec) {
+    texture_handle texture_allocator::acquire(const texture_spec& spec, bool clear) {
         texture_slot slot{spec, take_texture(spec.size), /*needs_redraw=*/true};
-        if (slot.tex) {
+        if (slot.tex && clear) {
             slot.tex->fill(slot.spec.clear_color);
         }
         return texture_handle(m_table.add(std::move(slot)));
@@ -96,12 +105,12 @@ namespace neutrino::detail {
         m_pool.clear();
     }
 
-    void texture_allocator::request_trim() {
-        m_trim_requested.store(true);
+    void texture_allocator::request_trim() noexcept {
+        g_trim_requested.store(true, std::memory_order_release);
     }
 
     void texture_allocator::begin_frame() {
-        if (m_trim_requested.exchange(false)) {
+        if (g_trim_requested.exchange(false, std::memory_order_acq_rel)) {
             trim();
         }
     }
@@ -189,9 +198,40 @@ namespace neutrino::detail {
     bool texture_allocator::is_valid(std::size_t idx) const noexcept {
         return m_table.is_valid(idx);
     }
+
+    std::optional <renderer_target_scope> bind_pooled(texture_handle& handle, const texture_spec& spec,
+                                                      bool wipe, const target_geometry& presentation) {
+        const bool fresh = handle.empty();
+        if (fresh) {
+            handle = require_texture_allocator().acquire(spec, false);   // cleared below, once bound
+        } else {
+            handle.set_clear_color(spec.clear_color);
+        }
+        if (!handle) {
+            return std::nullopt;               // could not be made: drawing lands below
+        }
+        try {
+            auto scope = handle.get().bind(fresh || wipe ? std::optional <color>{spec.clear_color} : std::nullopt);
+            apply_presentation(presentation);
+            return scope;
+        } catch (...) {
+            if (fresh) {
+                handle = texture_handle{};     // not cleared: it may hold a previous owner's pixels
+            }
+            throw;
+        }
+    }
 }
 
 namespace neutrino {
+    detail::texture_allocator& require_texture_allocator() {
+        return detail::application_scoped <detail::texture_allocator>::instance();
+    }
+
+    detail::texture_allocator* maybe_texture_allocator() noexcept {
+        return detail::application_scoped <detail::texture_allocator>::maybe();
+    }
+
     pool_stats texture_pool_stats() {
         return require_texture_allocator().stats();
     }

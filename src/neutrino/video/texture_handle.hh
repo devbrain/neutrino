@@ -69,8 +69,21 @@ namespace neutrino::detail {
             /// @brief Fill the texture with the spec's clear colour. needs_redraw() is unchanged.
             ///        Does nothing without a texture.
             void clear();
+            /// @brief Its contents no longer hold: cleared to the spec's colour, and
+            ///        needs_redraw() becomes true, as after a resize. For an on-demand target whose
+            ///        logical presentation changed at the same pixel size. Does nothing when empty
+            ///        or detached; a failed handle needs a redraw already.
+            void invalidate();
+            /// @brief The colour the allocator clears the texture to from now on: at a resize, a
+            ///        reset and clear(). The contents are not touched. Does nothing when empty or
+            ///        detached; a failed handle keeps it for its retry.
+            void set_clear_color(const color& c);
             /// @brief True only when live: false when empty, failed or detached.
             explicit operator bool() const;
+            /// @brief True when the handle holds no slot: default-constructed, moved from,
+            ///        given back, or detached. A failed handle is not empty: it keeps its slot
+            ///        and the size it asked for, and only resize() or a device reset retries it.
+            [[nodiscard]] bool empty() const;
         private:
             /// Made by texture_allocator::acquire() for the slot at @p slot_id.
             explicit texture_handle(std::size_t slot_id);

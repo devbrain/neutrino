@@ -91,12 +91,37 @@ namespace neutrino::detail {
         }
     }
 
+    void texture_handle::invalidate() {
+        auto* a = maybe_texture_allocator();
+        if (!a || !a->is_valid(m_slot_id)) {
+            return;
+        }
+        auto& slot = a->get(m_slot_id);
+        if (slot.tex) {
+            slot.tex->fill(slot.spec.clear_color);
+        }
+        slot.needs_redraw = true;
+    }
+
+    void texture_handle::set_clear_color(const color& c) {
+        auto* a = maybe_texture_allocator();
+        if (!a || !a->is_valid(m_slot_id)) {
+            return;
+        }
+        a->get(m_slot_id).spec.clear_color = c;
+    }
+
     texture_handle::operator bool() const {
         auto* a = maybe_texture_allocator();
         if (!a || !a->is_valid(m_slot_id)) {
             return false;
         }
         return a->get(m_slot_id).tex.has_value();
+    }
+
+    bool texture_handle::empty() const {
+        const auto* a = maybe_texture_allocator();
+        return !a || !a->is_valid(m_slot_id);
     }
 
     texture_handle::texture_handle(std::size_t slot_id)

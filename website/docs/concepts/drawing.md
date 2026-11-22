@@ -489,7 +489,7 @@ neutrino::draw_texture(rt);
 `compose()` binds the texture as the render target, clears it (pass `std::nullopt` to keep the existing contents -- a persistent canvas), runs your function, and restores the previous target even if it throws. When the drawing doesn't fit in one function -- `begin()` / `end()` across separate calls -- hold the binding yourself:
 
 ```cpp
-std::optional<neutrino::target_scope> m_painting;
+std::optional<neutrino::renderer_target_scope> m_painting;
 void begin() { m_painting = m_board.bind(neutrino::colors::black); }
 void end()   { m_painting.reset(); }   // previous target restored
 ```

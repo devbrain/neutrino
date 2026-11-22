@@ -8,6 +8,7 @@
 #include <doctest/doctest.h>
 
 #include <neutrino/video/draw.hh>
+#include <neutrino/video/globals.hh>
 #include <neutrino/video/texture.hh>
 
 #include "test_application.hh"
@@ -57,6 +58,20 @@ namespace {
 }
 
 TEST_SUITE("neutrino::video::texture") {
+    TEST_CASE("capture_frame reads the window opaque, as the screen shows it") {
+        test::test_application app("capture opaque");
+        REQUIRE(get_renderer().get_target().value() == nullptr);   // the window
+        set_draw_blend_mode(blend_mode::none);
+        draw_rect_fill(rect{0, 0, 4, 4}, color{10, 20, 30, 0});    // a transparent pixel written
+        const image img = capture_frame();
+        const auto px = img.get_pixel(1, 1);
+        REQUIRE(px.has_value());
+        CHECK(px->a == 255);
+        CHECK(px->r == 10);
+        CHECK(px->b == 30);
+        set_draw_blend_mode(blend_mode::none);
+    }
+
     TEST_CASE("create reports size and access, and rejects degenerate sizes") {
         test::test_application app("texture create");
         auto t = texture::create(dim{8, 4}, texture_access::target);
@@ -106,9 +121,9 @@ TEST_SUITE("neutrino::video::texture") {
     TEST_CASE("a moved-from or ended scope does not restore twice") {
         test::test_application app("texture scope move");
         auto t = make_target(2, 2);
-        std::optional <target_scope> held;
+        std::optional <renderer_target_scope> held;
         held.emplace(t.bind(colors::black));
-        target_scope moved = std::move(*held);
+        renderer_target_scope moved = std::move(*held);
         held.reset();                                           // moved-from: no restore
         draw_rect_fill(rect{0, 0, 2, 2}, colors::red);          // still drawing into t
         moved.end();

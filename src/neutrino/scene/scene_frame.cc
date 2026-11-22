@@ -1,0 +1,168 @@
+//
+// Created by igor on 20/11/2026.
+//
+
+#include <failsafe/enforce.hh>
+
+#include <neutrino/video/painter_state.hh>
+
+#include "scene_frame.hh"
+#include "scene_context_access.hh"
+#include "video/canvas.hh"
+#include "video/composite_draw.hh"
+#include "video/layer_stack.hh"
+#include "video/painter_state_internal.hh"
+#include "video/target_geometry.hh"
+
+namespace neutrino::detail {
+    bool scene_frame::s_rendering = false;
+    layer_stack* scene_frame::s_current = nullptr;
+
+    render_shortcuts& shortcuts() noexcept {
+        static render_shortcuts s;
+        return s;
+    }
+
+    bool is_default_compositor(const compositor& c) noexcept {
+        const auto* f = c.target <void (*)(composition&)>();
+        return f && *f == &default_compositor;
+    }
+
+    scene_frame::scene_frame(base_scene* scene, std::span <const texture* const> below, frame_target onto)
+        : m_layers(scene_context_access::of(scene)),
+          m_canvas(scene_context_access::canvas_of(scene)),
+          m_compositor(scene_context_access::compositor_of(scene)),
+          m_below(below),
+          m_state_depth(painter_save_depth()) {
+        // A flag of its own: s_current is null in a scene without layers too, so it cannot
+        // tell whether a frame is open.
+        ENFORCE(!s_rendering, "a scene is already being rendered");
+        // The target bound now is the one the scene manager draws into: the canvas and the
+        // layers mirror it (R42).
+        const target_geometry geometry = bound_target_geometry();
+        if (onto == frame_target::bound_target) {
+            ENFORCE(!m_layers, "a scene with layers is drawn onto its canvas");
+            if (m_canvas) {
+                // Not used this frame: an every-frame canvas gives its texture back, and shows
+                // nothing (has_content() is false), so it is neither copied nor below().
+                m_canvas->release_every_frame();
+                m_canvas->begin_frame(geometry);
+                m_canvas = nullptr;
+            }
+        } else if (m_canvas) {
+            m_canvas->begin_frame(geometry);
+        }
+        if (m_layers) {
+            m_layers->begin_frame(geometry);   // resize, reset the flags, push the base layer
+        } else if (m_canvas) {
+            m_canvas_binding = m_canvas->bind(); // render() draws onto the canvas
+        }
+        // With neither, render() draws into the target bound now.
+        // Only now: if anything above throws, the destructor does not run, and nothing is set.
+        s_rendering = true;
+        s_current = m_layers;
+    }
+
+    void scene_frame::finish() {
+        // First: if end_frame() fails, it has already ended every push.
+        m_finished = true;
+        if (m_layers) {
+            m_layers->end_frame();             // fails if a layer is left pushed
+            combine();
+        } else if (m_canvas) {
+            // Nothing tells the canvas a draw landed on it, so a render() that returned
+            // counts as having drawn.
+            m_canvas->note_drawn();
+        }
+        if (m_canvas) {
+            m_canvas->end_frame();
+        }
+        m_canvas_binding.reset();              // the target from before the frame again
+        check_state_balance(m_state_depth, "the frame");
+        if (m_canvas) {
+            // Here, so a bad setting fails this scene's frame, not the copy of every canvas
+            // into the window after the last scene.
+            validate_composite(m_canvas->composite());
+        }
+    }
+
+    void scene_frame::check_state_balance(std::size_t expected, const char* what) {
+        const std::size_t left = painter_save_depth();
+        if (left == expected) {
+            return;
+        }
+        // Undone first, as an unbalanced layer push is: the state from before is back.
+        pop_painter_saves_to(expected);
+        ENFORCE(left > expected, what, "popped more painter state saves than it pushed");
+        ENFORCE(false, what, "ended with", left - expected, "push_state() not popped");
+    }
+
+    void scene_frame::combine() {
+        // Pushing and declaring fail until it ends, however the compositor ends.
+        struct combining {
+            layer_stack& layers;
+            explicit combining(layer_stack& l) : layers(l) { layers.begin_combine(); }
+            ~combining() { layers.end_combine(); }
+            combining(const combining&) = delete;
+            combining& operator=(const combining&) = delete;
+        } const guard{*m_layers};
+
+        // The base layer's texture as the canvas (R41): drawing it onto a cleared canvas would
+        // copy it exactly, so the declared layers go straight onto it instead.
+        texture* base = m_layers->base_texture();
+        const bool share = shortcuts().base_layer_as_canvas && base && m_canvas
+                           && m_canvas->redraw() == redraw_mode::every_frame && m_compositor
+                           && is_default_compositor(*m_compositor)
+                           && is_identity_composite(m_layers->composite(m_layers->base_layer()));
+        if (share) {
+            if (auto binding = m_layers->bind_base()) {
+                m_layers->draw_declared();     // the default compositor, the base layer aside
+                m_canvas->share(*base);
+            }
+        } else if (m_canvas && m_compositor && *m_compositor) {
+            // Cleared unless redrawn on demand. Without a texture the compositor is skipped:
+            // it would draw into the target below, before the canvases under this one.
+            if (auto binding = m_canvas->bind()) {
+                // The default painter state, not what render() left (R43). It ends before the
+                // binding, while the canvas is still bound.
+                const auto state = scoped_state(painter_state{});
+                const std::size_t inside = painter_save_depth();
+                if (is_default_compositor(*m_compositor)) {
+                    m_layers->draw_all();      // what it does, with the presentation off once
+                } else {
+                    composition c(*m_layers, m_below);
+                    (*m_compositor)(c);
+                }
+                check_state_balance(inside, "the compositor");
+                m_canvas->note_drawn();
+            }
+        }
+        // After the compositor: needs_redraw() keeps one answer for the whole frame.
+        m_layers->mark_drawn();
+    }
+
+    scene_frame::~scene_frame() {
+        if (!m_finished && m_layers) {
+            m_layers->abort_frame();           // render() threw: end every push
+        }
+        m_canvas_binding.reset();              // never throws
+        pop_painter_saves_to(m_state_depth);   // render() threw with pushes left; never throws
+        s_rendering = false;
+        s_current = nullptr;
+    }
+
+    bool scene_frame::draws_into_target() const {
+        if (m_layers) {
+            return m_layers->base_texture() == nullptr;
+        }
+        return !m_canvas_binding.has_value();
+    }
+
+    bool scene_frame::rendering() noexcept {
+        return s_rendering;
+    }
+
+    layer_stack* scene_frame::get_current_layers_stack() noexcept {
+        return s_current;
+    }
+}

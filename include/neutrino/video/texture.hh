@@ -59,15 +59,17 @@ namespace neutrino {
      *        current render target is restored. Returned by texture::bind().
      *
      * Moveable, so a binding can span separate calls (begin()/end() flows: hold it in a
-     * @c std::optional member and reset() it). Scopes must end in reverse order of creation.
+     * @c std::optional member and reset() it). Scopes must end in reverse order of creation,
+     * and before the application quits: ending one binds the previous target again, which
+     * needs the renderer.
      */
-    class NEUTRINO_EXPORT target_scope {
+    class NEUTRINO_EXPORT renderer_target_scope {
         public:
-            target_scope(target_scope&& other) noexcept;
-            target_scope& operator=(target_scope&& other) noexcept;
-            target_scope(const target_scope&) = delete;
-            target_scope& operator=(const target_scope&) = delete;
-            ~target_scope();
+            renderer_target_scope(renderer_target_scope&& other) noexcept;
+            renderer_target_scope& operator=(renderer_target_scope&& other) noexcept;
+            renderer_target_scope(const renderer_target_scope&) = delete;
+            renderer_target_scope& operator=(const renderer_target_scope&) = delete;
+            ~renderer_target_scope();
 
             /// @brief Restore the previous render target now (idempotent).
             void end() noexcept;
@@ -75,9 +77,13 @@ namespace neutrino {
         private:
             friend class texture;
             /// Saves @p r's current target; restores it when the scope ends.
-            explicit target_scope(sdlpp::renderer& r) { m_guard.emplace(r); } // sdlpp-ok: private
+            explicit renderer_target_scope(sdlpp::renderer& r); // sdlpp-ok: private
 
             std::optional <sdlpp::renderer::target_guard> m_guard; // sdlpp-ok: private
+            /// The painter had a clip when the scope began, so the previous target held it:
+            /// if the painter has none when the scope ends, that target's clip is cleared.
+            /// Otherwise the target keeps its own clip (R39).
+            bool m_painter_clip{false};
     };
 
     /**
@@ -160,7 +166,7 @@ namespace neutrino {
             /// @brief Make this texture the render target until the returned scope ends. If
             ///        @p clear is set, the texture is cleared to it first; nullopt keeps the
             ///        existing contents (persistent canvases). The draw colour is left untouched.
-            [[nodiscard]] target_scope bind(std::optional <color> clear = std::nullopt);
+            [[nodiscard]] renderer_target_scope bind(std::optional <color> clear = std::nullopt);
 
             /// @brief Draw into the texture: bind it, clear to @p clear (default transparent;
             ///        nullopt keeps the existing contents), run @p draw, restore the previous target.
@@ -197,6 +203,7 @@ namespace neutrino {
 
     /// @brief Read the CURRENT render target back to the CPU: the window between drawing and
     ///        present (its contents are undefined after present), or the texture bound by
-    ///        compose() / bind(). For a specific target texture prefer texture::to_image().
+    ///        compose() / bind(). For a specific target texture prefer texture::to_image(). The
+    ///        window's pixels come back opaque, as the screen shows them.
     NEUTRINO_EXPORT [[nodiscard]] image capture_frame();
 }
