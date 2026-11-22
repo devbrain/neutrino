@@ -200,10 +200,4 @@ namespace neutrino {
             dim m_size{0, 0};
             texture_access m_access{texture_access::fixed};
     };
-
-    /// @brief Read the CURRENT render target back to the CPU: the window between drawing and
-    ///        present (its contents are undefined after present), or the texture bound by
-    ///        compose() / bind(). For a specific target texture prefer texture::to_image(). The
-    ///        window's pixels come back opaque, as the screen shows them.
-    NEUTRINO_EXPORT [[nodiscard]] image capture_frame();
 }

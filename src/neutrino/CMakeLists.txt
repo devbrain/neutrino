@@ -125,6 +125,7 @@ neutrino_subsystem(scene
         scene_context_access.hh
         scene_frame.cc
         scene_frame.hh
+        screenshot.cc
 )
 
 neutrino_subsystem(audio
@@ -162,6 +163,7 @@ neutrino_subsystem(video
         layer_settings.hh
         layer_style.hh
         composition.hh
+        screenshot.hh
         flip_mode.hh
         blend_mode.hh
         line_style.hh

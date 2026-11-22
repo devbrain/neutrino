@@ -3,7 +3,7 @@
 //
 // Every texture is drawn into, or read back from, a TARGET texture -- never the window, whose
 // contents are undefined after present. Reading back is itself part of the API under test
-// (texture::to_image, capture_frame).
+// (texture::to_image).
 //
 #include <doctest/doctest.h>
 
@@ -58,20 +58,6 @@ namespace {
 }
 
 TEST_SUITE("neutrino::video::texture") {
-    TEST_CASE("capture_frame reads the window opaque, as the screen shows it") {
-        test::test_application app("capture opaque");
-        REQUIRE(get_renderer().get_target().value() == nullptr);   // the window
-        set_draw_blend_mode(blend_mode::none);
-        draw_rect_fill(rect{0, 0, 4, 4}, color{10, 20, 30, 0});    // a transparent pixel written
-        const image img = capture_frame();
-        const auto px = img.get_pixel(1, 1);
-        REQUIRE(px.has_value());
-        CHECK(px->a == 255);
-        CHECK(px->r == 10);
-        CHECK(px->b == 30);
-        set_draw_blend_mode(blend_mode::none);
-    }
-
     TEST_CASE("create reports size and access, and rejects degenerate sizes") {
         test::test_application app("texture create");
         auto t = texture::create(dim{8, 4}, texture_access::target);
@@ -213,17 +199,6 @@ TEST_SUITE("neutrino::video::texture") {
         const image img = out.to_image();
         CHECK(same_rgb(pixel_at(img, 0, 1), colors::blue));
         CHECK(same_rgb(pixel_at(img, 3, 1), colors::red));
-    }
-
-    TEST_CASE("capture_frame reads the currently bound target") {
-        test::test_application app("texture capture");
-        auto t = make_target(2, 2);
-        image captured;
-        t.compose([&] {
-            draw_rect_fill(rect{0, 0, 2, 2}, colors::red);
-            captured = capture_frame();
-        }, colors::black);
-        CHECK(same_rgb(pixel_at(captured, 1, 1), colors::red));
     }
 
     TEST_CASE("adopt wraps a raw texture without applying engine defaults") {

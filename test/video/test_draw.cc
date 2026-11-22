@@ -95,7 +95,7 @@ namespace {
             // True if the PHYSICAL pixel (x, y) of the target is lit (not the black background).
             [[nodiscard]] bool lit(int x, int y) {
                 REQUIRE(SDL_SetRenderScale(raw(), 1.0f, 1.0f));
-                const neutrino::image frame = neutrino::capture_frame();
+                const neutrino::image frame = neutrino::get_renderer().read_pixels().value();
                 REQUIRE(SDL_SetRenderScale(raw(), scale, scale));
                 const auto px = frame.get_pixel(x, y);
                 REQUIRE(px.has_value());

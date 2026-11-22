@@ -22,6 +22,7 @@
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/layer_ops.hh>
 #include <neutrino/video/painter_state.hh>
+#include <neutrino/video/screenshot.hh>
 #include <neutrino/video/texture.hh>
 
 #include "scene/scene_context_access.hh"
@@ -79,6 +80,12 @@ namespace {
 
     [[nodiscard]] color pixel(const texture& t, int x, int y) {
         const image img = t.to_image();
+        const auto px = img.get_pixel(x, y);
+        REQUIRE(px.has_value());
+        return color{px->r, px->g, px->b, px->a};
+    }
+
+    [[nodiscard]] color pixel_of(const image& img, int x, int y) {
         const auto px = img.get_pixel(x, y);
         REQUIRE(px.has_value());
         return color{px->r, px->g, px->b, px->a};
@@ -1047,5 +1054,76 @@ TEST_SUITE("neutrino::compositor wrapping") {
         CHECK(scene_context_access::canvas_of(f.scene)->get() == nullptr);   // straight in again (R44)
         CHECK(f.at(1, 1) == BLUE);
         CHECK(f.at(6, 6) == RED);
+    }
+}
+
+TEST_SUITE("neutrino::screenshot") {
+    TEST_CASE("screenshot() shows every visible scene at the window's size, opaque") {
+        test::test_application app("screenshot scenes");
+        scenes_manager& mgr = empty_manager();
+        auto bottom = std::make_unique <plain_scene>(RED, scene_flags::hides_below);
+        auto overlay = std::make_unique <layer_scene>(scene_flags::none);
+        layer_scene* top = overlay.get();
+        const layer_id a = top->add();
+        top->draw = [&] { paint(a, rect{0, 0, 10, 10}, BLUE); };
+        mgr.push_scene_sync(std::move(bottom));
+        mgr.push_scene_sync(std::move(overlay));
+
+        const image shot = screenshot();
+        const auto size = get_renderer().get_output_size();
+        REQUIRE(size.has_value());
+        CHECK(shot.width() == size->width);
+        CHECK(shot.height() == size->height);
+        CHECK(pixel_of(shot, 5, 5) == BLUE);       // the overlay
+        CHECK(pixel_of(shot, 50, 50) == RED);      // the full-screen scene under it
+        CHECK(pixel_of(shot, 50, 50).a == 255);
+        CHECK(bound() == nullptr);                 // the window is bound again
+        mgr.finish();
+    }
+
+    TEST_CASE("under a letterbox presentation the shot is the whole window, bars included") {
+        test::test_application app("screenshot letterbox");
+        scenes_manager& mgr = empty_manager();
+        const auto size = get_renderer().get_output_size();
+        REQUIRE(size.has_value());
+        // A render space twice as wide as tall: bars above and below.
+        REQUIRE(get_renderer().set_logical_presentation(20, 10, sdlpp::logical_presentation::letterbox));
+        mgr.push_scene_sync(std::make_unique <plain_scene>(RED, scene_flags::hides_below));
+        const image shot = screenshot();
+        CHECK(shot.width() == size->width);
+        CHECK(shot.height() == size->height);
+        CHECK(pixel_of(shot, size->width / 2, 0) == BLACK);                // a bar
+        CHECK(pixel_of(shot, size->width / 2, size->height / 2) == RED);   // the picture
+        const auto lp = get_renderer().get_logical_presentation();
+        REQUIRE(lp.has_value());
+        CHECK(lp->width == 20);                    // the window's presentation untouched
+        mgr.finish();
+    }
+
+    TEST_CASE("screenshot() fails inside a scene's render(), or with a texture bound") {
+        test::test_application app("screenshot refused");
+        scenes_manager& mgr = empty_manager();
+        auto owned = std::make_unique <layer_scene>();
+        layer_scene* scene = owned.get();
+        bool refused = false;
+        scene->draw = [&] {
+            try {
+                (void)screenshot();
+            } catch (const std::exception&) {
+                refused = true;
+            }
+        };
+        mgr.push_scene_sync(std::move(owned));
+        mgr.render();
+        CHECK(refused);
+
+        texture t = make_output(dim{4, 4});
+        auto scope = t.bind();
+        CHECK_THROWS_WITH((void)screenshot(), doctest::Contains("texture is bound"));
+        mgr.finish();
+    }
+
+    TEST_CASE("screenshot() needs a running application") {
+        CHECK_THROWS_WITH((void)screenshot(), doctest::Contains("running application"));
     }
 }

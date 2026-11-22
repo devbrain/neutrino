@@ -77,7 +77,7 @@ namespace {
             texture_draw_params params;
             params.src = src;
             draw_texture(page, render_rect{0.0f, 0.0f, 20.0f, 2.0f}, params);
-            const image frame = capture_frame();
+            const image frame = get_renderer().read_pixels().value();
             for (int x = 0; x < 20; x++) {
                 const auto px = frame.get_pixel(x, 0);
                 REQUIRE(px.has_value());
@@ -140,7 +140,7 @@ namespace {
         params.src = src;
         params.tint = tint;
         draw_texture(page, render_rect{0.0f, 0.0f, 8.0f, 8.0f}, params);
-        return capture_frame();
+        return get_renderer().read_pixels().value();
     }
 
     color frame_pixel(const image& frame, int x, int y) {

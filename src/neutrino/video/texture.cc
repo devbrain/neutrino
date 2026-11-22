@@ -204,22 +204,4 @@ namespace neutrino {
         set_render_target(m_texture);
         return read_current_target();
     }
-
-    image capture_frame() {
-        image img = read_current_target();
-        const auto bound = get_renderer().get_target();
-        if (bound && *bound == nullptr) {
-            // A window has no alpha. Where a canvas copied with none left a transparent pixel —
-            // nothing drawn there, by a full-screen scene that covered the window instead of
-            // clearing it — the screen shows black; so does the capture. Through a format
-            // without alpha and back: two conversions, not a loop over the pixels.
-            const auto format = img.format();
-            if (auto opaque = img.convert(sdlpp::pixel_format_enum::RGB888)) { // sdlpp-ok: internal
-                if (auto back = opaque->convert(format)) {
-                    img = std::move(*back);
-                }
-            }
-        }
-        return img;
-    }
 }

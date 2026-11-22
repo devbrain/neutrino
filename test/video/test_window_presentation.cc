@@ -185,7 +185,7 @@ namespace {
     // Reads the CURRENT render target -- the test binds a target texture, because window
     // contents are undefined after present().
     void check_pixel(int x, int y, const sdlpp::color& expected) {
-        const image frame = capture_frame();
+        const image frame = get_renderer().read_pixels().value();
         const auto px = frame.get_pixel(x, y);
         REQUIRE(px.has_value());
         CHECK(px->r == expected.r);

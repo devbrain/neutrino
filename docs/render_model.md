@@ -109,7 +109,7 @@ that is gone:
 | state that cannot leak | each draw call sets the render state it needs, as `draw.cc` does today; `pop_layer` restores the painter state (§3.3) |
 | effects on a whole layer | a layer is a texture, complete at the end of the frame (§5.4) |
 | errors at the caller's line | immediate drawing reports there already (§3.5) |
-| baking and readback as "render boundaries" | nothing is pending; `compose()` and `capture_frame()` work as today |
+| baking and readback as "render boundaries" | nothing is pending; `compose()` works as today, and `screenshot()` draws the scenes again to read them (R46) |
 | textures freed between record and render | nothing is pending on our side, and SDL flushes its own queue before a texture in use is changed or destroyed (`FlushRenderCommandsIfTextureNeeded`, `SDL_render.c:340`) |
 
 Our own batching into one `render_geometry` call is not wanted either: on the software
@@ -229,7 +229,7 @@ Agreed 2026-11-10 (R27), two rules:
 | `draw.hh` free functions, all overloads (`int` and `render_pos`) | same signatures and meaning; they draw with the one painter (R37) |
 | `set_draw_color` / `set_draw_blend_mode` / `set_line_style` and their getters | the same calls; the values are the painter's state (§3.3) |
 | `texture::bind()`, `renderer_target_scope` (was `target_scope`), `compose()`, `draw_texture*` | unchanged but for the scope's name; inside a layer, `bind()` redirects drawing into the texture and the layer is current again when the scope ends |
-| `capture_frame()`, `render_size()`, `pixel_snap`, `draw_failure_count()` | unchanged; `capture_frame()` combines first |
+| `render_size()`, `pixel_snap`, `draw_failure_count()` | unchanged; `capture_frame()` is replaced by `screenshot()` (R46) |
 | `base_scene::render()` | draws onto the scene's canvas, which is drawn into the window |
 | simplex | unchanged; its canvas is the simplex scene's on-demand canvas (§5.6) |
 
@@ -521,8 +521,8 @@ The game controls combining at two levels:
 2. **A compositor of the game's own** (§5.4.4), for what the settings cannot say: a layer
    drawn twice, an overlay between layers, a transition, split screen.
 
-Either way each layer is scaled from its resolution to the result's. `capture_frame()`
-combines first, so a readback sees what will be shown.
+Either way each layer is scaled from its resolution to the result's. `screenshot()` draws
+every visible scene again, so it sees what is shown (R46).
 
 #### 5.4.1 Alpha and blend modes
 
@@ -1087,8 +1087,8 @@ Drawing stays immediate, so the audit of the deferred draft shrinks to readback 
 
 | Site | What it does | Here |
 |---|---|---|
-| `texture::to_image()`, `capture_frame()` (`src/neutrino/video/texture.cc`) | GPU → CPU readback | unchanged; `capture_frame()` combines the layers first (§5.4) |
-| KE `tests/enemies.cc:172` | `save_bmp(capture_frame())` | unchanged |
+| `texture::to_image()` (`src/neutrino/video/texture.cc`), `screenshot()` | GPU → CPU readback | `to_image()` unchanged; `screenshot()` replaces `capture_frame()` (R46) |
+| KE `tests/enemies.cc:172` | `save_bmp(capture_frame())` | draws the scene into a texture with `compose()` and saves `to_image()`: the scene is not on the stack (R46) |
 | `texture::compose()` / `bind()` (KE `assets/backdrop.cc`, tutorial `04_render_textures`) | bake into a target | unchanged (R37: no explicit painters) |
 | simplex adapter (`application_adapter.cc`, `canvas.bind()`) | persistent canvas target | becomes the simplex scene's on-demand canvas (§5.6) |
 | brix `view.cc:177` `SDL_RenderReadPixels`, `game_board_painter.cc` `SDL_SetRenderTarget` | raw SDL, outside neutrino | a layer or a `compose()`d texture, and a mesh (§7.1) |
@@ -1792,7 +1792,7 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
     frame with nothing to show, or the scene's own target could not be made and its
     `render()` draws into the window — until the copies, nothing else is drawn there.
     Where nothing was drawn on such a canvas the window gets a transparent pixel, which
-    shows black; `capture_frame()` returns the window's pixels opaque. In a window made
+    shows black; `screenshot()` returns it opaque (R46). In a window made
     with `window_flags::transparent`, where alpha shows, full-screen canvases blend over
     the cleared window instead (their default blend is `blend` there), so nothing becomes
     see-through that was opaque before.
@@ -1841,6 +1841,24 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
   `scene_style()` / `canvas_composite()` for transitions (transitions are RM5's wrapping
   compositors over the old scene's last frame, not styled scenes); a `blend` the game may
   set (the flags would stop being the truth).
+
+- **R46 — `screenshot()` replaces `capture_frame()`** (2026-11-22). `capture_frame()` read
+  whatever target was bound: inside a scene's `render()` the scene's own unfinished layer,
+  outside it the window after the last present, which SDL leaves undefined; the promise
+  that it "combines first" had no user. `screenshot()` (`<neutrino/video/screenshot.hh>`)
+  returns what the window shows: every visible scene, the pinned one included, drawn again
+  into a texture of the window's size and logical presentation, read back opaque. It is
+  called from anywhere a scene is not being drawn — `fixed_update()`, an event handler, a
+  test — with the window bound (ENFORCE otherwise), costs one full extra draw only when
+  called, and relies on `render()` not advancing state. Reading a texture stays
+  `texture::to_image()`; KE's test, whose scene is not on the stack, draws it into a
+  texture with `compose()`.
+
+  *Why:* the game wants the picture on the screen, from wherever it handles a key; one
+  call that works anywhere beats a readback whose meaning depends on where it runs.
+  Considered: keeping `capture_frame()` as a low-level readback beside it (two ways to
+  read pixels, one of them a trap); a screenshot request answered at the end of the next
+  frame (no extra draw, but a callback where a value will do).
 
 **Proposed, not yet agreed:**
 
@@ -1974,8 +1992,7 @@ RM8 Nuklear), so references from `font_plan.md` and `sprite_layer_plan.md` stay 
      (`layers()`, `info()`, `layer_texture()`, `get_painter_stats()`).
   3. *Scenes' pictures* — each scene's canvas (internal, R45) from the allocator, copied
      into the window in stack order with the blend its flags give; the simplex scene's
-     persistent picture on an on-demand layer; `below()`; `capture_frame()` combines
-     first.
+     persistent picture on an on-demand layer; `below()`; `screenshot()` (R46).
   4. *Painter state* — the painter's own `painter_state` (colour, blend, line style,
      clip), saved into each scene's context between its frames; `draw.hh` reads it;
      outside a scene, the bound target or the window, as today; `custom_blend`. Every

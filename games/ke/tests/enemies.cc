@@ -169,7 +169,11 @@ namespace {
             for (int i=0;i<8;++i) { enemy_state target; target.type=static_cast<rs::enemy>(i); target.pos={float(52+i%4*72),float(55+i/4*65)}; target.animation_ticks= i==2 ? 21 : 0; li.enemies.push_back(target); }
             li.hatch_ticks=55; m.get_paddle().shield=2; scene.render();
             if (const char* screenshot=std::getenv("KE_TEST_SCREENSHOT")) {
-                neutrino::save_bmp(neutrino::capture_frame(), screenshot); // throws if either step fails
+                // The scene is not on the scene stack, so it is drawn into a texture of its own.
+                auto shot=neutrino::texture::create(neutrino::render_size(), neutrino::texture_access::target);
+                if (!shot) throw std::runtime_error("cannot make the screenshot texture");
+                shot->compose([&]{ scene.render(); }, neutrino::colors::black);
+                neutrino::save_bmp(shot->to_image(), screenshot); // throws if saving fails
             }
             m.add_life(-m.get_lives()); li.paddle_death_ticks=24;
             scene.render(); // exercise game-over text as well as the sprite renderer

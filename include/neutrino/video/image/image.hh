@@ -25,7 +25,7 @@ namespace neutrino {
     using pixel_format = sdlpp::pixel_format_enum;   // sdlpp-ok
 
     /**
-     * @brief Write @p img to @p pth as a BMP file -- e.g. a capture_frame() screenshot.
+     * @brief Write @p img to @p pth as a BMP file -- e.g. a screenshot().
      * @throws std::runtime_error carrying the error if the file cannot be written.
      */
     inline void save_bmp(const image& img, const std::filesystem::path& pth) {

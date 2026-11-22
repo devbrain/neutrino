@@ -144,7 +144,7 @@ nuts and bolts — full state, inspection, rendering into a texture (§2.4, §2.
 | `set_draw_color` / `set_draw_blend_mode` / `set_line_style` and their getters | same calls; the values are the painter's state (§2.4) |
 | `texture::create`, `from_image`, `adopt` | unchanged; what they make belongs to the caller, not to the texture allocator (§3.3); `adopt` rejects a texture made on another renderer |
 | `texture::bind()`, `renderer_target_scope` (was `target_scope`), `compose()`, `draw_texture`, `draw_texture_quad` | unchanged but for the scope's name; inside a layer, `bind()` redirects drawing into the texture, and the layer is current again when the scope ends |
-| `capture_frame()` | unchanged; it combines first, so it sees what will be shown |
+| `capture_frame()` | replaced by `screenshot()`: every visible scene, drawn again into a texture of the window's size, read back opaque (R46) |
 | `render_size()`, `pixel_snap`, `draw_failure_count()` | unchanged |
 | `base_scene::render()` | draws onto the scene's canvas, which is drawn into the window |
 | `sprite_batch` | unchanged; flushes onto the current layer, or the canvas |
@@ -956,7 +956,10 @@ walks the visible scenes bottom to top. With the painter, after the allocator's
    nothing drawn on it this frame is not copied, so a hidden pinned scene costs nothing.
 5. Present.
 
-`capture_frame()` runs the combining first, so it reads what will be shown.
+`screenshot()` (`<neutrino/video/screenshot.hh>`, R46) runs these steps again into a
+texture of the window's size and logical presentation and reads it back opaque, so it
+shows what the screen shows. It is called outside any scene's frame, with the window
+bound.
 
 ### 3.3 Targets and the texture allocator
 
@@ -1671,23 +1674,23 @@ painter, so there are no scene painters to build.
 3. **Scenes' pictures.** Each scene's canvas (internal, R45) from the allocator, copied
    into the window in stack order with the blend its flags give; the compositor draws onto
    it; the simplex scene's persistent picture on an on-demand layer; the pooled textures
-   of the old render size dropped on a resize; `below()`; `capture_frame()` combines
-   first; R41: the canvas's texture taken when first needed, the base layer's texture as
-   the canvas, with a test switch, and the every-frame canvases of hidden scenes given
-   back. *Done so far (2026-11-22):* `detail::canvas` (§3.1), owned by `base_scene` and
-   run by `scene_frame`; a scene without layers draws onto it, and the scene manager
-   copies the canvases into the bound target, 1:1, with the blend from the scene's flags;
-   R42's mirrored geometry for canvases and layers; hidden scenes give back the textures
-   of their every-frame canvases and layers. The compositor (R43): `composition`,
-   `default_compositor`, `set_compositor` / `get_compositor`, `below()`, every flat
-   setting of `layer_style` with `layer_scale` and `destination`. The base layer's texture
-   as the canvas (R41), the bottom full-screen scene straight into the window (R44), the
-   window's clear skipped under a covering canvas. Tests in `test/video/test_canvas.cc`,
-   `test/scene/test_scene_frame.cc`, `test/scene/test_compositor.cc` and the layer
-   presentation case in `test/video/test_layer_stack.cc`. Not yet: the simplex scene on an
-   on-demand layer, the old render size's pooled textures dropped, and `capture_frame()`
-   combining first. *Exit:* tutorials, demos, simplex and the games unchanged (±1 on
-   blended pixels in overlays).
+   of the old render size dropped on a resize; `below()`; `screenshot()` in place of
+   `capture_frame()` (R46); R41: the canvas's texture taken when first needed, the base
+   layer's texture as the canvas, with a test switch, and the every-frame canvases of
+   hidden scenes given back. *Done so far (2026-11-22):* `detail::canvas` (§3.1), owned by
+   `base_scene` and run by `scene_frame`; a scene without layers draws onto it, and the
+   scene manager copies the canvases into the bound target, 1:1, with the blend from the
+   scene's flags; R42's mirrored geometry for canvases and layers; hidden scenes give back
+   the textures of their every-frame canvases and layers. The compositor (R43):
+   `composition`, `default_compositor`, `set_compositor` / `get_compositor`, `below()`,
+   every flat setting of `layer_style` with `layer_scale` and `destination`. The base
+   layer's texture as the canvas (R41), the bottom full-screen scene straight into the
+   window (R44), the window's clear skipped under a covering canvas. `screenshot()` (R46).
+   Tests in `test/video/test_canvas.cc`, `test/scene/test_scene_frame.cc`,
+   `test/scene/test_compositor.cc` and the layer presentation case in
+   `test/video/test_layer_stack.cc`. Not yet: the simplex scene on an on-demand layer, and
+   the old render size's pooled textures dropped. *Exit:* tutorials, demos, simplex and
+   the games unchanged (±1 on blended pixels in overlays).
 4. **Painter state.** The painter's own `painter_state` (colour, blend, line style, clip),
    saved into each scene's context between its frames; `get_painter_state`,
    `push_state(s)` / `scoped_state(s)`; `draw.hh` reads it and sets the SDL state each

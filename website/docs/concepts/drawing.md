@@ -513,7 +513,15 @@ neutrino::draw_texture(*canvas, viewport);
 
 ### Reading pixels back
 
-`target.to_image()` reads a target texture back into an `image`; `neutrino::capture_frame()` reads whatever target is currently bound (the window is only meaningful between drawing and present; its pixels come back opaque, as the screen shows them). `neutrino::save_bmp(img, path)` writes either to disk -- handy for screenshots and tests.
+`target.to_image()` reads a target texture back into an `image`. `neutrino::screenshot()` (`<neutrino/video/screenshot.hh>`) returns what the window shows -- every visible scene, drawn again at the window's size, opaque -- from anywhere a scene is not being drawn: `fixed_update()`, an event handler, a test. `neutrino::save_bmp(img, path)` writes either to disk:
+
+```cpp
+void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
+    if (in.pressed(neutrino::key::f12)) {
+        neutrino::save_bmp(neutrino::screenshot(), "shot.bmp");
+    }
+}
+```
 
 ## 6. Layers and the Compositor
 

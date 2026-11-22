@@ -45,6 +45,7 @@
 #include <neutrino/video/flip_mode.hh>
 #include <neutrino/video/layer_style.hh>
 #include <neutrino/video/composition.hh>
+#include <neutrino/video/screenshot.hh>
 #include <neutrino/video/painter_state.hh>
 
 
