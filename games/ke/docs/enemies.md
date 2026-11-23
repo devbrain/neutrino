@@ -86,18 +86,7 @@ The game-over panel is a small port UI, not a recreation of the DOS screen.
 
 ```sh
 python3 tools/inspect_enemies.py ~/games/ke/Krypton-Egg_DOS_EN/ke.exe
-python3 tools/test_enemies.py
 ```
 
-The first command checks all eight animation descriptors plus hatch, enemy
-death, and paddle death against the fingerprinted executable. The second
-compiles the actual game code and `tests/enemies.cc` using an existing Ninja
-build's compilation database and libraries, in a temporary directory. It
-does not configure CMake or modify the CLion build tree. Use `--build-dir` for
-a different configured build and `KE_TEST_RSC` for a different resource path.
-
-Integration checks cover spawn timing/sequence/cap, original sprite bounds,
-wall turns, animation loops, ball and paddle contacts, shields, dynamite,
-death cleanup, last-ball loss, brick/score preservation, life reset and the
-game-over restart click. Rendering is exercised with all eight sprite types;
-`KE_TEST_SCREENSHOT=/tmp/ke-enemies.bmp` saves that frame for visual inspection.
+This checks all eight animation descriptors plus hatch, enemy death, and paddle
+death against the fingerprinted executable.
