@@ -13,6 +13,7 @@
 #include <neutrino/video/texture.hh>
 
 #include "video/painter_state_stack.hh"
+#include "video/target_discard.hh"
 
 namespace neutrino {
     class base_scene;
@@ -45,8 +46,13 @@ namespace neutrino::detail {
 
     /// @brief Where a scene's frame draws.
     enum class frame_target : std::uint8_t {
-        /// Onto the scene's canvas, or into its layers, combined onto the canvas.
+        /// Onto the scene's canvas, or into its layers, combined onto the canvas. A canvas
+        /// that cannot be made discards what is drawn (painter.md §3.6).
         canvas,
+        /// As @c canvas, but in a scene without layers whose canvas cannot be made, straight
+        /// into the target bound now: the bottom scene, whose picture is the first in the
+        /// target, so drawing there gives the picture its canvas would have.
+        canvas_or_bound_target,
         /// Straight into the target bound now: the bottom full-screen scene when its canvas
         /// would only copy it 1:1 (R44). Its every-frame canvas gives its texture back.
         bound_target,
@@ -113,8 +119,9 @@ namespace neutrino::detail {
             void finish();
 
             /// @brief True when render() draws straight into the target bound before the frame:
-            ///        the scene draws there (frame_target::bound_target), or its own target —
-            ///        its canvas, or its base layer — could not be made.
+            ///        the scene draws there (frame_target::bound_target), or its canvas could
+            ///        not be made in a scene without layers drawn with
+            ///        frame_target::canvas_or_bound_target. A failed base layer discards.
             [[nodiscard]] bool draws_into_target() const;
 
             /// @brief True while a frame is open, whether or not its scene has layers; the
@@ -124,8 +131,8 @@ namespace neutrino::detail {
             ///        scene without layers.
             [[nodiscard]] static layer_stack* get_current_layers_stack() noexcept;
             /// @brief clear() for the scene being rendered: its current layer; without layers,
-            ///        its canvas; drawing straight into the target, that target, to black.
-            ///        ENFORCE: a frame is open.
+            ///        its canvas; drawing straight into the target, that target, to black; a
+            ///        canvas that could not be made, nothing. ENFORCE: a frame is open.
             static void clear_current();
         private:
             /// Runs the compositor onto the canvas, then marks the pushed layers drawn.
@@ -141,6 +148,9 @@ namespace neutrino::detail {
             std::span <const texture* const> m_below;
             /// The canvas bound for render() in a scene without layers.
             std::optional <renderer_target_scope> m_canvas_binding;
+            /// Instead of the binding, when the canvas could not be made and the scene may not
+            /// draw into the target bound before: drawing does nothing (painter.md §3.6).
+            std::optional <discard_scope> m_discard;
             bool m_finished{false};
             static bool s_rendering;
             static layer_stack* s_current;

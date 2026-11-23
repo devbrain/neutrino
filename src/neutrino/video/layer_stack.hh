@@ -15,6 +15,7 @@
 #include <neutrino/video/texture.hh>
 
 #include "video/composite_draw.hh"
+#include "video/target_discard.hh"
 #include "video/target_geometry.hh"
 #include "video/texture_handle.hh"
 
@@ -73,7 +74,8 @@ namespace neutrino::detail {
              * without a size of its own, so render space maps onto it as onto the target the
              * scene is drawn into (R42); none for a layer with one, which is drawn in its own
              * pixels. A layer whose texture could not be made is pushed with nothing
-             * bound, and is not retried here. Pushing a layer again in the same frame, or while
+             * bound, and is not retried here: drawing into it does nothing (painter.md §3.6),
+             * and the target below it is left as it was. Pushing a layer again in the same frame, or while
              * it is already pushed, continues drawing on it. The painter state is not touched:
              * a layer is where draws go, the state how (R39); the painter's clip follows onto
              * the layer. ENFORCE: @p lid is a layer of this stack; not combining — the layers
@@ -86,8 +88,8 @@ namespace neutrino::detail {
              *
              * ENFORCE: something is pushed — begin_frame()'s push of the base layer does not
              * count, only end_frame() ends it — and the bound target is still the layer's
-             * texture: a texture::bind() scope that outlived the layer fails here instead of
-             * leaving the wrong target bound.
+             * texture, or for a failed layer still discards: a texture::bind() scope that
+             * outlived the layer fails here instead of leaving the wrong target bound.
              */
             void pop();
 
@@ -220,6 +222,7 @@ namespace neutrino::detail {
             struct pushed_entry {
                 std::size_t                          layer;   // its index in m_layers
                 std::optional <renderer_target_scope> target; // from texture::bind(); ending it binds the previous target; none for a failed layer
+                std::optional <discard_scope>        discard; // a failed layer's instead: drawing into it does nothing
                 bool                                 frame{false}; // begin_frame()'s push of the base layer
             };
             std::vector<entry> m_layers;           // the base layer, then declaration order (§3.1)

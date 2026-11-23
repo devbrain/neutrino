@@ -61,6 +61,11 @@ namespace neutrino::detail {
             m_layers->begin_frame(geometry);   // resize, reset the flags, push the base layer
         } else if (m_canvas) {
             m_canvas_binding = m_canvas->bind(); // render() draws onto the canvas
+            if (!m_canvas_binding && onto != frame_target::canvas_or_bound_target) {
+                // Its drawing would land under the scenes below it, copied into the target
+                // later, or be overwritten by them: it does nothing instead (painter.md §3.6).
+                m_discard.emplace();
+            }
         }
         // With neither, render() draws into the target bound now.
         // Only now: if anything above throws, the destructor does not run, and nothing is set.
@@ -84,6 +89,7 @@ namespace neutrino::detail {
             m_canvas->end_frame();
         }
         m_canvas_binding.reset();              // the target from before the frame again
+        m_discard.reset();
         if (m_painter) {
             m_painter->finish("the frame");    // a push left is undone, then fails
         }
@@ -139,6 +145,7 @@ namespace neutrino::detail {
             m_layers->abort_frame();           // render() threw: end every push
         }
         m_canvas_binding.reset();              // never throws
+        m_discard.reset();
         s_rendering = false;
         s_current = nullptr;
         s_frame = nullptr;
@@ -153,6 +160,8 @@ namespace neutrino::detail {
             f.m_layers->clear_current();
         } else if (f.m_canvas_binding) {
             f.m_canvas->clear();
+        } else if (f.m_discard) {
+            // The canvas could not be made: nothing to clear.
         } else {
             // Drawing straight into the target (R44), or the canvas could not be made: the
             // scene's picture is the target, cleared as the window is, to black.
@@ -164,9 +173,9 @@ namespace neutrino::detail {
 
     bool scene_frame::draws_into_target() const {
         if (m_layers) {
-            return m_layers->base_texture() == nullptr;
+            return false;                      // into its layers; a failed base layer discards
         }
-        return !m_canvas_binding.has_value();
+        return !m_canvas_binding && !m_discard;
     }
 
     bool scene_frame::rendering() noexcept {

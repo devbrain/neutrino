@@ -88,20 +88,27 @@ namespace neutrino::detail {
         const dim size = lr.settings.size.value_or(mirrored.size);
         auto binding = bind_pooled(lr.target, {size, clear}, first && lr.settings.redraw == redraw_mode::every_frame,
                                    lr.settings.size ? target_geometry{} : mirrored);
-        m_stack.push_back({idx, std::move(binding), frame});
+        // A failed layer has nothing bound: drawing into it does nothing (painter.md §3.6).
+        std::optional <discard_scope> discard;
+        if (!binding) {
+            discard.emplace();
+        }
+        m_stack.push_back({idx, std::move(binding), std::move(discard), frame});
     }
 
     void layer_stack::pop() {
         ENFORCE(!m_stack.empty() && !m_stack.back().frame, "pop_layer with nothing pushed");
         const auto& top = m_stack.back();
+        // A binding of the game's that outlived the layer would be ended by ours and leave the
+        // wrong target bound; catch it here instead. A failed layer binds nothing, so the
+        // binding shows as the target no longer discarding.
+        bool bound_is_layers = target_discards();
         if (top.target) {
-            // A binding of the game's that outlived the layer would be ended by ours and leave
-            // the wrong target bound; catch it here instead.
             const auto& own = m_layers[top.layer].target;
-            ENFORCE(own && get_renderer().is_target(own.get().native()),
-                    "pop_layer while the bound target is not the layer's: a texture::bind() "
-                    "scope outlived it");
+            bound_is_layers = own && get_renderer().is_target(own.get().native());
         }
+        ENFORCE(bound_is_layers, "pop_layer while the bound target is not the layer's: a texture::bind() "
+                                 "scope outlived it");
         end_newest();
     }
 
@@ -109,6 +116,7 @@ namespace neutrino::detail {
         pushed_entry e = std::move(m_stack.back());
         m_stack.pop_back();
         e.target.reset();                      // the previous target is bound again, with the painter's clip
+        e.discard.reset();                     // or, for a failed layer, draws into it as before
     }
 
     void layer_stack::begin_frame(const target_geometry& geometry) {

@@ -129,6 +129,11 @@ namespace neutrino::detail {
             count_draw_failure();
             return std::nullopt;
         }
+        if (m_refuse) {
+            LOG_ERROR("refusing a texture of size", size, "(refuse_textures, for the tests)");
+            count_draw_failure();
+            return std::nullopt;
+        }
 
         auto [itr_beg, itr_end] = m_pool.equal_range(size);
         if (itr_beg == itr_end) {
@@ -208,7 +213,7 @@ namespace neutrino::detail {
             handle.set_clear_color(spec.clear_color);
         }
         if (!handle) {
-            return std::nullopt;               // could not be made: drawing lands below
+            return std::nullopt;               // could not be made: the caller discards drawing (§3.6)
         }
         try {
             auto scope = handle.get().bind(fresh || wipe ? std::optional <color>{spec.clear_color} : std::nullopt);

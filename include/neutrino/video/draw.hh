@@ -32,6 +32,7 @@
  */
 
 #include <neutrino/video/globals.hh>
+#include <neutrino/video/blend_mode.hh>
 #include <neutrino/video/color.hh>
 #include <neutrino/video/flip_mode.hh>
 #include <neutrino/video/line_style.hh>
@@ -52,10 +53,10 @@ namespace neutrino {
     /// @brief Read the current scene's draw colour.
     NEUTRINO_EXPORT [[nodiscard]] color get_draw_color();
 
-    /// @brief Set the blend mode applied to the current scene's subsequent draws without a
-    ///        texture (defaults to no blending). A value outside the enum is counted as a draw
-    ///        failure and leaves the mode as it was.
-    NEUTRINO_EXPORT void set_draw_blend_mode(blend_mode mode = blend_mode::none);
+    /// @brief Set the blend mode applied to the current scene's subsequent draws, textures
+    ///        included (R49; defaults to @c blend). A value outside the enum is counted as a
+    ///        draw failure and leaves the mode as it was.
+    NEUTRINO_EXPORT void set_draw_blend_mode(blend_mode mode = blend_mode::blend);
     /// @brief Read the current scene's draw blend mode.
     NEUTRINO_EXPORT [[nodiscard]] blend_mode get_draw_blend_mode();
 

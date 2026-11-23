@@ -70,7 +70,7 @@ Use it for fades, damage flashes, day/night tints and health bars that shift fro
 
 ## Row 2: `premultiply()`
 
-A colour with alpha below 255 only looks translucent if the renderer blends. Primitives start with blending off, so the demo turns it on for the top half of the row:
+A colour with alpha below 255 looks translucent because draws blend: `blend` is the default. The demo says so for the top half of the row, then switches to `none`, so the rows below write their colours as they are:
 
 ```cpp
 neutrino::set_draw_blend_mode(neutrino::blend_mode::blend);

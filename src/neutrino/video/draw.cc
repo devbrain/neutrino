@@ -23,6 +23,7 @@
 #include "video/line_style_sdl.hh"
 #include "video/draw_failures.hh"
 #include "video/painter_state_stack.hh"
+#include "video/target_discard.hh"
 
 namespace neutrino {
     using detail::has_diagonal_flip;
@@ -69,10 +70,27 @@ namespace neutrino {
             return detail::painter_state_stack::instance().state();
         }
 
-        // A textured draw reads no painter state until R49 (the blend in its source's form), but
-        // it is a painter call: it needs a scene too (R48).
+        // A textured draw is a painter call: it needs a scene too (R48), also when it turns out
+        // to draw nothing.
         void require_scene() {
             (void) detail::painter_state_stack::instance();
+        }
+
+        // Whether a draw call submits anything: false while the bound target discards drawing,
+        // a layer's or a canvas's whose texture could not be made (painter.md §3.6). A draw
+        // checks its arguments first, so a wrong one fails there too. ENFORCE: a scene is
+        // current (R48), whatever the answer.
+        [[nodiscard]] bool target_draws() {
+            require_scene();
+            return !detail::target_discards();
+        }
+
+        // A textured draw's blend (R49): the painter's, in the form @p source's alpha mode
+        // needs, set on the texture at the call -- a texture keeps no blend of its own.
+        void blend_source(const texture& source) {
+            const painter_state& s = painter();
+            auto& native = const_cast <sdlpp::texture&>(source.native()); // sdlpp-ok: internal
+            DRAW_CHECK(native.set_blend_mode(detail::to_sdl_blend(s.blend, source.alpha_mode())));
         }
 
         // Whether a primitive's SDL call reads the line style: sdlpp's draw_line and
@@ -313,6 +331,10 @@ namespace neutrino {
 
             const auto& visual = sheet.visual(visual_id);
             const auto resolved = resolve_visual(registry, sheet, visual);
+            if (!target_draws()) {
+                return {};
+            }
+            blend_source(resolved.page);
             auto& renderer = get_renderer();
             const bool snap = snapping();
             position = snap_pos(position, snap);
@@ -444,6 +466,9 @@ namespace neutrino {
         }
 
         void draw_point(render_pos p, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             p = snap_pos(p, snapping());
             DRAW_CHECK(paint(c).draw_point(p.x, p.y));
         }
@@ -453,6 +478,9 @@ namespace neutrino {
         }
 
         void draw_line(render_pos a, render_pos b, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             const bool snap = snapping();
             a = snap_pos(a, snap);
             b = snap_pos(b, snap);
@@ -464,6 +492,9 @@ namespace neutrino {
         }
 
         void draw_line_aa(render_pos a, render_pos b, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             const bool snap = snapping();
             a = snap_pos(a, snap);
             b = snap_pos(b, snap);
@@ -475,6 +506,9 @@ namespace neutrino {
         }
 
         void draw_line_thick(render_pos a, render_pos b, float w, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             const bool snap = snapping();
             a = snap_pos(a, snap);
             b = snap_pos(b, snap);
@@ -486,6 +520,9 @@ namespace neutrino {
         }
 
         void draw_line_dashed(render_pos a, render_pos b, float dash, float gap, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             const bool snap = snapping();
             a = snap_pos(a, snap);
             b = snap_pos(b, snap);
@@ -497,6 +534,9 @@ namespace neutrino {
         }
 
         void draw_line_dotted(render_pos a, render_pos b, float spacing, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             const bool snap = snapping();
             a = snap_pos(a, snap);
             b = snap_pos(b, snap);
@@ -509,6 +549,9 @@ namespace neutrino {
 
         void draw_arrow(render_pos from, render_pos to, float head_size, float head_angle, float thickness,
                         const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             const bool snap = snapping();
             from = snap_pos(from, snap);
             to = snap_pos(to, snap);
@@ -521,6 +564,9 @@ namespace neutrino {
         }
 
         void draw_cross(render_pos centre, float size, float thickness, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             centre = snap_pos(centre, snapping());
             DRAW_CHECK(paint(c, reads_line::yes).draw_cross(centre.x, centre.y, size, thickness));
         }
@@ -530,6 +576,9 @@ namespace neutrino {
         }
 
         void draw_rect(const render_rect& r, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             DRAW_CHECK(paint(c).draw_rect(to_sdl(r, snapping())));
         }
 
@@ -538,6 +587,9 @@ namespace neutrino {
         }
 
         void draw_rect_fill(const render_rect& r, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             DRAW_CHECK(paint(c).fill_rect(to_sdl(r, snapping())));
         }
 
@@ -546,6 +598,9 @@ namespace neutrino {
         }
 
         void draw_circle(render_pos centre, float radius, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             DRAW_CHECK(paint(c).draw_circle(whole(centre.x), whole(centre.y), whole(radius)));
         }
 
@@ -554,6 +609,9 @@ namespace neutrino {
         }
 
         void draw_circle_fill(render_pos centre, float radius, const sdlpp::color& c) {
+            if (!target_draws()) {
+                return;
+            }
             DRAW_CHECK(paint(c).fill_circle(whole(centre.x), whole(centre.y), whole(radius)));
         }
 
@@ -693,9 +751,13 @@ namespace neutrino {
         const auto& manager = require_sprites_manager();
         const auto& sheet = manager.get(visual.sheet);
         const auto resolved = resolve_visual(require_texture_registry(), sheet, sheet.visual(visual.visual));
+        if (!target_draws()) {
+            return;
+        }
         // Straight blit into the explicit destination: the caller has already rounded
         // both corners, so no origin/scale rounding here. Diagonal flip / rotation are
         // not supported on this path (H/V only).
+        blend_source(resolved.page);
         DRAW_CHECK(get_renderer().copy_ex(
             resolved.page.native(),
             std::optional <rect>{resolved.src},
@@ -927,8 +989,12 @@ namespace neutrino {
             ENFORCE(!has_diagonal_flip(params.flip), "draw_texture: diagonal flip is not supported; "
                                                      "use draw_texture_quad");
             ENFORCE(std::isfinite(params.rotation_degrees), "texture rotation must be finite");
+            if (!target_draws()) {
+                return;
+            }
 
             auto& native = drawable(t);
+            blend_source(t);
             const tint_scope tint(native, params.tint);
             const std::optional <sdlpp::rect <float>> target{to_sdl(dst, snapping())};
             if (params.rotation_degrees == 0.0f && params.flip == flip_mode::none) {
@@ -955,7 +1021,9 @@ namespace neutrino {
 
     void draw_texture_quad(const texture& t, const std::array <render_pos, 4>& corners, std::optional <rect> src,
                            const color& tint) {
-        require_scene();
+        if (!target_draws()) {
+            return;
+        }
         const dim size = t.size();
         const rect s = src.value_or(rect{0, 0, size.width, size.height});
         const float w = static_cast <float>(size.width);
@@ -975,6 +1043,7 @@ namespace neutrino {
             vertices[i] = sdlpp::vertex{.position = sdlpp::render_pos{p.x, p.y}, .color = c, .tex_coord = uv[i]};
         }
         constexpr std::array <int, 6> indices{0, 1, 2, 0, 2, 3};
+        blend_source(t);
         DRAW_CHECK(get_renderer().render_geometry(drawable(t), vertices, indices));
     }
 

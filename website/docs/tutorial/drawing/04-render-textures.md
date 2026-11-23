@@ -61,7 +61,7 @@ neutrino::texture backdrop = std::move(*rt_opt);
 
 When created, a target `texture`:
 - Allocates an `RGBA8888` texture on the active GPU renderer.
-- Automatically enables `neutrino::blend_mode::blend`, so transparent areas in the texture will composite over whatever lies beneath when drawn.
+- Is premultiplied (`alpha_mode()`): what blended drawing into a transparent target leaves in it. Drawn with the default `neutrino::blend_mode::blend`, its transparent areas composite over whatever lies beneath, translucent edges included.
 - Is nearest-filtered, so scaled draws keep crisp pixels (`set_filter()` to change).
 - Is movable but non-copyable (strictly owns its GPU texture handle).
 

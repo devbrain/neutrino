@@ -9,6 +9,7 @@
 #include <neutrino/video/blend_mode.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/layer_style.hh>
+#include <sdlpp/video/blend_mode.hh>
 #include <sdlpp/utility/geometry.hh>
 
 #include "video/target_geometry.hh"
@@ -22,15 +23,15 @@ namespace neutrino {
 // canvases into the window share.
 
 namespace neutrino::detail {
-    /// The blend a finished layer or canvas is drawn with (painter.md §2.8): blended drawing
-    /// into a transparent target leaves premultiplied colour in it, so @c blend and @c add
-    /// become their premultiplied forms; the others are unchanged.
-    [[nodiscard]] blend_mode premultiplied(blend_mode mode) noexcept;
+    /// The SDL blend a finished layer or canvas is drawn with (painter.md §2.8): blended
+    /// drawing into a transparent target leaves premultiplied colour in it, so @c blend and
+    /// @c add become their premultiplied forms; the others are unchanged.
+    [[nodiscard]] sdlpp::blend_mode premultiplied(blend_mode mode) noexcept; // sdlpp-ok: internal
 
-    /// The blend a layer of @p mode is drawn with at @p opacity: premultiplied(), except that
-    /// a @c mod layer below full opacity is drawn with @c mul, which fades its tint (SDL's mod
-    /// ignores alpha, so it cannot fade).
-    [[nodiscard]] blend_mode composite_blend(blend_mode mode, float opacity) noexcept;
+    /// The SDL blend a layer of @p mode is drawn with at @p opacity: premultiplied(), except
+    /// that a @c mod layer below full opacity is drawn with @c mul, which fades its tint
+    /// (SDL's mod ignores alpha, so it cannot fade).
+    [[nodiscard]] sdlpp::blend_mode composite_blend(blend_mode mode, float opacity) noexcept; // sdlpp-ok: internal
 
     /// Sets on @p t what @p s says about colour: composite_blend(), colour modulation
     /// @c tint × @c opacity and alpha modulation @c opacity (opacity clamped to 0..1; it scales

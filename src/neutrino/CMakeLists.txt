@@ -166,6 +166,7 @@ neutrino_subsystem(video
         composition.hh
         screenshot.hh
         flip_mode.hh
+        alpha_mode.hh
         blend_mode.hh
         line_style.hh
         painter_state.hh
@@ -178,6 +179,8 @@ neutrino_subsystem(video
         painter_state.cc
         painter_state_internal.hh
         painter_state_internal.cc
+        target_discard.hh
+        target_discard.cc
         globals.cc
         palette.cc
         sprites.cc

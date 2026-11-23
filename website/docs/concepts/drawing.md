@@ -63,7 +63,7 @@ flowchart TD
 | [`render_layer`](pathname:///api/) | `<neutrino/video/world/render_layer.hh>` | Compositor slot | Game-owned layer slotted between static tile map layers in a `world_compositor`. |
 | [`layer_id`, `push_layer`, `scoped_layer`, `layer_style`](pathname:///api/) | `<neutrino/video/layer_ops.hh>` | A scene's layers | Declared with `declare_layer` in the scene's constructor; pushed and popped during its `render()`; styled live with `style_of(id)`. Not to be confused with `draw_layer`, a `sprite_batch` sort band. |
 | [`composition`, `compositor`](pathname:///api/) | `<neutrino/video/composition.hh>` | Combining the layers | What a scene's compositor receives after `render()`; `default_compositor` draws the layers in declaration order. |
-| [`painter_state`, `scoped_state`](pathname:///api/) | `<neutrino/video/painter_state.hh>` | Colour, blend, line style, clip | Saved and restored around helpers; every push popped within the scene's frame. |
+| [`painter_state`, `scoped_state`](pathname:///api/) | `<neutrino/video/painter_state.hh>` | Colour, blend, line style, clip | Each scene's own; saved and restored around helpers; every push popped before the call into the scene returns. |
 
 ---
 
@@ -143,17 +143,15 @@ auto px = canvas.lock();
 px.row(y)[x] = neutrino::to_rgba32(neutrino::colors::gold);
 ```
 
-### Alpha needs a blend mode
+### Alpha and the blend mode
 
-A colour's alpha only shows when the renderer blends. The immediate primitives use the renderer's draw blend mode, which starts as `blend_mode::none` (alpha ignored), so turn blending on around translucent draws:
+Every draw blends with the painter's blend mode, which starts as `blend_mode::blend`, so a colour's alpha shows:
 
 ```cpp
-neutrino::set_draw_blend_mode(neutrino::blend_mode::blend);
 neutrino::draw_rect_fill(neutrino::rect{0, 0, 640, 360}, neutrino::color{0, 0, 0, 128});   // dim the screen
-neutrino::set_draw_blend_mode(neutrino::blend_mode::none);
 ```
 
-`draw_line_aa` is the exception among primitives: it blends its edge pixels itself and restores the mode afterwards. Textures are different too: every texture created by the engine is alpha-blended by default.
+`set_draw_blend_mode()` picks another operation — `none` (colour and alpha written as they are), `add`, `mul` or `mod` — for every draw that follows, sprites and textures included: a texture keeps no blend of its own. `draw_line_aa` blends its edge pixels itself.
 
 See [Drawing tutorial, Part 5: Colors](../tutorial/drawing/05-colors.md) for a runnable demo of every operation.
 
@@ -214,17 +212,18 @@ Drawing is fire-and-forget: draw and set functions in `draw.hh` return `void`, s
 
 - **Invalid arguments throw.** A non-finite or non-positive sprite scale, or a non-finite rotation, is a bug in the calling code and fails loudly.
 - **SDL failures are logged and counted.** If SDL rejects a draw (e.g. an invalidated graphics context), the engine logs SDL's error, rate-limited per call site so a broken renderer cannot flood the log, and increments `neutrino::draw_failure_count()`. Tests and tools can compare the count before and after a span of draws.
-- **Getters return values directly.** `get_draw_color()`, `get_draw_blend_mode()` and `get_line_style()` throw only if the renderer can no longer report its state.
+- **Getters return values directly.** `get_draw_color()`, `get_draw_blend_mode()` and `get_line_style()` read the current scene's painter state.
+- **Drawing needs a scene.** Draws and the painter state functions work during the calls the engine makes into a scene — `on_enter`, updates, events, `render()` — and fail outside them, in `ready()` or a scene's constructor. Bake render textures in `on_enter` or later.
 
-Calls that take a trailing `neutrino::color` apply that color for the single call and **automatically restore the previous draw color**:
+Calls that take a trailing `neutrino::color` use that color for the single call; **the draw color set before is unchanged**:
 
 ```cpp
-// 1. Explicitly sets global draw color for subsequent color-less calls:
+// 1. Sets the scene's draw color for subsequent color-less calls:
 neutrino::set_draw_color(neutrino::colors::red);
 neutrino::draw_point(10, 10);
 neutrino::draw_point(11, 10);
 
-// 2. Trailing color overload: sets green, draws, and restores red:
+// 2. Trailing color overload: draws green; the draw color stays red:
 neutrino::draw_line(0, 0, 50, 50, neutrino::colors::green);
 
 // Still draws red!
@@ -445,7 +444,9 @@ A `neutrino::texture` is a GPU image you draw with `draw_texture()`. It is one t
 | `streaming` | the CPU, rewritten each frame | `texture::create(size, texture_access::streaming)` | software canvases, palette effects |
 | `target` | the GPU: neutrino draws land in it | `texture::create(size, texture_access::target)` | baked scenery, minimaps, render-to-texture |
 
-Every texture starts alpha-blended (`set_blend_mode()` to change) and nearest-filtered for crisp pixel art (`set_filter(texture_filter::linear)` to smooth). Calling an operation that doesn't match the mode -- `update()` on a fixed texture, `bind()` on a streaming one -- throws: it is a programming error.
+Every texture starts nearest-filtered for crisp pixel art (`set_filter(texture_filter::linear)` to smooth). Calling an operation that doesn't match the mode -- `update()` on a fixed texture, `bind()` on a streaming one -- throws: it is a programming error.
+
+A texture is drawn with the painter's blend mode, in the form its pixels need. Blended drawing into a transparent target leaves colour already multiplied by alpha in it, so a `target` texture is **premultiplied** and the others **straight** (`alpha_mode()`); neutrino picks SDL's blend from the two, so a composed texture keeps its translucent edges when it is drawn again. `set_alpha_mode()` says otherwise when the default is wrong — a target drawn into with `none` and translucent colour, an image exported premultiplied. `to_image()` always returns straight colour.
 
 ### Drawing a texture
 
@@ -568,7 +569,7 @@ class level_scene : public neutrino::base_scene {
 - **Pushes are balanced.** Every `push_layer` is ended by a `pop_layer` before `render()` returns — `scoped_layer` does it for you, also on an exception; a frame left with a layer pushed fails, naming it. Pushing a layer does not change the colour, blend or clip (part 7).
 - **`layer_settings`:** `size` (the layer's own resolution; unset, the window's), `redraw` (`every_frame`, cleared at its first push each frame, or `on_demand`, kept between frames: a layer you redraw only when it changes or when `needs_redraw(id)` says it was lost) and `style`, how it is drawn when combined.
 - **`clear()`** empties the current layer — the way to start an on-demand layer again.
-- **Translucent drawing into a layer needs `blend_mode::blend`.** Layers are cleared to transparent and combined premultiplied; with the default `none`, a translucent colour is kept unmultiplied and comes out too bright.
+- **Translucent drawing into a layer blends.** Layers are cleared to transparent and combined premultiplied, which the default `blend` leaves in them; drawn with `none`, a translucent colour is kept unmultiplied and comes out too bright.
 
 ### Layer style
 
@@ -619,7 +620,7 @@ set_compositor([this](neutrino::composition& c) {
 
 Header: `<neutrino/video/painter_state.hh>`.
 
-The draw colour, the blend mode, the line style and the clip are the **painter state** — what every draw call reads. Set them as before (`set_draw_color()`, `set_draw_blend_mode()`, `set_line_style()`); save and restore them around a helper so its changes do not leak into the caller:
+The draw colour, the blend mode, the line style and the clip are the **painter state** — what every draw call reads. Each scene has its own: a new scene starts from the defaults (opaque black, `blend`, solid lines, no clip), what it sets stays until it changes it, and a colour set in one scene never reaches another. Set them as before (`set_draw_color()`, `set_draw_blend_mode()`, `set_line_style()`); save and restore them around a helper so its changes do not leak into the caller:
 
 ```cpp
 #include <neutrino/video/painter_state.hh>
@@ -627,13 +628,14 @@ The draw colour, the blend mode, the line style and the clip are the **painter s
 void draw_panel(neutrino::rect area) {
     neutrino::painter_state s = neutrino::get_painter_state();
     s.clip = area;                                        // nothing outside it is drawn
-    s.blend = neutrino::blend_mode::blend;
+    s.blend = neutrino::blend_mode::blend;                // whatever the caller set
     auto panel = neutrino::scoped_state(s);               // the caller's state is back at the end
     neutrino::draw_rect_fill(area, neutrino::color{0, 0, 0, 160});
 }
 ```
 
-- `push_state()` saves, `push_state(s)` saves and replaces the whole state, `pop_state()` restores; `scoped_state()` / `scoped_state(s)` pop for you, also on an exception. A scene's frame must pop what it pushes: one that ends with a push left fails, after the push is undone.
+- `push_state()` saves, `push_state(s)` saves and replaces the whole state, `pop_state()` restores; `scoped_state()` / `scoped_state(s)` pop for you, also on an exception. Each call into a scene — an update, an event, a frame — must pop what it pushes: one that ends with a push left fails, after the push is undone.
+- **Draws set what they use at the call.** State set straight on the renderer through `native()` does not reach neutrino's draws.
 - **The clip follows the painter**, not the target: it applies to whichever texture or layer is bound. A clip set straight on the renderer — by a UI backend — is kept while the painter has none.
 - `line_style` is neutrino's own: `{.pattern = neutrino::line_pattern::dashed, .dash = 6, .gap = 3}`.
 

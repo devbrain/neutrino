@@ -22,6 +22,10 @@
  * Inside compose() / bind() coordinates are the texture's own pixels ((0, 0) is its top-left):
  * SDL keeps viewport and scale per render target, and logical presentation applies only to the
  * window. Bindings nest -- each restores the target that was current before it.
+ *
+ * A texture keeps no blend of its own: every draw takes the painter's (painter.md §2.8, R49).
+ * What it does keep is its @ref alpha_mode, what its pixels hold, from which a draw picks the
+ * form of that blend: @c target textures are premultiplied, the others straight.
  */
 
 #include <cstddef>
@@ -31,7 +35,7 @@
 #include <utility>
 
 #include <neutrino/neutrino_export.h>
-#include <neutrino/video/blend_mode.hh>
+#include <neutrino/video/alpha_mode.hh>
 #include <neutrino/video/color.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/image/image.hh>
@@ -84,6 +88,9 @@ namespace neutrino {
             /// if the painter has none when the scope ends, that target's clip is cleared.
             /// Otherwise the target keeps its own clip (R39).
             bool m_painter_clip{false};
+            /// The target bound before discarded drawing — a layer or a canvas whose texture
+            /// could not be made: put back when the scope ends (painter.md §3.6).
+            bool m_discards{false};
     };
 
     /**
@@ -121,12 +128,13 @@ namespace neutrino {
      */
     class NEUTRINO_EXPORT texture {
         public:
-            /// @brief A @c fixed texture holding @p img's pixels. Alpha-blended, nearest-filtered.
+            /// @brief A @c fixed texture holding @p img's pixels. Straight alpha, nearest-filtered.
             /// @return nullopt if the upload fails.
             [[nodiscard]] static std::optional <texture> from_image(const image& img);
 
-            /// @brief A blank texture of @p size. Alpha-blended, nearest-filtered. A @c target
-            ///        texture's contents start undefined -- compose() clears it by default.
+            /// @brief A blank texture of @p size, nearest-filtered. A @c target texture is
+            ///        premultiplied, the others straight (R49). A @c target texture's contents
+            ///        start undefined -- compose() clears it by default.
             ///        @c streaming textures must use a 32-bit @p format (update() / lock() are 32-bit).
             /// @return nullopt if @p size is degenerate or the driver cannot create it (e.g. no
             ///         render-target support).
@@ -134,8 +142,9 @@ namespace neutrino {
                                                                pixel_format format = pixel_format::RGBA8888);
 
             /// @brief Wrap an existing SDL texture (interop with code that creates its own). Keeps
-            ///        the texture's blend and filter state as-is -- no engine defaults applied.
-            ///        The size and access are read from @p raw. @p raw must have been created on
+            ///        the texture's filter as-is -- no engine defaults applied. The size and access
+            ///        are read from @p raw, and the alpha mode follows the access, as for create();
+            ///        set_alpha_mode() when the pixels say otherwise. @p raw must have been created on
             ///        the application's renderer, the only one neutrino draws with: a texture from
             ///        another renderer fails ENFORCE.
             [[nodiscard]] static texture adopt(sdlpp::texture raw); // sdlpp-ok
@@ -150,7 +159,15 @@ namespace neutrino {
             [[nodiscard]] texture_access access() const noexcept { return m_access; }
 
             void set_filter(texture_filter filter);
-            void set_blend_mode(blend_mode mode);
+
+            /// @brief Say what the pixels hold (R49): a target drawn into with @c none and
+            ///        translucent colour is straight; images exported premultiplied, or a
+            ///        streaming texture written so, are premultiplied. It describes the pixels,
+            ///        so it can change when they do.
+            void set_alpha_mode(neutrino::alpha_mode mode) noexcept { m_alpha = mode; }
+            /// @brief What the pixels hold: @c premultiplied for a @c target texture, @c straight
+            ///        for the others, unless set_alpha_mode() said otherwise.
+            [[nodiscard]] neutrino::alpha_mode alpha_mode() const noexcept { return m_alpha; }
 
             // ---- streaming ---------------------------------------------------------------------
 
@@ -182,7 +199,10 @@ namespace neutrino {
                 auto scope = bind(c);
             }
 
-            /// @brief Read the texture's pixels back to the CPU (target textures only).
+            /// @brief Read the texture's pixels back to the CPU (target textures only), as
+            ///        straight colour (R49): a premultiplied texture's colour is divided by its
+            ///        alpha. A pixel with alpha 0 has no straight colour and reads back as
+            ///        transparent black, even if additive light gave it colour.
             [[nodiscard]] image to_image() const;
 
             // ---- escape hatch ------------------------------------------------------------------
@@ -194,10 +214,13 @@ namespace neutrino {
 
         private:
             texture(sdlpp::texture tex, dim size, texture_access access) noexcept // sdlpp-ok
-                : m_texture(std::move(tex)), m_size(size), m_access(access) {}
+                : m_texture(std::move(tex)), m_size(size), m_access(access),
+                  m_alpha(access == texture_access::target ? neutrino::alpha_mode::premultiplied
+                                                           : neutrino::alpha_mode::straight) {}
 
             sdlpp::texture m_texture; // sdlpp-ok: private
             dim m_size{0, 0};
             texture_access m_access{texture_access::fixed};
+            neutrino::alpha_mode m_alpha{neutrino::alpha_mode::straight};
     };
 }

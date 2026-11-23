@@ -1790,8 +1790,9 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
     is copied with `none` (§5.4, the default from `hides_below`), so in place, unmoved and
     unscaled, it writes every pixel of the window: the scene manager, which clears the
     window, then does not (`scenes_manager::covers_target()`), unless that canvas ends the
-    frame with nothing to show, or the scene's own target could not be made and its
-    `render()` draws into the window — until the copies, nothing else is drawn there.
+    frame with nothing to show, or the scene has no layers, its canvas could not be made
+    and its `render()` draws into the window — until the copies, nothing else is drawn
+    there (amended 2026-11-23: a failed base layer discards its drawing, painter.md §3.6).
     Where nothing was drawn on such a canvas the window gets a transparent pixel, which
     shows black; `screenshot()` returns it opaque (R46). In a window made
     with `window_flags::transparent`, where alpha shows, full-screen canvases blend over
@@ -1891,8 +1892,10 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
   too, the blend in its source's form for textured draws (R49). The renderer's own
   colour, blend and line style are scratch: state set on it through `native()` does not
   reach neutrino's draws, and a save no longer keeps an SDL blend with no neutrino name.
-  Each call into a scene pops the state it pushes. A layer or canvas whose texture cannot
-  be made binds a 1×1 sink target, so what is drawn into it is discarded. Simplex: the
+  Each call into a scene pops the state it pushes. Drawing into a layer or canvas whose
+  texture cannot be made does nothing: the painter knows the bound target discards, and
+  each draw call checks it; the bottom scene without layers draws into the window instead
+  (amended 2026-11-23, painter.md §3.6). Simplex: the
   adapter creates its scene before `on_create` and runs `on_create` as that scene, still
   in `ready()`, so a failed `on_create` still fails startup. Engine tests run inside the
   harness's scene. `custom_blend` is deferred until a game needs one.
@@ -1901,14 +1904,18 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
   inside one, so drawing outside a scene has no meaning, and a scene's state is its own
   wherever its code runs: nothing leaks between scenes, a push one scene forgets cannot
   reach another, and nothing is copied when scenes switch. Setting what a call uses at
-  every call means nothing depends on an earlier one. The sink discards direct SDL draws
-  too, with no check in each draw call. Considered: one state saved into each scene
+  every call means nothing depends on an earlier one. *Amended 2026-11-23:* a 1×1 sink
+  target was chosen first, bound for a failed layer or canvas, because it discards direct
+  SDL draws too, with no check in each draw call. The flag replaced it: every draw goes
+  through the painter, nothing draws through `native()` today, and the sink needed its
+  own lifetime, reset handling and a fallback for when it could not be made, while SDL
+  still processed every draw into it. Considered: one state saved into each scene
   around its `render()` only (the updates and event handlers of all scenes would share a
   state); every `render()` from the defaults with nothing kept; an application-level
   stack for code outside scenes; a public "run as scene" helper for games' tests (a back
   door around the rule); caching the SDL state last set (anything that touches the
-  renderer directly would make it wrong); a flag checked by every draw for a failed
-  layer; an empty clip on the target below.
+  renderer directly would make it wrong); the sink (above); an empty clip on the target
+  below.
 
 - **R49 — One blend for every draw; textures know their alpha** (2026-11-23; amends R34,
   §3.3 and painter.md §2.8). The painter's blend applies to every draw — primitives,
@@ -2074,7 +2081,7 @@ RM8 Nuklear), so references from `font_plan.md` and `sprite_layer_plan.md` stay 
   4. *Painter state* — each scene's own `painter_state` and save stack, current during
      every call into the scene; painter calls outside a scene fail; `draw.hh` sets the
      SDL state each call uses (R48); one blend for every draw and textures' alpha modes
-     (R49); a failed layer or canvas binds the sink. `custom_blend` deferred. Every
+     (R49); drawing into a failed layer or canvas does nothing. `custom_blend` deferred. Every
      existing test pixel-identical, except where R49 changes pixels on purpose.
   5. *Custom compositors* — `set_compositor` / `get_compositor`, `composition`, wrapping.
   6. *Quads* — tint, crop and `draw_picture` with the fit modes; independent of the

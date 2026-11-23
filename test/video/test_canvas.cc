@@ -52,10 +52,13 @@ namespace {
     }
 
     // A target texture to copy canvases into, filled with black.
+    // A target texture standing in for the window. The window shows its pixels as they are
+    // held, so they are read back so too, not as straight colour (R49).
     [[nodiscard]] texture make_output(dim size) {
         auto out = texture::create(size, texture_access::target);
         REQUIRE(out.has_value());
         out->fill(colors::black);
+        out->set_alpha_mode(alpha_mode::straight);
         return std::move(*out);
     }
 
@@ -244,7 +247,7 @@ TEST_SUITE("neutrino::detail::canvas") {
         CHECK(draw_failure_count() == failures + 1);
         CHECK(c.get() == nullptr);
         CHECK(c.size() == dim{0, 4});                         // the size it asked for
-        CHECK(bound() == before);                             // drawing lands below
+        CHECK(bound() == before);                             // the frame decides: discard, or the target below
         c.end_frame();
 
         c.begin_frame(dim{0, 4});                             // the same size: not retried

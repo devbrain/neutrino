@@ -87,7 +87,8 @@ namespace neutrino::detail {
              * every-frame canvas is cleared to transparent at its first bind in the frame; a
              * second bind continues drawing on it. An on-demand canvas keeps its contents.
              * Returns nothing before the first begin_frame(), and when the texture could not
-             * be made: drawing then lands on the target bound before.
+             * be made: the scene frame then discards what is drawn, or, for the bottom scene,
+             * has it drawn into the target bound before (painter.md §3.6).
              */
             [[nodiscard]] std::optional <renderer_target_scope> bind();
             /// @brief Something was drawn on the canvas this frame. Called by whoever draws on

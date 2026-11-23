@@ -862,7 +862,8 @@ canvases can be dumped with `texture::to_image()`.
   - a diagonal flip, a non-finite rotation or opacity, or a negative or non-finite scale
     in the style of a layer being drawn;
   - `pop_scene` or `replace_scene` with no scene below the pinned scene.
-- **Silent no-op:** an invalid address ("no picture").
+- **Silent no-op:** an invalid address ("no picture"); drawing into a layer or canvas whose
+  texture could not be made (§3.6), counted once, when the texture is refused.
 - **Wrong arguments throw**, as today: a non-finite or non-positive scale, a non-finite
   rotation.
 - **What only SDL can reject** — a failed call, a target that cannot be created — is logged,
@@ -908,7 +909,7 @@ struct scene_context {                       // one per scene, owned by base_sce
 
 class painter {                              // one: application_scoped<painter>
     scene_context*             m_context{nullptr}; // the current scene's; none outside scenes (R48)
-    texture_handle             m_sink;          // 1x1: bound for a layer or canvas that failed
+    bool                       m_discarding{false}; // the bound target could not be made: draws do nothing (§3.6)
 };
 ```
 
@@ -975,7 +976,8 @@ presents. `scenes_manager::render()` (`src/neutrino/scene/scenes_manager.cc`) pl
 frame (`plan()`: the bottom visible scene, whether it draws straight into the window,
 whether its canvas covers it), clears the window to black unless that canvas will cover
 it (`covers_target()`, R44) — late, if it ends with nothing to show, or before the bottom
-scene's `render()` if its own target could not be made, so it draws into the window — and
+scene's `render()` if it has no layers and its canvas could not be made, so it draws into
+the window (§3.6) — and
 walks the visible scenes bottom to top. With the painter, after the allocator's
 `begin_frame()` (§3.3):
 
@@ -1390,7 +1392,8 @@ changes (R45).
    a canvas's bind uses too;
 3. binds it with `texture::bind()`, clearing it again if this is its first push in the
    frame and its redraw mode is `every_frame`, unless the texture was taken in step 2,
-   which came cleared. A failed layer binds nothing;
+   which came cleared. A failed layer binds nothing, and drawing into it does nothing
+   (§3.6);
 4. marks the layer pushed this frame and appends a push entry.
 
 `pop()`:
@@ -1423,8 +1426,9 @@ changes (R45).
   applies only to the window, so inside a layer the coordinates are its own pixels: render
   coordinates for a layer at the scene's size.
 - **A failed layer** — its target could not be made (§3.3) — is pushed like any other,
-  with nothing bound. Until draw calls go through the painter (RM1 step 4) they land on
-  the target below it; from then on, drawing into it does nothing.
+  with nothing bound, and drawing into it does nothing (§3.6): the target below it is
+  left as it was. Popping it checks that the target still discards, as popping any other
+  layer checks that its texture is still bound.
 
 **The frame**, around `render()` (§3.2):
 
@@ -1537,8 +1541,9 @@ scene above runs a compositor of its own, `scenes_manager::plan()` has it drawn 
 into the window (`scene_frame` with `frame_target::bound_target`): its canvas gives its
 texture back and shows nothing. Otherwise a full-screen scene's canvas, copied with
 `none` in place, covers the window, so the scene manager does not clear it
-(`covers_target()`), unless the canvas ends the frame with nothing to show, or the scene's
-own target could not be made and its `render()` draws into the window.
+(`covers_target()`), unless the canvas ends the frame with nothing to show, or the scene
+has no layers, its canvas could not be made and its `render()` draws into the window
+(§3.6).
 `detail::shortcuts().bottom_scene_into_target` turns the first off. With the default
 compositor the layers are drawn with the presentation and clip turned off once for all of
 them (`layer_stack::draw_all()`, `draw_declared()`).
@@ -1555,10 +1560,24 @@ them (`layer_stack::draw_all()`, `draw_declared()`).
   does in `draw.cc` today), so a texture always rests at white and opaque.
 - **`texture::bind()` inside a layer** pushes the texture as a temporary target; when its
   scope ends, the layer's target is bound again.
-- **A layer or canvas whose texture cannot be made binds the sink** (R48): a 1×1 internal
-  target, made once, so whatever is drawn while it is bound — direct SDL draws included
-  — is discarded. The failure is counted once, when the texture is refused. If the sink
-  itself cannot be made, draws land on the target below, as before, and that is logged.
+- **Drawing into a layer or canvas whose texture cannot be made does nothing** (R48,
+  amended 2026-11-23). The painter knows the bound target discards: binding a failed
+  layer or canvas sets it, and the target scopes put it back as they end, so a
+  `texture::bind()` inside a failed layer draws into its texture and the layer discards
+  again after. Draw calls check their arguments and the scene as always, then submit
+  nothing, so a wrong argument fails there too; `clear()` clears nothing. The failure is
+  counted once, when the texture is refused; drawing into the target is no failure.
+  *Why not a 1×1 target to draw into instead:* every draw goes through the painter (R48),
+  so the painter can skip it; a texture would need its own lifetime, reset handling and a
+  fallback for when it cannot be made, and SDL would still process every draw. What is
+  drawn straight through `native()` reaches the target below; a UI backend that draws
+  that way would check the same flag (RM8).
+  - **The exception: the bottom scene without layers.** Its canvas could not be made, so
+    its `render()` draws straight into the window, cleared first. Its picture is the first
+    there, so this gives what its canvas would (`frame_target::canvas_or_bound_target`).
+    Any other scene's drawing would land under the scenes below it, copied in later, or be
+    overwritten by them, and a failed base layer's would be overwritten by its own canvas:
+    those discard.
 - **Outside scenes there is no painter state:** painter calls fail (R48). The scene
   manager's own drawing — the canvases into the window, the frame's clear, the copies
   that combine layers — is below the painter and sets SDL directly.
@@ -1772,11 +1791,19 @@ painter, so there are no scene painters to build.
    own state is scratch. The default blend `blend`, for every draw, textures included;
    `alpha_mode` on textures (targets premultiplied, the others straight) with
    `set_alpha_mode()`; `blend_premultiplied` and `add_premultiplied` out of the public
-   enum; `texture::set_blend_mode` removed; `to_image()` straight. A failed layer or
-   canvas binds the sink. Simplex runs `on_create` as its scene; the test harness runs
+   enum; `texture::set_blend_mode` removed; `to_image()` straight. Drawing into a failed
+   layer or canvas does nothing. Simplex runs `on_create` as its scene; the test harness runs
    tests inside its scene.
    *Done before (e9f9c59):* `push_state` / `pop_state` / `scoped_state` /
    `get_painter_state` on the renderer's state, and the clip the painter's own (R39).
+   *Done (2026-11-23):* R48 (0dd95af): each scene's state and saves, current during every
+   call into it; ENFORCE outside scenes; per-call SDL state; simplex and the test harness.
+   R49: the painter's blend for every draw, `alpha_mode`, `to_image()` straight, the default
+   `blend`; tests in `test/video/test_blend_mode.cc`. Failed layers and canvases discard
+   what is drawn into them, through a painter flag instead of the 1×1 sink R48 planned;
+   the bottom scene without layers keeps drawing into the window; tests in
+   `test/video/test_layer_stack.cc` and `test/scene/test_compositor.cc` (suite
+   `neutrino::failed targets`).
    Deferred: `custom_blend` (R48). *Exit:* every existing test pixel-identical, except
    where R49 changes pixels on purpose: translucent primitives drawn with the default
    blend, and translucent pixels of target textures drawn again or read back.

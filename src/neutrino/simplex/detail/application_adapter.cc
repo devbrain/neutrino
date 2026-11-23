@@ -87,7 +87,6 @@ namespace neutrino::simplex::detail {
         if (!m_canvas) {
             throw std::runtime_error("Simplex canvas texture could not be created");
         }
-        m_canvas->set_blend_mode(blend_mode::none); // the canvas replaces the frame; nearest is the default filter
         // The scene the user's callbacks run as: on_create here, on_update from its updates.
         m_scene = std::make_unique <simplex_scene>(*this);
 
@@ -138,12 +137,22 @@ namespace neutrino::simplex::detail {
 
     void application_adapter::present() noexcept {
         if (m_state != lifecycle::running || !is_running()) return;
-        // Presenting the canvas is the whole frame: a rejected draw stops the app (the entry point
-        // reports it) rather than being logged and skipped like an ordinary draw.
-        const auto failures_before = draw_failure_count();
-        draw_texture(*m_canvas);
-        if (draw_failure_count() != failures_before) {
-            fail(std::make_exception_ptr(std::runtime_error("Simplex canvas presentation failed")));
+        // Presenting the canvas is the whole frame: a rejected copy stops the app (the entry point
+        // reports it) rather than being logged and skipped like an ordinary draw. The engine's
+        // own copy, below the painter: the canvas replaces the frame whatever blend the user's
+        // callbacks left in the scene's painter state (R49).
+        try {
+            auto& native = m_canvas->native();
+            const auto size = m_canvas->size();
+            const sdlpp::rect <float> whole{0.0f, 0.0f, static_cast <float>(size.width),
+                                           static_cast <float>(size.height)};
+            const bool presented = native.set_blend_mode(sdlpp::blend_mode::none).has_value()
+                                   && get_renderer().copy(native, std::nullopt, whole).has_value();
+            if (!presented) {
+                fail(std::make_exception_ptr(std::runtime_error("Simplex canvas presentation failed")));
+            }
+        } catch (...) {
+            fail(std::current_exception());
         }
     }
 

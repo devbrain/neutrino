@@ -6,13 +6,17 @@
 #include <neutrino/video/globals.hh>
 
 #include "video/painter_state_internal.hh"
+#include "video/target_discard.hh"
 #include "video/target_geometry.hh"
 
-#include "video/blend_mode_sdl.hh"
 
 #include <failsafe/enforce.hh>
 #include <failsafe/exception.hh>
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <span>
 #include <utility>
 
 namespace neutrino {
@@ -44,10 +48,9 @@ namespace neutrino {
             return texture_access::fixed;
         }
 
-        // Engine defaults for every texture: alpha-blended (a texture with transparent regions
-        // composites over what it is drawn onto) and nearest-filtered (pixel art stays crisp).
+        // Engine defaults for every texture: nearest-filtered (pixel art stays crisp). No blend:
+        // every draw sets the painter's on its source (R49).
         void apply_defaults(sdlpp::texture& tex) {
-            (void) tex.set_blend_mode(sdlpp::blend_mode::blend);
             (void) tex.set_scale_mode(sdlpp::scale_mode::nearest);
         }
 
@@ -57,6 +60,57 @@ namespace neutrino {
                 THROW_RUNTIME("reading the render target back failed:", pixels.error());
             }
             return std::move(*pixels);
+        }
+
+        // One premultiplied channel as straight colour: divided by @p a, rounded, at most 255.
+        [[nodiscard]] std::uint32_t straight_channel(std::uint32_t c, std::uint32_t a) noexcept {
+            return std::min <std::uint32_t>(255u, (c * 255u + a / 2u) / a);
+        }
+
+        // @p img, premultiplied, as straight colour (R49): each pixel's colour divided by its
+        // alpha. A pixel with alpha 0 has no straight colour; it becomes transparent black.
+        // Worked on in ARGB8888, and handed back in the format it came in.
+        [[nodiscard]] image straight_from_premultiplied(image img) {
+            const pixel_format original = img.format();
+            if (original != pixel_format::ARGB8888) {
+                auto converted = img.convert(pixel_format::ARGB8888);
+                if (!converted) {
+                    THROW_RUNTIME("converting a read-back texture failed:", converted.error());
+                }
+                img = std::move(*converted);
+            }
+            if (const auto locked = img.lock(); !locked) {
+                THROW_RUNTIME("locking a read-back texture failed:", locked.error());
+            }
+            const std::span <std::uint8_t> bytes = img.pixels();
+            const std::size_t pitch = img.pitch();
+            const auto width = static_cast <std::size_t>(img.width());
+            const auto height = static_cast <std::size_t>(img.height());
+            for (std::size_t y = 0; y < height; ++y) {
+                auto* row = reinterpret_cast <std::uint32_t*>(bytes.data() + y * pitch);
+                for (std::size_t x = 0; x < width; ++x) {
+                    const std::uint32_t p = row[x];
+                    const std::uint32_t a = p >> 24;
+                    if (a == 255u) {
+                        continue;
+                    }
+                    if (a == 0u) {
+                        row[x] = 0u;
+                        continue;
+                    }
+                    row[x] = (a << 24) | (straight_channel((p >> 16) & 0xFFu, a) << 16)
+                             | (straight_channel((p >> 8) & 0xFFu, a) << 8) | straight_channel(p & 0xFFu, a);
+                }
+            }
+            img.unlock();
+            if (original != pixel_format::ARGB8888) {
+                auto back = img.convert(original);
+                if (!back) {
+                    THROW_RUNTIME("converting a read-back texture failed:", back.error());
+                }
+                return std::move(*back);
+            }
+            return img;
         }
 
         // Make @p tex the render target; a failure is an error, not a no-op.
@@ -74,12 +128,13 @@ namespace neutrino {
     // The guard restores on destruction and a moved-from guard restores nothing, so moving and
     // resetting the optional is all the bookkeeping a scope needs.
     renderer_target_scope::renderer_target_scope(sdlpp::renderer& r) // sdlpp-ok: private
-        : m_painter_clip(detail::painter_has_clip()) {
+        : m_painter_clip(detail::painter_has_clip()), m_discards(detail::target_discards()) {
         m_guard.emplace(r);
     }
 
     renderer_target_scope::renderer_target_scope(renderer_target_scope&& other) noexcept
-        : m_guard(std::move(other.m_guard)), m_painter_clip(other.m_painter_clip) {
+        : m_guard(std::move(other.m_guard)), m_painter_clip(other.m_painter_clip),
+          m_discards(other.m_discards) {
         other.m_guard.reset();
     }
 
@@ -88,6 +143,7 @@ namespace neutrino {
             end();
             m_guard = std::move(other.m_guard);
             m_painter_clip = other.m_painter_clip;
+            m_discards = other.m_discards;
             other.m_guard.reset();
         }
         return *this;
@@ -101,6 +157,7 @@ namespace neutrino {
         if (m_guard) {
             m_guard.reset();                      // the previous target is bound again
             detail::count_target_switch();
+            (void) detail::set_target_discards(m_discards);   // and draws into it as before
             detail::clip_after_scope(m_painter_clip);   // the painter's clip, or the target's own
         }
     }
@@ -165,10 +222,6 @@ namespace neutrino {
         (void) m_texture.set_scale_mode(to_sdl(filter));
     }
 
-    void texture::set_blend_mode(blend_mode mode) {
-        (void) m_texture.set_blend_mode(detail::to_sdl_blend(mode));
-    }
-
     void texture::update(std::span <const std::uint32_t> pixels) {
         ENFORCE(m_access == texture_access::streaming, "update() needs a streaming texture");
         ENFORCE(pixels.size() == static_cast <std::size_t>(m_size.width) * static_cast <std::size_t>(m_size.height),
@@ -189,6 +242,7 @@ namespace neutrino {
         auto& r = get_renderer();
         renderer_target_scope scope(r);
         set_render_target(m_texture);
+        (void) detail::set_target_discards(false); // a real target, inside a failed layer too
         detail::clip_bound_texture();             // the painter's clip, or none (R39)
         if (clear) {
             // Clearing uses the renderer's draw colour, which is scratch: every draw call sets
@@ -203,6 +257,10 @@ namespace neutrino {
         ENFORCE(m_access == texture_access::target, "to_image() needs a target texture");
         renderer_target_scope restore(get_renderer());
         set_render_target(m_texture);
-        return read_current_target();
+        image img = read_current_target();
+        if (m_alpha == neutrino::alpha_mode::premultiplied) {
+            return straight_from_premultiplied(std::move(img));
+        }
+        return img;
     }
 }

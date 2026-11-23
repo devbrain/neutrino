@@ -75,6 +75,11 @@ namespace neutrino::detail {
             [[nodiscard]] const pool_stats& stats() const noexcept;
             /// @brief The pooled textures of @p size (the tests' invariants need it per size).
             [[nodiscard]] std::size_t pooled_count(const dim& size) const;
+            /// @brief For the tests: while set, no texture is handed out, pooled or new, as
+            ///        when SDL cannot create one — acquire() and resize() give failed handles
+            ///        (logged and counted). A scene's canvas cannot be made to fail otherwise:
+            ///        it takes the size of the target it is drawn into.
+            void refuse_textures(bool refuse) noexcept { m_refuse = refuse; }
 
             /// @brief SDL_EVENT_RENDER_TARGETS_RESET: clear every live handle's texture and mark
             ///        it for redraw. Failed handles already need one; the pool is left alone.
@@ -107,6 +112,8 @@ namespace neutrino::detail {
             pool_stats m_stats;
             /// The textures given back, keyed by size.
             std::unordered_multimap<dim, texture> m_pool;
+            /// refuse_textures(): take_texture() gives nothing.
+            bool m_refuse{false};
     };
 
     /**

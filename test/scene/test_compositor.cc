@@ -1,7 +1,8 @@
 //
 // Tests for combining a scene's layers onto its canvas: the default compositor, a scene's own
 // compositor through composition, and the placement of a layer by its composite settings
-// (painter.md §2.7–2.9, §3.4, §3.5; render_model.md R43).
+// (painter.md §2.7–2.9, §3.4, §3.5; render_model.md R43); what a layer or a canvas whose
+// texture cannot be made does to the picture (§3.6).
 //
 #include <doctest/doctest.h>
 
@@ -28,11 +29,14 @@
 #include "scene/scene_context_access.hh"
 #include "scene/scene_frame.hh"
 #include "scene/scenes_manager.hh"
+#include "services/service_access.hh"
 #include "services/service_locator.hh"
 #include "video/canvas.hh"
 #include "video/target_geometry.hh"
 #include "video/composite_draw.hh"
 #include "video/layer_stack.hh"
+#include "video/target_discard.hh"
+#include "video/texture_allocator.hh"
 #include "test_application.hh"
 
 using namespace neutrino;
@@ -68,11 +72,13 @@ namespace {
         return mgr;
     }
 
-    // A target texture standing in for the window, filled with black.
+    // A target texture standing in for the window, filled with black. The window shows its
+    // pixels as they are held, so they are read back so too, not as straight colour (R49).
     [[nodiscard]] texture make_output(dim size) {
         auto out = texture::create(size, texture_access::target);
         REQUIRE(out.has_value());
         out->fill(colors::black);
+        out->set_alpha_mode(alpha_mode::straight);
         return std::move(*out);
     }
 
@@ -590,7 +596,7 @@ TEST_SUITE("neutrino::compositor") {
         f.frame();
         REQUIRE(inside.has_value());
         CHECK(inside->draw_color == painter_state{}.draw_color);
-        CHECK(inside->blend == blend_mode::none);
+        CHECK(inside->blend == painter_state{}.blend);
         CHECK_FALSE(inside->clip.has_value());
         CHECK(f.at(1, 1) == GREEN);
         CHECK(f.at(4, 4) == RED);
@@ -1151,5 +1157,105 @@ TEST_SUITE("neutrino::screenshot") {
 
     TEST_CASE("screenshot() needs a running application") {
         CHECK_THROWS_WITH((void)screenshot(), doctest::Contains("running application"));
+    }
+}
+
+namespace {
+    // While alive, no texture is handed out, as when SDL cannot create one (painter.md §3.6).
+    struct refusing_textures {
+        refusing_textures() { require_texture_allocator().refuse_textures(true); }
+        ~refusing_textures() { require_texture_allocator().refuse_textures(false); }
+        refusing_textures(const refusing_textures&) = delete;
+        refusing_textures& operator=(const refusing_textures&) = delete;
+    };
+}
+
+TEST_SUITE("neutrino::failed targets") {
+    TEST_CASE("drawing into a layer whose texture cannot be made does nothing; the other layers show") {
+        fixture f;
+        const layer_id a = f.scene->add();
+        const layer_id failed = f.scene->add({.size = dim{0, 8}});
+        f.scene->draw = [&] {
+            paint(a, rect{4, 0, 4, 8}, RED);
+            paint(failed, rect{0, 0, 8, 8}, BLUE);  // once landed on the base layer
+            draw_rect_fill(rect{0, 0, 2, 2}, GREEN); // the base layer draws after it
+        };
+        const auto failures = draw_failure_count();
+        f.frame();
+        f.frame();
+        CHECK(f.at(1, 1) == GREEN);
+        CHECK(f.at(3, 3) == BLACK);
+        CHECK(f.at(6, 6) == RED);
+        CHECK(draw_failure_count() == failures + 1);  // counted once, when refused
+    }
+
+    TEST_CASE("with no textures, the bottom scene draws into the window and a scene above it nothing") {
+        // The bottom scene's picture is the first in the window, so drawing there gives what
+        // its canvas would; the overlay's would land under it, or be overwritten by it.
+        for (const bool into_target : {true, false}) {
+            CAPTURE(into_target);
+            const shortcuts_set shortcuts{into_target, true};
+            test::test_application app("failed canvases");
+            scenes_manager& mgr = empty_manager();
+            texture out = make_output(dim{8, 8});
+            const renderer_target_scope binding = out.bind();
+            const refusing_textures refusing;
+            auto overlay = std::make_unique <layer_scene>(scene_flags::none);   // no layers
+            overlay->draw = [] {
+                clear();                               // nothing to clear
+                draw_rect_fill(rect{0, 0, 8, 8}, BLUE);
+            };
+            mgr.push_scene_sync(std::make_unique <plain_scene>(RED, scene_flags::hides_below));
+            mgr.push_scene_sync(std::move(overlay));
+            mgr.render();
+            CHECK(pixel(out, 1, 1) == RED);
+            CHECK(pixel(out, 6, 6) == RED);
+            CHECK_FALSE(detail::target_discards());
+            mgr.finish();
+        }
+    }
+
+    TEST_CASE("a scene with layers and no textures shows nothing, its base layer included") {
+        fixture f;
+        (void) f.scene->add();
+        f.scene->draw = [] { draw_rect_fill(rect{0, 0, 8, 8}, RED); };
+        const refusing_textures refusing;
+        f.out.fill(GREEN);
+        f.mgr.render();
+        CHECK(f.at(1, 1) == BLACK);                // cleared: nothing covers it
+    }
+
+    TEST_CASE("a frame whose canvas cannot be made discards, unless it may draw into the target") {
+        test::test_application app("failed frame");
+        layer_scene plain;
+        layer_scene layered;
+        (void) layered.add();
+        const refusing_textures refusing;
+        {
+            scene_frame frame(&plain);
+            CHECK_FALSE(frame.draws_into_target());
+            CHECK(detail::target_discards());
+            frame.finish();
+        }
+        CHECK_FALSE(detail::target_discards());
+        {
+            scene_frame frame(&plain, {}, detail::frame_target::canvas_or_bound_target);
+            CHECK(frame.draws_into_target());
+            CHECK_FALSE(detail::target_discards());
+            frame.finish();
+        }
+        {
+            scene_frame frame(&layered);
+            CHECK_FALSE(frame.draws_into_target());   // its base layer discards
+            CHECK(detail::target_discards());
+            frame.finish();
+        }
+        CHECK_FALSE(detail::target_discards());
+        const auto throwing = [&] {
+            scene_frame frame(&layered);
+            throw std::runtime_error("render failed");
+        };
+        CHECK_THROWS_WITH(throwing(), doctest::Contains("render failed"));
+        CHECK_FALSE(detail::target_discards());    // the aborted frame put it back
     }
 }

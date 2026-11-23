@@ -32,12 +32,10 @@ namespace neutrino {
         /// @brief The colour of draws that are not given one (set_draw_color()). Default:
         ///        opaque black.
         color draw_color;
-        /// @brief How draws without a texture combine with the target (set_draw_blend_mode()):
-        ///        a preset, or a custom_blend() once it exists. Textures carry their own. Default:
-        ///        @c none, SDL's. Translucent primitives drawn into a layer need @c blend: with
-        ///        @c none the layer keeps colour not multiplied by alpha, and it is combined too
-        ///        bright (painter.md §2.8).
-        blend_mode blend{blend_mode::none};
+        /// @brief How every draw, textures included, combines with the target
+        ///        (set_draw_blend_mode()). A texture keeps no blend of its own: the form SDL uses
+        ///        follows from its alpha_mode (painter.md §2.8, R49). Default: @c blend.
+        blend_mode blend{blend_mode::blend};
         /// @brief How draw_line() draws: solid, dashed or dotted (set_line_style()). Default:
         ///        solid.
         line_style line;

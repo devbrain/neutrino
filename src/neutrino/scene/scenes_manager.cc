@@ -379,8 +379,9 @@ namespace neutrino {
     void scenes_manager::render() {
         // The target is cleared here, once, to black — unless the bottom scene's canvas will
         // cover it with an opaque copy (R44). Then it is cleared only if nothing ends up
-        // covering it, or if that scene's own target could not be made and its render()
-        // draws straight into the target: until the copies, nothing else is drawn there.
+        // covering it, or if that scene has no layers, its canvas could not be made and its
+        // render() draws straight into the target: until the copies, nothing else is drawn
+        // there.
         auto& r = get_renderer();
         bool cleared = false;
         const auto clear_once = [&] {
@@ -428,10 +429,13 @@ namespace neutrino {
                 {
                     // The scene draws onto its canvas, or into its layers, which its compositor
                     // then combines onto the canvas; the free push_layer / pop_layer reach them
-                    // meanwhile. The bottom scene may draw straight into the target (R44). If
+                    // meanwhile. The bottom scene may draw straight into the target (R44), and
+                    // does if its canvas cannot be made: its picture is the first there. Any
+                    // other scene's failed canvas discards its drawing (painter.md §3.6). If
                     // render() or the compositor throws, the frame unwinds.
-                    const auto onto = i == index && p.direct ? detail::frame_target::bound_target
-                                                             : detail::frame_target::canvas;
+                    const auto onto = i != index ? detail::frame_target::canvas
+                                      : p.direct ? detail::frame_target::bound_target
+                                                 : detail::frame_target::canvas_or_bound_target;
                     detail::scene_frame frame(scene, below, onto);
                     if (i == index && frame.draws_into_target()) {
                         clear_once();          // its drawing lands in the target: clear it first

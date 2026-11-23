@@ -40,21 +40,17 @@ namespace neutrino::detail {
         }
     }
 
-    blend_mode premultiplied(blend_mode mode) noexcept {
-        switch (mode) {
-            case blend_mode::blend: return blend_mode::blend_premultiplied;
-            case blend_mode::add: return blend_mode::add_premultiplied;
-            default: return mode;              // none, mul, mod and the premultiplied ones
-        }
+    sdlpp::blend_mode premultiplied(blend_mode mode) noexcept { // sdlpp-ok: internal
+        return to_sdl_blend(mode, alpha_mode::premultiplied);
     }
 
-    blend_mode composite_blend(blend_mode mode, float opacity) noexcept {
+    sdlpp::blend_mode composite_blend(blend_mode mode, float opacity) noexcept { // sdlpp-ok: internal
         // SDL's mod (src × dst) ignores alpha, so it cannot fade. Below full opacity a mod
         // layer is drawn with mul (src × dst + dst × (1 − srcA)): with colour and alpha
         // scaled by the opacity o, an opaque pixel c gives dst × (1 − o + c × o), the tint
         // faded by o. A mod layer is cleared to opaque white, so its pixels are opaque.
         if (mode == blend_mode::mod && std::clamp(opacity, 0.0f, 1.0f) < 1.0f) {
-            return blend_mode::mul;
+            return sdlpp::blend_mode::mul; // sdlpp-ok: internal
         }
         return premultiplied(mode);
     }
@@ -63,7 +59,7 @@ namespace neutrino::detail {
         auto& native = t.native();
         const float opacity = std::clamp(s.opacity, 0.0f, 1.0f);
         const color mod{times(s.tint.r, opacity), times(s.tint.g, opacity), times(s.tint.b, opacity), 255};
-        return native.set_blend_mode(to_sdl_blend(composite_blend(s.blend, opacity))).has_value()
+        return native.set_blend_mode(composite_blend(s.blend, opacity)).has_value()
                && native.set_color_mod(mod).has_value()
                && native.set_alpha_mod(times(255, opacity)).has_value();
     }

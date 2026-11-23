@@ -1,5 +1,6 @@
 //
-// Tests for the internal layer stack (painter.md §3.4): declare, push and target, so far.
+// Tests for the internal layer stack (painter.md §3.4): declare, push and target, so far; a
+// layer whose texture cannot be made discards what is drawn into it (§3.6).
 //
 #include <doctest/doctest.h>
 
@@ -11,6 +12,7 @@
 #include "test_application.hh"
 #include "services/service_access.hh"
 #include "video/layer_stack.hh"
+#include "video/target_discard.hh"
 #include "video/target_geometry.hh"
 #include "video/texture_allocator.hh"
 
@@ -103,7 +105,7 @@ TEST_SUITE("neutrino::detail::layer_stack") {
         CHECK(require_texture_allocator().stats().held == held);
     }
 
-    TEST_CASE("a layer whose texture cannot be made is pushed with nothing bound, once") {
+    TEST_CASE("a layer whose texture cannot be made is pushed with nothing bound and discards, once") {
         test::test_application app("layer stack failed");
         layer_stack s(dim{4, 4});
         const layer_id id = s.declare(sized(dim{0, 8}));     // degenerate: kept, not replaced
@@ -114,9 +116,81 @@ TEST_SUITE("neutrino::detail::layer_stack") {
         CHECK(s.target(id) == nullptr);
         CHECK(bound() == before);
         CHECK(draw_failure_count() == failures + 1);
+        CHECK(detail::target_discards());                    // drawing into it does nothing
 
         CHECK_NOTHROW(s.push(id));                           // not retried on push
         CHECK(draw_failure_count() == failures + 1);
+        s.pop();
+        CHECK(detail::target_discards());                    // the first push is still current
+        s.pop();
+        CHECK_FALSE(detail::target_discards());
+    }
+
+    TEST_CASE("drawing into a failed layer leaves the target below it as it was") {
+        test::test_application app("layer stack failed draws");
+        auto below = texture::create(dim{4, 4}, texture_access::target);
+        REQUIRE(below.has_value());
+        auto red = texture::create(dim{4, 4}, texture_access::target);
+        REQUIRE(red.has_value());
+        red->fill(colors::red);
+        const auto binding = below->bind(colors::green);
+        layer_stack s(dim{4, 4});
+        const layer_id good = s.declare();
+        const layer_id failed = s.declare(sized(dim{0, 8}));
+        const auto failures = draw_failure_count();
+
+        s.push(failed);
+        draw_rect_fill(rect{0, 0, 4, 4}, colors::red);
+        draw_line(0, 0, 3, 3, colors::red);
+        draw_texture(*red);
+        s.push(good);                                        // a real layer above it draws
+        draw_rect_fill(rect{0, 0, 4, 4}, colors::blue);
+        CHECK_FALSE(detail::target_discards());
+        s.pop();
+        CHECK(detail::target_discards());                    // back on the failed layer
+        draw_rect_fill(rect{0, 0, 4, 4}, colors::red);
+        s.pop();
+
+        CHECK(draw_failure_count() == failures + 1);         // the refusal only: drawing is no failure
+        CHECK(pixel_is(*below, 1, 1, colors::green));
+        CHECK(pixel_is(*s.target(good), 1, 1, colors::blue));
+    }
+
+    TEST_CASE("a texture bound inside a failed layer is drawn into; the layer discards again after") {
+        test::test_application app("layer stack failed bind");
+        auto t = texture::create(dim{2, 2}, texture_access::target);
+        REQUIRE(t.has_value());
+        layer_stack s(dim{4, 4});
+        const layer_id failed = s.declare(sized(dim{0, 8}));
+        s.push(failed);
+        {
+            const auto binding = t->bind(colors::transparent);
+            CHECK_FALSE(detail::target_discards());
+            draw_rect_fill(rect{0, 0, 2, 2}, colors::red);
+            CHECK_THROWS_WITH(s.pop(), doctest::Contains("outlived"));   // the bind is still alive
+        }
+        CHECK(detail::target_discards());
+        t->compose([] { draw_point(0, 0, colors::blue); }, std::nullopt);
+        CHECK(detail::target_discards());
+        s.pop();
+        CHECK(pixel_is(*t, 1, 1, colors::red));
+        CHECK(pixel_is(*t, 0, 0, colors::blue));
+    }
+
+    TEST_CASE("a draw into a failed layer still checks its arguments and the scene") {
+        test::test_application app("layer stack failed checks");
+        auto t = texture::create(dim{2, 2}, texture_access::target);
+        REQUIRE(t.has_value());
+        layer_stack s(dim{4, 4});
+        const layer_id failed = s.declare(sized(dim{0, 8}));
+        s.push(failed);
+        CHECK_THROWS_WITH(draw_texture(*t, rect{0, 0, 2, 2}, {.flip = flip_mode::diagonal}),
+                          doctest::Contains("diagonal"));
+        s.pop();
+
+        app.leave_scene();
+        const detail::discard_scope discarding;
+        CHECK_THROWS_WITH(draw_point(0, 0), doctest::Contains("no scene current"));
     }
 
     TEST_CASE("push and target reject another stack's layer and an empty id") {
