@@ -96,12 +96,12 @@ namespace {
                 // handle_action (once per event): a per-event pressed() check posts one
                 // request per queued event, and popping the last scene more than once
                 // trips the scenes_manager's non-empty enforcement.
-                if (!m_quitting && in.pressed(hotkey{neutrino::key::escape})) {
+                if (!m_quitting && in.pressed(neutrino::key::escape)) {
                     m_quitting = true;
                     pop_scene();
                     return;
                 }
-                if (in.pressed(hotkey{neutrino::key::r})) {
+                if (in.pressed(neutrino::key::r)) {
                     reset_camera();
                 }
 

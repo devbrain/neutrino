@@ -179,4 +179,41 @@ TEST_SUITE("neutrino::input input_snapshot") {
         CHECK(in.gamepad_axis(0, sdlpp::gamepad_axis::leftx) == 0.0f);
         CHECK(in.wheel() == 0);
     }
+
+    TEST_CASE("direct key and mouse-button queries ignore modifiers; the matchers do not") {
+        input_snapshot in;
+        in.set_key(key::a, down_edge());
+        in.set_key(key::b, up_edge());
+        in.set_mouse(mouse_button::left, down_edge());
+        in.set_mouse(mouse_button::right, up_edge());
+        in.set_mouse(mouse_button::middle, button_state{false, false, true});   // held, no edge
+
+        SUBCASE("each query reads the button's own state") {
+            CHECK(in.pressed(mouse_button::left));
+            CHECK(in.held(mouse_button::left));
+            CHECK_FALSE(in.released(mouse_button::left));
+            CHECK(in.released(mouse_button::right));
+            CHECK_FALSE(in.held(mouse_button::right));
+            CHECK(in.held(mouse_button::middle));
+            CHECK_FALSE(in.pressed(mouse_button::middle));
+            CHECK_FALSE(in.pressed(mouse_button::x1));
+            CHECK(in.released(key::b));
+        }
+
+        SUBCASE("with ctrl held") {
+            in.set_modifiers(mods::ctrl);
+            CHECK(in.pressed(key::a));                       // direct: modifiers ignored
+            CHECK_FALSE(in.pressed(hotkey{key::a}));         // matcher: none may be held
+            CHECK(in.pressed(mouse_button::left));
+            CHECK_FALSE(in.pressed(mouse_click{mouse_button::left}));
+            CHECK(in.pressed(mouse_click{mods::ctrl, mouse_button::left}));
+        }
+
+        SUBCASE("a later substep keeps held, drops the edges") {
+            const input_snapshot rest = in.without_edges();
+            CHECK_FALSE(rest.pressed(mouse_button::left));
+            CHECK(rest.held(mouse_button::left));
+            CHECK_FALSE(rest.released(mouse_button::right));
+        }
+    }
 }

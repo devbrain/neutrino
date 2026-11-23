@@ -31,7 +31,7 @@ Here is the complete source code for Step 1, located in `tutorials/01_window_and
 
 ```cpp
 #include <neutrino/application.hh>
-#include <neutrino/input/hotkey.hh>
+#include <neutrino/input/keys.hh>
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/draw.hh>
@@ -73,7 +73,7 @@ namespace {
             m_sim_ticks++;
             m_sim_time += dt.count();
 
-            if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
+            if (in.pressed(neutrino::key::escape)) {
                 std::cout << "[Tutorial 01] Escape pressed - popping scene to exit\n";
                 neutrino::pop_scene();
             }
@@ -194,7 +194,7 @@ runs no substeps; see [Input](../concepts/input.md#input-across-simulation-subst
 ### 3. Transitions and quitting
 
 ```cpp
-if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
+if (in.pressed(neutrino::key::escape)) {
     neutrino::pop_scene();
 }
 ```

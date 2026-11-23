@@ -81,7 +81,8 @@ namespace neutrino {
     ///   that key's own modifier bit when matching.
     class NEUTRINO_EXPORT hotkey {
     public:
-        /// @brief Match a physical key by scancode (layout-independent position), no modifier required.
+        /// @brief Match a physical key by scancode (layout-independent position), only while no
+        ///        modifier is held. To ignore modifiers, query the snapshot: @c in.pressed(key).
         hotkey(neutrino::key key)
             : m_mods(modifier::none), m_key(key) {}
 
@@ -89,7 +90,8 @@ namespace neutrino {
         hotkey(modifier mods, neutrino::key key)
             : m_mods(mods), m_key(key) {}
 
-        /// @brief Match a logical key by keycode (current layout); resolved to a scancode at query time.
+        /// @brief Match a logical key by keycode (current layout), only while no modifier is held;
+        ///        resolved to a scancode at query time.
         hotkey(neutrino::keycode key)
             : m_mods(modifier::none), m_key(key) {}
 

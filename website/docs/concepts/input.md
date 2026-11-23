@@ -84,14 +84,17 @@ void my_scene::fixed_update(neutrino::sim_duration dt, const neutrino::input_sna
     if (in.pointer().on_screen) {
         m_cursor = in.pointer().render;
     }
-    if (in.mouse(neutrino::mouse_button::left).pressed) {
+    if (in.pressed(neutrino::mouse_button::left)) {
         fire();                                   // only on a delivered press edge
     }
-    if (in.mouse(neutrino::mouse_button::right).held) {
+    if (in.held(neutrino::mouse_button::right)) {
         aim();                                    // every step the button is down
     }
 }
 ```
+
+`in.mouse(button)` returns the button's whole `button_state` (`pressed`, `released`, `held`)
+when you need more than one of them.
 
 The snapshot stores input state by value. You can construct one in a test and drive a
 scene with synthetic input:
@@ -201,6 +204,7 @@ Query keys, mouse buttons, wheel movement, and gamepad buttons or axes from the 
 ```cpp
 if (in.pressed(neutrino::key::space)) { fire(); }      // edge
 if (in.held(neutrino::key::a))        { move_left(); } // state
+if (in.released(neutrino::mouse_button::left)) { drop(); }
 
 // Gamepad slot 0 is Player 1.
 if (in.gamepad_button_state(0, neutrino::pad_button::south).pressed) { jump(); }
@@ -243,7 +247,8 @@ or resolved game actions for tests and replay data that must be independent of S
 Modifier matching is strict:
 
 - `hotkey{scancode::space}` requires no modifiers. Direct `in.pressed(scancode::space)`
-  ignores modifiers.
+  ignores modifiers. The same holds for the mouse: `mouse_click{mouse_button::left}`
+  requires no modifiers, and `in.pressed(mouse_button::left)` ignores them.
 - `modifier::ctrl` accepts either Ctrl key, but rejects additional Shift, Alt, or GUI modifiers.
 - `modifier::lctrl` requires left Ctrl and rejects right Ctrl, including when both are held.
 

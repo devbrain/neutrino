@@ -16,7 +16,8 @@ namespace neutrino {
     /// groups are held (same strict matching as @ref hotkey).
     class NEUTRINO_EXPORT mouse_click {
     public:
-        /// @brief Match @p button with no modifier requirement.
+        /// @brief Match @p button only while no modifier is held, as @c hotkey(key) does. To
+        ///        ignore modifiers, query the snapshot directly: @c in.pressed(button).
         mouse_click(neutrino::mouse_button button)
             : m_mods(modifier::none), m_button(button) {}
 

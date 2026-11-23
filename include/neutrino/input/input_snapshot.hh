@@ -73,12 +73,18 @@ namespace neutrino {
             [[nodiscard]] button_state mouse(neutrino::mouse_button b) const noexcept;
             [[nodiscard]] int wheel() const noexcept { return m_wheel; }
 
+            // Direct mouse conveniences: modifiers are ignored, as for keys; a mouse_click
+            // matches them.
+            [[nodiscard]] bool pressed(neutrino::mouse_button b) const noexcept { return mouse(b).pressed; }
+            [[nodiscard]] bool held(neutrino::mouse_button b) const noexcept { return mouse(b).held; }
+            [[nodiscard]] bool released(neutrino::mouse_button b) const noexcept { return mouse(b).released; }
+
             // --- Keyboard ---
             [[nodiscard]] button_state key(neutrino::key scan) const noexcept;
             [[nodiscard]] button_state key(neutrino::keycode code) const noexcept;
             [[nodiscard]] modifier modifiers() const noexcept { return m_modifiers; }
 
-            // Direct keyboard conveniences
+            // Direct keyboard conveniences: modifiers are ignored; a hotkey matches them.
             [[nodiscard]] bool pressed(neutrino::key scan) const noexcept { return key(scan).pressed; }
             [[nodiscard]] bool held(neutrino::key scan) const noexcept { return key(scan).held; }
             [[nodiscard]] bool released(neutrino::key scan) const noexcept { return key(scan).released; }

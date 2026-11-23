@@ -16,7 +16,7 @@ namespace luxor {
     void play_scene::fixed_update(neutrino::sim_duration, const neutrino::input_snapshot& in) {
 
         // Press Escape to pop the scene and cleanly exit.
-        if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
+        if (in.pressed(neutrino::key::escape)) {
             LOG_INFO("Escape pressed - exiting");
             neutrino::pop_scene();
         }

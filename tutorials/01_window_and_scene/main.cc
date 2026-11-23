@@ -10,7 +10,7 @@
 //
 
 #include <neutrino/application.hh>
-#include <neutrino/input/hotkey.hh>
+#include <neutrino/input/keys.hh>
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/draw.hh>
@@ -72,7 +72,7 @@ namespace {
             m_sim_time += dt.count();
 
             // Press Escape to pop the scene and cleanly exit the application.
-            if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
+            if (in.pressed(neutrino::key::escape)) {
                 std::cout << "[Tutorial 01] Escape pressed - popping scene to exit\n";
                 neutrino::pop_scene();
             }

@@ -34,7 +34,7 @@ Here is the complete source code for Step 2, located in `tutorials/02_one_sprite
 
 ```cpp
 #include <neutrino/application.hh>
-#include <neutrino/input/hotkey.hh>
+#include <neutrino/input/keys.hh>
 #include <neutrino/scene/base_scene.hh>
 #include <neutrino/scene/scene_transitions.hh>
 #include <neutrino/video/draw.hh>
@@ -128,7 +128,7 @@ namespace {
         }
 
         void fixed_update(neutrino::sim_duration, const neutrino::input_snapshot& in) override {
-            if (in.pressed(neutrino::hotkey{neutrino::key::escape})) {
+            if (in.pressed(neutrino::key::escape)) {
                 std::cout << "[Tutorial 02] Escape pressed - exiting\n";
                 neutrino::pop_scene();
             }
