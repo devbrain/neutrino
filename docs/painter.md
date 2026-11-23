@@ -148,7 +148,7 @@ nuts and bolts — full state, inspection, rendering into a texture (§2.4, §2.
 | `render_size()`, `pixel_snap`, `draw_failure_count()` | unchanged |
 | `base_scene::render()` | draws onto the scene's canvas, which is drawn into the window |
 | `sprite_batch` | unchanged; flushes onto the current layer, or the canvas |
-| simplex | unchanged; its canvas is the simplex scene's canvas |
+| simplex | unchanged: its picture stays its own texture, which the simplex scene copies onto its canvas; simplex programs have no layers (R47) |
 
 ### 2.3 Defaults
 
@@ -394,7 +394,7 @@ sees no canvas and sets nothing about how its scene is drawn:
   onto it after `render()` (§2.9). Drawing with no layer pushed goes to the base layer.
 - **To fade, shake or turn a scene**, the scene does it to its own layers:
   `style_of(m_menu).opacity = t`.
-- **To keep a picture between frames** (simplex), a scene declares an on-demand layer and
+- **To keep a picture between frames**, a scene declares an on-demand layer and
   draws into it; `needs_redraw(id)` says when to draw it in full.
 
 Internally the picture is the scene's canvas (`detail::canvas`, §3.1): at the pixel size
@@ -598,7 +598,9 @@ class play_scene : public neutrino::base_scene {
   manager keeps it until the transition ends, and a wrapping compositor draws it with the
   new scene (§2.9).
 - **Simplex is a scene.** `application_adapter::create_initial_scene()` installs a
-  `simplex_scene`; its persistent canvas becomes that scene's on-demand canvas.
+  `simplex_scene`. Its persistent picture stays the adapter's texture, drawn in
+  `on_create` and every fixed tick; the scene's `render()` copies it onto the scene's
+  canvas. Simplex programs have no layers (R47).
 - **A scene rendered outside the scene manager** — a test calling `scene.render()`
   directly — draws with no scene context: onto the bound target, as today. That works for
   scenes without declared layers; pushing a layer there fails ENFORCE, so a layered scene
@@ -979,8 +981,8 @@ decided in one place and tested without a scene manager.
 | baked results (`compose()`), streaming textures, any other game texture | `texture::create`, `from_image` | the game | no | its owner re-bakes or re-creates it |
 | sprite and glyph atlas pages | the texture registry (`adopt`, `from_image`) | the registry | no | re-uploaded or rebuilt |
 
-The simplex canvas is a game texture today. It becomes the simplex scene's on-demand canvas
-([`render_model.md`](render_model.md) §5.6), and then comes from the allocator.
+The simplex picture is a game texture and stays one
+([`render_model.md`](render_model.md) R47).
 
 **The renderer.** Every texture, the allocator's included, is made on the application's
 renderer. The allocator creates through `texture::create`, which uses it, and takes no
@@ -1152,8 +1154,12 @@ before drawing into a layer or combining it.
   layer that was never drawn takes the new size when the painter acquires it.
 - **Why the old texture is not pooled:** pooling it would keep a set of textures for every
   size the window has had.
-- **The pooled textures of the old render size are destroyed too**
-  (`drop_pooled(old_size)`): those of a pause menu closed before the resize, for example.
+- **The pooled textures of the window's old pixel size are destroyed too**
+  (`drop_pooled(old_size)`), by the application after the first frame at the new size:
+  those of a pause menu closed before the resize, and those given back during that frame
+  by a scene popped or hidden before it was drawn at the new size. The pixel size, not
+  `render_size()`: canvases and layers take the window's pixel size (R42), which changes
+  under a fixed logical size too.
   *Why:* they would be reused only if the window came back to exactly that size. Pooled
   textures of other sizes stay.
 
@@ -1170,7 +1176,7 @@ before drawing into a layer or combining it.
 **Leaving the pool.** A pooled texture is reused by `acquire` or `resize` for its size, or
 destroyed:
 
-- when the render size changes and it has the old render size (above);
+- after the first frame at a new window pixel size, if it has the old one (above);
 - when the system is low on memory (below);
 - on `trim_texture_pool()`;
 - on a device reset;
@@ -1386,8 +1392,8 @@ changes (R45).
 **Resizing waits for the next frame.** `begin_frame()` compares sizes, so a scene's layers
 are resized when it is next drawn. *Why:* the scene manager's resize notice reaches only
 the top scene and the pinned scene; a scene further down, hidden or not, takes the new
-size when it is drawn again. The pooled textures of the old render size are dropped once,
-by the application (`drop_pooled`, §3.3), not by each stack.
+size when it is drawn again. The pooled textures of the window's old pixel size are
+dropped once, by the application (`drop_pooled`, §3.3), not by each stack.
 
 **When a layer holds a texture.**
 
@@ -1556,7 +1562,7 @@ not (five 1080p layers ≈ 30 ms); the tests use small sizes.
 | `draw.hh` / `draw.cc`: immediate drawing; colour and blend are global SDL_Renderer state | the same calls on the one painter; its state saved per scene |
 | `application::on_render`: clear → `render_scene()` → present | each scene's context in use during its `render()`, its compositor after it, canvases into the window |
 | `scenes_manager`: one stack, the pinned scene and `passes_input` (RM10, partly done); `on_pause` only to the scene directly below | a scene context per scene; pausing by change of state |
-| simplex adapter: a persistent canvas texture bound around callbacks | the simplex scene's on-demand canvas |
+| simplex adapter: a persistent canvas texture bound around callbacks | unchanged (R47) |
 | `texture` (`target` access), `bind()` / `compose()`, `renderer_target_scope` | unchanged; `bind()` cooperates with the layer stack |
 | render targets created wherever they are needed; nothing reuses them | layer targets and canvases from the internal `texture_allocator` (§3.3) |
 | `blend_mode`: neutrino's own enum, mapped to SDL's internally (R34); the presets | painter state; premultiplied forms when combining; `custom_blend` |
@@ -1673,8 +1679,7 @@ painter, so there are no scene painters to build.
    layered test scene renders as specified.
 3. **Scenes' pictures.** Each scene's canvas (internal, R45) from the allocator, copied
    into the window in stack order with the blend its flags give; the compositor draws onto
-   it; the simplex scene's persistent picture on an on-demand layer; the pooled textures
-   of the old render size dropped on a resize; `below()`; `screenshot()` in place of
+   it; the pooled textures of the window's old pixel size dropped on a resize; `below()`; `screenshot()` in place of
    `capture_frame()` (R46); R41: the canvas's texture taken when first needed, the base
    layer's texture as the canvas, with a test switch, and the every-frame canvases of
    hidden scenes given back. *Done so far (2026-11-22):* `detail::canvas` (§3.1), owned by
@@ -1688,8 +1693,11 @@ painter, so there are no scene painters to build.
    window (R44), the window's clear skipped under a covering canvas. `screenshot()` (R46).
    Tests in `test/video/test_canvas.cc`, `test/scene/test_scene_frame.cc`,
    `test/scene/test_compositor.cc` and the layer presentation case in
-   `test/video/test_layer_stack.cc`. Not yet: the simplex scene on an on-demand layer, and
-   the old render size's pooled textures dropped. *Exit:* tutorials, demos, simplex and
+   `test/video/test_layer_stack.cc`. *Done (2026-11-23):* the old size's pooled textures
+   dropped after the first frame at a new window pixel size (`application::on_render`;
+   tests in `test/video/test_texture_allocator.cc`). Dropped from the step (R47): the
+   simplex picture on an on-demand layer. Not yet: the exit check in a real window.
+   *Exit:* tutorials, demos, simplex and
    the games unchanged (±1 on blended pixels in overlays).
 4. **Painter state.** The painter's own `painter_state` (colour, blend, line style, clip),
    saved into each scene's context between its frames; `get_painter_state`,

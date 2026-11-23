@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include <neutrino/application.hh>
 #include <neutrino/input/input_snapshot.hh>
@@ -19,6 +20,7 @@
 #include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
 #include "video/text/fonts_manager.hh"
+#include "video/target_geometry.hh"
 #include "video/texture_allocator.hh"
 #include "services/application_scoped.hh"
 #include "services/service_access.hh"
@@ -37,6 +39,21 @@ namespace neutrino {
                 case scale_mode::stretch: return sdlpp::logical_presentation::stretch;
             }
             return sdlpp::logical_presentation::letterbox;
+        }
+
+        // The end of a frame drawn at @p now window pixels; @p last is the previous frame's.
+        // The pooled textures of an old size would be reused only if the window came back to
+        // exactly that size (painter.md §3.3). They are dropped after the first frame at the
+        // new size, so the textures given back during it go too: those of a scene popped or
+        // hidden before it was drawn at the new size. Pooled textures of other sizes stay.
+        void drop_old_window_size(dim& last, dim now) {
+            const dim previous = std::exchange(last, now);
+            if (previous == now || previous.empty()) {
+                return;
+            }
+            if (auto* allocator = maybe_texture_allocator()) {
+                allocator->drop_pooled(previous);
+            }
         }
     }
 
@@ -63,6 +80,10 @@ namespace neutrino {
         // that leaves the render space unchanged (e.g. a logical-mode resize) does
         // not spuriously re-fire the hook.
         dim m_last_render_size{0, 0};
+        // The window's pixel size in the last frame: what the canvases and the layers without
+        // a size of their own take (R42). A frame at another size drops the pooled textures of
+        // this one (painter.md §3.3). Zero before the first frame.
+        dim m_last_frame_pixels{0, 0};
         // Fixed-step accumulator: unconsumed real time (seconds) carried between frames.
         // on_update adds the clamped frame delta and drains it in whole `fixed.period` ticks.
         float m_accum = 0.0f;
@@ -345,6 +366,8 @@ namespace neutrino {
         if (auto* allocator = maybe_texture_allocator()) {
             allocator->begin_frame();
         }
+        // Read while the window is bound: the size the canvases and layers mirror this frame.
+        const dim window_pixels = detail::bound_target_geometry().size;
         r.set_draw_color(sdlpp::colors::black);
         // The scene manager clears the window itself, unless a full-screen canvas covers it
         // (R44); without it running, the clear is here.
@@ -353,6 +376,7 @@ namespace neutrino {
         }
         render_scene();
         r.present();
+        drop_old_window_size(m_pimpl->m_last_frame_pixels, window_pixels);
 
         // End of frame: clear transient gamepad state (pressed/released) at
         // the same point where sdlpp clears keyboard/mouse transients.

@@ -7,6 +7,7 @@
 //
 #include <doctest/doctest.h>
 
+#include <neutrino/scene/base_scene.hh>
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/texture.hh>
@@ -16,6 +17,7 @@
 #include "scene/scenes_manager.hh"
 #include "services/service_access.hh"
 #include "services/service_locator.hh"
+#include "video/target_geometry.hh"
 #include "video/texture_allocator.hh"
 #include "video/texture_table.hh"
 
@@ -577,6 +579,58 @@ TEST_SUITE("neutrino::detail::texture_allocator") {
         CHECK(a.stats().created == 2);
         CHECK(a.stats().destroyed == 1);
         inv.check({{h, colors::red}});
+    }
+
+    TEST_CASE("the first frame at a new window size drops the pooled textures of the old size") {
+        test::test_application app("allocator window resize");
+        auto& a = require_texture_allocator();
+        app.iterate();                                             // a frame at the first size
+        const dim old_size = neutrino::detail::bound_target_geometry().size;
+        REQUIRE(old_size == dim{100, 100});                        // the harness's window
+        {
+            auto at_old = a.acquire(texture_spec{old_size, colors::red});
+            auto other = a.acquire(texture_spec{MEDIUM, colors::red});
+        }
+        REQUIRE(a.pooled_count(old_size) == 1);
+        REQUIRE(a.pooled_count(MEDIUM) == 1);
+
+        app.iterate();                                             // the same size: kept
+        CHECK(a.pooled_count(old_size) == 1);
+
+        REQUIRE(SDL_SetWindowSize(get_window().get(), 120, 90));
+        REQUIRE(neutrino::detail::bound_target_geometry().size == dim{120, 90});
+        const auto destroyed = a.stats().destroyed;
+        app.iterate();                                             // the first frame at 120x90
+        CHECK(a.pooled_count(old_size) == 0);
+        CHECK(a.pooled_count(MEDIUM) == 1);                        // other sizes stay
+        CHECK(a.stats().destroyed == destroyed + 1);
+    }
+
+    TEST_CASE("a texture given back in the first frame at a new window size is dropped too") {
+        // A scene that lets go of an old-size texture while it is drawn: what a scene popped
+        // or hidden before it was drawn at the new size does.
+        struct releasing_scene final : base_scene {
+            std::optional <texture_handle>* held = nullptr;
+            void fixed_update(sim_duration, const input_snapshot&) override {}
+            void render() override { held->reset(); }
+        };
+        test::test_application app("allocator resize give back");
+        auto& a = require_texture_allocator();
+        app.iterate();
+        const dim old_size = neutrino::detail::bound_target_geometry().size;
+        std::optional <texture_handle> held = a.acquire(texture_spec{old_size, colors::red});
+        REQUIRE(a.pooled_count(old_size) == 0);
+
+        auto& mgr = service_locator::instance().get_scenes_manager();
+        mgr.finish();
+        auto scene = std::make_unique <releasing_scene>();
+        scene->held = &held;
+        mgr.push_scene_sync(std::move(scene));
+
+        REQUIRE(SDL_SetWindowSize(get_window().get(), 120, 90));
+        app.iterate();
+        CHECK_FALSE(held.has_value());
+        CHECK(a.pooled_count(old_size) == 0);                      // given back, then dropped
     }
 
     TEST_CASE("low memory trims the pool at the start of the next frame") {

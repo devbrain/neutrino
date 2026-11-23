@@ -231,7 +231,7 @@ Agreed 2026-11-10 (R27), two rules:
 | `texture::bind()`, `renderer_target_scope` (was `target_scope`), `compose()`, `draw_texture*` | unchanged but for the scope's name; inside a layer, `bind()` redirects drawing into the texture and the layer is current again when the scope ends |
 | `render_size()`, `pixel_snap`, `draw_failure_count()` | unchanged; `capture_frame()` is replaced by `screenshot()` (R46) |
 | `base_scene::render()` | draws onto the scene's canvas, which is drawn into the window |
-| simplex | unchanged; its canvas is the simplex scene's on-demand canvas (§5.6) |
+| simplex | unchanged; its picture stays its own texture, copied onto the simplex scene's canvas (R47) |
 
 The defaults that make it true:
 
@@ -411,7 +411,7 @@ Each scene knows which layers it uses (R18, §5.6): `declare_layer(settings)`, a
 
 Uses: a HUD redrawn only when the score changes; a background drawn once; accumulation
 effects (trails: each frame draws a translucent rectangle, then the new positions); a
-picture that persists, as simplex's does (an on-demand layer, R45). Costs and caveats:
+picture that persists (an on-demand layer, R45). Costs and caveats:
 
 - **It can need drawing in full again.** `needs_redraw(id)` tells the owner to draw all of
   it (R13): `if (changed || p.needs_redraw(hud))`. It is true in the layer's first frame,
@@ -718,10 +718,9 @@ nothing else is needed.
 - **A scene with no declared layers** draws straight onto its canvas (R23). Existing
   scenes draw unchanged.
 - **Simplex is not a special case.** `application_adapter::create_initial_scene()` already
-  installs a `simplex_scene`, and its canvas is a persistent target combined with
-  `blend_mode::none` (`application_adapter.cc:86–90`) — a scene with no layers and an
-  on-demand, opaque canvas. It becomes the simplex scene's canvas; the simplex API does not
-  change.
+  installs a `simplex_scene`: a scene with no layers whose `render()` copies the adapter's
+  persistent picture, an opaque texture, onto the scene's canvas. The picture stays the
+  adapter's, and simplex programs have no layers (R47); the simplex API does not change.
 
 **Effects on the scenes below.** A scene's compositor cannot reach the layers of other
 scenes; they are private. It can read their results: `below()` returns the canvases of the
@@ -1090,7 +1089,7 @@ Drawing stays immediate, so the audit of the deferred draft shrinks to readback 
 | `texture::to_image()` (`src/neutrino/video/texture.cc`), `screenshot()` | GPU → CPU readback | `to_image()` unchanged; `screenshot()` replaces `capture_frame()` (R46) |
 | KE `tests/enemies.cc:172` | `save_bmp(capture_frame())` | draws the scene into a texture with `compose()` and saves `to_image()`: the scene is not on the stack (R46) |
 | `texture::compose()` / `bind()` (KE `assets/backdrop.cc`, tutorial `04_render_textures`) | bake into a target | unchanged (R37: no explicit painters) |
-| simplex adapter (`application_adapter.cc`, `canvas.bind()`) | persistent canvas target | becomes the simplex scene's on-demand canvas (§5.6) |
+| simplex adapter (`application_adapter.cc`, `canvas.bind()`) | persistent canvas target | unchanged (R47) |
 | brix `view.cc:177` `SDL_RenderReadPixels`, `game_board_painter.cc` `SDL_SetRenderTarget` | raw SDL, outside neutrino | a layer or a `compose()`d texture, and a mesh (§7.1) |
 
 No game in this repository calls the SDL renderer directly for drawing.
@@ -1817,7 +1816,8 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
     `hides_below`, `blend` without, `blend` for every scene in a transparent window. The
     flags are the only source; nothing the game writes changes it. Planned
     `canvas_composite()`, `set_canvas_redraw()`, `canvas_needs_redraw()` and `canvas()`
-    are dropped; a scene that keeps its picture (simplex) declares an on-demand layer.
+    are dropped; a scene that keeps its picture declares an on-demand layer (simplex
+    keeps its own texture: R47).
   - **The base layer is internal** (amends R31): drawing with no layer pushed goes to it,
     it is drawn as it is, and there is no `base_layer()`. A compositor of the scene's own
     reaches it as `layers().front()`; drawing that must move or fade goes on a declared
@@ -1859,6 +1859,22 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
   Considered: keeping `capture_frame()` as a low-level readback beside it (two ways to
   read pixels, one of them a trap); a screenshot request answered at the end of the next
   frame (no extra draw, but a callback where a value will do).
+
+- **R47 — Simplex keeps its own picture; simplex programs have no layers** (2026-11-23;
+  amends R45 and §5.6). The simplex picture stays the adapter's texture, at the program's
+  own pixel size, drawn in `on_create` and every fixed tick; the simplex scene's
+  `render()` copies it onto the scene's canvas, as it does today. RM1 step 3's "the
+  simplex scene's persistent picture on an on-demand layer" is dropped. Simplex exposes no
+  layers to its programs. If it ever offers more, it is at most the default compositor's
+  settings, for fades and the like; that is not planned.
+
+  *Why:* simplex is for rapid development, and layers are machinery its programs do not
+  need. Moving the picture onto an on-demand layer would also mean drawing in `render()`
+  instead of each fixed tick, or pushing a layer outside `render()`, where pushes are
+  refused. Either would change simplex or the layer rules for no gain to its programs.
+  After a device reset the picture is lost like any game texture (RM6), as it would be on
+  a layer, which simplex could not redraw either. Considered: an internal on-demand layer
+  at the program's size, so a later fade would be its `layer_style`.
 
 **Proposed, not yet agreed:**
 
@@ -1991,8 +2007,8 @@ RM8 Nuklear), so references from `font_plan.md` and `sprite_layer_plan.md` stay 
      (blend, opacity, tint, flat transform, source), the alpha rules of §5.4.1, inspection
      (`layers()`, `info()`, `layer_texture()`, `get_painter_stats()`).
   3. *Scenes' pictures* — each scene's canvas (internal, R45) from the allocator, copied
-     into the window in stack order with the blend its flags give; the simplex scene's
-     persistent picture on an on-demand layer; `below()`; `screenshot()` (R46).
+     into the window in stack order with the blend its flags give; `below()`;
+     `screenshot()` (R46).
   4. *Painter state* — the painter's own `painter_state` (colour, blend, line style,
      clip), saved into each scene's context between its frames; `draw.hh` reads it;
      outside a scene, the bound target or the window, as today; `custom_blend`. Every
