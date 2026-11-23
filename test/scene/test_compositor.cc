@@ -1258,4 +1258,41 @@ TEST_SUITE("neutrino::failed targets") {
         CHECK_THROWS_WITH(throwing(), doctest::Contains("render failed"));
         CHECK_FALSE(detail::target_discards());    // the aborted frame put it back
     }
+
+    TEST_CASE("a frame starts with nothing left current: a discard left by an out-of-order scope is reset") {
+        // The overlay's canvas cannot be made, so it discards; a texture it binds there and
+        // keeps past the frame puts the discard back when it ends, after the frame. Without
+        // the check the bottom scene's next frame would be thrown away.
+        test::test_application app("left current");
+        scenes_manager& mgr = empty_manager();
+        texture out = make_output(dim{8, 8});
+        const renderer_target_scope binding = out.bind();
+        auto scratch = texture::create(dim{2, 2}, texture_access::target);
+        REQUIRE(scratch.has_value());
+        std::optional <renderer_target_scope> kept;
+        auto overlay = std::make_unique <layer_scene>(scene_flags::none);
+        overlay->draw = [&] {
+            if (!kept) {
+                kept.emplace(scratch->bind());     // held past the frame
+            }
+        };
+        mgr.push_scene_sync(std::make_unique <plain_scene>(RED, scene_flags::hides_below));
+        layer_scene* top = overlay.get();
+        mgr.push_scene_sync(std::move(overlay));
+        {
+            const refusing_textures refusing;
+            mgr.render();
+        }
+        top->draw = nullptr;
+        kept.reset();                              // out of order: the discard is back
+        REQUIRE(detail::target_discards());
+
+        const auto failures = draw_failure_count();
+        out.fill(colors::black);
+        mgr.render();
+        CHECK(pixel(out, 1, 1) == RED);            // drawn: the frame started clean
+        CHECK(draw_failure_count() == failures + 1);
+        CHECK_FALSE(detail::target_discards());
+        mgr.finish();
+    }
 }

@@ -491,4 +491,26 @@ TEST_SUITE("neutrino::detail::painter_context") {
         CHECK_FALSE(detail::scene_frame::rendering());
         draw_point(0, 0);                                  // the harness's scene is current
     }
+
+    TEST_CASE("a frame boundary resets what is left current, counted once for each") {
+        using detail::painter_context;
+        test::test_application app("painter context idle");
+        scenes_manager& mgr = service_locator::instance().get_scenes_manager();
+        mgr.finish();
+        {
+            painter_context& c = painter_context::instance();
+            detail::painter_state_stack* const scene = c.scene;
+            const auto failures = draw_failure_count();
+            c.discards = true;
+            c.frame = reinterpret_cast <detail::scene_frame*>(&app);
+            mgr.render();                                  // no scene: the checks only
+            CHECK_FALSE(c.discards);
+            CHECK(c.frame == nullptr);
+            CHECK(c.scene == scene);                       // the scene is not the check's
+            CHECK(draw_failure_count() == failures + 2);
+
+            mgr.render();                                  // nothing left: nothing counted
+            CHECK(draw_failure_count() == failures + 2);
+        }
+    }
 }

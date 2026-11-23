@@ -46,6 +46,18 @@ namespace neutrino::detail {
         [[nodiscard]] static painter_context* maybe() noexcept;
     };
 
+    /**
+     * @brief At a frame boundary, @p when ("before a frame", "after a frame"): no frame is
+     *        open and the bound target does not discard. What is left — a texture::bind()
+     *        scope that ended out of order, after the failed layer or canvas it began in — is
+     *        reset, logged (rate-limited) and counted in draw_failure_count(), and the frame
+     *        draws as usual (painter.md §3.1).
+     *
+     * The scene is not checked: one may be current around a frame — screenshot() from an
+     * update, the test harness's — and only the engine's scopes set it. Never throws.
+     */
+    void check_idle(const char* when) noexcept;
+
     // ---- the bound target -----------------------------------------------------------------------
 
     /// True while the bound target discards drawing; false with no application.

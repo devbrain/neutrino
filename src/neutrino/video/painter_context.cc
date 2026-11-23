@@ -4,6 +4,8 @@
 
 #include "video/painter_context.hh"
 
+#include <cstdint>
+
 #include <failsafe/logger.hh>
 
 #include <neutrino/video/globals.hh>
@@ -25,6 +27,18 @@ namespace neutrino::detail {
             return p != nullptr ? p->clip() : std::nullopt;
         }
 
+        // Logs @p what, left at a frame boundary: the first time, then every 1000th, so a game
+        // that leaves it every frame cannot flood the log.
+        void report_left(std::uint32_t& count, const char* what, const char* when) noexcept {
+            if (count++ % 1000 == 0) {
+                try {
+                    LOG_ERROR(what, when, "(painter.md §3.1); reset");
+                } catch (...) {
+                }
+            }
+            count_draw_failure();
+        }
+
         // Sets whether the bound target discards drawing; returns the value it had. Setting
         // false with no context made yet makes none: nothing discards then.
         bool set_target_discards(bool discards) {
@@ -42,6 +56,24 @@ namespace neutrino::detail {
 
     painter_context* painter_context::maybe() noexcept {
         return application_scoped <painter_context>::maybe();
+    }
+
+    void check_idle(const char* when) noexcept {
+        painter_context* c = painter_context::maybe();
+        if (c == nullptr) {
+            return;                           // nothing made yet, or the application has quit
+        }
+        static std::uint32_t s_frames_left = 0;
+        static std::uint32_t s_discards_left = 0;
+        if (c->frame != nullptr) {
+            c->frame = nullptr;
+            report_left(s_frames_left, "a scene's frame was still open", when);
+        }
+        if (c->discards) {
+            c->discards = false;
+            report_left(s_discards_left, "the bound target still discarded drawing — a texture::bind() "
+                        "scope ended after the failed layer or canvas it began in —", when);
+        }
     }
 
     bool target_discards() noexcept {

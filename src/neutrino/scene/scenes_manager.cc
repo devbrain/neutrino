@@ -22,6 +22,7 @@
 #include "video/canvas.hh"
 #include "video/composite_draw.hh"
 #include "video/layer_stack.hh"
+#include "video/painter_context.hh"
 #include "video/painter_state_stack.hh"
 
 namespace neutrino {
@@ -377,6 +378,15 @@ namespace neutrino {
     }
 
     void scenes_manager::render() {
+        // Nothing is left current from before the frame, nor after it (painter.md §3.1): what
+        // a scope that ended out of order left is reset, logged and counted.
+        struct idle_check {
+            idle_check() noexcept { detail::check_idle("before a frame"); }
+            ~idle_check() { detail::check_idle("after a frame"); }
+            idle_check(const idle_check&) = delete;
+            idle_check& operator=(const idle_check&) = delete;
+        } const idle;
+
         // The target is cleared here, once, to black — unless the bottom scene's canvas will
         // cover it with an opaque copy (R44). Then it is cleared only if nothing ends up
         // covering it, or if that scene has no layers, its canvas could not be made and its

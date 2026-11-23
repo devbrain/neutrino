@@ -868,6 +868,9 @@ canvases can be dumped with `texture::to_image()`.
   rotation.
 - **What only SDL can reject** — a failed call, a target that cannot be created — is logged,
   rate-limited per call site, and counted in `draw_failure_count()` and `painter_stats`.
+- **Left current at a frame boundary** — the bound target still discarding after a
+  `texture::bind()` scope ended out of order (§3.1) — is reset, logged (rate-limited) and
+  counted, and the frame draws.
 
 ### 2.16 Below the painter
 
@@ -930,6 +933,15 @@ struct painter_context {                     // one: application_scoped<painter_
   a scope that ends out of order cannot leave it set for the next application, as file
   statics did. Counters (`draw_failure_count()`, target switches) and settings
   (`pixel_snap`, the test switches) are not current state and stay where they are.
+- **The scene manager checks the context when each frame starts and ends**
+  (`check_idle()`, in `scenes_manager::render()`, so in `screenshot()` too): no frame is
+  open and the bound target does not discard. What is left — a `texture::bind()` scope
+  that ended after the failed layer or canvas it began in, between frames or later in the
+  frame — is reset, logged (rate-limited) and counted in `draw_failure_count()`, and the
+  frame draws as usual. *Why not fail:* the check cannot tell which scene left it, and
+  failing the frame would pop the top scene. Checked at the start too, because a scope
+  can end between frames, in an update. The scene is not checked: one may be current
+  around a frame (`screenshot()` from an update), and only the engine's scopes set it.
 - **`application_scoped<T>`** is the engine's lifetime for objects that live as long as the
   application (R38). `on_ready()` opens the application scope; `on_quit()` closes it right
   after the scenes and `teardown()`, before the application's own services and SDL, and
@@ -1817,7 +1829,8 @@ painter, so there are no scene painters to build.
    the bottom scene without layers keeps drawing into the window; tests in
    `test/video/test_layer_stack.cc` and `test/scene/test_compositor.cc` (suite
    `neutrino::failed targets`). What is current — the scene, the frame, the bound target —
-   moved from file statics into one `application_scoped` `detail::painter_context`.
+   moved from file statics into one `application_scoped` `detail::painter_context`,
+   checked when each frame starts and ends.
    Deferred: `custom_blend` (R48). *Exit:* every existing test pixel-identical, except
    where R49 changes pixels on purpose: translucent primitives drawn with the default
    blend, and translucent pixels of target textures drawn again or read back.
