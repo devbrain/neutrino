@@ -10,11 +10,12 @@
 
 #include "video/layer_stack.hh"
 #include "video/canvas.hh"
-
+#include "video/painter_state_stack.hh"
 
 namespace neutrino {
     base_scene::base_scene()
-        : m_canvas(std::make_unique<detail::canvas>()) {
+        : m_canvas(std::make_unique <detail::canvas>()),
+          m_painter_state_stack(std::make_unique <detail::painter_state_stack>()) {
     }
 
     base_scene::~base_scene() = default;

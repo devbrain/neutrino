@@ -20,13 +20,15 @@
  * throw. A failure inside SDL itself (a lost renderer, out of memory while
  * queuing) can't be handled per call, so it is logged -- rate-limited per call
  * site -- and counted in @ref draw_failure_count(). Getters return the value
- * directly and throw if the renderer cannot report it. Per-function briefs below
+ * directly. Per-function briefs below
  * do not restate this and instead describe *what* is drawn and what the
  * parameters mean.
  *
- * Overloads that take no @c color draw with the renderer's current draw
- * colour; overloads that take a trailing @c color set that colour for the single
- * call and restore the previous draw colour afterwards.
+ * Every draw call reads the current scene's painter state (painter_state.hh) and sets
+ * the SDL state it uses from it at the call: state set straight on the renderer does not
+ * reach it. With no scene current a draw fails ENFORCE (R48). Overloads that take no
+ * @c color draw with the state's draw colour; overloads that take a trailing @c color draw
+ * with that colour for the single call, and the state does not change.
  */
 
 #include <neutrino/video/globals.hh>
@@ -44,21 +46,24 @@
 #include <cstdint>
 
 namespace neutrino {
-    /// @brief Set the renderer's current draw colour, used by all subsequent
-    ///        colourless draw calls.
+    /// @brief Set the current scene's draw colour, used by its subsequent colourless draw
+    ///        calls.
     NEUTRINO_EXPORT void set_draw_color(const color& c);
-    /// @brief Read the renderer's current draw colour.
+    /// @brief Read the current scene's draw colour.
     NEUTRINO_EXPORT [[nodiscard]] color get_draw_color();
 
-    /// @brief Set the blend mode applied to subsequent draws (defaults to no blending).
+    /// @brief Set the blend mode applied to the current scene's subsequent draws without a
+    ///        texture (defaults to no blending). A value outside the enum is counted as a draw
+    ///        failure and leaves the mode as it was.
     NEUTRINO_EXPORT void set_draw_blend_mode(blend_mode mode = blend_mode::none);
-    /// @brief Read the renderer's current draw blend mode.
+    /// @brief Read the current scene's draw blend mode.
     NEUTRINO_EXPORT [[nodiscard]] blend_mode get_draw_blend_mode();
 
-    /// @brief Set the line style (solid, dashed or dotted, with its lengths) used by
-    ///        subsequent draw_line() calls.
+    /// @brief Set the current scene's line style (solid, dashed or dotted, with its lengths),
+    ///        used by its subsequent draw_line(), draw_line_thick(), draw_arrow() and
+    ///        draw_cross() calls.
     NEUTRINO_EXPORT void set_line_style(const line_style& style);
-    /// @brief Read the renderer's current line style.
+    /// @brief Read the current scene's line style.
     NEUTRINO_EXPORT [[nodiscard]] line_style get_line_style();
 
     /// @brief Total draw calls that SDL rejected since startup, plus the painter's render targets

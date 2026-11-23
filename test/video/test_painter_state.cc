@@ -4,13 +4,21 @@
 //
 #include <doctest/doctest.h>
 
+#include <SDL3/SDL.h>
+#include <sdlpp/events/events.hh>
+
+#include <neutrino/scene/base_scene.hh>
 #include <neutrino/video/draw.hh>
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/painter_state.hh>
 #include <neutrino/video/texture.hh>
 
+#include "scene/scenes_manager.hh"
+#include "services/service_locator.hh"
 #include "test_application.hh"
 
+#include <functional>
+#include <memory>
 #include <optional>
 #include <type_traits>
 #include <utility>
@@ -43,6 +51,48 @@ namespace {
         const auto px = img.get_pixel(x, y);
         REQUIRE(px.has_value());
         return px->a == 0;
+    }
+
+    // The application's scenes_manager with an empty stack, so each test builds its own.
+    scenes_manager& empty_manager() {
+        scenes_manager& mgr = service_locator::instance().get_scenes_manager();
+        mgr.finish();
+        REQUIRE(mgr.empty());
+        return mgr;
+    }
+
+    // A scene whose every hook runs what the test gives it.
+    class probe_scene final : public base_scene {
+        public:
+            explicit probe_scene(scene_flags flags = scene_flags::hides_below)
+                : m_flags(flags) {
+            }
+
+            std::function <void()> enter = [] {};
+            std::function <void()> update = [] {};
+            std::function <void()> action = [] {};
+            std::function <void()> draw = [] {};
+
+            void on_enter() override { enter(); }
+            void fixed_update(sim_duration, const input_snapshot&) override { update(); }
+            void handle_action(const event&) override { action(); }
+            void render() override { draw(); }
+            [[nodiscard]] scene_flags flags() const override { return m_flags; }
+
+        private:
+            scene_flags m_flags;
+    };
+
+    constexpr color PINK{255, 0, 255, 255};
+
+    void one_tick(scenes_manager& mgr) {
+        mgr.fixed_update(sim_duration{1.0f / 60.0f}, input_snapshot{});
+    }
+
+    void key_event(scenes_manager& mgr) {
+        SDL_Event raw{};
+        raw.type = SDL_EVENT_KEY_DOWN;
+        mgr.handle_action(sdlpp::event(raw));
     }
 }
 
@@ -250,7 +300,169 @@ TEST_SUITE("neutrino::painter_state") {
         {
             test::test_application app("painter state outlives");
             held.emplace(scoped_state());
-        }                                                      // the save is dropped, and logged
-        CHECK_NOTHROW(held.reset());
+        }                                                      // the harness's scene undoes the push
+        CHECK_NOTHROW(held.reset());                           // nothing to pop: logged
+    }
+}
+
+TEST_SUITE("neutrino::painter_state per scene") {
+    TEST_CASE("a draw colour set in one scene does not reach another, from its render(), update or events") {
+        test::test_application app("painter state per scene");
+        scenes_manager& mgr = empty_manager();
+        auto out = texture::create(dim{4, 4}, texture_access::target);
+        REQUIRE(out.has_value());
+        auto binding = out->bind();
+
+        auto bottom = std::make_unique <probe_scene>(scene_flags::hides_below);
+        auto top = std::make_unique <probe_scene>(scene_flags::passes_input);
+        probe_scene* low = bottom.get();
+        probe_scene* high = top.get();
+        int checked = 0;
+        const auto sees_defaults = [&] {
+            CHECK(get_painter_state().draw_color == painter_state{}.draw_color);
+            CHECK(get_painter_state().blend == painter_state{}.blend);
+            ++checked;
+        };
+        low->enter = [] { set_draw_color(colors::red); };
+        low->update = [] { set_draw_color(colors::green); };
+        low->action = [] { set_draw_color(colors::blue); };
+        low->draw = [] { set_draw_blend_mode(blend_mode::add); };
+        high->enter = sees_defaults;
+        high->update = sees_defaults;
+        high->action = sees_defaults;
+        high->draw = sees_defaults;
+        mgr.push_scene_sync(std::move(bottom));
+        mgr.push_scene_sync(std::move(top));
+
+        one_tick(mgr);                             // the bottom scene's update runs first
+        key_event(mgr);
+        mgr.render();
+        key_event(mgr);                            // after the bottom scene's render() and events
+        one_tick(mgr);
+        CHECK(checked == 6);
+
+        // The bottom scene keeps what it set, across its calls.
+        std::optional <painter_state> kept;
+        low->draw = [&] { kept = get_painter_state(); };
+        mgr.render();
+        REQUIRE(kept.has_value());
+        CHECK(kept->draw_color == colors::green);  // its last update set it after its last event
+        CHECK(kept->blend == blend_mode::add);
+        // And the test's own scene saw none of it.
+        CHECK(get_painter_state().draw_color == painter_state{}.draw_color);
+        mgr.finish();
+    }
+
+    TEST_CASE("a scene's painter state lasts from its on_enter to its frames") {
+        test::test_application app("painter state from on_enter");
+        scenes_manager& mgr = empty_manager();
+        auto out = texture::create(dim{4, 4}, texture_access::target);
+        REQUIRE(out.has_value());
+        out->fill(colors::black);
+        auto binding = out->bind();
+
+        auto owned = std::make_unique <probe_scene>();
+        owned->enter = [] { set_draw_color(PINK); };
+        owned->draw = [] { draw_point(1, 1); };
+        mgr.push_scene_sync(std::move(owned));
+        mgr.render();
+        binding.end();
+        CHECK(lit(out->to_image(), 1, 1, PINK));
+        mgr.finish();
+    }
+
+    TEST_CASE("a draw or a painter state function with no scene current fails") {
+        test::test_application app("painter state no scene");
+        auto t = texture::create(dim{4, 4}, texture_access::target);
+        REQUIRE(t.has_value());
+        app.leave_scene();                         // as in ready()
+
+        CHECK_THROWS_WITH(set_draw_color(colors::red), doctest::Contains("no scene current"));
+        CHECK_THROWS((void) get_draw_color());
+        CHECK_THROWS(set_draw_blend_mode(blend_mode::blend));
+        CHECK_THROWS(set_line_style(line_style::dashed()));
+        CHECK_THROWS((void) get_painter_state());
+        CHECK_THROWS(push_state());
+        CHECK_THROWS(pop_state());
+        CHECK_THROWS([] { auto s = scoped_state(); }());
+        CHECK_THROWS(draw_point(0, 0));
+        CHECK_THROWS(draw_rect_fill(rect{0, 0, 2, 2}, colors::red));
+        CHECK_THROWS(draw_texture(*t));
+
+        // Textures work anywhere; a bake fails at its first draw.
+        CHECK_NOTHROW(t->fill(colors::red));
+        CHECK_NOTHROW(t->compose([] {}, colors::blue));
+        CHECK(lit(t->to_image(), 0, 0, colors::blue));
+        CHECK_THROWS(t->compose([] { draw_point(0, 0); }));
+    }
+
+    TEST_CASE("a push left at the end of an update fails, after it is undone") {
+        test::test_application app("painter state update push");
+        scenes_manager& mgr = empty_manager();
+        auto owned = std::make_unique <probe_scene>();
+        probe_scene* scene = owned.get();
+        scene->update = [] {
+            push_state();
+            set_draw_color(colors::red);
+        };
+        mgr.push_scene_sync(std::move(owned));
+        CHECK_THROWS_WITH(one_tick(mgr), doctest::Contains("fixed_update ended with 1 push_state() not popped"));
+
+        std::optional <painter_state> next;
+        bool nothing_pushed = false;
+        scene->update = [&] {
+            next = get_painter_state();
+            try {
+                pop_state();
+            } catch (...) {
+                nothing_pushed = true;
+            }
+        };
+        one_tick(mgr);
+        REQUIRE(next.has_value());
+        CHECK(next->draw_color == painter_state{}.draw_color);
+        CHECK(nothing_pushed);
+        mgr.finish();
+    }
+
+    TEST_CASE("state set straight on the renderer does not reach a neutrino draw") {
+        test::test_application app("painter state native");
+        auto t = texture::create(dim{4, 4}, texture_access::target);
+        REQUIRE(t.has_value());
+        constexpr color half_blue{0, 0, 255, 128};
+        set_draw_color(half_blue);                 // blend none: written as it is
+        t->compose([] {
+            REQUIRE(get_renderer().set_draw_color(colors::red));
+            REQUIRE(get_renderer().set_draw_blend_mode(sdlpp::blend_mode::blend));
+            REQUIRE(get_renderer().set_line_style(sdlpp::line_style::dashed(1.0f, 1.0f)));
+            draw_point(0, 0);
+            draw_line(0, 1, 3, 1);
+        }, colors::transparent);
+
+        const image img = t->to_image();
+        CHECK(lit(img, 0, 0, half_blue));
+        for (int x = 0; x < 4; ++x) {
+            CAPTURE(x);
+            CHECK(lit(img, x, 1, half_blue));      // solid, not dashed
+        }
+    }
+
+    TEST_CASE("a scope that ends after its push was undone pops nothing of another") {
+        test::test_application app("painter state stale scope");
+        scenes_manager& mgr = empty_manager();
+        auto owned = std::make_unique <probe_scene>();
+        probe_scene* scene = owned.get();
+        std::optional <painter_state_scope> held;
+        scene->update = [&] { held.emplace(scoped_state()); };
+        mgr.push_scene_sync(std::move(owned));
+        CHECK_THROWS(one_tick(mgr));               // the scope outlived the call: undone
+
+        push_state();                              // the test's own scene's save
+        set_draw_color(colors::red);
+        CHECK_NOTHROW(held.reset());               // not this scene's save: nothing popped
+        CHECK(get_painter_state().draw_color == colors::red);
+        pop_state();
+        CHECK(get_painter_state().draw_color == painter_state{}.draw_color);
+        mgr.finish();
     }
 }

@@ -12,7 +12,6 @@
 #include "video/canvas.hh"
 #include "video/composite_draw.hh"
 #include "video/layer_stack.hh"
-#include "video/painter_state_internal.hh"
 #include "video/target_geometry.hh"
 
 namespace neutrino::detail {
@@ -31,14 +30,18 @@ namespace neutrino::detail {
     }
 
     scene_frame::scene_frame(base_scene* scene, std::span <const texture* const> below, frame_target onto)
-        : m_layers(scene_context_access::of(scene)),
+        : m_layers(scene_context_access::layer_stack_of(scene)),
           m_canvas(scene_context_access::canvas_of(scene)),
           m_compositor(scene_context_access::compositor_of(scene)),
-          m_below(below),
-          m_state_depth(painter_save_depth()) {
+          m_below(below) {
         // A flag of its own: s_current is null in a scene without layers too, so it cannot
         // tell whether a frame is open.
         ENFORCE(!s_rendering, "a scene is already being rendered");
+        // The scene's painter state for render() and its compositor (R48), before anything is
+        // bound: the canvas or the base layer takes its clip.
+        if (scene != nullptr) {
+            m_painter.emplace(*scene_context_access::painter_state_stack_of(scene));
+        }
         // The target bound now is the one the scene manager draws into: the canvas and the
         // layers mirror it (R42).
         const target_geometry geometry = bound_target_geometry();
@@ -81,18 +84,9 @@ namespace neutrino::detail {
             m_canvas->end_frame();
         }
         m_canvas_binding.reset();              // the target from before the frame again
-        check_state_balance(m_state_depth, "the frame");
-    }
-
-    void scene_frame::check_state_balance(std::size_t expected, const char* what) {
-        const std::size_t left = painter_save_depth();
-        if (left == expected) {
-            return;
+        if (m_painter) {
+            m_painter->finish("the frame");    // a push left is undone, then fails
         }
-        // Undone first, as an unbalanced layer push is: the state from before is back.
-        pop_painter_saves_to(expected);
-        ENFORCE(left > expected, what, "popped more painter state saves than it pushed");
-        ENFORCE(false, what, "ended with", left - expected, "push_state() not popped");
     }
 
     void scene_frame::combine() {
@@ -124,14 +118,15 @@ namespace neutrino::detail {
                 // The default painter state, not what render() left (R43). It ends before the
                 // binding, while the canvas is still bound.
                 const auto state = scoped_state(painter_state{});
-                const std::size_t inside = painter_save_depth();
+                painter_state_stack& painter = painter_state_stack::instance();
+                const std::size_t inside = painter.depth();
                 if (is_default_compositor(*m_compositor)) {
                     m_layers->draw_all();      // what it does, with the presentation off once
                 } else {
                     composition c(*m_layers, m_below);
                     (*m_compositor)(c);
                 }
-                check_state_balance(inside, "the compositor");
+                painter.end_call(inside, "the compositor");
                 m_canvas->note_drawn();
             }
         }
@@ -144,10 +139,11 @@ namespace neutrino::detail {
             m_layers->abort_frame();           // render() threw: end every push
         }
         m_canvas_binding.reset();              // never throws
-        pop_painter_saves_to(m_state_depth);   // render() threw with pushes left; never throws
         s_rendering = false;
         s_current = nullptr;
         s_frame = nullptr;
+        // Then m_painter ends: the pushes render() left if it threw are undone, and the
+        // painter state current before the frame is back. Never throws.
     }
 
     void scene_frame::clear_current() {

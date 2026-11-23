@@ -105,7 +105,7 @@ namespace {
             [[nodiscard]] layer_style& style(layer_id id) { return style_of(id); }
 
             [[nodiscard]] layer_id base() const {
-                const detail::layer_stack* s = scene_context_access::of(const_cast <layer_scene*>(this));
+                const detail::layer_stack* s = scene_context_access::layer_stack_of(const_cast <layer_scene*>(this));
                 REQUIRE(s != nullptr);
                 return s->base_layer();
             }
@@ -529,14 +529,27 @@ TEST_SUITE("neutrino::compositor") {
     TEST_CASE("a frame or a compositor that leaves a push_state() fails, and the push is undone") {
         {
             fixture f;
-            set_draw_color(GREEN);
+            set_draw_color(GREEN);                 // the test's own scene, not the one rendered
             f.scene->draw = [&] {
                 push_state();
                 set_draw_color(BLUE);
             };
             CHECK_THROWS_WITH(f.frame(), doctest::Contains("push_state() not popped"));
             CHECK(get_painter_state().draw_color == GREEN);
-            CHECK_THROWS(pop_state());             // nothing left pushed
+            std::optional <painter_state> next;
+            bool nothing_pushed = false;
+            f.scene->draw = [&] {
+                next = get_painter_state();
+                try {
+                    pop_state();
+                } catch (...) {
+                    nothing_pushed = true;
+                }
+            };
+            f.frame();
+            REQUIRE(next.has_value());
+            CHECK(next->draw_color == painter_state{}.draw_color);   // the push was undone
+            CHECK(nothing_pushed);
         }
         {
             fixture f;
@@ -546,7 +559,17 @@ TEST_SUITE("neutrino::compositor") {
                 default_compositor(c);
             });
             CHECK_THROWS_WITH(f.frame(), doctest::Contains("the compositor ended with 1"));
-            CHECK_THROWS(pop_state());
+            f.scene->set_compositor(default_compositor);
+            bool nothing_pushed = false;
+            f.scene->draw = [&] {
+                try {
+                    pop_state();
+                } catch (...) {
+                    nothing_pushed = true;
+                }
+            };
+            f.frame();
+            CHECK(nothing_pushed);                 // the compositor's push was undone
         }
     }
 
@@ -571,7 +594,12 @@ TEST_SUITE("neutrino::compositor") {
         CHECK_FALSE(inside->clip.has_value());
         CHECK(f.at(1, 1) == GREEN);
         CHECK(f.at(4, 4) == RED);
-        CHECK(get_painter_state().draw_color == BLUE);   // render()'s state again afterwards
+        std::optional <painter_state> next;
+        f.scene->draw = [&] { next = get_painter_state(); };
+        f.frame();
+        REQUIRE(next.has_value());
+        CHECK(next->draw_color == BLUE);           // render()'s state again, in the next frame
+        CHECK(next->blend == blend_mode::blend);
     }
 
     TEST_CASE("pushing a layer inside a compositor fails; the frame unwinds and the next one works") {
@@ -677,7 +705,7 @@ TEST_SUITE("neutrino::render shortcuts") {
             draw(*f.scene, a);
             f.frame();
             const detail::canvas* c = scene_context_access::canvas_of(f.scene);
-            const detail::layer_stack* layers = scene_context_access::of(f.scene);
+            const detail::layer_stack* layers = scene_context_access::layer_stack_of(f.scene);
             CHECK(c->shared());
             CHECK(c->get() == layers->target(layers->base_layer()));
             for (int y = 0; y < 8; ++y) {
@@ -695,7 +723,7 @@ TEST_SUITE("neutrino::render shortcuts") {
             const detail::canvas* c = scene_context_access::canvas_of(f.scene);
             CHECK_FALSE(c->shared());
             REQUIRE(c->get() != nullptr);
-            CHECK(c->get() != scene_context_access::of(f.scene)->target(scene_context_access::of(f.scene)->base_layer()));
+            CHECK(c->get() != scene_context_access::layer_stack_of(f.scene)->target(scene_context_access::layer_stack_of(f.scene)->base_layer()));
             std::size_t i = 0;
             for (int y = 0; y < 8; ++y) {
                 for (int x = 0; x < 8; ++x) {
@@ -713,7 +741,7 @@ TEST_SUITE("neutrino::render shortcuts") {
         fixture f;
         const layer_id a = f.scene->add();
         f.scene->draw = [&] { paint(a, rect{0, 0, 2, 2}, RED); };
-        detail::layer_stack* layers = scene_context_access::of(f.scene);
+        detail::layer_stack* layers = scene_context_access::layer_stack_of(f.scene);
         layers->style(layers->base_layer()).opacity = 0.5f;
         f.frame();
         CHECK_FALSE(scene_context_access::canvas_of(f.scene)->shared());

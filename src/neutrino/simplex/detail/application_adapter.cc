@@ -12,6 +12,8 @@
 
 #include "simplex/detail/application_adapter.hh"
 #include "simplex/detail/simplex_scene.hh"
+#include "scene/scene_context_access.hh"
+#include "video/painter_state_stack.hh"
 
 namespace neutrino::simplex::detail {
     namespace {
@@ -52,16 +54,16 @@ namespace neutrino::simplex::detail {
         }
 
         // Keep callback drawing in the persistent canvas, restoring the previous
-        // target even when a callback throws or uses nested render targets.
+        // target even when a callback throws or uses nested render targets. The draw colour
+        // the callbacks set is the simplex scene's painter state, which persists by itself
+        // (R48).
         class canvas_scope {
             public:
-                canvas_scope(sdlpp::renderer& renderer, neutrino::texture& canvas, sdlpp::fcolor& color)
-                    : m_renderer(renderer), m_target(canvas.bind()), m_color(color) {
-                    checked(renderer.set_draw_color_float(color));
+                explicit canvas_scope(neutrino::texture& canvas)
+                    : m_target(canvas.bind()) {
                 }
 
                 void restore() {
-                    m_color = checked(m_renderer.get_draw_color_float());
                     m_target.end();
                 }
 
@@ -69,9 +71,7 @@ namespace neutrino::simplex::detail {
                 canvas_scope& operator=(const canvas_scope&) = delete;
 
             private:
-                sdlpp::renderer& m_renderer;
                 renderer_target_scope m_target;
-                sdlpp::fcolor& m_color;
         };
     }
 
@@ -88,17 +88,25 @@ namespace neutrino::simplex::detail {
             throw std::runtime_error("Simplex canvas texture could not be created");
         }
         m_canvas->set_blend_mode(blend_mode::none); // the canvas replaces the frame; nearest is the default filter
+        // The scene the user's callbacks run as: on_create here, on_update from its updates.
+        m_scene = std::make_unique <simplex_scene>(*this);
 
         try {
-            canvas_scope canvas(renderer, *m_canvas, m_canvas_color);
+            canvas_scope canvas(*m_canvas);
             // Logical presentation belongs to each target separately. Keep
             // render_size() meaningful while callbacks draw into the canvas.
             checked(renderer.set_logical_presentation(m_canvas_size.width, m_canvas_size.height,
                                                        sdlpp::logical_presentation::integer_scale));
+            checked(renderer.set_draw_color(sdlpp::colors::black));
             checked(renderer.clear());
             m_state = lifecycle::creating;
-            if (!m_owner->on_create()) {
-                throw std::runtime_error("Simplex on_create returned false");
+            {
+                neutrino::detail::painter_state_stack::current_scope as_scene(
+                    *neutrino::detail::scene_context_access::painter_state_stack_of(m_scene.get()));
+                if (!m_owner->on_create()) {
+                    throw std::runtime_error("Simplex on_create returned false");
+                }
+                as_scene.finish("on_create");
             }
             canvas.restore();
             m_state = lifecycle::running;
@@ -109,7 +117,7 @@ namespace neutrino::simplex::detail {
     }
 
     std::unique_ptr<base_scene> application_adapter::create_initial_scene() {
-        return std::make_unique<simplex_scene>(*this);
+        return std::move(m_scene);
     }
 
     void application_adapter::run_update(float dt, const input_snapshot& input) noexcept {
@@ -117,9 +125,9 @@ namespace neutrino::simplex::detail {
         // or threw: no callback runs after the application stopped.
         if (m_state != lifecycle::running || !is_running()) return;
         try {
-            // The canvas and the draw colour persist between frames (the documented
-            // contract): no clear here; on_update clears when it wants a fresh frame.
-            canvas_scope canvas(get_renderer(), *m_canvas, m_canvas_color);
+            // The canvas persists between frames (the documented contract), and so does the
+            // scene's painter state: no clear here; on_update clears when it wants a fresh frame.
+            canvas_scope canvas(*m_canvas);
             const bool keep_running = m_owner->on_update(dt, input);
             canvas.restore();
             if (!keep_running) stop();
@@ -173,6 +181,7 @@ namespace neutrino::simplex::detail {
                 log_cleanup_error("unknown exception");
             }
         }
+        m_scene.reset();                          // a ready() that failed after making it
         m_canvas.reset();
     }
 }

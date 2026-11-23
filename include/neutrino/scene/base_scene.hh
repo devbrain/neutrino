@@ -48,6 +48,7 @@ namespace neutrino {
         class layer_stack;
         struct scene_context_access;
         class canvas;
+        class painter_state_stack;
     }
 
     class texture;
@@ -160,5 +161,8 @@ namespace neutrino {
             std::unique_ptr <detail::canvas> m_canvas;
             /// Draws the layers onto the canvas after render(); run by detail::scene_frame.
             compositor m_compositor{default_compositor};
+            /// The scene's painter state and its saves (R48): current during every call the
+            /// scene manager makes into the scene.
+            std::unique_ptr <detail::painter_state_stack> m_painter_state_stack;
     };
 }

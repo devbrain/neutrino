@@ -12,6 +12,8 @@
 #include <neutrino/video/composition.hh>
 #include <neutrino/video/texture.hh>
 
+#include "video/painter_state_stack.hh"
+
 namespace neutrino {
     class base_scene;
 }
@@ -60,8 +62,9 @@ namespace neutrino::detail {
      * scene->render();
      * frame.finish();
      * @endcode
-     * The constructor starts the scene's canvas frame, with the geometry of the target bound
-     * now, which the canvas and the layers mirror (R42). In a scene without layers it binds
+     * The constructor makes the scene's painter state current for the frame (R48), then starts
+     * the scene's canvas frame, with the geometry of the target bound now, which the canvas and
+     * the layers mirror (R42). In a scene without layers it binds
      * the canvas, so render() draws onto it. In a scene with layers it starts the layer frame
      * instead (layer_stack::begin_frame(), which pushes the base layer), and makes the scene's
      * layers the ones the free push_layer() / pop_layer() reach; the canvas is bound only when
@@ -76,15 +79,15 @@ namespace neutrino::detail {
      * the declared layers are drawn straight onto it and the canvas shows it (R41). A canvas that cannot be made skips the compositor. Then it
      * ends the canvas's frame and its binding, and checks that the frame popped every
      * push_state() it pushed, as the compositor must too: a push left is popped, and the frame
-     * fails naming it.
+     * fails naming it. The destructor puts back the painter state current before the frame.
      *
      * If render() throws, finish() is not reached and the destructor ends every push instead
      * (layer_stack::abort_frame()) and the canvas's binding, so the target bound before the
      * frame is bound again. If the compositor throws, its bindings and state end with it.
      * Either way the destructor ends the frame: no scene's layers are current afterwards.
      *
-     * A null scene makes a frame with nothing in it: nothing is bound or pushed, and
-     * push_layer() fails as in a scene without layers.
+     * A null scene makes a frame with nothing in it: nothing is bound or pushed, push_layer()
+     * fails as in a scene without layers, and the painter state current before stays so.
      *
      * Frames do not nest: scenes render one after another. Main thread only.
      */
@@ -127,17 +130,15 @@ namespace neutrino::detail {
         private:
             /// Runs the compositor onto the canvas, then marks the pushed layers drawn.
             void combine();
-            /// ENFORCE: as many painter state saves are held as @p expected. Otherwise pops the
-            ///        extra ones first, restoring the state from before them, and fails naming
-            ///        @p what.
-            static void check_state_balance(std::size_t expected, const char* what);
 
+            /// The scene's painter state, current for the frame; none for a null scene. Made
+            /// before anything is bound, so the canvas and the layers take its clip, and ended
+            /// after the binding, so the target bound before gets back the clip it had.
+            std::optional <painter_state_stack::current_scope> m_painter;
             layer_stack* m_layers;
             canvas* m_canvas;
             const compositor* m_compositor;
             std::span <const texture* const> m_below;
-            /// The painter state saves held when the frame began: as many are held at its end.
-            std::size_t m_state_depth;
             /// The canvas bound for render() in a scene without layers.
             std::optional <renderer_target_scope> m_canvas_binding;
             bool m_finished{false};

@@ -191,13 +191,10 @@ namespace neutrino {
         set_render_target(m_texture);
         detail::clip_bound_texture();             // the painter's clip, or none (R39)
         if (clear) {
-            // Clearing uses the renderer's draw colour; restore it so a bind leaves it untouched.
-            const auto previous = r.get_draw_color();
+            // Clearing uses the renderer's draw colour, which is scratch: every draw call sets
+            // the colour it uses (R48).
             (void) r.set_draw_color(*clear);
             (void) r.clear();
-            if (previous) {
-                (void) r.set_draw_color(*previous);
-            }
         }
         return scope;
     }

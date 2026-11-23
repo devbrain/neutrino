@@ -22,6 +22,7 @@
 #include "video/flip_mode_sdl.hh"
 #include "video/line_style_sdl.hh"
 #include "video/draw_failures.hh"
+#include "video/painter_state_stack.hh"
 
 namespace neutrino {
     using detail::has_diagonal_flip;
@@ -62,13 +63,35 @@ namespace neutrino {
 
 #define DRAW_CHECK(...) call_site_checker <std::source_location::current().line()>::run(__VA_ARGS__)
 
-        // Open the renderer, set the draw colour under a scope guard, and run `fn(renderer)`.
-        // Collapses the repeated get_renderer() + draw_color_guard + forward boilerplate.
-        template<class Fn>
-        auto with_draw_color(const sdlpp::color& c, Fn&& fn) {
-            auto& renderer = get_renderer();
-            sdlpp::renderer::draw_color_guard guard(renderer, c);
-            return fn(renderer);
+        // The current scene's painter state, what every draw call reads. ENFORCE: a scene is
+        // current (R48).
+        [[nodiscard]] const painter_state& painter() {
+            return detail::painter_state_stack::instance().state();
+        }
+
+        // A textured draw reads no painter state until R49 (the blend in its source's form), but
+        // it is a painter call: it needs a scene too (R48).
+        void require_scene() {
+            (void) detail::painter_state_stack::instance();
+        }
+
+        // Whether a primitive's SDL call reads the line style: sdlpp's draw_line and
+        // draw_line_thick do, and draw_arrow and draw_cross through them.
+        enum class reads_line : bool { no, yes };
+
+        // The renderer, with the SDL state a primitive reads set from the current scene's
+        // painter state (R48): colour @p c and the blend, and the line style when @p line says
+        // the call reads it. Nothing is left from an earlier call; the renderer's own colour,
+        // blend and line style are scratch.
+        sdlpp::renderer& paint(const sdlpp::color& c, reads_line line = reads_line::no) {
+            const painter_state& s = painter();
+            auto& r = get_renderer();
+            DRAW_CHECK(r.set_draw_color(c));
+            DRAW_CHECK(r.set_draw_blend_mode(detail::to_sdl_blend(s.blend)));
+            if (line == reads_line::yes) {
+                DRAW_CHECK(r.set_line_style(detail::to_sdl_line(s.line)));
+            }
+            return r;
         }
 
         // Sprite metrics are computed in float. Snapped (pixel_snap::logical) every value is rounded
@@ -380,161 +403,169 @@ namespace neutrino {
     }
 
     void set_draw_color(const sdlpp::color& c) {
-        DRAW_CHECK(get_renderer().set_draw_color(c));
+        detail::painter_state_stack::instance().set_draw_color(c);
     }
 
     sdlpp::color get_draw_color() {
-        return DRAW_CHECK(get_renderer().get_draw_color());
+        return painter().draw_color;
     }
 
     void set_draw_blend_mode(blend_mode mode) {
-        DRAW_CHECK(get_renderer().set_draw_blend_mode(detail::to_sdl_blend(mode)));
+        auto& p = detail::painter_state_stack::instance();
+        if (detail::to_sdl_blend(mode) == sdlpp::blend_mode::invalid) { // sdlpp-ok: internal
+            // A value outside the enum: counted, and the mode stays as it was.
+            detail::count_draw_failure();
+            LOG_ERROR("set_draw_blend_mode: not a blend mode:", static_cast <std::uint32_t>(mode));
+            return;
+        }
+        p.set_blend(mode);
     }
 
     blend_mode get_draw_blend_mode() {
-        const auto mode = detail::from_sdl_blend(DRAW_CHECK(get_renderer().get_draw_blend_mode()));
-        if (!mode) {
-            THROW_RUNTIME("the renderer's blend mode has no neutrino name (set through native()?)");
-        }
-        return *mode;
+        return painter().blend;
     }
 
     void set_line_style(const line_style& style) {
-        DRAW_CHECK(get_renderer().set_line_style(detail::to_sdl_line(style)));
+        detail::painter_state_stack::instance().set_line(style);
     }
 
     line_style get_line_style() {
-        return detail::from_sdl_line(DRAW_CHECK(get_renderer().get_line_style()));
+        return painter().line;
     }
 
     // --- Float render-space implementations -------------------------------------------------------
     // Every primitive below is implemented once, here, on floats; the integer overloads forward.
+    // The overloads without a colour draw with the painter state's; one given is for that call
+    // only, and the state does not change.
 
     namespace detail {
         void draw_point(render_pos p) {
-            p = snap_pos(p, snapping());
-            DRAW_CHECK(get_renderer().draw_point(p.x, p.y));
+            draw_point(p, painter().draw_color);
         }
 
         void draw_point(render_pos p, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_point(p); });
+            p = snap_pos(p, snapping());
+            DRAW_CHECK(paint(c).draw_point(p.x, p.y));
         }
 
         void draw_line(render_pos a, render_pos b) {
-            const bool snap = snapping();
-            a = snap_pos(a, snap);
-            b = snap_pos(b, snap);
-            DRAW_CHECK(get_renderer().draw_line(a.x, a.y, b.x, b.y));
+            draw_line(a, b, painter().draw_color);
         }
 
         void draw_line(render_pos a, render_pos b, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_line(a, b); });
+            const bool snap = snapping();
+            a = snap_pos(a, snap);
+            b = snap_pos(b, snap);
+            DRAW_CHECK(paint(c, reads_line::yes).draw_line(a.x, a.y, b.x, b.y));
         }
 
         void draw_line_aa(render_pos a, render_pos b) {
-            const bool snap = snapping();
-            a = snap_pos(a, snap);
-            b = snap_pos(b, snap);
-            DRAW_CHECK(get_renderer().draw_line_aa(a.x, a.y, b.x, b.y));
+            draw_line_aa(a, b, painter().draw_color);
         }
 
         void draw_line_aa(render_pos a, render_pos b, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_line_aa(a, b); });
+            const bool snap = snapping();
+            a = snap_pos(a, snap);
+            b = snap_pos(b, snap);
+            DRAW_CHECK(paint(c).draw_line_aa(a.x, a.y, b.x, b.y));
         }
 
         void draw_line_thick(render_pos a, render_pos b, float w) {
-            const bool snap = snapping();
-            a = snap_pos(a, snap);
-            b = snap_pos(b, snap);
-            DRAW_CHECK(get_renderer().draw_line_thick(a.x, a.y, b.x, b.y, w));
+            draw_line_thick(a, b, w, painter().draw_color);
         }
 
         void draw_line_thick(render_pos a, render_pos b, float w, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_line_thick(a, b, w); });
+            const bool snap = snapping();
+            a = snap_pos(a, snap);
+            b = snap_pos(b, snap);
+            DRAW_CHECK(paint(c, reads_line::yes).draw_line_thick(a.x, a.y, b.x, b.y, w));
         }
 
         void draw_line_dashed(render_pos a, render_pos b, float dash, float gap) {
-            const bool snap = snapping();
-            a = snap_pos(a, snap);
-            b = snap_pos(b, snap);
-            DRAW_CHECK(get_renderer().draw_line_dashed(a.x, a.y, b.x, b.y, dash, gap));
+            draw_line_dashed(a, b, dash, gap, painter().draw_color);
         }
 
         void draw_line_dashed(render_pos a, render_pos b, float dash, float gap, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_line_dashed(a, b, dash, gap); });
-        }
-
-        void draw_line_dotted(render_pos a, render_pos b, float spacing) {
             const bool snap = snapping();
             a = snap_pos(a, snap);
             b = snap_pos(b, snap);
-            DRAW_CHECK(get_renderer().draw_line_dotted(a.x, a.y, b.x, b.y, spacing));
+            DRAW_CHECK(paint(c).draw_line_dashed(a.x, a.y, b.x, b.y, dash, gap));
+        }
+
+        void draw_line_dotted(render_pos a, render_pos b, float spacing) {
+            draw_line_dotted(a, b, spacing, painter().draw_color);
         }
 
         void draw_line_dotted(render_pos a, render_pos b, float spacing, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_line_dotted(a, b, spacing); });
+            const bool snap = snapping();
+            a = snap_pos(a, snap);
+            b = snap_pos(b, snap);
+            DRAW_CHECK(paint(c).draw_line_dotted(a.x, a.y, b.x, b.y, spacing));
         }
 
         void draw_arrow(render_pos from, render_pos to, float head_size, float head_angle, float thickness) {
-            const bool snap = snapping();
-            from = snap_pos(from, snap);
-            to = snap_pos(to, snap);
-            DRAW_CHECK(get_renderer().draw_arrow(from.x, from.y, to.x, to.y, head_size, head_angle, thickness));
+            draw_arrow(from, to, head_size, head_angle, thickness, painter().draw_color);
         }
 
         void draw_arrow(render_pos from, render_pos to, float head_size, float head_angle, float thickness,
                         const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_arrow(from, to, head_size, head_angle, thickness); });
+            const bool snap = snapping();
+            from = snap_pos(from, snap);
+            to = snap_pos(to, snap);
+            DRAW_CHECK(paint(c, reads_line::yes).draw_arrow(from.x, from.y, to.x, to.y, head_size, head_angle,
+                                                            thickness));
         }
 
         void draw_cross(render_pos centre, float size, float thickness) {
-            centre = snap_pos(centre, snapping());
-            DRAW_CHECK(get_renderer().draw_cross(centre.x, centre.y, size, thickness));
+            draw_cross(centre, size, thickness, painter().draw_color);
         }
 
         void draw_cross(render_pos centre, float size, float thickness, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_cross(centre, size, thickness); });
+            centre = snap_pos(centre, snapping());
+            DRAW_CHECK(paint(c, reads_line::yes).draw_cross(centre.x, centre.y, size, thickness));
         }
 
         void draw_rect(const render_rect& r) {
-            DRAW_CHECK(get_renderer().draw_rect(to_sdl(r, snapping())));
+            draw_rect(r, painter().draw_color);
         }
 
         void draw_rect(const render_rect& r, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_rect(r); });
+            DRAW_CHECK(paint(c).draw_rect(to_sdl(r, snapping())));
         }
 
         void draw_rect_fill(const render_rect& r) {
-            DRAW_CHECK(get_renderer().fill_rect(to_sdl(r, snapping())));
+            draw_rect_fill(r, painter().draw_color);
         }
 
         void draw_rect_fill(const render_rect& r, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_rect_fill(r); });
+            DRAW_CHECK(paint(c).fill_rect(to_sdl(r, snapping())));
         }
 
         void draw_circle(render_pos centre, float radius) {
-            DRAW_CHECK(get_renderer().draw_circle(whole(centre.x), whole(centre.y), whole(radius)));
+            draw_circle(centre, radius, painter().draw_color);
         }
 
         void draw_circle(render_pos centre, float radius, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_circle(centre, radius); });
+            DRAW_CHECK(paint(c).draw_circle(whole(centre.x), whole(centre.y), whole(radius)));
         }
 
         void draw_circle_fill(render_pos centre, float radius) {
-            DRAW_CHECK(get_renderer().fill_circle(whole(centre.x), whole(centre.y), whole(radius)));
+            draw_circle_fill(centre, radius, painter().draw_color);
         }
 
         void draw_circle_fill(render_pos centre, float radius, const sdlpp::color& c) {
-            with_draw_color(c, [&](auto&) { draw_circle_fill(centre, radius); });
+            DRAW_CHECK(paint(c).fill_circle(whole(centre.x), whole(centre.y), whole(radius)));
         }
 
         void draw_sprite(render_pos position, const sprite_sheet& sheet, sprite_visual_id visual,
                          const sprite_draw_params& params) {
+            require_scene();
             DRAW_CHECK(draw_visual_impl(require_texture_registry(), sheet, visual, position, params.flip,
                                         params.scale, params.rotation_degrees));
         }
 
         void draw_sprite(render_pos position, sprite_visual_ref visual, const sprite_draw_params& params) {
+            require_scene();
             const auto& manager = require_sprites_manager();
             DRAW_CHECK(draw_visual_impl(require_texture_registry(), manager.get(visual.sheet), visual.visual,
                                         position, params.flip, params.scale, params.rotation_degrees));
@@ -542,6 +573,7 @@ namespace neutrino {
 
         void draw_sprite(render_pos position, const sprite_appearance& appearance,
                          const sprite_draw_params& params) {
+            require_scene();
             if (!appearance.visible || !appearance.visual.valid()) {
                 return;
             }
@@ -549,6 +581,7 @@ namespace neutrino {
         }
 
         void draw_sprite(render_pos position, sprite_state_id state, const sprite_draw_params& params) {
+            require_scene();
             const auto& manager = require_sprites_manager();
             DRAW_CHECK(draw_appearance_impl(manager, position, manager.appearance(state), params));
         }
@@ -653,6 +686,7 @@ namespace neutrino {
         const rect& dst,
         sprite_visual_ref visual,
         flip_mode flip) {
+        require_scene();
         if (!visual.valid() || dst.w <= 0 || dst.h <= 0) {
             return; // nothing to draw
         }
@@ -889,6 +923,7 @@ namespace neutrino {
 
     namespace detail {
         void draw_texture(const texture& t, const render_rect& dst, const texture_draw_params& params) {
+            require_scene();
             ENFORCE(!has_diagonal_flip(params.flip), "draw_texture: diagonal flip is not supported; "
                                                      "use draw_texture_quad");
             ENFORCE(std::isfinite(params.rotation_degrees), "texture rotation must be finite");
@@ -920,6 +955,7 @@ namespace neutrino {
 
     void draw_texture_quad(const texture& t, const std::array <render_pos, 4>& corners, std::optional <rect> src,
                            const color& tint) {
+        require_scene();
         const dim size = t.size();
         const rect s = src.value_or(rect{0, 0, size.width, size.height});
         const float w = static_cast <float>(size.width);

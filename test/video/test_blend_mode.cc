@@ -51,13 +51,14 @@ TEST_SUITE("neutrino::blend_mode") {
         CHECK_FALSE(from_sdl_blend(static_cast <sdlpp::blend_mode>(0x03)).has_value());
     }
 
-    TEST_CASE("set_draw_blend_mode reaches the renderer; get_draw_blend_mode reads it back") {
+    TEST_CASE("set_draw_blend_mode reaches SDL at the next draw; get_draw_blend_mode reads it back") {
         test::test_application app("blend mode draw");
         for (const auto& [mode, sdl] : MODES) {
             CAPTURE(static_cast <std::uint32_t>(mode));
             set_draw_blend_mode(mode);
-            CHECK(get_renderer().get_draw_blend_mode() == sdl);
             CHECK(get_draw_blend_mode() == mode);
+            draw_point(0, 0);                         // a draw sets the blend it uses (R48)
+            CHECK(get_renderer().get_draw_blend_mode() == sdl);
         }
     }
 

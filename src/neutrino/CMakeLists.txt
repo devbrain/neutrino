@@ -123,6 +123,7 @@ neutrino_subsystem(scene
         scenes_manager.cc
         scenes_manager.hh
         scene_context_access.hh
+        scene_context_access.cc
         scene_frame.cc
         scene_frame.hh
         screenshot.cc
@@ -176,6 +177,7 @@ neutrino_subsystem(video
         line_style_sdl.hh
         painter_state.cc
         painter_state_internal.hh
+        painter_state_internal.cc
         globals.cc
         palette.cc
         sprites.cc
@@ -198,6 +200,8 @@ neutrino_subsystem(video
         target_geometry.hh
         layer_id.cc
         layer_ops.cc
+        painter_state_stack.cc
+        painter_state_stack.hh
 )
 
 neutrino_subsystem(video_image DIR video/image

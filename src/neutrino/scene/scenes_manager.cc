@@ -6,6 +6,7 @@
 #include <limits>
 #include <mutex>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 #include <sdlpp/events/events.hh>
 #include <sdlpp/video/window.hh>
@@ -21,6 +22,7 @@
 #include "video/canvas.hh"
 #include "video/composite_draw.hh"
 #include "video/layer_stack.hh"
+#include "video/painter_state_stack.hh"
 
 namespace neutrino {
     static constexpr auto INVALID_EVENT = std::numeric_limits <uint32_t>::max();
@@ -54,6 +56,17 @@ namespace neutrino {
         custom.user.data1 = bs;
         custom.user.data2 = nullptr;
         return custom;
+    }
+
+    // Runs @p call — a call into @p scene — with the scene's painter state current (R48): what
+    // it sets stays the scene's, and a push it leaves fails, naming @p what, after it is
+    // undone. The state current before comes back afterwards, also when the call throws.
+    template<class Call>
+    static void as_current(base_scene* scene, const char* what, Call&& call) {
+        detail::painter_state_stack::current_scope current(
+            *detail::scene_context_access::painter_state_stack_of(scene));
+        std::forward <Call>(call)();
+        current.finish(what);
     }
 
     static void queue_scene(int code, std::unique_ptr <base_scene> scene) {
@@ -127,7 +140,8 @@ namespace neutrino {
         // against dead services. One scene failing to exit cleanly must not strand the rest.
         while (!m_stack.empty()) {
             try {
-                m_stack.back()->on_exit();
+                base_scene* const scene = m_stack.back().get();
+                as_current(scene, "on_exit", [scene] { scene->on_exit(); });
             } catch (const std::exception& e) {
                 LOG_ERROR("Scene on_exit threw during shutdown:", e.what());
             } catch (...) {
@@ -165,14 +179,14 @@ namespace neutrino {
         // app stays responsive instead of letting the exception escape to
         // SDL, which would turn it into SDL_APP_FAILURE and terminate.
         try {
-            scene->on_enter();
+            as_current(scene, "on_enter", [scene] { scene->on_enter(); });
             return true;
         } catch (const std::exception& ex) {
             LOG_ERROR("Scene on_enter threw:", ex.what());
         } catch (...) {
             LOG_ERROR("Scene on_enter threw an unknown exception");
         }
-        try { scene->on_exit(); } catch (...) {}
+        try { as_current(scene, "on_exit", [scene] { scene->on_exit(); }); } catch (...) {}
         for (auto i = m_stack.begin(); i != m_stack.end(); ++i) {
             if (i->get() == scene) {
                 m_stack.erase(i);
@@ -192,13 +206,13 @@ namespace neutrino {
         // The new scene goes on top of the stack, below the pinned scene if there is one.
         const bool pauses = has(scene->flags(), scene_flags::pauses_below);
         if (base_scene* below = active_top(); pauses && below) {
-            below->on_pause();
+            as_current(below, "on_pause", [below] { below->on_pause(); });
         }
         const auto at = m_stack.begin() + static_cast <std::ptrdiff_t>(active_count());
         base_scene* const entered = m_stack.insert(at, std::move(scene))->get();
         if (!enter_or_roll_back(entered) && pauses) {
             if (base_scene* below = active_top()) {
-                try { below->on_resume(); } catch (...) {}
+                try { as_current(below, "on_resume", [below] { below->on_resume(); }); } catch (...) {}
             }
         }
         // Whatever ended up on top (the pushed scene, or the resumed scene below
@@ -211,11 +225,12 @@ namespace neutrino {
         ENFORCE(active_count() > 0, "pop_scene: the stack has no scene to pop");
         const std::size_t top = active_count() - 1;
         const bool pauses = has(m_stack[top]->flags(), scene_flags::pauses_below);
-        m_stack[top]->on_exit();
+        base_scene* const leaving = m_stack[top].get();
+        as_current(leaving, "on_exit", [leaving] { leaving->on_exit(); });
         m_stack.erase(m_stack.begin() + static_cast <std::ptrdiff_t>(top));
         // Mirror apply_push: only a scene that paused the one below resumes it.
         if (base_scene* below = active_top(); pauses && below) {
-            below->on_resume();
+            as_current(below, "on_resume", [below] { below->on_resume(); });
         }
         notify_top_resized();
     }
@@ -223,9 +238,11 @@ namespace neutrino {
     void scenes_manager::apply_replace(std::unique_ptr <base_scene>&& scene) {
         ENFORCE(active_count() > 0, "replace_scene: the stack has no scene to replace");
         auto& slot = m_stack[active_count() - 1];
-        slot->on_exit();
+        base_scene* const leaving = slot.get();
+        as_current(leaving, "on_exit", [leaving] { leaving->on_exit(); });
         slot = std::move(scene);
-        slot->on_enter();
+        base_scene* const entering = slot.get();
+        as_current(entering, "on_enter", [entering] { entering->on_enter(); });
         notify_top_resized();
     }
 
@@ -233,18 +250,19 @@ namespace neutrino {
         apply_unpin(); // pinning replaces the pinned scene, if any
         const bool pauses = has(scene->flags(), scene_flags::pauses_below);
         if (base_scene* below = active_top(); pauses && below) {
-            below->on_pause();
+            as_current(below, "on_pause", [below] { below->on_pause(); });
         }
         m_stack.emplace_back(std::move(scene));
         m_pinned = true;
         base_scene* const pinned = m_stack.back().get();
         if (enter_or_roll_back(pinned)) {
-            pinned->on_resize(render_size());
+            const dim size = render_size();
+            as_current(pinned, "on_resize", [pinned, size] { pinned->on_resize(size); });
             return;
         }
         m_pinned = false;
         if (base_scene* below = active_top(); pauses && below) {
-            try { below->on_resume(); } catch (...) {}
+            try { as_current(below, "on_resume", [below] { below->on_resume(); }); } catch (...) {}
         }
     }
 
@@ -253,26 +271,29 @@ namespace neutrino {
             return;
         }
         const bool pauses = has(m_stack.back()->flags(), scene_flags::pauses_below);
-        m_stack.back()->on_exit();
+        base_scene* const leaving = m_stack.back().get();
+        as_current(leaving, "on_exit", [leaving] { leaving->on_exit(); });
         m_stack.pop_back();
         m_pinned = false;
         if (base_scene* below = active_top(); pauses && below) {
-            below->on_resume();
+            as_current(below, "on_resume", [below] { below->on_resume(); });
         }
     }
 
     void scenes_manager::notify_top_resized() {
         if (base_scene* top = active_top()) {
-            top->on_resize(render_size());
+            const dim size = render_size();
+            as_current(top, "on_resize", [top, size] { top->on_resize(size); });
         }
     }
 
     void scenes_manager::notify_resize(dim size) {
         if (base_scene* top = active_top()) {
-            top->on_resize(size);
+            as_current(top, "on_resize", [top, size] { top->on_resize(size); });
         }
         if (m_pinned) {
-            m_stack.back()->on_resize(size);
+            base_scene* const pinned = m_stack.back().get();
+            as_current(pinned, "on_resize", [pinned, size] { pinned->on_resize(size); });
         }
     }
 
@@ -306,7 +327,9 @@ namespace neutrino {
 
         static constexpr input_snapshot no_input{};
         for (size_t i = index; i < m_stack.size(); i++) {
-            m_stack[i]->fixed_update(dt, i >= floor ? in : no_input);
+            base_scene* const scene = m_stack[i].get();
+            const input_snapshot& input = i >= floor ? in : no_input;
+            as_current(scene, "fixed_update", [scene, dt, &input] { scene->fixed_update(dt, input); });
         }
     }
 
@@ -334,11 +357,11 @@ namespace neutrino {
         // an every-frame canvas, and nothing above that can read below() — only a compositor
         // of a scene's own can. A canvas is always copied as it is (R45).
         bool direct = detail::shortcuts().bottom_scene_into_target
-                      && detail::scene_context_access::of(bottom) == nullptr
+                      && detail::scene_context_access::layer_stack_of(bottom) == nullptr
                       && canvas->redraw() == redraw_mode::every_frame;
         for (size_t i = p.bottom + 1; direct && i < m_stack.size(); i++) {
             base_scene* const above = m_stack[i].get();
-            if (detail::scene_context_access::of(above) != nullptr
+            if (detail::scene_context_access::layer_stack_of(above) != nullptr
                 && !detail::is_default_compositor(*detail::scene_context_access::compositor_of(above))) {
                 direct = false;
             }
@@ -395,7 +418,7 @@ namespace neutrino {
                 if (detail::canvas* canvas = detail::scene_context_access::canvas_of(hidden)) {
                     canvas->release_every_frame();
                 }
-                if (detail::layer_stack* layers = detail::scene_context_access::of(hidden)) {
+                if (detail::layer_stack* layers = detail::scene_context_access::layer_stack_of(hidden)) {
                     layers->release_every_frame();
                 }
             }
@@ -480,8 +503,9 @@ namespace neutrino {
             // through passes_input scenes, never past a pauses_below one. The flags are read
             // before delivering, so a handle_action that changes them routes the next event.
             for (size_t i = m_stack.size(); i-- > 0;) {
-                const auto f = m_stack[i]->flags();
-                m_stack[i]->handle_action(ev);
+                base_scene* const scene = m_stack[i].get();
+                const auto f = scene->flags();
+                as_current(scene, "handle_action", [scene, &ev] { scene->handle_action(ev); });
                 if (!has(f, scene_flags::passes_input) || has(f, scene_flags::pauses_below)) {
                     break;
                 }

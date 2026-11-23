@@ -4,16 +4,15 @@
 
 #pragma once
 
-#include <cstddef>
-
 #include <neutrino/video/painter_state.hh>
 
 namespace neutrino::detail {
     // The painter's clip follows the painter (R39): SDL keeps a clip per target, so it is put
     // on each target bound. A clip set straight on the renderer — a UI backend's — is kept
-    // when the painter has none: only a texture just bound loses the clip it held.
+    // when the painter has none: only a texture just bound loses the clip it held. The
+    // painter's clip is the current scene's (R48); with no scene current there is none.
 
-    /// True when the painter has a clip; false before the painter state exists.
+    /// True when the current scene's painter state has a clip; false with no scene current.
     [[nodiscard]] bool painter_has_clip() noexcept;
 
     /// The clip of a texture just bound (texture::bind(), so layer pushes too): the painter's
@@ -26,12 +25,4 @@ namespace neutrino::detail {
     /// and it is gone; otherwise the target keeps its own. Nothing without a renderer. Never
     /// throws: a failure is counted.
     void clip_after_scope(bool painter_clip_at_start) noexcept;
-
-    /// How many push_state() saves are held now; 0 before the painter state exists.
-    [[nodiscard]] std::size_t painter_save_depth() noexcept;
-
-    /// Pops saves, newest first, until @p depth are left, each restoring the state it saved:
-    /// what a scene's frame does when it ends with pushes not popped. Never throws: a failure
-    /// is logged.
-    void pop_painter_saves_to(std::size_t depth) noexcept;
 }

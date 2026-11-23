@@ -68,10 +68,12 @@ is in [`render_model.md`](render_model.md).
 - **The canvas is the result.** Without layers, drawing goes straight onto it; with
   layers, drawing outside every layer goes to the base layer, the bottom one. A scene's
   canvas is what the window shows of that scene.
-- **One painter; scenes own their layers.** There is one painter, application-wide: one
-  painter state and one stack of saves. Each scene owns its layers, its compositor, its
-  canvas and its saved state — its scene context — which the painter uses while the scene
-  is rendered; the scene manager draws the canvases into the window in stack order. *Why
+- **One painter; scenes own their layers and their state.** There is one painter,
+  application-wide. Each scene owns its layers, its compositor, its canvas, and its
+  painter state with its save stack — its scene context — which the painter uses while the
+  scene is current: during every call the scene manager makes into it (R48). Drawing with
+  no scene current fails. The scene manager draws the canvases into the window in stack
+  order. *Why
   one:* drawing is immediate and single-threaded and scenes render one after another, so
   only one painter is ever in use (R37).
 - **Defaults change nothing; everything is exposed.** Code that draws today keeps working
@@ -81,8 +83,9 @@ is in [`render_model.md`](render_model.md).
 
 | Term | Meaning |
 |---|---|
-| **painter** | the drawing interface, one for the application: the painter state, the stack of saves, and the scene context in use; the free functions of `draw.hh` draw with it |
-| **scene context** | what a scene draws into: its layers, compositor and canvas, and the painter state saved between its frames. Owned by the scene; in use while the scene is rendered |
+| **painter** | the drawing interface, one for the application: the scene context in use; the free functions of `draw.hh` draw with it |
+| **scene context** | what a scene draws with and into: its layers, compositor and canvas, its painter state and its save stack. Owned by the scene; in use while the scene is current |
+| **current scene** | the scene the scene manager is calling into — enter, exit, update, events, render, its compositor, pause, resume, resize. Painter calls act on its context and fail when there is none (R48) |
 | **pinned scene** | the one scene in the slot above the stack; push, pop and replace never touch it |
 | **layer** | a render target texture a scene declares; drawing goes to it while it is pushed |
 | **current layer** | the layer most recently pushed and not yet popped |
@@ -102,7 +105,8 @@ is in [`render_model.md`](render_model.md).
 | **texture handle** | a layer's or a canvas's hold on a texture from the allocator; gives it back when destroyed |
 | **pool** | the allocator's unused textures, kept for reuse |
 | **layer stack** | the internal owner of one scene's layers: their settings, their targets, the frame's flags and the record of the layer pushes (§3.4) |
-| **save stack** | the painter's stack of saved states: one entry per `push_state`, the painter state to restore (§3.1). Layer pushes do not save state (R39) |
+| **save stack** | a scene's stack of saved states: one entry per `push_state`, the painter state to restore (§3.1). Layer pushes do not save state (R39) |
+| **alpha mode** | what a texture's pixels hold: straight colour, or colour already multiplied by alpha (premultiplied). Targets are premultiplied, other textures straight, unless set otherwise (§2.8, R49) |
 
 "Renderer" means SDL_Renderer (`sdlpp::renderer`), which only the painter's internals see.
 
@@ -154,23 +158,30 @@ nuts and bolts — full state, inspection, rendering into a texture (§2.4, §2.
 
 | Setting | Default | Why it matches today |
 |---|---|---|
-| scene context in use | the scene's during its `render()`; none outside scenes, where drawing goes to the bound target | tests and tools draw on the bound target as now |
+| scene context in use | the current scene's: during every call the scene manager makes into it. None outside scenes, where painter calls fail (R48) | every game runs inside a scene; engine tests run inside the harness's |
 | layers | none: drawing goes onto the canvas | one picture per scene |
 | canvas | the pixel size and logical presentation of the target it is drawn into (R42), cleared every frame | drawing onto it lands on the same pixels as drawing into the window |
 | canvas blend | `none` for a scene with `hides_below`, `blend` otherwise — and `blend` for every scene in a transparent window; set when the scene is pushed, before `on_enter()` | a full-screen scene is a plain copy, pixel-identical; an overlay shows the scenes below; a transparent window stays opaque where nothing was drawn |
 | compositor | `default_compositor` | — |
-| painter state | colour, blend and line style as SDL's defaults today; saved per scene between its frames | simplex relies on its draw colour persisting |
+| painter state | opaque black, blend `blend`, solid lines, no clip; each scene's own, kept from its creation on (R48, R49) | simplex relies on its draw colour persisting |
 | view | identity: screen space | — |
 | filtering | nearest | pixel art |
 
-Four things change underneath, all intended:
+Six things change underneath, all intended:
 
-- **Draw state is saved per scene.** A colour set by one scene no longer leaks into the
-  scene drawn after it.
+- **Each scene has its own draw state** (R48). A colour set by one scene no longer leaks
+  into another, from its `render()` or from anywhere else.
+- **Drawing outside a scene fails** (R48): in `ready()`, `teardown()` or a scene's
+  constructor. Nothing in the games, demos or tutorials draws there; simplex runs
+  `on_create` as its scene.
+- **The default blend is `blend`, and it applies to textures too** (R49). Translucent
+  primitives drawn with the default now blend instead of overwriting, and a texture made
+  with `compose()` keeps light translucent edges when it is drawn again. Opaque drawing is
+  unchanged.
 - **Overlay scenes may differ by ±1 on semi-transparent pixels**, because they pass through
   a canvas. Full-screen scenes are identical.
-- **An overlay that draws translucent colour with blend `none`**, SDL's default, shows it
-  blended over the scenes below instead of overwriting them. Drawn into the window, `none`
+- **An overlay that draws translucent colour with blend `none`** shows it blended over the
+  scenes below instead of overwriting them. Drawn into the window, `none`
   replaced the pixels: `(0, 0, 255, 128)` over red came out solid blue. On the overlay's
   own canvas the alpha is kept, and the copy blends it: `(127, 0, 255)`. Full-screen
   scenes do not change, because the window under them is black. An overlay that wants to
@@ -183,8 +194,8 @@ Four things change underneath, all intended:
 
 ```cpp
 struct painter_state {                       // everything a draw call reads
-    color               draw_color;          // set_draw_color
-    blend_mode          blend;               // set_draw_blend_mode: a preset or custom_blend(...)
+    color               draw_color;          // set_draw_color; opaque black
+    blend_mode          blend{blend_mode::blend}; // set_draw_blend_mode; every draw, textures too (R49)
     line_style          line;                // set_line_style
     std::optional<rect> clip;                // nothing outside it is drawn
     view                view;                // camera transform; identity until RM2
@@ -196,20 +207,32 @@ void push_state(const painter_state& s);                   // save, then replace
 void pop_state();
 [[nodiscard]] painter_state_scope scoped_state();          // push_state() now, pop_state() at scope end
 [[nodiscard]] painter_state_scope scoped_state(const painter_state& s);
-[[nodiscard]] blend_mode custom_blend(/* colour and alpha factors and operations */);
 ```
 
-All of these are free functions on the one painter, as `set_draw_color` is.
+All of these are free functions, as `set_draw_color` is. They act on the current scene's
+state.
 
-- **One state, saved per scene.** The scene manager restores a scene's saved state before
-  its `render()` and saves it again after; a new scene starts from the defaults. Outside
-  scenes the state carries on from call to call, as today. *Why:* nothing leaks between
-  scenes, and persistent drawing (simplex) keeps its colour.
-- **Every draw call reads the state when it is made** and sets the SDL render state it
-  needs; nothing depends on what an earlier call left behind.
+- **Each scene owns its painter state and its save stack** (R48). A scene is current
+  during every call the scene manager makes into it: `on_enter` / `on_exit`,
+  `fixed_update`, events, `render()`, its compositor, pause and resume, resize. A new
+  scene starts from the defaults, and what it sets stays until it changes it, across its
+  frames and its calls. *Why:* a scene is a part of the game — the main menu, a level —
+  and its drawing is its own. A colour set in one scene never reaches another, wherever
+  it was set, and switching scenes copies nothing.
+- **Painter calls need a scene** (R48). A draw or a state function with no scene current
+  — in `ready()`, `teardown()`, a scene's constructor — fails ENFORCE: every game runs
+  inside a scene, so drawing outside one has no meaning. Bake in `on_enter` or later.
+  `texture::create`, `fill()`, `bind()`, `compose()` and `to_image()` work anywhere; a
+  bake outside a scene fails at its first draw.
+- **Every draw call sets the SDL state it uses, at the call** (R48): a primitive its colour
+  and blend, `draw_line` its line style too, a textured draw the blend in the form its
+  source needs (§2.8). Nothing depends on what an earlier call left in SDL_Renderer, and
+  state set straight on the renderer through `native()` does not reach neutrino's draws.
+  The clip is put on each target as it is bound.
 - **`push_state` saves the state and `pop_state` restores it.** *Why:* a helper that
   changes the colour cannot leave it changed for its caller. `scoped_state` pops with
-  RAII, so an exception cannot leave a save behind.
+  RAII, so an exception cannot leave a save behind. Each call into a scene pops what it
+  pushes: one that ends with a push left fails ENFORCE, after the push is undone.
 - **A layer push does not touch the state** (R39): the state says how to draw, a layer
   where. A helper that pushes a layer and wants its colour changes undone wraps them in
   `scoped_state()` too.
@@ -220,9 +243,7 @@ All of these are free functions on the one painter, as `set_draw_color` is.
   `scoped_state(painter_state{})` draws with the defaults.
 - **There is no `set_painter_state`.** Replacing the whole state with nothing to restore
   is what the save stack exists to prevent; the setters (`set_draw_color` and the others)
-  change single fields, and `push_state(s)` replaces it all. Only the scene manager
-  replaces the state outright, when it restores a scene's saved state, and that is
-  internal.
+  change single fields, and `push_state(s)` replaces it all.
 - **State pushes and layer pushes are independent.** Each restores only its own — the
   state, or the target — so a `pop_state` between a `push_layer` and its `pop_layer`
   leaves both right.
@@ -231,14 +252,14 @@ All of these are free functions on the one painter, as `set_draw_color` is.
   the painter applies its clip to whichever target is bound — after a layer push or pop,
   or a `texture::bind()`, too. A clip set straight on the renderer, by a UI backend, is
   kept while the painter has none (R39, amended).
-- **`blend_mode` is neutrino's own enum** (`video/blend_mode.hh`): none, blend, add, mul,
-  mod and the two premultiplied forms. Its values are neutrino's; the engine maps them to
-  SDL's in one internal header (`video/blend_mode_sdl.hh`), so nothing else relies on SDL's
-  numbers (R34). One choice per draw, not flags.
-- **`custom_blend`** composes a blend mode from factors and operations, encoded by
-  neutrino and turned into SDL's at the mapping (`SDL_ComposeCustomBlendMode`, through
-  sdlpp). Only the seven presets are guaranteed on every backend; the software renderer —
-  the tests — supports no custom blend, and a draw SDL rejects counts as a failed draw.
+- **`blend_mode` is neutrino's own enum** (`video/blend_mode.hh`): none, blend, add, mul and
+  mod — the operation. The form SDL uses, straight or premultiplied, follows from what is
+  drawn (§2.8, R49). Its values are neutrino's; the engine maps them to SDL's in one
+  internal header (`video/blend_mode_sdl.hh`), so nothing else relies on SDL's numbers
+  (R34). One choice per draw, not flags.
+- **Custom blends are deferred** until a game needs one (R48). `blend_mode`'s underlying
+  type leaves room for them (R26); the software renderer, which the tests use, supports
+  none.
 
 ### 2.5 Layers
 
@@ -371,8 +392,8 @@ if (m_score_changed || needs_redraw(m_hud)) {
   its owner draws it every frame anyway.
 
 **`clear()`** clears the current layer — the base layer when none is pushed, the canvas in
-a scene without layers, the bound target outside scenes — to transparent; a `mod` layer to
-opaque white (§2.8).
+a scene without layers — to transparent; a `mod` layer to opaque white (§2.8). Like
+every painter call it needs a scene (R48).
 
 **`size`** gives a layer its own resolution; it is scaled to the canvas when combined.
 
@@ -483,6 +504,38 @@ premultiplied form of its blend:
 - **±1 on semi-transparent pixels** compared with drawing straight into the window; opaque
   pixels are identical.
 
+**Textured draws** (R49). The painter's blend is the only one: sprites, text, quads,
+meshes and `draw_texture` take it from the painter state, as primitives do, and a texture
+keeps no blend of its own. What a texture holds is the texture's own business: its
+`alpha_mode`, straight or premultiplied. The engine picks SDL's form from the two:
+
+| Painter's blend | Straight source (primitives, images, atlases) | Premultiplied source (targets) |
+|---|---|---|
+| `none` | none | none |
+| `blend` | blend | blend_premultiplied |
+| `add` | add | add_premultiplied |
+| `mul` | mul | mul (already right for premultiplied content, above) |
+| `mod` | mod | mod |
+
+- **Target textures are premultiplied; fixed and streaming textures are straight**, by
+  default. A target starts transparent and is drawn into with `blend` or `add`, which
+  leaves premultiplied colour in it — additive light included, whose alpha stays 0 while
+  its colour grows. `adopt()` follows the access it reads. Layers and canvases are
+  targets, so a layer texture a game draws itself is drawn right.
+- **`texture::set_alpha_mode()` says otherwise** when the default is wrong: a target drawn
+  into with `none` and translucent colour, images exported premultiplied, a streaming
+  texture written premultiplied, an adopted texture of unknown origin. It describes the
+  pixels, so it can change when they do.
+- **Primitives are straight:** their colour is the one given.
+- **`to_image()` returns straight colour.** A premultiplied texture's pixels are divided by
+  their alpha, so every `image` is straight and `from_image(t.to_image())` draws as `t`
+  does, within rounding at very low alpha. `screenshot()` reads opaque pixels and is
+  unaffected.
+- **Tint on a premultiplied source scales colour as well as alpha** (§2.13), as layer
+  opacity does above.
+- **`mod` ignores alpha in both forms**, so a transparent pixel acts on what is below; a
+  `mod` layer is cleared to opaque white (table above).
+
 ### 2.9 The compositor
 
 ```cpp
@@ -578,15 +631,15 @@ class play_scene : public neutrino::base_scene {
 };
 ```
 
-- **Every scene owns a scene context:** its layers, its compositor, its canvas and the
-  painter state saved between its frames. The painter uses it while the scene is
-  rendered, so the free functions draw into the scene's layers and canvas. *Why per
+- **Every scene owns a scene context:** its layers, its compositor, its canvas, its
+  painter state and its save stack. The painter uses it while the scene is current
+  (R48), so the free functions draw into the scene's layers and canvas, with the scene's
+  state. *Why per
   scene:* a menu, gameplay and a loading screen need different layers, and the scene's
   lifetime manages their textures. *Why not a painter per scene:* only one scene draws at
   a time (R37).
 - **A frame:** the scene manager walks the visible scenes bottom to top, from the topmost
-  one with `hides_below`. For each it makes the scene's context the painter's, restoring
-  its saved state, calls `render()`, and, if the scene declared layers, runs its
+  one with `hides_below`. For each it makes the scene current, calls `render()`, and, if the scene declared layers, runs its
   compositor; the pinned scene comes last (§2.11). Then the canvases are drawn into the
   window in that order, each as it is, with the blend its flags give.
 - **Overlays** are scenes whose canvas is blended over the scenes below.
@@ -602,9 +655,9 @@ class play_scene : public neutrino::base_scene {
   `on_create` and every fixed tick; the scene's `render()` copies it onto the scene's
   canvas. Simplex programs have no layers (R47).
 - **A scene rendered outside the scene manager** — a test calling `scene.render()`
-  directly — draws with no scene context: onto the bound target, as today. That works for
-  scenes without declared layers; pushing a layer there fails ENFORCE, so a layered scene
-  is rendered through the manager (tests get a helper).
+  directly — has no scene current, so its first draw fails ENFORCE (R48). Engine tests
+  run inside the harness's scene; a game's test pushes its scene, runs a frame and takes
+  `screenshot()` (R46).
 
 ### 2.11 The pinned scene
 
@@ -768,7 +821,8 @@ Placement rules — all exist in `draw.cc` today and are kept:
   `centre` (no scaling). The exact-integer `stretch` path is the seam-free one tilemaps use.
 - A quad's source may also be a texture and a source rect — a layer, a canvas — not only an
   atlas picture (the Doom melt, §4.1).
-- The blend mode comes from the painter state.
+- The blend mode comes from the painter state, its form from the picture's alpha mode
+  (§2.8). `tint` on a premultiplied source scales colour as well as alpha.
 
 ### 2.14 Inspection
 
@@ -791,6 +845,7 @@ canvases can be dumped with `texture::to_image()`.
 ### 2.15 Errors
 
 - **ENFORCE at the caller's line:**
+  - a draw or a painter state function with no scene current (R48);
   - an unknown atlas or picture index;
   - `push_layer` with a layer of a scene that is not being rendered, or `layer_id{}`;
   - `push_layer` outside a scene's `render()`;
@@ -801,8 +856,8 @@ canvases can be dumped with `texture::to_image()`.
   - drawing a layer's or a canvas's own texture into itself;
   - `style_of` in a scene that declared no layers, or on the base layer;
   - pushing a layer inside a compositor;
-  - a scene's frame, or a compositor, that ends with a `push_state()` not popped (the push
-    is undone first);
+  - a call into a scene — its frame, an update, an event, any other — or a compositor,
+    that ends with a `push_state()` not popped (the push is undone first);
   - `set_compositor` with an empty compositor, or inside the scene's own compositor;
   - a diagonal flip, a non-finite rotation or opacity, or a negative or non-finite scale
     in the style of a layer being drawn;
@@ -847,13 +902,13 @@ struct scene_context {                       // one per scene, owned by base_sce
     detail::layer_stack        layers;          // the base layer, then declaration order (§3.4)
     detail::canvas             canvas;          // the result: texture, composite, redraw, drawn
     compositor                 compositor{default_compositor};
-    painter_state              saved;           // the painter state between the scene's frames
+    painter_state              state;           // what every draw call reads; the clip included (R48)
+    std::vector<painter_state> saves;           // the save stack: one per push_state
 };
 
 class painter {                              // one: application_scoped<painter>
-    painter_state              m_state;         // what every draw call reads; the clip included
-    std::vector<painter_state> m_saves;         // the save stack: one per push_state
-    scene_context*             m_context{nullptr}; // the scene being rendered; none outside scenes
+    scene_context*             m_context{nullptr}; // the current scene's; none outside scenes (R48)
+    texture_handle             m_sink;          // 1x1: bound for a layer or canvas that failed
 };
 ```
 
@@ -873,8 +928,10 @@ class painter {                              // one: application_scoped<painter>
 - **A scene's context belongs to `base_scene`**, so `declare_layer` works in the scene's
   member initialisers, where layers are declared (§2.10), and the scene's lifetime is its
   layers' and canvas's lifetime.
-- **`m_context` is set by the scene manager around each `render()`** and is null
-  otherwise; drawing then goes to the bound target, as today.
+- **`m_context` is set by the scene manager around every call into a scene** (R48) —
+  enter, exit, update, events, render, the compositor, pause, resume, resize — and is null
+  otherwise; painter calls then fail ENFORCE. Making a scene current puts its clip on the
+  bound target; nothing else is copied.
 - **`detail::canvas`** (`src/neutrino/video/canvas.hh`) owns a scene's canvas: its texture
   from the allocator, its blend (set from its scene's flags before each copy, R45), its
   redraw mode (every frame; on demand only in its own tests) and the frame's `drawn` flag.
@@ -904,10 +961,12 @@ class painter {                              // one: application_scoped<painter>
   manager gives it the canvases drawn so far, for `below()`.
 - **A `layer_id` carries its layer stack's serial** as well as its index (§3.4), so a
   layer of a scene that is not being rendered is rejected.
-- **The save stack holds the state pushes only.** The layer pushes are recorded by the
-  scene's layer stack (§3.4): a layer push changes where draws go, not the state (R39).
-  Both are empty between frames: a scene's frame that ends with a layer or a state push
-  left fails, after undoing it, and so does a compositor that leaves a state push.
+- **A scene's save stack holds the state pushes only.** The layer pushes are recorded by
+  the scene's layer stack (§3.4): a layer push changes where draws go, not the state
+  (R39). The save stack is empty between calls into the scene, and the layer pushes
+  between frames: a call that ends with a state push left fails, after undoing it; so
+  does a frame that ends with a layer push left, and a compositor that leaves a state
+  push.
 
 ### 3.2 A frame
 
@@ -926,7 +985,7 @@ walks the visible scenes bottom to top. With the painter, after the allocator's
 2. For each visible scene:
    1. start the canvas's frame: resize its texture if the render size changed, and reset
       its `drawn` flag;
-   2. the painter takes the scene's context and restores the context's saved state;
+   2. the scene becomes current: the painter takes its context, state included (R48);
    3. a scene without layers binds its canvas, taking its texture at the first frame
       (§3.3) and clearing it unless it is redrawn on demand — or, the bottom full-screen
       scene whose canvas would only copy it, binds nothing and draws straight into the
@@ -949,8 +1008,7 @@ walks the visible scenes bottom to top. With the painter, after the allocator's
       cannot be made skips the compositor;
    7. `mark_drawn()` every handle drawn on this frame: each layer pushed, and the canvas if
       anything was drawn on it;
-   8. the canvas's binding ends; the painter saves its state into the context and lets go
-      of it.
+   8. the canvas's binding ends, and the scene stops being current.
 3. Do the same for the pinned scene, last.
 4. Clear the window now if it was not cleared because the bottom canvas would cover it,
    and that canvas has nothing to show. Draw the canvases into the window in that order,
@@ -1487,15 +1545,23 @@ them (`layer_stack::draw_all()`, `draw_declared()`).
 
 ### 3.6 Render state
 
-- **Each draw call sets the SDL state it needs** — target, blend mode, colour and alpha
-  modulation, clip — from the painter state, and assumes nothing about what the previous
-  call left. *Why:* no state leaks between helpers, layers or scenes.
+- **Each draw call sets the SDL state it uses** from the current scene's painter state,
+  and assumes nothing about what the previous call left (R48): a primitive its colour
+  and blend, `draw_line` its line style too, a textured draw the blend in the form its
+  source's alpha mode needs (§2.8). The target and the clip are set when a target is
+  bound. The renderer's own colour, blend and line style are scratch. *Why:* no state
+  leaks between helpers, layers or scenes.
 - **A texture's colour and alpha modulation are restored after the call** (as `tint_scope`
   does in `draw.cc` today), so a texture always rests at white and opaque.
 - **`texture::bind()` inside a layer** pushes the texture as a temporary target; when its
   scope ends, the layer's target is bound again.
-- **Outside scenes** the painter keeps its state in the same `painter_state`, so
-  `get_draw_color()` outside a scene behaves as today.
+- **A layer or canvas whose texture cannot be made binds the sink** (R48): a 1×1 internal
+  target, made once, so whatever is drawn while it is bound — direct SDL draws included
+  — is discarded. The failure is counted once, when the texture is refused. If the sink
+  itself cannot be made, draws land on the target below, as before, and that is logged.
+- **Outside scenes there is no painter state:** painter calls fail (R48). The scene
+  manager's own drawing — the canvases into the window, the frame's clear, the copies
+  that combine layers — is below the painter and sets SDL directly.
 - **The core is today's `draw.cc`:** `resolve_visual` (address → page and rectangle), quad
   placement including the diagonal path, line and rectangle tessellation, pixel snapping.
 
@@ -1559,13 +1625,13 @@ not (five 1080p layers ≈ 30 ms); the tests use small sizes.
 
 | Today | Becomes |
 |---|---|
-| `draw.hh` / `draw.cc`: immediate drawing; colour and blend are global SDL_Renderer state | the same calls on the one painter; its state saved per scene |
+| `draw.hh` / `draw.cc`: immediate drawing; colour and blend are global SDL_Renderer state | the same calls on the one painter, with the current scene's state; none outside scenes (R48) |
 | `application::on_render`: clear → `render_scene()` → present | each scene's context in use during its `render()`, its compositor after it, canvases into the window |
 | `scenes_manager`: one stack, the pinned scene and `passes_input` (RM10, partly done); `on_pause` only to the scene directly below | a scene context per scene; pausing by change of state |
 | simplex adapter: a persistent canvas texture bound around callbacks | unchanged (R47) |
 | `texture` (`target` access), `bind()` / `compose()`, `renderer_target_scope` | unchanged; `bind()` cooperates with the layer stack |
 | render targets created wherever they are needed; nothing reuses them | layer targets and canvases from the internal `texture_allocator` (§3.3) |
-| `blend_mode`: neutrino's own enum, mapped to SDL's internally (R34); the presets | painter state; premultiplied forms when combining; `custom_blend` |
+| `blend_mode`: neutrino's own enum, mapped to SDL's internally (R34); the presets; each texture its own blend | the painter's blend for every draw, five operations, SDL's form from the source's alpha mode (R49); `custom_blend` deferred (R48) |
 | `get_renderer()` public (`application.hh`, `draw.hh`, `globals.hh`) | hidden |
 | `sprite_draw_params`: no tint, crop or fit | `quad_params` and `draw_picture` |
 | `world_compositor`, `render_layer`, `layer_view`, `world_renderer`, `sprite_batch` camera mode | redesigned on the painter in RM2 |
@@ -1696,14 +1762,24 @@ painter, so there are no scene painters to build.
    `test/video/test_layer_stack.cc`. *Done (2026-11-23):* the old size's pooled textures
    dropped after the first frame at a new window pixel size (`application::on_render`;
    tests in `test/video/test_texture_allocator.cc`). Dropped from the step (R47): the
-   simplex picture on an on-demand layer. Not yet: the exit check in a real window.
+   simplex picture on an on-demand layer. Checked in a real window with KE (2026-11-23).
    *Exit:* tutorials, demos, simplex and
    the games unchanged (±1 on blended pixels in overlays).
-4. **Painter state.** The painter's own `painter_state` (colour, blend, line style, clip),
-   saved into each scene's context between its frames; `get_painter_state`,
-   `push_state(s)` / `scoped_state(s)`; `draw.hh` reads it and sets the SDL state each
-   call needs; the saves hold it instead of the renderer's; drawing into a failed layer
-   does nothing; `custom_blend`. *Exit:* every existing test pixel-identical.
+4. **Painter state** (R48, R49). Each scene's own `painter_state` and save stack, current
+   during every call the scene manager makes into it; painter calls with no scene current
+   fail ENFORCE; `draw.hh` sets the SDL state each call uses from it (colour and blend;
+   the line style for `draw_line`; the blend's form for textured draws); the renderer's
+   own state is scratch. The default blend `blend`, for every draw, textures included;
+   `alpha_mode` on textures (targets premultiplied, the others straight) with
+   `set_alpha_mode()`; `blend_premultiplied` and `add_premultiplied` out of the public
+   enum; `texture::set_blend_mode` removed; `to_image()` straight. A failed layer or
+   canvas binds the sink. Simplex runs `on_create` as its scene; the test harness runs
+   tests inside its scene.
+   *Done before (e9f9c59):* `push_state` / `pop_state` / `scoped_state` /
+   `get_painter_state` on the renderer's state, and the clip the painter's own (R39).
+   Deferred: `custom_blend` (R48). *Exit:* every existing test pixel-identical, except
+   where R49 changes pixels on purpose: translucent primitives drawn with the default
+   blend, and translucent pixels of target textures drawn again or read back.
 5. **Custom compositors.** `set_compositor` / `get_compositor` on the scene,
    `composition`, wrapping. *Done (2026-11-22):* all of it, built with step 3 (R43);
    wrapping tested in `test/scene/test_compositor.cc` (suite `neutrino::compositor
@@ -1740,7 +1816,14 @@ painter, so there are no scene painters to build.
   base layer takes a canvas texture and gives it back when the shake ends; a scene hidden
   under one with `hides_below` gives its every-frame canvas's texture back, and an
   on-demand canvas keeps it;
-- the clip rect clips; a draw colour set in one scene does not leak into the next;
+- the clip rect clips; a draw colour set in one scene does not leak into the next, from
+  its `render()`, its update or an event handler; a scene's colour lasts from its
+  `on_enter` to its frames; a draw or a state function with no scene current fails; a
+  push left at the end of an update fails, after it is undone; a colour set on the
+  renderer through `native()` does not reach a neutrino draw;
+- sprites drawn with `add` add; a `compose()`d texture with translucent edges keeps them
+  when drawn again; `to_image()` of a premultiplied texture is straight; drawing into a
+  layer whose texture failed changes nothing;
 - each ENFORCE of §2.15;
 - pixel tests for tint, crop and each fit mode.
 

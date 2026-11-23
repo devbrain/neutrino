@@ -151,7 +151,7 @@ namespace {
             [[nodiscard]] layer_id layer(std::size_t i) const { return m_ids.at(i); }
 
             [[nodiscard]] layer_stack& layers() {
-                layer_stack* s = scene_context_access::of(this);
+                layer_stack* s = scene_context_access::layer_stack_of(this);
                 REQUIRE(s != nullptr);
                 return *s;
             }
@@ -373,11 +373,11 @@ TEST_SUITE("neutrino::scene layers") {
         std::optional <SDL_Texture*> seen;
         layered_scene layered(probe);
         plain_scene plain(seen);
-        layer_stack* layers = scene_context_access::of(&layered);
+        layer_stack* layers = scene_context_access::layer_stack_of(&layered);
         REQUIRE(layers != nullptr);
         CHECK(layers->target(layered.hud()) == nullptr);          // no texture before its first push
-        CHECK(scene_context_access::of(&plain) == nullptr);
-        CHECK(scene_context_access::of(nullptr) == nullptr);
+        CHECK(scene_context_access::layer_stack_of(&plain) == nullptr);
+        CHECK(scene_context_access::layer_stack_of(nullptr) == nullptr);
     }
 
     TEST_CASE("the scene manager runs a layered scene's frame around render()") {
@@ -391,7 +391,7 @@ TEST_SUITE("neutrino::scene layers") {
 
         mgr.render();
 
-        layer_stack* layers = scene_context_access::of(scene);
+        layer_stack* layers = scene_context_access::layer_stack_of(scene);
         REQUIRE(layers != nullptr);
         CHECK(probe.renders == 1);
         CHECK(probe.rendering);

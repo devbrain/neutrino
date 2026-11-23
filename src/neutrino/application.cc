@@ -488,8 +488,8 @@ namespace neutrino {
             }
         }
         // The application-scoped objects go next, newest first, while SDL is still up: the
-        // painter state stack, then the texture allocator (made early in on_ready()). The
-        // handles the scenes held are already back. They may use the services below, never
+        // texture allocator (made early in on_ready()). The painter state went with the scenes
+        // (R48). The handles the scenes held are already back. They may use the services below, never
         // the reverse.
         if (m_pimpl->m_scope_open) {
             m_pimpl->m_scope_open = false;

@@ -6,6 +6,7 @@
 #include <doctest/doctest.h>
 #include <neutrino/video/globals.hh>
 #include <neutrino/video/draw.hh>
+#include <neutrino/video/painter_state.hh>
 #include <sdlpp/app/game_application.hh>
 #include <functional>
 #include <limits>
@@ -390,7 +391,8 @@ TEST_SUITE("neutrino::simplex frames") {
         check_pixel(output.renderer, 3, 3, 255, 0, 0);
         check_pixel(output.renderer, 4, 4, 255, 0, 0);
         probe.update = [] {
-            neutrino::set_draw_color(sdlpp::colors::blue);
+            // The renderer's colour is scratch (R48): a raw clear sets its own.
+            REQUIRE(neutrino::get_renderer().set_draw_color(sdlpp::colors::blue));
             REQUIRE(neutrino::get_renderer().clear());
         };
         session.frame(one_tick);
@@ -398,24 +400,29 @@ TEST_SUITE("neutrino::simplex frames") {
         check_pixel(output.renderer, 3, 3, 0, 0, 255);
     }
 
-    TEST_CASE("callback draw color retains floating-point precision between frames") {
+    TEST_CASE("the painter state set in on_create lasts into on_update, between frames") {
+        // on_create runs as the simplex scene, so what it sets is the scene's (R48).
         app_session session;
-        const sdlpp::fcolor color{0.1234f, 0.4567f, 0.7891f, 0.6543f};
+        const neutrino::color color{12, 34, 56, 78};
         probe.create = [color] {
-            REQUIRE(neutrino::get_renderer().set_draw_color_float(color));
+            neutrino::set_draw_color(color);
+            neutrino::set_draw_blend_mode(neutrino::blend_mode::blend);
         };
         probe.update = [color] {
-            const auto current = neutrino::get_renderer().get_draw_color_float();
-            REQUIRE(current);
-            CHECK(current->r == doctest::Approx(color.r));
-            CHECK(current->g == doctest::Approx(color.g));
-            CHECK(current->b == doctest::Approx(color.b));
-            CHECK(current->a == doctest::Approx(color.a));
+            CHECK(neutrino::get_draw_color() == color);
+            CHECK(neutrino::get_draw_blend_mode() == neutrino::blend_mode::blend);
         };
         REQUIRE(session.init() == SDL_APP_CONTINUE);
         session.frame(one_tick);
         session.frame(0.05f);
         CHECK(probe.updates.size() >= 2);
+    }
+
+    TEST_CASE("a push left by on_create fails startup") {
+        app_session session;
+        probe.create = [] { neutrino::push_state(); };
+        CHECK(session.init() == SDL_APP_FAILURE);
+        CHECK(probe.updates.empty());
     }
 
     TEST_CASE("returning false stops immediately, even within the same frame, and never invokes another update") {

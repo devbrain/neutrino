@@ -6,7 +6,11 @@
 #include <SDL3/SDL.h>
 
 #include <memory>
+#include <optional>
 #include <string>
+
+#include "scene/scene_context_access.hh"
+#include "video/painter_state_stack.hh"
 
 namespace neutrino::test {
     /// A scene that does nothing. Every application has at least one scene; the harness installs
@@ -46,6 +50,9 @@ namespace neutrino::test {
                 app->init_sdl_();
                 app->on_init(0, nullptr);
                 m_started = true;
+                // Painter calls need a scene current (R48); a test runs as this one.
+                m_scene = std::make_unique <idle_scene>();
+                m_as_scene.emplace(*neutrino::detail::scene_context_access::painter_state_stack_of(m_scene.get()));
             }
 
             ~basic_test_application() {
@@ -70,6 +77,12 @@ namespace neutrino::test {
                 app->on_iterate();
             }
 
+            /// Ends the harness's scene: no scene is current any more, as in ready(), for the
+            /// tests of what fails outside scenes. Pushes it holds are undone.
+            void leave_scene() noexcept {
+                m_as_scene.reset();
+            }
+
             /// Deliver one synthetic SDL event through the real dispatch: sdlpp's on_event(),
             /// its lifecycle hooks (on_low_memory(), ...), then the application's handle_event().
             void feed(const SDL_Event& ev) {
@@ -80,6 +93,8 @@ namespace neutrino::test {
                 if (!m_started) {
                     return;
                 }
+                leave_scene();
+                m_scene.reset();
 
                 auto* app = neutrino::detail::application_access::base(m_app);
                 app->on_quit();
@@ -99,6 +114,10 @@ namespace neutrino::test {
 
             App m_app;
             bool m_started{false};
+            /// The scene tests run as (R48). Not on the scene stack, so a test that empties the
+            /// stack (scenes_manager::finish()) does not end it.
+            std::unique_ptr <base_scene> m_scene;
+            std::optional <neutrino::detail::painter_state_stack::current_scope> m_as_scene;
     };
 
     /// The harness most tests use: the stock engine with an idle first scene.

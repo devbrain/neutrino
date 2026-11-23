@@ -5,6 +5,7 @@
 #pragma once
 
 #include <exception>
+#include <memory>
 #include <string>
 #include <neutrino/application.hh>
 #include <optional>
@@ -17,6 +18,8 @@ namespace neutrino::simplex {
         // Runs a simplex::application on the engine. The canvas and the user's lifecycle live
         // here; the frame itself runs through the scene stack: create_initial_scene() installs a
         // simplex_scene that calls run_update() on every fixed tick and present() on every render.
+        // ready() makes that scene and runs on_create as it, so the painter state the user sets
+        // there is the scene's, and lasts into its updates (R48).
         class NEUTRINO_EXPORT application_adapter : public neutrino::application {
             public:
                 application_adapter(simplex::application* owner, int width_px, int height_px,
@@ -47,7 +50,8 @@ namespace neutrino::simplex {
                 simplex::application* m_owner;
                 dim m_canvas_size;
                 std::optional<neutrino::texture> m_canvas;
-                sdlpp::fcolor m_canvas_color{0.0f, 0.0f, 0.0f, 1.0f};
+                // Made in ready(), so on_create runs as it; create_initial_scene() hands it over.
+                std::unique_ptr <base_scene> m_scene;
                 lifecycle m_state = lifecycle::idle;
                 std::exception_ptr m_failure;
         };
