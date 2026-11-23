@@ -344,8 +344,9 @@ Everything below the painter lives in `src/` and is not installed:
 
 **The data.** A layer is more than a render target: it is an entry in an ordered list.
 `push_layer` / `pop_layer` only choose the current entry; the list's order is what the
-default compositor follows. The one painter holds the state and the save stack; each scene
-holds its context (R37, [`painter.md`](painter.md) §3.1):
+default compositor follows. Each scene holds its context, its painter state and saves
+included (R48); one painter context per application says what is current
+([`painter.md`](painter.md) §3.1):
 
 ```cpp
 struct layer_entry {
@@ -360,10 +361,10 @@ struct scene_context {               // one per scene, owned by base_scene
     compositor               compositor{default_compositor};
     painter_state            saved;             // the painter state between the scene's frames
 };
-class painter {                      // one: application_scoped<painter> (R38)
-    painter_state            m_state;
-    std::vector<save_entry>  m_saves;           // push_layer and push_state, one stack
-    scene_context*           m_context{nullptr};// the scene being rendered
+struct painter_context {             // one: application_scoped<painter_context> (R38)
+    painter_state_stack*     scene{nullptr};    // the current scene's state and saves (R48)
+    scene_frame*             frame{nullptr};    // the frame open now
+    bool                     discards{false};   // the bound target could not be made
 };
 ```
 
@@ -1611,8 +1612,9 @@ earlier on 2026-11-09 are superseded by the immediate model. The numbers are reu
   later object usually depends on an earlier one); after quit the pointer reads null and
   the next application gets a new object, instead of a deleted pointer and a null queue;
   registration is locked; a throwing destructor is logged, not swallowed. Users: the
-  painter's state stack (R37) and the texture allocator (R20), made early in `on_ready()`
-  so it outlives anything made later. Not a port of everything: the services the
+  painter context — the current scene, frame and target (2026-11-23; the painter's state
+  stack before R48 made it per scene) — and the texture allocator (R20), made early in
+  `on_ready()` so it outlives anything made later. Not a port of everything: the services the
   application owns directly stay as they are.
 - **R39 — The painter state and the layers are independent** (2026-11-18; replaces R37's
   shared save stack). A layer push changes where draws go, not how: `push_layer` /

@@ -8,30 +8,12 @@
 
 #include <failsafe/failsafe.hh>
 
-#include <neutrino/video/globals.hh>
-
-#include "services/service_locator.hh"
-#include "video/draw_failures.hh"
+#include "video/painter_context.hh"
 
 namespace neutrino::detail {
     namespace {
-        // The current scene's state; null outside scenes (R48). Main thread only, like drawing.
-        painter_state_stack* g_current = nullptr;
-
         // Ids of saves, so a painter_state_scope pops its own save and nothing else.
         std::uint64_t g_last_save_id = 0;
-
-        // Puts @p clip on the target bound now, if there is a renderer. Never throws: a failure
-        // is counted.
-        void switch_clip(const std::optional <rect>& clip) noexcept {
-            try {
-                if (service_locator::instance().maybe_renderer() != nullptr) {
-                    painter_state_stack::apply_clip(clip);
-                }
-            } catch (...) {
-                count_draw_failure();
-            }
-        }
 
         [[nodiscard]] std::optional <rect> clip_of(const painter_state_stack* stack) noexcept {
             return stack ? stack->clip() : std::nullopt;
@@ -41,8 +23,8 @@ namespace neutrino::detail {
     painter_state_stack::painter_state_stack() = default;
 
     painter_state_stack::~painter_state_stack() {
-        if (g_current == this) {
-            g_current = nullptr;                  // a scene destroyed while current
+        if (painter_context* c = painter_context::maybe(); c != nullptr && c->scene == this) {
+            c->scene = nullptr;                   // a scene destroyed while current
         }
         if (!m_saves.empty()) {
             LOG_ERROR("a scene was destroyed with", m_saves.size(), "painter state save(s) never popped");
@@ -50,11 +32,12 @@ namespace neutrino::detail {
     }
 
     painter_state_stack* painter_state_stack::maybe() noexcept {
-        return g_current;
+        const painter_context* c = painter_context::maybe();
+        return c != nullptr ? c->scene : nullptr;
     }
 
     painter_state_stack& painter_state_stack::instance() {
-        painter_state_stack* current = g_current;
+        painter_state_stack* current = maybe();
         ENFORCE(current != nullptr, "a painter call with no scene current: draw and set the painter "
                 "state from a scene's on_enter, update, events or render (R48)");
         return *current;
@@ -78,10 +61,6 @@ namespace neutrino::detail {
 
     const std::optional <rect>& painter_state_stack::clip() const noexcept {
         return m_state.clip;
-    }
-
-    void painter_state_stack::reapply_clip() const {
-        apply_clip(m_state.clip);
     }
 
     void painter_state_stack::apply(const painter_state& s) {
@@ -146,32 +125,25 @@ namespace neutrino::detail {
         ENFORCE(false, what, "ended with", left - depth, "push_state() not popped");
     }
 
-    void painter_state_stack::apply_clip(const std::optional <rect>& clip) {
-        auto& r = get_renderer();
-        const auto set = clip ? r.set_clip_rect(*clip) : r.set_clip_rect(std::nullopt);
-        if (!set) {
-            LOG_ERROR("cannot set the renderer's clip rect:", set.error());
-            count_draw_failure();
-        }
-    }
-
     // ---- current_scope --------------------------------------------------------------------------
 
     painter_state_stack::current_scope::current_scope(painter_state_stack& stack)
         : m_stack(stack),
-          m_previous(g_current),
+          m_previous(painter_context::instance().scene),
           m_depth(stack.depth()) {
         if (clip_of(m_previous) != m_stack.clip()) {
-            switch_clip(m_stack.clip());
+            try_apply_clip(m_stack.clip());
         }
-        g_current = &m_stack;
+        painter_context::instance().scene = &m_stack;
     }
 
     painter_state_stack::current_scope::~current_scope() {
         m_stack.pop_to(m_depth);                  // the call threw with pushes left
-        g_current = m_previous;
+        if (painter_context* c = painter_context::maybe()) {
+            c->scene = m_previous;
+        }
         if (clip_of(m_previous) != m_stack.clip()) {
-            switch_clip(clip_of(m_previous));
+            try_apply_clip(clip_of(m_previous));
         }
     }
 

@@ -58,6 +58,19 @@ namespace neutrino {
 
     class texture;
 
+    namespace detail {
+        /// @brief Internal: what a renderer_target_scope saves of the target bound when it
+        ///        begins, and puts back when it ends (painter.md §3.1).
+        struct target_state {
+            /// The painter had a clip, so the target held it: if the painter has none when the
+            /// scope ends, the target's clip is cleared; otherwise it keeps its own (R39).
+            bool painter_clip{false};
+            /// Drawing into the target did nothing: a layer's or a canvas's whose texture could
+            /// not be made (painter.md §3.6).
+            bool discards{false};
+        };
+    }
+
     /**
      * @brief While alive, neutrino draws land in a target texture; on destruction the previously
      *        current render target is restored. Returned by texture::bind().
@@ -84,13 +97,8 @@ namespace neutrino {
             explicit renderer_target_scope(sdlpp::renderer& r); // sdlpp-ok: private
 
             std::optional <sdlpp::renderer::target_guard> m_guard; // sdlpp-ok: private
-            /// The painter had a clip when the scope began, so the previous target held it:
-            /// if the painter has none when the scope ends, that target's clip is cleared.
-            /// Otherwise the target keeps its own clip (R39).
-            bool m_painter_clip{false};
-            /// The target bound before discarded drawing — a layer or a canvas whose texture
-            /// could not be made: put back when the scope ends (painter.md §3.6).
-            bool m_discards{false};
+            /// The target bound before: put back when the scope ends.
+            detail::target_state m_before;
     };
 
     /**

@@ -177,10 +177,8 @@ neutrino_subsystem(video
         flip_mode_sdl.hh
         line_style_sdl.hh
         painter_state.cc
-        painter_state_internal.hh
-        painter_state_internal.cc
-        target_discard.hh
-        target_discard.cc
+        painter_context.hh
+        painter_context.cc
         globals.cc
         palette.cc
         sprites.cc

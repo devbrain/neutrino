@@ -5,8 +5,7 @@
 #include <neutrino/video/texture.hh>
 #include <neutrino/video/globals.hh>
 
-#include "video/painter_state_internal.hh"
-#include "video/target_discard.hh"
+#include "video/painter_context.hh"
 #include "video/target_geometry.hh"
 
 
@@ -128,13 +127,12 @@ namespace neutrino {
     // The guard restores on destruction and a moved-from guard restores nothing, so moving and
     // resetting the optional is all the bookkeeping a scope needs.
     renderer_target_scope::renderer_target_scope(sdlpp::renderer& r) // sdlpp-ok: private
-        : m_painter_clip(detail::painter_has_clip()), m_discards(detail::target_discards()) {
+        : m_before(detail::save_target()) {
         m_guard.emplace(r);
     }
 
     renderer_target_scope::renderer_target_scope(renderer_target_scope&& other) noexcept
-        : m_guard(std::move(other.m_guard)), m_painter_clip(other.m_painter_clip),
-          m_discards(other.m_discards) {
+        : m_guard(std::move(other.m_guard)), m_before(other.m_before) {
         other.m_guard.reset();
     }
 
@@ -142,8 +140,7 @@ namespace neutrino {
         if (this != &other) {
             end();
             m_guard = std::move(other.m_guard);
-            m_painter_clip = other.m_painter_clip;
-            m_discards = other.m_discards;
+            m_before = other.m_before;
             other.m_guard.reset();
         }
         return *this;
@@ -157,8 +154,7 @@ namespace neutrino {
         if (m_guard) {
             m_guard.reset();                      // the previous target is bound again
             detail::count_target_switch();
-            (void) detail::set_target_discards(m_discards);   // and draws into it as before
-            detail::clip_after_scope(m_painter_clip);   // the painter's clip, or the target's own
+            detail::restore_target(m_before);     // it discards as before; its clip
         }
     }
 
@@ -242,8 +238,7 @@ namespace neutrino {
         auto& r = get_renderer();
         renderer_target_scope scope(r);
         set_render_target(m_texture);
-        (void) detail::set_target_discards(false); // a real target, inside a failed layer too
-        detail::clip_bound_texture();             // the painter's clip, or none (R39)
+        detail::texture_bound();                  // drawn into; the painter's clip, or none (R39)
         if (clear) {
             // Clearing uses the renderer's draw colour, which is scratch: every draw call sets
             // the colour it uses (R48).

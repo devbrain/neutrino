@@ -35,7 +35,7 @@
 #include "video/target_geometry.hh"
 #include "video/composite_draw.hh"
 #include "video/layer_stack.hh"
-#include "video/target_discard.hh"
+#include "video/painter_context.hh"
 #include "video/texture_allocator.hh"
 #include "test_application.hh"
 

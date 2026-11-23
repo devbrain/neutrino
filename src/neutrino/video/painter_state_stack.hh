@@ -19,8 +19,8 @@ namespace neutrino::detail {
     /**
      * A scene's painter state and its saves (painter.md §2.4, R48): what the draw calls read
      * while the scene is current. Each scene owns one. The current one is the scene the scene
-     * manager is calling into, made current by a current_scope; with none current, every
-     * painter call fails ENFORCE (instance()).
+     * manager is calling into (painter_context::scene), made current by a current_scope; with
+     * none current, every painter call fails ENFORCE (instance()).
      *
      * The state is the painter's own: the draw calls set the SDL state they use from it at
      * each call, so the renderer's colour, blend and line style are scratch. The clip is put
@@ -48,11 +48,9 @@ namespace neutrino::detail {
             void set_blend(blend_mode mode) noexcept;
             void set_line(const line_style& style) noexcept;
 
-            /// The painter's clip, if it has one.
+            /// The painter's clip, if it has one. Putting it on a target is the painter
+            /// context's (apply_clip()).
             [[nodiscard]] const std::optional <rect>& clip() const noexcept;
-
-            /// The painter's clip on the target bound now, after the bound target changed.
-            void reapply_clip() const;
 
             /// Saves the state; the state does not change. Returns the save's id (never 0).
             std::uint64_t push();
@@ -78,10 +76,6 @@ namespace neutrino::detail {
             /// Ends a call into the scene that began with @p depth saves (R48): a push left is
             /// undone, then fails ENFORCE, naming @p what.
             void end_call(std::size_t depth, const char* what);
-
-            /// Sets @p clip on the target bound now. A failure is logged and counted, like a
-            /// draw's.
-            static void apply_clip(const std::optional <rect>& clip);
 
         private:
             // Makes @p s the state; the clip goes on the target bound now only if it changed,

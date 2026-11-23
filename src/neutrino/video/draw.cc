@@ -23,7 +23,7 @@
 #include "video/line_style_sdl.hh"
 #include "video/draw_failures.hh"
 #include "video/painter_state_stack.hh"
-#include "video/target_discard.hh"
+#include "video/painter_context.hh"
 
 namespace neutrino {
     using detail::has_diagonal_flip;

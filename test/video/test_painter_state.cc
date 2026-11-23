@@ -13,8 +13,11 @@
 #include <neutrino/video/painter_state.hh>
 #include <neutrino/video/texture.hh>
 
+#include "scene/scene_frame.hh"
 #include "scene/scenes_manager.hh"
 #include "services/service_locator.hh"
+#include "video/painter_context.hh"
+#include "video/painter_state_stack.hh"
 #include "test_application.hh"
 
 #include <functional>
@@ -464,5 +467,28 @@ TEST_SUITE("neutrino::painter_state per scene") {
         pop_state();
         CHECK(get_painter_state().draw_color == painter_state{}.draw_color);
         mgr.finish();
+    }
+}
+
+TEST_SUITE("neutrino::detail::painter_context") {
+    TEST_CASE("each application starts with nothing current; none outside an application") {
+        using detail::painter_context;
+        {
+            test::test_application app("painter context first");
+            REQUIRE(painter_context::maybe() != nullptr);  // the harness's scene made it
+            CHECK(painter_context::maybe()->scene != nullptr);
+            // What a scope ending out of order would leave behind.
+            painter_context::instance().discards = true;
+            painter_context::instance().frame = reinterpret_cast <detail::scene_frame*>(&app);
+        }
+        CHECK(painter_context::maybe() == nullptr);        // gone with the application
+        CHECK(detail::painter_state_stack::maybe() == nullptr);
+        CHECK_FALSE(detail::target_discards());
+        CHECK_FALSE(detail::scene_frame::rendering());
+
+        test::test_application app("painter context second");
+        CHECK_FALSE(detail::target_discards());
+        CHECK_FALSE(detail::scene_frame::rendering());
+        draw_point(0, 0);                                  // the harness's scene is current
     }
 }

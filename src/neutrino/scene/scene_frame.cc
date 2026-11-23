@@ -12,13 +12,10 @@
 #include "video/canvas.hh"
 #include "video/composite_draw.hh"
 #include "video/layer_stack.hh"
+#include "video/painter_context.hh"
 #include "video/target_geometry.hh"
 
 namespace neutrino::detail {
-    bool scene_frame::s_rendering = false;
-    layer_stack* scene_frame::s_current = nullptr;
-    scene_frame* scene_frame::s_frame = nullptr;
-
     render_shortcuts& shortcuts() noexcept {
         static render_shortcuts s;
         return s;
@@ -34,9 +31,7 @@ namespace neutrino::detail {
           m_canvas(scene_context_access::canvas_of(scene)),
           m_compositor(scene_context_access::compositor_of(scene)),
           m_below(below) {
-        // A flag of its own: s_current is null in a scene without layers too, so it cannot
-        // tell whether a frame is open.
-        ENFORCE(!s_rendering, "a scene is already being rendered");
+        ENFORCE(!rendering(), "a scene is already being rendered");
         // The scene's painter state for render() and its compositor (R48), before anything is
         // bound: the canvas or the base layer takes its clip.
         if (scene != nullptr) {
@@ -69,9 +64,7 @@ namespace neutrino::detail {
         }
         // With neither, render() draws into the target bound now.
         // Only now: if anything above throws, the destructor does not run, and nothing is set.
-        s_rendering = true;
-        s_current = m_layers;
-        s_frame = this;
+        painter_context::instance().frame = this;
     }
 
     void scene_frame::finish() {
@@ -146,16 +139,16 @@ namespace neutrino::detail {
         }
         m_canvas_binding.reset();              // never throws
         m_discard.reset();
-        s_rendering = false;
-        s_current = nullptr;
-        s_frame = nullptr;
+        if (painter_context* c = painter_context::maybe()) {
+            c->frame = nullptr;
+        }
         // Then m_painter ends: the pushes render() left if it threw are undone, and the
         // painter state current before the frame is back. Never throws.
     }
 
     void scene_frame::clear_current() {
-        ENFORCE(s_frame != nullptr, "clear() outside a scene's render()");
-        scene_frame& f = *s_frame;
+        ENFORCE(rendering(), "clear() outside a scene's render()");
+        scene_frame& f = *painter_context::instance().frame;
         if (f.m_layers) {
             f.m_layers->clear_current();
         } else if (f.m_canvas_binding) {
@@ -179,10 +172,12 @@ namespace neutrino::detail {
     }
 
     bool scene_frame::rendering() noexcept {
-        return s_rendering;
+        const painter_context* c = painter_context::maybe();
+        return c != nullptr && c->frame != nullptr;
     }
 
     layer_stack* scene_frame::get_current_layers_stack() noexcept {
-        return s_current;
+        const painter_context* c = painter_context::maybe();
+        return c != nullptr && c->frame != nullptr ? c->frame->m_layers : nullptr;
     }
 }

@@ -907,16 +907,29 @@ struct scene_context {                       // one per scene, owned by base_sce
     std::vector<painter_state> saves;           // the save stack: one per push_state
 };
 
-class painter {                              // one: application_scoped<painter>
-    scene_context*             m_context{nullptr}; // the current scene's; none outside scenes (R48)
-    bool                       m_discarding{false}; // the bound target could not be made: draws do nothing (§3.6)
+struct painter_context {                     // one: application_scoped<painter_context>
+    painter_state_stack*       scene{nullptr};     // the current scene's state and saves; none outside scenes (R48)
+    scene_frame*               frame{nullptr};     // the frame open now; none outside one
+    bool                       discards{false};    // the bound target could not be made: draws do nothing (§3.6)
 };
 ```
 
-- **The painter is `application_scoped<painter>`** (`services/application_scoped.hh`):
-  made on first use, destroyed when the application quits, before SDL goes. The free
-  functions of `draw.hh` reach it through `instance()`; anything that may run during or
-  after quit uses `maybe()`, which is null then.
+- **What is current for drawing is one `detail::painter_context`**
+  (`video/painter_context.hh`), `application_scoped` (`services/application_scoped.hh`):
+  made on first use, destroyed when the application quits, before SDL goes, so each
+  application starts with nothing current. It has three axes, each changed by scopes of
+  its own: the scene (`painter_state_stack::current_scope`), the frame (`scene_frame`)
+  and the bound target — whether it discards, and the painter's clip on it
+  (`discard_scope`, `texture::bind()` and its `renderer_target_scope`, which saves what
+  the context says of the target bound before it, `detail::target_state`, and puts it
+  back). Putting the painter's clip on a target is the context's too; the scene's state
+  only holds the clip. A layer push changes the target but not
+  the state (R39), so no scope sets more than one axis. The free functions of `draw.hh`
+  reach it through `instance()`; anything that may run during or after quit uses
+  `maybe()`, which is null then. *Why one object:* what is current is in one place, and
+  a scope that ends out of order cannot leave it set for the next application, as file
+  statics did. Counters (`draw_failure_count()`, target switches) and settings
+  (`pixel_snap`, the test switches) are not current state and stay where they are.
 - **`application_scoped<T>`** is the engine's lifetime for objects that live as long as the
   application (R38). `on_ready()` opens the application scope; `on_quit()` closes it right
   after the scenes and `teardown()`, before the application's own services and SDL, and
@@ -929,7 +942,7 @@ class painter {                              // one: application_scoped<painter>
 - **A scene's context belongs to `base_scene`**, so `declare_layer` works in the scene's
   member initialisers, where layers are declared (§2.10), and the scene's lifetime is its
   layers' and canvas's lifetime.
-- **`m_context` is set by the scene manager around every call into a scene** (R48) —
+- **`scene` is set by the scene manager around every call into a scene** (R48) —
   enter, exit, update, events, render, the compositor, pause, resume, resize — and is null
   otherwise; painter calls then fail ENFORCE. Making a scene current puts its clip on the
   bound target; nothing else is copied.
@@ -1803,7 +1816,8 @@ painter, so there are no scene painters to build.
    what is drawn into them, through a painter flag instead of the 1×1 sink R48 planned;
    the bottom scene without layers keeps drawing into the window; tests in
    `test/video/test_layer_stack.cc` and `test/scene/test_compositor.cc` (suite
-   `neutrino::failed targets`).
+   `neutrino::failed targets`). What is current — the scene, the frame, the bound target —
+   moved from file statics into one `application_scoped` `detail::painter_context`.
    Deferred: `custom_blend` (R48). *Exit:* every existing test pixel-identical, except
    where R49 changes pixels on purpose: translucent primitives drawn with the default
    blend, and translucent pixels of target textures drawn again or read back.

@@ -15,7 +15,7 @@
 #include <neutrino/video/texture.hh>
 
 #include "video/composite_draw.hh"
-#include "video/target_discard.hh"
+#include "video/painter_context.hh"
 #include "video/target_geometry.hh"
 #include "video/texture_handle.hh"
 

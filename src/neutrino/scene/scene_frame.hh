@@ -12,8 +12,8 @@
 #include <neutrino/video/composition.hh>
 #include <neutrino/video/texture.hh>
 
+#include "video/painter_context.hh"
 #include "video/painter_state_stack.hh"
-#include "video/target_discard.hh"
 
 namespace neutrino {
     class base_scene;
@@ -124,8 +124,8 @@ namespace neutrino::detail {
             ///        frame_target::canvas_or_bound_target. A failed base layer discards.
             [[nodiscard]] bool draws_into_target() const;
 
-            /// @brief True while a frame is open, whether or not its scene has layers; the
-            ///        compositor runs inside it.
+            /// @brief True while a frame is open (painter_context::frame), whether or not its
+            ///        scene has layers; the compositor runs inside it.
             [[nodiscard]] static bool rendering() noexcept;
             /// @brief The layers of the scene being rendered; null outside a frame, and in a
             ///        scene without layers.
@@ -152,9 +152,5 @@ namespace neutrino::detail {
             /// draw into the target bound before: drawing does nothing (painter.md §3.6).
             std::optional <discard_scope> m_discard;
             bool m_finished{false};
-            static bool s_rendering;
-            static layer_stack* s_current;
-            /// The frame open now; null outside one.
-            static scene_frame* s_frame;
     };
 }
