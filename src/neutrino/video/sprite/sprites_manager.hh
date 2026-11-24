@@ -165,10 +165,6 @@ namespace neutrino {
             [[nodiscard]] bool uses(sprite_sheet_id id) const;
 
         private:
-            static sprite_sheet_id make_sheet_id(std::uint32_t value);
-            static sprite_animation_id make_animation_id(std::uint32_t value);
-            static sprite_state_id make_state_id(std::uint32_t value);
-
             void validate_sheet(const sprite_sheet& sheet) const;
             void validate_appearance(const sprite_appearance& appearance) const;
             void validate_animation(const sprite_animation& animation) const;

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include <neutrino/neutrino_export.h>
-#include <neutrino/detail/id_strong_type.hh>
+#include <neutrino/detail/generic_handle.hh>
 #include <neutrino/video/sprite/sprite_appearance.hh>
 
 namespace neutrino {
@@ -25,21 +25,7 @@ namespace neutrino {
      * The handle identifies animation metadata stored by the internal sprite
      * manager. It is not a playback clock and carries no world position.
      */
-    class NEUTRINO_EXPORT sprite_animation_id
-        : public detail::id_strong_type <detail::sprite_animation_id_tag> {
-        friend struct detail::id_access;
-
-        public:
-            /**
-             * @brief Construct an invalid animation handle.
-             */
-            sprite_animation_id() = default;
-
-        private:
-            explicit sprite_animation_id(std::uint32_t value)
-                : id_strong_type(value) {
-            }
-    };
+    using sprite_animation_id = detail::generic_handle <detail::sprite_animation_id_tag>;
 
     /**
      * @brief Duration type used by sprite animation definitions.
@@ -172,12 +158,3 @@ namespace neutrino {
      */
     NEUTRINO_EXPORT void unregister_sprite_animation(sprite_animation_id animation);
 }
-
-/**
- * @brief @c std::hash specialization so @ref neutrino::sprite_animation_id keys
- *        @c unordered_map / @c unordered_set.
- */
-template<>
-struct std::hash <neutrino::sprite_animation_id>
-    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::sprite_animation_id_tag>> {
-};

@@ -97,6 +97,22 @@ TEST_SUITE("neutrino::video::sprite_state") {
         CHECK(resolved.visible);
     }
 
+    TEST_CASE("a sprite state id kept from an earlier application names nothing in the next") {
+        const neutrino::sprite_appearance appearance{.visible = true};
+
+        neutrino::sprite_state_id earlier;
+        {
+            neutrino::test::test_application first("Sprite state id, first application");
+            earlier = neutrino::create_sprite_state(appearance);
+        }
+
+        neutrino::test::test_application second("Sprite state id, second application");
+        const auto state = neutrino::create_sprite_state(appearance);
+        CHECK(state != earlier);
+        CHECK_THROWS(static_cast <void>(neutrino::sprite_state_appearance(earlier)));
+        CHECK_NOTHROW(static_cast <void>(neutrino::sprite_state_appearance(state)));
+    }
+
     TEST_CASE("sprite states resolve animations advanced by the application loop") {
         neutrino::application_config cfg;
         cfg.title = "Sprite state animation test";

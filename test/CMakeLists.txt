@@ -81,6 +81,7 @@ add_executable(neutrino_tests
         detail/test_content_hash.cc
         detail/test_enum.cc
         detail/test_application_scoped.cc
+        detail/test_generic_handle.cc
 
         utils/test_lru.cc
 )

@@ -53,8 +53,10 @@ neutrino_subsystem(detail
         enum.hh
         hash.hh
         id_strong_type.hh
+        generic_handle.hh
     PRIVATE
         hash.cc
+        generic_handle_factory.hh
 )
 
 neutrino_subsystem(utils
@@ -224,8 +226,6 @@ neutrino_subsystem(video_atlas DIR video/atlas
         bitmask.hh
         image_atlas.hh
     PRIVATE
-        atlas_id_gen.cc
-        atlas_id_gen.hh
         bitmask.cc
         image_atlas.cc
         shelf_packer.hh

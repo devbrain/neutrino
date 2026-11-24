@@ -3,7 +3,6 @@
 //
 
 #include "texture_registry.hh"
-#include "video/atlas/atlas_id_gen.hh"
 
 #include <utility>
 

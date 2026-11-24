@@ -3,11 +3,11 @@
 //
 
 #include <algorithm>
-#include <atomic>
 #include <utility>
 #include <failsafe/enforce.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
 #include "fonts_manager.hh"
+#include "detail/generic_handle_factory.hh"
 #include "video/text/glyph_mapping_access.hh"
 
 namespace neutrino {
@@ -87,8 +87,7 @@ namespace neutrino {
     }
 
     font_id fonts_manager::add(loaded_font&& f) {
-        static std::atomic <uint32_t> font_id_counter = 0;
-        auto fid = detail::id_access::make <font_id>(font_id_counter.fetch_add(1, std::memory_order_relaxed));
+        const auto fid = detail::make_handle <font_id>();
         m_fonts.emplace(fid, std::move(f));
         return fid;
     }

@@ -172,7 +172,7 @@ Rules:
 ### 3.3 Atlas — `video/atlas/`
 
 ```cpp
-class atlas_id;                   // atlas/atlas_id.hh: strong type, minted by build_atlas
+using atlas_id = detail::generic_handle <detail::atlas_id_tag>; // atlas/atlas_id.hh, minted by build_atlas
 
 struct atlas_address {            // which picture -- known at load time, before any GPU
     atlas_id    atlas;
@@ -227,8 +227,8 @@ Rules:
 - **The CPU atlas is short-lived.** Load, define sprites from its addresses, upload. The
   upload consumes it, so its rects are never kept twice.
 - **The atlas id is minted at build time** from an engine-wide counter (no renderer
-  needed) and is preserved by moves. It is a `detail::id_strong_type`, like every other
-  engine handle.
+  needed) and is preserved by moves. It is a `detail::generic_handle`, like every other
+  plain engine handle.
 - **Output format.** `indexed8` keeps indices and requires every entry to be INDEX8 with
   the same palette (the same refcounted SDL palette, or equal colours), else throws.
   `rgba` expands. `automatic` picks indexed when the bank qualifies, RGBA otherwise.
@@ -485,6 +485,13 @@ playhead owned by the actor and advanced with `update(dt)`, and `draw_tile(pos, 
    `video/sprite/detail/` to `neutrino/detail/`, next to `hash.hh`, because `atlas/` sits
    below `sprite/`. A hidden-friend `operator<<` on the base prints every id (for
    `ENFORCE` messages) without exposing the raw value.
+   *Update 2026-11-24:* a handle that holds nothing but its value is an alias of
+   `detail::generic_handle <tag>` (`atlas_id`, `font_id`, `sprite_sheet_id`,
+   `sprite_animation_id`, `sprite_state_id`). One `std::hash` covers them all, and
+   `detail::make_handle <Handle>()` mints every one, the sprite registries' too, from a
+   counter of the handle's own: an id kept from an earlier application names nothing. Only a
+   handle that carries more (`sprite_visual_id`, with its owner) derives from
+   `id_strong_type` and has a hash of its own.
 10. **Picture sizes come from either side.** `image_atlas::picture_size(i)` before upload
     (no renderer needed, so headless code keeps the atlas alive), `picture_size(atlas, i)`
     from the registry after. One name, `picture_size` / `picture_count`, at every level.

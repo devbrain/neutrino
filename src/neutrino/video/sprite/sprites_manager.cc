@@ -32,18 +32,6 @@ namespace neutrino {
         }
     }
 
-    sprite_sheet_id sprites_manager::make_sheet_id(std::uint32_t value) {
-        return detail::id_access::make <sprite_sheet_id>(value);
-    }
-
-    sprite_animation_id sprites_manager::make_animation_id(std::uint32_t value) {
-        return detail::id_access::make <sprite_animation_id>(value);
-    }
-
-    sprite_state_id sprites_manager::make_state_id(std::uint32_t value) {
-        return detail::id_access::make <sprite_state_id>(value);
-    }
-
     void sprites_manager::validate_sheet(const sprite_sheet& sheet) const {
         auto* textures = service_locator::instance().get_texture_registry();
         ENFORCE(textures != nullptr);
@@ -70,7 +58,7 @@ namespace neutrino {
 
     sprite_sheet_id sprites_manager::create(sprite_sheet sheet) {
         validate_sheet(sheet);
-        return m_sheets.store(make_sheet_id, std::move(sheet));
+        return m_sheets.store(std::move(sheet));
     }
 
     sprite_sheet& sprites_manager::get(sprite_sheet_id id) {
@@ -102,7 +90,7 @@ namespace neutrino {
 
     sprite_animation_id sprites_manager::create(sprite_animation animation) {
         validate_animation(animation);
-        return m_animations.store(make_animation_id, std::move(animation));
+        return m_animations.store(std::move(animation));
     }
 
     const sprite_animation& sprites_manager::get(sprite_animation_id id) const {
@@ -129,7 +117,7 @@ namespace neutrino {
 
         detail::sprite_state_record state;
         state.appearance = appearance;
-        return m_states.store(make_state_id, state);
+        return m_states.store(state);
     }
 
     sprite_state_id sprites_manager::create(sprite_animation_id animation) {
@@ -137,7 +125,7 @@ namespace neutrino {
 
         detail::sprite_state_record state;
         state.animation = animation;
-        return m_states.store(make_state_id, state);
+        return m_states.store(state);
     }
 
     void sprites_manager::set_appearance(sprite_state_id id, sprite_appearance appearance) {

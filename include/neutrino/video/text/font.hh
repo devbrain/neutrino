@@ -15,7 +15,7 @@
 #include <neutrino/video/text/glyph_atlas.hh>
 #include <neutrino/video/text/glyph_mapping.hh>
 #include <neutrino/neutrino_export.h>
-#include <neutrino/detail/id_strong_type.hh>
+#include <neutrino/detail/generic_handle.hh>
 
 #include <neutrino/video/sprite/texture_atlas.hh>
 
@@ -24,18 +24,10 @@ namespace neutrino {
         struct font_id_tag;
     }
 
-    class NEUTRINO_EXPORT font_id
-        : public detail::id_strong_type <detail::font_id_tag> {
-        friend struct detail::id_access;
-
-        public:
-            font_id() = default;
-
-        private:
-            explicit font_id(std::uint32_t value)
-                : id_strong_type(value) {
-            }
-    };
+    /**
+     * @brief Opaque handle to a registered font and its glyph atlas.
+     */
+    using font_id = detail::generic_handle <detail::font_id_tag>;
 
     /**
      * @brief Register a font built with a glyph_atlas_builder.
@@ -147,8 +139,3 @@ namespace neutrino {
      */
     NEUTRINO_EXPORT void unregister_font(font_id font);
 }
-
-template<>
-struct std::hash <neutrino::font_id>
-    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::font_id_tag>> {
-};

@@ -11,29 +11,32 @@
 
 #include <failsafe/enforce.hh>
 
+#include "detail/generic_handle_factory.hh"
+
 namespace neutrino::detail {
     /**
      * @brief Shared storage for registries keyed by opaque resource handles.
      *
-     * Domain registries keep their creation policy and pass a private id factory
-     * into @ref store. This helper owns only the common map/counter/get/erase code.
+     * @p Id is a generic_handle, minted by make_handle(): from one counter per handle kind,
+     * so an id stays unique across every registry and application of the process, and an id
+     * kept from an earlier application names nothing instead of another resource. This
+     * helper owns only the common map/get/erase code.
      */
     template <typename Id, typename Resource>
     class resource_registry {
         public:
             /**
-             * @brief Store a resource and return its new opaque id.
+             * @brief Store a resource and return its new opaque id. An id still in use, met
+             *        once the counter wraps, is skipped.
              */
-            template <typename MakeId>
-            Id store(MakeId make_id, Resource resource) {
+            Id store(Resource resource) {
                 constexpr auto max_attempts =
                     static_cast <std::uint64_t>(std::numeric_limits <std::uint32_t>::max()) + 1u;
 
                 for (std::uint64_t attempt = 0; attempt < max_attempts; ++attempt) {
-                    Id key = make_id(m_next_id);
-                    ++m_next_id;
+                    Id key = make_handle <Id>();
 
-                    if (!key.valid() || contains(key)) {
+                    if (contains(key)) {
                         continue;
                     }
 
@@ -119,6 +122,5 @@ namespace neutrino::detail {
 
         private:
             std::unordered_map <Id, Resource> m_resources;
-            std::uint32_t m_next_id{0};
     };
 }

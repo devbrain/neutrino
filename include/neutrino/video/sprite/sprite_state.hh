@@ -9,7 +9,7 @@
 #include <functional>
 
 #include <neutrino/neutrino_export.h>
-#include <neutrino/detail/id_strong_type.hh>
+#include <neutrino/detail/generic_handle.hh>
 #include <neutrino/video/sprite/sprite_animation.hh>
 #include <neutrino/video/sprite/sprite_appearance.hh>
 
@@ -25,21 +25,7 @@ namespace neutrino {
      * registered @ref sprite_animation. It still has no world position; callers
      * provide position when drawing.
      */
-    class NEUTRINO_EXPORT sprite_state_id
-        : public detail::id_strong_type <detail::sprite_state_id_tag> {
-        friend struct detail::id_access;
-
-        public:
-            /**
-             * @brief Construct an invalid sprite-state handle.
-             */
-            sprite_state_id() = default;
-
-        private:
-            explicit sprite_state_id(std::uint32_t value)
-                : id_strong_type(value) {
-            }
-    };
+    using sprite_state_id = detail::generic_handle <detail::sprite_state_id_tag>;
 
     /**
      * @brief Create a runtime state that always resolves to @p appearance.
@@ -118,12 +104,3 @@ namespace neutrino {
      */
     NEUTRINO_EXPORT void unregister_sprite_state(sprite_state_id state);
 }
-
-/**
- * @brief @c std::hash specialization so @ref neutrino::sprite_state_id keys
- *        @c unordered_map / @c unordered_set.
- */
-template<>
-struct std::hash <neutrino::sprite_state_id>
-    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::sprite_state_id_tag>> {
-};

@@ -4,29 +4,16 @@
 
 #pragma once
 
-#include <neutrino/detail/id_strong_type.hh>
-#include <neutrino/neutrino_export.h>
+#include <neutrino/detail/generic_handle.hh>
 
 namespace neutrino {
     namespace detail {
         struct atlas_id_tag;
     }
 
-    class NEUTRINO_EXPORT atlas_id
-        : public detail::id_strong_type <detail::atlas_id_tag> {
-        friend struct detail::id_access;
-
-        public:
-            atlas_id() = default;
-
-        private:
-            explicit atlas_id(std::uint32_t value)
-                : id_strong_type(value) {
-            }
-    };
+    /**
+     * @brief Opaque handle to an @ref image_atlas, minted when the atlas is built (no
+     *        renderer needed) and kept by moves and by the GPU upload.
+     */
+    using atlas_id = detail::generic_handle <detail::atlas_id_tag>;
 }
-
-template<>
-struct std::hash <neutrino::atlas_id>
-    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::atlas_id_tag>> {
-};

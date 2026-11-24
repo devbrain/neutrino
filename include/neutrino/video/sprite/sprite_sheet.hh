@@ -19,6 +19,7 @@
 #include <neutrino/detail/hash.hh>
 #include <neutrino/video/geometry_types.hh>
 #include <neutrino/video/sprite/texture_atlas.hh>
+#include <neutrino/detail/generic_handle.hh>
 #include <neutrino/detail/id_strong_type.hh>
 
 namespace neutrino {
@@ -34,21 +35,7 @@ namespace neutrino {
      * The handle identifies sprite-sheet metadata stored by the internal sprite
      * resource manager. It does not identify a world object and carries no position.
      */
-    class NEUTRINO_EXPORT sprite_sheet_id
-        : public detail::id_strong_type <detail::sprite_sheet_id_tag> {
-        friend struct detail::id_access;
-
-        public:
-            /**
-             * @brief Construct an invalid sheet handle.
-             */
-            sprite_sheet_id() = default;
-
-        private:
-            explicit sprite_sheet_id(std::uint32_t value)
-                : id_strong_type(value) {
-            }
-    };
+    using sprite_sheet_id = detail::generic_handle <detail::sprite_sheet_id_tag>;
 
     namespace detail {
         struct sprite_visual_id_tag;
@@ -378,15 +365,6 @@ namespace neutrino {
      */
     [[nodiscard]] NEUTRINO_EXPORT std::optional <sprite_visual> find_visual(sprite_visual_ref ref);
 }
-
-/**
- * @brief @c std::hash specialization so @ref neutrino::sprite_sheet_id keys
- *        @c unordered_map / @c unordered_set.
- */
-template<>
-struct std::hash <neutrino::sprite_sheet_id>
-    : std::hash <neutrino::detail::id_strong_type <neutrino::detail::sprite_sheet_id_tag>> {
-};
 
 /**
  * @brief @c std::hash specialization so @ref neutrino::sprite_visual_id keys

@@ -14,7 +14,7 @@
 
 #include "shelf_packer.hh"
 #include "services/service_locator.hh"
-#include "atlas_id_gen.hh"
+#include "detail/generic_handle_factory.hh"
 
 namespace neutrino {
     namespace detail {
@@ -250,7 +250,7 @@ namespace neutrino {
         std::vector <atlas_region> regions;
         regions.reserve(bank.entries.size());
 
-        auto current_atlas_id = detail::make_atlas_id();
+        auto current_atlas_id = detail::make_handle <atlas_id>();
 
         for (std::size_t i = 0; i < bank.entries.size(); ++i) {
             const auto& entry = bank.entries[i];
@@ -288,7 +288,7 @@ namespace neutrino {
         ENFORCE(size.width > 0 && size.height > 0, "Can not build atlas from the empty image");
         ENFORCE(size.width <= cap && size.height <= cap, "Image size is larger than the maximal texture size");
 
-        auto current_atlas_id = detail::make_atlas_id();
+        auto current_atlas_id = detail::make_handle <atlas_id>();
 
         const image* indexed_like = indexed_source(img);
         pixel_format format = deduce_image_format(atlas_texture_format, indexed_like);
