@@ -80,7 +80,7 @@ namespace {
 
             // passes_input may change while the scene is on the stack.
             void set_flags(scene_flags flags) { m_flags = flags; }
-            // Flags to switch to inside the next handle_action, as a console does when it opens.
+            // Flags to switch to inside the next handle_event, as a console does when it opens.
             void set_flags_on_action(scene_flags flags) { m_flags_on_action = flags; }
 
             void fixed_update(sim_duration, const input_snapshot& in) override {
@@ -102,7 +102,7 @@ namespace {
             void on_enter() override { ++m_counts.enters; }
             void on_exit() override { ++m_counts.exits; }
             void on_resize(dim) override { ++m_counts.resizes; }
-            void handle_action(const event&) override {
+            void handle_event(const event&) override {
                 ++m_counts.actions;
                 if (m_flags_on_action) {
                     m_flags = *m_flags_on_action;
@@ -141,7 +141,7 @@ namespace {
     void key_event(scenes_manager& mgr) {
         SDL_Event raw{};
         raw.type = SDL_EVENT_KEY_DOWN;
-        mgr.handle_action(sdlpp::event(raw));
+        mgr.handle_event(sdlpp::event(raw));
     }
 
     // Transition requests are only queued; deliver them the way the main loop does. The main loop
@@ -153,7 +153,7 @@ namespace {
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
             try {
-                mgr.handle_action(sdlpp::event(ev));
+                mgr.handle_event(sdlpp::event(ev));
             } catch (...) {
                 if (!failure) {
                     failure = std::current_exception();
@@ -369,7 +369,7 @@ TEST_SUITE("neutrino::scene scenes_manager flags") {
 
         SDL_Event raw{};
         raw.type = SDL_EVENT_KEY_DOWN;
-        mgr.handle_action(sdlpp::event(raw));
+        mgr.handle_event(sdlpp::event(raw));
 
         CHECK(top.actions == 1);
         CHECK(below.actions == 0);

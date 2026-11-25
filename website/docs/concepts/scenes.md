@@ -23,7 +23,7 @@ class my_scene : public neutrino::base_scene {
 Everything else has a default, so override only what you need:
 
 - `flags()` returns `hides_below | pauses_below`: a full screen (see below).
-- `handle_action(ev)` ignores raw events.
+- `handle_event(ev)` ignores raw events.
 - The lifecycle hooks — `on_enter`, `on_exit`, `on_pause`, `on_resume`, `on_resize` — do nothing.
 
 See [Tutorial Step 1: A window and an empty scene](../tutorial/step-01-window-and-scene.md) for a working
@@ -211,13 +211,13 @@ class gameplay_scene : public neutrino::base_scene {
         m_level.draw();
     }
 
-    // handle_action() and flags() keep their defaults: continuous input is read
+    // handle_event() and flags() keep their defaults: continuous input is read
     // from the snapshot in fixed_update, and a gameplay scene is a full screen.
 };
 ```
 
 With the default application hooks, `fixed_update()` receives a snapshot containing both
-held state and button edges, while `handle_action()` receives raw event payloads such as text
+held state and button edges, while `handle_event()` receives raw event payloads such as text
 input. The application can replace the event route through `event()`.
 See [Input](./input.md) for the hook boundaries and substep delivery rules.
 

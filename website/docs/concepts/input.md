@@ -27,7 +27,7 @@ tracking, `handle_event()` detects render-space size changes and calls `resize_s
 when needed, then calls `event(e)`:
 
 - The default `event(e)` dispatches scene transitions and forwards other events to the
-  top scene's `handle_action(e)`, and on down through scenes with `passes_input`. Overriding it replaces that dispatch; call
+  top scene's `handle_event(e)`, and on down through scenes with `passes_input`. Overriding it replaces that dispatch; call
   `application::event(e)` explicitly if you also want the default behavior.
 - The default `resize_scene(size)` calls the active scene's `on_resize(size)`. An override
   replaces this notification. Scene activation delivers an initial size separately;
@@ -47,7 +47,7 @@ flowchart TD
     Resize --> Event["event(e)"]
     Size -- No --> Event
     Resize -. "default" .-> SceneResize["Active scene: on_resize(size)"]
-    Event -. "default" .-> Actions["Scene transitions / top scene: handle_action(e)"]
+    Event -. "default" .-> Actions["Scene transitions / top scene: handle_event(e)"]
     Track --> Sample["Once per frame: capture input_snapshot"]
     Sample --> Update["Fixed-step scheduler"]
     Update --> Steps["0..N scene fixed_update calls<br/>Only the first substep receives edges"]

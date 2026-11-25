@@ -24,16 +24,22 @@
 #include "video/layer_stack.hh"
 #include "video/painter_context.hh"
 #include "video/painter_state_stack.hh"
+#include "events/event_types.hh"
 
 namespace neutrino {
-    static constexpr auto INVALID_EVENT = std::numeric_limits <uint32_t>::max();
-    static uint32_t s_event_type = INVALID_EVENT;
+
+    enum scene_manager_events : std::int32_t {
+        PUSH_SCENE,
+        POP_SCENE,
+        REPLACE_SCENE,
+        PIN_SCENE,
+        UNPIN_SCENE
+    };
+
+    using events = custom_event<scene_manager_events>;
+
     static bool s_scenes_manager_initialized = false;
-    static constexpr int PUSH_SCENE = 1;
-    static constexpr int POP_SCENE = 2;
-    static constexpr int REPLACE_SCENE = 3;
-    static constexpr int PIN_SCENE = 4;
-    static constexpr int UNPIN_SCENE = 5;
+
     // Pending transitions outlive a consumed event when an application replaces
     // scene dispatch. Keep ownership here until dispatch or finish(), not in SDL.
     static std::mutex s_pending_mutex;
@@ -45,19 +51,6 @@ namespace neutrino {
         return node.empty() ? nullptr : std::move(node.mapped());
     }
 
-    static SDL_Event create_custom_event(int code, base_scene* bs = nullptr) {
-        if (s_event_type == INVALID_EVENT) {
-            auto ids = sdlpp::event_registry::register_events(1);
-            ENFORCE(ids);
-            s_event_type = *ids;
-        }
-        SDL_Event custom{};
-        custom.type = s_event_type;
-        custom.user.code = code;
-        custom.user.data1 = bs;
-        custom.user.data2 = nullptr;
-        return custom;
-    }
 
     // Runs @p call — a call into @p scene — with the scene's painter state current (R48): what
     // it sets stays the scene's, and a push it leaves fails, naming @p what, after it is
@@ -70,17 +63,17 @@ namespace neutrino {
         current.finish(what);
     }
 
-    static void queue_scene(int code, std::unique_ptr <base_scene> scene) {
+    static void queue_scene(scene_manager_events code, std::unique_ptr <base_scene> scene) {
         ENFORCE(scene != nullptr);
-        const auto ev = create_custom_event(code, scene.get());
+        auto* scene_ptr = scene.get();
         {
             const std::lock_guard lock(s_pending_mutex);
             s_pending_scenes.emplace(scene.get(), std::move(scene));
         }
         try {
-            ENFORCE(sdlpp::event_queue::push(sdlpp::event(ev)));
+            events::push(code, scene_ptr);
         } catch (...) {
-            auto discarded = take_pending_scene(ev.user.data1);
+            auto discarded = take_pending_scene(scene_ptr);
             throw;
         }
     }
@@ -99,8 +92,7 @@ namespace neutrino {
     }
 
     void scenes_manager::pop_scene() {
-        auto ev = create_custom_event(POP_SCENE);
-        ENFORCE(sdlpp::event_queue::push(sdlpp::event(ev)));
+        events::push(POP_SCENE, nullptr, nullptr);
     }
 
     void scenes_manager::pin_scene(std::unique_ptr <base_scene>&& scene) {
@@ -108,8 +100,7 @@ namespace neutrino {
     }
 
     void scenes_manager::unpin_scene() {
-        auto ev = create_custom_event(UNPIN_SCENE);
-        ENFORCE(sdlpp::event_queue::push(sdlpp::event(ev)));
+        events::push(UNPIN_SCENE, nullptr, nullptr);
     }
 
     void scenes_manager::replace_scene(std::unique_ptr <base_scene>&& scene) {
@@ -123,7 +114,7 @@ namespace neutrino {
     void scenes_manager::finish() {
         // Remove queued transition notifications, then reclaim pending scenes,
         // including requests whose events were ignored by an application override.
-        sdlpp::event_queue::flush(static_cast <sdlpp::event_type>(s_event_type));
+        events::drain();
         {
             decltype(s_pending_scenes) discarded;
             {
@@ -151,6 +142,10 @@ namespace neutrino {
             m_stack.pop_back(); // pop regardless: the stack must be empty when finish() returns
         }
         m_pinned = false;
+    }
+
+    void scenes_manager::register_events() {
+        events::init();
     }
 
     std::size_t scenes_manager::active_count() const noexcept {
@@ -316,7 +311,7 @@ namespace neutrino {
         }
         // Live input runs from the top scene down through scenes with passes_input and stops at
         // the first scene without it -- or at the topmost pauses_below scene, since a paused
-        // scene gets no input. Raw events follow the same chain (handle_action). Every other
+        // scene gets no input. Raw events follow the same chain (handle_event). Every other
         // covered scene keeps updating (that is the point of running it under an overlay) but
         // must not act on the pointer or buttons: handing it the real snapshot would let a
         // background scene react to clicks *through* a modal or busy overlay. It gets a neutral
@@ -485,11 +480,11 @@ namespace neutrino {
         detail::draw_canvases(finished);
     }
 
-    void scenes_manager::handle_action(const sdlpp::event& ev) {
+    void scenes_manager::handle_event(const sdlpp::event& ev) {
         if (sdlpp::event_registry::is_custom(ev.type())) {
             auto* ue = ev.as <sdlpp::user_event>();
             auto type = static_cast <uint32_t>(ue->type);
-            if (type == s_event_type && type != INVALID_EVENT) {
+            if (type == events::category()) {
                 if (ue->code == PUSH_SCENE) {
                     auto scene = take_pending_scene(ue->data1);
                     ENFORCE(scene != nullptr);
@@ -515,11 +510,11 @@ namespace neutrino {
         if (!m_stack.empty()) {
             // Events follow the same chain as the live input in fixed_update: from the top down
             // through passes_input scenes, never past a pauses_below one. The flags are read
-            // before delivering, so a handle_action that changes them routes the next event.
+            // before delivering, so a handle_event that changes them routes the next event.
             for (size_t i = m_stack.size(); i-- > 0;) {
                 base_scene* const scene = m_stack[i].get();
                 const auto f = scene->flags();
-                as_current(scene, "handle_action", [scene, &ev] { scene->handle_action(ev); });
+                as_current(scene, "handle_event", [scene, &ev] { scene->handle_event(ev); });
                 if (!has(f, scene_flags::passes_input) || has(f, scene_flags::pauses_below)) {
                     break;
                 }

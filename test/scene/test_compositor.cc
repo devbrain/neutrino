@@ -829,7 +829,7 @@ TEST_SUITE("neutrino::render shortcuts, edges") {
         neutrino::replace_scene(std::move(owned));
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
-            f.mgr.handle_action(sdlpp::event(ev));
+            f.mgr.handle_event(sdlpp::event(ev));
         }
         f.frame();
         CHECK(scene_context_access::canvas_of(overlay)->blend() == blend_mode::blend);

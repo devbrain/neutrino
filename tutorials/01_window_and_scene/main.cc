@@ -107,7 +107,7 @@ namespace {
 
         // fixed_update and render are the only hooks a scene must write. base_scene
         // provides the rest, and both defaults suit this scene:
-        //   handle_action(ev) - discrete one-shot SDL events (window focus, text input).
+        //   handle_event(ev)  - discrete one-shot SDL events (window focus, text input).
         //                       Default: ignore. Continuous input belongs in fixed_update.
         //   flags()           - what this scene does to the scenes beneath it.
         //                       Default: hides_below | pauses_below, so scenes underneath

@@ -93,7 +93,7 @@ namespace {
 
             void fixed_update(sim_duration dt, const input_snapshot& in) override {
                 // Edge-triggered actions belong here (once per frame), not in
-                // handle_action (once per event): a per-event pressed() check posts one
+                // handle_event (once per event): a per-event pressed() check posts one
                 // request per queued event, and popping the last scene more than once
                 // trips the scenes_manager's non-empty enforcement.
                 if (!m_quitting && in.pressed(neutrino::key::escape)) {

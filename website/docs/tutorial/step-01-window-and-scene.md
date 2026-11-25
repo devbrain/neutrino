@@ -177,7 +177,7 @@ Two more hooks have defaults that suit most scenes, so this one doesn't override
 
 | Method | Default | Role |
 |---|---|---|
-| `handle_action(ev)` | ignore | Discrete event dispatch (e.g. text entry, window events). |
+| `handle_event(ev)` | ignore | Discrete event dispatch (e.g. text entry, window events). |
 | `flags()` | `hides_below \| pauses_below` | What this scene does to the scenes below it: a full screen hides them and pauses them. Overlays such as pause menus override it — `pauses_below` alone keeps the game visible but stopped. See [Scenes](../concepts/scenes.md). |
 
 #### Why `fixed_update` receives a constant `dt`

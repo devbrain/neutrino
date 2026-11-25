@@ -831,7 +831,7 @@ enum class scene_flags : std::uint8_t {
   that one get the neutral snapshot and no events, as covered scenes do today.
 - It never reaches a scene paused by `pauses_below`: a paused scene gets no input and no
   events.
-- The flags are read before an event is delivered, so a `handle_action` that changes them
+- The flags are read before an event is delivered, so a `handle_event` that changes them
   routes the next event, not the current one.
 - It means "sees it and passes it on", not "gets nothing", so that a closed console sees
   its toggle key.
@@ -854,7 +854,7 @@ class console_scene : public neutrino::base_scene {
     scene_flags flags() const override {
         return m_open ? scene_flags::pauses_below : scene_flags::passes_input;
     }
-    void handle_action(const event& e) override {
+    void handle_event(const event& e) override {
         if (is_key_down(e, key::grave)) { m_open = !m_open; return; }   // seen while closed too
         if (m_open) m_line.edit(e);                      // text, history, completion
     }

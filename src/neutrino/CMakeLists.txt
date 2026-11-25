@@ -54,6 +54,7 @@ neutrino_subsystem(detail
         hash.hh
         id_strong_type.hh
         generic_handle.hh
+        overloaded.hh
     PRIVATE
         hash.cc
         generic_handle_factory.hh
@@ -65,6 +66,15 @@ neutrino_subsystem(utils
         json.hh
         lru.hh
 )
+
+neutrino_subsystem(events
+        PRIVATE
+            event_types.hh
+            events.cc
+            events.hh
+            command_concept.hh
+)
+
 
 neutrino_subsystem(services
     PRIVATE
@@ -83,6 +93,7 @@ neutrino_subsystem(input
         input_snapshot.hh
         keys.hh
         mouse_click.hh
+        action_id.hh
     PRIVATE
         gamepad_button.cc
         gamepads.cc
@@ -91,6 +102,9 @@ neutrino_subsystem(input
         input_snapshot.cc
         modifier_match.hh
         mouse_click.cc
+        action_activation.hh
+        action_tables.cc
+        action_tables.hh
 )
 
 neutrino_subsystem(physics

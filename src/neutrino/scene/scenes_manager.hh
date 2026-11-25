@@ -49,7 +49,7 @@ namespace neutrino {
             ///        itself otherwise, and late if that canvas ends the frame with nothing to
             ///        show.
             [[nodiscard]] bool covers_target() const;
-            void handle_action(const sdlpp::event& ev);
+            void handle_event(const sdlpp::event& ev);
 
             /// @brief Deliver a render-space size change to the active (top) scene and to the
             /// pinned scene.
@@ -62,6 +62,7 @@ namespace neutrino {
             /// @brief Exit all scenes cleanly (called on application shutdown).
             void finish();
 
+            static void register_events();
         private:
             /// What render() does this frame: the bottom visible scene (the topmost with
             /// hides_below, or the first), whether it draws straight into the target (R44),

@@ -23,7 +23,7 @@ namespace neutrino {
     void base_scene::on_resize([[maybe_unused]] dim size) {
     }
 
-    void base_scene::handle_action([[maybe_unused]] const sdlpp::event& ev) {
+    void base_scene::handle_event([[maybe_unused]] const sdlpp::event& ev) {
     }
 
     scene_flags base_scene::flags() const {

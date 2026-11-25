@@ -26,7 +26,7 @@ namespace neutrino {
     using sim_duration = std::chrono::duration <float>;
 
     /// @brief A raw SDL event (keyboard, mouse, window, text input, ...), as delivered to
-    ///        @ref base_scene::handle_action and application::event.
+    ///        @ref base_scene::handle_event and application::event.
     using event = sdlpp::event; // sdlpp-ok
 
     /// @brief What a scene does to the scenes beneath it on the stack. The bits are
@@ -99,7 +99,7 @@ namespace neutrino {
             /// pixel art, sub-step interpolation would round away anyway).
             virtual void render() = 0;
             /// @brief Handle an SDL event (input, window, etc.).
-            virtual void handle_action(const event& ev);
+            virtual void handle_event(const event& ev);
             /// @brief What this scene does to the scenes beneath it (see @ref scene_flags).
             /// Default: `hides_below | pauses_below` -- a full-screen scene. Overlays override it:
             /// a pause menu returns `pauses_below`, a busy spinner returns `none`.

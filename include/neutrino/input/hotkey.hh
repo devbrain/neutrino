@@ -118,4 +118,23 @@ namespace neutrino {
         std::variant<neutrino::key, neutrino::keycode> m_key;
     };
 
+    inline
+    hotkey operator + (modifier mods, neutrino::keycode key) {
+        return {mods, key};
+    }
+
+    inline
+    hotkey operator + (neutrino::keycode key, modifier mods) {
+        return {mods, key};
+    }
+
+    inline
+    hotkey operator + (modifier mods, neutrino::key key) {
+        return {mods, key};
+    }
+
+    inline
+    hotkey operator + (neutrino::key key, modifier mods) {
+        return {mods, key};
+    }
 } // namespace neutrino

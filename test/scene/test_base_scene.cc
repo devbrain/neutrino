@@ -36,7 +36,7 @@ TEST_SUITE("neutrino::scene base_scene defaults") {
         minimal_scene scene;
         SDL_Event raw{};
         raw.type = SDL_EVENT_KEY_DOWN;
-        CHECK_NOTHROW(scene.handle_action(sdlpp::event(raw)));
+        CHECK_NOTHROW(scene.handle_event(sdlpp::event(raw)));
         CHECK_NOTHROW(scene.on_enter());
         CHECK_NOTHROW(scene.on_pause());
         CHECK_NOTHROW(scene.on_resume());

@@ -40,7 +40,7 @@ namespace {
             if (tick) tick(dt, input);
         }
         void render() override { if (draw) draw(); }
-        void handle_action(const sdlpp::event& e) override { if (action) action(e); }
+        void handle_event(const sdlpp::event& e) override { if (action) action(e); }
         [[nodiscard]] scene_flags flags() const override {
             return scene_flags::hides_below | scene_flags::pauses_below;
         }

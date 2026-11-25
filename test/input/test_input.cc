@@ -38,4 +38,18 @@ TEST_SUITE("neutrino::input") {
         CHECK_FALSE(in.pointer().on_screen);
         CHECK(in.wheel() == 0);
     }
+    TEST_CASE("check hotkey operator +") {
+        {
+            neutrino::hotkey hk = neutrino::mods::ctrl + neutrino::key::a;
+            CHECK(hk.modifiers() == neutrino::mods::ctrl);
+            auto k = hk.key();
+            CHECK(((std::get_if<neutrino::key>(&k) != nullptr) && (std::get<neutrino::key>(k) == neutrino::key::a)));
+        }
+        {
+            neutrino::hotkey hk = neutrino::key::a + neutrino::mods::ctrl;
+            CHECK(hk.modifiers() == neutrino::mods::ctrl);
+            auto k = hk.key();
+            CHECK(((std::get_if<neutrino::key>(&k) != nullptr) && (std::get<neutrino::key>(k) == neutrino::key::a)));
+        }
+    }
 }

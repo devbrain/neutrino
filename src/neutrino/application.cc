@@ -29,6 +29,8 @@
 #include <neutrino/video/sprite/sprite_cache.hh>
 #include <neutrino/video/world/resource_cache.hh>
 
+#include "events/events.hh"
+
 namespace neutrino {
     namespace {
         [[nodiscard]] sdlpp::logical_presentation to_sdl(scale_mode mode) noexcept {
@@ -185,6 +187,9 @@ namespace neutrino {
         // application_scoped objects may be made from here until on_quit() closes the scope.
         detail::open_application_scope();
         m_pimpl->m_scope_open = true;
+
+        scenes_manager::register_events();
+
         service_locator::instance().set_renderer(get_renderer());
         // The game_application path leaves vsync off; honor the config so apps present
         // without tearing by default (fast full-screen scrolling otherwise tears).
@@ -433,7 +438,7 @@ namespace neutrino {
 
     void application::event(const neutrino::event& e) {
         try {
-            m_pimpl->m_scenes_manager.handle_action(e);
+            m_pimpl->m_scenes_manager.handle_event(e);
         } catch (const std::exception& ex) {
             LOG_ERROR("Scene event handler threw:", ex.what());
         } catch (...) {

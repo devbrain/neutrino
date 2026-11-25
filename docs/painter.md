@@ -709,7 +709,7 @@ Input and events go down from the top, the pinned scene first, and stop at the f
 without `passes_input`; the scenes passed on the way see them too. The scenes below that
 one get the neutral snapshot and no events, as covered scenes do today. Input never reaches
 a scene paused by `pauses_below`. The flags are read before an event is delivered, so a
-`handle_action` that changes them routes the next event. *Why "sees and passes on":* a
+`handle_event` that changes them routes the next event. *Why "sees and passes on":* a
 closed console must see its toggle key.
 
 | Scene | Flags |
@@ -730,7 +730,7 @@ class console_scene : public neutrino::base_scene {
     scene_flags flags() const override {
         return m_open ? scene_flags::pauses_below : scene_flags::passes_input;
     }
-    void handle_action(const event& e) override {
+    void handle_event(const event& e) override {
         if (is_key_down(e, key::grave)) { m_open = !m_open; return; }   // seen while closed too
         if (m_open) m_line.edit(e);                      // text, history, completion
     }

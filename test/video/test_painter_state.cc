@@ -78,7 +78,7 @@ namespace {
 
             void on_enter() override { enter(); }
             void fixed_update(sim_duration, const input_snapshot&) override { update(); }
-            void handle_action(const event&) override { action(); }
+            void handle_event(const event&) override { action(); }
             void render() override { draw(); }
             [[nodiscard]] scene_flags flags() const override { return m_flags; }
 
@@ -95,7 +95,7 @@ namespace {
     void key_event(scenes_manager& mgr) {
         SDL_Event raw{};
         raw.type = SDL_EVENT_KEY_DOWN;
-        mgr.handle_action(sdlpp::event(raw));
+        mgr.handle_event(sdlpp::event(raw));
     }
 }
 
