@@ -72,7 +72,6 @@ neutrino_subsystem(events
             event_types.hh
             events.cc
             events.hh
-            command_concept.hh
 )
 
 

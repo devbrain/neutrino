@@ -118,6 +118,9 @@ namespace neutrino {
         std::variant<neutrino::key, neutrino::keycode> m_key;
     };
 
+    /// @brief A modifier and a key combine into a @ref hotkey, in either order:
+    ///        `mods::ctrl + key::s` is `hotkey{mods::ctrl, key::s}`. `+` binds tighter than
+    ///        `|`, so several modifiers go in parentheses: `(mods::ctrl | mods::shift) + key::s`.
     inline
     hotkey operator + (modifier mods, neutrino::keycode key) {
         return {mods, key};

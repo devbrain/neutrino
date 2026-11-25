@@ -233,6 +233,15 @@ if (in.pressed(ctrl_click))   { select(); }
 if (in.pressed(shoot_button)) { fire(); }
 ```
 
+A modifier and a key also combine with `+` into a `hotkey`, in either order, with a
+scancode or a keycode. Join several modifiers with `|` first, in parentheses, because `+`
+binds tighter than `|`:
+
+```cpp
+const neutrino::hotkey save_key = neutrino::mods::ctrl + neutrino::key::s;
+const neutrino::hotkey save_as  = (neutrino::mods::ctrl | neutrino::mods::shift) + neutrino::key::s;
+```
+
 ### Scancodes, keycodes, and modifiers
 
 A **scancode** identifies a physical key position, useful for layout-independent movement.

@@ -883,7 +883,7 @@ flags. What the console needs beyond the scene manager and the painter:
 |---|---|
 | text input | sdlpp has an RAII `text_input_session` (`SDL_StartTextInput`); neutrino does not expose it. The console opens one while open; UI text fields need the same |
 | drawing text | `draw_text` is FM3 in `font_plan.md` |
-| log lines | failsafe's `logger::set_backend` lets the console collect lines; it has no getter, so the console's backend forwards to the cerr backend itself |
+| log lines | failsafe's `logger::exchange_backend` installs the console's backend and returns the one it replaced, so the console can forward to it and put it back when it closes; swapping is thread-safe (failsafe b382e0b) |
 | commands | a registry (name → function, completion); not designed |
 
 The scene manager change is independent of the painter (RM10).
@@ -1109,7 +1109,7 @@ The use case is *load, run, exit*. No current user releases an atlas mid-run (KE
 - Registered atlases stay until the application shuts down; the registry is cleared as a
   whole then (and between test cases).
 - No handles, no refcounts, no public `unregister_atlas`.
-- `atlas_id`s come from a monotonic counter and are never reused (`atlas_id_gen.cc`), so
+- `atlas_id`s come from a monotonic counter and are never reused (`detail::make_handle`), so
   drawing from an atlas that no longer exists is an ENFORCE at the call site, never a
   dangling pointer.
 

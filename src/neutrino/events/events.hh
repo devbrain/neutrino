@@ -6,7 +6,6 @@
 
 #include <string_view>
 
-#include "events/command_concept.hh"
 #include <sdlpp/events/events.hh>
 
 
