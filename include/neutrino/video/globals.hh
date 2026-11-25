@@ -26,6 +26,22 @@ namespace neutrino {
     /// @brief The active application's window (the renderer's presentation surface).
     NEUTRINO_EXPORT [[nodiscard]] window& get_window();
 
+    /// @brief Switch the window between fullscreen and windowed, deferred: the toggle is applied
+    /// at the start of the next cycle, while events are handled, as scene transitions are. The
+    /// resize that follows reaches base_scene::on_resize like any other.
+    ///
+    /// It flips the state the window is in or is being switched to, so toggles made in one cycle
+    /// cancel in pairs, and on window systems that switch asynchronously (Wayland, macOS) a toggle
+    /// made before the previous switch completed still reverses it. A switch made by something
+    /// else (the window manager, the system) is followed: the next toggle flips it. A failure is
+    /// logged when the toggle is applied. Callable from any thread. ENFORCE: an application runs
+    /// (from ready() until teardown()).
+    NEUTRINO_EXPORT void toggle_fullscreen();
+    /// @brief Is the window fullscreen? The window system's answer, now: after toggle_fullscreen()
+    /// it changes once the toggle is applied and, on asynchronous window systems, once the switch
+    /// completes. Main thread.
+    NEUTRINO_EXPORT [[nodiscard]] bool is_fullscreen();
+
     /// @brief The size of the coordinate space scenes draw in: the logical size
     /// when logical presentation is active, otherwise the drawable's pixel size.
     /// This is what a scene's viewport and camera should use. Derived from the

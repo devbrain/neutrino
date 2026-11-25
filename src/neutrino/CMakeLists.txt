@@ -218,6 +218,8 @@ neutrino_subsystem(video
         layer_ops.cc
         painter_state_stack.cc
         painter_state_stack.hh
+        fullscreen.cc
+        fullscreen.hh
 )
 
 neutrino_subsystem(video_image DIR video/image

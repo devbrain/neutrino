@@ -113,11 +113,12 @@ namespace neutrino {
             using game_application::quit;
             /// True until quit() has been requested (or startup failed).
             using game_application::is_running;
-            /// Fullscreen control. Each returns success; a resulting drawable change drives
-            /// base_scene::on_resize like any other resize.
+            /// Is the window fullscreen? As neutrino::is_fullscreen(): the window system's answer,
+            /// now.
             using game_application::is_fullscreen;
-            using game_application::set_fullscreen;
-            using game_application::toggle_fullscreen;
+            /// Switch between fullscreen and windowed at the start of the next cycle: as
+            /// neutrino::toggle_fullscreen(), which documents the rules.
+            void toggle_fullscreen();
 
         protected:
             // Inside a class derived from application, an unqualified get_renderer()/get_window()

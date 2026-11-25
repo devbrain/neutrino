@@ -88,15 +88,33 @@ both "poll `get_output_size` every frame" and "parse `window_event` in `handle_a
 ### Fullscreen
 
 ```cpp
-// application
-void set_fullscreen(bool on);
-void toggle_fullscreen();
-[[nodiscard]] bool is_fullscreen() const;
+// free functions (video/globals.hh); application has the same two members
+void toggle_fullscreen();            // deferred; any thread
+[[nodiscard]] bool is_fullscreen();  // the window system's answer, now
 ```
 
-Wraps `get_window().set_fullscreen(...)`. It just changes the drawable → a
-`window_pixel_size_changed` event → `on_resize` fires. Config `fullscreen` applied at ready.
-A default Alt+Enter / F11 binding is left to the game (the engine provides the API).
+The switch just changes the drawable → a `window_pixel_size_changed` event → `on_resize`
+fires. Config `fullscreen` applied at window creation. A default Alt+Enter / F11 binding is
+left to the game (the engine provides the API; P3.11's global actions are made for it).
+
+Deferred (P3.11, 2026-11-25; it replaced sdlpp's immediate `set_fullscreen(bool)` /
+`toggle_fullscreen()`, which returned success). Called during a frame, some window systems
+(Windows) switch inside the call and SDL's renderer can change the viewport mid-frame; on
+asynchronous ones (Wayland, macOS) SDL's fullscreen flag changes only when the switch
+completes, so a toggle that flips the flag loses the second of two quick toggles.
+
+- A toggle posts `custom_event<fullscreen_events>` (no payload) and is applied at the start of
+  the next cycle, in `application::handle_event`, before `event()` (which a game may override).
+- `detail::fullscreen_tracker` (src/neutrino/video/fullscreen.hh) flips the state the window
+  is in or is being switched to: the state last sent to SDL, or one the window reported
+  (`window_enter/leave_fullscreen`). So toggles in one cycle cancel in pairs (an odd number
+  makes one SDL call), a toggle before a switch completes reverses it, and a switch made by
+  something else (window manager, system) is followed: the next toggle flips it.
+- A failure is logged when applied, and the tracker takes the state the window is still in.
+- `is_fullscreen()` is SDL's flag. SDL has no query for a switch in flight; `SDL_SyncWindow()`
+  would block until it completes.
+- Toggling with no application running (before `ready()`, after `teardown()`) is an ENFORCE;
+  toggles not applied by `on_quit()` are dropped.
 
 ## 4. Design decisions (agreed)
 

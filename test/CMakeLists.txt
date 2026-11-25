@@ -66,6 +66,7 @@ add_executable(neutrino_tests
         video/test_layer_stack.cc
         video/test_canvas.cc
         video/test_window_presentation.cc
+        video/test_fullscreen.cc
         video/test_sprite_sheet.cc
         video/test_glyph_mapping.cc
         video/test_glyph_bank_fonts.cc

@@ -20,6 +20,7 @@
 #include "video/sprite/sprites_manager.hh"
 #include "video/sprite/texture_registry.hh"
 #include "video/text/fonts_manager.hh"
+#include "video/fullscreen.hh"
 #include "video/target_geometry.hh"
 #include "video/texture_allocator.hh"
 #include "services/application_scoped.hh"
@@ -55,6 +56,24 @@ namespace neutrino {
             }
             if (auto* allocator = maybe_texture_allocator()) {
                 allocator->drop_pooled(previous);
+            }
+        }
+
+        // The toggles made since the last cycle (P3.11, "Deferred fullscreen"): one switch if
+        // they did not cancel out. A refused switch is logged, and the next toggle flips the
+        // state the window is still in.
+        void apply_fullscreen_toggles(sdlpp::window& window) {
+            auto& tracker = detail::fullscreen();
+            const auto target = tracker.take();
+            if (!target) {
+                return;
+            }
+            const auto mode = *target ? sdlpp::fullscreen_mode::fullscreen : sdlpp::fullscreen_mode::windowed;
+            if (const auto switched = window.set_fullscreen(mode)) {
+                tracker.track(*target);
+            } else {
+                LOG_ERROR("Failed to switch to", *target ? "fullscreen:" : "windowed:", switched.error());
+                tracker.track(window.is_fullscreen());
             }
         }
     }
@@ -188,7 +207,10 @@ namespace neutrino {
         detail::open_application_scope();
         m_pimpl->m_scope_open = true;
 
+        // Every engine event type, registered before any game code runs (P3.11, "Engine events").
         scenes_manager::register_events();
+        detail::fullscreen_event::init();
+        detail::fullscreen().begin(get_window().is_fullscreen());
 
         service_locator::instance().set_renderer(get_renderer());
         // The game_application path leaves vsync off; honor the config so apps present
@@ -407,6 +429,19 @@ namespace neutrino {
     }
 
     void application::handle_event(const neutrino::event& e) {
+        // Engine-internal and applied here, before event(), which an application may override.
+        if (sdlpp::event_registry::is_custom(e.type())
+            && static_cast <std::uint32_t>(e.type()) == detail::fullscreen_event::category()) {
+            apply_fullscreen_toggles(get_window());
+            return;
+        }
+        // The window entered or left fullscreen: a switch sent, or one made by something else,
+        // which the next toggle then flips.
+        if (e.type() == sdlpp::event_type::window_enter_fullscreen) {
+            detail::fullscreen().track(true);
+        } else if (e.type() == sdlpp::event_type::window_leave_fullscreen) {
+            detail::fullscreen().track(false);
+        }
         if (auto change = m_pimpl->m_gamepads.handle_event(e)) {
             if (change->connected) {
                 on_gamepad_connected(change->index);
@@ -434,6 +469,10 @@ namespace neutrino {
             }
         }
         event(e);
+    }
+
+    void application::toggle_fullscreen() {
+        neutrino::toggle_fullscreen();
     }
 
     void application::event(const neutrino::event& e) {
@@ -506,6 +545,9 @@ namespace neutrino {
         // unregisters through the still-published services.
         m_pimpl->m_resource_cache.reset();
         m_pimpl->m_sprite_cache.reset();
+        // Toggles not applied yet are dropped; a toggle from now on is an ENFORCE.
+        detail::fullscreen().end();
+        detail::fullscreen_event::drain();
         game_application::on_quit();
         service_locator::instance().clear_application(*this);
     }
