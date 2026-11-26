@@ -32,6 +32,8 @@ namespace neutrino {
         /// @brief The gamepad button queried.
         [[nodiscard]] pad_button button() const noexcept { return m_button; }
 
+        [[nodiscard]] bool operator==(const gamepad_button&) const noexcept = default;
+
     private:
         int m_gamepad_index;
         pad_button m_button;

@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <neutrino/scene/base_scene.hh>
@@ -63,6 +64,22 @@ namespace neutrino {
             void finish();
 
             static void register_events();
+
+            /// The actions made while no application ran (application members, statics) move
+            /// into this application's table. Called by on_ready(), before ready().
+            static void setup_actions();
+
+            /// The records of actions still alive move back to the pending table, so an action
+            /// that outlives the application (a member, destroyed after on_quit()) is removed
+            /// from there, and one that lives on is bound in the next application. Called before
+            /// the application scope closes and takes the table with it.
+            static void release_actions();
+
+            /// The global actions pressed in @p live fire, once per frame, before the fixed
+            /// steps: each takes the press it fires on from the scenes' snapshot (P3.11). No scene
+            /// is current while they run. Returns @p live without the taken edges, or nothing
+            /// if none fired (the scenes then get @p live itself).
+            [[nodiscard]] static std::optional <input_snapshot> fire_global_actions(const input_snapshot& live);
         private:
             /// What render() does this frame: the bottom visible scene (the topmost with
             /// hides_below, or the first), whether it draws straight into the target (R44),

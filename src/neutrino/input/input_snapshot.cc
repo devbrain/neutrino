@@ -1,8 +1,77 @@
 #include <neutrino/input/input_snapshot.hh>
+#include <neutrino/input/action.hh>
 #include <sdlpp/events/keyboard_codes.hh>
 #include <algorithm>
 
 namespace neutrino {
+    namespace {
+        [[nodiscard]] bool is_modifier_key(sdlpp::scancode scan) noexcept {
+            switch (scan) {
+                case sdlpp::scancode::lshift:
+                case sdlpp::scancode::rshift:
+                case sdlpp::scancode::lctrl:
+                case sdlpp::scancode::rctrl:
+                case sdlpp::scancode::lalt:
+                case sdlpp::scancode::ralt:
+                case sdlpp::scancode::lgui:
+                case sdlpp::scancode::rgui:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        // The groups held, either side: left Ctrl alone gives mods::ctrl.
+        [[nodiscard]] modifier either_side(modifier held) noexcept {
+            modifier result = modifier::none;
+            for (const auto group : {modifier::ctrl, modifier::shift, modifier::alt, modifier::gui}) {
+                if ((held & group) != modifier::none) {
+                    result = result | group;
+                }
+            }
+            return result;
+        }
+    }
+
+    bool input_snapshot::pressed(const action& a) const {
+        return a.pressed(*this);
+    }
+
+    bool input_snapshot::held(const action& a) const {
+        return a.held(*this);
+    }
+
+    bool input_snapshot::released(const action& a) const {
+        return a.released(*this);
+    }
+
+    std::optional <binding> input_snapshot::capture_binding() const {
+        const modifier mods = either_side(m_modifiers);
+        for (std::size_t i = 0; i < max_scancodes; ++i) {
+            const auto scan = static_cast <sdlpp::scancode>(i);
+            if (m_keys_pressed.test(i) && !is_modifier_key(scan)) {
+                return mods == modifier::none ? binding{scan} : binding{hotkey{mods, scan}};
+            }
+        }
+        for (const auto button : {mouse_button::left, mouse_button::middle, mouse_button::right,
+                                  mouse_button::x1, mouse_button::x2}) {
+            if (mouse(button).pressed) {
+                return mods == modifier::none ? binding{button} : binding{mouse_click{mods, button}};
+            }
+        }
+        for (std::size_t slot = 0; slot < max_gamepad_slots; ++slot) {
+            const auto& gp = m_gamepads[slot];
+            if (!gp.connected) {
+                continue;
+            }
+            for (std::size_t b = 0; b < max_gamepad_buttons; ++b) {
+                if (gp.pressed.test(b)) {
+                    return binding{gamepad_button{static_cast <int>(slot), static_cast <pad_button>(b)}};
+                }
+            }
+        }
+        return std::nullopt;
+    }
 
     input_snapshot::input_snapshot(pointer_state pointer,
                                    button_state left,

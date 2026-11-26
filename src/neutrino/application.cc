@@ -30,7 +30,7 @@
 #include <neutrino/video/sprite/sprite_cache.hh>
 #include <neutrino/video/world/resource_cache.hh>
 
-#include "events/events.hh"
+#include "events/detail/events.hh"
 
 namespace neutrino {
     namespace {
@@ -157,6 +157,7 @@ namespace neutrino {
         // teardown path.
         if (m_pimpl->m_scope_open) {
             m_pimpl->m_scope_open = false;
+            scenes_manager::release_actions();
             detail::close_application_scope();
         }
         m_pimpl->m_resource_cache.reset();
@@ -256,6 +257,7 @@ namespace neutrino {
         // a ready() that allocates and then throws still gets its release hook -- the services it
         // allocated against are up either way.
         m_pimpl->m_services_published = true;
+        scenes_manager::setup_actions();
         ready();
         if (auto scene = create_initial_scene()) {
             m_pimpl->m_scenes_manager.push_scene_sync(std::move(scene));
@@ -278,8 +280,13 @@ namespace neutrino {
         update_scene(dt, input);
     }
 
-    void application::update_scene(float dt, const input_snapshot& input) {
+    void application::update_scene(float dt, const input_snapshot& sampled) {
         if (!m_pimpl->m_scenes_manager.empty()) {
+            // Global actions fire once per frame, before the fixed steps: a frame that runs no
+            // step does not lose their press. Each takes the press it fires on from the
+            // snapshot the scenes get (P3.11).
+            const auto taken = scenes_manager::fire_global_actions(sampled);
+            const input_snapshot& input = taken ? *taken : sampled;
             // Fixed-step scheduler: the sim advances in constant `period` ticks decoupled from the
             // display rate. Clamp the frame delta (a stall must not spiral) into the accumulator, then
             // run whole ticks -- up to max_substeps -- with a constant dt. Input was sampled
@@ -537,6 +544,8 @@ namespace neutrino {
         // the reverse.
         if (m_pimpl->m_scope_open) {
             m_pimpl->m_scope_open = false;
+            // The actions still alive keep their records: the table goes with the scope.
+            scenes_manager::release_actions();
             detail::close_application_scope();
         }
         // Now that scenes (and their world_renderers) have released their handles,

@@ -13,14 +13,18 @@
 #include <bitset>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <neutrino/input/keys.hh>
 #include <neutrino/neutrino_export.h>
 #include <neutrino/coordinates.hh>        // window_pos / render_pos
+#include <neutrino/input/binding.hh>
 #include <neutrino/input/hotkey.hh>
 #include <neutrino/input/mouse_click.hh>
 #include <neutrino/input/gamepad_button.hh>
 
 namespace neutrino {
+    class action;
+
     /// @brief The pointer position this frame, in BOTH window and render space. @c render is the one
     ///        update callbacks want: window input already mapped through to_render_coords() (so HiDPI scaling
     ///        and logical-presentation letterboxing are accounted for), so callbacks never re-derive it.
@@ -107,6 +111,23 @@ namespace neutrino {
             [[nodiscard]] bool pressed(const gamepad_button& gb) const noexcept { return gb.pressed(*this); }
             [[nodiscard]] bool held(const gamepad_button& gb) const noexcept { return gb.held(*this); }
             [[nodiscard]] bool released(const gamepad_button& gb) const noexcept { return gb.released(*this); }
+
+            /// @brief The same as @c a.pressed(*this) etc. (action.hh).
+            [[nodiscard]] bool pressed(const action& a) const;
+            [[nodiscard]] bool held(const action& a) const;
+            [[nodiscard]] bool released(const action& a) const;
+
+            /**
+             * @brief The binding that went down this frame, with the modifiers held, for a
+             *        rebinding screen: Ctrl+S gives `mods::ctrl + key::s` (either side), S alone
+             *        the plain `key::s`, a click `mouse_button::left` or `mods::ctrl +
+             *        mouse_button::left`, a pad button `gamepad_button{slot, button}`.
+             *
+             * A modifier pressed alone is skipped, so the screen waits for the real key. Keys
+             * come first (lowest scancode), then mouse buttons, then pads. Nothing if no binding
+             * went down. Cancelling (Esc) is the screen's job.
+             */
+            [[nodiscard]] std::optional <binding> capture_binding() const;
 
             // --- Mutators (for application::sample_input and tests) ---
             void set_pointer(pointer_state ptr) noexcept { m_pointer = ptr; }

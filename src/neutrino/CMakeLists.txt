@@ -70,8 +70,8 @@ neutrino_subsystem(utils
 neutrino_subsystem(events
         PRIVATE
             event_types.hh
-            events.cc
-            events.hh
+            detail/events.cc
+            detail/events.hh
 )
 
 
@@ -93,6 +93,9 @@ neutrino_subsystem(input
         keys.hh
         mouse_click.hh
         action_id.hh
+        action.hh
+        action_bindings.hh
+        binding.hh
     PRIVATE
         gamepad_button.cc
         gamepads.cc
@@ -101,9 +104,14 @@ neutrino_subsystem(input
         input_snapshot.cc
         modifier_match.hh
         mouse_click.cc
-        action_activation.hh
         action_tables.cc
         action_tables.hh
+        action.cc
+        action_access.hh
+        action_bindings.cc
+        binding.cc
+        binding_text.hh
+        key_names.hh
 )
 
 neutrino_subsystem(physics

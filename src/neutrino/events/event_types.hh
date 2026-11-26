@@ -7,8 +7,7 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "events/events.hh"
-#include <sdlpp/events/events.hh>
+#include "events/detail/events.hh"
 #include <failsafe/type_name.hh>
 
 namespace neutrino {

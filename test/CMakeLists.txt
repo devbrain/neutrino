@@ -34,6 +34,8 @@ add_executable(neutrino_tests
         scene/test_compositor.cc
         input/test_input.cc
         input/test_input_snapshot.cc
+        input/test_action.cc
+        input/test_binding.cc
         input/test_action_table.cc
 
         events/test_events.cc

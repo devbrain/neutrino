@@ -95,7 +95,8 @@ void toggle_fullscreen();            // deferred; any thread
 
 The switch just changes the drawable → a `window_pixel_size_changed` event → `on_resize`
 fires. Config `fullscreen` applied at window creation. A default Alt+Enter / F11 binding is
-left to the game (the engine provides the API; P3.11's global actions are made for it).
+left to the game, as a global action (P3.11, docs/input_actions.md):
+`global_action m_fullscreen{{mods::alt + key::return_key, mods::alt + key::kp_enter}, neutrino::toggle_fullscreen};`
 
 Deferred (P3.11, 2026-11-25; it replaced sdlpp's immediate `set_fullscreen(bool)` /
 `toggle_fullscreen()`, which returned success). Called during a frame, some window systems

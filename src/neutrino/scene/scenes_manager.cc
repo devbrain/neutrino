@@ -25,6 +25,7 @@
 #include "video/painter_context.hh"
 #include "video/painter_state_stack.hh"
 #include "events/event_types.hh"
+#include "input/action_tables.hh"
 
 namespace neutrino {
 
@@ -146,6 +147,18 @@ namespace neutrino {
 
     void scenes_manager::register_events() {
         events::init();
+    }
+
+    void scenes_manager::setup_actions() {
+        detail::adopt_pending_actions();
+    }
+
+    void scenes_manager::release_actions() {
+        detail::return_actions();
+    }
+
+    std::optional <input_snapshot> scenes_manager::fire_global_actions(const input_snapshot& live) {
+        return detail::current_action_table().fire_globals(live);
     }
 
     std::size_t scenes_manager::active_count() const noexcept {

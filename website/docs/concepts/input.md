@@ -234,12 +234,14 @@ if (in.pressed(shoot_button)) { fire(); }
 ```
 
 A modifier and a key also combine with `+` into a `hotkey`, in either order, with a
-scancode or a keycode. Join several modifiers with `|` first, in parentheses, because `+`
-binds tighter than `|`:
+scancode or a keycode; a modifier and a mouse button into a `mouse_click`. Several modifiers
+chain with `+` too, left to right. (`|` also combines modifiers, but `+` binds tighter than
+`|`, so a `|` group needs parentheses.)
 
 ```cpp
 const neutrino::hotkey save_key = neutrino::mods::ctrl + neutrino::key::s;
-const neutrino::hotkey save_as  = (neutrino::mods::ctrl | neutrino::mods::shift) + neutrino::key::s;
+const neutrino::hotkey save_as  = neutrino::mods::ctrl + neutrino::mods::shift + neutrino::key::s;
+const neutrino::mouse_click add = neutrino::mods::shift + neutrino::mouse_button::left;
 ```
 
 ### Scancodes, keycodes, and modifiers
@@ -275,6 +277,128 @@ Recording snapshots or resolved actions can support replay, but does not by itse
 identical results. Reproduction also needs the same initial state, simulation-step sequence,
 randomness, and other external inputs, together with deterministic simulation behavior.
 :::
+
+## Actions
+
+An `action` names what the game asks for ("left", "fire") and binds it to alternative
+inputs, which the player can rebind and the game can save and load. Check it against the
+snapshot as you would a key:
+
+```cpp
+#include <neutrino/input/input.hh>
+
+class game_scene final : public neutrino::base_scene {
+    neutrino::action m_left{"Move left", neutrino::key::left, neutrino::key::a,
+                            neutrino::pad_button::dpad_left};
+    neutrino::action m_fire{"Fire", neutrino::key::space, neutrino::mouse_button::left};
+
+    void fixed_update(neutrino::sim_duration dt, const neutrino::input_snapshot& in) override {
+        if (m_left.held(in)) { move_left(dt); }
+        if (in.pressed(m_fire)) { fire(); }     // the same as m_fire.pressed(in)
+    }
+};
+```
+
+**Bindings.** A plain `key`, `mouse_button` or `pad_button` ignores modifiers, as
+`in.pressed(key)` does; `hotkey`, `mouse_click` and `gamepad_button` match as described above
+(`mods::ctrl + key::s` only while Ctrl, and no other modifier, is held). A plain `pad_button`
+is that button on slot 0.
+
+**One virtual button.** An action is held while any of its bindings is held; pressed when it
+goes from none held to some held (a tap within one frame counts); released when it goes to
+none held. Holding Left and then pressing A gives no second press. A strict binding follows
+the modifiers held now, so letting go of Ctrl while S is held ends `Ctrl+S` without a
+released edge.
+
+**Lifetime.** An action is a handle to a record in the application's actions table, and the
+record lives exactly as long as the object: a scene member while the scene lives, an
+application member for the whole run. Actions made before the application is ready (members
+built in its constructor) wait in a pending table and join it at startup; those alive at
+shutdown go back, so they serve the next application too. Actions can be made on a loading
+thread; check them on the main thread. Actions are movable, not copyable.
+
+**Rebinding and state.**
+
+```cpp
+m_fire.rebind({neutrino::mods::ctrl + neutrino::key::f, neutrino::mouse_button::left});
+m_fire.rebind({});                                // deliberately unbound: answers false, silently
+bool ok = m_fire.rebind("Ctrl+F, Mouse Left");    // the text form; false (and logged) if malformed
+m_fire.disable();                                 // answers false until enable()
+```
+
+A default-constructed action is empty and not in the table until `rebind()` gives it
+bindings; checking it answers false and logs a warning, once per object. The first bindings
+an action is given are kept as its defaults.
+
+### Global actions
+
+A `global_action` fires on its own, before the scenes see the input, so it works under a
+pausing scene or while a console has the keyboard:
+
+```cpp
+class my_game final : public neutrino::application {
+    neutrino::global_action m_fullscreen{
+        "Fullscreen",
+        {neutrino::mods::alt + neutrino::key::return_key, neutrino::mods::alt + neutrino::key::kp_enter},
+        [] { neutrino::toggle_fullscreen(); }};
+    // ...
+};
+```
+
+It fires once on the press, checked once per frame before the fixed steps (so a frame that
+runs no step does not lose it), and takes that press out of the scenes' snapshot: the edges
+of the bindings that fired. Held state stays, so the scenes see the key held and then
+released, and the raw key events still reach `handle_event()`. Holding the key does not
+repeat it. If two global actions
+share an input, the one registered first takes it; a disabled one is skipped. No scene is
+current while the callback runs, so drawing fails there; `toggle_fullscreen()`,
+`pin_scene()` and `screenshot()` work. A throwing callback is logged and contained.
+`rebind()` keeps the callback.
+
+A `global_actions_suspended` object suspends every global action while it lives (they nest),
+for example while a rebinding screen captures Alt+Enter.
+
+### Rebinding screens
+
+`neutrino::action_records()` lists the live actions and global actions in registration order:
+those of the application and of the scenes alive now. Each `action_record` gives the
+`description()`, `is_global()`, `bindings()` and `default_bindings()`, and rebinds through
+`rebind()` or `reset()`. A record stays valid across frames; once its action is gone, it
+answers empty and rebinding does nothing.
+
+`in.capture_binding()` gives the binding that went down this frame, with the modifiers held:
+Ctrl+S gives `mods::ctrl + key::s` (either side), S alone the plain `key::s`. A modifier
+pressed alone is skipped, so the screen waits for the real key; cancelling with Esc is the
+screen's job.
+
+### Text form and saving
+
+Bindings have a text form: `"Ctrl+F, Space, Pad South, Mouse Left"`. Keys go by scancode
+names, so the text does not depend on the keyboard layout (a keycode hotkey is written as the
+scancode it maps to). The names are the engine's own: SDL's default ones, fixed, so a file
+written on one platform reads on another (SDL renames some keys per platform, such as "Left
+Option" on macOS; those names are read too). `None+Space` is the strict hotkey with no
+modifier, `Space` the plain key; `LCtrl+S` asks for the left Ctrl; `Pad 2 South` is slot 1.
+Case and extra blanks do not matter when reading. `neutrino::to_string()`,
+`binding_from_string()` and `bindings_from_string()` convert; a malformed text gives nothing.
+
+`action_bindings` names the actions once and saves and loads them on any stream:
+
+```cpp
+const neutrino::action_bindings bindings{
+    {"left", m_left}, {"fire", m_fire}, {"fullscreen", m_fullscreen}};
+
+std::ofstream out(path);   // e.g. under sdlpp's get_pref_path
+out << bindings;           // "left = Left, A, Pad DPad Left" ...
+
+std::ifstream in(path);
+in >> bindings;            // rebinds each named action, in any line order
+```
+
+A bad or missing line keeps the old bindings and is logged; a line for a name not listed is
+logged and skipped; blank lines and `#` comments are skipped. Loaded bindings do not become
+the defaults, so a rebinding screen's reset still goes back to the game's. An action never
+given bindings is not written.
 
 ## Common pitfalls
 

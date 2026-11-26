@@ -35,9 +35,21 @@ namespace neutrino {
         [[nodiscard]] modifier modifiers() const noexcept { return m_mods; }
         [[nodiscard]] neutrino::mouse_button button() const noexcept { return m_button; }
 
+        [[nodiscard]] bool operator==(const mouse_click&) const noexcept = default;
+
     private:
         modifier m_mods;
         neutrino::mouse_button m_button;
     };
+
+    /// @brief A modifier and a mouse button combine into a @ref mouse_click, in either order:
+    ///        `mods::ctrl + mouse_button::left` is `mouse_click{mods::ctrl, mouse_button::left}`.
+    inline mouse_click operator+(modifier mods, neutrino::mouse_button button) {
+        return {mods, button};
+    }
+
+    inline mouse_click operator+(neutrino::mouse_button button, modifier mods) {
+        return {mods, button};
+    }
 
 } // namespace neutrino

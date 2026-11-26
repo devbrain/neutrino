@@ -49,6 +49,12 @@ namespace neutrino {
         return static_cast<modifier>(~static_cast<std::uint32_t>(mod));
     }
 
+    /// @brief Modifiers combine with @c + as with @c |, so a binding reads left to right:
+    ///        `mods::ctrl + mods::shift + key::w` is `hotkey{mods::ctrl | mods::shift, key::w}`.
+    inline modifier operator+(modifier lhs, modifier rhs) {
+        return lhs | rhs;
+    }
+
     /// @brief Lower-case aliases for the @c modifier enumerators.
     ///
     /// Ergonomic aliases (e.g. @c mods::ctrl) scoped in their own namespace to
@@ -113,14 +119,19 @@ namespace neutrino {
         /// @brief Resolve the scancode corresponding to this key (resolving keycode to scancode if needed).
         [[nodiscard]] neutrino::key resolve_scancode() const noexcept;
 
+        /// @brief Same modifiers and the same key, spelled the same way (a keycode is not equal
+        ///        to the scancode it resolves to).
+        [[nodiscard]] bool operator==(const hotkey&) const noexcept = default;
+
     private:
         modifier m_mods;
         std::variant<neutrino::key, neutrino::keycode> m_key;
     };
 
     /// @brief A modifier and a key combine into a @ref hotkey, in either order:
-    ///        `mods::ctrl + key::s` is `hotkey{mods::ctrl, key::s}`. `+` binds tighter than
-    ///        `|`, so several modifiers go in parentheses: `(mods::ctrl | mods::shift) + key::s`.
+    ///        `mods::ctrl + key::s` is `hotkey{mods::ctrl, key::s}`. Several modifiers chain
+    ///        with `+`: `mods::ctrl + mods::shift + key::s`. (`+` binds tighter than `|`, so
+    ///        with `|` they go in parentheses: `(mods::ctrl | mods::shift) + key::s`.)
     inline
     hotkey operator + (modifier mods, neutrino::keycode key) {
         return {mods, key};

@@ -8,3 +8,7 @@
 #include <neutrino/input/hotkey.hh>
 #include <neutrino/input/input_snapshot.hh>
 #include <neutrino/input/mouse_click.hh>
+#include <neutrino/input/action_id.hh>
+#include <neutrino/input/action.hh>
+#include <neutrino/input/action_bindings.hh>
+#include <neutrino/input/binding.hh>
