@@ -56,6 +56,8 @@ this properly, including whether it suits what you are building.
 | `include/neutrino/` | Public headers — extensively documented, and the reference until the API site lands |
 | `src/neutrino/` | Implementation |
 | `test/` | doctest suite |
+| `tools/` | Build-time tools: `bin2c`, which embeds files as C++ arrays |
+| `cmake/` | CMake functions for projects that use Neutrino: `neutrino_embed_files()` |
 | `examples/` | `sprite_demo`, `map_viewer` |
 | `games/ke/` | Krypton Egg, an Arkanoid clone used to exercise the engine against a real game |
 | `docs/` | Internal design notes |

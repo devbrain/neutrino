@@ -91,6 +91,8 @@ add_executable(neutrino_tests
         detail/test_generic_handle.cc
 
         utils/test_lru.cc
+
+        tools/test_bin2c.cc
 )
 
 target_include_directories(neutrino_tests
@@ -118,6 +120,17 @@ if(NEUTRINO_NEUTRINO_TMX_ENABLE_ZSTD)
                 PRIVATE
                 NEUTRINO_TMX_ENABLE_ZSTD)
 endif()
+
+# Files embedded by bin2c, as a client embeds them (tools/test_bin2c.cc).
+neutrino_embed_files(neutrino_tests
+        NAMESPACE neutrino_test::embedded
+        FILES tools/embed/hello.txt tools/embed/bytes.bin tools/embed/empty.bin)
+neutrino_embed_files(neutrino_tests
+        SYMBOL renamed_hello
+        FILES tools/embed/hello.txt)
+target_compile_definitions(neutrino_tests
+        PRIVATE
+        NEUTRINO_EMBED_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tools/embed")
 
 add_test(NAME neutrino_tests COMMAND neutrino_tests)
 

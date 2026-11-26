@@ -104,6 +104,36 @@ target_link_libraries(my_game PRIVATE neutrino)
 Linking the target brings its include directories and its C++20 requirement with it — you do not
 need to set the standard or spell out include paths yourself.
 
+### Embedding files in the program
+
+`neutrino_embed_files()` turns files into C++ arrays compiled into a target, so a game can carry
+small assets (a font, a logo, a shader) without reading them from disk. It is defined once
+Neutrino has been added:
+
+```cmake
+neutrino_embed_files(my_game
+    NAMESPACE my_game::assets
+    FILES assets/logo.png assets/click.wav)
+```
+
+Each file becomes a header named after it (`logo.png` gives `logo_png.hh`), made at build time
+and remade when the file changes:
+
+```cpp
+#include "logo_png.hh"
+
+std::span<const std::uint8_t> bytes = my_game::assets::logo_png_data();
+static_assert(my_game::assets::logo_png.size() > 0);   // a constexpr std::array
+```
+
+`FILES` are relative to the calling `CMakeLists.txt`. `SYMBOL` names a single file's array
+instead of its file name, and `OUTPUT_DIR` moves the generated headers. Two files that would
+get the same name are an error at configure time.
+
+The headers are made by `bin2c`, a small tool that runs on the build machine. When you
+cross-compile — for WebAssembly with Emscripten, or for Android or iOS — it is compiled with the
+host's C++ compiler while CMake configures, so the same call works there unchanged.
+
 ## Next
 
 With a build in hand, the [concepts](../concepts/index.md) explain the model behind the engine —

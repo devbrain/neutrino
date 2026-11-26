@@ -161,6 +161,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # ============================================================================
+# Build-time tools for neutrino's clients
+# ============================================================================
+# neutrino_embed_files(): embed files into a target as C++ arrays, through bin2c (built for
+# the host when cross-compiling). Defined here, so every project that adds neutrino has it.
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/neutrino_embed.cmake)
+
+# ============================================================================
 # Subdirectories
 # ============================================================================
 
